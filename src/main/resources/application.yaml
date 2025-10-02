@@ -1,0 +1,32 @@
+quarkus:
+  flyway:
+    migrate-at-start: true
+  hibernate-orm:
+    database:
+      generation: validate
+  smallrye-openapi:
+    path: /q/openapi
+  swagger-ui:
+    always-include: true
+  http:
+    cors: true
+
+# dev: use Dev Services Postgres
+"%dev":
+  quarkus:
+    datasource:
+      devservices:
+        enabled: true
+        image-name: postgres:16
+        reuse: true
+
+# prod: real Postgres via env
+"%prod":
+  quarkus:
+    datasource:
+      username: ${DB_USER}
+      password: ${DB_PASS}
+      jdbc:
+        url: ${DB_URL}
+    flyway:
+      migrate-at-start: true
