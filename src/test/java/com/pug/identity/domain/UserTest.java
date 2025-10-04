@@ -1,10 +1,12 @@
 package com.pug.identity.domain;
 
-import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.junit.jupiter.api.Test;
+
 class UserTest {
-  @Test void canInstantiate() {
+  @Test
+  void canInstantiate() {
     var x = new User();
     assertNotNull(x);
   }

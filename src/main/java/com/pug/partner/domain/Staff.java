@@ -1,7 +1,7 @@
-package com.pug.hours.domain;
+package com.pug.partner.domain;
 
+import com.pug.identity.domain.UserRoleAssignment;
 import com.pug.shared.id.UuidV7Algorithm;
-import com.pug.student.domain.Student;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,11 +12,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Digits;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,9 +34,11 @@ import org.hibernate.annotations.UuidGenerator;
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(
-    name = "students_counterparts_hours",
-    indexes = @Index(name = "idx_sch_student", columnList = "student_id"))
-public class StudentCounterpartHours {
+    name = "staff",
+    uniqueConstraints =
+        @UniqueConstraint(name = "uk_staff_user_role", columnNames = "user_role_id"),
+    indexes = @Index(name = "idx_staff_entity", columnList = "entity_id"))
+public class Staff {
 
   @Id
   @GeneratedValue
@@ -46,23 +47,19 @@ public class StudentCounterpartHours {
   private UUID id;
 
   @NotNull
+  @OneToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "user_role_id",
+      nullable = false,
+      unique = true,
+      foreignKey = @ForeignKey(name = "fk_staff_user_role"))
+  private UserRoleAssignment userRole;
+
+  @NotNull
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(
-      name = "student_id",
+      name = "entity_id",
       nullable = false,
-      foreignKey = @ForeignKey(name = "fk_sch_student"))
-  private Student student;
-
-  @NotNull
-  @Digits(integer = 4, fraction = 2)
-  @Column(name = "required_hours", precision = 6, scale = 2, nullable = false)
-  private BigDecimal requiredHours;
-
-  @NotNull
-  @Column(name = "start_date", nullable = false)
-  private LocalDate startDate;
-
-  @NotNull
-  @Column(name = "due_date", nullable = false)
-  private LocalDate dueDate;
+      foreignKey = @ForeignKey(name = "fk_staff_entity"))
+  private PartnerEntity entity;
 }
