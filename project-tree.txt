@@ -1,0 +1,292 @@
+./
+├── .dockerignore
+├── .git/
+├── .gitignore
+├── .idea/
+├── .mvn/
+├── .quarkus/
+│   └── cli/
+│       └── plugins/
+│           └── quarkus-cli-catalog.json
+├── README.md
+├── generate-dir-tree.sh
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── project-tree.txt
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── pug/
+│   │   │           ├── attendance/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── ProjectAttendance.java
+│   │   │           │   │   └── enums/
+│   │   │           │   │       └── AttendanceStatus.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       └── ProjectAttendanceRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── AttendanceResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── AttendanceRequest.java
+│   │   │           │   │       │   ├── AttendanceResponse.java
+│   │   │           │   │       │   └── AttendanceValidationRequest.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── AttendanceDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── ListAttendances.java
+│   │   │           │       ├── SubmitAttendance.java
+│   │   │           │       └── ValidateAttendance.java
+│   │   │           ├── enrollment/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── ProjectEnrollment.java
+│   │   │           │   │   └── enums/
+│   │   │           │   │       └── ProjectEnrollmentStatus.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       └── ProjectEnrollmentRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── EnrollmentResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── EnrollmentDecisionRequest.java
+│   │   │           │   │       │   ├── EnrollmentRequest.java
+│   │   │           │   │       │   └── EnrollmentResponse.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── EnrollmentDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── DecideEnrollment.java
+│   │   │           │       ├── EnrollStudent.java
+│   │   │           │       └── ListEnrollments.java
+│   │   │           ├── geo/
+│   │   │           │   ├── domain/
+│   │   │           │   │   └── City.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       └── CityRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── CityResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   └── CityResponse.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── CityDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       └── ListCities.java
+│   │   │           ├── hours/
+│   │   │           │   ├── domain/
+│   │   │           │   │   └── StudentCounterpartHours.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       └── StudentCounterpartHoursRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── HoursResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── HoursProgressResponse.java
+│   │   │           │   │       │   └── HoursRequirementRequest.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── HoursDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── DefineHoursRequirement.java
+│   │   │           │       └── GetHoursProgress.java
+│   │   │           ├── identity/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── User.java
+│   │   │           │   │   ├── UserRoleAssignment.java
+│   │   │           │   │   └── enums/
+│   │   │           │   │       └── UserRole.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── StaffRepository.java
+│   │   │           │   │       ├── UserRepository.java
+│   │   │           │   │       └── UserRoleAssignmentRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── AuthResource.java
+│   │   │           │   │       ├── UserResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── AuthRequest.java
+│   │   │           │   │       │   ├── AuthResponse.java
+│   │   │           │   │       │   ├── UserRequest.java
+│   │   │           │   │       │   └── UserResponse.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── UserDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── AssignRole.java
+│   │   │           │       ├── AuthenticateUser.java
+│   │   │           │       └── CreateUser.java
+│   │   │           ├── partner/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── PartnerEntity.java
+│   │   │           │   │   └── Staff.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       └── PartnerEntityRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── EntityResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── EntityRequest.java
+│   │   │           │   │       │   └── EntityResponse.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── EntityDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── ListEntities.java
+│   │   │           │       └── RegisterEntity.java
+│   │   │           ├── project/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── Project.java
+│   │   │           │   │   ├── ProjectAllocation.java
+│   │   │           │   │   ├── ProjectLocation.java
+│   │   │           │   │   └── enums/
+│   │   │           │   │       └── ProjectStatus.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── ProjectAllocationRepository.java
+│   │   │           │   │       ├── ProjectLocationRepository.java
+│   │   │           │   │       └── ProjectRepository.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
+│   │   │           │   │       ├── ProjectResource.java
+│   │   │           │   │       ├── dto/
+│   │   │           │   │       │   ├── ProjectAllocationRequest.java
+│   │   │           │   │       │   ├── ProjectLocationRequest.java
+│   │   │           │   │       │   ├── ProjectRequest.java
+│   │   │           │   │       │   └── ProjectResponse.java
+│   │   │           │   │       └── mapper/
+│   │   │           │   │           └── ProjectDtoMapper.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── AllocateProject.java
+│   │   │           │       ├── CreateProject.java
+│   │   │           │       └── ListProjects.java
+│   │   │           ├── shared/
+│   │   │           │   ├── dto/
+│   │   │           │   │   └── .gitkeep
+│   │   │           │   ├── errors/
+│   │   │           │   │   └── .gitkeep
+│   │   │           │   ├── id/
+│   │   │           │   │   └── UuidV7Algorithm.java
+│   │   │           │   ├── json/
+│   │   │           │   │   └── JacksonConfig.java
+│   │   │           │   ├── mapper/
+│   │   │           │   │   └── PageMapper.java
+│   │   │           │   └── util/
+│   │   │           │       ├── ClockProvider.java
+│   │   │           │       └── CpfValidator.java
+│   │   │           └── student/
+│   │   │               ├── domain/
+│   │   │               │   ├── Course.java
+│   │   │               │   ├── FieldOfStudy.java
+│   │   │               │   └── Student.java
+│   │   │               ├── infra/
+│   │   │               │   └── persistence/
+│   │   │               │       ├── CourseRepository.java
+│   │   │               │       ├── FieldOfStudyRepository.java
+│   │   │               │       └── StudentRepository.java
+│   │   │               ├── presenter/
+│   │   │               │   └── rest/
+│   │   │               │       ├── StudentResource.java
+│   │   │               │       ├── dto/
+│   │   │               │       │   ├── StudentRequest.java
+│   │   │               │       │   └── StudentResponse.java
+│   │   │               │       └── mapper/
+│   │   │               │           └── StudentDtoMapper.java
+│   │   │               └── usecase/
+│   │   │                   ├── ListStudents.java
+│   │   │                   └── RegisterStudent.java
+│   │   └── resources/
+│   │       ├── META-INF/
+│   │       │   └── resources/
+│   │       │       └── .gitkeep
+│   │       ├── application.yaml
+│   │       └── db/
+│   │           └── migration/
+│   │               ├── V001__create_users_table.sql
+│   │               ├── V002__create_user_roles_table.sql
+│   │               ├── V003__create_cities_table.sql
+│   │               ├── V004__create_entities_table.sql
+│   │               ├── V005__create_staff_table.sql
+│   │               ├── V006__create_fields_of_study_table.sql
+│   │               ├── V007__create_courses_table.sql
+│   │               ├── V008__create_students_table.sql
+│   │               ├── V009__create_students_counterparts_hours.sql
+│   │               ├── V010__create_projects_table.sql
+│   │               ├── V011__create_projects_allocations_table.sql
+│   │               ├── V012__create_projects_locations_table.sql
+│   │               ├── V013__create_projects_enrollments_table.sql
+│   │               └── V014__create_projects_attendances_table.sql
+│   └── test/
+│       ├── java/
+│       │   └── com/
+│       │       └── pug/
+│       │           ├── attendance/
+│       │           │   ├── domain/
+│       │           │   │   └── ProjectAttendanceTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── AttendanceResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── SubmitAttendanceTest.java
+│       │           ├── enrollment/
+│       │           │   ├── domain/
+│       │           │   │   └── ProjectEnrollmentTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── EnrollmentResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── EnrollStudentTest.java
+│       │           ├── geo/
+│       │           │   ├── domain/
+│       │           │   │   └── CityTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── CityResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── ListCitiesTest.java
+│       │           ├── hours/
+│       │           │   ├── domain/
+│       │           │   │   └── StudentCounterpartHoursTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── HoursResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── DefineHoursRequirementTest.java
+│       │           ├── identity/
+│       │           │   ├── domain/
+│       │           │   │   └── UserTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── UserResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── CreateUserTest.java
+│       │           ├── partner/
+│       │           │   ├── domain/
+│       │           │   │   └── PartnerEntityTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── EntityResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── RegisterEntityTest.java
+│       │           ├── project/
+│       │           │   ├── domain/
+│       │           │   │   └── ProjectTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   │       └── ProjectResourceTest.java
+│       │           │   └── usecase/
+│       │           │       └── CreateProjectTest.java
+│       │           └── student/
+│       │               ├── domain/
+│       │               │   └── StudentTest.java
+│       │               ├── presenter/
+│       │               │   └── rest/
+│       │               │       └── StudentResourceTest.java
+│       │               └── usecase/
+│       │                   └── RegisterStudentTest.java
+│       └── resources/
+│           └── application.yaml
+└── target/
