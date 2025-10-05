@@ -1,3 +1,6 @@
 package com.pug.partner.usecase.entity.update;
 
-public record AttIsActiveCommand() {}
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
+
+public record AttIsActiveCommand(@NotNull UUID id) {}

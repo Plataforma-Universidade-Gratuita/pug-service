@@ -1,6 +1,8 @@
 package com.pug.shared.mappers;
 
 import static com.pug.shared.errors.ErrorCodes.CITY_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.ENTITY_DUPLICATE_CNPJ;
+import static com.pug.shared.errors.ErrorCodes.ENTITY_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.ROLE_DUPLICATE_EMAIL;
 import static com.pug.shared.errors.ErrorCodes.ROLE_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.USER_ALREADY_REGISTERED_AS_FORMER_STUDENT;
@@ -30,11 +32,13 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
   private static final Map<String, Response.Status> STATUS =
       Map.of(
           USER_ALREADY_REGISTERED_AS_FORMER_STUDENT, Response.Status.CONFLICT,
-          ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT,
+          ENTITY_DUPLICATE_CNPJ, Response.Status.CONFLICT,
           USER_DUPLICATE_CPF, Response.Status.CONFLICT,
+          ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT,
           CITY_NOT_FOUND, Response.Status.NOT_FOUND,
           ROLE_NOT_FOUND, Response.Status.NOT_FOUND,
-          USER_NOT_FOUND, Response.Status.NOT_FOUND);
+          USER_NOT_FOUND, Response.Status.NOT_FOUND,
+          ENTITY_NOT_FOUND, Response.Status.NOT_FOUND);
 
   @Override
   public Response toResponse(DomainException ex) {
@@ -65,10 +69,15 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
           if (a instanceof UUID u) yield Map.of("id", u);
           yield Map.of("email", a);
         }
+        case ENTITY_NOT_FOUND -> {
+          if (a instanceof UUID u) yield Map.of("id", u);
+          yield Map.of("cnpj", a);
+        }
+        case CITY_NOT_FOUND -> Map.of("ibgeCode", a);
         case USER_DUPLICATE_CPF -> Map.of("cpf", a);
         case ROLE_DUPLICATE_EMAIL -> Map.of("email", a);
+        case ENTITY_DUPLICATE_CNPJ -> Map.of("cnpj", a);
         case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT -> Map.of("user", a);
-        case CITY_NOT_FOUND -> Map.of("ibgeCode", a);
         default -> Map.of();
       };
     }

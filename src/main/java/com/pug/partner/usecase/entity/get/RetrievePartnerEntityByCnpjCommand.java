@@ -1,3 +1,5 @@
 package com.pug.partner.usecase.entity.get;
 
-public record RetrievePartnerEntityByCnpjCommand() {}
+import jakarta.validation.constraints.NotBlank;
+
+public record RetrievePartnerEntityByCnpjCommand(@NotBlank String cnpj) {}

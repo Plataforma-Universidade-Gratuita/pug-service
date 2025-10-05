@@ -1,3 +1,6 @@
 package com.pug.partner.usecase.entity.get;
 
-public record RetrievePartnerEntityByIdCommand() {}
+import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
+
+public record RetrievePartnerEntityByIdCommand(@NotNull UUID id) {}

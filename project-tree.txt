@@ -148,7 +148,10 @@
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── PartnerEntity.java
-│   │   │           │   │   └── Staff.java
+│   │   │           │   │   ├── Staff.java
+│   │   │           │   │   └── exceptions/
+│   │   │           │   │       ├── DuplicateCnpjException.java
+│   │   │           │   │       └── PartnerEntityNotFoundException.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CnpjConverter.java
 │   │   │           │   │   └── persistence/
@@ -156,10 +159,12 @@
 │   │   │           │   │       └── StaffRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
-│   │   │           │   │       ├── EntityResource.java
+│   │   │           │   │       ├── PartnerEntityResource.java
 │   │   │           │   │       └── dto/
-│   │   │           │   │           ├── EntityRequest.java
-│   │   │           │   │           └── EntityResponse.java
+│   │   │           │   │           ├── AttPartnerEntityRequest.java
+│   │   │           │   │           ├── PartnerEntityResponse.java
+│   │   │           │   │           ├── RegisterPartnerEntityRequest.java
+│   │   │           │   │           └── RegisterPartnerEntityResponse.java
 │   │   │           │   └── usecase/
 │   │   │           │       ├── entity/
 │   │   │           │       │   ├── create/
@@ -338,6 +343,11 @@
 │       │           │   │   └── staff/
 │       │           │   │       ├── StaffJpaMappingTest.java
 │       │           │   │       └── StaffValidationTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CnpjConverterTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       ├── PartnerEntityRepositoryTest.java
+│       │           │   │       └── StaffRepositoryTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       ├── entity/
@@ -346,7 +356,9 @@
 │       │           │   │           └── StaffResourceTest.java
 │       │           │   └── usecase/
 │       │           │       ├── entity/
-│       │           │       │   └── RegisterEntityTest.java
+│       │           │       │   ├── AttPartnerEntityHandlerTest.java
+│       │           │       │   ├── RegisterPartnerEntityHandlerTest.java
+│       │           │       │   └── RetrievePartnerEntityHandlerTest.java
 │       │           │       └── staff/
 │       │           ├── project/
 │       │           │   ├── domain/

@@ -321,6 +321,7 @@
                                 <include>com/pug/identity/**</include>
                                 <include>com/pug/geo/**</include>
                                 <include>com/pug/shared/**</include>
+                                <include>com/pug/partner/**</include>
                             </includes>
                         </configuration>
                     </execution>
