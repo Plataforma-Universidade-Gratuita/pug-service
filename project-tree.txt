@@ -63,19 +63,25 @@
 │   │   │           │       └── ListEnrollments.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
-│   │   │           │   │   └── City.java
+│   │   │           │   │   ├── City.java
+│   │   │           │   │   └── exceptions/
+│   │   │           │   │       └── CityNotFoundException.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       └── CityRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── CityResource.java
-│   │   │           │   │       ├── dto/
-│   │   │           │   │       │   └── CityResponse.java
-│   │   │           │   │       └── mapper/
-│   │   │           │   │           └── CityDtoMapper.java
-│   │   │           │   └── service/
-│   │   │           │       └── ListCities.java
+│   │   │           │   │       └── dto/
+│   │   │           │   │           └── CityResponse.java
+│   │   │           │   └── usecase/
+│   │   │           │       └── get/
+│   │   │           │           ├── byIbgeCode/
+│   │   │           │           │   ├── GetCityByIbgeCodeHandler.java
+│   │   │           │           │   └── GetCityByIbgeCodeQuery.java
+│   │   │           │           └── byPattern/
+│   │   │           │               ├── ListCitiesByPatternHandler.java
+│   │   │           │               └── ListCitiesByPatternQuery.java
 │   │   │           ├── hours/
 │   │   │           │   ├── domain/
 │   │   │           │   │   └── StudentCounterpartHours.java
@@ -214,7 +220,7 @@
 │   │   │           │   │   ├── DomainExceptionMapper.java
 │   │   │           │   │   └── UncaughtExceptionMapper.java
 │   │   │           │   └── util/
-│   │   │           │       └── .gitkeep
+│   │   │           │       └── CollectionUtils.java
 │   │   │           └── student/
 │   │   │               ├── domain/
 │   │   │               │   ├── Course.java
@@ -256,7 +262,8 @@
 │   │       │       ├── V011__create_projects_allocations_table.sql
 │   │       │       ├── V012__create_projects_locations_table.sql
 │   │       │       ├── V013__create_projects_enrollments_table.sql
-│   │       │       └── V014__create_projects_attendances_table.sql
+│   │       │       ├── V014__create_projects_attendances_table.sql
+│   │       │       └── V015__insert_base_cities_into_table.sql
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
@@ -281,12 +288,17 @@
 │       │           │       └── EnrollStudentTest.java
 │       │           ├── geo/
 │       │           │   ├── domain/
-│       │           │   │   └── CityTest.java
+│       │           │   │   ├── CityJpaMappingTest.java
+│       │           │   │   └── CityValidationTest.java
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   │       └── CityRepositoryTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── CityResourceTest.java
-│       │           │   └── service/
-│       │           │       └── ListCitiesTest.java
+│       │           │   └── usecase/
+│       │           │       ├── GetCityByIbgeCodeHandlerTest.java
+│       │           │       └── ListCitiesByPatternHandlerTest.java
 │       │           ├── hours/
 │       │           │   ├── domain/
 │       │           │   │   └── StudentCounterpartHoursTest.java
@@ -340,6 +352,9 @@
 │       │           │   │       └── ProjectResourceTest.java
 │       │           │   └── service/
 │       │           │       └── CreateProjectTest.java
+│       │           ├── shared/
+│       │           │   └── util/
+│       │           │       └── CollectionUtilsTest.java
 │       │           └── student/
 │       │               ├── domain/
 │       │               │   └── StudentTest.java

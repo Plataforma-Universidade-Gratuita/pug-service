@@ -1,5 +1,12 @@
 package com.pug.shared.mappers;
 
+import static com.pug.shared.errors.ErrorCodes.CITY_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.ROLE_DUPLICATE_EMAIL;
+import static com.pug.shared.errors.ErrorCodes.ROLE_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.USER_ALREADY_REGISTERED_AS_FORMER_STUDENT;
+import static com.pug.shared.errors.ErrorCodes.USER_DUPLICATE_CPF;
+import static com.pug.shared.errors.ErrorCodes.USER_NOT_FOUND;
+
 import com.pug.shared.dtos.ApiError;
 import com.pug.shared.dtos.ApiResponse;
 import com.pug.shared.errors.DomainException;
@@ -13,6 +20,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import java.util.Map;
+import java.util.UUID;
 
 @Provider
 public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
@@ -21,8 +29,12 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
 
   private static final Map<String, Response.Status> STATUS =
       Map.of(
-          ErrorCodes.USER_DUPLICATE_CPF, Response.Status.CONFLICT,
-          ErrorCodes.USER_NOT_FOUND, Response.Status.NOT_FOUND);
+          USER_ALREADY_REGISTERED_AS_FORMER_STUDENT, Response.Status.CONFLICT,
+          ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT,
+          USER_DUPLICATE_CPF, Response.Status.CONFLICT,
+          CITY_NOT_FOUND, Response.Status.NOT_FOUND,
+          ROLE_NOT_FOUND, Response.Status.NOT_FOUND,
+          USER_NOT_FOUND, Response.Status.NOT_FOUND);
 
   @Override
   public Response toResponse(DomainException ex) {
@@ -40,9 +52,25 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
   }
 
   private Map<String, Object> buildDetails(DomainException ex) {
-    if (ErrorCodes.USER_NOT_FOUND.equals(ex.getCode()) && ex.getArgs().length == 1) {
-      Object a = ex.getArgs()[0];
-      return (a instanceof java.util.UUID) ? Map.of("id", a) : Map.of("cpf", a);
+    var code = ex.getCode();
+    var args = ex.getArgs();
+    if (args.length == 1) {
+      Object a = args[0];
+      return switch (code) {
+        case USER_NOT_FOUND -> {
+          if (a instanceof UUID u) yield Map.of("id", u);
+          yield Map.of("cpf", a);
+        }
+        case ROLE_NOT_FOUND -> {
+          if (a instanceof UUID u) yield Map.of("id", u);
+          yield Map.of("email", a);
+        }
+        case USER_DUPLICATE_CPF -> Map.of("cpf", a);
+        case ROLE_DUPLICATE_EMAIL -> Map.of("email", a);
+        case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT -> Map.of("user", a);
+        case CITY_NOT_FOUND -> Map.of("ibgeCode", a);
+        default -> Map.of();
+      };
     }
     return Map.of();
   }
