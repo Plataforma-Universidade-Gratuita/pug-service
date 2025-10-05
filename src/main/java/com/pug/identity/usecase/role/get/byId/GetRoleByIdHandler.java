@@ -1,8 +1,8 @@
-package com.pug.identity.usecase.user.get.byId;
+package com.pug.identity.usecase.role.get.byId;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.exceptions.UserNotFoundException;
-import com.pug.identity.infra.persistence.UserRepository;
+import com.pug.identity.domain.Role;
+import com.pug.identity.domain.exceptions.RoleNotFoundException;
+import com.pug.identity.infra.persistence.RoleRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -10,14 +10,14 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class GetUserByIdHandler {
-  @Inject UserRepository repo;
+public class GetRoleByIdHandler {
+  @Inject RoleRepository repo;
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public User handle(GetUserByIdQuery q) {
+  public Role handle(GetRoleByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
-    return repo.findByIdOptional(q.id()).orElseThrow(() -> new UserNotFoundException(q.id()));
+    return repo.findByIdOptional(q.id()).orElseThrow(() -> new RoleNotFoundException(q.id()));
   }
 }

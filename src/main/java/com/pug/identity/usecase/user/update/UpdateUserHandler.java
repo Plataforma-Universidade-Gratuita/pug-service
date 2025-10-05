@@ -18,8 +18,11 @@ public class UpdateUserHandler {
 
   @Transactional
   public User handle(UpdateUserCommand cmd) {
+    var vCmd = validator.validate(cmd);
+    if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
+
     UUID id = cmd.id();
-    String cpf = cmd.cpf() == null ? null : cmd.cpf().replaceAll("\\D", "");
+    String cpf = cmd.cpf().replaceAll("\\D", "");
 
     var u = repo.findByIdOptional(id).orElseThrow(() -> new UserNotFoundException(id));
 

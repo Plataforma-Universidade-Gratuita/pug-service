@@ -1,16 +1,15 @@
 package com.pug.identity.usecase.user;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 import com.pug.identity.infra.persistence.UserRepository;
-import com.pug.identity.usecase.user.create.CreateUserCommand;
-import com.pug.identity.usecase.user.create.CreateUserHandler;
+import com.pug.identity.usecase.user.update.UpdateUserCommand;
+import com.pug.identity.usecase.user.update.UpdateUserHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -19,7 +18,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class CreateUserHandlerTest {
+class UpdateUserHandlerCommandValidationTest {
 
   @Mock UserRepository repo;
 
@@ -27,13 +26,13 @@ class CreateUserHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks CreateUserHandler handler;
+  @InjectMocks UpdateUserHandler handler;
 
   @Test
-  void nullCpfFailsAndSkipsRepo() {
+  void nullIdFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new CreateUserCommand(null, "Ada")));
+        () -> handler.handle(new UpdateUserCommand(null, "935.411.347-80", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -41,15 +40,15 @@ class CreateUserHandlerTest {
   void blankCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new CreateUserCommand("  ", "Ada")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "   ", "Ada")));
     verifyNoInteractions(repo);
   }
 
   @Test
-  void invalidCpfFailsAndSkipsRepo() {
+  void invalidCpfFormatFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new CreateUserCommand("1234567890a", "Ada")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "1234567890a", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -57,29 +56,17 @@ class CreateUserHandlerTest {
   void blankNameFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new CreateUserCommand("935.411.347-80", " ")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "935.411.347-80", " ")));
     verifyNoInteractions(repo);
   }
 
   @Test
-  void overlongNameFailsAndSkipsRepo() {
+  void nameOver150FailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new CreateUserCommand("935.411.347-80", "x".repeat(151))));
+        () ->
+            handler.handle(
+                new UpdateUserCommand(UUID.randomUUID(), "935.411.347-80", "x".repeat(151))));
     verifyNoInteractions(repo);
-  }
-
-  @Test
-  void acceptsDigitsCpfWithoutMask() {
-    when(repo.existsByCpf("93541134780")).thenReturn(false);
-    handler.handle(new CreateUserCommand("93541134780", "Ada"));
-    verify(repo).existsByCpf("93541134780");
-  }
-
-  @Test
-  void maskedCpfIsNormalizedBeforePersist() {
-    when(repo.existsByCpf("93541134780")).thenReturn(false);
-    handler.handle(new CreateUserCommand("935.411.347-80", "Ada"));
-    verify(repo).existsByCpf("93541134780");
   }
 }

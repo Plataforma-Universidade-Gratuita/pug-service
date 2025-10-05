@@ -1,6 +1,6 @@
 package com.pug.partner.domain;
 
-import com.pug.identity.domain.UserRoleAssignment;
+import com.pug.identity.domain.Role;
 import com.pug.shared.id.UuidV7Algorithm;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -53,7 +53,7 @@ public class Staff {
       nullable = false,
       unique = true,
       foreignKey = @ForeignKey(name = "fk_staff_user_role"))
-  private UserRoleAssignment userRole;
+  private Role userRole;
 
   @NotNull
   @ManyToOne(optional = false, fetch = FetchType.LAZY)

@@ -6,6 +6,7 @@ import com.pug.identity.infra.persistence.UserRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import java.util.UUID;
 
@@ -16,16 +17,19 @@ public class CreateUserHandler {
 
   @Transactional
   public UUID handle(CreateUserCommand cmd) {
-    String cpf = cmd.cpf() == null ? null : cmd.cpf().replaceAll("\\D", "");
-    User u = User.builder().cpf(cpf).name(cmd.name()).build();
+    var vCmd = validator.validate(cmd);
+    if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 
-    var v = validator.validate(u);
-    if (!v.isEmpty()) throw new jakarta.validation.ConstraintViolationException(v);
+    String cpf = cmd.cpf().replaceAll("\\D", "");
+
+    var probe = User.builder().cpf(cpf).name(cmd.name()).build();
+    var vEnt = validator.validate(probe);
+    if (!vEnt.isEmpty()) throw new ConstraintViolationException(vEnt);
 
     if (repo.existsByCpf(cpf)) throw new DuplicateCpfException(cpf);
 
-    repo.persist(u);
+    repo.persist(probe);
     repo.flush();
-    return u.getId();
+    return probe.getId();
   }
 }

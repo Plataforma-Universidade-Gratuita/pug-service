@@ -47,7 +47,7 @@ import org.hibernate.annotations.UuidGenerator;
       @Index(name = "idx_users_roles_user", columnList = "user_id"),
       @Index(name = "idx_users_roles_role", columnList = "role")
     })
-public class UserRoleAssignment {
+public class Role {
 
   @Id
   @GeneratedValue

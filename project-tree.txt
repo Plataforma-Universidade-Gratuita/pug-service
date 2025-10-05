@@ -95,18 +95,21 @@
 │   │   │           │       └── GetHoursProgress.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── Role.java
 │   │   │           │   │   ├── User.java
-│   │   │           │   │   ├── UserRoleAssignment.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── UserRole.java
 │   │   │           │   │   └── exceptions/
 │   │   │           │   │       ├── DuplicateCpfException.java
+│   │   │           │   │       ├── DuplicateEmailException.java
+│   │   │           │   │       ├── FormerStudentRegistrationException.java
+│   │   │           │   │       ├── RoleNotFoundException.java
 │   │   │           │   │       └── UserNotFoundException.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CpfConverter.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── UserRepository.java
-│   │   │           │   │       └── UserRoleAssignmentRepository.java
+│   │   │           │   │       ├── RoleRepository.java
+│   │   │           │   │       └── UserRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── UserResource.java
@@ -116,22 +119,37 @@
 │   │   │           │   │           ├── UpdateUserRequest.java
 │   │   │           │   │           └── UserResponse.java
 │   │   │           │   └── usecase/
-│   │   │           │       ├── user/
+│   │   │           │       ├── role/
+│   │   │           │       │   ├── activation/
+│   │   │           │       │   │   ├── ChangeActiveRoleStatusCommand.java
+│   │   │           │       │   │   └── ChangeActiveRoleStatusHandler.java
 │   │   │           │       │   ├── create/
-│   │   │           │       │   │   ├── CreateUserCommand.java
-│   │   │           │       │   │   └── CreateUserHandler.java
+│   │   │           │       │   │   ├── CreateRoleCommand.java
+│   │   │           │       │   │   └── CreateRoleHandler.java
 │   │   │           │       │   ├── get/
-│   │   │           │       │   │   ├── byCpf/
-│   │   │           │       │   │   │   ├── GetUserByCpfHandler.java
-│   │   │           │       │   │   │   └── GetUserByCpfQuery.java
+│   │   │           │       │   │   ├── byEmail/
+│   │   │           │       │   │   │   ├── GetRoleByEmailHandler.java
+│   │   │           │       │   │   │   └── GetRoleByEmailQuery.java
 │   │   │           │       │   │   └── byId/
-│   │   │           │       │   │       ├── GetUserByIdHandler.java
-│   │   │           │       │   │       └── GetUserByIdQuery.java
+│   │   │           │       │   │       ├── GetRoleByIdHandler.java
+│   │   │           │       │   │       └── GetRoleByIdQuery.java
 │   │   │           │       │   └── update/
-│   │   │           │       │       ├── UpdateUserCommand.java
-│   │   │           │       │       └── UpdateUserHandler.java
-│   │   │           │       └── userRoleAssigment/
-│   │   │           │           └── UserRoleAssignmentService.java
+│   │   │           │       │       ├── UpdateRoleCommand.java
+│   │   │           │       │       └── UpdateRoleHandler.java
+│   │   │           │       └── user/
+│   │   │           │           ├── create/
+│   │   │           │           │   ├── CreateUserCommand.java
+│   │   │           │           │   └── CreateUserHandler.java
+│   │   │           │           ├── get/
+│   │   │           │           │   ├── byCpf/
+│   │   │           │           │   │   ├── GetUserByCpfHandler.java
+│   │   │           │           │   │   └── GetUserByCpfQuery.java
+│   │   │           │           │   └── byId/
+│   │   │           │           │       ├── GetUserByIdHandler.java
+│   │   │           │           │       └── GetUserByIdQuery.java
+│   │   │           │           └── update/
+│   │   │           │               ├── UpdateUserCommand.java
+│   │   │           │               └── UpdateUserHandler.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── PartnerEntity.java
@@ -279,24 +297,32 @@
 │       │           │       └── DefineHoursRequirementTest.java
 │       │           ├── identity/
 │       │           │   ├── domain/
-│       │           │   │   ├── UserRoleAssigmentTest/
-│       │           │   │   │   ├── UserRoleAssignmentJpaMappingTest.java
-│       │           │   │   │   └── UserRoleAssignmentValidationTest.java
+│       │           │   │   ├── RoleTest/
+│       │           │   │   │   ├── RoleJpaMappingTest.java
+│       │           │   │   │   └── RoleValidationTest.java
 │       │           │   │   └── UserTest/
 │       │           │   │       ├── UserJpaMappingTest.java
 │       │           │   │       └── UserValidationTest.java
 │       │           │   ├── infra/
 │       │           │   │   ├── CpfConverterTest.java
 │       │           │   │   └── persistence/
+│       │           │   │       ├── RoleRepositoryTest.java
 │       │           │   │       └── UserRepositoryTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── UserResourceTest.java
 │       │           │   └── usecase/
+│       │           │       ├── role/
+│       │           │       │   ├── ChangeActiveRoleStatusHandlerTest.java
+│       │           │       │   ├── CreateRoleHandlerTest.java
+│       │           │       │   ├── GetRoleByEmailHandlerTest.java
+│       │           │       │   ├── GetRoleByIdHandlerTest.java
+│       │           │       │   └── UpdateRoleHandlerTest.java
 │       │           │       └── user/
 │       │           │           ├── CreateUserHandlerTest.java
 │       │           │           ├── GetUserByCpfHandlerTest.java
 │       │           │           ├── GetUserByIdHandlerTest.java
+│       │           │           ├── UpdateUserHandlerCommandValidationTest.java
 │       │           │           └── UpdateUserHandlerTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/

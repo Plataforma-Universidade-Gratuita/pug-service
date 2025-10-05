@@ -13,6 +13,7 @@ import com.pug.identity.usecase.user.get.byId.GetUserByIdHandler;
 import com.pug.identity.usecase.user.get.byId.GetUserByIdQuery;
 import com.pug.shared.errors.DomainException;
 import com.pug.shared.errors.ErrorCodes;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.util.Optional;
@@ -60,6 +61,13 @@ class GetUserByIdHandlerTest {
     assertEquals(1, ex.getArgs().length);
     assertEquals(id, ex.getArgs()[0]);
     verify(repo).findByIdOptional(id);
+    verifyNoMoreInteractions(repo);
+  }
+
+  @Test
+  void nullIdFailsValidationAndSkipsRepo() {
+    assertThrows(
+        ConstraintViolationException.class, () -> handler.handle(new GetUserByIdQuery(null)));
     verifyNoMoreInteractions(repo);
   }
 }

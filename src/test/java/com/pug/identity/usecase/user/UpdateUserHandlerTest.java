@@ -14,7 +14,6 @@ import com.pug.identity.domain.exceptions.UserNotFoundException;
 import com.pug.identity.infra.persistence.UserRepository;
 import com.pug.identity.usecase.user.update.UpdateUserCommand;
 import com.pug.identity.usecase.user.update.UpdateUserHandler;
-import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import java.util.Optional;
@@ -38,22 +37,21 @@ class UpdateUserHandlerTest {
 
   @InjectMocks UpdateUserHandler handler;
 
-  private static final String CPF_OLD = "28612017004";
-  private static final String CPF_NEW_MASKED = "935.411.347-80";
-  private static final String CPF_NEW = "93541134780";
+  private static final String CPF_OLD = "93541134780";
+  private static final String CPF_NEW_MASKED = "390.533.447-05";
+  private static final String CPF_NEW = "39053344705";
 
   @Test
-  void updateUserSuccessAdminUpdatesAndFlushes() {
+  void successUpdatesAndFlushes() {
     UUID id = UUID.randomUUID();
-    User existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
+    var existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(false);
 
-    User out = handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
+    var out = handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
 
     assertEquals(CPF_NEW, out.getCpf());
     assertEquals("Alan Turing", out.getName());
-
     InOrder io = inOrder(repo);
     io.verify(repo).findByIdOptional(id);
     io.verify(repo).existsByCpfForAnother(CPF_NEW, id);
@@ -62,39 +60,24 @@ class UpdateUserHandlerTest {
   }
 
   @Test
-  void updateUserFailsWhenUserNotFound() {
+  void userNotFoundThrows() {
     UUID id = UUID.randomUUID();
     when(repo.findByIdOptional(id)).thenReturn(Optional.empty());
 
     assertThrows(
-        UserNotFoundException.class, () -> handler.handle(new UpdateUserCommand(id, CPF_NEW, "X")));
+        UserNotFoundException.class,
+        () -> handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "X")));
 
     verify(repo).findByIdOptional(id);
     verifyNoMoreInteractions(repo);
   }
 
   @Test
-  void updateUserFailsOnValidationAfterSetters() {
+  void duplicateCpfThrowsBeforeMutate() {
     UUID id = UUID.randomUUID();
-    User existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
+    var existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
-
-    assertThrows(
-        ConstraintViolationException.class,
-        () -> handler.handle(new UpdateUserCommand(id, "invalid", " ")));
-
-    verify(repo).findByIdOptional(id);
-    verify(repo).existsByCpfForAnother("", id);
-    verify(repo, never()).flush();
-    verifyNoMoreInteractions(repo);
-  }
-
-  @Test
-  void updateUserFailsOnDuplicateCpfOtherUser() {
-    UUID id = UUID.randomUUID();
-    User existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
-    when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
-    when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(true); // digits
+    when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(true);
 
     assertThrows(
         DuplicateCpfException.class,
@@ -107,9 +90,24 @@ class UpdateUserHandlerTest {
   }
 
   @Test
-  void updateUserNormalizesMaskedBeforeDuplicateCheck() {
+  void unchangedCpfAllowsNameChangeOnlyChecksDuplicateOnOldCpf() {
     UUID id = UUID.randomUUID();
-    User existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
+    var existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
+    when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
+    when(repo.existsByCpfForAnother(CPF_OLD, id)).thenReturn(false);
+
+    var out = handler.handle(new UpdateUserCommand(id, CPF_OLD, "Alan M. Turing"));
+
+    assertEquals(CPF_OLD, out.getCpf());
+    assertEquals("Alan M. Turing", out.getName());
+    verify(repo).existsByCpfForAnother(CPF_OLD, id);
+    verify(repo).flush();
+  }
+
+  @Test
+  void maskedCpfIsNormalizedBeforeDuplicateCheck() {
+    UUID id = UUID.randomUUID();
+    var existing = User.builder().id(id).cpf(CPF_OLD).name("Alan").build();
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(false);
 

@@ -1,6 +1,6 @@
 package com.pug.student.domain;
 
-import com.pug.identity.domain.UserRoleAssignment;
+import com.pug.identity.domain.Role;
 import com.pug.shared.id.UuidV7Algorithm;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -59,7 +59,7 @@ public class Student {
       nullable = false,
       unique = true,
       foreignKey = @ForeignKey(name = "fk_students_user_role"))
-  private UserRoleAssignment userRole;
+  private Role userRole;
 
   @NotBlank
   @Size(max = 15)
