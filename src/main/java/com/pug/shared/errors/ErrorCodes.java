@@ -1,0 +1,20 @@
+package com.pug.shared.errors;
+
+public final class ErrorCodes {
+  private ErrorCodes() {}
+
+  public static final String USER_DUPLICATE_CPF = "USER_DUPLICATE_CPF";
+  public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
+  public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
+  public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+
+  public static String bundleKey(String code) {
+    return switch (code) {
+      case USER_DUPLICATE_CPF -> "error.user.duplicate_cpf";
+      case USER_NOT_FOUND -> "error.user.not_found";
+      case VALIDATION_ERROR -> "error.validation";
+      case INTERNAL_ERROR -> "error.internal";
+      default -> code;
+    };
+  }
+}

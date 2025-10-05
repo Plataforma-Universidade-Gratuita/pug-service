@@ -18,6 +18,8 @@ class UserValidationTest {
   static Validator validator;
   static Locale original;
 
+  private static final String VALID_CPF = "93541134780";
+
   @BeforeAll
   static void boot() {
     original = Locale.getDefault();
@@ -32,7 +34,14 @@ class UserValidationTest {
 
   @Test
   void validUserPasses() {
-    var u = User.builder().cpf("12345678901234").name("Ada Lovelace").build();
+    var u = User.builder().cpf(VALID_CPF).name("Ada Lovelace").build();
+    var v = validator.validate(u);
+    assertTrue(v.isEmpty());
+  }
+
+  @Test
+  void cpf_acceptsMaskedAndIsSanitizedByConverter_whenPersisting() {
+    var u = User.builder().cpf("935.411.347-80").name("Ada Lovelace").build();
     var v = validator.validate(u);
     assertTrue(v.isEmpty());
   }
@@ -41,12 +50,21 @@ class UserValidationTest {
   void cpfCannotBeBlank() {
     var u = User.builder().cpf("   ").name("Ada Lovelace").build();
     var v = validator.validate(u);
-    var cpfViolations =
-        v.stream().filter(cv -> cv.getPropertyPath().toString().equals("cpf")).toList();
-    assertEquals(2, cpfViolations.size());
-    var templates = cpfViolations.stream().map(ConstraintViolation::getMessageTemplate).toList();
+    var templates =
+        v.stream()
+            .filter(cv -> cv.getPropertyPath().toString().equals("cpf"))
+            .map(ConstraintViolation::getMessageTemplate)
+            .toList();
     assertTrue(templates.contains("{jakarta.validation.constraints.NotBlank.message}"));
-    assertTrue(templates.contains("{jakarta.validation.constraints.Size.message}"));
+    assertTrue(templates.contains("{org.hibernate.validator.constraints.br.CPF.message}"));
+  }
+
+  @Test
+  void cpfCannotContainLetters() {
+    var u = User.builder().cpf("1234567890a").name("Ada Lovelace").build();
+    var v = validator.validate(u);
+    var cv = one(v, "cpf");
+    assertEquals("{org.hibernate.validator.constraints.br.CPF.message}", cv.getMessageTemplate());
   }
 
   @Test
@@ -54,30 +72,33 @@ class UserValidationTest {
     var u = User.builder().cpf(null).name("Ada Lovelace").build();
     var v = validator.validate(u);
     var cv = one(v, "cpf");
+    // @CPF allows null; @NotBlank catches it
     assertEquals("{jakarta.validation.constraints.NotBlank.message}", cv.getMessageTemplate());
   }
 
   @Test
-  void cpfMustBeExactly14Characters() {
-    var over = User.builder().cpf("123456789012345").name("Ada").build();
+  void cpfInvalidLengthFailsCpfConstraint() {
+    var over = User.builder().cpf("123456789012").name("Ada").build(); // 12
     var vOver = validator.validate(over);
     var cvOver = one(vOver, "cpf");
-    assertEquals("{jakarta.validation.constraints.Size.message}", cvOver.getMessageTemplate());
+    assertEquals(
+        "{org.hibernate.validator.constraints.br.CPF.message}", cvOver.getMessageTemplate());
 
-    var under = User.builder().cpf("1234567890123").name("Ada").build();
+    var under = User.builder().cpf("1234567890").name("Ada").build(); // 10
     var vUnder = validator.validate(under);
     var cvUnder = one(vUnder, "cpf");
-    assertEquals("{jakarta.validation.constraints.Size.message}", cvUnder.getMessageTemplate());
+    assertEquals(
+        "{org.hibernate.validator.constraints.br.CPF.message}", cvUnder.getMessageTemplate());
   }
 
   @Test
   void nameCannotBeBlankOrNull() {
-    var blank = User.builder().cpf("12345678901234").name(" ").build();
+    var blank = User.builder().cpf(VALID_CPF).name(" ").build();
     var vBlank = validator.validate(blank);
     var cvBlank = one(vBlank, "name");
     assertEquals("{jakarta.validation.constraints.NotBlank.message}", cvBlank.getMessageTemplate());
 
-    var nul = User.builder().cpf("12345678901234").name(null).build();
+    var nul = User.builder().cpf(VALID_CPF).name(null).build();
     var vNull = validator.validate(nul);
     var cvNull = one(vNull, "name");
     assertEquals("{jakarta.validation.constraints.NotBlank.message}", cvNull.getMessageTemplate());
@@ -85,7 +106,7 @@ class UserValidationTest {
 
   @Test
   void nameMax150Chars() {
-    var u = User.builder().cpf("12345678901234").name("x".repeat(151)).build();
+    var u = User.builder().cpf(VALID_CPF).name("x".repeat(151)).build();
     var v = validator.validate(u);
     var cv = one(v, "name");
     assertEquals("{jakarta.validation.constraints.Size.message}", cv.getMessageTemplate());

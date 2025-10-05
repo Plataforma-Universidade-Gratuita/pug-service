@@ -1,7 +1,9 @@
 package com.pug.identity.domain;
 
+import com.pug.identity.infra.CpfConverter;
 import com.pug.shared.id.UuidV7Algorithm;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -20,6 +22,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.validator.constraints.br.CPF;
 
 @Getter
 @Setter
@@ -39,9 +42,10 @@ public class User {
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 
+  @CPF
   @NotBlank
-  @Size(min = 14, max = 14)
-  @Column(length = 14, nullable = false, unique = true)
+  @Convert(converter = CpfConverter.class)
+  @Column(length = 11, nullable = false, unique = true)
   private String cpf;
 
   @NotBlank
