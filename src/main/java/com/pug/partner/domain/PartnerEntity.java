@@ -1,9 +1,11 @@
 package com.pug.partner.domain;
 
 import com.pug.geo.domain.City;
+import com.pug.partner.infra.CnpjConverter;
 import com.pug.shared.id.UuidV7Algorithm;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.ForeignKey;
@@ -28,6 +30,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.validator.constraints.br.CNPJ;
 
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 @Getter
@@ -49,9 +52,10 @@ public class PartnerEntity {
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 
+  @CNPJ
   @NotBlank
-  @Size(max = 18)
-  @Column(length = 18, nullable = false, unique = true)
+  @Convert(converter = CnpjConverter.class)
+  @Column(length = 14, nullable = false, unique = true)
   private String cnpj;
 
   @NotBlank

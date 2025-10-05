@@ -11,10 +11,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.usecase.get.byIbgeCode.GetCityByIbgeCodeHandler;
-import com.pug.geo.usecase.get.byIbgeCode.GetCityByIbgeCodeQuery;
-import com.pug.geo.usecase.get.byPattern.ListCitiesByPatternHandler;
-import com.pug.geo.usecase.get.byPattern.ListCitiesByPatternQuery;
+import com.pug.geo.usecase.get.RetrieveCitiesByPatternQuery;
+import com.pug.geo.usecase.get.RetrieveCityByIbgeCodeQuery;
+import com.pug.geo.usecase.get.RetrieveCityHandler;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import java.util.List;
@@ -24,8 +23,7 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class CityResourceTest {
 
-  @InjectMock ListCitiesByPatternHandler listCities;
-  @InjectMock GetCityByIbgeCodeHandler getCityByIbgeCode;
+  @InjectMock RetrieveCityHandler handler;
 
   private static City city(String name, String ibge) {
     return City.builder().id(UUID.randomUUID()).name(name).ibgeCode(ibge).build();
@@ -33,12 +31,13 @@ class CityResourceTest {
 
   @Test
   void listOkMapsToApiResponseAndUsesHandler() {
-    when(listCities.handle(
-            argThat(
-                q ->
-                    q instanceof ListCitiesByPatternQuery l
-                        && "flo".equals(l.query())
-                        && Integer.valueOf(2).equals(l.limit()))))
+    when(handler.handle(
+            (RetrieveCitiesByPatternQuery)
+                argThat(
+                    q ->
+                        q instanceof RetrieveCitiesByPatternQuery(String query, Integer limit)
+                            && "flo".equals(query)
+                            && Integer.valueOf(2).equals(limit))))
         .thenReturn(List.of(city("Florianópolis", "4205407"), city("Floresta Alta", "1234567")));
 
     given()
@@ -51,27 +50,32 @@ class CityResourceTest {
         .body("data[0].name", notNullValue())
         .body("data[0].ibgeCode", notNullValue());
 
-    verify(listCities)
+    verify(handler)
         .handle(
-            argThat(
-                q ->
-                    q instanceof ListCitiesByPatternQuery l
-                        && "flo".equals(l.query())
-                        && Integer.valueOf(2).equals(l.limit())));
-    verifyNoMoreInteractions(listCities, getCityByIbgeCode);
+            (RetrieveCitiesByPatternQuery)
+                argThat(
+                    q ->
+                        q instanceof RetrieveCitiesByPatternQuery(String query, Integer limit)
+                            && "flo".equals(query)
+                            && Integer.valueOf(2).equals(limit)));
+    verifyNoMoreInteractions(handler, handler);
   }
 
   @Test
   void listLimitValidationViolationReturns422() {
     given().when().get("/cities?limit=0").then().statusCode(422);
 
-    verifyNoInteractions(listCities, getCityByIbgeCode);
+    verifyNoInteractions(handler, handler);
   }
 
   @Test
   void getByIbgeCodeOkMapsToApiResponseAndUsesHandler() {
-    when(getCityByIbgeCode.handle(
-            argThat(q -> q instanceof GetCityByIbgeCodeQuery g && "4205407".equals(g.ibgeCode()))))
+    when(handler.handle(
+            (RetrieveCityByIbgeCodeQuery)
+                argThat(
+                    q ->
+                        q instanceof RetrieveCityByIbgeCodeQuery(String ibgeCode)
+                            && "4205407".equals(ibgeCode))))
         .thenReturn(city("Florianópolis", "4205407"));
 
     given()
@@ -83,9 +87,13 @@ class CityResourceTest {
         .body("data.name", equalTo("Florianópolis"))
         .body("data.ibgeCode", equalTo("4205407"));
 
-    verify(getCityByIbgeCode)
+    verify(handler)
         .handle(
-            argThat(q -> q instanceof GetCityByIbgeCodeQuery g && "4205407".equals(g.ibgeCode())));
-    verifyNoMoreInteractions(getCityByIbgeCode, listCities);
+            (RetrieveCityByIbgeCodeQuery)
+                argThat(
+                    q ->
+                        q instanceof RetrieveCityByIbgeCodeQuery(String ibgeCode)
+                            && "4205407".equals(ibgeCode)));
+    verifyNoMoreInteractions(handler, handler);
   }
 }

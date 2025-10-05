@@ -1,7 +1,7 @@
 CREATE TABLE entities
 (
     id         uuid PRIMARY KEY,
-    cnpj       varchar(18)  NOT NULL UNIQUE,
+    cnpj       varchar(14)  NOT NULL UNIQUE,
     name       varchar(150) NOT NULL,
     city_id    uuid         NOT NULL REFERENCES cities (id),
     address    varchar(254),

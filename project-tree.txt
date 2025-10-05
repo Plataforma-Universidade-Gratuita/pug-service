@@ -76,12 +76,9 @@
 │   │   │           │   │           └── CityResponse.java
 │   │   │           │   └── usecase/
 │   │   │           │       └── get/
-│   │   │           │           ├── byIbgeCode/
-│   │   │           │           │   ├── GetCityByIbgeCodeHandler.java
-│   │   │           │           │   └── GetCityByIbgeCodeQuery.java
-│   │   │           │           └── byPattern/
-│   │   │           │               ├── ListCitiesByPatternHandler.java
-│   │   │           │               └── ListCitiesByPatternQuery.java
+│   │   │           │           ├── RetrieveCitiesByPatternQuery.java
+│   │   │           │           ├── RetrieveCityByIbgeCodeQuery.java
+│   │   │           │           └── RetrieveCityHandler.java
 │   │   │           ├── hours/
 │   │   │           │   ├── domain/
 │   │   │           │   │   └── StudentCounterpartHours.java
@@ -120,61 +117,63 @@
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── UserResource.java
 │   │   │           │   │       └── dto/
-│   │   │           │   │           ├── CreateUserRequest.java
-│   │   │           │   │           ├── CreateUserResponse.java
-│   │   │           │   │           ├── UpdateUserRequest.java
+│   │   │           │   │           ├── AttUserRequest.java
+│   │   │           │   │           ├── RegisterUserRequest.java
+│   │   │           │   │           ├── RegisterUserResponse.java
 │   │   │           │   │           └── UserResponse.java
 │   │   │           │   └── usecase/
 │   │   │           │       ├── role/
-│   │   │           │       │   ├── activation/
-│   │   │           │       │   │   ├── ChangeActiveRoleStatusCommand.java
-│   │   │           │       │   │   └── ChangeActiveRoleStatusHandler.java
 │   │   │           │       │   ├── create/
-│   │   │           │       │   │   ├── CreateRoleCommand.java
-│   │   │           │       │   │   └── CreateRoleHandler.java
+│   │   │           │       │   │   ├── RegisterRoleCommand.java
+│   │   │           │       │   │   └── RegisterRoleHandler.java
 │   │   │           │       │   ├── get/
-│   │   │           │       │   │   ├── byEmail/
-│   │   │           │       │   │   │   ├── GetRoleByEmailHandler.java
-│   │   │           │       │   │   │   └── GetRoleByEmailQuery.java
-│   │   │           │       │   │   └── byId/
-│   │   │           │       │   │       ├── GetRoleByIdHandler.java
-│   │   │           │       │   │       └── GetRoleByIdQuery.java
+│   │   │           │       │   │   ├── RetrieveRoleByEmailQuery.java
+│   │   │           │       │   │   ├── RetrieveRoleByIdQuery.java
+│   │   │           │       │   │   └── RetrieveRoleHandler.java
 │   │   │           │       │   └── update/
-│   │   │           │       │       ├── UpdateRoleCommand.java
-│   │   │           │       │       └── UpdateRoleHandler.java
+│   │   │           │       │       ├── AttIsActiveCommand.java
+│   │   │           │       │       ├── AttRoleCommand.java
+│   │   │           │       │       └── AttRoleHandler.java
 │   │   │           │       └── user/
 │   │   │           │           ├── create/
-│   │   │           │           │   ├── CreateUserCommand.java
-│   │   │           │           │   └── CreateUserHandler.java
+│   │   │           │           │   ├── RegisterUserCommand.java
+│   │   │           │           │   └── RegisterUserHandler.java
 │   │   │           │           ├── get/
-│   │   │           │           │   ├── byCpf/
-│   │   │           │           │   │   ├── GetUserByCpfHandler.java
-│   │   │           │           │   │   └── GetUserByCpfQuery.java
-│   │   │           │           │   └── byId/
-│   │   │           │           │       ├── GetUserByIdHandler.java
-│   │   │           │           │       └── GetUserByIdQuery.java
+│   │   │           │           │   ├── RetrieveUserByCpfQuery.java
+│   │   │           │           │   ├── RetrieveUserByIdQuery.java
+│   │   │           │           │   └── RetrieveUserHandler.java
 │   │   │           │           └── update/
-│   │   │           │               ├── UpdateUserCommand.java
-│   │   │           │               └── UpdateUserHandler.java
+│   │   │           │               ├── AttUserCommand.java
+│   │   │           │               └── AttUserHandler.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── PartnerEntity.java
 │   │   │           │   │   └── Staff.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── CnpjConverter.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── PartnerEntityRepository.java
 │   │   │           │   │       └── StaffRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── EntityResource.java
-│   │   │           │   │       ├── dto/
-│   │   │           │   │       │   ├── EntityRequest.java
-│   │   │           │   │       │   └── EntityResponse.java
-│   │   │           │   │       └── mapper/
-│   │   │           │   │           └── EntityDtoMapper.java
-│   │   │           │   └── service/
-│   │   │           │       ├── ListEntities.java
-│   │   │           │       └── RegisterEntity.java
+│   │   │           │   │       └── dto/
+│   │   │           │   │           ├── EntityRequest.java
+│   │   │           │   │           └── EntityResponse.java
+│   │   │           │   └── usecase/
+│   │   │           │       ├── entity/
+│   │   │           │       │   ├── create/
+│   │   │           │       │   │   ├── RegisterPartnerEntityCommand.java
+│   │   │           │       │   │   └── RegisterPartnerEntityHandler.java
+│   │   │           │       │   ├── get/
+│   │   │           │       │   │   ├── RetrievePartnerEntityByCnpjCommand.java
+│   │   │           │       │   │   ├── RetrievePartnerEntityByIdCommand.java
+│   │   │           │       │   │   └── RetrievePartnerEntityHandler.java
+│   │   │           │       │   └── update/
+│   │   │           │       │       ├── AttIsActiveCommand.java
+│   │   │           │       │       ├── AttPartnerEntityCommand.java
+│   │   │           │       │       └── AttPartnerEntityHandler.java
+│   │   │           │       └── staff/
 │   │   │           ├── project/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Project.java
@@ -297,8 +296,7 @@
 │       │           │   │   └── rest/
 │       │           │   │       └── CityResourceTest.java
 │       │           │   └── usecase/
-│       │           │       ├── GetCityByIbgeCodeHandlerTest.java
-│       │           │       └── ListCitiesByPatternHandlerTest.java
+│       │           │       └── RetrieveCityHandlerTest.java
 │       │           ├── hours/
 │       │           │   ├── domain/
 │       │           │   │   └── StudentCounterpartHoursTest.java
@@ -325,25 +323,31 @@
 │       │           │   │       └── UserResourceTest.java
 │       │           │   └── usecase/
 │       │           │       ├── role/
-│       │           │       │   ├── ChangeActiveRoleStatusHandlerTest.java
-│       │           │       │   ├── CreateRoleHandlerTest.java
-│       │           │       │   ├── GetRoleByEmailHandlerTest.java
-│       │           │       │   ├── GetRoleByIdHandlerTest.java
-│       │           │       │   └── UpdateRoleHandlerTest.java
+│       │           │       │   ├── AttRoleHandlerTest.java
+│       │           │       │   ├── RegisterRoleHandlerTest.java
+│       │           │       │   └── RetrieveRoleHandlerTest.java
 │       │           │       └── user/
-│       │           │           ├── CreateUserHandlerTest.java
-│       │           │           ├── GetUserByCpfHandlerTest.java
-│       │           │           ├── GetUserByIdHandlerTest.java
-│       │           │           ├── UpdateUserHandlerCommandValidationTest.java
-│       │           │           └── UpdateUserHandlerTest.java
+│       │           │           ├── AttUserHandlerTest.java
+│       │           │           ├── RegisterUserHandlerTest.java
+│       │           │           └── RetrieveUserHandlerTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/
-│       │           │   │   └── PartnerEntityTest.java
+│       │           │   │   ├── entity/
+│       │           │   │   │   ├── PartnerEntityJpaMappingTest.java
+│       │           │   │   │   └── PartnerEntityValidationTest.java
+│       │           │   │   └── staff/
+│       │           │   │       ├── StaffJpaMappingTest.java
+│       │           │   │       └── StaffValidationTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
-│       │           │   │       └── EntityResourceTest.java
-│       │           │   └── service/
-│       │           │       └── RegisterEntityTest.java
+│       │           │   │       ├── entity/
+│       │           │   │       │   └── PartnerEntityResourceTest.java
+│       │           │   │       └── staff/
+│       │           │   │           └── StaffResourceTest.java
+│       │           │   └── usecase/
+│       │           │       ├── entity/
+│       │           │       │   └── RegisterEntityTest.java
+│       │           │       └── staff/
 │       │           ├── project/
 │       │           │   ├── domain/
 │       │           │   │   └── ProjectTest.java
