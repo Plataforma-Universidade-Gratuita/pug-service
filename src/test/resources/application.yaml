@@ -1,4 +1,17 @@
 quarkus:
+  http:
+    test-port: 0
+    test-ssl-port: 0
+    cors:
+      enabled: true
+      origins:
+        - http://localhost:3000
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
   datasource:
     devservices:
       enabled: true
@@ -7,11 +20,18 @@ quarkus:
   flyway:
     migrate-at-start: true
   hibernate-orm:
-    database:
-      generation: validate
+    schema-management:
+      strategy: validate
+    log:
+      sql: false
+      bind-parameters: false
   log:
     category:
-      "io.quarkus":
-        level: WARN
+      "org.hibernate":
+        level: ERROR
       "org.hibernate.SQL":
+        level: ERROR
+      "org.hibernate.orm.jdbc":
+        level: ERROR
+      "io.quarkus":
         level: WARN

@@ -40,7 +40,7 @@ public class User {
   private UUID id;
 
   @NotBlank
-  @Size(max = 14)
+  @Size(min = 14, max = 14)
   @Column(length = 14, nullable = false, unique = true)
   private String cpf;
 
