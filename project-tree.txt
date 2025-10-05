@@ -36,7 +36,7 @@
 │   │   │           │   │       │   └── AttendanceValidationRequest.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── AttendanceDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       ├── ListAttendances.java
 │   │   │           │       ├── SubmitAttendance.java
 │   │   │           │       └── ValidateAttendance.java
@@ -57,7 +57,7 @@
 │   │   │           │   │       │   └── EnrollmentResponse.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── EnrollmentDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       ├── DecideEnrollment.java
 │   │   │           │       ├── EnrollStudent.java
 │   │   │           │       └── ListEnrollments.java
@@ -74,7 +74,7 @@
 │   │   │           │   │       │   └── CityResponse.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── CityDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       └── ListCities.java
 │   │   │           ├── hours/
 │   │   │           │   ├── domain/
@@ -90,42 +90,56 @@
 │   │   │           │   │       │   └── HoursRequirementRequest.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── HoursDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       ├── DefineHoursRequirement.java
 │   │   │           │       └── GetHoursProgress.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── User.java
 │   │   │           │   │   ├── UserRoleAssignment.java
-│   │   │           │   │   └── enums/
-│   │   │           │   │       └── UserRole.java
+│   │   │           │   │   ├── enums/
+│   │   │           │   │   │   └── UserRole.java
+│   │   │           │   │   └── exceptions/
+│   │   │           │   │       ├── DuplicateCpfException.java
+│   │   │           │   │       └── UserNotFoundException.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── CpfConverter.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── StaffRepository.java
 │   │   │           │   │       ├── UserRepository.java
 │   │   │           │   │       └── UserRoleAssignmentRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
-│   │   │           │   │       ├── AuthResource.java
 │   │   │           │   │       ├── UserResource.java
-│   │   │           │   │       ├── dto/
-│   │   │           │   │       │   ├── AuthRequest.java
-│   │   │           │   │       │   ├── AuthResponse.java
-│   │   │           │   │       │   ├── UserRequest.java
-│   │   │           │   │       │   └── UserResponse.java
-│   │   │           │   │       └── mapper/
-│   │   │           │   │           └── UserDtoMapper.java
+│   │   │           │   │       └── dto/
+│   │   │           │   │           ├── CreateUserRequest.java
+│   │   │           │   │           ├── CreateUserResponse.java
+│   │   │           │   │           ├── UpdateUserRequest.java
+│   │   │           │   │           └── UserResponse.java
 │   │   │           │   └── usecase/
-│   │   │           │       ├── AssignRole.java
-│   │   │           │       ├── AuthenticateUser.java
-│   │   │           │       └── CreateUser.java
+│   │   │           │       ├── user/
+│   │   │           │       │   ├── create/
+│   │   │           │       │   │   ├── CreateUserCommand.java
+│   │   │           │       │   │   └── CreateUserHandler.java
+│   │   │           │       │   ├── get/
+│   │   │           │       │   │   ├── byCpf/
+│   │   │           │       │   │   │   ├── GetUserByCpfHandler.java
+│   │   │           │       │   │   │   └── GetUserByCpfQuery.java
+│   │   │           │       │   │   └── byId/
+│   │   │           │       │   │       ├── GetUserByIdHandler.java
+│   │   │           │       │   │       └── GetUserByIdQuery.java
+│   │   │           │       │   └── update/
+│   │   │           │       │       ├── UpdateUserCommand.java
+│   │   │           │       │       └── UpdateUserHandler.java
+│   │   │           │       └── userRoleAssigment/
+│   │   │           │           └── UserRoleAssignmentService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── PartnerEntity.java
 │   │   │           │   │   └── Staff.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       └── PartnerEntityRepository.java
+│   │   │           │   │       ├── PartnerEntityRepository.java
+│   │   │           │   │       └── StaffRepository.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── EntityResource.java
@@ -134,7 +148,7 @@
 │   │   │           │   │       │   └── EntityResponse.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── EntityDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       ├── ListEntities.java
 │   │   │           │       └── RegisterEntity.java
 │   │   │           ├── project/
@@ -159,24 +173,30 @@
 │   │   │           │   │       │   └── ProjectResponse.java
 │   │   │           │   │       └── mapper/
 │   │   │           │   │           └── ProjectDtoMapper.java
-│   │   │           │   └── usecase/
+│   │   │           │   └── service/
 │   │   │           │       ├── AllocateProject.java
 │   │   │           │       ├── CreateProject.java
 │   │   │           │       └── ListProjects.java
 │   │   │           ├── shared/
-│   │   │           │   ├── dto/
-│   │   │           │   │   └── .gitkeep
+│   │   │           │   ├── dtos/
+│   │   │           │   │   ├── ApiError.java
+│   │   │           │   │   └── ApiResponse.java
 │   │   │           │   ├── errors/
-│   │   │           │   │   └── .gitkeep
+│   │   │           │   │   ├── DomainException.java
+│   │   │           │   │   └── ErrorCodes.java
+│   │   │           │   ├── http/
+│   │   │           │   │   └── CorrelationFilter.java
+│   │   │           │   ├── i18n/
+│   │   │           │   │   └── I18n.java
 │   │   │           │   ├── id/
+│   │   │           │   │   ├── UuidV7.java
 │   │   │           │   │   └── UuidV7Algorithm.java
-│   │   │           │   ├── json/
-│   │   │           │   │   └── JacksonConfig.java
-│   │   │           │   ├── mapper/
-│   │   │           │   │   └── PageMapper.java
+│   │   │           │   ├── mappers/
+│   │   │           │   │   ├── BeanValidationMapper.java
+│   │   │           │   │   ├── DomainExceptionMapper.java
+│   │   │           │   │   └── UncaughtExceptionMapper.java
 │   │   │           │   └── util/
-│   │   │           │       ├── ClockProvider.java
-│   │   │           │       └── CpfValidator.java
+│   │   │           │       └── .gitkeep
 │   │   │           └── student/
 │   │   │               ├── domain/
 │   │   │               │   ├── Course.java
@@ -195,7 +215,7 @@
 │   │   │               │       │   └── StudentResponse.java
 │   │   │               │       └── mapper/
 │   │   │               │           └── StudentDtoMapper.java
-│   │   │               └── usecase/
+│   │   │               └── service/
 │   │   │                   ├── ListStudents.java
 │   │   │                   └── RegisterStudent.java
 │   │   └── resources/
@@ -203,22 +223,24 @@
 │   │       │   └── resources/
 │   │       │       └── .gitkeep
 │   │       ├── application.yaml
-│   │       └── db/
-│   │           └── migration/
-│   │               ├── V001__create_users_table.sql
-│   │               ├── V002__create_user_roles_table.sql
-│   │               ├── V003__create_cities_table.sql
-│   │               ├── V004__create_entities_table.sql
-│   │               ├── V005__create_staff_table.sql
-│   │               ├── V006__create_fields_of_study_table.sql
-│   │               ├── V007__create_courses_table.sql
-│   │               ├── V008__create_students_table.sql
-│   │               ├── V009__create_students_counterparts_hours.sql
-│   │               ├── V010__create_projects_table.sql
-│   │               ├── V011__create_projects_allocations_table.sql
-│   │               ├── V012__create_projects_locations_table.sql
-│   │               ├── V013__create_projects_enrollments_table.sql
-│   │               └── V014__create_projects_attendances_table.sql
+│   │       ├── db/
+│   │       │   └── migration/
+│   │       │       ├── V001__create_users_table.sql
+│   │       │       ├── V002__create_user_roles_table.sql
+│   │       │       ├── V003__create_cities_table.sql
+│   │       │       ├── V004__create_entities_table.sql
+│   │       │       ├── V005__create_staff_table.sql
+│   │       │       ├── V006__create_fields_of_study_table.sql
+│   │       │       ├── V007__create_courses_table.sql
+│   │       │       ├── V008__create_students_table.sql
+│   │       │       ├── V009__create_students_counterparts_hours.sql
+│   │       │       ├── V010__create_projects_table.sql
+│   │       │       ├── V011__create_projects_allocations_table.sql
+│   │       │       ├── V012__create_projects_locations_table.sql
+│   │       │       ├── V013__create_projects_enrollments_table.sql
+│   │       │       └── V014__create_projects_attendances_table.sql
+│   │       ├── messages_en_US.properties
+│   │       └── messages_pt_BR.properties
 │   └── test/
 │       ├── java/
 │       │   └── com/
@@ -229,7 +251,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── AttendanceResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── SubmitAttendanceTest.java
 │       │           ├── enrollment/
 │       │           │   ├── domain/
@@ -237,7 +259,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── EnrollmentResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── EnrollStudentTest.java
 │       │           ├── geo/
 │       │           │   ├── domain/
@@ -245,7 +267,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── CityResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── ListCitiesTest.java
 │       │           ├── hours/
 │       │           │   ├── domain/
@@ -253,23 +275,36 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── HoursResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── DefineHoursRequirementTest.java
 │       │           ├── identity/
 │       │           │   ├── domain/
-│       │           │   │   └── UserTest.java
+│       │           │   │   ├── UserRoleAssigmentTest/
+│       │           │   │   │   ├── UserRoleAssignmentJpaMappingTest.java
+│       │           │   │   │   └── UserRoleAssignmentValidationTest.java
+│       │           │   │   └── UserTest/
+│       │           │   │       ├── UserJpaMappingTest.java
+│       │           │   │       └── UserValidationTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CpfConverterTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       └── UserRepositoryTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── UserResourceTest.java
 │       │           │   └── usecase/
-│       │           │       └── CreateUserTest.java
+│       │           │       └── user/
+│       │           │           ├── CreateUserHandlerTest.java
+│       │           │           ├── GetUserByCpfHandlerTest.java
+│       │           │           ├── GetUserByIdHandlerTest.java
+│       │           │           └── UpdateUserHandlerTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/
 │       │           │   │   └── PartnerEntityTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── EntityResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── RegisterEntityTest.java
 │       │           ├── project/
 │       │           │   ├── domain/
@@ -277,7 +312,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   │       └── ProjectResourceTest.java
-│       │           │   └── usecase/
+│       │           │   └── service/
 │       │           │       └── CreateProjectTest.java
 │       │           └── student/
 │       │               ├── domain/
@@ -285,7 +320,7 @@
 │       │               ├── presenter/
 │       │               │   └── rest/
 │       │               │       └── StudentResourceTest.java
-│       │               └── usecase/
+│       │               └── service/
 │       │                   └── RegisterStudentTest.java
 │       └── resources/
 │           └── application.yaml
