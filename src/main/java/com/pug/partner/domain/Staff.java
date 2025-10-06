@@ -1,7 +1,7 @@
 package com.pug.partner.domain;
 
 import com.pug.identity.domain.Role;
-import com.pug.shared.id.UuidV7Algorithm;
+import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +42,7 @@ public class Staff {
 
   @Id
   @GeneratedValue
-  @UuidGenerator(algorithm = UuidV7Algorithm.class)
+  @UuidGenerator(algorithm = UuidV7Hibernate.class)
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 

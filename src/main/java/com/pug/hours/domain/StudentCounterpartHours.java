@@ -1,6 +1,6 @@
 package com.pug.hours.domain;
 
-import com.pug.shared.id.UuidV7Algorithm;
+import com.pug.shared.id.UuidV7Hibernate;
 import com.pug.student.domain.Student;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -41,7 +41,7 @@ public class StudentCounterpartHours {
 
   @Id
   @GeneratedValue
-  @UuidGenerator(algorithm = UuidV7Algorithm.class)
+  @UuidGenerator(algorithm = UuidV7Hibernate.class)
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 

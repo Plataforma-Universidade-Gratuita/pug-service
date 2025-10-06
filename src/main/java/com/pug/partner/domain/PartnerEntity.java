@@ -2,7 +2,7 @@ package com.pug.partner.domain;
 
 import com.pug.geo.domain.City;
 import com.pug.partner.infra.CnpjConverter;
-import com.pug.shared.id.UuidV7Algorithm;
+import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
@@ -48,7 +48,7 @@ public class PartnerEntity {
 
   @Id
   @GeneratedValue
-  @UuidGenerator(algorithm = UuidV7Algorithm.class)
+  @UuidGenerator(algorithm = UuidV7Hibernate.class)
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 

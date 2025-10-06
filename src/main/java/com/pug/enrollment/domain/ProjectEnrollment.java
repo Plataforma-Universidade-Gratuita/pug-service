@@ -2,7 +2,7 @@ package com.pug.enrollment.domain;
 
 import com.pug.enrollment.domain.enums.ProjectEnrollmentStatus;
 import com.pug.project.domain.Project;
-import com.pug.shared.id.UuidV7Algorithm;
+import com.pug.shared.id.UuidV7Hibernate;
 import com.pug.student.domain.Student;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -48,7 +48,7 @@ public class ProjectEnrollment {
 
   @Id
   @GeneratedValue
-  @UuidGenerator(algorithm = UuidV7Algorithm.class)
+  @UuidGenerator(algorithm = UuidV7Hibernate.class)
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   private UUID id;
 

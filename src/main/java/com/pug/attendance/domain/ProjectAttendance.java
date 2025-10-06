@@ -4,7 +4,7 @@ import com.pug.attendance.domain.enums.AttendanceStatus;
 import com.pug.enrollment.domain.ProjectEnrollment;
 import com.pug.partner.domain.Staff;
 import com.pug.project.domain.ProjectLocation;
-import com.pug.shared.id.UuidV7Algorithm;
+import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
@@ -58,7 +58,7 @@ public class ProjectAttendance extends PanacheEntityBase {
 
   @Id
   @GeneratedValue
-  @org.hibernate.annotations.UuidGenerator(algorithm = UuidV7Algorithm.class)
+  @org.hibernate.annotations.UuidGenerator(algorithm = UuidV7Hibernate.class)
   @Column(columnDefinition = "uuid", nullable = false, updatable = false)
   UUID id;
 

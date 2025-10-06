@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.uuid.UuidValueGenerator;
 
-public class UuidV7Algorithm implements UuidValueGenerator {
+public class UuidV7Hibernate implements UuidValueGenerator {
   @Override
   public UUID generateUuid(SharedSessionContractImplementor session) {
     return UuidCreator.getTimeOrderedEpoch();
