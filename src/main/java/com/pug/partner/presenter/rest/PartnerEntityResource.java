@@ -6,8 +6,8 @@ import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityRequest;
 import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityResponse;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityCommand;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityHandler;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjCommand;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdCommand;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjQuery;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdQuery;
 import com.pug.partner.usecase.entity.get.RetrievePartnerEntityHandler;
 import com.pug.partner.usecase.entity.update.AttPartnerEntityCommand;
 import com.pug.partner.usecase.entity.update.AttPartnerEntityHandler;
@@ -64,13 +64,13 @@ public class PartnerEntityResource {
   @GET
   @Path("{id}")
   public Response getById(@PathParam("id") UUID id) {
-    var e = retrieveHandler.handle(new RetrievePartnerEntityByIdCommand(id));
+    var e = retrieveHandler.handle(new RetrievePartnerEntityByIdQuery(id));
     return Response.ok(ApiResponse.ok(PartnerEntityResponse.from(e))).build();
   }
 
   @GET
   public Response getByCnpj(@QueryParam("cnpj") @NotBlank @CNPJ String cnpj) {
-    var e = retrieveHandler.handle(new RetrievePartnerEntityByCnpjCommand(cnpj));
+    var e = retrieveHandler.handle(new RetrievePartnerEntityByCnpjQuery(cnpj));
     return Response.ok(ApiResponse.ok(PartnerEntityResponse.from(e))).build();
   }
 }

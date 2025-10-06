@@ -12,8 +12,8 @@ import com.pug.geo.domain.City;
 import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.exceptions.PartnerEntityNotFoundException;
 import com.pug.partner.infra.persistence.PartnerEntityRepository;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjCommand;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdCommand;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjQuery;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdQuery;
 import com.pug.partner.usecase.entity.get.RetrievePartnerEntityHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
@@ -50,7 +50,7 @@ class RetrievePartnerEntityHandlerTest {
     var digits = "11222333000181";
     when(repo.findByCnpj(digits)).thenReturn(Optional.of(entityWithCnpj(digits)));
 
-    var out = handler.handle(new RetrievePartnerEntityByCnpjCommand(masked));
+    var out = handler.handle(new RetrievePartnerEntityByCnpjQuery(masked));
 
     assertNotNull(out);
     assertEquals(digits, out.getCnpj());
@@ -62,7 +62,7 @@ class RetrievePartnerEntityHandlerTest {
   void nullCnpjThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrievePartnerEntityByCnpjCommand(null)));
+        () -> handler.handle(new RetrievePartnerEntityByCnpjQuery(null)));
     verifyNoInteractions(repo);
   }
 
@@ -70,7 +70,7 @@ class RetrievePartnerEntityHandlerTest {
   void blankCnpjThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrievePartnerEntityByCnpjCommand("  ")));
+        () -> handler.handle(new RetrievePartnerEntityByCnpjQuery("  ")));
     verifyNoInteractions(repo);
   }
 
@@ -78,7 +78,7 @@ class RetrievePartnerEntityHandlerTest {
   void invalidCnpjFormatThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrievePartnerEntityByCnpjCommand("123")));
+        () -> handler.handle(new RetrievePartnerEntityByCnpjQuery("123")));
     verifyNoInteractions(repo);
   }
 
@@ -89,7 +89,7 @@ class RetrievePartnerEntityHandlerTest {
 
     assertThrows(
         PartnerEntityNotFoundException.class,
-        () -> handler.handle(new RetrievePartnerEntityByCnpjCommand(digits)));
+        () -> handler.handle(new RetrievePartnerEntityByCnpjQuery(digits)));
 
     verify(repo).findByCnpj(digits);
     verifyNoMoreInteractions(repo);
@@ -110,7 +110,7 @@ class RetrievePartnerEntityHandlerTest {
     var e = entityWithId(id);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(e));
 
-    var out = handler.handle(new RetrievePartnerEntityByIdCommand(id));
+    var out = handler.handle(new RetrievePartnerEntityByIdQuery(id));
 
     assertNotNull(out);
     assertEquals(id, out.getId());
@@ -125,7 +125,7 @@ class RetrievePartnerEntityHandlerTest {
 
     assertThrows(
         PartnerEntityNotFoundException.class,
-        () -> handler.handle(new RetrievePartnerEntityByIdCommand(id)));
+        () -> handler.handle(new RetrievePartnerEntityByIdQuery(id)));
 
     verify(repo).findByIdOptional(id);
     verifyNoMoreInteractions(repo);
@@ -135,7 +135,7 @@ class RetrievePartnerEntityHandlerTest {
   void throwsWhenIdIsNull() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrievePartnerEntityByIdCommand(null)));
+        () -> handler.handle(new RetrievePartnerEntityByIdQuery(null)));
     verifyNoInteractions(repo);
   }
 }

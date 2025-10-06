@@ -5,6 +5,8 @@ import static com.pug.shared.errors.ErrorCodes.ENTITY_DUPLICATE_CNPJ;
 import static com.pug.shared.errors.ErrorCodes.ENTITY_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.ROLE_DUPLICATE_EMAIL;
 import static com.pug.shared.errors.ErrorCodes.ROLE_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.STAFF_DUPLICATE_USER_ROLE_ID;
+import static com.pug.shared.errors.ErrorCodes.STAFF_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.USER_ALREADY_REGISTERED_AS_FORMER_STUDENT;
 import static com.pug.shared.errors.ErrorCodes.USER_DUPLICATE_CPF;
 import static com.pug.shared.errors.ErrorCodes.USER_NOT_FOUND;
@@ -35,10 +37,12 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
           ENTITY_DUPLICATE_CNPJ, Response.Status.CONFLICT,
           USER_DUPLICATE_CPF, Response.Status.CONFLICT,
           ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT,
+          STAFF_DUPLICATE_USER_ROLE_ID, Response.Status.CONFLICT,
           CITY_NOT_FOUND, Response.Status.NOT_FOUND,
           ROLE_NOT_FOUND, Response.Status.NOT_FOUND,
           USER_NOT_FOUND, Response.Status.NOT_FOUND,
-          ENTITY_NOT_FOUND, Response.Status.NOT_FOUND);
+          ENTITY_NOT_FOUND, Response.Status.NOT_FOUND,
+          STAFF_NOT_FOUND, Response.Status.NOT_FOUND);
 
   @Override
   public Response toResponse(DomainException ex) {
@@ -74,6 +78,7 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
           yield Map.of("cnpj", a);
         }
         case CITY_NOT_FOUND -> Map.of("ibgeCode", a);
+        case STAFF_NOT_FOUND, STAFF_DUPLICATE_USER_ROLE_ID -> Map.of("userRoleId", a);
         case USER_DUPLICATE_CPF -> Map.of("cpf", a);
         case ROLE_DUPLICATE_EMAIL -> Map.of("email", a);
         case ENTITY_DUPLICATE_CNPJ -> Map.of("cnpj", a);

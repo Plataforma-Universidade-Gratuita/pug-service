@@ -19,8 +19,8 @@ import com.pug.partner.presenter.rest.dto.AttPartnerEntityRequest;
 import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityRequest;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityCommand;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityHandler;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjCommand;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdCommand;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjQuery;
+import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdQuery;
 import com.pug.partner.usecase.entity.get.RetrievePartnerEntityHandler;
 import com.pug.partner.usecase.entity.update.AttPartnerEntityCommand;
 import com.pug.partner.usecase.entity.update.AttPartnerEntityHandler;
@@ -70,7 +70,7 @@ class PartnerEntityResourceTest {
   @Test
   void getByIdNotFoundMapsTo404EnvelopeWithIdDetail() {
     var id = UUID.randomUUID();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdCommand.class)))
+    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdQuery.class)))
         .thenThrow(new PartnerEntityNotFoundException(id));
 
     given()
@@ -121,7 +121,7 @@ class PartnerEntityResourceTest {
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByCnpjCommand.class))).thenReturn(ent);
+    when(retrieveHandler.handle(any(RetrievePartnerEntityByCnpjQuery.class))).thenReturn(ent);
 
     given()
         .header("X-Correlation-Id", "cid-cnpj-200")
@@ -137,7 +137,7 @@ class PartnerEntityResourceTest {
         .body("data.cityId", equalTo(cityId.toString()))
         .body("error", nullValue());
 
-    verify(retrieveHandler).handle(any(RetrievePartnerEntityByCnpjCommand.class));
+    verify(retrieveHandler).handle(any(RetrievePartnerEntityByCnpjQuery.class));
   }
 
   @Test
@@ -235,7 +235,7 @@ class PartnerEntityResourceTest {
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdCommand.class))).thenReturn(ent);
+    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdQuery.class))).thenReturn(ent);
 
     given()
         .header("X-Correlation-Id", "cid-getid-200")
@@ -250,6 +250,6 @@ class PartnerEntityResourceTest {
         .body("data.name", equalTo("Org"))
         .body("error", nullValue());
 
-    verify(retrieveHandler).handle(any(RetrievePartnerEntityByIdCommand.class));
+    verify(retrieveHandler).handle(any(RetrievePartnerEntityByIdQuery.class));
   }
 }

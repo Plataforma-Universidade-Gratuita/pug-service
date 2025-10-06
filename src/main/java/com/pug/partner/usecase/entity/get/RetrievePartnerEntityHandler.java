@@ -17,7 +17,7 @@ public class RetrievePartnerEntityHandler {
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public PartnerEntity handle(RetrievePartnerEntityByIdCommand q) {
+  public PartnerEntity handle(RetrievePartnerEntityByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id())
@@ -25,7 +25,7 @@ public class RetrievePartnerEntityHandler {
   }
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public PartnerEntity handle(RetrievePartnerEntityByCnpjCommand q) {
+  public PartnerEntity handle(RetrievePartnerEntityByCnpjQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 
