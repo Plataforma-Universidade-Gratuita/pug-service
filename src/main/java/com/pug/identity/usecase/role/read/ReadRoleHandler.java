@@ -3,6 +3,7 @@ package com.pug.identity.usecase.role.read;
 import com.pug.identity.domain.Role;
 import com.pug.identity.domain.exceptions.RoleNotFoundException;
 import com.pug.identity.infra.persistence.RoleRepository;
+import com.pug.shared.dtos.ReadByIdQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -15,7 +16,7 @@ public class ReadRoleHandler {
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public Role handle(ReadRoleByIdQuery q) {
+  public Role handle(ReadByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id()).orElseThrow(() -> new RoleNotFoundException(q.id()));

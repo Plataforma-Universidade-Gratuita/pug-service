@@ -3,6 +3,7 @@ package com.pug.geo.usecase.read;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.exceptions.CityNotFoundException;
 import com.pug.geo.infra.persistence.CityRepository;
+import com.pug.shared.dtos.ReadByPatternQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
@@ -22,7 +23,7 @@ public class ReadCityHandler {
         .orElseThrow(() -> new CityNotFoundException(q.ibgeCode()));
   }
 
-  public List<City> handle(ReadCitiesByPatternQuery q) {
+  public List<City> handle(ReadByPatternQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     if (q.limit() != null) return repo.listByPattern(q.query(), q.limit());

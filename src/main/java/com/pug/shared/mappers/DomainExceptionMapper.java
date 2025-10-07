@@ -3,6 +3,8 @@ package com.pug.shared.mappers;
 import static com.pug.shared.errors.ErrorCodes.CITY_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.ENTITY_DUPLICATE_CNPJ;
 import static com.pug.shared.errors.ErrorCodes.ENTITY_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.FIELD_OF_STUDY_DUPLICATE_NAME;
+import static com.pug.shared.errors.ErrorCodes.FIELD_OF_STUDY_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.ROLE_DUPLICATE_EMAIL;
 import static com.pug.shared.errors.ErrorCodes.ROLE_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.STAFF_DUPLICATE_USER_ROLE_ID;
@@ -32,17 +34,19 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
   @Inject I18n i18n;
 
   private static final Map<String, Response.Status> STATUS =
-      Map.of(
-          USER_ALREADY_REGISTERED_AS_FORMER_STUDENT, Response.Status.CONFLICT,
-          ENTITY_DUPLICATE_CNPJ, Response.Status.CONFLICT,
-          USER_DUPLICATE_CPF, Response.Status.CONFLICT,
-          ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT,
-          STAFF_DUPLICATE_USER_ROLE_ID, Response.Status.CONFLICT,
-          CITY_NOT_FOUND, Response.Status.NOT_FOUND,
-          ROLE_NOT_FOUND, Response.Status.NOT_FOUND,
-          USER_NOT_FOUND, Response.Status.NOT_FOUND,
-          ENTITY_NOT_FOUND, Response.Status.NOT_FOUND,
-          STAFF_NOT_FOUND, Response.Status.NOT_FOUND);
+      Map.ofEntries(
+          Map.entry(USER_ALREADY_REGISTERED_AS_FORMER_STUDENT, Response.Status.CONFLICT),
+          Map.entry(ENTITY_DUPLICATE_CNPJ, Response.Status.CONFLICT),
+          Map.entry(USER_DUPLICATE_CPF, Response.Status.CONFLICT),
+          Map.entry(ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT),
+          Map.entry(STAFF_DUPLICATE_USER_ROLE_ID, Response.Status.CONFLICT),
+          Map.entry(FIELD_OF_STUDY_DUPLICATE_NAME, Response.Status.CONFLICT),
+          Map.entry(CITY_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(ROLE_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(USER_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(ENTITY_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(STAFF_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(FIELD_OF_STUDY_NOT_FOUND, Response.Status.NOT_FOUND));
 
   @Override
   public Response toResponse(DomainException ex) {
@@ -82,8 +86,10 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
         case USER_DUPLICATE_CPF -> Map.of("cpf", a);
         case ROLE_DUPLICATE_EMAIL -> Map.of("email", a);
         case ENTITY_DUPLICATE_CNPJ -> Map.of("cnpj", a);
+        case FIELD_OF_STUDY_DUPLICATE_NAME -> Map.of("name", a);
+        case FIELD_OF_STUDY_NOT_FOUND -> Map.of("id", a);
         case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT -> Map.of("user", a);
-        default -> Map.of();
+        default -> Map.of("arg", a);
       };
     }
     return Map.of();

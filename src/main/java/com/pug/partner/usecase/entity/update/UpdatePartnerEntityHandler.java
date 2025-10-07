@@ -25,7 +25,8 @@ public class UpdatePartnerEntityHandler {
 
     var vCmd =
         validator.validate(
-            new UpdatePartnerEntityCommand(cmd.id(), cnpjDigits, name, cmd.cityId(), cmd.address()));
+            new UpdatePartnerEntityCommand(
+                cmd.id(), cnpjDigits, name, cmd.cityId(), cmd.address()));
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 
     var entity =

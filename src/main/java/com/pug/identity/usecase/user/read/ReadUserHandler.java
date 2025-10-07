@@ -3,6 +3,7 @@ package com.pug.identity.usecase.user.read;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.exceptions.UserNotFoundException;
 import com.pug.identity.infra.persistence.UserRepository;
+import com.pug.shared.dtos.ReadByIdQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -15,7 +16,7 @@ public class ReadUserHandler {
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public User handle(ReadUserByIdQuery q) {
+  public User handle(ReadByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id()).orElseThrow(() -> new UserNotFoundException(q.id()));

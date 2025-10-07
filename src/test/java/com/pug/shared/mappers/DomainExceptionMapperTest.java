@@ -21,6 +21,7 @@ class DomainExceptionMapperTest {
   private static final String ENTITY_DUPLICATE_CNPJ = "ENTITY_DUPLICATE_CNPJ";
   private static final String USER_ALREADY_REGISTERED_AS_FORMER_STUDENT =
       "USER_ALREADY_REGISTERED_AS_FORMER_STUDENT";
+  private static final String FIELD_OF_STUDY_DUPLICATE_NAME = "FIELD_OF_STUDY_DUPLICATE_NAME";
 
   private static DomainException ex(String code, Object... args) {
     return new DomainException(code, args) {};
@@ -76,12 +77,15 @@ class DomainExceptionMapperTest {
         Map.of("cnpj", "11222333000181"),
         details(mapper, ex(ENTITY_DUPLICATE_CNPJ, "11222333000181")));
 
+    // FIELD_OF_STUDY_DUPLICATE_NAME
+    assertEquals(Map.of("name", "Law"), details(mapper, ex(FIELD_OF_STUDY_DUPLICATE_NAME, "Law")));
+
     // USER_ALREADY_REGISTERED_AS_FORMER_STUDENT
     assertEquals(
         Map.of("user", uid), details(mapper, ex(USER_ALREADY_REGISTERED_AS_FORMER_STUDENT, uid)));
 
-    // default branch (unknown code) -> empty
-    assertEquals(Map.of(), details(mapper, ex("SOME_OTHER_CODE", "x")));
+    // default branch with single arg -> {"arg": a}
+    assertEquals(Map.of("arg", "x"), details(mapper, ex("SOME_OTHER_CODE", "x")));
 
     // args length != 1 -> empty
     assertEquals(Map.of(), details(mapper, ex(USER_NOT_FOUND, "a", "b")));

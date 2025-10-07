@@ -4,6 +4,7 @@ package com.pug.partner.usecase.entity.read;
 import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.exceptions.PartnerEntityNotFoundException;
 import com.pug.partner.infra.persistence.PartnerEntityRepository;
+import com.pug.shared.dtos.ReadByIdQuery;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -17,7 +18,7 @@ public class ReadPartnerEntityHandler {
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public PartnerEntity handle(ReadPartnerEntityByIdQuery q) {
+  public PartnerEntity handle(ReadByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id())
