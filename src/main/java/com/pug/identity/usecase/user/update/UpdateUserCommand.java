@@ -6,5 +6,5 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import org.hibernate.validator.constraints.br.CPF;
 
-public record AttUserCommand(
+public record UpdateUserCommand(
     @NotNull UUID id, @NotBlank @CPF String cpf, @NotBlank @Size(max = 150) String name) {}

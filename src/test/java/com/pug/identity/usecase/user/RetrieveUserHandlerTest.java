@@ -10,9 +10,9 @@ import static org.mockito.Mockito.when;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.infra.persistence.UserRepository;
-import com.pug.identity.usecase.user.get.RetrieveUserByCpfQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserByIdQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserHandler;
+import com.pug.identity.usecase.user.read.ReadUserByCpfQuery;
+import com.pug.identity.usecase.user.read.ReadUserByIdQuery;
+import com.pug.identity.usecase.user.read.ReadUserHandler;
 import com.pug.shared.errors.DomainException;
 import com.pug.shared.errors.ErrorCodes;
 import jakarta.validation.ConstraintViolationException;
@@ -36,19 +36,20 @@ class RetrieveUserHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RetrieveUserHandler handler;
+  @InjectMocks
+  ReadUserHandler handler;
 
   @Test
   void nullCpfFailsAndSkipsRepo() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new RetrieveUserByCpfQuery(null)));
+        ConstraintViolationException.class, () -> handler.handle(new ReadUserByCpfQuery(null)));
     verifyNoInteractions(repo);
   }
 
   @Test
   void blankCpfFailsAndSkipsRepo() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new RetrieveUserByCpfQuery("  ")));
+        ConstraintViolationException.class, () -> handler.handle(new ReadUserByCpfQuery("  ")));
     verifyNoInteractions(repo);
   }
 
@@ -56,7 +57,7 @@ class RetrieveUserHandlerTest {
   void invalidCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveUserByCpfQuery("1234567890a")));
+        () -> handler.handle(new ReadUserByCpfQuery("1234567890a")));
     verifyNoInteractions(repo);
   }
 
@@ -66,7 +67,7 @@ class RetrieveUserHandlerTest {
     var u = User.builder().id(id).cpf("93541134780").name("Ada").build();
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(u));
 
-    var out = handler.handle(new RetrieveUserByIdQuery(id));
+    var out = handler.handle(new ReadUserByIdQuery(id));
 
     assertSame(u, out);
     verify(repo).findByIdOptional(id);
@@ -79,7 +80,7 @@ class RetrieveUserHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.empty());
 
     DomainException ex =
-        assertThrows(DomainException.class, () -> handler.handle(new RetrieveUserByIdQuery(id)));
+        assertThrows(DomainException.class, () -> handler.handle(new ReadUserByIdQuery(id)));
 
     assertEquals(ErrorCodes.USER_NOT_FOUND, ex.getCode());
     assertEquals(1, ex.getArgs().length);
@@ -91,7 +92,7 @@ class RetrieveUserHandlerTest {
   @Test
   void nullIdFailsValidationAndSkipsRepo() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new RetrieveUserByIdQuery(null)));
+        ConstraintViolationException.class, () -> handler.handle(new ReadUserByIdQuery(null)));
     verifyNoMoreInteractions(repo);
   }
 }

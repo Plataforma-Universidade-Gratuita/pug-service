@@ -13,8 +13,8 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.exceptions.DuplicateCpfException;
 import com.pug.identity.domain.exceptions.UserNotFoundException;
 import com.pug.identity.infra.persistence.UserRepository;
-import com.pug.identity.usecase.user.update.AttUserCommand;
-import com.pug.identity.usecase.user.update.AttUserHandler;
+import com.pug.identity.usecase.user.update.UpdateUserCommand;
+import com.pug.identity.usecase.user.update.UpdateUserHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -37,7 +37,8 @@ class AttUserHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks AttUserHandler handler;
+  @InjectMocks
+  UpdateUserHandler handler;
 
   private static final String CPF_OLD = "93541134780";
   private static final String CPF_NEW_MASKED = "390.533.447-05";
@@ -50,7 +51,7 @@ class AttUserHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(false);
 
-    var out = handler.handle(new AttUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
+    var out = handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
 
     assertEquals(CPF_NEW, out.getCpf());
     assertEquals("Alan Turing", out.getName());
@@ -68,7 +69,7 @@ class AttUserHandlerTest {
 
     assertThrows(
         UserNotFoundException.class,
-        () -> handler.handle(new AttUserCommand(id, CPF_NEW_MASKED, "X")));
+        () -> handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "X")));
 
     verify(repo).findByIdOptional(id);
     verifyNoMoreInteractions(repo);
@@ -83,7 +84,7 @@ class AttUserHandlerTest {
 
     assertThrows(
         DuplicateCpfException.class,
-        () -> handler.handle(new AttUserCommand(id, CPF_NEW_MASKED, "Alan")));
+        () -> handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "Alan")));
 
     verify(repo).findByIdOptional(id);
     verify(repo).existsByCpfForAnother(CPF_NEW, id);
@@ -98,7 +99,7 @@ class AttUserHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCpfForAnother(CPF_OLD, id)).thenReturn(false);
 
-    var out = handler.handle(new AttUserCommand(id, CPF_OLD, "Alan M. Turing"));
+    var out = handler.handle(new UpdateUserCommand(id, CPF_OLD, "Alan M. Turing"));
 
     assertEquals(CPF_OLD, out.getCpf());
     assertEquals("Alan M. Turing", out.getName());
@@ -113,7 +114,7 @@ class AttUserHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCpfForAnother(CPF_NEW, id)).thenReturn(false);
 
-    handler.handle(new AttUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
+    handler.handle(new UpdateUserCommand(id, CPF_NEW_MASKED, "Alan Turing"));
 
     verify(repo).existsByCpfForAnother(CPF_NEW, id);
   }
@@ -122,7 +123,7 @@ class AttUserHandlerTest {
   void nullIdFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new AttUserCommand(null, "935.411.347-80", "Ada")));
+        () -> handler.handle(new UpdateUserCommand(null, "935.411.347-80", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -130,7 +131,7 @@ class AttUserHandlerTest {
   void blankCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new AttUserCommand(UUID.randomUUID(), "   ", "Ada")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "   ", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -138,7 +139,7 @@ class AttUserHandlerTest {
   void invalidCpfFormatFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new AttUserCommand(UUID.randomUUID(), "1234567890a", "Ada")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "1234567890a", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -146,7 +147,7 @@ class AttUserHandlerTest {
   void blankNameFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new AttUserCommand(UUID.randomUUID(), "935.411.347-80", " ")));
+        () -> handler.handle(new UpdateUserCommand(UUID.randomUUID(), "935.411.347-80", " ")));
     verifyNoInteractions(repo);
   }
 
@@ -156,7 +157,7 @@ class AttUserHandlerTest {
         ConstraintViolationException.class,
         () ->
             handler.handle(
-                new AttUserCommand(UUID.randomUUID(), "935.411.347-80", "x".repeat(151))));
+                new UpdateUserCommand(UUID.randomUUID(), "935.411.347-80", "x".repeat(151))));
     verifyNoInteractions(repo);
   }
 }

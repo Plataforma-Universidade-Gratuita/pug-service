@@ -14,9 +14,9 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.UserRole;
 import com.pug.identity.domain.exceptions.RoleNotFoundException;
 import com.pug.identity.infra.persistence.RoleRepository;
-import com.pug.identity.usecase.role.get.RetrieveRoleByEmailQuery;
-import com.pug.identity.usecase.role.get.RetrieveRoleByIdQuery;
-import com.pug.identity.usecase.role.get.RetrieveRoleHandler;
+import com.pug.identity.usecase.role.read.ReadRoleByEmailQuery;
+import com.pug.identity.usecase.role.read.ReadRoleByIdQuery;
+import com.pug.identity.usecase.role.read.ReadRoleHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -38,7 +38,8 @@ class RetrieveRoleHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RetrieveRoleHandler handler;
+  @InjectMocks
+  ReadRoleHandler handler;
 
   private static Role role(String email) {
     var u = User.builder().id(UUID.randomUUID()).cpf("93541134780").name("Ada").build();
@@ -51,7 +52,7 @@ class RetrieveRoleHandlerTest {
     var normalized = "admin@example.org";
     when(repo.findByEmail(normalized)).thenReturn(Optional.of(role(normalized)));
 
-    var out = handler.handle(new RetrieveRoleByEmailQuery(raw));
+    var out = handler.handle(new ReadRoleByEmailQuery(raw));
 
     assertNotNull(out);
     assertEquals(normalized, out.getEmail());
@@ -63,7 +64,7 @@ class RetrieveRoleHandlerTest {
   void nullEmailThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveRoleByEmailQuery(null)));
+        () -> handler.handle(new ReadRoleByEmailQuery(null)));
     verifyNoInteractions(repo);
   }
 
@@ -71,7 +72,7 @@ class RetrieveRoleHandlerTest {
   void blankEmailThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveRoleByEmailQuery("  ")));
+        () -> handler.handle(new ReadRoleByEmailQuery("  ")));
     verifyNoInteractions(repo);
   }
 
@@ -79,7 +80,7 @@ class RetrieveRoleHandlerTest {
   void invalidFormatEmail_throwsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveRoleByEmailQuery("bad")));
+        () -> handler.handle(new ReadRoleByEmailQuery("bad")));
     verifyNoInteractions(repo);
   }
 
@@ -91,7 +92,7 @@ class RetrieveRoleHandlerTest {
 
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveRoleByEmailQuery(email)));
+        () -> handler.handle(new ReadRoleByEmailQuery(email)));
     verifyNoInteractions(repo);
   }
 
@@ -101,7 +102,7 @@ class RetrieveRoleHandlerTest {
     when(repo.findByEmail(email)).thenReturn(Optional.empty());
 
     assertThrows(
-        RoleNotFoundException.class, () -> handler.handle(new RetrieveRoleByEmailQuery(email)));
+        RoleNotFoundException.class, () -> handler.handle(new ReadRoleByEmailQuery(email)));
 
     verify(repo).findByEmail(email);
     verifyNoMoreInteractions(repo);
@@ -118,7 +119,7 @@ class RetrieveRoleHandlerTest {
     var r = role(id);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(r));
 
-    var out = handler.handle(new RetrieveRoleByIdQuery(id));
+    var out = handler.handle(new ReadRoleByIdQuery(id));
 
     assertNotNull(out);
     assertEquals(id, out.getId());
@@ -131,7 +132,7 @@ class RetrieveRoleHandlerTest {
     var id = UUID.randomUUID();
     when(repo.findByIdOptional(id)).thenReturn(Optional.empty());
 
-    assertThrows(RoleNotFoundException.class, () -> handler.handle(new RetrieveRoleByIdQuery(id)));
+    assertThrows(RoleNotFoundException.class, () -> handler.handle(new ReadRoleByIdQuery(id)));
 
     verify(repo).findByIdOptional(id);
     verifyNoMoreInteractions(repo);
@@ -140,7 +141,7 @@ class RetrieveRoleHandlerTest {
   @Test
   void throwsWhenIdIsNull() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new RetrieveRoleByIdQuery(null)));
+        ConstraintViolationException.class, () -> handler.handle(new ReadRoleByIdQuery(null)));
     verifyNoInteractions(repo);
   }
 }

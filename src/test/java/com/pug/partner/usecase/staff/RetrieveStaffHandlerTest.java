@@ -13,8 +13,8 @@ import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.exceptions.StaffNotFoundException;
 import com.pug.partner.infra.persistence.StaffRepository;
-import com.pug.partner.usecase.staff.get.RetrieveStaffByUserRoleIdQuery;
-import com.pug.partner.usecase.staff.get.RetrieveStaffHandler;
+import com.pug.partner.usecase.staff.read.ReadStaffByUserRoleIdQuery;
+import com.pug.partner.usecase.staff.read.ReadStaffHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -36,7 +36,8 @@ class RetrieveStaffHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RetrieveStaffHandler handler;
+  @InjectMocks
+  ReadStaffHandler handler;
 
   private static Staff staffWithUserRole(UUID userRoleId) {
     var city = City.builder().id(UUID.randomUUID()).name("City").ibgeCode("4200000").build();
@@ -60,7 +61,7 @@ class RetrieveStaffHandlerTest {
     var s = staffWithUserRole(urid);
     when(repo.findByUserRoleId(urid)).thenReturn(Optional.of(s));
 
-    var out = handler.handle(new RetrieveStaffByUserRoleIdQuery(urid));
+    var out = handler.handle(new ReadStaffByUserRoleIdQuery(urid));
 
     assertNotNull(out);
     assertEquals(urid, out.getUserRole().getId());
@@ -75,7 +76,7 @@ class RetrieveStaffHandlerTest {
 
     assertThrows(
         StaffNotFoundException.class,
-        () -> handler.handle(new RetrieveStaffByUserRoleIdQuery(urid)));
+        () -> handler.handle(new ReadStaffByUserRoleIdQuery(urid)));
 
     verify(repo).findByUserRoleId(urid);
     verifyNoMoreInteractions(repo);
@@ -85,7 +86,7 @@ class RetrieveStaffHandlerTest {
   void nullUserRoleIdThrowsConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveStaffByUserRoleIdQuery(null)));
+        () -> handler.handle(new ReadStaffByUserRoleIdQuery(null)));
     verifyNoInteractions(repo);
   }
 }

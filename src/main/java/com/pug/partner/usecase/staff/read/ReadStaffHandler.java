@@ -1,4 +1,4 @@
-package com.pug.partner.usecase.staff.get;
+package com.pug.partner.usecase.staff.read;
 
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.exceptions.StaffNotFoundException;
@@ -10,13 +10,13 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class RetrieveStaffHandler {
+public class ReadStaffHandler {
 
   @Inject StaffRepository repo;
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public Staff handle(RetrieveStaffByUserRoleIdQuery q) {
+  public Staff handle(ReadStaffByUserRoleIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByUserRoleId(q.userRoleId())

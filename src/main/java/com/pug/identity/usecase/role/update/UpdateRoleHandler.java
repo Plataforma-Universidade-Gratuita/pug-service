@@ -13,13 +13,13 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class AttRoleHandler {
+public class UpdateRoleHandler {
 
   @Inject RoleRepository repo;
   @Inject Validator validator;
 
   @Transactional
-  public Role handle(AttRoleCommand cmd) {
+  public Role handle(UpdateRoleCommand cmd) {
     var vCmd = validator.validate(cmd);
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 
@@ -54,7 +54,7 @@ public class AttRoleHandler {
   }
 
   @Transactional
-  public void handle(AttIsActiveCommand cmd) {
+  public void handle(UpdateIsActiveCommand cmd) {
     var v = validator.validate(cmd);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 

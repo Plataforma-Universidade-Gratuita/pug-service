@@ -12,20 +12,20 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class AttPartnerEntityHandler {
+public class UpdatePartnerEntityHandler {
 
   @Inject PartnerEntityRepository repo;
   @Inject EntityManager em;
   @Inject Validator validator;
 
   @Transactional
-  public PartnerEntity handle(AttPartnerEntityCommand cmd) {
+  public PartnerEntity handle(UpdatePartnerEntityCommand cmd) {
     String cnpjDigits = cmd.cnpj() == null ? null : cmd.cnpj().replaceAll("\\D+", "");
     String name = cmd.name() == null ? null : cmd.name().trim();
 
     var vCmd =
         validator.validate(
-            new AttPartnerEntityCommand(cmd.id(), cnpjDigits, name, cmd.cityId(), cmd.address()));
+            new UpdatePartnerEntityCommand(cmd.id(), cnpjDigits, name, cmd.cityId(), cmd.address()));
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 
     var entity =
@@ -65,7 +65,7 @@ public class AttPartnerEntityHandler {
   }
 
   @Transactional
-  public void handle(AttIsActiveCommand cmd) {
+  public void handle(UpdateIsActiveCommand cmd) {
     var v = validator.validate(cmd);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 

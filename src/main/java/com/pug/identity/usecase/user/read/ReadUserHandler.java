@@ -1,4 +1,4 @@
-package com.pug.identity.usecase.user.get;
+package com.pug.identity.usecase.user.read;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.exceptions.UserNotFoundException;
@@ -10,19 +10,19 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class RetrieveUserHandler {
+public class ReadUserHandler {
   @Inject UserRepository repo;
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public User handle(RetrieveUserByIdQuery q) {
+  public User handle(ReadUserByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id()).orElseThrow(() -> new UserNotFoundException(q.id()));
   }
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public User handle(RetrieveUserByCpfQuery q) {
+  public User handle(ReadUserByCpfQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 

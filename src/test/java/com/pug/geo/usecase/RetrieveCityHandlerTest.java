@@ -11,9 +11,9 @@ import static org.mockito.Mockito.when;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.exceptions.CityNotFoundException;
 import com.pug.geo.infra.persistence.CityRepository;
-import com.pug.geo.usecase.get.RetrieveCitiesByPatternQuery;
-import com.pug.geo.usecase.get.RetrieveCityByIbgeCodeQuery;
-import com.pug.geo.usecase.get.RetrieveCityHandler;
+import com.pug.geo.usecase.read.ReadCitiesByPatternQuery;
+import com.pug.geo.usecase.read.ReadCityByIbgeCodeQuery;
+import com.pug.geo.usecase.read.ReadCityHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -35,13 +35,14 @@ class RetrieveCityHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RetrieveCityHandler handler;
+  @InjectMocks
+  ReadCityHandler handler;
 
   @Test
   void returnsByPatternWhenLimitProvided() {
     when(repo.listByPattern("flo", 10)).thenReturn(List.of(new City()));
 
-    var out = handler.handle(new RetrieveCitiesByPatternQuery("flo", 10));
+    var out = handler.handle(new ReadCitiesByPatternQuery("flo", 10));
 
     assertEquals(1, out.size());
     verify(repo).listByPattern("flo", 10);
@@ -52,7 +53,7 @@ class RetrieveCityHandlerTest {
   void returnsAllWhenLimitIsNull() {
     when(repo.listAllSorted()).thenReturn(List.of(new City()));
 
-    var out = handler.handle(new RetrieveCitiesByPatternQuery("any", null));
+    var out = handler.handle(new ReadCitiesByPatternQuery("any", null));
 
     assertEquals(1, out.size());
     verify(repo).listAllSorted();
@@ -63,7 +64,7 @@ class RetrieveCityHandlerTest {
   void nullQueryFailsValidation() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveCitiesByPatternQuery(null, 5)));
+        () -> handler.handle(new ReadCitiesByPatternQuery(null, 5)));
 
     verifyNoInteractions(repo);
   }
@@ -72,7 +73,7 @@ class RetrieveCityHandlerTest {
   void limitBelowMinFailsValidation() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveCitiesByPatternQuery("x", 0)));
+        () -> handler.handle(new ReadCitiesByPatternQuery("x", 0)));
 
     verifyNoInteractions(repo);
   }
@@ -81,7 +82,7 @@ class RetrieveCityHandlerTest {
   void limitAboveMaxFailsValidation() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveCitiesByPatternQuery("x", 201)));
+        () -> handler.handle(new ReadCitiesByPatternQuery("x", 201)));
 
     verifyNoInteractions(repo);
   }
@@ -91,7 +92,7 @@ class RetrieveCityHandlerTest {
     var city = new City();
     when(repo.findByIbgeCode("4205407")).thenReturn(Optional.of(city));
 
-    var out = handler.handle(new RetrieveCityByIbgeCodeQuery("4205407"));
+    var out = handler.handle(new ReadCityByIbgeCodeQuery("4205407"));
 
     assertSame(city, out);
     verify(repo).findByIbgeCode("4205407");
@@ -104,7 +105,7 @@ class RetrieveCityHandlerTest {
 
     assertThrows(
         CityNotFoundException.class,
-        () -> handler.handle(new RetrieveCityByIbgeCodeQuery("4209102")));
+        () -> handler.handle(new ReadCityByIbgeCodeQuery("4209102")));
 
     verify(repo).findByIbgeCode("4209102");
     verifyNoMoreInteractions(repo);
@@ -114,7 +115,7 @@ class RetrieveCityHandlerTest {
   void blankCodeFailsValidationAndDoesNotQueryRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveCityByIbgeCodeQuery("   ")));
+        () -> handler.handle(new ReadCityByIbgeCodeQuery("   ")));
 
     verifyNoInteractions(repo);
   }
@@ -123,7 +124,7 @@ class RetrieveCityHandlerTest {
   void nullCodeFailsValidationAndDoesNotQueryRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RetrieveCityByIbgeCodeQuery(null)));
+        () -> handler.handle(new ReadCityByIbgeCodeQuery(null)));
 
     verifyNoInteractions(repo);
   }

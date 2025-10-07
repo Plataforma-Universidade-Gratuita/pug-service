@@ -19,9 +19,9 @@ import com.pug.identity.domain.exceptions.DuplicateEmailException;
 import com.pug.identity.domain.exceptions.FormerStudentRegistrationException;
 import com.pug.identity.domain.exceptions.RoleNotFoundException;
 import com.pug.identity.infra.persistence.RoleRepository;
-import com.pug.identity.usecase.role.update.AttIsActiveCommand;
-import com.pug.identity.usecase.role.update.AttRoleCommand;
-import com.pug.identity.usecase.role.update.AttRoleHandler;
+import com.pug.identity.usecase.role.update.UpdateIsActiveCommand;
+import com.pug.identity.usecase.role.update.UpdateRoleCommand;
+import com.pug.identity.usecase.role.update.UpdateRoleHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -43,7 +43,8 @@ class AttRoleHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks AttRoleHandler handler;
+  @InjectMocks
+  UpdateRoleHandler handler;
 
   private static final String VALID_CPF = "93541134780";
 
@@ -65,7 +66,7 @@ class AttRoleHandlerTest {
     when(repo.findByIdOptional(rid)).thenReturn(Optional.of(existing));
     when(repo.existsByEmailForAnother("new@example.org", rid)).thenReturn(false);
 
-    var cmd = new AttRoleCommand(rid, "new@example.org", UserRole.PARTNER);
+    var cmd = new UpdateRoleCommand(rid, "new@example.org", UserRole.PARTNER);
     var out = handler.handle(cmd);
 
     assertNotNull(out);
@@ -90,7 +91,7 @@ class AttRoleHandlerTest {
     when(repo.findByIdOptional(rid)).thenReturn(Optional.of(existing));
     when(repo.existsByEmailForAnother("dup@example.org", rid)).thenReturn(true);
 
-    var cmd = new AttRoleCommand(rid, "dup@example.org", UserRole.ADMIN);
+    var cmd = new UpdateRoleCommand(rid, "dup@example.org", UserRole.ADMIN);
 
     assertThrows(DuplicateEmailException.class, () -> handler.handle(cmd));
 
@@ -112,7 +113,7 @@ class AttRoleHandlerTest {
     when(repo.existsByEmailForAnother("fs@example.org", rid)).thenReturn(false);
     when(repo.existsFormerStudentForAnother(uid, rid)).thenReturn(true);
 
-    var cmd = new AttRoleCommand(rid, "fs@example.org", UserRole.FORMER_STUDENT);
+    var cmd = new UpdateRoleCommand(rid, "fs@example.org", UserRole.FORMER_STUDENT);
 
     assertThrows(FormerStudentRegistrationException.class, () -> handler.handle(cmd));
 
@@ -128,7 +129,7 @@ class AttRoleHandlerTest {
     var rid = UUID.randomUUID();
     when(repo.findByIdOptional(rid)).thenReturn(Optional.empty());
 
-    var cmd = new AttRoleCommand(rid, "a@b.org", UserRole.ADMIN);
+    var cmd = new UpdateRoleCommand(rid, "a@b.org", UserRole.ADMIN);
 
     assertThrows(RoleNotFoundException.class, () -> handler.handle(cmd));
 
@@ -139,7 +140,7 @@ class AttRoleHandlerTest {
   @Test
   void commandValidationFailureThrowsConstraintViolation() {
     var rid = UUID.randomUUID();
-    var cmd = new AttRoleCommand(rid, "bad", UserRole.ADMIN);
+    var cmd = new UpdateRoleCommand(rid, "bad", UserRole.ADMIN);
 
     assertThrows(ConstraintViolationException.class, () -> handler.handle(cmd));
 
@@ -163,7 +164,7 @@ class AttRoleHandlerTest {
     var r = role(id, true);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(r));
 
-    handler.handle(new AttIsActiveCommand(id));
+    handler.handle(new UpdateIsActiveCommand(id));
 
     assertFalse(r.isActive());
     verify(repo).findByIdOptional(id);
@@ -177,7 +178,7 @@ class AttRoleHandlerTest {
     var r = role(id, false);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(r));
 
-    handler.handle(new AttIsActiveCommand(id));
+    handler.handle(new UpdateIsActiveCommand(id));
 
     assertTrue(r.isActive());
     verify(repo).findByIdOptional(id);
@@ -188,7 +189,7 @@ class AttRoleHandlerTest {
   @Test
   void invalidCommandIdTriggersConstraintViolation() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new AttIsActiveCommand(null)));
+        ConstraintViolationException.class, () -> handler.handle(new UpdateIsActiveCommand(null)));
     verifyNoInteractions(repo);
   }
 }

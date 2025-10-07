@@ -6,11 +6,11 @@ import com.pug.identity.presenter.rest.dto.RegisterUserResponse;
 import com.pug.identity.presenter.rest.dto.UserResponse;
 import com.pug.identity.usecase.user.create.RegisterUserCommand;
 import com.pug.identity.usecase.user.create.RegisterUserHandler;
-import com.pug.identity.usecase.user.get.RetrieveUserByCpfQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserByIdQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserHandler;
-import com.pug.identity.usecase.user.update.AttUserCommand;
-import com.pug.identity.usecase.user.update.AttUserHandler;
+import com.pug.identity.usecase.user.read.ReadUserByCpfQuery;
+import com.pug.identity.usecase.user.read.ReadUserByIdQuery;
+import com.pug.identity.usecase.user.read.ReadUserHandler;
+import com.pug.identity.usecase.user.update.UpdateUserCommand;
+import com.pug.identity.usecase.user.update.UpdateUserHandler;
 import com.pug.shared.dtos.ApiResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotBlank;
@@ -35,8 +35,10 @@ import org.hibernate.validator.constraints.br.CPF;
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
   @Inject RegisterUserHandler createUser;
-  @Inject AttUserHandler updateUser;
-  @Inject RetrieveUserHandler handler;
+  @Inject
+  UpdateUserHandler updateUser;
+  @Inject
+  ReadUserHandler handler;
 
   @POST
   public Response create(RegisterUserRequest body, @Context UriInfo uri) {
@@ -50,20 +52,20 @@ public class UserResource {
   @PUT
   @Path("{id}")
   public Response update(@PathParam("id") UUID id, AttUserRequest body) {
-    var u = updateUser.handle(new AttUserCommand(id, body.cpf(), body.name()));
+    var u = updateUser.handle(new UpdateUserCommand(id, body.cpf(), body.name()));
     return Response.ok(ApiResponse.ok(UserResponse.from(u))).build();
   }
 
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") UUID id) {
-    var u = handler.handle(new RetrieveUserByIdQuery(id));
+    var u = handler.handle(new ReadUserByIdQuery(id));
     return Response.ok(ApiResponse.ok(UserResponse.from(u))).build();
   }
 
   @GET
   public Response getByCpf(@QueryParam("cpf") @NotBlank @CPF String cpf) {
-    var u = handler.handle(new RetrieveUserByCpfQuery(cpf));
+    var u = handler.handle(new ReadUserByCpfQuery(cpf));
     return Response.ok(ApiResponse.ok(UserResponse.from(u))).build();
   }
 }

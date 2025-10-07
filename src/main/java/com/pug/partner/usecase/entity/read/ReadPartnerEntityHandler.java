@@ -1,5 +1,5 @@
 // src/main/java/com/pug/partner/usecase/entity/get/RetrievePartnerEntityHandler.java
-package com.pug.partner.usecase.entity.get;
+package com.pug.partner.usecase.entity.read;
 
 import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.exceptions.PartnerEntityNotFoundException;
@@ -11,13 +11,13 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class RetrievePartnerEntityHandler {
+public class ReadPartnerEntityHandler {
 
   @Inject PartnerEntityRepository repo;
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public PartnerEntity handle(RetrievePartnerEntityByIdQuery q) {
+  public PartnerEntity handle(ReadPartnerEntityByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id())
@@ -25,7 +25,7 @@ public class RetrievePartnerEntityHandler {
   }
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public PartnerEntity handle(RetrievePartnerEntityByCnpjQuery q) {
+  public PartnerEntity handle(ReadPartnerEntityByCnpjQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 

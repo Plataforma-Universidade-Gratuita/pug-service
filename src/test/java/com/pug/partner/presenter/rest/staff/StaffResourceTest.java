@@ -18,8 +18,8 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.presenter.rest.dto.RegisterStaffRequest;
 import com.pug.partner.usecase.staff.create.RegisterStaffCommand;
 import com.pug.partner.usecase.staff.create.RegisterStaffHandler;
-import com.pug.partner.usecase.staff.get.RetrieveStaffByUserRoleIdQuery;
-import com.pug.partner.usecase.staff.get.RetrieveStaffHandler;
+import com.pug.partner.usecase.staff.read.ReadStaffByUserRoleIdQuery;
+import com.pug.partner.usecase.staff.read.ReadStaffHandler;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.MediaType;
@@ -31,7 +31,8 @@ import org.mockito.ArgumentCaptor;
 class StaffResourceTest {
 
   @InjectMock RegisterStaffHandler createHandler;
-  @InjectMock RetrieveStaffHandler retrieveHandler;
+  @InjectMock
+  ReadStaffHandler retrieveHandler;
 
   private static Staff staff(UUID id, UUID userRoleId, UUID entityId) {
     return Staff.builder()
@@ -76,7 +77,7 @@ class StaffResourceTest {
     var userRoleId = UUID.randomUUID();
     var entityId = UUID.randomUUID();
 
-    when(retrieveHandler.handle(any(RetrieveStaffByUserRoleIdQuery.class)))
+    when(retrieveHandler.handle(any(ReadStaffByUserRoleIdQuery.class)))
         .thenReturn(staff(id, userRoleId, entityId));
 
     given()
@@ -92,13 +93,13 @@ class StaffResourceTest {
         .body("data.entityId", equalTo(entityId.toString()))
         .body("error", nullValue());
 
-    verify(retrieveHandler).handle(any(RetrieveStaffByUserRoleIdQuery.class));
+    verify(retrieveHandler).handle(any(ReadStaffByUserRoleIdQuery.class));
   }
 
   @Test
   void getByUserRoleIdNotFoundMaps404WithDetail() {
     var missing = UUID.randomUUID();
-    when(retrieveHandler.handle(any(RetrieveStaffByUserRoleIdQuery.class)))
+    when(retrieveHandler.handle(any(ReadStaffByUserRoleIdQuery.class)))
         .thenThrow(new com.pug.partner.domain.exceptions.StaffNotFoundException(missing));
 
     given()

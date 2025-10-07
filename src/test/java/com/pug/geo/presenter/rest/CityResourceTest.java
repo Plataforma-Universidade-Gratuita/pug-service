@@ -11,9 +11,9 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.usecase.get.RetrieveCitiesByPatternQuery;
-import com.pug.geo.usecase.get.RetrieveCityByIbgeCodeQuery;
-import com.pug.geo.usecase.get.RetrieveCityHandler;
+import com.pug.geo.usecase.read.ReadCitiesByPatternQuery;
+import com.pug.geo.usecase.read.ReadCityByIbgeCodeQuery;
+import com.pug.geo.usecase.read.ReadCityHandler;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import java.util.List;
@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class CityResourceTest {
 
-  @InjectMock RetrieveCityHandler handler;
+  @InjectMock
+  ReadCityHandler handler;
 
   private static City city(String name, String ibge) {
     return City.builder().id(UUID.randomUUID()).name(name).ibgeCode(ibge).build();
@@ -32,10 +33,10 @@ class CityResourceTest {
   @Test
   void listOkMapsToApiResponseAndUsesHandler() {
     when(handler.handle(
-            (RetrieveCitiesByPatternQuery)
+            (ReadCitiesByPatternQuery)
                 argThat(
                     q ->
-                        q instanceof RetrieveCitiesByPatternQuery(String query, Integer limit)
+                        q instanceof ReadCitiesByPatternQuery(String query, Integer limit)
                             && "flo".equals(query)
                             && Integer.valueOf(2).equals(limit))))
         .thenReturn(List.of(city("Florianópolis", "4205407"), city("Floresta Alta", "1234567")));
@@ -52,10 +53,10 @@ class CityResourceTest {
 
     verify(handler)
         .handle(
-            (RetrieveCitiesByPatternQuery)
+            (ReadCitiesByPatternQuery)
                 argThat(
                     q ->
-                        q instanceof RetrieveCitiesByPatternQuery(String query, Integer limit)
+                        q instanceof ReadCitiesByPatternQuery(String query, Integer limit)
                             && "flo".equals(query)
                             && Integer.valueOf(2).equals(limit)));
     verifyNoMoreInteractions(handler, handler);
@@ -71,10 +72,10 @@ class CityResourceTest {
   @Test
   void getByIbgeCodeOkMapsToApiResponseAndUsesHandler() {
     when(handler.handle(
-            (RetrieveCityByIbgeCodeQuery)
+            (ReadCityByIbgeCodeQuery)
                 argThat(
                     q ->
-                        q instanceof RetrieveCityByIbgeCodeQuery(String ibgeCode)
+                        q instanceof ReadCityByIbgeCodeQuery(String ibgeCode)
                             && "4205407".equals(ibgeCode))))
         .thenReturn(city("Florianópolis", "4205407"));
 
@@ -89,10 +90,10 @@ class CityResourceTest {
 
     verify(handler)
         .handle(
-            (RetrieveCityByIbgeCodeQuery)
+            (ReadCityByIbgeCodeQuery)
                 argThat(
                     q ->
-                        q instanceof RetrieveCityByIbgeCodeQuery(String ibgeCode)
+                        q instanceof ReadCityByIbgeCodeQuery(String ibgeCode)
                             && "4205407".equals(ibgeCode)));
     verifyNoMoreInteractions(handler, handler);
   }

@@ -1,4 +1,4 @@
-package com.pug.identity.usecase.role.get;
+package com.pug.identity.usecase.role.read;
 
 import com.pug.identity.domain.Role;
 import com.pug.identity.domain.exceptions.RoleNotFoundException;
@@ -10,19 +10,19 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class RetrieveRoleHandler {
+public class ReadRoleHandler {
   @Inject RoleRepository repo;
   @Inject Validator validator;
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public Role handle(RetrieveRoleByIdQuery q) {
+  public Role handle(ReadRoleByIdQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     return repo.findByIdOptional(q.id()).orElseThrow(() -> new RoleNotFoundException(q.id()));
   }
 
   @Transactional(Transactional.TxType.SUPPORTS)
-  public Role handle(RetrieveRoleByEmailQuery q) {
+  public Role handle(ReadRoleByEmailQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
 

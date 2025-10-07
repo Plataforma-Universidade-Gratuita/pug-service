@@ -75,10 +75,10 @@
 │   │   │           │   │       └── dto/
 │   │   │           │   │           └── CityResponse.java
 │   │   │           │   └── usecase/
-│   │   │           │       └── get/
-│   │   │           │           ├── RetrieveCitiesByPatternQuery.java
-│   │   │           │           ├── RetrieveCityByIbgeCodeQuery.java
-│   │   │           │           └── RetrieveCityHandler.java
+│   │   │           │       └── read/
+│   │   │           │           ├── ReadCitiesByPatternQuery.java
+│   │   │           │           ├── ReadCityByIbgeCodeQuery.java
+│   │   │           │           └── ReadCityHandler.java
 │   │   │           ├── hours/
 │   │   │           │   ├── domain/
 │   │   │           │   │   └── StudentCounterpartHours.java
@@ -126,25 +126,25 @@
 │   │   │           │       │   ├── create/
 │   │   │           │       │   │   ├── RegisterRoleCommand.java
 │   │   │           │       │   │   └── RegisterRoleHandler.java
-│   │   │           │       │   ├── get/
-│   │   │           │       │   │   ├── RetrieveRoleByEmailQuery.java
-│   │   │           │       │   │   ├── RetrieveRoleByIdQuery.java
-│   │   │           │       │   │   └── RetrieveRoleHandler.java
+│   │   │           │       │   ├── read/
+│   │   │           │       │   │   ├── ReadRoleByEmailQuery.java
+│   │   │           │       │   │   ├── ReadRoleByIdQuery.java
+│   │   │           │       │   │   └── ReadRoleHandler.java
 │   │   │           │       │   └── update/
-│   │   │           │       │       ├── AttIsActiveCommand.java
-│   │   │           │       │       ├── AttRoleCommand.java
-│   │   │           │       │       └── AttRoleHandler.java
+│   │   │           │       │       ├── UpdateIsActiveCommand.java
+│   │   │           │       │       ├── UpdateRoleCommand.java
+│   │   │           │       │       └── UpdateRoleHandler.java
 │   │   │           │       └── user/
 │   │   │           │           ├── create/
 │   │   │           │           │   ├── RegisterUserCommand.java
 │   │   │           │           │   └── RegisterUserHandler.java
-│   │   │           │           ├── get/
-│   │   │           │           │   ├── RetrieveUserByCpfQuery.java
-│   │   │           │           │   ├── RetrieveUserByIdQuery.java
-│   │   │           │           │   └── RetrieveUserHandler.java
+│   │   │           │           ├── read/
+│   │   │           │           │   ├── ReadUserByCpfQuery.java
+│   │   │           │           │   ├── ReadUserByIdQuery.java
+│   │   │           │           │   └── ReadUserHandler.java
 │   │   │           │           └── update/
-│   │   │           │               ├── AttUserCommand.java
-│   │   │           │               └── AttUserHandler.java
+│   │   │           │               ├── UpdateUserCommand.java
+│   │   │           │               └── UpdateUserHandler.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── PartnerEntity.java
@@ -176,21 +176,21 @@
 │   │   │           │       │   ├── create/
 │   │   │           │       │   │   ├── RegisterPartnerEntityCommand.java
 │   │   │           │       │   │   └── RegisterPartnerEntityHandler.java
-│   │   │           │       │   ├── get/
-│   │   │           │       │   │   ├── RetrievePartnerEntityByCnpjQuery.java
-│   │   │           │       │   │   ├── RetrievePartnerEntityByIdQuery.java
-│   │   │           │       │   │   └── RetrievePartnerEntityHandler.java
+│   │   │           │       │   ├── read/
+│   │   │           │       │   │   ├── ReadPartnerEntityByCnpjQuery.java
+│   │   │           │       │   │   ├── ReadPartnerEntityByIdQuery.java
+│   │   │           │       │   │   └── ReadPartnerEntityHandler.java
 │   │   │           │       │   └── update/
-│   │   │           │       │       ├── AttIsActiveCommand.java
-│   │   │           │       │       ├── AttPartnerEntityCommand.java
-│   │   │           │       │       └── AttPartnerEntityHandler.java
+│   │   │           │       │       ├── UpdateIsActiveCommand.java
+│   │   │           │       │       ├── UpdatePartnerEntityCommand.java
+│   │   │           │       │       └── UpdatePartnerEntityHandler.java
 │   │   │           │       └── staff/
 │   │   │           │           ├── create/
 │   │   │           │           │   ├── RegisterStaffCommand.java
 │   │   │           │           │   └── RegisterStaffHandler.java
-│   │   │           │           └── get/
-│   │   │           │               ├── RetrieveStaffByUserRoleIdQuery.java
-│   │   │           │               └── RetrieveStaffHandler.java
+│   │   │           │           └── read/
+│   │   │           │               ├── ReadStaffByUserRoleIdQuery.java
+│   │   │           │               └── ReadStaffHandler.java
 │   │   │           ├── project/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Project.java

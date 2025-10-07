@@ -16,9 +16,9 @@ import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.exceptions.DuplicateCnpjException;
 import com.pug.partner.domain.exceptions.PartnerEntityNotFoundException;
 import com.pug.partner.infra.persistence.PartnerEntityRepository;
-import com.pug.partner.usecase.entity.update.AttIsActiveCommand;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityCommand;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityHandler;
+import com.pug.partner.usecase.entity.update.UpdateIsActiveCommand;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityCommand;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityHandler;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
@@ -41,7 +41,8 @@ class AttPartnerEntityHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks AttPartnerEntityHandler handler;
+  @InjectMocks
+  UpdatePartnerEntityHandler handler;
 
   private static PartnerEntity entity(UUID id, String cnpj, String name, UUID cityId) {
     return PartnerEntity.builder()
@@ -64,7 +65,7 @@ class AttPartnerEntityHandlerTest {
     when(em.getReference(City.class, newCity))
         .thenReturn(City.builder().id(newCity).name("New City").ibgeCode("4201000").build());
 
-    var cmd = new AttPartnerEntityCommand(id, null, "  New Org  ", newCity, "Addr");
+    var cmd = new UpdatePartnerEntityCommand(id, null, "  New Org  ", newCity, "Addr");
 
     var out = handler.handle(cmd);
 
@@ -90,7 +91,7 @@ class AttPartnerEntityHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCnpjForAnother("19131243000197", id)).thenReturn(false);
 
-    var cmd = new AttPartnerEntityCommand(id, "19.131.243/0001-97", null, null, null);
+    var cmd = new UpdatePartnerEntityCommand(id, "19.131.243/0001-97", null, null, null);
 
     var out = handler.handle(cmd);
 
@@ -112,7 +113,7 @@ class AttPartnerEntityHandlerTest {
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(existing));
     when(repo.existsByCnpjForAnother("19131243000197", id)).thenReturn(true);
 
-    var cmd = new AttPartnerEntityCommand(id, "19.131.243/0001-97", null, null, null);
+    var cmd = new UpdatePartnerEntityCommand(id, "19.131.243/0001-97", null, null, null);
 
     assertThrows(DuplicateCnpjException.class, () -> handler.handle(cmd));
 
@@ -128,7 +129,7 @@ class AttPartnerEntityHandlerTest {
     var id = UUID.randomUUID();
     when(repo.findByIdOptional(id)).thenReturn(Optional.empty());
 
-    var cmd = new AttPartnerEntityCommand(id, null, "Org", null, null);
+    var cmd = new UpdatePartnerEntityCommand(id, null, "Org", null, null);
 
     assertThrows(PartnerEntityNotFoundException.class, () -> handler.handle(cmd));
 
@@ -140,7 +141,7 @@ class AttPartnerEntityHandlerTest {
   @Test
   void commandValidationFailure_badCnpj_throwsConstraintViolation_andSkipsRepo() {
     var id = UUID.randomUUID();
-    var cmd = new AttPartnerEntityCommand(id, "bad", null, null, null);
+    var cmd = new UpdatePartnerEntityCommand(id, "bad", null, null, null);
 
     assertThrows(ConstraintViolationException.class, () -> handler.handle(cmd));
 
@@ -150,7 +151,7 @@ class AttPartnerEntityHandlerTest {
   @Test
   void commandValidationFailure_nameTooLong_throwsConstraintViolation_andSkipsRepo() {
     var id = UUID.randomUUID();
-    var cmd = new AttPartnerEntityCommand(id, null, "x".repeat(151), null, null);
+    var cmd = new UpdatePartnerEntityCommand(id, null, "x".repeat(151), null, null);
 
     assertThrows(ConstraintViolationException.class, () -> handler.handle(cmd));
 
@@ -173,7 +174,7 @@ class AttPartnerEntityHandlerTest {
     var e = entity(id, true);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(e));
 
-    handler.handle(new AttIsActiveCommand(id));
+    handler.handle(new UpdateIsActiveCommand(id));
 
     assertFalse(e.isActive());
     verify(repo).findByIdOptional(id);
@@ -187,7 +188,7 @@ class AttPartnerEntityHandlerTest {
     var e = entity(id, false);
     when(repo.findByIdOptional(id)).thenReturn(Optional.of(e));
 
-    handler.handle(new AttIsActiveCommand(id));
+    handler.handle(new UpdateIsActiveCommand(id));
 
     assertTrue(e.isActive());
     verify(repo).findByIdOptional(id);
@@ -198,7 +199,7 @@ class AttPartnerEntityHandlerTest {
   @Test
   void invalidToggleCommandIdTriggersConstraintViolation() {
     assertThrows(
-        ConstraintViolationException.class, () -> handler.handle(new AttIsActiveCommand(null)));
+        ConstraintViolationException.class, () -> handler.handle(new UpdateIsActiveCommand(null)));
     verifyNoInteractions(repo);
   }
 }

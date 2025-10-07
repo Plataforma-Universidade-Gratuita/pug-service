@@ -12,12 +12,12 @@ import jakarta.validation.Validator;
 import java.util.UUID;
 
 @ApplicationScoped
-public class AttUserHandler {
+public class UpdateUserHandler {
   @Inject UserRepository repo;
   @Inject Validator validator;
 
   @Transactional
-  public User handle(AttUserCommand cmd) {
+  public User handle(UpdateUserCommand cmd) {
     var vCmd = validator.validate(cmd);
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 

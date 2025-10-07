@@ -20,11 +20,11 @@ import com.pug.identity.presenter.rest.dto.AttUserRequest;
 import com.pug.identity.presenter.rest.dto.RegisterUserRequest;
 import com.pug.identity.usecase.user.create.RegisterUserCommand;
 import com.pug.identity.usecase.user.create.RegisterUserHandler;
-import com.pug.identity.usecase.user.get.RetrieveUserByCpfQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserByIdQuery;
-import com.pug.identity.usecase.user.get.RetrieveUserHandler;
-import com.pug.identity.usecase.user.update.AttUserCommand;
-import com.pug.identity.usecase.user.update.AttUserHandler;
+import com.pug.identity.usecase.user.read.ReadUserByCpfQuery;
+import com.pug.identity.usecase.user.read.ReadUserByIdQuery;
+import com.pug.identity.usecase.user.read.ReadUserHandler;
+import com.pug.identity.usecase.user.update.UpdateUserCommand;
+import com.pug.identity.usecase.user.update.UpdateUserHandler;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.MediaType;
@@ -36,8 +36,10 @@ import org.mockito.ArgumentCaptor;
 class UserResourceTest {
 
   @InjectMock RegisterUserHandler createUser;
-  @InjectMock AttUserHandler updateUser;
-  @InjectMock RetrieveUserHandler handler;
+  @InjectMock
+  UpdateUserHandler updateUser;
+  @InjectMock
+  ReadUserHandler handler;
 
   @Test
   void createReturns201WithEnvelopeAndLocation() {
@@ -64,7 +66,7 @@ class UserResourceTest {
   @Test
   void getByIdNotFoundMapsTo404EnvelopeWithIdDetail() {
     var id = UUID.randomUUID();
-    when(handler.handle(any(RetrieveUserByIdQuery.class))).thenThrow(new UserNotFoundException(id));
+    when(handler.handle(any(ReadUserByIdQuery.class))).thenThrow(new UserNotFoundException(id));
 
     given()
         .header("Accept-Language", "en-US")
@@ -100,7 +102,7 @@ class UserResourceTest {
   @Test
   void getByCpfSuccessReturnsEnvelopeAndNormalizedValue() {
     var u = User.builder().id(UUID.randomUUID()).cpf("93541134780").name("Ada").build();
-    when(handler.handle(any(RetrieveUserByCpfQuery.class))).thenReturn(u);
+    when(handler.handle(any(ReadUserByCpfQuery.class))).thenReturn(u);
 
     given()
         .header("X-Correlation-Id", "cid-4")
@@ -127,7 +129,7 @@ class UserResourceTest {
             .createdAt(java.time.Instant.now())
             .updatedAt(java.time.Instant.now())
             .build();
-    when(updateUser.handle(any(AttUserCommand.class))).thenReturn(u);
+    when(updateUser.handle(any(UpdateUserCommand.class))).thenReturn(u);
 
     given()
         .header("X-Correlation-Id", "cid-upd-1")
@@ -144,13 +146,13 @@ class UserResourceTest {
         .body("data.name", equalTo("Ada Lovelace"))
         .body("error", nullValue());
 
-    verify(updateUser).handle(any(AttUserCommand.class));
+    verify(updateUser).handle(any(UpdateUserCommand.class));
   }
 
   @Test
   void updateNotFoundMaps404WithIdDetail() {
     var id = UUID.randomUUID();
-    when(updateUser.handle(any(AttUserCommand.class))).thenThrow(new UserNotFoundException(id));
+    when(updateUser.handle(any(UpdateUserCommand.class))).thenThrow(new UserNotFoundException(id));
 
     given()
         .header("Accept-Language", "en-US")
@@ -169,7 +171,7 @@ class UserResourceTest {
   @Test
   void updateDuplicateCpfMaps409() {
     var id = UUID.randomUUID();
-    when(updateUser.handle(any(AttUserCommand.class)))
+    when(updateUser.handle(any(UpdateUserCommand.class)))
         .thenThrow(new DuplicateCpfException("93541134780"));
 
     given()
@@ -195,7 +197,7 @@ class UserResourceTest {
             .createdAt(java.time.Instant.now())
             .updatedAt(java.time.Instant.now())
             .build();
-    when(handler.handle(any(RetrieveUserByIdQuery.class))).thenReturn(u);
+    when(handler.handle(any(ReadUserByIdQuery.class))).thenReturn(u);
 
     given()
         .header("X-Correlation-Id", "cid-get-1")
@@ -210,6 +212,6 @@ class UserResourceTest {
         .body("data.name", equalTo("Ada"))
         .body("error", nullValue());
 
-    verify(handler).handle(any(RetrieveUserByIdQuery.class));
+    verify(handler).handle(any(ReadUserByIdQuery.class));
   }
 }

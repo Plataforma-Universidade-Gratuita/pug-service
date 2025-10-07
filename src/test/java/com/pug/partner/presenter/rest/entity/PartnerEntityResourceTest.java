@@ -19,11 +19,11 @@ import com.pug.partner.presenter.rest.dto.AttPartnerEntityRequest;
 import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityRequest;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityCommand;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityHandler;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjQuery;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdQuery;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityHandler;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityCommand;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityHandler;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityByCnpjQuery;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityByIdQuery;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityHandler;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityCommand;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityHandler;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.ws.rs.core.MediaType;
@@ -36,8 +36,10 @@ import org.mockito.ArgumentCaptor;
 class PartnerEntityResourceTest {
 
   @InjectMock RegisterPartnerEntityHandler createHandler;
-  @InjectMock AttPartnerEntityHandler updateHandler;
-  @InjectMock RetrievePartnerEntityHandler retrieveHandler;
+  @InjectMock
+  UpdatePartnerEntityHandler updateHandler;
+  @InjectMock
+  ReadPartnerEntityHandler retrieveHandler;
 
   @Test
   void createReturns201WithEnvelopeAndLocation() {
@@ -70,7 +72,7 @@ class PartnerEntityResourceTest {
   @Test
   void getByIdNotFoundMapsTo404EnvelopeWithIdDetail() {
     var id = UUID.randomUUID();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdQuery.class)))
+    when(retrieveHandler.handle(any(ReadPartnerEntityByIdQuery.class)))
         .thenThrow(new PartnerEntityNotFoundException(id));
 
     given()
@@ -121,7 +123,7 @@ class PartnerEntityResourceTest {
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByCnpjQuery.class))).thenReturn(ent);
+    when(retrieveHandler.handle(any(ReadPartnerEntityByCnpjQuery.class))).thenReturn(ent);
 
     given()
         .header("X-Correlation-Id", "cid-cnpj-200")
@@ -137,7 +139,7 @@ class PartnerEntityResourceTest {
         .body("data.cityId", equalTo(cityId.toString()))
         .body("error", nullValue());
 
-    verify(retrieveHandler).handle(any(RetrievePartnerEntityByCnpjQuery.class));
+    verify(retrieveHandler).handle(any(ReadPartnerEntityByCnpjQuery.class));
   }
 
   @Test
@@ -158,7 +160,7 @@ class PartnerEntityResourceTest {
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
-    when(updateHandler.handle(any(AttPartnerEntityCommand.class))).thenReturn(ent);
+    when(updateHandler.handle(any(UpdatePartnerEntityCommand.class))).thenReturn(ent);
 
     given()
         .header("X-Correlation-Id", "cid-upd-200")
@@ -176,13 +178,13 @@ class PartnerEntityResourceTest {
         .body("data.cityId", equalTo(cityId.toString()))
         .body("error", nullValue());
 
-    verify(updateHandler).handle(any(AttPartnerEntityCommand.class));
+    verify(updateHandler).handle(any(UpdatePartnerEntityCommand.class));
   }
 
   @Test
   void updateNotFoundMaps404WithIdDetail() {
     var id = UUID.randomUUID();
-    when(updateHandler.handle(any(AttPartnerEntityCommand.class)))
+    when(updateHandler.handle(any(UpdatePartnerEntityCommand.class)))
         .thenThrow(new PartnerEntityNotFoundException(id));
 
     given()
@@ -202,7 +204,7 @@ class PartnerEntityResourceTest {
   @Test
   void updateDuplicateCnpjMaps409() {
     var id = UUID.randomUUID();
-    when(updateHandler.handle(any(AttPartnerEntityCommand.class)))
+    when(updateHandler.handle(any(UpdatePartnerEntityCommand.class)))
         .thenThrow(new DuplicateCnpjException("11222333000181"));
 
     given()
@@ -235,7 +237,7 @@ class PartnerEntityResourceTest {
             .createdAt(Instant.now())
             .updatedAt(Instant.now())
             .build();
-    when(retrieveHandler.handle(any(RetrievePartnerEntityByIdQuery.class))).thenReturn(ent);
+    when(retrieveHandler.handle(any(ReadPartnerEntityByIdQuery.class))).thenReturn(ent);
 
     given()
         .header("X-Correlation-Id", "cid-getid-200")
@@ -250,6 +252,6 @@ class PartnerEntityResourceTest {
         .body("data.name", equalTo("Org"))
         .body("error", nullValue());
 
-    verify(retrieveHandler).handle(any(RetrievePartnerEntityByIdQuery.class));
+    verify(retrieveHandler).handle(any(ReadPartnerEntityByIdQuery.class));
   }
 }

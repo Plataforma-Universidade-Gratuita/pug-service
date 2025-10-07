@@ -1,4 +1,4 @@
-package com.pug.geo.usecase.get;
+package com.pug.geo.usecase.read;
 
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.exceptions.CityNotFoundException;
@@ -11,18 +11,18 @@ import java.util.List;
 import java.util.Locale;
 
 @ApplicationScoped
-public class RetrieveCityHandler {
+public class ReadCityHandler {
   @Inject CityRepository repo;
   @Inject Validator validator;
 
-  public City handle(RetrieveCityByIbgeCodeQuery q) {
+  public City handle(ReadCityByIbgeCodeQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new jakarta.validation.ConstraintViolationException(v);
     return repo.findByIbgeCode(q.ibgeCode().trim().toLowerCase(Locale.ROOT))
         .orElseThrow(() -> new CityNotFoundException(q.ibgeCode()));
   }
 
-  public List<City> handle(RetrieveCitiesByPatternQuery q) {
+  public List<City> handle(ReadCitiesByPatternQuery q) {
     var v = validator.validate(q);
     if (!v.isEmpty()) throw new ConstraintViolationException(v);
     if (q.limit() != null) return repo.listByPattern(q.query(), q.limit());

@@ -4,8 +4,8 @@ import com.pug.partner.presenter.rest.dto.RegisterStaffRequest;
 import com.pug.partner.presenter.rest.dto.RegisterStaffResponse;
 import com.pug.partner.usecase.staff.create.RegisterStaffCommand;
 import com.pug.partner.usecase.staff.create.RegisterStaffHandler;
-import com.pug.partner.usecase.staff.get.RetrieveStaffByUserRoleIdQuery;
-import com.pug.partner.usecase.staff.get.RetrieveStaffHandler;
+import com.pug.partner.usecase.staff.read.ReadStaffByUserRoleIdQuery;
+import com.pug.partner.usecase.staff.read.ReadStaffHandler;
 import com.pug.shared.dtos.ApiResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotBlank;
@@ -28,7 +28,8 @@ import java.util.UUID;
 public class StaffResource {
 
   @Inject RegisterStaffHandler createHandler;
-  @Inject RetrieveStaffHandler retrieveHandler;
+  @Inject
+  ReadStaffHandler retrieveHandler;
 
   @POST
   public Response create(RegisterStaffRequest body, @Context UriInfo uri) {
@@ -42,7 +43,7 @@ public class StaffResource {
 
   @GET
   public Response getByUserRoleId(@QueryParam("userRoleId") @NotBlank String userRoleId) {
-    var s = retrieveHandler.handle(new RetrieveStaffByUserRoleIdQuery(UUID.fromString(userRoleId)));
+    var s = retrieveHandler.handle(new ReadStaffByUserRoleIdQuery(UUID.fromString(userRoleId)));
     return Response.ok(
             com.pug.shared.dtos.ApiResponse.ok(
                 com.pug.partner.presenter.rest.dto.StaffResponse.from(s)))

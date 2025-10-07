@@ -6,11 +6,11 @@ import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityRequest;
 import com.pug.partner.presenter.rest.dto.RegisterPartnerEntityResponse;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityCommand;
 import com.pug.partner.usecase.entity.create.RegisterPartnerEntityHandler;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByCnpjQuery;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityByIdQuery;
-import com.pug.partner.usecase.entity.get.RetrievePartnerEntityHandler;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityCommand;
-import com.pug.partner.usecase.entity.update.AttPartnerEntityHandler;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityByCnpjQuery;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityByIdQuery;
+import com.pug.partner.usecase.entity.read.ReadPartnerEntityHandler;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityCommand;
+import com.pug.partner.usecase.entity.update.UpdatePartnerEntityHandler;
 import com.pug.shared.dtos.ApiResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotBlank;
@@ -36,8 +36,10 @@ import org.hibernate.validator.constraints.br.CNPJ;
 public class PartnerEntityResource {
 
   @Inject RegisterPartnerEntityHandler createHandler;
-  @Inject AttPartnerEntityHandler updateHandler;
-  @Inject RetrievePartnerEntityHandler retrieveHandler;
+  @Inject
+  UpdatePartnerEntityHandler updateHandler;
+  @Inject
+  ReadPartnerEntityHandler retrieveHandler;
 
   @POST
   public Response create(RegisterPartnerEntityRequest body, @Context UriInfo uri) {
@@ -56,7 +58,7 @@ public class PartnerEntityResource {
   public Response update(@PathParam("id") UUID id, AttPartnerEntityRequest body) {
     var e =
         updateHandler.handle(
-            new AttPartnerEntityCommand(
+            new UpdatePartnerEntityCommand(
                 id, body.cnpj(), body.name(), body.cityId(), body.address()));
     return Response.ok(ApiResponse.ok(PartnerEntityResponse.from(e))).build();
   }
@@ -64,13 +66,13 @@ public class PartnerEntityResource {
   @GET
   @Path("{id}")
   public Response getById(@PathParam("id") UUID id) {
-    var e = retrieveHandler.handle(new RetrievePartnerEntityByIdQuery(id));
+    var e = retrieveHandler.handle(new ReadPartnerEntityByIdQuery(id));
     return Response.ok(ApiResponse.ok(PartnerEntityResponse.from(e))).build();
   }
 
   @GET
   public Response getByCnpj(@QueryParam("cnpj") @NotBlank @CNPJ String cnpj) {
-    var e = retrieveHandler.handle(new RetrievePartnerEntityByCnpjQuery(cnpj));
+    var e = retrieveHandler.handle(new ReadPartnerEntityByCnpjQuery(cnpj));
     return Response.ok(ApiResponse.ok(PartnerEntityResponse.from(e))).build();
   }
 }

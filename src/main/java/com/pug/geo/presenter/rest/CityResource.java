@@ -1,9 +1,9 @@
 package com.pug.geo.presenter.rest;
 
 import com.pug.geo.presenter.rest.dto.CityResponse;
-import com.pug.geo.usecase.get.RetrieveCitiesByPatternQuery;
-import com.pug.geo.usecase.get.RetrieveCityByIbgeCodeQuery;
-import com.pug.geo.usecase.get.RetrieveCityHandler;
+import com.pug.geo.usecase.read.ReadCitiesByPatternQuery;
+import com.pug.geo.usecase.read.ReadCityByIbgeCodeQuery;
+import com.pug.geo.usecase.read.ReadCityHandler;
 import com.pug.shared.dtos.ApiResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.Min;
@@ -21,12 +21,13 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class CityResource {
-  @Inject RetrieveCityHandler handler;
+  @Inject
+  ReadCityHandler handler;
 
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("limit") @Min(1) Integer limit) {
     var items =
-        handler.handle(new RetrieveCitiesByPatternQuery(q, limit)).stream()
+        handler.handle(new ReadCitiesByPatternQuery(q, limit)).stream()
             .map(CityResponse::from)
             .collect(Collectors.toList());
     return Response.ok(ApiResponse.ok(items)).build();
@@ -35,7 +36,7 @@ public class CityResource {
   @GET
   @Path("{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") Integer ibgeCode) {
-    var item = handler.handle(new RetrieveCityByIbgeCodeQuery(ibgeCode.toString()));
+    var item = handler.handle(new ReadCityByIbgeCodeQuery(ibgeCode.toString()));
     return Response.ok(ApiResponse.ok(CityResponse.from(item))).build();
   }
 }
