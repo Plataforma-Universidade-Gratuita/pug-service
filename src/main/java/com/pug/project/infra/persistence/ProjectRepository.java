@@ -1,6 +1,6 @@
-package com.pug.TODO.project.infra.persistence;
+package com.pug.project.infra.persistence;
 
-import com.pug.TODO.project.domain.Project;
+import com.pug.project.domain.Project;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 

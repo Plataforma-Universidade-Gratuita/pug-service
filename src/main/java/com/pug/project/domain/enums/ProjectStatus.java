@@ -1,4 +1,4 @@
-package com.pug.TODO.project.domain.enums;
+package com.pug.project.domain.enums;
 
 public enum ProjectStatus {
   PLANNED,

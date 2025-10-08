@@ -11,3 +11,6 @@ CREATE TABLE users_roles
 
 CREATE INDEX idx_users_roles_user ON users_roles (user_id);
 CREATE INDEX idx_users_roles_role ON users_roles (role);
+
+CREATE INDEX idx_users_roles_unaccent_email
+    ON users_roles (immutable_unaccent(lower(email)));

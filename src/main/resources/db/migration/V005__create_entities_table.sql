@@ -11,3 +11,8 @@ CREATE TABLE entities
 );
 
 CREATE INDEX idx_entities_city ON entities (city_id);
+
+CREATE INDEX idx_entities_unaccent_name
+    ON entities (immutable_unaccent(lower(name)));
+CREATE INDEX idx_entities_unaccent_address
+    ON entities (immutable_unaccent(lower(address)));

@@ -1,4 +1,4 @@
-package com.pug.TODO.project.domain;
+package com.pug.project.domain;
 
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

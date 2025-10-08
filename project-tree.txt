@@ -37,25 +37,12 @@
 │   │   │           │   │   │   └── persistence/
 │   │   │           │   │   │       └── ProjectEnrollmentRepository.java
 │   │   │           │   │   └── usecase/
-│   │   │           │   ├── hours/
-│   │   │           │   │   ├── domain/
-│   │   │           │   │   │   └── StudentCounterpartHours.java
-│   │   │           │   │   ├── infra/
-│   │   │           │   │   │   └── persistence/
-│   │   │           │   │   │       └── StudentCounterpartHoursRepository.java
-│   │   │           │   │   └── usecase/
-│   │   │           │   └── project/
+│   │   │           │   └── hours/
 │   │   │           │       ├── domain/
-│   │   │           │       │   ├── Project.java
-│   │   │           │       │   ├── ProjectAllocation.java
-│   │   │           │       │   ├── ProjectLocation.java
-│   │   │           │       │   └── enums/
-│   │   │           │       │       └── ProjectStatus.java
+│   │   │           │       │   └── StudentCounterpartHours.java
 │   │   │           │       ├── infra/
 │   │   │           │       │   └── persistence/
-│   │   │           │       │       ├── ProjectAllocationRepository.java
-│   │   │           │       │       ├── ProjectLocationRepository.java
-│   │   │           │       │       └── ProjectRepository.java
+│   │   │           │       │       └── StudentCounterpartHoursRepository.java
 │   │   │           │       └── usecase/
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
@@ -188,6 +175,19 @@
 │   │   │           │           └── read/
 │   │   │           │               ├── ReadStaffByUserRoleIdQuery.java
 │   │   │           │               └── ReadStaffHandler.java
+│   │   │           ├── project/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── Project.java
+│   │   │           │   │   ├── ProjectAllocation.java
+│   │   │           │   │   ├── ProjectLocation.java
+│   │   │           │   │   └── enums/
+│   │   │           │   │       └── ProjectStatus.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── ProjectAllocationRepository.java
+│   │   │           │   │       ├── ProjectLocationRepository.java
+│   │   │           │   │       └── ProjectRepository.java
+│   │   │           │   └── usecase/
 │   │   │           └── shared/
 │   │   │               ├── dtos/
 │   │   │               │   ├── ApiError.java
@@ -217,9 +217,9 @@
 │   │       ├── application.yaml
 │   │       ├── db/
 │   │       │   └── migration/
-│   │       │       ├── V001__create_users_table.sql
-│   │       │       ├── V002__create_user_roles_table.sql
-│   │       │       ├── V003__create_unnacent_extension.sql
+│   │       │       ├── V001__create_unnacent_extension.sql
+│   │       │       ├── V002__create_users_table.sql
+│   │       │       ├── V003__create_user_roles_table.sql
 │   │       │       ├── V004__create_cities_table.sql
 │   │       │       ├── V005__create_entities_table.sql
 │   │       │       ├── V006__create_staff_table.sql
@@ -320,6 +320,22 @@
 │       │           │       └── staff/
 │       │           │           ├── CreateStaffHandlerTest.java
 │       │           │           └── ReadStaffHandlerTest.java
+│       │           ├── project/
+│       │           │   ├── domain/
+│       │           │   │   ├── project/
+│       │           │   │   │   ├── ProjectJpaMappingTest.java
+│       │           │   │   │   └── ProjectValidationTest.java
+│       │           │   │   ├── projectAllocation/
+│       │           │   │   │   ├── ProjectAllocationJpaMappingTest.java
+│       │           │   │   │   └── ProjectAllocationValidationTest.java
+│       │           │   │   └── projectLocation/
+│       │           │   │       ├── ProjectLocationJpaMappingTest.java
+│       │           │   │       └── ProjectLocationValidationTest.java
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   │       └── project/
+│       │           │   └── usecase/
+│       │           │       └── project/
 │       │           └── shared/
 │       │               ├── dtos/
 │       │               │   ├── ApiErrorTest.java

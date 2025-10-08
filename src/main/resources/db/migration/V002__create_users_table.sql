@@ -6,3 +6,6 @@ CREATE TABLE users
     created_at timestamp    NOT NULL DEFAULT now(),
     updated_at timestamp
 );
+
+CREATE INDEX idx_users_unaccent_name
+    ON users (immutable_unaccent(lower(name)));

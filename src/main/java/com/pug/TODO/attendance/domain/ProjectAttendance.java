@@ -2,8 +2,8 @@ package com.pug.TODO.attendance.domain;
 
 import com.pug.TODO.attendance.domain.enums.AttendanceStatus;
 import com.pug.TODO.enrollment.domain.ProjectEnrollment;
-import com.pug.TODO.project.domain.ProjectLocation;
 import com.pug.partner.domain.Staff;
+import com.pug.project.domain.ProjectLocation;
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;

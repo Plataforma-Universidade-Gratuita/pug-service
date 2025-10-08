@@ -1,9 +1,9 @@
-package com.pug.TODO.project.domain;
+package com.pug.project.domain;
 
-import com.pug.TODO.project.domain.enums.ProjectStatus;
 import com.pug.academic.domain.FieldOfStudy;
 import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.Staff;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -19,7 +19,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -49,7 +48,8 @@ import org.hibernate.annotations.UuidGenerator;
       @Index(name = "idx_projects_entity", columnList = "entity_id"),
       @Index(name = "idx_projects_field", columnList = "field_id"),
       @Index(name = "idx_projects_status", columnList = "status"),
-      @Index(name = "idx_projects_created_by", columnList = "created_by")
+      @Index(name = "idx_projects_created_by", columnList = "created_by"),
+      @Index(name = "idx_projects_updated_by", columnList = "updated_by")
     })
 public class Project {
 
@@ -87,9 +87,9 @@ public class Project {
   @NotNull
   @Enumerated(EnumType.STRING)
   @Column(name = "status", length = 50, nullable = false)
-  private ProjectStatus status;
+  @Builder.Default
+  private ProjectStatus status = ProjectStatus.PLANNED;
 
-  @Min(1)
   @Column(name = "max_participants")
   private Integer maxParticipants;
 
@@ -104,6 +104,13 @@ public class Project {
   @CreationTimestamp
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
+
+  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @JoinColumn(
+      name = "updated_by",
+      nullable = false,
+      foreignKey = @ForeignKey(name = "fk_projects_updated_by"))
+  private Staff updatedBy;
 
   @UpdateTimestamp
   @Column(name = "updated_at")
