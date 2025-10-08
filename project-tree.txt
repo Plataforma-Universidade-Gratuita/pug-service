@@ -63,6 +63,8 @@
 │   │   │           │   │   ├── FieldOfStudy.java
 │   │   │           │   │   ├── Student.java
 │   │   │           │   │   └── exceptions/
+│   │   │           │   │       ├── CourseNotFoundException.java
+│   │   │           │   │       ├── DuplicateCourseNameException.java
 │   │   │           │   │       ├── DuplicateFieldOfStudyNameException.java
 │   │   │           │   │       └── FieldOfStudyNotFoundException.java
 │   │   │           │   ├── infra/
@@ -71,6 +73,15 @@
 │   │   │           │   │       ├── FieldOfStudyRepository.java
 │   │   │           │   │       └── StudentRepository.java
 │   │   │           │   └── usecase/
+│   │   │           │       ├── course/
+│   │   │           │       │   ├── create/
+│   │   │           │       │   │   ├── CreateCourseCommand.java
+│   │   │           │       │   │   └── CreateCourseHandler.java
+│   │   │           │       │   ├── read/
+│   │   │           │       │   │   └── ReadCourseHandler.java
+│   │   │           │       │   └── update/
+│   │   │           │       │       ├── UpdateCourseCommand.java
+│   │   │           │       │       └── UpdateCourseHandler.java
 │   │   │           │       └── fieldOfStudy/
 │   │   │           │           ├── create/
 │   │   │           │           │   ├── CreateFieldOfStudyCommand.java
@@ -195,19 +206,20 @@
 │   │       │   └── migration/
 │   │       │       ├── V001__create_users_table.sql
 │   │       │       ├── V002__create_user_roles_table.sql
-│   │       │       ├── V003__create_cities_table.sql
-│   │       │       ├── V004__create_entities_table.sql
-│   │       │       ├── V005__create_staff_table.sql
-│   │       │       ├── V006__create_fields_of_study_table.sql
-│   │       │       ├── V007__create_courses_table.sql
-│   │       │       ├── V008__create_students_table.sql
-│   │       │       ├── V009__create_students_counterparts_hours.sql
-│   │       │       ├── V010__create_projects_table.sql
-│   │       │       ├── V011__create_projects_allocations_table.sql
-│   │       │       ├── V012__create_projects_locations_table.sql
-│   │       │       ├── V013__create_projects_enrollments_table.sql
-│   │       │       ├── V014__create_projects_attendances_table.sql
-│   │       │       └── V015__insert_base_cities_into_table.sql
+│   │       │       ├── V003__create_unnacent_extension.sql
+│   │       │       ├── V004__create_cities_table.sql
+│   │       │       ├── V005__create_entities_table.sql
+│   │       │       ├── V006__create_staff_table.sql
+│   │       │       ├── V007__create_fields_of_study_table.sql
+│   │       │       ├── V008__create_courses_table.sql
+│   │       │       ├── V009__create_students_table.sql
+│   │       │       ├── V010__create_students_counterparts_hours.sql
+│   │       │       ├── V011__create_projects_table.sql
+│   │       │       ├── V012__create_projects_allocations_table.sql
+│   │       │       ├── V013__create_projects_locations_table.sql
+│   │       │       ├── V014__create_projects_enrollments_table.sql
+│   │       │       ├── V015__create_projects_attendances_table.sql
+│   │       │       └── V016__insert_base_cities_into_table.sql
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
@@ -216,10 +228,21 @@
 │       │       └── pug/
 │       │           ├── academic/
 │       │           │   ├── domain/
+│       │           │   │   ├── course/
+│       │           │   │   │   ├── CourseJpaMappingTest.java
+│       │           │   │   │   └── CourseValidationTest.java
 │       │           │   │   └── fieldOfStudy/
 │       │           │   │       ├── FieldOfStudyJpaMappingTest.java
 │       │           │   │       └── FieldOfStudyValidationTest.java
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   │       ├── CourseRepositoryTest.java
+│       │           │   │       └── FieldOfStudyRepositoryTest.java
 │       │           │   └── usecase/
+│       │           │       ├── course/
+│       │           │       │   ├── CreateCourseHandlerTest.java
+│       │           │       │   ├── ReadCourseHandlerTest.java
+│       │           │       │   └── UpdateCourseHandlerTest.java
 │       │           │       └── fieldOfStudy/
 │       │           │           ├── CreateFieldOfStudyHandlerTest.java
 │       │           │           ├── ReadFieldOfStudyHandlerTest.java

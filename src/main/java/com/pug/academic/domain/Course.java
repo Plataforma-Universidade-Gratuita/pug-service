@@ -46,7 +46,7 @@ public class Course {
 
   @NotBlank
   @Size(max = 120)
-  @Column(length = 120, nullable = false)
+  @Column(length = 120, nullable = false, unique = true)
   private String name;
 
   @NotNull

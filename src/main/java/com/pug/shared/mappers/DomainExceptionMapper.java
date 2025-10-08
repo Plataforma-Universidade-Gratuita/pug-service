@@ -1,6 +1,8 @@
 package com.pug.shared.mappers;
 
 import static com.pug.shared.errors.ErrorCodes.CITY_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.COURSE_DUPLICATE_NAME;
+import static com.pug.shared.errors.ErrorCodes.COURSE_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.ENTITY_DUPLICATE_CNPJ;
 import static com.pug.shared.errors.ErrorCodes.ENTITY_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.FIELD_OF_STUDY_DUPLICATE_NAME;
@@ -41,11 +43,13 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
           Map.entry(ROLE_DUPLICATE_EMAIL, Response.Status.CONFLICT),
           Map.entry(STAFF_DUPLICATE_USER_ROLE_ID, Response.Status.CONFLICT),
           Map.entry(FIELD_OF_STUDY_DUPLICATE_NAME, Response.Status.CONFLICT),
+          Map.entry(COURSE_DUPLICATE_NAME, Response.Status.CONFLICT),
           Map.entry(CITY_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(ROLE_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(USER_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(ENTITY_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(STAFF_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(COURSE_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(FIELD_OF_STUDY_NOT_FOUND, Response.Status.NOT_FOUND));
 
   @Override
@@ -86,8 +90,8 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
         case USER_DUPLICATE_CPF -> Map.of("cpf", a);
         case ROLE_DUPLICATE_EMAIL -> Map.of("email", a);
         case ENTITY_DUPLICATE_CNPJ -> Map.of("cnpj", a);
-        case FIELD_OF_STUDY_DUPLICATE_NAME -> Map.of("name", a);
-        case FIELD_OF_STUDY_NOT_FOUND -> Map.of("id", a);
+        case FIELD_OF_STUDY_DUPLICATE_NAME, COURSE_DUPLICATE_NAME -> Map.of("name", a);
+        case FIELD_OF_STUDY_NOT_FOUND, COURSE_NOT_FOUND -> Map.of("id", a);
         case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT -> Map.of("user", a);
         default -> Map.of("arg", a);
       };
