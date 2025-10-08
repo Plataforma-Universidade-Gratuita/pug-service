@@ -64,9 +64,11 @@
 │   │   │           │   │   ├── Student.java
 │   │   │           │   │   └── exceptions/
 │   │   │           │   │       ├── CourseNotFoundException.java
+│   │   │           │   │       ├── DuplicateAcademicRegistrationException.java
 │   │   │           │   │       ├── DuplicateCourseNameException.java
 │   │   │           │   │       ├── DuplicateFieldOfStudyNameException.java
-│   │   │           │   │       └── FieldOfStudyNotFoundException.java
+│   │   │           │   │       ├── FieldOfStudyNotFoundException.java
+│   │   │           │   │       └── StudentNotFoundException.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── CourseRepository.java
@@ -82,15 +84,26 @@
 │   │   │           │       │   └── update/
 │   │   │           │       │       ├── UpdateCourseCommand.java
 │   │   │           │       │       └── UpdateCourseHandler.java
-│   │   │           │       └── fieldOfStudy/
+│   │   │           │       ├── fieldOfStudy/
+│   │   │           │       │   ├── create/
+│   │   │           │       │   │   ├── CreateFieldOfStudyCommand.java
+│   │   │           │       │   │   └── CreateFieldOfStudyHandler.java
+│   │   │           │       │   ├── read/
+│   │   │           │       │   │   └── ReadFieldOfStudyHandler.java
+│   │   │           │       │   └── update/
+│   │   │           │       │       ├── UpdateFieldOfStudyCommand.java
+│   │   │           │       │       └── UpdateFieldOfStudyHandler.java
+│   │   │           │       └── student/
 │   │   │           │           ├── create/
-│   │   │           │           │   ├── CreateFieldOfStudyCommand.java
-│   │   │           │           │   └── CreateFieldOfStudyHandler.java
+│   │   │           │           │   ├── CreateStudentCommand.java
+│   │   │           │           │   └── CreateStudentHandler.java
 │   │   │           │           ├── read/
-│   │   │           │           │   └── ReadFieldOfStudyHandler.java
+│   │   │           │           │   ├── ReadStudentByAcademicRegistrationQuery.java
+│   │   │           │           │   ├── ReadStudentByUserRoleIdQuery.java
+│   │   │           │           │   └── ReadStudentHandler.java
 │   │   │           │           └── update/
-│   │   │           │               ├── UpdateFieldOfStudyCommand.java
-│   │   │           │               └── UpdateFieldOfStudyHandler.java
+│   │   │           │               ├── UpdateStudentCommand.java
+│   │   │           │               └── UpdateStudentHandler.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
@@ -231,22 +244,30 @@
 │       │           │   │   ├── course/
 │       │           │   │   │   ├── CourseJpaMappingTest.java
 │       │           │   │   │   └── CourseValidationTest.java
-│       │           │   │   └── fieldOfStudy/
-│       │           │   │       ├── FieldOfStudyJpaMappingTest.java
-│       │           │   │       └── FieldOfStudyValidationTest.java
+│       │           │   │   ├── fieldOfStudy/
+│       │           │   │   │   ├── FieldOfStudyJpaMappingTest.java
+│       │           │   │   │   └── FieldOfStudyValidationTest.java
+│       │           │   │   └── student/
+│       │           │   │       ├── StudentJpaMappingTest.java
+│       │           │   │       └── StudentValidationTest.java
 │       │           │   ├── infra/
 │       │           │   │   └── persistence/
 │       │           │   │       ├── CourseRepositoryTest.java
-│       │           │   │       └── FieldOfStudyRepositoryTest.java
+│       │           │   │       ├── FieldOfStudyRepositoryTest.java
+│       │           │   │       └── StudentRepositoryTest.java
 │       │           │   └── usecase/
 │       │           │       ├── course/
 │       │           │       │   ├── CreateCourseHandlerTest.java
 │       │           │       │   ├── ReadCourseHandlerTest.java
 │       │           │       │   └── UpdateCourseHandlerTest.java
-│       │           │       └── fieldOfStudy/
-│       │           │           ├── CreateFieldOfStudyHandlerTest.java
-│       │           │           ├── ReadFieldOfStudyHandlerTest.java
-│       │           │           └── UpdateFieldOfStudyHandlerTest.java
+│       │           │       ├── fieldOfStudy/
+│       │           │       │   ├── CreateFieldOfStudyHandlerTest.java
+│       │           │       │   ├── ReadFieldOfStudyHandlerTest.java
+│       │           │       │   └── UpdateFieldOfStudyHandlerTest.java
+│       │           │       └── student/
+│       │           │           ├── CreateStudentHandlerTest.java
+│       │           │           ├── ReadStudentHandlerTest.java
+│       │           │           └── UpdateStudentHandlerTest.java
 │       │           ├── geo/
 │       │           │   ├── domain/
 │       │           │   │   ├── CityJpaMappingTest.java

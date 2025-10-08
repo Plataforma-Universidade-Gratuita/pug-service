@@ -11,6 +11,8 @@ import static com.pug.shared.errors.ErrorCodes.ROLE_DUPLICATE_EMAIL;
 import static com.pug.shared.errors.ErrorCodes.ROLE_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.STAFF_DUPLICATE_USER_ROLE_ID;
 import static com.pug.shared.errors.ErrorCodes.STAFF_NOT_FOUND;
+import static com.pug.shared.errors.ErrorCodes.STUDENT_DUPLICATE_ACADEMIC_REGISTRATION;
+import static com.pug.shared.errors.ErrorCodes.STUDENT_NOT_FOUND;
 import static com.pug.shared.errors.ErrorCodes.USER_ALREADY_REGISTERED_AS_FORMER_STUDENT;
 import static com.pug.shared.errors.ErrorCodes.USER_DUPLICATE_CPF;
 import static com.pug.shared.errors.ErrorCodes.USER_NOT_FOUND;
@@ -44,8 +46,10 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
           Map.entry(STAFF_DUPLICATE_USER_ROLE_ID, Response.Status.CONFLICT),
           Map.entry(FIELD_OF_STUDY_DUPLICATE_NAME, Response.Status.CONFLICT),
           Map.entry(COURSE_DUPLICATE_NAME, Response.Status.CONFLICT),
+          Map.entry(STUDENT_DUPLICATE_ACADEMIC_REGISTRATION, Response.Status.CONFLICT),
           Map.entry(CITY_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(ROLE_NOT_FOUND, Response.Status.NOT_FOUND),
+          Map.entry(STUDENT_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(USER_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(ENTITY_NOT_FOUND, Response.Status.NOT_FOUND),
           Map.entry(STAFF_NOT_FOUND, Response.Status.NOT_FOUND),
@@ -93,6 +97,11 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
         case FIELD_OF_STUDY_DUPLICATE_NAME, COURSE_DUPLICATE_NAME -> Map.of("name", a);
         case FIELD_OF_STUDY_NOT_FOUND, COURSE_NOT_FOUND -> Map.of("id", a);
         case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT -> Map.of("user", a);
+        case STUDENT_NOT_FOUND -> {
+          if (a instanceof UUID u) yield Map.of("id", u);
+          yield Map.of("academicRegistration", a);
+        }
+        case STUDENT_DUPLICATE_ACADEMIC_REGISTRATION -> Map.of("academicRegistration", a);
         default -> Map.of("arg", a);
       };
     }

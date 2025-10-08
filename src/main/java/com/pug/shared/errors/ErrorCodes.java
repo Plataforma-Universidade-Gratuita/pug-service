@@ -12,10 +12,13 @@ public final class ErrorCodes {
   public static final String ENTITY_DUPLICATE_CNPJ = "ENTITY_DUPLICATE_CNPJ";
   public static final String FIELD_OF_STUDY_DUPLICATE_NAME = "FIELD_OF_STUDY_DUPLICATE_NAME";
   public static final String COURSE_DUPLICATE_NAME = "COURSE_DUPLICATE_NAME";
+  public static final String STUDENT_DUPLICATE_ACADEMIC_REGISTRATION =
+      "STUDENT_DUPLICATE_ACADEMIC_REGISTRATION";
   public static final String STAFF_DUPLICATE_USER_ROLE_ID = "STAFF_DUPLICATE_USER_ROLE_ID";
   public static final String CITY_NOT_FOUND = "CITY_NOT_FOUND";
   public static final String ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
   public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
+  public static final String STUDENT_NOT_FOUND = "STUDENT_NOT_FOUND";
   public static final String ENTITY_NOT_FOUND = "ENTITY_NOT_FOUND";
   public static final String STAFF_NOT_FOUND = "STAFF_NOT_FOUND";
   public static final String FIELD_OF_STUDY_NOT_FOUND = "FIELD_OF_STUDY_NOT_FOUND";
@@ -40,6 +43,9 @@ public final class ErrorCodes {
       case FIELD_OF_STUDY_NOT_FOUND -> "error.field_of_study.not_found";
       case COURSE_DUPLICATE_NAME -> "error.course.duplicate_name";
       case COURSE_NOT_FOUND -> "error.course.not_found";
+      case STUDENT_NOT_FOUND -> "error.student.not_found";
+      case STUDENT_DUPLICATE_ACADEMIC_REGISTRATION ->
+          "error.student.duplicate_academic_registration";
       default -> code;
     };
   }
