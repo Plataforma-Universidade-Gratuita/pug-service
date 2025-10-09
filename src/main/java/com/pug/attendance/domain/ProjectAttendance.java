@@ -1,12 +1,11 @@
-package com.pug.TODO.attendance.domain;
+package com.pug.attendance.domain;
 
-import com.pug.TODO.attendance.domain.enums.AttendanceStatus;
-import com.pug.TODO.enrollment.domain.ProjectEnrollment;
+import com.pug.attendance.domain.enums.AttendanceStatus;
+import com.pug.enrollment.domain.ProjectEnrollment;
 import com.pug.partner.domain.Staff;
 import com.pug.project.domain.ProjectLocation;
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -54,7 +53,7 @@ import org.hibernate.annotations.UpdateTimestamp;
       @Index(name = "idx_projects_attendances_location", columnList = "project_location_id"),
       @Index(name = "idx_projects_attendances_status", columnList = "status")
     })
-public class ProjectAttendance extends PanacheEntityBase {
+public class ProjectAttendance {
 
   @Id
   @GeneratedValue

@@ -1,4 +1,4 @@
-package com.pug.TODO.attendance.domain.enums;
+package com.pug.attendance.domain.enums;
 
 public enum AttendanceStatus {
   PENDING,

@@ -1,4 +1,4 @@
-package com.pug.TODO.enrollment.domain.enums;
+package com.pug.enrollment.domain.enums;
 
 public enum ProjectEnrollmentStatus {
   PENDING,

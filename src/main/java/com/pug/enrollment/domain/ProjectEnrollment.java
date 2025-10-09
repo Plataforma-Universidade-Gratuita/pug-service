@@ -1,7 +1,7 @@
-package com.pug.TODO.enrollment.domain;
+package com.pug.enrollment.domain;
 
-import com.pug.TODO.enrollment.domain.enums.ProjectEnrollmentStatus;
 import com.pug.academic.domain.Student;
+import com.pug.enrollment.domain.enums.ProjectEnrollmentStatus;
 import com.pug.project.domain.Project;
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;

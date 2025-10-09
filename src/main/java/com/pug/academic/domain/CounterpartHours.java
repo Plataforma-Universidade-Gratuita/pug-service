@@ -1,6 +1,5 @@
-package com.pug.TODO.hours.domain;
+package com.pug.academic.domain;
 
-import com.pug.academic.domain.Student;
 import com.pug.shared.id.UuidV7Hibernate;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -35,9 +34,9 @@ import org.hibernate.annotations.UuidGenerator;
 @EqualsAndHashCode(of = "id")
 @Entity
 @Table(
-    name = "students_counterparts_hours",
+    name = "counterparts_hours",
     indexes = @Index(name = "idx_sch_student", columnList = "student_id"))
-public class StudentCounterpartHours {
+public class CounterpartHours {
 
   @Id
   @GeneratedValue

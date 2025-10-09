@@ -1,4 +1,4 @@
-CREATE TABLE students_counterparts_hours
+CREATE TABLE counterparts_hours
 (
     id             uuid PRIMARY KEY,
     student_id     uuid          NOT NULL REFERENCES students (id),
@@ -8,4 +8,4 @@ CREATE TABLE students_counterparts_hours
     CONSTRAINT chk_sch_dates CHECK (due_date >= start_date)
 );
 
-CREATE INDEX idx_sch_student ON students_counterparts_hours (student_id);
+CREATE INDEX idx_sch_student ON counterparts_hours (student_id);

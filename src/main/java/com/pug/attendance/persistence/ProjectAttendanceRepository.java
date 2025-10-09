@@ -1,6 +1,6 @@
-package com.pug.TODO.attendance.persistence;
+package com.pug.attendance.persistence;
 
-import com.pug.TODO.attendance.domain.ProjectAttendance;
+import com.pug.attendance.domain.ProjectAttendance;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 
