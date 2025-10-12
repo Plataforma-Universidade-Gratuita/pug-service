@@ -16,4 +16,9 @@ public final class UserMapper {
     if (d == null) return null;
     return UserEntity.builder().id(d.getId()).cpf(d.getCpf().getValue()).name(d.getName()).build();
   }
+
+  public static void copy(User d, UserEntity e) {
+    e.setCpf(d.getCpf().getValue());
+    e.setName(d.getName());
+  }
 }

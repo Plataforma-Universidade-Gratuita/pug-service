@@ -19,6 +19,19 @@
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── pug/
+│   │   │           ├── geo/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── City.java
+│   │   │           │   │   └── CityRepository.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   ├── CityMapper.java
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── CityEntity.java
+│   │   │           │   │       └── CityRepositoryImpl.java
+│   │   │           │   └── service/
+│   │   │           │       ├── CityService.java
+│   │   │           │       └── queries/
+│   │   │           │           └── SearchCitiesQuery.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Cpf.java
@@ -30,7 +43,6 @@
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── UserEntity.java
 │   │   │           │   │       └── UserRepositoryImpl.java
-│   │   │           │   ├── presenter/
 │   │   │           │   └── service/
 │   │   │           │       ├── UserService.java
 │   │   │           │       └── commands/
@@ -117,6 +129,18 @@
 │       ├── java/
 │       │   └── com/
 │       │       └── pug/
+│       │           ├── geo/
+│       │           │   ├── domain/
+│       │           │   │   └── CityTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CityMapperTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       ├── CityEntityTest.java
+│       │           │   │       └── CityRepositoryImplTest.java
+│       │           │   └── service/
+│       │           │       ├── CityServiceTest.java
+│       │           │       └── queries/
+│       │           │           └── SearchCitiesQueryTest.java
 │       │           ├── identity/
 │       │           │   ├── domain/
 │       │           │   │   ├── CpfTest.java

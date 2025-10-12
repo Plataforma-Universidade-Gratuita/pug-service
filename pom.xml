@@ -320,6 +320,7 @@
                             <includes>
                                 <include>com/pug/shared/**</include>
                                 <include>com/pug/identity/**</include>
+                                <include>com/pug/geo/**</include>
                             </includes>
                         </configuration>
                     </execution>

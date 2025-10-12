@@ -1,4 +1,3 @@
-// UPDATE: src/main/java/com/pug/identity/infra/persistence/UserRepositoryImpl.java
 package com.pug.identity.infra.persistence;
 
 import com.pug.identity.domain.Cpf;
@@ -43,7 +42,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
       PanacheRepositoryBase.super.persist(e);
       return UserMapper.toDomain(e);
     }
-    var managed = getEntityManager().merge(e);
-    return UserMapper.toDomain(managed);
+    UserMapper.copy(user, e);
+    return UserMapper.toDomain(e);
   }
 }
