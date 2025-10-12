@@ -19,7 +19,28 @@
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── pug/
+│   │   │           ├── identity/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── Cpf.java
+│   │   │           │   │   ├── User.java
+│   │   │           │   │   └── UserRepository.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   ├── CpfConverter.java
+│   │   │           │   │   ├── UserMapper.java
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── UserEntity.java
+│   │   │           │   │       └── UserRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   └── service/
+│   │   │           │       ├── UserService.java
+│   │   │           │       └── commands/
+│   │   │           │           ├── CreateUserCommand.java
+│   │   │           │           └── UpdateUserCommand.java
 │   │   │           └── shared/
+│   │   │               ├── app/
+│   │   │               │   └── queries/
+│   │   │               │       ├── StringQuery.java
+│   │   │               │       └── UuidQuery.java
 │   │   │               ├── domain/
 │   │   │               │   ├── exceptions/
 │   │   │               │   │   ├── AppValidationException.java
@@ -96,7 +117,26 @@
 │       ├── java/
 │       │   └── com/
 │       │       └── pug/
+│       │           ├── identity/
+│       │           │   ├── domain/
+│       │           │   │   ├── CpfTest.java
+│       │           │   │   └── UserTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CpfConverterTest.java
+│       │           │   │   ├── UserMapperTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       ├── UserEntityTest.java
+│       │           │   │       └── UserRepositoryImplTest.java
+│       │           │   └── service/
+│       │           │       ├── UserServiceTest.java
+│       │           │       └── commands/
+│       │           │           ├── CreateUserCommandTest.java
+│       │           │           └── UpdateUserCommandTest.java
 │       │           └── shared/
+│       │               ├── app/
+│       │               │   └── queries/
+│       │               │       ├── StringQueryTest.java
+│       │               │       └── UuidQueryTest.java
 │       │               ├── domain/
 │       │               │   ├── exceptions/
 │       │               │   │   ├── AppValidationExceptionTest.java

@@ -5,47 +5,23 @@ public final class ErrorCodes {
 
   public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
   public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
-  public static final String USER_ALREADY_REGISTERED_AS_FORMER_STUDENT =
-      "USER_ALREADY_REGISTERED_AS_FORMER_STUDENT";
-  public static final String ROLE_DUPLICATE_EMAIL = "ROLE_DUPLICATE_EMAIL";
-  public static final String USER_DUPLICATE_CPF = "USER_DUPLICATE_CPF";
-  public static final String ENTITY_DUPLICATE_CNPJ = "ENTITY_DUPLICATE_CNPJ";
-  public static final String FIELD_OF_STUDY_DUPLICATE_NAME = "FIELD_OF_STUDY_DUPLICATE_NAME";
-  public static final String COURSE_DUPLICATE_NAME = "COURSE_DUPLICATE_NAME";
-  public static final String STUDENT_DUPLICATE_ACADEMIC_REGISTRATION =
-      "STUDENT_DUPLICATE_ACADEMIC_REGISTRATION";
-  public static final String STAFF_DUPLICATE_USER_ROLE_ID = "STAFF_DUPLICATE_USER_ROLE_ID";
-  public static final String CITY_NOT_FOUND = "CITY_NOT_FOUND";
-  public static final String ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
+  public static final String USER_CPF_INVALID = "USER_CPF_INVALID";
+  public static final String USER_CPF_REQUIRED = "USER_CPF_REQUIRED";
+  public static final String USER_NAME_REQUIRED = "USER_NAME_REQUIRED";
+  public static final String USER_NAME_TOO_LONG = "USER_NAME_TOO_LONG";
   public static final String USER_NOT_FOUND = "USER_NOT_FOUND";
-  public static final String STUDENT_NOT_FOUND = "STUDENT_NOT_FOUND";
-  public static final String ENTITY_NOT_FOUND = "ENTITY_NOT_FOUND";
-  public static final String STAFF_NOT_FOUND = "STAFF_NOT_FOUND";
-  public static final String FIELD_OF_STUDY_NOT_FOUND = "FIELD_OF_STUDY_NOT_FOUND";
-  public static final String COURSE_NOT_FOUND = "COURSE_NOT_FOUND";
+  public static final String USER_CPF_ALREADY_IN_USE = "USER_CPF_ALREADY_IN_USE";
 
   public static String bundleKey(String code) {
     return switch (code) {
-      case USER_DUPLICATE_CPF -> "error.user.duplicate_cpf";
-      case USER_NOT_FOUND -> "error.user.not_found";
       case VALIDATION_ERROR -> "error.validation";
       case INTERNAL_ERROR -> "error.internal";
-      case ROLE_DUPLICATE_EMAIL -> "error.role.duplicate_email";
-      case USER_ALREADY_REGISTERED_AS_FORMER_STUDENT ->
-          "error.user.already_registered_as_former_student";
-      case ROLE_NOT_FOUND -> "error.role.not_found";
-      case CITY_NOT_FOUND -> "error.city.not_found";
-      case ENTITY_DUPLICATE_CNPJ -> "error.entity.duplicate_cnpj";
-      case ENTITY_NOT_FOUND -> "error.entity.not_found";
-      case STAFF_NOT_FOUND -> "error.staff.not_found";
-      case STAFF_DUPLICATE_USER_ROLE_ID -> "error.staff.duplicate_user_role_id";
-      case FIELD_OF_STUDY_DUPLICATE_NAME -> "error.field_of_study.duplicate_name";
-      case FIELD_OF_STUDY_NOT_FOUND -> "error.field_of_study.not_found";
-      case COURSE_DUPLICATE_NAME -> "error.course.duplicate_name";
-      case COURSE_NOT_FOUND -> "error.course.not_found";
-      case STUDENT_NOT_FOUND -> "error.student.not_found";
-      case STUDENT_DUPLICATE_ACADEMIC_REGISTRATION ->
-          "error.student.duplicate_academic_registration";
+      case USER_CPF_INVALID -> "error.identity.user.cpf.invalid";
+      case USER_CPF_REQUIRED -> "error.identity.user.cpf.required";
+      case USER_NAME_REQUIRED -> "error.identity.user.name.required";
+      case USER_NAME_TOO_LONG -> "error.identity.user.name.toolong";
+      case USER_NOT_FOUND -> "error.identity.user.notfound";
+      case USER_CPF_ALREADY_IN_USE -> "error.identity.user.cpf.alreadyinuse";
       default -> code;
     };
   }

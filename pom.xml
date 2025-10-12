@@ -319,6 +319,7 @@
                             <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
                             <includes>
                                 <include>com/pug/shared/**</include>
+                                <include>com/pug/identity/**</include>
                             </includes>
                         </configuration>
                     </execution>
