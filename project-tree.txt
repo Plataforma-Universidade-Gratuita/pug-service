@@ -1,0 +1,141 @@
+./
+├── .dockerignore
+├── .git/
+├── .gitignore
+├── .idea/
+├── .mvn/
+├── .quarkus/
+│   └── cli/
+│       └── plugins/
+│           └── quarkus-cli-catalog.json
+├── README.md
+├── generate-dir-tree.sh
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── project-tree.txt
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/
+│   │   │       └── pug/
+│   │   │           └── shared/
+│   │   │               ├── domain/
+│   │   │               │   ├── exceptions/
+│   │   │               │   │   ├── AppValidationException.java
+│   │   │               │   │   ├── DomainException.java
+│   │   │               │   │   ├── DuplicateResourceException.java
+│   │   │               │   │   └── ResourceNotFoundException.java
+│   │   │               │   ├── id/
+│   │   │               │   │   ├── UuidV7.java
+│   │   │               │   │   └── UuidV7Hibernate.java
+│   │   │               │   ├── time/
+│   │   │               │   │   ├── DateRange.java
+│   │   │               │   │   ├── SystemTimeProvider.java
+│   │   │               │   │   └── TimeProvider.java
+│   │   │               │   └── validation/
+│   │   │               │       ├── EmailBasic.java
+│   │   │               │       └── EmailBasicValidator.java
+│   │   │               ├── errors/
+│   │   │               │   └── ErrorCodes.java
+│   │   │               ├── http/
+│   │   │               │   └── CorrelationFilter.java
+│   │   │               ├── i18n/
+│   │   │               │   └── I18n.java
+│   │   │               ├── infra/
+│   │   │               │   ├── persistence/
+│   │   │               │   │   ├── Page.java
+│   │   │               │   │   ├── PageRequest.java
+│   │   │               │   │   └── Pagination.java
+│   │   │               │   └── util/
+│   │   │               │       ├── CollectionUtils.java
+│   │   │               │       ├── CpfUtils.java
+│   │   │               │       └── TextSearchUtils.java
+│   │   │               └── presenter/
+│   │   │                   └── rest/
+│   │   │                       ├── ApiEnvelope.java
+│   │   │                       ├── ApiError.java
+│   │   │                       └── mappers/
+│   │   │                           ├── ConstraintViolationExceptionMapper.java
+│   │   │                           ├── DomainExceptionMapper.java
+│   │   │                           └── UncaughtExceptionMapper.java
+│   │   └── resources/
+│   │       ├── META-INF/
+│   │       │   └── resources/
+│   │       │       └── .gitkeep
+│   │       ├── application.yaml
+│   │       ├── db/
+│   │       │   └── migration/
+│   │       │       ├── V001__create_users_table.sql
+│   │       │       ├── V002__create_cities_table.sql
+│   │       │       ├── V003__create_admins_table.sql
+│   │       │       ├── V004__create_entities_table.sql
+│   │       │       ├── V005__create_staff_table.sql
+│   │       │       ├── V006__create_schools_table.sql
+│   │       │       ├── V007__create_courses_table.sql
+│   │       │       ├── V008__create_students_table.sql
+│   │       │       ├── V009__create_projects_table.sql
+│   │       │       ├── V010__create_projects_by_schools_table.sql
+│   │       │       ├── V011__create_allocations_table.sql
+│   │       │       ├── V012__create_enrollments_table.sql
+│   │       │       ├── V013__create_attendances_table.sql
+│   │       │       ├── V014__create_view_student_progress.sql
+│   │       │       ├── V015__create_view_allocation_progress.sql
+│   │       │       ├── V016__create_view_project_progress.sql
+│   │       │       ├── V017__create_view_enrollment_per_allocation.sql
+│   │       │       ├── V018__create_trigger_enforce_allocation_capacity.sql
+│   │       │       ├── V019__create_trigger_set_enrollment_timestamps.sql
+│   │       │       ├── V020__create_trigger_set_allocation_completed_at.sql
+│   │       │       ├── V021__create_trigger_enforce_attendance_validation.sql
+│   │       │       ├── V022__create_trigger_prevent_capacity_underflow.sql
+│   │       │       ├── V023__create_trigger_sync_student_completed_hours.sql
+│   │       │       └── V024__seed_for_testing.sql
+│   │       ├── messages_en_US.properties
+│   │       └── messages_pt_BR.properties
+│   └── test/
+│       ├── java/
+│       │   └── com/
+│       │       └── pug/
+│       │           └── shared/
+│       │               ├── domain/
+│       │               │   ├── exceptions/
+│       │               │   │   ├── AppValidationExceptionTest.java
+│       │               │   │   ├── DuplicateResourceExceptionTest.java
+│       │               │   │   └── ResourceNotFoundExceptionTest.java
+│       │               │   ├── id/
+│       │               │   │   ├── UuidV7HibernateTest.java
+│       │               │   │   └── UuidV7Test.java
+│       │               │   ├── time/
+│       │               │   │   ├── DateRangeTest.java
+│       │               │   │   └── SystemTimeProviderTest.java
+│       │               │   └── validation/
+│       │               │       ├── EmailBasicAnnotationTest.java
+│       │               │       └── EmailBasicValidatorTest.java
+│       │               ├── errors/
+│       │               │   └── ErrorCodesTest.java
+│       │               ├── http/
+│       │               │   └── CorrelationFilterTest.java
+│       │               ├── i18n/
+│       │               │   └── I18nTest.java
+│       │               ├── infra/
+│       │               │   ├── persistence/
+│       │               │   │   ├── PageRequestTest.java
+│       │               │   │   ├── PageTest.java
+│       │               │   │   └── PaginationTest.java
+│       │               │   └── util/
+│       │               │       ├── CollectionUtilsTest.java
+│       │               │       ├── CpfUtilsTest.java
+│       │               │       └── TextSearchUtilsTest.java
+│       │               └── presenter/
+│       │                   └── rest/
+│       │                       ├── ApiEnvelopeTest.java
+│       │                       ├── ApiErrorTest.java
+│       │                       └── mappers/
+│       │                           ├── ConstraintViolationExceptionMapperTest.java
+│       │                           ├── DomainExceptionMapperTest.java
+│       │                           └── UncaughtExceptionMapperTest.java
+│       └── resources/
+│           ├── application.yaml
+│           ├── messages_en_US.properties
+│           └── messages_pt_BR.properties
+└── target/

@@ -1,32 +1,22 @@
 package com.pug.shared.i18n;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.ws.rs.core.HttpHeaders;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 @ApplicationScoped
 public class I18n {
-  private static final Locale PT_BR = Locale.forLanguageTag("pt-BR");
-  private static final List<Locale> SUPPORTED = List.of(Locale.US, PT_BR);
-  private static final Locale FALLBACK = Locale.US;
+  private static final String BUNDLE = "messages";
 
-  public Locale resolve(HttpHeaders headers) {
-    for (Locale req : headers.getAcceptableLanguages()) {
-      for (Locale sup : SUPPORTED) {
-        if (sup.equals(req) || sup.toLanguageTag().equalsIgnoreCase(req.toLanguageTag())) {
-          return sup;
-        }
-      }
+  public String t(String key, Object... args) {
+    try {
+      ResourceBundle rb = ResourceBundle.getBundle(BUNDLE, Locale.getDefault());
+      String pat = rb.containsKey(key) ? rb.getString(key) : key;
+      return args == null || args.length == 0 ? pat : MessageFormat.format(pat, args);
+    } catch (MissingResourceException e) {
+      return key;
     }
-    return FALLBACK;
-  }
-
-  public String msg(String key, Locale locale, Object... args) {
-    var rb = ResourceBundle.getBundle("messages", locale);
-    var pattern = rb.containsKey(key) ? rb.getString(key) : key;
-    return (args == null || args.length == 0) ? pattern : MessageFormat.format(pattern, args);
   }
 }
