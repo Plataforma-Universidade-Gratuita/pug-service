@@ -6,8 +6,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.pug.identity.infra.persistence.UserRepository;
-import com.pug.identity.usecase.user.create.RegisterUserCommand;
-import com.pug.identity.usecase.user.create.RegisterUserHandler;
+import com.pug.identity.usecase.user.create.CreateUserCommand;
+import com.pug.identity.usecase.user.create.CreateUserHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -27,13 +27,14 @@ class CreateUserHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RegisterUserHandler handler;
+  @InjectMocks
+  CreateUserHandler handler;
 
   @Test
   void nullCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterUserCommand(null, "Ada")));
+        () -> handler.handle(new CreateUserCommand(null, "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -41,7 +42,7 @@ class CreateUserHandlerTest {
   void blankCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterUserCommand("  ", "Ada")));
+        () -> handler.handle(new CreateUserCommand("  ", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -49,7 +50,7 @@ class CreateUserHandlerTest {
   void invalidCpfFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterUserCommand("1234567890a", "Ada")));
+        () -> handler.handle(new CreateUserCommand("1234567890a", "Ada")));
     verifyNoInteractions(repo);
   }
 
@@ -57,7 +58,7 @@ class CreateUserHandlerTest {
   void blankNameFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterUserCommand("935.411.347-80", " ")));
+        () -> handler.handle(new CreateUserCommand("935.411.347-80", " ")));
     verifyNoInteractions(repo);
   }
 
@@ -65,21 +66,21 @@ class CreateUserHandlerTest {
   void overlongNameFailsAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterUserCommand("935.411.347-80", "x".repeat(151))));
+        () -> handler.handle(new CreateUserCommand("935.411.347-80", "x".repeat(151))));
     verifyNoInteractions(repo);
   }
 
   @Test
   void acceptsDigitsCpfWithoutMask() {
     when(repo.existsByCpf("93541134780")).thenReturn(false);
-    handler.handle(new RegisterUserCommand("93541134780", "Ada"));
+    handler.handle(new CreateUserCommand("93541134780", "Ada"));
     verify(repo).existsByCpf("93541134780");
   }
 
   @Test
   void maskedCpfIsNormalizedBeforePersist() {
     when(repo.existsByCpf("93541134780")).thenReturn(false);
-    handler.handle(new RegisterUserCommand("935.411.347-80", "Ada"));
+    handler.handle(new CreateUserCommand("935.411.347-80", "Ada"));
     verify(repo).existsByCpf("93541134780");
   }
 }

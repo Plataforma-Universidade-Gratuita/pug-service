@@ -16,12 +16,12 @@ import java.util.Locale;
 import java.util.UUID;
 
 @ApplicationScoped
-public class RegisterRoleHandler {
+public class CreateRoleHandler {
   @Inject RoleRepository repo;
   @Inject Validator validator;
 
   @Transactional
-  public UUID handle(RegisterRoleCommand cmd) {
+  public UUID handle(CreateRoleCommand cmd) {
     var vCmd = validator.validate(cmd);
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 

@@ -18,8 +18,8 @@ import com.pug.identity.domain.enums.UserRole;
 import com.pug.identity.domain.exceptions.DuplicateEmailException;
 import com.pug.identity.domain.exceptions.FormerStudentRegistrationException;
 import com.pug.identity.infra.persistence.RoleRepository;
-import com.pug.identity.usecase.role.create.RegisterRoleCommand;
-import com.pug.identity.usecase.role.create.RegisterRoleHandler;
+import com.pug.identity.usecase.role.create.CreateRoleCommand;
+import com.pug.identity.usecase.role.create.CreateRoleHandler;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -41,7 +41,8 @@ class CreateRoleHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RegisterRoleHandler handler;
+  @InjectMocks
+  CreateRoleHandler handler;
 
   private static final String VALID_CPF = "93541134780";
   private static final UUID FIXED = UUID.fromString("00000000-0000-7000-8000-000000000001");
@@ -63,7 +64,7 @@ class CreateRoleHandlerTest {
         .when(repo)
         .persist(any(Role.class));
 
-    var id = handler.handle(new RegisterRoleCommand(uid, "admin@example.org", UserRole.ADMIN));
+    var id = handler.handle(new CreateRoleCommand(uid, "admin@example.org", UserRole.ADMIN));
 
     assertNotNull(id);
 
@@ -79,7 +80,7 @@ class CreateRoleHandlerTest {
   void createRoleFailsOnValidation() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterRoleCommand(UUID.randomUUID(), "bad", UserRole.ADMIN)));
+        () -> handler.handle(new CreateRoleCommand(UUID.randomUUID(), "bad", UserRole.ADMIN)));
     verify(repo, never()).persist(any(Role.class));
     verify(repo, never()).flush();
   }
@@ -92,7 +93,7 @@ class CreateRoleHandlerTest {
         DuplicateEmailException.class,
         () ->
             handler.handle(
-                new RegisterRoleCommand(UUID.randomUUID(), "dup@example.org", UserRole.PARTNER)));
+                new CreateRoleCommand(UUID.randomUUID(), "dup@example.org", UserRole.PARTNER)));
 
     verify(repo).existsByEmail("dup@example.org");
     verify(repo, never()).existsFormerStudentByUserId(any());
@@ -110,7 +111,7 @@ class CreateRoleHandlerTest {
         FormerStudentRegistrationException.class,
         () ->
             handler.handle(
-                new RegisterRoleCommand(uid, "fs@example.org", UserRole.FORMER_STUDENT)));
+                new CreateRoleCommand(uid, "fs@example.org", UserRole.FORMER_STUDENT)));
 
     InOrder io = inOrder(repo);
     io.verify(repo).existsByEmail("fs@example.org");
@@ -132,8 +133,8 @@ class CreateRoleHandlerTest {
         .when(repo)
         .persist(any(Role.class));
 
-    var id1 = handler.handle(new RegisterRoleCommand(uid, "p1@example.org", UserRole.PARTNER));
-    var id2 = handler.handle(new RegisterRoleCommand(uid, "p2@example.org", UserRole.PARTNER));
+    var id1 = handler.handle(new CreateRoleCommand(uid, "p1@example.org", UserRole.PARTNER));
+    var id2 = handler.handle(new CreateRoleCommand(uid, "p2@example.org", UserRole.PARTNER));
 
     assertNotNull(id1);
     assertNotNull(id2);
@@ -159,7 +160,7 @@ class CreateRoleHandlerTest {
         .when(repo)
         .persist(any(Role.class));
 
-    var id = handler.handle(new RegisterRoleCommand(uid, "Admin@Example.ORG", UserRole.ADMIN));
+    var id = handler.handle(new CreateRoleCommand(uid, "Admin@Example.ORG", UserRole.ADMIN));
 
     assertNotNull(id);
     InOrder io = inOrder(repo);
@@ -184,7 +185,7 @@ class CreateRoleHandlerTest {
         .persist(any(Role.class));
 
     var id =
-        handler.handle(new RegisterRoleCommand(uid, "fs@example.org", UserRole.FORMER_STUDENT));
+        handler.handle(new CreateRoleCommand(uid, "fs@example.org", UserRole.FORMER_STUDENT));
 
     assertNotNull(id);
     InOrder io = inOrder(repo);
@@ -199,7 +200,7 @@ class CreateRoleHandlerTest {
   void nullUserTriggersConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterRoleCommand(null, "a@b.org", UserRole.ADMIN)));
+        () -> handler.handle(new CreateRoleCommand(null, "a@b.org", UserRole.ADMIN)));
     verifyNoInteractions(repo);
   }
 
@@ -207,7 +208,7 @@ class CreateRoleHandlerTest {
   void blankEmailTriggersConstraintViolationAndSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterRoleCommand(UUID.randomUUID(), "  ", UserRole.ADMIN)));
+        () -> handler.handle(new CreateRoleCommand(UUID.randomUUID(), "  ", UserRole.ADMIN)));
     verifyNoInteractions(repo);
   }
 
@@ -217,7 +218,7 @@ class CreateRoleHandlerTest {
     String email = local + "@example.org";
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterRoleCommand(UUID.randomUUID(), email, UserRole.ADMIN)));
+        () -> handler.handle(new CreateRoleCommand(UUID.randomUUID(), email, UserRole.ADMIN)));
     verifyNoInteractions(repo);
   }
 }

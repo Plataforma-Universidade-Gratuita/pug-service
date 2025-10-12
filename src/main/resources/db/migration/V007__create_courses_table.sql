@@ -8,6 +8,4 @@ CREATE TABLE courses
 );
 
 CREATE INDEX idx_courses_field ON courses (field_id);
-
-CREATE INDEX idx_courses_unaccent_name
-    ON courses (immutable_unaccent(lower(name)));
+CREATE INDEX idx_courses_name  ON courses (name);

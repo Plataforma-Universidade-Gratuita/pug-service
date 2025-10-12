@@ -16,8 +16,8 @@ import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.exceptions.DuplicateStaffException;
 import com.pug.partner.infra.persistence.StaffRepository;
-import com.pug.partner.usecase.staff.create.RegisterStaffCommand;
-import com.pug.partner.usecase.staff.create.RegisterStaffHandler;
+import com.pug.partner.usecase.staff.create.CreateStaffCommand;
+import com.pug.partner.usecase.staff.create.CreateStaffHandler;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
@@ -43,7 +43,8 @@ class CreateStaffHandlerTest {
   @Spy
   Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RegisterStaffHandler handler;
+  @InjectMocks
+  CreateStaffHandler handler;
 
   private static Role roleRef(UUID id) {
     return Role.builder().id(id).build();
@@ -71,7 +72,7 @@ class CreateStaffHandlerTest {
         .when(repo)
         .persist(any(Staff.class));
 
-    var out = handler.handle(new RegisterStaffCommand(userRoleId, entityId));
+    var out = handler.handle(new CreateStaffCommand(userRoleId, entityId));
 
     assertNotNull(out);
     assertEquals(fixed, out.getId());
@@ -96,7 +97,7 @@ class CreateStaffHandlerTest {
 
     assertThrows(
         DuplicateStaffException.class,
-        () -> handler.handle(new RegisterStaffCommand(userRoleId, entityId)));
+        () -> handler.handle(new CreateStaffCommand(userRoleId, entityId)));
 
     verify(repo).findByUserRoleId(userRoleId);
     verify(repo, never()).persist(any(Staff.class));
@@ -108,7 +109,7 @@ class CreateStaffHandlerTest {
   void nullUserRoleId_violatesCommand_andSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterStaffCommand(null, UUID.randomUUID())));
+        () -> handler.handle(new CreateStaffCommand(null, UUID.randomUUID())));
     verifyNoInteractions(repo, em);
   }
 
@@ -116,7 +117,7 @@ class CreateStaffHandlerTest {
   void nullEntityId_violatesCommand_andSkipsRepo() {
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterStaffCommand(UUID.randomUUID(), null)));
+        () -> handler.handle(new CreateStaffCommand(UUID.randomUUID(), null)));
     verifyNoInteractions(repo, em);
   }
 }

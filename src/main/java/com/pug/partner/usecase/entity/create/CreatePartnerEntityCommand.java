@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import org.hibernate.validator.constraints.br.CNPJ;
 
-public record RegisterPartnerEntityCommand(
+public record CreatePartnerEntityCommand(
     @CNPJ @NotBlank String cnpj,
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID cityId,

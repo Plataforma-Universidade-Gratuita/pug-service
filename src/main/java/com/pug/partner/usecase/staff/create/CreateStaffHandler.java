@@ -13,14 +13,14 @@ import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 
 @ApplicationScoped
-public class RegisterStaffHandler {
+public class CreateStaffHandler {
 
   @Inject StaffRepository repo;
   @Inject EntityManager em;
   @Inject Validator validator;
 
   @Transactional
-  public Staff handle(RegisterStaffCommand cmd) {
+  public Staff handle(CreateStaffCommand cmd) {
     var vCmd = validator.validate(cmd);
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 

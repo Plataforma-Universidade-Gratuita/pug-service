@@ -13,14 +13,14 @@ import jakarta.validation.Validator;
 import java.util.UUID;
 
 @ApplicationScoped
-public class RegisterPartnerEntityHandler {
+public class CreatePartnerEntityHandler {
 
   @Inject PartnerEntityRepository repo;
   @Inject EntityManager em;
   @Inject Validator validator;
 
   @Transactional
-  public UUID handle(RegisterPartnerEntityCommand cmd) {
+  public UUID handle(CreatePartnerEntityCommand cmd) {
     final String cnpjDigits = cmd.cnpj() == null ? null : cmd.cnpj().replaceAll("\\D+", "");
     final String name = cmd.name() == null ? null : cmd.name().trim();
 

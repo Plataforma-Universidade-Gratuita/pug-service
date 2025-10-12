@@ -11,12 +11,12 @@ import jakarta.validation.Validator;
 import java.util.UUID;
 
 @ApplicationScoped
-public class RegisterUserHandler {
+public class CreateUserHandler {
   @Inject UserRepository repo;
   @Inject Validator validator;
 
   @Transactional
-  public UUID handle(RegisterUserCommand cmd) {
+  public UUID handle(CreateUserCommand cmd) {
     var vCmd = validator.validate(cmd);
     if (!vCmd.isEmpty()) throw new ConstraintViolationException(vCmd);
 

@@ -16,8 +16,8 @@ import com.pug.geo.domain.City;
 import com.pug.partner.domain.PartnerEntity;
 import com.pug.partner.domain.exceptions.DuplicateCnpjException;
 import com.pug.partner.infra.persistence.PartnerEntityRepository;
-import com.pug.partner.usecase.entity.create.RegisterPartnerEntityCommand;
-import com.pug.partner.usecase.entity.create.RegisterPartnerEntityHandler;
+import com.pug.partner.usecase.entity.create.CreatePartnerEntityCommand;
+import com.pug.partner.usecase.entity.create.CreatePartnerEntityHandler;
 import jakarta.persistence.EntityManager;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validation;
@@ -39,7 +39,8 @@ class CreatePartnerEntityHandlerTest {
 
   @Spy Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
-  @InjectMocks RegisterPartnerEntityHandler handler;
+  @InjectMocks
+  CreatePartnerEntityHandler handler;
 
   private static final UUID CITY_ID = UUID.randomUUID();
   private static final UUID FIXED = UUID.fromString("00000000-0000-7000-8000-000000000001");
@@ -64,7 +65,7 @@ class CreatePartnerEntityHandlerTest {
 
     var id =
         handler.handle(
-            new RegisterPartnerEntityCommand("11.222.333/0001-81", " Org ", CITY_ID, null));
+            new CreatePartnerEntityCommand("11.222.333/0001-81", " Org ", CITY_ID, null));
 
     assertNotNull(id);
 
@@ -87,7 +88,7 @@ class CreatePartnerEntityHandlerTest {
     // bad CNPJ
     assertThrows(
         ConstraintViolationException.class,
-        () -> handler.handle(new RegisterPartnerEntityCommand("bad", "Org", CITY_ID, null)));
+        () -> handler.handle(new CreatePartnerEntityCommand("bad", "Org", CITY_ID, null)));
     verifyNoInteractions(repo, em);
   }
 
@@ -99,7 +100,7 @@ class CreatePartnerEntityHandlerTest {
         DuplicateCnpjException.class,
         () ->
             handler.handle(
-                new RegisterPartnerEntityCommand("11.222.333/0001-81", "Org", CITY_ID, null)));
+                new CreatePartnerEntityCommand("11.222.333/0001-81", "Org", CITY_ID, null)));
 
     verify(repo).existsByCnpj("11222333000181");
     verifyNoMoreInteractions(repo);
@@ -120,7 +121,7 @@ class CreatePartnerEntityHandlerTest {
         .persist(any(PartnerEntity.class));
 
     handler.handle(
-        new RegisterPartnerEntityCommand(" 11.222.333/0001-81 ", "  Org  ", CITY_ID, "Addr"));
+        new CreatePartnerEntityCommand(" 11.222.333/0001-81 ", "  Org  ", CITY_ID, "Addr"));
 
     ArgumentCaptor<PartnerEntity> cap = ArgumentCaptor.forClass(PartnerEntity.class);
     verify(repo).persist(cap.capture());
@@ -136,7 +137,7 @@ class CreatePartnerEntityHandlerTest {
     assertThrows(
         ConstraintViolationException.class,
         () ->
-            handler.handle(new RegisterPartnerEntityCommand("11222333000181", "Org", null, null)));
+            handler.handle(new CreatePartnerEntityCommand("11222333000181", "Org", null, null)));
     verifyNoInteractions(repo, em);
   }
 
@@ -146,7 +147,7 @@ class CreatePartnerEntityHandlerTest {
         ConstraintViolationException.class,
         () ->
             handler.handle(
-                new RegisterPartnerEntityCommand(
+                new CreatePartnerEntityCommand(
                     "11222333000181", "x".repeat(151), CITY_ID, null)));
     verifyNoInteractions(repo, em);
   }

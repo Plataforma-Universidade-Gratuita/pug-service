@@ -7,5 +7,4 @@ CREATE TABLE users
     updated_at timestamp
 );
 
-CREATE INDEX idx_users_unaccent_name
-    ON users (immutable_unaccent(lower(name)));
+CREATE INDEX idx_users_name ON users (name);

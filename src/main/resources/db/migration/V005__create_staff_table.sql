@@ -5,4 +5,5 @@ CREATE TABLE staff
     entity_id    uuid NOT NULL REFERENCES entities (id)
 );
 
-CREATE INDEX idx_staff_entity ON staff (entity_id);
+CREATE INDEX idx_staff_entity    ON staff (entity_id);
+CREATE INDEX idx_staff_user_role ON staff (user_role_id);

@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.hibernate.validator.constraints.br.CPF;
 
-public record RegisterUserCommand(
+public record CreateUserCommand(
     @NotBlank @CPF String cpf, @NotBlank @Size(max = 150) String name) {}
