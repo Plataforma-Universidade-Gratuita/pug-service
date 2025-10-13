@@ -1,5 +1,5 @@
 // src/test/java/com/pug/shared/app/queries/UuidQueryTest.java
-package com.pug.shared.app.queries;
+package com.pug.shared.application;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

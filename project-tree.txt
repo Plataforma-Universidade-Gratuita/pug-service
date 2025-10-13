@@ -22,7 +22,8 @@
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
-│   │   │           │   │   └── CityRepository.java
+│   │   │           │   │   ├── CityRepository.java
+│   │   │           │   │   └── GeoErrorCodes.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   └── persistence/
@@ -35,6 +36,7 @@
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Cpf.java
+│   │   │           │   │   ├── IdentityErrorCodes.java
 │   │   │           │   │   ├── User.java
 │   │   │           │   │   └── UserRepository.java
 │   │   │           │   ├── infra/
@@ -48,11 +50,39 @@
 │   │   │           │       └── commands/
 │   │   │           │           ├── CreateUserCommand.java
 │   │   │           │           └── UpdateUserCommand.java
+│   │   │           ├── partner/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── Address.java
+│   │   │           │   │   ├── Cnpj.java
+│   │   │           │   │   ├── PartnerEntity.java
+│   │   │           │   │   ├── PartnerEntityRepository.java
+│   │   │           │   │   ├── PartnerErrorCodes.java
+│   │   │           │   │   ├── Staff.java
+│   │   │           │   │   └── StaffRepository.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   ├── CnpjConverter.java
+│   │   │           │   │   ├── PartnerEntityMapper.java
+│   │   │           │   │   ├── StaffMapper.java
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── PartnerEntityEntity.java
+│   │   │           │   │       ├── PartnerEntityRepositoryImpl.java
+│   │   │           │   │       ├── StaffEntity.java
+│   │   │           │   │       └── StaffRepositoryImpl.java
+│   │   │           │   └── service/
+│   │   │           │       ├── PartnerEntityService.java
+│   │   │           │       ├── StaffService.java
+│   │   │           │       ├── commands/
+│   │   │           │       │   ├── CreatePartnerEntityCommand.java
+│   │   │           │       │   ├── CreateStaffCommand.java
+│   │   │           │       │   └── UpdatePartnerEntityCommand.java
+│   │   │           │       └── queries/
+│   │   │           │           └── ListEntitiesByCityQuery.java
 │   │   │           └── shared/
-│   │   │               ├── app/
-│   │   │               │   └── queries/
-│   │   │               │       ├── StringQuery.java
-│   │   │               │       └── UuidQuery.java
+│   │   │               ├── application/
+│   │   │               │   ├── EmailQuery.java
+│   │   │               │   ├── StringQuery.java
+│   │   │               │   ├── UuidCommand.java
+│   │   │               │   └── UuidQuery.java
 │   │   │               ├── domain/
 │   │   │               │   ├── exceptions/
 │   │   │               │   │   ├── AppValidationException.java
@@ -156,11 +186,34 @@
 │       │           │       └── commands/
 │       │           │           ├── CreateUserCommandTest.java
 │       │           │           └── UpdateUserCommandTest.java
+│       │           ├── partner/
+│       │           │   ├── domain/
+│       │           │   │   ├── AddressTest.java
+│       │           │   │   ├── CnpjTest.java
+│       │           │   │   ├── PartnerEntityTest.java
+│       │           │   │   └── StaffTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── PartnerEntityMapperTest.java
+│       │           │   │   ├── StaffMapperTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       ├── PartnerEntityEntityTest.java
+│       │           │   │       ├── PartnerEntityRepositoryImplTest.java
+│       │           │   │       ├── StaffEntityTest.java
+│       │           │   │       └── StaffRepositoryImplTest.java
+│       │           │   └── service/
+│       │           │       ├── PartnerEntityServiceTest.java
+│       │           │       ├── StaffServiceTest.java
+│       │           │       ├── commands/
+│       │           │       │   ├── CreatePartnerEntityCommandTest.java
+│       │           │       │   ├── CreateStaffCommandTest.java
+│       │           │       │   └── UpdatePartnerEntityCommandTest.java
+│       │           │       └── queries/
+│       │           │           └── ListEntitiesByCityQueryTest.java
 │       │           └── shared/
 │       │               ├── app/
-│       │               │   └── queries/
-│       │               │       ├── StringQueryTest.java
-│       │               │       └── UuidQueryTest.java
+│       │               ├── application/
+│       │               │   ├── StringQueryTest.java
+│       │               │   └── UuidQueryTest.java
 │       │               ├── domain/
 │       │               │   ├── exceptions/
 │       │               │   │   ├── AppValidationExceptionTest.java

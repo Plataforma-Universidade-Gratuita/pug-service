@@ -1,11 +1,13 @@
 package com.pug.identity.domain;
 
+import static com.pug.identity.domain.IdentityErrorCodes.IDENTITY_CPF_REQUIRED;
+import static com.pug.identity.domain.IdentityErrorCodes.IDENTITY_NAME_REQUIRED;
+import static com.pug.identity.domain.IdentityErrorCodes.IDENTITY_NAME_TOO_LONG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +26,7 @@ class UserTest {
   @Test
   void nullCpfThrows() {
     var ex = assertThrows(AppValidationException.class, () -> User.builder().name("Bob").build());
-    assertEquals(ErrorCodes.USER_CPF_REQUIRED, ex.code());
+    assertEquals(IDENTITY_CPF_REQUIRED, ex.code());
   }
 
   @Test
@@ -33,7 +35,7 @@ class UserTest {
         assertThrows(
             AppValidationException.class,
             () -> User.builder().cpf(Cpf.of(CPF_VALID)).name(" ").build());
-    assertEquals(ErrorCodes.USER_NAME_REQUIRED, ex.code());
+    assertEquals(IDENTITY_NAME_REQUIRED, ex.code());
   }
 
   @Test
@@ -43,7 +45,7 @@ class UserTest {
         assertThrows(
             AppValidationException.class,
             () -> User.builder().cpf(Cpf.of(CPF_VALID)).name(longName).build());
-    assertEquals(ErrorCodes.USER_NAME_TOO_LONG, ex.code());
+    assertEquals(IDENTITY_NAME_TOO_LONG, ex.code());
   }
 
   @Test

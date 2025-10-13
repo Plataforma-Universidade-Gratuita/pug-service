@@ -1,5 +1,6 @@
 package com.pug.identity.service;
 
+import static com.pug.identity.domain.IdentityErrorCodes.IDENTITY_CPF_ALREADY_IN_USE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -7,10 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.pug.identity.service.commands.CreateUserCommand;
 import com.pug.identity.service.commands.UpdateUserCommand;
-import com.pug.shared.app.queries.StringQuery;
-import com.pug.shared.app.queries.UuidQuery;
+import com.pug.shared.application.StringQuery;
+import com.pug.shared.application.UuidQuery;
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -42,7 +42,7 @@ class UserServiceTest {
         assertThrows(
             AppValidationException.class,
             () -> svc.create(new CreateUserCommand("935.411.347-80", "Bruna")));
-    assertEquals(ErrorCodes.USER_CPF_ALREADY_IN_USE, ex.code());
+    assertEquals(IDENTITY_CPF_ALREADY_IN_USE, ex.code());
   }
 
   @Test
@@ -72,7 +72,7 @@ class UserServiceTest {
         assertThrows(
             AppValidationException.class,
             () -> svc.update(new UpdateUserCommand(a.getId(), CPF_B, null)));
-    assertEquals(ErrorCodes.USER_CPF_ALREADY_IN_USE, ex.code());
+    assertEquals(IDENTITY_CPF_ALREADY_IN_USE, ex.code());
   }
 
   @Test

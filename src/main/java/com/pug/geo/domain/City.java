@@ -1,7 +1,10 @@
 package com.pug.geo.domain;
 
+import static com.pug.geo.domain.GeoErrorCodes.GEO_IBGE_INVALID;
+import static com.pug.geo.domain.GeoErrorCodes.GEO_NAME_REQUIRED;
+import static com.pug.geo.domain.GeoErrorCodes.GEO_NAME_TOO_LONG;
+
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -18,14 +21,13 @@ import lombok.ToString;
 public final class City {
   private final UUID id;
   private final String name;
-  private final String ibgeCode; // 7 digits
+  private final String ibgeCode;
 
   private void validate() {
-    if (name == null || name.isBlank())
-      throw new AppValidationException(ErrorCodes.CITY_NAME_REQUIRED);
-    if (name.length() > 100) throw new AppValidationException(ErrorCodes.CITY_NAME_TOO_LONG);
+    if (name == null || name.isBlank()) throw new AppValidationException(GEO_NAME_REQUIRED);
+    if (name.length() > 100) throw new AppValidationException(GEO_NAME_TOO_LONG);
     if (ibgeCode == null || !ibgeCode.matches("\\d{7}"))
-      throw new AppValidationException(ErrorCodes.CITY_IBGE_INVALID);
+      throw new AppValidationException(GEO_IBGE_INVALID);
   }
 
   public static class CityBuilder {

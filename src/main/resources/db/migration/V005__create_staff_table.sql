@@ -5,7 +5,6 @@ CREATE TABLE staff
     email     varchar(254) NOT NULL,
     entity_id uuid         NOT NULL REFERENCES entities (id),
     active    boolean      NOT NULL DEFAULT true,
-    CONSTRAINT chk_staff_unique UNIQUE (user_id, entity_id),
     CONSTRAINT chk_staff_email_basic CHECK (position('@' in email) > 1)
 );
 

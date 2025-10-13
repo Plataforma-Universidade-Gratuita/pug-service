@@ -1,11 +1,11 @@
 package com.pug.identity.domain;
 
+import static com.pug.identity.domain.IdentityErrorCodes.IDENTITY_CPF_INVALID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import org.junit.jupiter.api.Test;
 
 class CpfTest {
@@ -25,7 +25,7 @@ class CpfTest {
   @Test
   void ofRejectsInvalidCpf() {
     var ex = assertThrows(AppValidationException.class, () -> Cpf.of("11111111111"));
-    assertEquals(ErrorCodes.USER_CPF_INVALID, ex.code());
+    assertEquals(IDENTITY_CPF_INVALID, ex.code());
   }
 
   @Test

@@ -1,7 +1,6 @@
 package com.pug.identity.domain;
 
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -21,10 +20,11 @@ public final class User {
   private final String name;
 
   private void validate() {
-    if (cpf == null) throw new AppValidationException(ErrorCodes.USER_CPF_REQUIRED);
+    if (cpf == null) throw new AppValidationException(IdentityErrorCodes.IDENTITY_CPF_REQUIRED);
     if (name == null || name.isBlank())
-      throw new AppValidationException(ErrorCodes.USER_NAME_REQUIRED);
-    if (name.length() > 150) throw new AppValidationException(ErrorCodes.USER_NAME_TOO_LONG);
+      throw new AppValidationException(IdentityErrorCodes.IDENTITY_NAME_REQUIRED);
+    if (name.length() > 150)
+      throw new AppValidationException(IdentityErrorCodes.IDENTITY_NAME_TOO_LONG);
   }
 
   public static class UserBuilder {

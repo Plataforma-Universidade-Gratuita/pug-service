@@ -1,7 +1,6 @@
 package com.pug.identity.domain;
 
 import com.pug.shared.domain.exceptions.AppValidationException;
-import com.pug.shared.errors.ErrorCodes;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,7 +13,8 @@ public final class Cpf {
 
   public static Cpf of(String raw) {
     String d = digits(raw);
-    if (!isValidDigits(d)) throw new AppValidationException(ErrorCodes.USER_CPF_INVALID);
+    if (!isValidDigits(d))
+      throw new AppValidationException(IdentityErrorCodes.IDENTITY_CPF_INVALID);
     return new Cpf(d);
   }
 

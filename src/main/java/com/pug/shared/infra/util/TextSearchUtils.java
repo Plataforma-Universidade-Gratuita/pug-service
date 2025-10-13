@@ -15,4 +15,9 @@ public final class TextSearchUtils {
   public static String likeParam(String pattern) {
     return "%" + normalize(pattern) + "%";
   }
+
+  public static String fold(String s) {
+    String n = Normalizer.normalize(s == null ? "" : s, Normalizer.Form.NFD);
+    return n.replaceAll("\\p{M}", "").toLowerCase(Locale.ROOT);
+  }
 }

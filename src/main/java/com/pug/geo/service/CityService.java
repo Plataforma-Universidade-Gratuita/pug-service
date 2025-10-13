@@ -3,7 +3,7 @@ package com.pug.geo.service;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.service.queries.SearchCitiesQuery;
-import com.pug.shared.app.queries.UuidQuery;
+import com.pug.shared.application.UuidQuery;
 import com.pug.shared.infra.persistence.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
