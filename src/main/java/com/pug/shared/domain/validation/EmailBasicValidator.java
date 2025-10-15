@@ -7,7 +7,10 @@ public final class EmailBasicValidator implements ConstraintValidator<EmailBasic
   @Override
   public boolean isValid(String value, ConstraintValidatorContext context) {
     if (value == null || value.isBlank()) return true;
-    int at = value.indexOf('@');
-    return at > 0 && at < value.length() - 1;
+    int first = value.indexOf('@');
+    int last = value.lastIndexOf('@');
+    if (first <= 0 || first != last || last == value.length() - 1) return false;
+    String domain = value.substring(last + 1);
+    return domain.indexOf('.') > 0 && !domain.endsWith(".");
   }
 }

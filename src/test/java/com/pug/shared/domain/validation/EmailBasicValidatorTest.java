@@ -25,9 +25,9 @@ class EmailBasicValidatorTest {
     var v = new EmailBasicValidator();
     assertTrue(v.isValid(null, null));
     assertTrue(v.isValid("", null));
-    assertTrue(v.isValid("a@b", null));
     assertTrue(v.isValid("user.name+tag@example.com", null));
 
+    assertFalse(v.isValid("a@b", null));
     assertFalse(v.isValid("abc", null));
     assertFalse(v.isValid("@host", null));
     assertFalse(v.isValid("user@", null));
@@ -36,7 +36,7 @@ class EmailBasicValidatorTest {
   @Test
   void beanValidationIntegration_optionalAllowsNull_invalidFails() {
     var ok = new Dto(null, "x@y");
-    assertTrue(validator.validate(ok).isEmpty());
+    assertFalse(validator.validate(ok).isEmpty());
 
     var bad = new Dto("bad", "bad");
     assertFalse(validator.validate(bad).isEmpty());

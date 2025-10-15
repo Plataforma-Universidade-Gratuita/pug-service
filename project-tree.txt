@@ -35,14 +35,19 @@
 │   │   │           │           └── SearchCitiesQuery.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── Admin.java
+│   │   │           │   │   ├── AdminRepository.java
 │   │   │           │   │   ├── Cpf.java
 │   │   │           │   │   ├── IdentityErrorCodes.java
 │   │   │           │   │   ├── User.java
 │   │   │           │   │   └── UserRepository.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── AdminMapper.java
 │   │   │           │   │   ├── CpfConverter.java
 │   │   │           │   │   ├── UserMapper.java
 │   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── AdminEntity.java
+│   │   │           │   │       ├── AdminRepositoryImpl.java
 │   │   │           │   │       ├── UserEntity.java
 │   │   │           │   │       └── UserRepositoryImpl.java
 │   │   │           │   └── service/
@@ -173,12 +178,16 @@
 │       │           │           └── SearchCitiesQueryTest.java
 │       │           ├── identity/
 │       │           │   ├── domain/
+│       │           │   │   ├── AdminTest.java
 │       │           │   │   ├── CpfTest.java
 │       │           │   │   └── UserTest.java
 │       │           │   ├── infra/
+│       │           │   │   ├── AdminMapperTest.java
 │       │           │   │   ├── CpfConverterTest.java
 │       │           │   │   ├── UserMapperTest.java
 │       │           │   │   └── persistence/
+│       │           │   │       ├── AdminEntityTest.java
+│       │           │   │       ├── AdminRepositoryImplTest.java
 │       │           │   │       ├── UserEntityTest.java
 │       │           │   │       └── UserRepositoryImplTest.java
 │       │           │   └── service/
@@ -210,9 +219,10 @@
 │       │           │       └── queries/
 │       │           │           └── ListEntitiesByCityQueryTest.java
 │       │           └── shared/
-│       │               ├── app/
 │       │               ├── application/
+│       │               │   ├── EmailQueryTest.java
 │       │               │   ├── StringQueryTest.java
+│       │               │   ├── UuidCommandTest.java
 │       │               │   └── UuidQueryTest.java
 │       │               ├── domain/
 │       │               │   ├── exceptions/
