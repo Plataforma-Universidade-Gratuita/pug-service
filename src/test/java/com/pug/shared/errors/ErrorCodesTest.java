@@ -1,5 +1,7 @@
 package com.pug.shared.errors;
 
+import static com.pug.academic.domain.AcademicErrorCodes.ACADEMIC_SCHOOL_NAME_REQUIRED;
+import static com.pug.academic.domain.AcademicErrorCodes.ACADEMIC_SCHOOL_NAME_TOO_LONG;
 import static com.pug.geo.domain.GeoErrorCodes.GEO_IBGE_INVALID;
 import static com.pug.geo.domain.GeoErrorCodes.GEO_NAME_REQUIRED;
 import static com.pug.geo.domain.GeoErrorCodes.GEO_NAME_TOO_LONG;
@@ -65,7 +67,10 @@ class ErrorCodesTest {
             Map.entry(STAFF_EMAIL_TOO_LONG, "error.partner.staff.email.toolong"),
             Map.entry(STAFF_NOT_FOUND, "error.partner.staff.notfound"),
             Map.entry(STAFF_EMAIL_ALREADY_EXISTS, "error.partner.staff.email.alreadyinuse"),
-            Map.entry(STAFF_EMAIL_INVALID, "error.partner.staff.email.invalid"));
+            Map.entry(STAFF_EMAIL_INVALID, "error.partner.staff.email.invalid"),
+            // academic
+            Map.entry(ACADEMIC_SCHOOL_NAME_REQUIRED, "error.academic.school.name.required"),
+            Map.entry(ACADEMIC_SCHOOL_NAME_TOO_LONG, "error.academic.school.name.toolong"));
 
     cases.forEach((code, expected) -> assertEquals(expected, ErrorCodes.bundleKey(code), code));
   }
