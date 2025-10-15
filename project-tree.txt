@@ -19,6 +19,26 @@
 │   │   ├── java/
 │   │   │   └── com/
 │   │   │       └── pug/
+│   │   │           ├── academic/
+│   │   │           │   ├── domain/
+│   │   │           │   │   ├── AcademicErrorCodes.java
+│   │   │           │   │   ├── Course.java
+│   │   │           │   │   ├── CourseRepository.java
+│   │   │           │   │   ├── School.java
+│   │   │           │   │   └── SchoolRepository.java
+│   │   │           │   ├── infra/
+│   │   │           │   │   ├── CourseMapper.java
+│   │   │           │   │   ├── SchoolMapper.java
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── CourseEntity.java
+│   │   │           │   │       ├── CourseRepositoryImpl.java
+│   │   │           │   │       ├── SchoolEntity.java
+│   │   │           │   │       └── SchoolRepositoryImpl.java
+│   │   │           │   └── service/
+│   │   │           │       ├── CourseService.java
+│   │   │           │       ├── SchoolService.java
+│   │   │           │       ├── commands/
+│   │   │           │       └── queries/
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
@@ -164,6 +184,23 @@
 │       ├── java/
 │       │   └── com/
 │       │       └── pug/
+│       │           ├── academic/
+│       │           │   ├── domain/
+│       │           │   │   ├── CourseTest.java
+│       │           │   │   └── SchoolTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CourseMapperTest.java
+│       │           │   │   ├── SchoolMapperTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       ├── CourseEntityTest.java
+│       │           │   │       ├── CourseRepositoryImplTest.java
+│       │           │   │       ├── SchoolEntityTest.java
+│       │           │   │       └── SchoolRepositoryImplTest.java
+│       │           │   └── service/
+│       │           │       ├── CourseServiceTest.java
+│       │           │       ├── SchoolServiceTest.java
+│       │           │       ├── commands/
+│       │           │       └── queries/
 │       │           ├── geo/
 │       │           │   ├── domain/
 │       │           │   │   └── CityTest.java
