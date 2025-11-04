@@ -5,8 +5,7 @@ CREATE TABLE entities
     name    varchar(150) NOT NULL,
     city_id uuid         NOT NULL REFERENCES cities (id),
     address varchar(254),
-    active  boolean      NOT NULL DEFAULT true,
-    CONSTRAINT chk_entities_cnpj_digits CHECK (cnpj ~ '^[0-9]{14}$')
+    active  boolean      NOT NULL DEFAULT true
 );
 
 CREATE INDEX idx_entities_name ON entities (name);

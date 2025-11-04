@@ -21,93 +21,27 @@
 │   │   │       └── pug/
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── AcademicErrorCodes.java
-│   │   │           │   │   ├── Course.java
-│   │   │           │   │   ├── CourseRepository.java
-│   │   │           │   │   ├── School.java
-│   │   │           │   │   └── SchoolRepository.java
 │   │   │           │   ├── infra/
-│   │   │           │   │   ├── CourseMapper.java
-│   │   │           │   │   ├── SchoolMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── CourseEntity.java
-│   │   │           │   │       ├── CourseRepositoryImpl.java
-│   │   │           │   │       ├── SchoolEntity.java
-│   │   │           │   │       └── SchoolRepositoryImpl.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CourseService.java
-│   │   │           │       ├── SchoolService.java
-│   │   │           │       ├── commands/
-│   │   │           │       └── queries/
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── City.java
-│   │   │           │   │   ├── CityRepository.java
-│   │   │           │   │   └── GeoErrorCodes.java
 │   │   │           │   ├── infra/
-│   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── CityEntity.java
-│   │   │           │   │       └── CityRepositoryImpl.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CityService.java
-│   │   │           │       └── queries/
-│   │   │           │           └── SearchCitiesQuery.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── Admin.java
-│   │   │           │   │   ├── AdminRepository.java
-│   │   │           │   │   ├── Cpf.java
-│   │   │           │   │   ├── IdentityErrorCodes.java
-│   │   │           │   │   ├── User.java
-│   │   │           │   │   └── UserRepository.java
 │   │   │           │   ├── infra/
-│   │   │           │   │   ├── AdminMapper.java
-│   │   │           │   │   ├── CpfConverter.java
-│   │   │           │   │   ├── UserMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── AdminEntity.java
-│   │   │           │   │       ├── AdminRepositoryImpl.java
-│   │   │           │   │       ├── UserEntity.java
-│   │   │           │   │       └── UserRepositoryImpl.java
 │   │   │           │   └── service/
-│   │   │           │       ├── UserService.java
 │   │   │           │       └── commands/
-│   │   │           │           ├── CreateUserCommand.java
-│   │   │           │           └── UpdateUserCommand.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── Address.java
-│   │   │           │   │   ├── Cnpj.java
-│   │   │           │   │   ├── PartnerEntity.java
-│   │   │           │   │   ├── PartnerEntityRepository.java
-│   │   │           │   │   ├── PartnerErrorCodes.java
-│   │   │           │   │   ├── Staff.java
-│   │   │           │   │   └── StaffRepository.java
 │   │   │           │   ├── infra/
-│   │   │           │   │   ├── CnpjConverter.java
-│   │   │           │   │   ├── PartnerEntityMapper.java
-│   │   │           │   │   ├── StaffMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── PartnerEntityEntity.java
-│   │   │           │   │       ├── PartnerEntityRepositoryImpl.java
-│   │   │           │   │       ├── StaffEntity.java
-│   │   │           │   │       └── StaffRepositoryImpl.java
 │   │   │           │   └── service/
-│   │   │           │       ├── PartnerEntityService.java
-│   │   │           │       ├── StaffService.java
-│   │   │           │       ├── commands/
-│   │   │           │       │   ├── CreatePartnerEntityCommand.java
-│   │   │           │       │   ├── CreateStaffCommand.java
-│   │   │           │       │   └── UpdatePartnerEntityCommand.java
-│   │   │           │       └── queries/
-│   │   │           │           └── ListEntitiesByCityQuery.java
 │   │   │           └── shared/
 │   │   │               ├── application/
-│   │   │               │   ├── EmailQuery.java
-│   │   │               │   ├── StringQuery.java
-│   │   │               │   ├── UuidCommand.java
-│   │   │               │   └── UuidQuery.java
 │   │   │               ├── domain/
 │   │   │               │   ├── exceptions/
 │   │   │               │   │   ├── AppValidationException.java
@@ -118,12 +52,9 @@
 │   │   │               │   │   ├── UuidV7.java
 │   │   │               │   │   └── UuidV7Hibernate.java
 │   │   │               │   ├── time/
-│   │   │               │   │   ├── DateRange.java
 │   │   │               │   │   ├── SystemTimeProvider.java
 │   │   │               │   │   └── TimeProvider.java
 │   │   │               │   └── validation/
-│   │   │               │       ├── EmailBasic.java
-│   │   │               │       └── EmailBasicValidator.java
 │   │   │               ├── errors/
 │   │   │               │   └── ErrorCodes.java
 │   │   │               ├── http/
@@ -132,13 +63,7 @@
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
 │   │   │               │   ├── persistence/
-│   │   │               │   │   ├── Page.java
-│   │   │               │   │   ├── PageRequest.java
-│   │   │               │   │   └── Pagination.java
 │   │   │               │   └── util/
-│   │   │               │       ├── CollectionUtils.java
-│   │   │               │       ├── CpfUtils.java
-│   │   │               │       └── TextSearchUtils.java
 │   │   │               └── presenter/
 │   │   │                   └── rest/
 │   │   │                       ├── ApiEnvelope.java
@@ -164,20 +89,10 @@
 │   │       │       ├── V008__create_students_table.sql
 │   │       │       ├── V009__create_projects_table.sql
 │   │       │       ├── V010__create_projects_by_schools_table.sql
-│   │       │       ├── V011__create_allocations_table.sql
-│   │       │       ├── V012__create_enrollments_table.sql
-│   │       │       ├── V013__create_attendances_table.sql
-│   │       │       ├── V014__create_view_student_progress.sql
-│   │       │       ├── V015__create_view_allocation_progress.sql
-│   │       │       ├── V016__create_view_project_progress.sql
-│   │       │       ├── V017__create_view_enrollment_per_allocation.sql
-│   │       │       ├── V018__create_trigger_enforce_allocation_capacity.sql
-│   │       │       ├── V019__create_trigger_set_enrollment_timestamps.sql
-│   │       │       ├── V020__create_trigger_set_allocation_completed_at.sql
-│   │       │       ├── V021__create_trigger_enforce_attendance_validation.sql
-│   │       │       ├── V022__create_trigger_prevent_capacity_underflow.sql
-│   │       │       ├── V023__create_trigger_sync_student_completed_hours.sql
-│   │       │       └── V024__seed_for_testing.sql
+│   │       │       ├── V011__create_enrollments_table.sql
+│   │       │       ├── V012__create_attendances_table.sql
+│   │       │       ├── V013__create_view_student_progress.sql
+│   │       │       └── V014__create_view_project_progress.sql
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
@@ -185,119 +100,10 @@
 │       │   └── com/
 │       │       └── pug/
 │       │           ├── academic/
-│       │           │   ├── domain/
-│       │           │   │   ├── CourseTest.java
-│       │           │   │   └── SchoolTest.java
-│       │           │   ├── infra/
-│       │           │   │   ├── CourseMapperTest.java
-│       │           │   │   ├── SchoolMapperTest.java
-│       │           │   │   └── persistence/
-│       │           │   │       ├── CourseEntityTest.java
-│       │           │   │       ├── CourseRepositoryImplTest.java
-│       │           │   │       ├── SchoolEntityTest.java
-│       │           │   │       └── SchoolRepositoryImplTest.java
-│       │           │   └── service/
-│       │           │       ├── CourseServiceTest.java
-│       │           │       ├── SchoolServiceTest.java
-│       │           │       ├── commands/
-│       │           │       └── queries/
 │       │           ├── geo/
-│       │           │   ├── domain/
-│       │           │   │   └── CityTest.java
-│       │           │   ├── infra/
-│       │           │   │   ├── CityMapperTest.java
-│       │           │   │   └── persistence/
-│       │           │   │       ├── CityEntityTest.java
-│       │           │   │       └── CityRepositoryImplTest.java
-│       │           │   └── service/
-│       │           │       ├── CityServiceTest.java
-│       │           │       └── queries/
-│       │           │           └── SearchCitiesQueryTest.java
 │       │           ├── identity/
-│       │           │   ├── domain/
-│       │           │   │   ├── AdminTest.java
-│       │           │   │   ├── CpfTest.java
-│       │           │   │   └── UserTest.java
-│       │           │   ├── infra/
-│       │           │   │   ├── AdminMapperTest.java
-│       │           │   │   ├── CpfConverterTest.java
-│       │           │   │   ├── UserMapperTest.java
-│       │           │   │   └── persistence/
-│       │           │   │       ├── AdminEntityTest.java
-│       │           │   │       ├── AdminRepositoryImplTest.java
-│       │           │   │       ├── UserEntityTest.java
-│       │           │   │       └── UserRepositoryImplTest.java
-│       │           │   └── service/
-│       │           │       ├── UserServiceTest.java
-│       │           │       └── commands/
-│       │           │           ├── CreateUserCommandTest.java
-│       │           │           └── UpdateUserCommandTest.java
 │       │           ├── partner/
-│       │           │   ├── domain/
-│       │           │   │   ├── AddressTest.java
-│       │           │   │   ├── CnpjTest.java
-│       │           │   │   ├── PartnerEntityTest.java
-│       │           │   │   └── StaffTest.java
-│       │           │   ├── infra/
-│       │           │   │   ├── PartnerEntityMapperTest.java
-│       │           │   │   ├── StaffMapperTest.java
-│       │           │   │   └── persistence/
-│       │           │   │       ├── PartnerEntityEntityTest.java
-│       │           │   │       ├── PartnerEntityRepositoryImplTest.java
-│       │           │   │       ├── StaffEntityTest.java
-│       │           │   │       └── StaffRepositoryImplTest.java
-│       │           │   └── service/
-│       │           │       ├── PartnerEntityServiceTest.java
-│       │           │       ├── StaffServiceTest.java
-│       │           │       ├── commands/
-│       │           │       │   ├── CreatePartnerEntityCommandTest.java
-│       │           │       │   ├── CreateStaffCommandTest.java
-│       │           │       │   └── UpdatePartnerEntityCommandTest.java
-│       │           │       └── queries/
-│       │           │           └── ListEntitiesByCityQueryTest.java
 │       │           └── shared/
-│       │               ├── application/
-│       │               │   ├── EmailQueryTest.java
-│       │               │   ├── StringQueryTest.java
-│       │               │   ├── UuidCommandTest.java
-│       │               │   └── UuidQueryTest.java
-│       │               ├── domain/
-│       │               │   ├── exceptions/
-│       │               │   │   ├── AppValidationExceptionTest.java
-│       │               │   │   ├── DuplicateResourceExceptionTest.java
-│       │               │   │   └── ResourceNotFoundExceptionTest.java
-│       │               │   ├── id/
-│       │               │   │   ├── UuidV7HibernateTest.java
-│       │               │   │   └── UuidV7Test.java
-│       │               │   ├── time/
-│       │               │   │   ├── DateRangeTest.java
-│       │               │   │   └── SystemTimeProviderTest.java
-│       │               │   └── validation/
-│       │               │       ├── EmailBasicAnnotationTest.java
-│       │               │       └── EmailBasicValidatorTest.java
-│       │               ├── errors/
-│       │               │   └── ErrorCodesTest.java
-│       │               ├── http/
-│       │               │   └── CorrelationFilterTest.java
-│       │               ├── i18n/
-│       │               │   └── I18nTest.java
-│       │               ├── infra/
-│       │               │   ├── persistence/
-│       │               │   │   ├── PageRequestTest.java
-│       │               │   │   ├── PageTest.java
-│       │               │   │   └── PaginationTest.java
-│       │               │   └── util/
-│       │               │       ├── CollectionUtilsTest.java
-│       │               │       ├── CpfUtilsTest.java
-│       │               │       └── TextSearchUtilsTest.java
-│       │               └── presenter/
-│       │                   └── rest/
-│       │                       ├── ApiEnvelopeTest.java
-│       │                       ├── ApiErrorTest.java
-│       │                       └── mappers/
-│       │                           ├── ConstraintViolationExceptionMapperTest.java
-│       │                           ├── DomainExceptionMapperTest.java
-│       │                           └── UncaughtExceptionMapperTest.java
 │       └── resources/
 │           ├── application.yaml
 │           ├── messages_en_US.properties

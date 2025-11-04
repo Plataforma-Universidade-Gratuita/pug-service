@@ -1,24 +1,16 @@
 CREATE TABLE students
 (
-    id                    uuid PRIMARY KEY,
-    user_id               uuid          NOT NULL UNIQUE REFERENCES users (id),
-    email                 varchar(254)  NOT NULL,
+    user_id               uuid PRIMARY KEY REFERENCES users (id),
     academic_registration varchar(15)   NOT NULL UNIQUE,
+    campus                varchar(150)  NOT NULL,
     course_id             uuid          NOT NULL REFERENCES courses (id),
-    required_hours        numeric(6, 2) NOT NULL,
-    completed_hours       numeric(6, 2) NOT NULL DEFAULT 0,
+    required_hours        DECIMAL(6, 2) NOT NULL,
     start_date            date          NOT NULL,
     due_date              date          NOT NULL,
-    completed             boolean GENERATED ALWAYS AS (completed_hours >= required_hours) STORED,
-    active                boolean       NOT NULL DEFAULT true,
+
     CONSTRAINT chk_students_dates CHECK (due_date >= start_date),
-    CONSTRAINT chk_students_hours CHECK (
-        required_hours >= 0 AND completed_hours >= 0 AND completed_hours <= required_hours
-        ),
-    CONSTRAINT chk_students_email_basic CHECK (position('@' in email) > 1)
+    CONSTRAINT chk_students_required_nonneg CHECK (required_hours >= 0)
 );
 
-CREATE UNIQUE INDEX uq_students_email_ci ON students (lower(email));
 CREATE INDEX idx_students_course ON students (course_id);
-CREATE INDEX idx_students_completed ON students (completed);
 CREATE INDEX idx_students_window ON students (start_date, due_date);
