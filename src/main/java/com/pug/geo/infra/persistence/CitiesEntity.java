@@ -1,0 +1,49 @@
+package com.pug.geo.infra.persistence;
+
+import com.pug.shared.infra.persistence.BaseUuidV7Entity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"name", "ibgeCode"})
+@Entity
+@Table(
+    name = "cities",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_cities_ibge_code",
+          columnNames = {"ibge_code"})
+    })
+public class CitiesEntity extends BaseUuidV7Entity {
+
+  @NotBlank
+  @Size(max = 100)
+  @Column(name = "name", nullable = false, length = 100)
+  private String name;
+
+  @NotBlank
+  @Size(min = 7, max = 7)
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(name = "ibge_code", nullable = false, length = 7, unique = true)
+  private String ibgeCode;
+}

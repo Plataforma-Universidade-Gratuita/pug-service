@@ -23,22 +23,39 @@
 │   │   │           │   ├── domain/
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── CoursesEntity.java
+│   │   │           │   │       ├── SchoolsEntity.java
+│   │   │           │   │       └── StudentsEntity.java
 │   │   │           │   └── service/
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
+│   │   │           │   │       └── CitiesEntity.java
 │   │   │           │   └── service/
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── AdminsEntity.java
+│   │   │           │   │       └── UsersEntity.java
 │   │   │           │   └── service/
 │   │   │           │       └── commands/
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── EntitiesEntity.java
+│   │   │           │   │       └── StaffEntity.java
+│   │   │           │   └── service/
+│   │   │           ├── projects/
+│   │   │           │   ├── domain/
+│   │   │           │   ├── infra/
+│   │   │           │   │   └── persistence/
+│   │   │           │   │       ├── AttendancesEntity.java
+│   │   │           │   │       ├── EnrollmentsEntity.java
+│   │   │           │   │       ├── ProjectsBySchoolsEntity.java
+│   │   │           │   │       └── ProjectsEntity.java
 │   │   │           │   └── service/
 │   │   │           └── shared/
 │   │   │               ├── application/
@@ -63,6 +80,8 @@
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
 │   │   │               │   ├── persistence/
+│   │   │               │   │   ├── BaseUuidV7Entity.java
+│   │   │               │   │   └── TimestampColumnsListener.java
 │   │   │               │   └── util/
 │   │   │               └── presenter/
 │   │   │                   └── rest/
@@ -100,9 +119,20 @@
 │       │   └── com/
 │       │       └── pug/
 │       │           ├── academic/
+│       │           │   └── infra/
+│       │           │       └── persistence/
 │       │           ├── geo/
+│       │           │   └── infra/
+│       │           │       └── persistence/
 │       │           ├── identity/
+│       │           │   └── infra/
+│       │           │       └── persistence/
 │       │           ├── partner/
+│       │           │   └── infra/
+│       │           │       └── persistence/
+│       │           ├── projects/
+│       │           │   └── infra/
+│       │           │       └── persistence/
 │       │           └── shared/
 │       └── resources/
 │           ├── application.yaml
