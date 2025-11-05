@@ -21,43 +21,65 @@
 │   │   │       └── pug/
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
-│   │   │           │   │   └── CoursesRepository.java
+│   │   │           │   │   ├── CoursesRepository.java
+│   │   │           │   │   ├── SchoolsRepository.java
+│   │   │           │   │   └── StudentsRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── CoursesEntity.java
 │   │   │           │   │       ├── CoursesRepositoryImpl.java
 │   │   │           │   │       ├── SchoolsEntity.java
-│   │   │           │   │       └── StudentsEntity.java
+│   │   │           │   │       ├── SchoolsRepositoryImpl.java
+│   │   │           │   │       ├── StudentsEntity.java
+│   │   │           │   │       └── StudentsRepositoryImpl.java
 │   │   │           │   └── service/
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
+│   │   │           │   │   └── CitiesRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       └── CitiesEntity.java
+│   │   │           │   │       ├── CitiesEntity.java
+│   │   │           │   │       └── CitiesRepositoryImpl.java
 │   │   │           │   └── service/
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── AdminsRepository.java
+│   │   │           │   │   └── UsersRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── AdminsEntity.java
-│   │   │           │   │       └── UsersEntity.java
+│   │   │           │   │       ├── AdminsRepositoryImpl.java
+│   │   │           │   │       ├── UsersEntity.java
+│   │   │           │   │       └── UsersRepositoryImpl.java
 │   │   │           │   └── service/
 │   │   │           │       └── commands/
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── EntitiesRepository.java
+│   │   │           │   │   └── StaffRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── EntitiesEntity.java
-│   │   │           │   │       └── StaffEntity.java
+│   │   │           │   │       ├── EntitiesRepositoryImpl.java
+│   │   │           │   │       ├── StaffEntity.java
+│   │   │           │   │       └── StaffRepositoryImpl.java
 │   │   │           │   └── service/
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── AttendancesRepository.java
+│   │   │           │   │   ├── EnrollmentsRepository.java
+│   │   │           │   │   ├── ProjectsBySchoolsRepository.java
+│   │   │           │   │   └── ProjectsRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── AttendancesEntity.java
+│   │   │           │   │       ├── AttendancesRepositoryImpl.java
 │   │   │           │   │       ├── EnrollmentsEntity.java
+│   │   │           │   │       ├── EnrollmentsRepositoryImpl.java
 │   │   │           │   │       ├── ProjectsBySchoolsEntity.java
-│   │   │           │   │       └── ProjectsEntity.java
+│   │   │           │   │       ├── ProjectsBySchoolsRepositoryImpl.java
+│   │   │           │   │       ├── ProjectsEntity.java
+│   │   │           │   │       └── ProjectsRepositoryImpl.java
 │   │   │           │   └── service/
 │   │   │           └── shared/
 │   │   │               ├── domain/
