@@ -21,9 +21,11 @@
 │   │   │       └── pug/
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
+│   │   │           │   │   └── CoursesRepository.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── CoursesEntity.java
+│   │   │           │   │       ├── CoursesRepositoryImpl.java
 │   │   │           │   │       ├── SchoolsEntity.java
 │   │   │           │   │       └── StudentsEntity.java
 │   │   │           │   └── service/
@@ -121,6 +123,22 @@
 │       │           ├── geo/
 │       │           │   └── infra/
 │       │           │       └── persistence/
+│       │           ├── helpers/
+│       │           │   ├── CNPJGenerator.java
+│       │           │   ├── CPFGenerator.java
+│       │           │   └── entityGenerators/
+│       │           │       ├── AdminsEntityGenerator.java
+│       │           │       ├── AttendancesEntityGenerator.java
+│       │           │       ├── CitiesEntityGenerator.java
+│       │           │       ├── CoursesEntityGenerator.java
+│       │           │       ├── EnrollmentsEntityGenerator.java
+│       │           │       ├── EntitiesEntityGenerator.java
+│       │           │       ├── ProjectsBySchoolsEntityGenerator.java
+│       │           │       ├── ProjectsEntityGenerator.java
+│       │           │       ├── SchoolsEntityGenerator.java
+│       │           │       ├── StaffEntityGenerator.java
+│       │           │       ├── StudentsEntityGenerator.java
+│       │           │       └── UsersEntityGenerator.java
 │       │           ├── identity/
 │       │           │   └── infra/
 │       │           │       └── persistence/

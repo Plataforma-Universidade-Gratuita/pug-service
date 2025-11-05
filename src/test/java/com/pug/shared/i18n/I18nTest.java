@@ -1,26 +1,46 @@
 package com.pug.shared.i18n;
 
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.quarkus.test.junit.QuarkusTest;
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 public class I18nTest {
 
-    @Test
-    public void testTranslationKeyFound() {
-        I18n i18n = new I18n();
-        String translated = i18n.t("hello", "John");
+  @Test
+  public void testTranslationKeyFoundEnUS() {
+    Locale.setDefault(Locale.forLanguageTag("en-US"));
+    I18n i18n = new I18n();
+    String translated = i18n.t("hello", "John");
 
-        assertEquals("Test Hello, John!", translated, "The translation should come from the test-specific properties file.");
-    }
+    assertEquals(
+        "Test Hello, John!",
+        translated,
+        "The translation should come from the test-specific properties file for en-US.");
+  }
 
-    @Test
-    public void testMissingTranslationKey() {
-        I18n i18n = new I18n();
-        String translated = i18n.t("nonexistent");
+  @Test
+  public void testTranslationKeyFoundPtBR() {
+    Locale.setDefault(Locale.forLanguageTag("pt-BR"));
+    I18n i18n = new I18n();
+    String translated = i18n.t("hello", "John");
 
-        assertEquals("nonexistent", translated, "The missing key should be handled by the test-specific message.");
-    }
+    assertEquals(
+        "Test Olá, John!",
+        translated,
+        "The translation should come from the test-specific properties file for pt-BR.");
+  }
+
+  @Test
+  public void testMissingTranslationKey() {
+    I18n i18n = new I18n();
+    String translated = i18n.t("nonexistent");
+
+    assertEquals(
+        "nonexistent",
+        translated,
+        "The missing key should be handled by the test-specific message.");
+  }
 }
