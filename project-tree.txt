@@ -32,14 +32,24 @@
 │   │   │           │   │       ├── SchoolsRepositoryImpl.java
 │   │   │           │   │       ├── StudentsEntity.java
 │   │   │           │   │       └── StudentsRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
-│   │   │           │   │   └── CitiesRepository.java
+│   │   │           │   │   ├── CitiesRepository.java
+│   │   │           │   │   ├── City.java
+│   │   │           │   │   ├── errors/
+│   │   │           │   │   │   └── GeoErrorCodes.java
+│   │   │           │   │   └── records/
+│   │   │           │   │       └── IBGECode.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── CitiesEntity.java
 │   │   │           │   │       └── CitiesRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
@@ -51,8 +61,9 @@
 │   │   │           │   │       ├── AdminsRepositoryImpl.java
 │   │   │           │   │       ├── UsersEntity.java
 │   │   │           │   │       └── UsersRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
 │   │   │           │   └── service/
-│   │   │           │       └── commands/
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── EntitiesRepository.java
@@ -63,6 +74,8 @@
 │   │   │           │   │       ├── EntitiesRepositoryImpl.java
 │   │   │           │   │       ├── StaffEntity.java
 │   │   │           │   │       └── StaffRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
@@ -80,22 +93,24 @@
 │   │   │           │   │       ├── ProjectsBySchoolsRepositoryImpl.java
 │   │   │           │   │       ├── ProjectsEntity.java
 │   │   │           │   │       └── ProjectsRepositoryImpl.java
+│   │   │           │   ├── presenter/
+│   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           └── shared/
 │   │   │               ├── domain/
-│   │   │               │   ├── exceptions/
-│   │   │               │   │   ├── AppValidationException.java
-│   │   │               │   │   ├── DomainException.java
-│   │   │               │   │   ├── DuplicateResourceException.java
-│   │   │               │   │   └── ResourceNotFoundException.java
 │   │   │               │   ├── id/
-│   │   │               │   │   ├── UuidV7.java
-│   │   │               │   │   └── UuidV7Hibernate.java
+│   │   │               │   │   └── UuidV7.java
 │   │   │               │   └── time/
 │   │   │               │       ├── SystemTimeProvider.java
 │   │   │               │       └── TimeProvider.java
 │   │   │               ├── errors/
-│   │   │               │   └── ErrorCodes.java
+│   │   │               │   ├── ErrorCodes.java
+│   │   │               │   └── GenericErrorCodes.java
+│   │   │               ├── exceptions/
+│   │   │               │   ├── AppValidationException.java
+│   │   │               │   ├── DomainException.java
+│   │   │               │   ├── DuplicateResourceException.java
+│   │   │               │   └── ResourceNotFoundException.java
 │   │   │               ├── http/
 │   │   │               │   └── CorrelationFilter.java
 │   │   │               ├── i18n/
@@ -103,7 +118,8 @@
 │   │   │               ├── infra/
 │   │   │               │   └── persistence/
 │   │   │               │       ├── BaseUuidV7Entity.java
-│   │   │               │       └── TimestampColumnsListener.java
+│   │   │               │       ├── TimestampColumnsListener.java
+│   │   │               │       └── UuidV7Hibernate.java
 │   │   │               └── presenter/
 │   │   │                   └── rest/
 │   │   │                       ├── ApiEnvelope.java
@@ -140,14 +156,28 @@
 │       │   └── com/
 │       │       └── pug/
 │       │           ├── academic/
-│       │           │   └── infra/
-│       │           │       └── persistence/
+│       │           │   ├── domain/
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   └── service/
 │       │           ├── geo/
-│       │           │   └── infra/
-│       │           │       └── persistence/
+│       │           │   ├── domain/
+│       │           │   │   ├── CityTest.java
+│       │           │   │   └── records/
+│       │           │   │       └── IBGECodeTest.java
+│       │           │   ├── infra/
+│       │           │   │   ├── CityMapperTest.java
+│       │           │   │   └── persistence/
+│       │           │   │       └── CitiesRepositoryImplTest.java
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   └── service/
 │       │           ├── helpers/
 │       │           │   ├── CNPJGenerator.java
 │       │           │   ├── CPFGenerator.java
+│       │           │   ├── TestErrorCodes.java
 │       │           │   └── entityGenerators/
 │       │           │       ├── AdminsEntityGenerator.java
 │       │           │       ├── AttendancesEntityGenerator.java
@@ -162,32 +192,46 @@
 │       │           │       ├── StudentsEntityGenerator.java
 │       │           │       └── UsersEntityGenerator.java
 │       │           ├── identity/
-│       │           │   └── infra/
-│       │           │       └── persistence/
+│       │           │   ├── domain/
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   └── service/
 │       │           ├── partner/
-│       │           │   └── infra/
-│       │           │       └── persistence/
+│       │           │   ├── domain/
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   └── service/
 │       │           ├── projects/
-│       │           │   └── infra/
-│       │           │       └── persistence/
+│       │           │   ├── domain/
+│       │           │   ├── infra/
+│       │           │   │   └── persistence/
+│       │           │   ├── presenter/
+│       │           │   │   └── rest/
+│       │           │   └── service/
 │       │           └── shared/
 │       │               ├── domain/
-│       │               │   ├── exceptions/
-│       │               │   │   ├── AppValidationExceptionTest.java
-│       │               │   │   ├── DomainExceptionTest.java
-│       │               │   │   ├── DuplicateResourceExceptionTest.java
-│       │               │   │   └── ResourceNotFoundExceptionTest.java
 │       │               │   ├── id/
-│       │               │   │   ├── UuidV7HibernateTest.java
 │       │               │   │   └── UuidV7Test.java
 │       │               │   └── time/
 │       │               │       └── SystemTimeProviderTest.java
 │       │               ├── errors/
 │       │               │   └── ErrorCodesTest.java
+│       │               ├── exceptions/
+│       │               │   ├── AppValidationExceptionTest.java
+│       │               │   ├── DomainExceptionTest.java
+│       │               │   ├── DuplicateResourceExceptionTest.java
+│       │               │   └── ResourceNotFoundExceptionTest.java
 │       │               ├── http/
 │       │               │   └── CorrelationFilterTest.java
 │       │               ├── i18n/
 │       │               │   └── I18nTest.java
+│       │               ├── infra/
+│       │               │   └── persistence/
+│       │               │       └── UuidV7HibernateTest.java
 │       │               └── presenter/
 │       │                   └── rest/
 │       │                       ├── ApiEnvelopeTest.java
