@@ -58,7 +58,6 @@
 │   │   │           │   │       └── ProjectsEntity.java
 │   │   │           │   └── service/
 │   │   │           └── shared/
-│   │   │               ├── application/
 │   │   │               ├── domain/
 │   │   │               │   ├── exceptions/
 │   │   │               │   │   ├── AppValidationException.java
@@ -68,10 +67,9 @@
 │   │   │               │   ├── id/
 │   │   │               │   │   ├── UuidV7.java
 │   │   │               │   │   └── UuidV7Hibernate.java
-│   │   │               │   ├── time/
-│   │   │               │   │   ├── SystemTimeProvider.java
-│   │   │               │   │   └── TimeProvider.java
-│   │   │               │   └── validation/
+│   │   │               │   └── time/
+│   │   │               │       ├── SystemTimeProvider.java
+│   │   │               │       └── TimeProvider.java
 │   │   │               ├── errors/
 │   │   │               │   └── ErrorCodes.java
 │   │   │               ├── http/
@@ -79,10 +77,9 @@
 │   │   │               ├── i18n/
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
-│   │   │               │   ├── persistence/
-│   │   │               │   │   ├── BaseUuidV7Entity.java
-│   │   │               │   │   └── TimestampColumnsListener.java
-│   │   │               │   └── util/
+│   │   │               │   └── persistence/
+│   │   │               │       ├── BaseUuidV7Entity.java
+│   │   │               │       └── TimestampColumnsListener.java
 │   │   │               └── presenter/
 │   │   │                   └── rest/
 │   │   │                       ├── ApiEnvelope.java
@@ -134,6 +131,31 @@
 │       │           │   └── infra/
 │       │           │       └── persistence/
 │       │           └── shared/
+│       │               ├── domain/
+│       │               │   ├── exceptions/
+│       │               │   │   ├── AppValidationExceptionTest.java
+│       │               │   │   ├── DomainExceptionTest.java
+│       │               │   │   ├── DuplicateResourceExceptionTest.java
+│       │               │   │   └── ResourceNotFoundExceptionTest.java
+│       │               │   ├── id/
+│       │               │   │   ├── UuidV7HibernateTest.java
+│       │               │   │   └── UuidV7Test.java
+│       │               │   └── time/
+│       │               │       └── SystemTimeProviderTest.java
+│       │               ├── errors/
+│       │               │   └── ErrorCodesTest.java
+│       │               ├── http/
+│       │               │   └── CorrelationFilterTest.java
+│       │               ├── i18n/
+│       │               │   └── I18nTest.java
+│       │               └── presenter/
+│       │                   └── rest/
+│       │                       ├── ApiEnvelopeTest.java
+│       │                       ├── ApiErrorTest.java
+│       │                       └── mappers/
+│       │                           ├── ConstraintViolationExceptionMapperTest.java
+│       │                           ├── DomainExceptionMapperTest.java
+│       │                           └── UncaughtExceptionMapperTest.java
 │       └── resources/
 │           ├── application.yaml
 │           ├── messages_en_US.properties

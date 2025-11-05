@@ -16,7 +16,7 @@ SELECT p.id                                                              AS proj
        p.name,
        p.entity_id,
        p.status,
-       p.created_by_user_id,
+       p.created_by,
        p.created_at,
        p.closed_at,
        p.offered_hours,

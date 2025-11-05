@@ -66,8 +66,8 @@ public class ProjectsEntity extends BaseUuidV7Entity {
   private String description;
 
   @NotNull
-  @Column(name = "created_by_user_id", nullable = false)
-  private UUID createdByUserId;
+  @Column(name = "created_by", nullable = false)
+  private UUID createdBy;
 
   @NotNull
   @Column(name = "created_at", nullable = false)

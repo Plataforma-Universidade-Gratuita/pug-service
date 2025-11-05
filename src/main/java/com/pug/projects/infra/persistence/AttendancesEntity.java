@@ -82,4 +82,7 @@ public class AttendancesEntity extends BaseUuidV7Entity {
 
   @Column(name = "validated_at")
   private OffsetDateTime validatedAt;
+
+  @Column(name = "created_at")
+  private OffsetDateTime createdAt;
 }

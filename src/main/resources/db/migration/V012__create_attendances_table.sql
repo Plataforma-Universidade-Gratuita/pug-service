@@ -10,6 +10,7 @@ CREATE TABLE attendances
     qr_validation_hash varchar(512) UNIQUE,
     validated_by       uuid REFERENCES staff (user_id),
     validated_at       TIMESTAMP WITH TIME ZONE,
+    created_at         TIMESTAMP WITH TIME ZONE,
 
     CONSTRAINT fk_att_enroll FOREIGN KEY (project_id, student_id)
         REFERENCES enrollments (project_id, student_id),
