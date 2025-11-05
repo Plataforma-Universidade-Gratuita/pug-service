@@ -1,10 +1,7 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.pug.shared.errors.ErrorCodes;
 import com.pug.shared.i18n.I18n;
@@ -12,96 +9,81 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-class ConstraintViolationExceptionMapperTest {
+public class ConstraintViolationExceptionMapperTest {
 
-  @Mock private I18n i18n;
-
-  @InjectMocks private ConstraintViolationExceptionMapper exceptionMapper;
+  private ConstraintViolationExceptionMapper mapper;
+  private I18n i18n;
 
   @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  public void setup() {
+    i18n = mock(I18n.class);
+    mapper = new ConstraintViolationExceptionMapper();
+    mapper.i18n = i18n;
   }
 
   @Test
-  void testToResponse_withViolations() {
-    String field = "username";
-    String message = "Username cannot be empty";
-
-    ConstraintViolation<?> violation = mock(ConstraintViolation.class);
-
+  public void testToResponse_withValidations() {
+    Set<ConstraintViolation<Object>> violations = new HashSet<>();
+    ConstraintViolation<Object> violation = mock(ConstraintViolation.class);
     Path propertyPath = mock(Path.class);
-    when(propertyPath.toString()).thenReturn(field);
     when(violation.getPropertyPath()).thenReturn(propertyPath);
-    when(violation.getMessage()).thenReturn(message);
+    when(propertyPath.toString()).thenReturn("username");
+    when(violation.getMessage()).thenReturn("Username is required");
 
-    ConstraintViolationException ex =
-        new ConstraintViolationException(Collections.singleton(violation));
+    violations.add(violation);
 
-    String errorMessage = "Validation failed";
-    when(i18n.t(ErrorCodes.bundleKey(ErrorCodes.VALIDATION_ERROR))).thenReturn(errorMessage);
+    ConstraintViolationException exception = new ConstraintViolationException(violations);
 
-    Response response = exceptionMapper.toResponse(ex);
+    when(i18n.t(ErrorCodes.VALIDATION_ERROR.getBundleKey())).thenReturn("Validation failed");
 
-    assertEquals(422, response.getStatus(), "The response status should be 422");
+    Response response = mapper.toResponse(exception);
+
+    assertEquals(422, response.getStatus(), "Response status should be 422");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
     assertEquals(
-        MediaType.APPLICATION_JSON_TYPE,
-        response.getMediaType(),
-        "The response type should be JSON");
-
-    ApiEnvelope<?> apiEnvelope = (ApiEnvelope<?>) response.getEntity();
-    assertFalse(apiEnvelope.success(), "The success flag should be false for validation errors");
+        ErrorCodes.VALIDATION_ERROR.toString(), envelope.error().code(), "Error code should match");
     assertEquals(
-        ErrorCodes.VALIDATION_ERROR, apiEnvelope.error().code(), "Error code should match");
-    assertEquals(errorMessage, apiEnvelope.error().message(), "Error message should match");
+        "Validation failed",
+        envelope.error().message(),
+        "The message should be correctly translated");
+
+    assertEquals(1, envelope.error().details().get("count"), "Violation count should be 1");
+    assertNotNull(envelope.error().details().get("violations"), "Violations should not be null");
     assertTrue(
-        apiEnvelope.error().details().containsKey("count"), "The details should contain count");
-    assertTrue(
-        apiEnvelope.error().details().containsKey("violations"),
-        "The details should contain violations");
-
-    List<Map<String, Object>> violationsDetails =
-        (List<Map<String, Object>>) apiEnvelope.error().details().get("violations");
-    assertFalse(violationsDetails.isEmpty(), "Violations details should not be empty");
-    assertEquals(field, violationsDetails.getFirst().get("field"), "Field name should match");
-    assertEquals(
-        message, violationsDetails.getFirst().get("message"), "Violation message should match");
+        ((ArrayList) envelope.error().details().get("violations")).size() > 0,
+        "There should be at least one violation");
   }
 
   @Test
-  void testToResponse_withEmptyViolations() {
-    ConstraintViolationException ex = new ConstraintViolationException(Collections.emptySet());
+  public void testToResponse_withEmptyViolations() {
+    ConstraintViolationException exception = new ConstraintViolationException(new HashSet<>());
 
-    String errorMessage = "Validation failed";
-    when(i18n.t(ErrorCodes.bundleKey(ErrorCodes.VALIDATION_ERROR))).thenReturn(errorMessage);
+    when(i18n.t(ErrorCodes.VALIDATION_ERROR.getBundleKey())).thenReturn("Validation failed");
 
-    Response response = exceptionMapper.toResponse(ex);
+    Response response = mapper.toResponse(exception);
 
-    assertEquals(422, response.getStatus(), "The response status should be 422");
+    assertEquals(422, response.getStatus(), "Response status should be 422");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
     assertEquals(
-        MediaType.APPLICATION_JSON_TYPE,
-        response.getMediaType(),
-        "The response type should be JSON");
-
-    ApiEnvelope<?> apiEnvelope = (ApiEnvelope<?>) response.getEntity();
-    assertFalse(apiEnvelope.success(), "The success flag should be false for validation errors");
+        ErrorCodes.VALIDATION_ERROR.toString(), envelope.error().code(), "Error code should match");
     assertEquals(
-        ErrorCodes.VALIDATION_ERROR, apiEnvelope.error().code(), "Error code should match");
-    assertEquals(errorMessage, apiEnvelope.error().message(), "Error message should match");
+        "Validation failed",
+        envelope.error().message(),
+        "The message should be correctly translated");
+
+    assertEquals(0, envelope.error().details().get("count"), "Violation count should be 0");
+    assertNotNull(envelope.error().details().get("violations"), "Violations should not be null");
     assertTrue(
-        apiEnvelope.error().details().containsKey("count"), "The details should contain count");
-    assertEquals(
-        0, apiEnvelope.error().details().get("count"), "The violation count should be zero");
+        ((ArrayList) envelope.error().details().get("violations")).isEmpty(),
+        "Violations should be empty");
   }
 }

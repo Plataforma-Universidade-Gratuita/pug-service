@@ -1,79 +1,94 @@
-package com.pug.shared.domain.exceptions;
+package com.pug.shared.exceptions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.pug.helpers.TestErrorCodes;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class DomainExceptionTest {
 
   private static class TestDomainException extends DomainException {
-    public TestDomainException(String code) {
+    public TestDomainException(TestErrorCodes code) {
       super(code);
     }
 
-    public TestDomainException(String code, Throwable cause) {
+    public TestDomainException(TestErrorCodes code, Throwable cause) {
       super(code, cause);
+    }
+
+    public TestDomainException(TestErrorCodes code, Map<String, Object> details) {
+      super(code, details);
     }
   }
 
   @Test
   public void testDomainException() {
-    String expectedCode = "Some domain error occurred";
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_DATA;
     DomainException exception = new TestDomainException(expectedCode);
+
     assertEquals(
-        expectedCode, exception.getMessage(), "The message (code) should be correctly set.");
+        expectedCode.toString(), exception.getMessage(), "The message should be the code itself.");
     assertEquals(
         expectedCode,
         exception.code(),
-        "The code method should return the same value as the message.");
+        "The code method should return the same value as the code.");
   }
 
   @Test
   public void testDomainExceptionNullCode() {
-    DomainException exception = new TestDomainException(null);
-    assertNull(exception.getMessage(), "The message should be null when passed null.");
-    assertNull(exception.code(), "The code method should return null for null code.");
+    assertThrows(
+        NullPointerException.class,
+        () -> {
+          new TestDomainException(null);
+        },
+        "A NullPointerException should be thrown when code is null.");
   }
 
   @Test
   public void testDomainExceptionEmptyCode() {
-    String expectedCode = "";
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_FORMAT;
     DomainException exception = new TestDomainException(expectedCode);
-    assertEquals(expectedCode, exception.getMessage(), "The code should be an empty string.");
-    assertEquals(expectedCode, exception.code(), "The code method should return an empty string.");
+    assertEquals(
+        expectedCode.toString(), exception.getMessage(), "The message should be the code itself.");
+    assertEquals(
+        expectedCode, exception.code(), "The code method should return the correct value.");
   }
 
   @Test
   public void testDomainExceptionSpecialCharactersInCode() {
-    String expectedCode = "Error: @!#$%^&*()";
+    TestErrorCodes expectedCode = TestErrorCodes.MISSING_FIELD;
     DomainException exception = new TestDomainException(expectedCode);
     assertEquals(
-        expectedCode,
+        expectedCode.toString(),
         exception.getMessage(),
-        "The exception should handle special characters in the code.");
+        "The message should correctly handle special characters in the code.");
     assertEquals(
         expectedCode, exception.code(), "The code method should return the correct value.");
   }
 
   @Test
   public void testDomainExceptionLongCode() {
-    String expectedCode = "A".repeat(1000);
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_DATA;
     DomainException exception = new TestDomainException(expectedCode);
     assertEquals(
-        expectedCode, exception.getMessage(), "The exception should handle very long codes.");
+        expectedCode.toString(),
+        exception.getMessage(),
+        "The exception should handle very long codes correctly.");
     assertEquals(
         expectedCode, exception.code(), "The code method should handle long codes correctly.");
   }
 
   @Test
   public void testDomainExceptionWithNullCause() {
-    String expectedCode = "Some domain error occurred";
-    DomainException exception = new TestDomainException(expectedCode, null);
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_FORMAT;
+    DomainException exception = new TestDomainException(expectedCode, (Throwable) null);
     assertEquals(
-        expectedCode,
+        expectedCode.toString(),
         exception.getMessage(),
-        "The message (code) should be set correctly with a null cause.");
+        "The message should be set correctly with a null cause.");
     assertNull(exception.getCause(), "The cause should be null.");
     assertEquals(
         expectedCode, exception.code(), "The code method should return the correct value.");
@@ -81,11 +96,11 @@ public class DomainExceptionTest {
 
   @Test
   public void testDomainExceptionWithCause() {
-    String expectedCode = "Some domain error occurred";
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_DATA;
     Throwable cause = new Throwable("Cause of the domain error");
     DomainException exception = new TestDomainException(expectedCode, cause);
     assertEquals(
-        expectedCode, exception.getMessage(), "The message (code) should be set correctly.");
+        expectedCode.toString(), exception.getMessage(), "The message should be set correctly.");
     assertEquals(cause, exception.getCause(), "The cause should be passed correctly.");
     assertEquals(
         expectedCode, exception.code(), "The code method should return the correct value.");

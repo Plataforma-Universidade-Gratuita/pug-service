@@ -19,10 +19,10 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   @Override
   public Response toResponse(Throwable ex) {
-    String msg = i18n.t(ErrorCodes.bundleKey(ErrorCodes.INTERNAL_ERROR));
+    String msg = i18n.t(ErrorCodes.INTERNAL_ERROR.getBundleKey());
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(ErrorCodes.INTERNAL_ERROR, msg, Map.of()))
+        .entity(ApiEnvelope.error(ErrorCodes.INTERNAL_ERROR.toString(), msg, Map.of()))
         .build();
   }
 }

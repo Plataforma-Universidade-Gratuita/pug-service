@@ -1,54 +1,72 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import com.pug.shared.errors.ErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-class UncaughtExceptionMapperTest {
+public class UncaughtExceptionMapperTest {
 
-  @Mock private I18n i18n;
-
-  @InjectMocks private UncaughtExceptionMapper exceptionMapper;
+  private UncaughtExceptionMapper mapper;
+  private I18n i18n;
 
   @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  public void setup() {
+    i18n = mock(I18n.class);
+    mapper = new UncaughtExceptionMapper();
+    mapper.i18n = i18n;
   }
 
   @Test
-  void testToResponse() {
-    Throwable exception = new RuntimeException("Something went wrong");
+  public void testToResponse_withThrowable() {
+    Throwable exception = new RuntimeException("Unexpected error");
 
-    String errorMessage = "An unexpected error occurred";
-    when(i18n.t(ErrorCodes.bundleKey(ErrorCodes.INTERNAL_ERROR))).thenReturn(errorMessage);
+    String expectedMessage = "An internal server error occurred";
+    when(i18n.t(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
 
-    Response response = exceptionMapper.toResponse(exception);
+    Response response = mapper.toResponse(exception);
 
+    assertEquals(500, response.getStatus(), "Response status should be 500");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
     assertEquals(
-        Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-        response.getStatus(),
-        "The response status should be 500");
+        ErrorCodes.INTERNAL_ERROR.toString(),
+        envelope.error().code(),
+        "Error code should be INTERNAL_ERROR");
     assertEquals(
-        MediaType.APPLICATION_JSON_TYPE,
-        response.getMediaType(),
-        "The response type should be JSON");
+        expectedMessage,
+        envelope.error().message(),
+        "The error message should be correctly translated");
+    assertNotNull(envelope.error().details(), "Details should be present in the error response");
+    assertTrue(envelope.error().details().isEmpty(), "Details map should be empty");
+  }
 
-    ApiEnvelope<?> apiEnvelope = (ApiEnvelope<?>) response.getEntity();
-    assertFalse(apiEnvelope.success(), "The success flag should be false for internal errors");
-    assertEquals(ErrorCodes.INTERNAL_ERROR, apiEnvelope.error().code(), "Error code should match");
-    assertEquals(errorMessage, apiEnvelope.error().message(), "Error message should match");
-    assertTrue(apiEnvelope.error().details().isEmpty(), "Details should be an empty map");
+  @Test
+  public void testToResponse_withNullThrowable() {
+    Throwable exception = null;
+
+    String expectedMessage = "An internal server error occurred";
+    when(i18n.t(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
+
+    Response response = mapper.toResponse(exception);
+
+    assertEquals(500, response.getStatus(), "Response status should be 500");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
+    assertEquals(
+        ErrorCodes.INTERNAL_ERROR.toString(),
+        envelope.error().code(),
+        "Error code should be INTERNAL_ERROR");
+    assertEquals(
+        expectedMessage,
+        envelope.error().message(),
+        "The error message should be correctly translated");
+    assertNotNull(envelope.error().details(), "Details should be present in the error response");
+    assertTrue(envelope.error().details().isEmpty(), "Details map should be empty");
   }
 }

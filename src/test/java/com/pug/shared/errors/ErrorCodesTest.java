@@ -7,24 +7,45 @@ import org.junit.jupiter.api.Test;
 public class ErrorCodesTest {
 
   @Test
-  public void testInternalError() {
-    String bundleKey = ErrorCodes.bundleKey(ErrorCodes.INTERNAL_ERROR);
+  public void testInternalErrorBundleKey() {
+    ErrorCodes errorCode = ErrorCodes.INTERNAL_ERROR;
+
+    String bundleKey = errorCode.getBundleKey();
+
     assertEquals(
-        "error.internal", bundleKey, "INTERNAL_ERROR should map to the correct bundle key");
+        "error.internal",
+        bundleKey,
+        "The bundleKey for INTERNAL_ERROR should be 'error.internal'.");
   }
 
   @Test
-  public void testValidationError() {
-    String bundleKey = ErrorCodes.bundleKey(ErrorCodes.VALIDATION_ERROR);
+  public void testValidationErrorBundleKey() {
+    ErrorCodes errorCode = ErrorCodes.VALIDATION_ERROR;
+
+    String bundleKey = errorCode.getBundleKey();
+
     assertEquals(
-        "error.validation", bundleKey, "VALIDATION_ERROR should map to the correct bundle key");
+        "error.validation",
+        bundleKey,
+        "The bundleKey for VALIDATION_ERROR should be 'error.validation'.");
   }
 
   @Test
-  public void testNonExistentErrorCode() {
-    String nonExistentCode = "NON_EXISTENT_ERROR";
-    String bundleKey = ErrorCodes.bundleKey(nonExistentCode);
+  public void testEnumToString() {
+    ErrorCodes errorCode = ErrorCodes.INTERNAL_ERROR;
+
+    String name = errorCode.toString();
+
+    assertEquals("INTERNAL_ERROR", name, "The toString() method should return 'INTERNAL_ERROR'.");
+  }
+
+  @Test
+  public void testEnumToStringForValidationError() {
+    ErrorCodes errorCode = ErrorCodes.VALIDATION_ERROR;
+
+    String name = errorCode.toString();
+
     assertEquals(
-        nonExistentCode, bundleKey, "Non-existent error codes should return the code itself");
+        "VALIDATION_ERROR", name, "The toString() method should return 'VALIDATION_ERROR'.");
   }
 }

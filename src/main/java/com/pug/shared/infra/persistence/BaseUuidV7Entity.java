@@ -1,6 +1,5 @@
 package com.pug.shared.infra.persistence;
 
-import com.pug.shared.domain.id.UuidV7Hibernate;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;

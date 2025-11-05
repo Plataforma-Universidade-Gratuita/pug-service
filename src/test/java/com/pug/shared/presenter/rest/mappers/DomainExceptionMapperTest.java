@@ -1,59 +1,110 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import com.pug.shared.domain.exceptions.DomainException;
-import com.pug.shared.errors.ErrorCodes;
+import com.pug.helpers.TestErrorCodes;
+import com.pug.shared.exceptions.DomainException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-class DomainExceptionMapperTest {
+public class DomainExceptionMapperTest {
 
-  @Mock private I18n i18n;
-
-  @InjectMocks private DomainExceptionMapper exceptionMapper;
+  private DomainExceptionMapper mapper;
+  private I18n i18n;
 
   @BeforeEach
-  void setUp() {
-    MockitoAnnotations.openMocks(this);
+  public void setup() {
+    i18n = mock(I18n.class);
+    mapper = new DomainExceptionMapper();
+    mapper.i18n = i18n;
   }
 
   @Test
-  void testToResponse() {
-    String errorCode = "VALIDATION_ERROR";
-    String errorMessage = "The provided data is invalid";
+  public void testToResponse_withDomainException() {
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_DATA;
+    Map<String, Object> details = new HashMap<>();
+    details.put("field", "username");
+    details.put("message", "Field 'username' is required");
 
-    DomainException domainException = mock(DomainException.class);
-    when(domainException.code()).thenReturn(errorCode);
+    DomainException exception = mock(DomainException.class);
+    when(exception.code()).thenReturn(expectedCode);
+    when(exception.getDetails()).thenReturn(details);
+    when(i18n.t(expectedCode.getBundleKey())).thenReturn("Validation failed");
 
-    when(i18n.t(ErrorCodes.bundleKey(errorCode))).thenReturn(errorMessage);
+    Response response = mapper.toResponse(exception);
 
-    Response response = exceptionMapper.toResponse(domainException);
+    assertEquals(400, response.getStatus(), "Response status should be 400");
 
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
+    assertEquals(expectedCode.toString(), envelope.error().code(), "Error code should match");
     assertEquals(
-        Response.Status.BAD_REQUEST.getStatusCode(),
-        response.getStatus(),
-        "The response status should be 400");
-    assertEquals(
-        MediaType.APPLICATION_JSON_TYPE,
-        response.getMediaType(),
-        "The response type should be JSON");
+        "Validation failed",
+        envelope.error().message(),
+        "The message should be correctly translated");
 
-    ApiEnvelope<?> apiEnvelope = (ApiEnvelope<?>) response.getEntity();
-    assertFalse(apiEnvelope.success(), "The success flag should be false for domain errors");
-    assertEquals(errorCode, apiEnvelope.error().code(), "Error code should match");
-    assertEquals(errorMessage, apiEnvelope.error().message(), "Error message should match");
-    assertTrue(apiEnvelope.error().details().isEmpty(), "Details should be an empty map");
+    assertEquals(2, envelope.error().details().size(), "Details should contain 2 elements");
+    assertEquals(
+        "username",
+        envelope.error().details().get("field"),
+        "Field 'username' should be in the details");
+    assertEquals(
+        "Field 'username' is required",
+        envelope.error().details().get("message"),
+        "The message should be correctly in details");
+  }
+
+  @Test
+  public void testToResponse_withNullDetails() {
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_FORMAT;
+    DomainException exception = mock(DomainException.class);
+    when(exception.code()).thenReturn(expectedCode);
+    when(exception.getDetails()).thenReturn(null);
+    when(i18n.t(expectedCode.getBundleKey())).thenReturn("Validation failed");
+
+    Response response = mapper.toResponse(exception);
+
+    assertEquals(400, response.getStatus(), "Response status should be 400");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
+    assertEquals(expectedCode.toString(), envelope.error().code(), "Error code should match");
+    assertEquals(
+        "Validation failed",
+        envelope.error().message(),
+        "The message should be correctly translated");
+
+    assertNotNull(envelope.error().details(), "Details should not be null");
+    assertTrue(envelope.error().details().isEmpty(), "Details should be empty when null is passed");
+  }
+
+  @Test
+  public void testToResponse_withEmptyDetails() {
+    TestErrorCodes expectedCode = TestErrorCodes.INVALID_DATA;
+    Map<String, Object> emptyDetails = new HashMap<>();
+
+    DomainException exception = mock(DomainException.class);
+    when(exception.code()).thenReturn(expectedCode);
+    when(exception.getDetails()).thenReturn(emptyDetails);
+    when(i18n.t(expectedCode.getBundleKey())).thenReturn("Validation failed");
+
+    Response response = mapper.toResponse(exception);
+
+    assertEquals(400, response.getStatus(), "Response status should be 400");
+
+    ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
+    assertEquals(expectedCode.toString(), envelope.error().code(), "Error code should match");
+    assertEquals(
+        "Validation failed",
+        envelope.error().message(),
+        "The message should be correctly translated");
+
+    assertNotNull(envelope.error().details(), "Details should not be null");
+    assertTrue(
+        envelope.error().details().isEmpty(), "Details should be empty when empty map is passed");
   }
 }

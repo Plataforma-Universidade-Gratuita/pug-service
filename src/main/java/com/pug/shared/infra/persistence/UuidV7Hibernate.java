@@ -1,4 +1,4 @@
-package com.pug.shared.domain.id;
+package com.pug.shared.infra.persistence;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;

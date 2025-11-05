@@ -1,19 +1,15 @@
 package com.pug.shared.errors;
 
-import java.util.Map;
+import lombok.Getter;
 
-public final class ErrorCodes {
-  private ErrorCodes() {}
+@Getter
+public enum ErrorCodes implements GenericErrorCodes {
+  INTERNAL_ERROR("error.internal"),
+  VALIDATION_ERROR("error.validation");
 
-  public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
-  public static final String VALIDATION_ERROR = "VALIDATION_ERROR";
+  private final String bundleKey;
 
-  private static final Map<String, String> MAP =
-      Map.ofEntries(
-          Map.entry(VALIDATION_ERROR, "error.validation"),
-          Map.entry(INTERNAL_ERROR, "error.internal"));
-
-  public static String bundleKey(String code) {
-    return MAP.getOrDefault(code, code);
+  ErrorCodes(String bundleKey) {
+    this.bundleKey = bundleKey;
   }
 }

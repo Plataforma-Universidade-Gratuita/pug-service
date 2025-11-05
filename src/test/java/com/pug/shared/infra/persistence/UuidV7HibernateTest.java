@@ -1,4 +1,4 @@
-package com.pug.shared.domain.id;
+package com.pug.shared.infra.persistence;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -38,11 +38,11 @@ public class ConstraintViolationExceptionMapper
     details.put("count", violations.size());
     details.put("violations", violations);
 
-    String msg = i18n.t(ErrorCodes.bundleKey(ErrorCodes.VALIDATION_ERROR));
+    String msg = i18n.t(ErrorCodes.VALIDATION_ERROR.getBundleKey());
 
     return Response.status(422)
         .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(ErrorCodes.VALIDATION_ERROR, msg, details))
+        .entity(ApiEnvelope.error(ErrorCodes.VALIDATION_ERROR.toString(), msg, details))
         .build();
   }
 }
