@@ -1,14 +1,17 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
 import com.pug.shared.errors.ErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class UncaughtExceptionMapperTest {
 
@@ -27,7 +30,7 @@ public class UncaughtExceptionMapperTest {
     Throwable exception = new RuntimeException("Unexpected error");
 
     String expectedMessage = "An internal server error occurred";
-    when(i18n.t(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
+    when(i18n.translation(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
 
     Response response = mapper.toResponse(exception);
 
@@ -35,13 +38,13 @@ public class UncaughtExceptionMapperTest {
 
     ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
     assertEquals(
-        ErrorCodes.INTERNAL_ERROR.toString(),
-        envelope.error().code(),
-        "Error code should be INTERNAL_ERROR");
+            ErrorCodes.INTERNAL_ERROR.toString(),
+            envelope.error().code(),
+            "Error code should be INTERNAL_ERROR");
     assertEquals(
-        expectedMessage,
-        envelope.error().message(),
-        "The error message should be correctly translated");
+            expectedMessage,
+            envelope.error().message(),
+            "The error message should be correctly translated");
     assertNotNull(envelope.error().details(), "Details should be present in the error response");
     assertTrue(envelope.error().details().isEmpty(), "Details map should be empty");
   }
@@ -51,7 +54,7 @@ public class UncaughtExceptionMapperTest {
     Throwable exception = null;
 
     String expectedMessage = "An internal server error occurred";
-    when(i18n.t(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
+    when(i18n.translation(ErrorCodes.INTERNAL_ERROR.getBundleKey())).thenReturn(expectedMessage);
 
     Response response = mapper.toResponse(exception);
 
@@ -59,13 +62,13 @@ public class UncaughtExceptionMapperTest {
 
     ApiEnvelope envelope = (ApiEnvelope) response.getEntity();
     assertEquals(
-        ErrorCodes.INTERNAL_ERROR.toString(),
-        envelope.error().code(),
-        "Error code should be INTERNAL_ERROR");
+            ErrorCodes.INTERNAL_ERROR.toString(),
+            envelope.error().code(),
+            "Error code should be INTERNAL_ERROR");
     assertEquals(
-        expectedMessage,
-        envelope.error().message(),
-        "The error message should be correctly translated");
+            expectedMessage,
+            envelope.error().message(),
+            "The error message should be correctly translated");
     assertNotNull(envelope.error().details(), "Details should be present in the error response");
     assertTrue(envelope.error().details().isEmpty(), "Details map should be empty");
   }

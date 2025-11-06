@@ -1,5 +1,6 @@
 ./
 ├── .dockerignore
+├── .env
 ├── .git/
 ├── .gitignore
 ├── .idea/
@@ -42,7 +43,7 @@
 │   │   │           │   │   ├── errors/
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── records/
-│   │   │           │   │       └── IBGECode.java
+│   │   │           │   │       └── IbgeCode.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   └── persistence/
@@ -97,12 +98,6 @@
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           └── shared/
-│   │   │               ├── domain/
-│   │   │               │   ├── id/
-│   │   │               │   │   └── UuidV7.java
-│   │   │               │   └── time/
-│   │   │               │       ├── SystemTimeProvider.java
-│   │   │               │       └── TimeProvider.java
 │   │   │               ├── errors/
 │   │   │               │   ├── ErrorCodes.java
 │   │   │               │   └── GenericErrorCodes.java
@@ -116,23 +111,30 @@
 │   │   │               ├── i18n/
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
-│   │   │               │   └── persistence/
-│   │   │               │       ├── BaseUuidV7Entity.java
-│   │   │               │       ├── TimestampColumnsListener.java
-│   │   │               │       └── UuidV7Hibernate.java
-│   │   │               └── presenter/
-│   │   │                   └── rest/
-│   │   │                       ├── ApiEnvelope.java
-│   │   │                       ├── ApiError.java
-│   │   │                       └── mappers/
-│   │   │                           ├── ConstraintViolationExceptionMapper.java
-│   │   │                           ├── DomainExceptionMapper.java
-│   │   │                           └── UncaughtExceptionMapper.java
+│   │   │               │   ├── persistence/
+│   │   │               │   │   ├── BaseUuidV7Entity.java
+│   │   │               │   │   ├── TimestampColumnsListener.java
+│   │   │               │   │   └── UuidV7Hibernate.java
+│   │   │               │   └── search/
+│   │   │               │       └── EsAnalysis.java
+│   │   │               ├── presenter/
+│   │   │               │   └── rest/
+│   │   │               │       ├── ApiEnvelope.java
+│   │   │               │       ├── ApiError.java
+│   │   │               │       └── mappers/
+│   │   │               │           ├── ConstraintViolationExceptionMapper.java
+│   │   │               │           ├── DomainExceptionMapper.java
+│   │   │               │           └── UncaughtExceptionMapper.java
+│   │   │               ├── text/
+│   │   │               │   └── Normalization.java
+│   │   │               └── time/
+│   │   │                   ├── SystemTimeProvider.java
+│   │   │                   └── TimeProvider.java
 │   │   └── resources/
 │   │       ├── META-INF/
 │   │       │   └── resources/
 │   │       │       └── .gitkeep
-│   │       ├── application.yaml
+│   │       ├── application.properties
 │   │       ├── db/
 │   │       │   └── migration/
 │   │       │       ├── V001__create_users_table.sql
@@ -166,11 +168,12 @@
 │       │           │   ├── domain/
 │       │           │   │   ├── CityTest.java
 │       │           │   │   └── records/
-│       │           │   │       └── IBGECodeTest.java
+│       │           │   │       └── IbgeCodeTest.java
 │       │           │   ├── infra/
 │       │           │   │   ├── CityMapperTest.java
 │       │           │   │   └── persistence/
-│       │           │   │       └── CitiesRepositoryImplTest.java
+│       │           │   │       ├── CitiesRepositoryImplCRUDTest.java
+│       │           │   │       └── CitiesRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
@@ -214,10 +217,6 @@
 │       │           │   └── service/
 │       │           └── shared/
 │       │               ├── domain/
-│       │               │   ├── id/
-│       │               │   │   └── UuidV7Test.java
-│       │               │   └── time/
-│       │               │       └── SystemTimeProviderTest.java
 │       │               ├── errors/
 │       │               │   └── ErrorCodesTest.java
 │       │               ├── exceptions/
@@ -232,16 +231,20 @@
 │       │               ├── infra/
 │       │               │   └── persistence/
 │       │               │       └── UuidV7HibernateTest.java
-│       │               └── presenter/
-│       │                   └── rest/
-│       │                       ├── ApiEnvelopeTest.java
-│       │                       ├── ApiErrorTest.java
-│       │                       └── mappers/
-│       │                           ├── ConstraintViolationExceptionMapperTest.java
-│       │                           ├── DomainExceptionMapperTest.java
-│       │                           └── UncaughtExceptionMapperTest.java
+│       │               ├── presenter/
+│       │               │   └── rest/
+│       │               │       ├── ApiEnvelopeTest.java
+│       │               │       ├── ApiErrorTest.java
+│       │               │       └── mappers/
+│       │               │           ├── ConstraintViolationExceptionMapperTest.java
+│       │               │           ├── DomainExceptionMapperTest.java
+│       │               │           └── UncaughtExceptionMapperTest.java
+│       │               ├── text/
+│       │               │   └── NormalizationTest.java
+│       │               └── time/
+│       │                   └── SystemTimeProviderTest.java
 │       └── resources/
-│           ├── application.yaml
+│           ├── application.properties
 │           ├── messages_en_US.properties
 │           └── messages_pt_BR.properties
 └── target/

@@ -1,8 +1,8 @@
 package com.pug.shared.errors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ErrorCodesTest {
 
@@ -13,9 +13,9 @@ public class ErrorCodesTest {
     String bundleKey = errorCode.getBundleKey();
 
     assertEquals(
-        "error.internal",
-        bundleKey,
-        "The bundleKey for INTERNAL_ERROR should be 'error.internal'.");
+            "error.internal",
+            bundleKey,
+            "The bundleKey for INTERNAL_ERROR should be 'error.internal'.");
   }
 
   @Test
@@ -25,9 +25,9 @@ public class ErrorCodesTest {
     String bundleKey = errorCode.getBundleKey();
 
     assertEquals(
-        "error.validation",
-        bundleKey,
-        "The bundleKey for VALIDATION_ERROR should be 'error.validation'.");
+            "error.validation",
+            bundleKey,
+            "The bundleKey for VALIDATION_ERROR should be 'error.validation'.");
   }
 
   @Test
@@ -46,6 +46,6 @@ public class ErrorCodesTest {
     String name = errorCode.toString();
 
     assertEquals(
-        "VALIDATION_ERROR", name, "The toString() method should return 'VALIDATION_ERROR'.");
+            "VALIDATION_ERROR", name, "The toString() method should return 'VALIDATION_ERROR'.");
   }
 }

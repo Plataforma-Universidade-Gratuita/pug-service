@@ -1,14 +1,15 @@
 package com.pug.geo.infra;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.pug.geo.domain.City;
-import com.pug.geo.domain.records.IBGECode;
+import com.pug.geo.domain.records.IbgeCode;
 import com.pug.geo.infra.persistence.CitiesEntity;
 import com.pug.helpers.entityGenerators.CitiesEntityGenerator;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class CityMapperTest {
 
@@ -21,13 +22,13 @@ public class CityMapperTest {
     City city = CityMapper.toDomain(entity);
 
     assertEquals(entity.getName(), city.getName());
-    assertEquals(new IBGECode(entity.getIbgeCode()), city.getIbgeCode());
+    assertEquals(new IbgeCode(entity.getIbgeCode()), city.getIbgeCode());
     assertEquals(entity.getId(), city.getId());
   }
 
   @Test
   public void testToEntity_withCity() {
-    City city = City.builder().name("São Paulo").ibgeCode(new IBGECode("3550308")).build();
+    City city = City.builder().name("São Paulo").ibgeCode(new IbgeCode("3550308")).build();
 
     CitiesEntity entity = CityMapper.toEntity(city);
 
@@ -38,7 +39,7 @@ public class CityMapperTest {
 
   @Test
   public void testCopy_withCityAndEntity() {
-    City city = City.builder().name("São Paulo").ibgeCode(new IBGECode("3550308")).build();
+    City city = City.builder().name("São Paulo").ibgeCode(new IbgeCode("3550308")).build();
     CitiesEntity entity = new CitiesEntity();
     entity.setId(UUID.randomUUID());
 

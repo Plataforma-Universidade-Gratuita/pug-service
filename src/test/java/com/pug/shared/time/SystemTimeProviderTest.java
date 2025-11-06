@@ -1,11 +1,12 @@
-package com.pug.shared.domain.time;
+package com.pug.shared.time;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SystemTimeProviderTest {
 

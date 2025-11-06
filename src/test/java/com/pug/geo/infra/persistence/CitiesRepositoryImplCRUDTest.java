@@ -1,24 +1,26 @@
 package com.pug.geo.infra.persistence;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.pug.geo.domain.CitiesRepository;
 import com.pug.helpers.entityGenerators.CitiesEntityGenerator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
-public class CitiesRepositoryImplTest {
+public class CitiesRepositoryImplCRUDTest {
 
-  @Inject CitiesRepository citiesRepository;
+  @Inject
+  CitiesRepository citiesRepository;
 
   private final CitiesEntityGenerator citiesEntityGenerator = new CitiesEntityGenerator();
 
@@ -74,9 +76,9 @@ public class CitiesRepositoryImplTest {
   @Transactional
   public void testPersistAll() {
     List<CitiesEntity> cities =
-        Stream.generate(citiesEntityGenerator::createRandomCitiesEntity)
-            .limit(10)
-            .collect(Collectors.toList());
+            Stream.generate(citiesEntityGenerator::createRandomCitiesEntity)
+                    .limit(10)
+                    .collect(Collectors.toList());
 
     citiesRepository.persistAll(cities);
 

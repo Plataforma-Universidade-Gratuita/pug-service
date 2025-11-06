@@ -79,6 +79,7 @@ public class UsersEntity extends BaseUuidV7Entity {
   private String passwordHash;
 
   @NotNull
+  @Builder.Default
   @Column(name = "active", nullable = false)
   private Boolean active = Boolean.TRUE;
 

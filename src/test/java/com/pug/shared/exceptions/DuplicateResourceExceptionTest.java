@@ -1,9 +1,9 @@
 package com.pug.shared.exceptions;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import com.pug.helpers.TestErrorCodes;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DuplicateResourceExceptionTest {
 

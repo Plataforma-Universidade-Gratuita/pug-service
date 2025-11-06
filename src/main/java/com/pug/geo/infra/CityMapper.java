@@ -1,24 +1,44 @@
 package com.pug.geo.infra;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.domain.records.IBGECode;
+import com.pug.geo.domain.records.IbgeCode;
 import com.pug.geo.infra.persistence.CitiesEntity;
 
+/**
+ * Mapper class for converting between City domain objects and CitiesEntity persistence entities.
+ */
 public final class CityMapper {
 
-  private CityMapper() {}
-
-  public static City toDomain(CitiesEntity e) {
-    if (e == null) return null;
-    return City.builder()
-        .id(e.getId())
-        .name(e.getName())
-        .ibgeCode(new IBGECode(e.getIbgeCode()))
-        .build();
+  private CityMapper() {
   }
 
+  /**
+   * Converts a CitiesEntity to a City domain object.
+   *
+   * @param e The CitiesEntity to convert.
+   * @return The corresponding City domain object.
+   */
+  public static City toDomain(CitiesEntity e) {
+    if (e == null) {
+      return null;
+    }
+    return City.builder()
+            .id(e.getId())
+            .name(e.getName())
+            .ibgeCode(new IbgeCode(e.getIbgeCode()))
+            .build();
+  }
+
+  /**
+   * Converts a City domain object to a CitiesEntity.
+   *
+   * @param d The City domain object to convert.
+   * @return The corresponding CitiesEntity.
+   */
   public static CitiesEntity toEntity(City d) {
-    if (d == null) return null;
+    if (d == null) {
+      return null;
+    }
     return CitiesEntity.builder().name(d.getName()).ibgeCode(d.getIbgeCode().toString()).build();
   }
 

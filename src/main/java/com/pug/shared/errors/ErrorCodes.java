@@ -2,6 +2,9 @@ package com.pug.shared.errors;
 
 import lombok.Getter;
 
+/**
+ * Enumeration of generic error codes used across the application.
+ */
 @Getter
 public enum ErrorCodes implements GenericErrorCodes {
   INTERNAL_ERROR("error.internal"),

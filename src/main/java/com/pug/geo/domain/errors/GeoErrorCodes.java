@@ -3,6 +3,9 @@ package com.pug.geo.domain.errors;
 import com.pug.shared.errors.GenericErrorCodes;
 import lombok.Getter;
 
+/**
+ * Enumeration of error codes related to geographical data validation.
+ */
 @Getter
 public enum GeoErrorCodes implements GenericErrorCodes {
   INVALID_IBGE_CODE("error.domain.geo.ibge-code.invalid"),
