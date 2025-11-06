@@ -1,4 +1,4 @@
-package com.pug.geo.domain.records;
+package com.pug.geo.domain.vos;
 
 import com.pug.geo.domain.errors.GeoErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
@@ -18,7 +18,7 @@ public record IbgeCode(String code) {
    * @throws AppValidationException if the code is null or not exactly 7 characters long.
    */
   public IbgeCode {
-    if (code == null || code.length() != 7) {
+    if (code == null || code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
       throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE);
     }
   }

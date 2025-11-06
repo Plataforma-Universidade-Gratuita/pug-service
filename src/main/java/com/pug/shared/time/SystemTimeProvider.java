@@ -1,13 +1,10 @@
 package com.pug.shared.time;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import java.time.Clock;
 import java.time.Instant;
 
-/**
- * A TimeProvider implementation that provides the current system time using UTC clock.
- */
+/** A TimeProvider implementation that provides the current system time using UTC clock. */
 @ApplicationScoped
 public class SystemTimeProvider implements TimeProvider {
   private final Clock clock = Clock.systemUTC();

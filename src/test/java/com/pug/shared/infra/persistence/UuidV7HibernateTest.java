@@ -1,11 +1,10 @@
 package com.pug.shared.infra.persistence;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 public class UuidV7HibernateTest {
 
@@ -22,6 +21,6 @@ public class UuidV7HibernateTest {
   private boolean isValidUuidFormat(UUID uuid) {
     String uuidString = uuid.toString();
     return uuidString.matches(
-            "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+        "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
   }
 }

@@ -1,14 +1,11 @@
 package com.pug.shared.infra.persistence;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import java.util.UUID;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.id.uuid.UuidValueGenerator;
 
-import java.util.UUID;
-
-/**
- * A Hibernate UUID generator that creates Version 7 UUIDs (time-ordered).
- */
+/** A Hibernate UUID generator that creates Version 7 UUIDs (time-ordered). */
 public class UuidV7Hibernate implements UuidValueGenerator {
   /**
    * Generates a Version 7 UUID using the UuidCreator library.

@@ -1,11 +1,11 @@
-package com.pug.geo.domain.records;
+package com.pug.geo.domain.vos;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.pug.geo.domain.errors.GeoErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class IbgeCodeTest {
 
@@ -21,16 +21,16 @@ public class IbgeCodeTest {
   @Test
   public void testInvalidIBGECode_nullCode() {
     Exception exception =
-            assertThrows(
-                    AppValidationException.class,
-                    () -> {
-                      new IbgeCode(null);
-                    });
+        assertThrows(
+            AppValidationException.class,
+            () -> {
+              new IbgeCode(null);
+            });
 
     assertEquals(
-            GeoErrorCodes.INVALID_IBGE_CODE.toString(),
-            exception.getMessage(),
-            "The exception should have the correct error message.");
+        GeoErrorCodes.INVALID_IBGE_CODE.toString(),
+        exception.getMessage(),
+        "The exception should have the correct error message.");
   }
 
   @Test
@@ -38,16 +38,16 @@ public class IbgeCodeTest {
     String invalidCode = "12345";
 
     Exception exception =
-            assertThrows(
-                    AppValidationException.class,
-                    () -> {
-                      new IbgeCode(invalidCode);
-                    });
+        assertThrows(
+            AppValidationException.class,
+            () -> {
+              new IbgeCode(invalidCode);
+            });
 
     assertEquals(
-            GeoErrorCodes.INVALID_IBGE_CODE.toString(),
-            exception.getMessage(),
-            "The exception should have the correct error message.");
+        GeoErrorCodes.INVALID_IBGE_CODE.toString(),
+        exception.getMessage(),
+        "The exception should have the correct error message.");
   }
 
   @Test

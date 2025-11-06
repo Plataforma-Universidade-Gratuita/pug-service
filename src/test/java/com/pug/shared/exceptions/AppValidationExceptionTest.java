@@ -1,13 +1,12 @@
 package com.pug.shared.exceptions;
 
-import com.pug.helpers.TestErrorCodes;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.pug.helpers.TestErrorCodes;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 public class AppValidationExceptionTest {
 
@@ -41,7 +40,7 @@ public class AppValidationExceptionTest {
     TestErrorCodes expectedCode = TestErrorCodes.INVALID_FORMAT;
 
     AppValidationException exception =
-            new AppValidationException(expectedCode, (Map<String, Object>) null);
+        new AppValidationException(expectedCode, (Map<String, Object>) null);
 
     assertEquals(expectedCode, exception.code());
 

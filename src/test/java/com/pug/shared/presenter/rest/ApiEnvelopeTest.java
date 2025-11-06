@@ -1,14 +1,13 @@
 package com.pug.shared.presenter.rest;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 class ApiEnvelopeTest {
 
@@ -36,7 +35,7 @@ class ApiEnvelopeTest {
   @Test
   void testApiEnvelope_error_withApiError() {
     ApiError error =
-            new ApiError("ERROR_CODE", "An error occurred", Map.of("detail", "Invalid data"));
+        new ApiError("ERROR_CODE", "An error occurred", Map.of("detail", "Invalid data"));
     ApiEnvelope<Void> envelope = ApiEnvelope.error(error);
 
     assertFalse(envelope.success(), "The success flag should be false for an error response");

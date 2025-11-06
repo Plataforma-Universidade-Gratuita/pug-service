@@ -1,6 +1,5 @@
 ./
 ├── .dockerignore
-├── .env
 ├── .git/
 ├── .gitignore
 ├── .idea/
@@ -42,7 +41,7 @@
 │   │   │           │   │   ├── City.java
 │   │   │           │   │   ├── errors/
 │   │   │           │   │   │   └── GeoErrorCodes.java
-│   │   │           │   │   └── records/
+│   │   │           │   │   └── vos/
 │   │   │           │   │       └── IbgeCode.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
@@ -50,8 +49,13 @@
 │   │   │           │   │       ├── CitiesEntity.java
 │   │   │           │   │       └── CitiesRepositoryImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
+│   │   │           │   │   │   ├── CityCreateOrUpdateRequest.java
+│   │   │           │   │   │   └── CityResponse.java
 │   │   │           │   │   └── rest/
+│   │   │           │   │       └── CitiesResource.java
 │   │   │           │   └── service/
+│   │   │           │       └── CitiesService.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── AdminsRepository.java
@@ -118,6 +122,11 @@
 │   │   │               │   └── search/
 │   │   │               │       └── EsAnalysis.java
 │   │   │               ├── presenter/
+│   │   │               │   ├── dtos/
+│   │   │               │   │   ├── BulkCreateRequest.java
+│   │   │               │   │   ├── BulkCreateResult.java
+│   │   │               │   │   ├── DeleteResult.java
+│   │   │               │   │   └── UuidsRequest.java
 │   │   │               │   └── rest/
 │   │   │               │       ├── ApiEnvelope.java
 │   │   │               │       ├── ApiError.java
@@ -126,14 +135,20 @@
 │   │   │               │           ├── DomainExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── text/
-│   │   │               │   └── Normalization.java
-│   │   │               └── time/
-│   │   │                   ├── SystemTimeProvider.java
-│   │   │                   └── TimeProvider.java
+│   │   │               │   └── StringUtils.java
+│   │   │               ├── time/
+│   │   │               │   ├── SystemTimeProvider.java
+│   │   │               │   └── TimeProvider.java
+│   │   │               └── validation/
+│   │   │                   ├── UuidV7.java
+│   │   │                   ├── UuidV7ForString.java
+│   │   │                   └── UuidV7ForUuid.java
 │   │   └── resources/
 │   │       ├── META-INF/
 │   │       │   └── resources/
 │   │       │       └── .gitkeep
+│   │       ├── ValidationMessages_en_US.properties
+│   │       ├── ValidationMessages_pt_BR.properties
 │   │       ├── application.properties
 │   │       ├── db/
 │   │       │   └── migration/
@@ -167,7 +182,7 @@
 │       │           ├── geo/
 │       │           │   ├── domain/
 │       │           │   │   ├── CityTest.java
-│       │           │   │   └── records/
+│       │           │   │   └── vos/
 │       │           │   │       └── IbgeCodeTest.java
 │       │           │   ├── infra/
 │       │           │   │   ├── CityMapperTest.java
@@ -232,6 +247,7 @@
 │       │               │   └── persistence/
 │       │               │       └── UuidV7HibernateTest.java
 │       │               ├── presenter/
+│       │               │   ├── dtos/
 │       │               │   └── rest/
 │       │               │       ├── ApiEnvelopeTest.java
 │       │               │       ├── ApiErrorTest.java
@@ -240,7 +256,7 @@
 │       │               │           ├── DomainExceptionMapperTest.java
 │       │               │           └── UncaughtExceptionMapperTest.java
 │       │               ├── text/
-│       │               │   └── NormalizationTest.java
+│       │               │   └── StringUtilsTest.java
 │       │               └── time/
 │       │                   └── SystemTimeProviderTest.java
 │       └── resources/

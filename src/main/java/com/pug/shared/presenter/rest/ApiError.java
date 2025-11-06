@@ -6,15 +6,15 @@ import java.util.Map;
 /**
  * API Error Record.
  *
- * @param code
- * @param message
- * @param details
+ * @param code the error code
+ * @param message the error message
+ * @param details the error details
  */
 public record ApiError(String code, String message, Map<String, Object> details) {
   /**
    * Constructor.
    *
-   * @param code    Error code.
+   * @param code Error code.
    * @param message Error message.
    * @param details Error details.
    */
@@ -37,7 +37,7 @@ public record ApiError(String code, String message, Map<String, Object> details)
   /**
    * Factory method.
    *
-   * @param code    Error code.
+   * @param code Error code.
    * @param message Error message.
    * @param details Error details.
    * @return ApiError instance.

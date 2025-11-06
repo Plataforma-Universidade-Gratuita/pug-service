@@ -4,15 +4,12 @@ import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.UuidGenerator;
 
-import java.util.UUID;
-
-/**
- * Base entity class with a UUIDv7 identifier.
- */
+/** Base entity class with a UUIDv7 identifier. */
 @Getter
 @Setter
 @MappedSuperclass

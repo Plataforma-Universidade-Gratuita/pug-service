@@ -1,15 +1,14 @@
 package com.pug.geo.infra;
 
-import com.pug.geo.domain.City;
-import com.pug.geo.domain.records.IbgeCode;
-import com.pug.geo.infra.persistence.CitiesEntity;
-import com.pug.helpers.entityGenerators.CitiesEntityGenerator;
-import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+
+import com.pug.geo.domain.City;
+import com.pug.geo.domain.vos.IbgeCode;
+import com.pug.geo.infra.persistence.CitiesEntity;
+import com.pug.helpers.entityGenerators.CitiesEntityGenerator;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 public class CityMapperTest {
 

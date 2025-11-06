@@ -8,9 +8,7 @@ import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
 
-/**
- * A JAX-RS filter that manages correlation IDs for incoming requests and outgoing responses.
- */
+/** A JAX-RS filter that manages correlation IDs for incoming requests and outgoing responses. */
 @Provider
 @Priority(Priorities.HEADER_DECORATOR)
 public class CorrelationFilter implements ContainerRequestFilter, ContainerResponseFilter {
@@ -24,7 +22,9 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   @Override
   public void filter(ContainerRequestContext req) {
     String cid = req.getHeaderString(HDR);
-    if (cid == null || cid.isBlank()) cid = java.util.UUID.randomUUID().toString();
+    if (cid == null || cid.isBlank()) {
+      cid = java.util.UUID.randomUUID().toString();
+    }
     req.setProperty(HDR, cid);
     org.jboss.logging.MDC.put(HDR, cid);
   }
@@ -38,7 +38,9 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext res) {
     String cid = (String) req.getProperty(HDR);
-    if (cid != null) res.getHeaders().putSingle(HDR, cid);
+    if (cid != null) {
+      res.getHeaders().putSingle(HDR, cid);
+    }
     org.jboss.logging.MDC.remove(HDR);
   }
 }

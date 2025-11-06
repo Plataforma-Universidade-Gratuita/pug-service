@@ -1,11 +1,10 @@
 package com.pug.shared.i18n;
 
-import io.quarkus.test.junit.QuarkusTest;
-import org.junit.jupiter.api.Test;
-
-import java.util.Locale;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import io.quarkus.test.junit.QuarkusTest;
+import java.util.Locale;
+import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 public class I18nTest {
@@ -17,9 +16,9 @@ public class I18nTest {
     String translated = i18n.translation("hello", "John");
 
     assertEquals(
-            "Test Hello, John!",
-            translated,
-            "The translation should come from the test-specific properties file for en-US.");
+        "Test Hello, John!",
+        translated,
+        "The translation should come from the test-specific properties file for en-US.");
   }
 
   @Test
@@ -29,9 +28,9 @@ public class I18nTest {
     String translated = i18n.translation("hello", "John");
 
     assertEquals(
-            "Test Olá, John!",
-            translated,
-            "The translation should come from the test-specific properties file for pt-BR.");
+        "Test Olá, John!",
+        translated,
+        "The translation should come from the test-specific properties file for pt-BR.");
   }
 
   @Test
@@ -40,8 +39,8 @@ public class I18nTest {
     String translated = i18n.translation("nonexistent");
 
     assertEquals(
-            "nonexistent",
-            translated,
-            "The missing key should be handled by the test-specific message.");
+        "nonexistent",
+        translated,
+        "The missing key should be handled by the test-specific message.");
   }
 }

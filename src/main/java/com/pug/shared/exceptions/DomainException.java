@@ -1,14 +1,11 @@
 package com.pug.shared.exceptions;
 
 import com.pug.shared.errors.GenericErrorCodes;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Base class for domain-specific exceptions in the application.
- */
+/** Base class for domain-specific exceptions in the application. */
 public abstract class DomainException extends RuntimeException {
   private final GenericErrorCodes code;
   private final Map<String, Object> details;
@@ -27,7 +24,7 @@ public abstract class DomainException extends RuntimeException {
   /**
    * Creates a new DomainException with the specified error code and additional details.
    *
-   * @param code    the generic error code representing the error condition.
+   * @param code the generic error code representing the error condition.
    * @param details a map of additional details related to the error.
    */
   protected DomainException(GenericErrorCodes code, Map<String, Object> details) {
@@ -39,7 +36,7 @@ public abstract class DomainException extends RuntimeException {
   /**
    * Creates a new DomainException with the specified error code and cause.
    *
-   * @param code  the generic error code representing the error condition.
+   * @param code the generic error code representing the error condition.
    * @param cause the underlying cause of the exception.
    */
   protected DomainException(GenericErrorCodes code, Throwable cause) {

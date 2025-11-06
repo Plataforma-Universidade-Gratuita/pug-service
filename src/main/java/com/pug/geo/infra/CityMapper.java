@@ -1,7 +1,7 @@
 package com.pug.geo.infra;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.domain.records.IbgeCode;
+import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.geo.infra.persistence.CitiesEntity;
 
 /**
@@ -9,8 +9,7 @@ import com.pug.geo.infra.persistence.CitiesEntity;
  */
 public final class CityMapper {
 
-  private CityMapper() {
-  }
+  private CityMapper() {}
 
   /**
    * Converts a CitiesEntity to a City domain object.
@@ -23,10 +22,10 @@ public final class CityMapper {
       return null;
     }
     return City.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .ibgeCode(new IbgeCode(e.getIbgeCode()))
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .ibgeCode(new IbgeCode(e.getIbgeCode()))
+        .build();
   }
 
   /**

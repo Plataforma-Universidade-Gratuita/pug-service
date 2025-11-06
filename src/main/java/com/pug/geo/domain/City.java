@@ -1,18 +1,15 @@
 package com.pug.geo.domain;
 
 import com.pug.geo.domain.errors.GeoErrorCodes;
-import com.pug.geo.domain.records.IbgeCode;
+import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.exceptions.AppValidationException;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.UUID;
-
-/**
- * Domain entity representing a City with validation logic.
- */
+/** Domain entity representing a City with validation logic. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -34,9 +31,7 @@ public class City {
     }
   }
 
-  /**
-   * Builder class for City with validation on build.
-   */
+  /** Builder class for City with validation on build. */
   public static class CityBuilder {
     /**
      * Builds the City instance after validating its fields.

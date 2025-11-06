@@ -1,13 +1,12 @@
 package com.pug.shared.presenter.rest;
 
-import org.junit.jupiter.api.Test;
-
-import java.util.Map;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 class ApiErrorTest {
 
@@ -32,9 +31,9 @@ class ApiErrorTest {
     assertNotNull(apiError.details(), "Details should not be null");
     assertFalse(apiError.details().isEmpty(), "Details should not be empty");
     assertEquals(
-            "value",
-            apiError.details().get("key"),
-            "Details should contain the correct key-value pair");
+        "value",
+        apiError.details().get("key"),
+        "Details should contain the correct key-value pair");
   }
 
   @Test
@@ -46,8 +45,8 @@ class ApiErrorTest {
     assertEquals("An error occurred", apiError.message(), "Message should match");
     assertFalse(apiError.details().isEmpty(), "Details should not be empty");
     assertEquals(
-            "value",
-            apiError.details().get("key"),
-            "Details should contain the correct key-value pair");
+        "value",
+        apiError.details().get("key"),
+        "Details should contain the correct key-value pair");
   }
 }

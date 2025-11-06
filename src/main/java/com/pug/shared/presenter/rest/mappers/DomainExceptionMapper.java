@@ -11,15 +11,12 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-/**
- * Maps DomainException to HTTP responses.
- */
+/** Maps DomainException to HTTP responses. */
 @Provider
 @ApplicationScoped
 public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts DomainException to a HTTP Response.
@@ -32,8 +29,8 @@ public class DomainExceptionMapper implements ExceptionMapper<DomainException> {
     GenericErrorCodes code = ex.code();
     String msg = i18n.translation(code.getBundleKey());
     return Response.status(Response.Status.BAD_REQUEST)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(code.toString(), msg, ex.getDetails()))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(code.toString(), msg, ex.getDetails()))
+        .build();
   }
 }
