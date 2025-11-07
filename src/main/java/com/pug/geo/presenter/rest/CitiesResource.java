@@ -119,6 +119,19 @@ public class CitiesResource {
   }
 
   /**
+   * Get a city by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code of the city.
+   * @return a Response with the city.
+   */
+  @GET
+  @Path("/ibge/{ibgeCode}")
+  public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
+    City found = service.getByIbgeCode(ibgeCode);
+    return Response.ok(ApiEnvelope.ok(CityResponse.from(found))).build();
+  }
+
+  /**
    * Delete cities by their IDs.
    *
    * @param req the request containing the IDs to delete.

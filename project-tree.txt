@@ -204,14 +204,22 @@
 │       │           │   │       ├── CitiesRepositoryImplCRUDTest.java
 │       │           │   │       └── CitiesRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
+│       │           │   │   ├── dtos/
+│       │           │   │   │   ├── CityCreateOrUpdateRequestTest.java
+│       │           │   │   │   └── CityResponseTest.java
 │       │           │   │   └── rest/
+│       │           │   │       └── CitiesResourceTest.java
 │       │           │   └── service/
+│       │           │       └── CitiesServiceTest.java
 │       │           ├── helpers/
 │       │           │   ├── CNPJGenerator.java
 │       │           │   ├── CPFGenerator.java
 │       │           │   ├── TestErrorCodes.java
 │       │           │   ├── domainGenerators/
-│       │           │   │   └── UserGenerator.java
+│       │           │   │   ├── CityGenerator.java
+│       │           │   │   ├── UserGenerator.java
+│       │           │   │   └── vos/
+│       │           │   │       └── IbgeCodeGenerator.java
 │       │           │   └── entityGenerators/
 │       │           │       ├── AdminsEntityGenerator.java
 │       │           │       ├── AttendancesEntityGenerator.java
@@ -255,6 +263,8 @@
 │       │           │   └── service/
 │       │           └── shared/
 │       │               ├── domain/
+│       │               │   └── enums/
+│       │               │       └── AccountTypeTest.java
 │       │               ├── errors/
 │       │               │   └── ErrorCodesTest.java
 │       │               ├── exceptions/
@@ -271,6 +281,10 @@
 │       │               │       └── UuidV7HibernateTest.java
 │       │               ├── presenter/
 │       │               │   ├── dtos/
+│       │               │   │   ├── BulkCreateRequestTest.java
+│       │               │   │   ├── BulkCreateResultTest.java
+│       │               │   │   ├── DeleteResultTest.java
+│       │               │   │   └── UuidsRequestTest.java
 │       │               │   └── rest/
 │       │               │       ├── ApiEnvelopeTest.java
 │       │               │       ├── ApiErrorTest.java
