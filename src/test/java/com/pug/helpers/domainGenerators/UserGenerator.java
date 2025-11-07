@@ -1,20 +1,21 @@
 package com.pug.helpers.domainGenerators;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.helpers.CPFGenerator;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
+import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
-/** Helper class to generate random User instances for testing purposes. */
 public final class UserGenerator {
   private final ThreadLocalRandom rnd = ThreadLocalRandom.current();
   private final CPFGenerator cpfGen = new CPFGenerator();
 
   /** Pre-persist user: id=null, createdAt=null, active=true, no password hash. */
-  public User randomUser() {
+  public User createRandomUser() {
     return User.builder()
         .id(null)
         .cpf(new Cpf(cpfGen.generateRandomCPF()))
@@ -24,6 +25,21 @@ public final class UserGenerator {
         .passwordHash(null)
         .active(Boolean.TRUE)
         .createdAt(null)
+        .build();
+  }
+
+  /** Persisted-like user: id set, createdAt set. Useful when a non-null id is required. */
+  public User createRandomPersistedUser() {
+    OffsetDateTime created = OffsetDateTime.now().minusSeconds(rnd.nextLong(60, 86_400));
+    return User.builder()
+        .id(UuidCreator.getTimeOrderedEpoch())
+        .cpf(new Cpf(cpfGen.generateRandomCPF()))
+        .name(randomName())
+        .email(new Email(randomEmail()))
+        .accountType(randomAccountType())
+        .passwordHash(null)
+        .active(Boolean.TRUE)
+        .createdAt(created)
         .build();
   }
 
@@ -45,7 +61,7 @@ public final class UserGenerator {
 
   private AccountType randomAccountType() {
     AccountType[] vals = AccountType.values();
-    return vals[ThreadLocalRandom.current().nextInt(vals.length)];
+    return vals[rnd.nextInt(vals.length)];
   }
 
   private static String capitalize(String s) {
@@ -65,5 +81,11 @@ public final class UserGenerator {
     StringBuilder sb = new StringBuilder(len);
     for (int i = 0; i < len; i++) sb.append(chars.charAt(rnd.nextInt(chars.length())));
     return sb.toString();
+  }
+
+  /** Backward-compat alias. */
+  @Deprecated
+  public User randomUser() {
+    return createRandomUser();
   }
 }

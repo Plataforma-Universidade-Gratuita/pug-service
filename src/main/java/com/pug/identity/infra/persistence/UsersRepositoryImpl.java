@@ -44,7 +44,20 @@ public class UsersRepositoryImpl
     }
     long deleted = delete("id in ?1", ids);
     flush();
+    getEntityManager().clear();
     return deleted;
+  }
+
+  @Transactional
+  @Override
+  public void deactivateById(UUID id) {
+    UsersEntity user = findById(id);
+    if (user == null) {
+      return;
+    }
+    if (Boolean.TRUE.equals(user.getActive())) {
+      user.setActive(false);
+    }
   }
 
   @Override

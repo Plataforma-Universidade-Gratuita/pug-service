@@ -196,7 +196,7 @@ class CitiesServiceTest {
     List<City> out = service.search(query);
 
     assertEquals(1, out.size());
-    assertEquals(c.getIbgeCode().toString(), out.get(0).getIbgeCode().toString());
+    assertEquals(c.getIbgeCode().toString(), out.getFirst().getIbgeCode().toString());
     verify(repo).searchByName(expectedKey);
   }
 }

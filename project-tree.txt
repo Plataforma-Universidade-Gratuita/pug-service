@@ -79,6 +79,7 @@
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
+│   │   │           │       ├── AdminsService.java
 │   │   │           │       ├── PasswordService.java
 │   │   │           │       └── UsersService.java
 │   │   │           ├── partner/
@@ -217,6 +218,7 @@
 │       │           │   ├── CPFGenerator.java
 │       │           │   ├── TestErrorCodes.java
 │       │           │   ├── domainGenerators/
+│       │           │   │   ├── AdminGenerator.java
 │       │           │   │   ├── CityGenerator.java
 │       │           │   │   ├── UserGenerator.java
 │       │           │   │   └── vos/
@@ -236,18 +238,23 @@
 │       │           │       └── UsersEntityGenerator.java
 │       │           ├── identity/
 │       │           │   ├── domain/
+│       │           │   │   ├── AdminTest.java
 │       │           │   │   ├── UserTest.java
 │       │           │   │   └── vos/
 │       │           │   │       ├── CpfTest.java
 │       │           │   │       └── EmailTest.java
 │       │           │   ├── infra/
+│       │           │   │   ├── AdminMapperTest.java
 │       │           │   │   ├── UserMapperTest.java
 │       │           │   │   └── persistence/
+│       │           │   │       ├── AdminsRepositoryImplCRUDTest.java
 │       │           │   │       ├── UsersRepositoryImplCRUDTest.java
 │       │           │   │       └── UsersRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
+│       │           │       ├── AdminsServiceTest.java
+│       │           │       ├── PasswordServiceTest.java
 │       │           │       └── UsersServiceTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/

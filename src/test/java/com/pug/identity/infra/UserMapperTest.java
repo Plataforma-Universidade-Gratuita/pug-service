@@ -55,7 +55,7 @@ public class UserMapperTest {
   @Test
   void toEntity_maps_from_domain_without_createdAt() {
     User d =
-        domainGen.randomUser().toBuilder()
+        domainGen.createRandomUser().toBuilder()
             .name("Bob Test")
             .email(new Email("Bob.TEST@Example.com"))
             .accountType(AccountType.ADMIN)

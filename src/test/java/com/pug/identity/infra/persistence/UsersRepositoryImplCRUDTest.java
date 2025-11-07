@@ -151,4 +151,51 @@ public class UsersRepositoryImplCRUDTest {
     assertTrue(list.stream().anyMatch(u -> u.getEmail().equals(a.getEmail())));
     assertTrue(list.stream().anyMatch(u -> u.getEmail().equals(b.getEmail())));
   }
+
+  @Test
+  public void testDeactivateById_setsActiveFalse() {
+    UsersEntity u = gen.createRandomUsersEntity();
+    u.setActive(true);
+    usersRepository.persist(u);
+
+    usersRepository.deactivateById(u.getId());
+
+    var after = usersRepository.findOptionalById(u.getId()).orElseThrow();
+    assertFalse(after.getActive());
+  }
+
+  @Test
+  public void testDeactivateById_idempotent() {
+    UsersEntity u = gen.createRandomUsersEntity();
+    usersRepository.persist(u);
+
+    usersRepository.deactivateById(u.getId());
+    usersRepository.deactivateById(u.getId());
+
+    var after = usersRepository.findOptionalById(u.getId()).orElseThrow();
+    assertFalse(after.getActive());
+  }
+
+  @Test
+  public void testDeactivateById_nonExisting_noop() {
+    UsersEntity u = gen.createRandomUsersEntity();
+    usersRepository.persist(u);
+
+    usersRepository.deactivateById(java.util.UUID.randomUUID());
+
+    var after = usersRepository.findOptionalById(u.getId()).orElseThrow();
+    assertTrue(after.getActive());
+  }
+
+  @Test
+  public void testDeactivateById_alreadyInactive() {
+    UsersEntity u = gen.createRandomUsersEntity();
+    u.setActive(false);
+    usersRepository.persist(u);
+
+    usersRepository.deactivateById(u.getId());
+
+    var after = usersRepository.findOptionalById(u.getId()).orElseThrow();
+    assertFalse(after.getActive());
+  }
 }

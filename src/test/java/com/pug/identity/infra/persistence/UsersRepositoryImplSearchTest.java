@@ -26,6 +26,9 @@ public class UsersRepositoryImplSearchTest {
 
   @Transactional
   void seedTx() {
+    em.createQuery("delete from AdminsEntity").executeUpdate();
+    em.createQuery("delete from StaffEntity ").executeUpdate();
+    em.createQuery("delete from StudentsEntity ").executeUpdate();
     em.createQuery("delete from UsersEntity").executeUpdate();
     em.persist(
         UsersEntity.builder()

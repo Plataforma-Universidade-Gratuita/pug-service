@@ -43,7 +43,7 @@ class UsersServiceTest {
 
   @Test
   void save_newUser_persists_and_returns_domain() {
-    User u = userGen.randomUser();
+    User u = userGen.createRandomUser();
     when(repo.existsByEmail(u.getEmail().toString())).thenReturn(false);
 
     doAnswer(
@@ -70,7 +70,7 @@ class UsersServiceTest {
 
   @Test
   void save_duplicate_email_throws_DuplicateResourceException() {
-    User u = userGen.randomUser();
+    User u = userGen.createRandomUser();
     when(repo.existsByEmail(u.getEmail().toString())).thenReturn(true);
 
     assertThrows(DuplicateResourceException.class, () -> service.save(u));
@@ -78,7 +78,7 @@ class UsersServiceTest {
 
   @Test
   void saveAll_any_duplicate_email_throws() {
-    List<User> users = List.of(userGen.randomUser(), userGen.randomUser());
+    List<User> users = List.of(userGen.createRandomUser(), userGen.createRandomUser());
     when(repo.existsAnyByEmailIn(anyCollection())).thenReturn(true);
 
     assertThrows(DuplicateResourceException.class, () -> service.saveAll(users));
@@ -86,7 +86,7 @@ class UsersServiceTest {
 
   @Test
   void saveAll_ok_persists_list() {
-    List<User> users = List.of(userGen.randomUser(), userGen.randomUser());
+    List<User> users = List.of(userGen.createRandomUser(), userGen.createRandomUser());
     when(repo.existsAnyByEmailIn(anyCollection())).thenReturn(false);
 
     assertDoesNotThrow(() -> service.saveAll(users));
@@ -96,7 +96,7 @@ class UsersServiceTest {
   @Test
   void update_not_found_throws_ResourceNotFound() {
     UUID id = UUID.randomUUID();
-    User data = userGen.randomUser();
+    User data = userGen.createRandomUser();
     when(repo.findOptionalById(id)).thenReturn(Optional.empty());
 
     assertThrows(ResourceNotFoundException.class, () -> service.update(id, data));
@@ -110,7 +110,7 @@ class UsersServiceTest {
     current.setId(id);
     current.setCreatedAt(OffsetDateTime.now());
 
-    User data = userGen.randomUser();
+    User data = userGen.createRandomUser();
 
     UsersEntity other = entGen.createRandomUsersEntity();
     other.setId(UUID.randomUUID());

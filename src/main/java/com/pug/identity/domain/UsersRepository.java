@@ -86,4 +86,11 @@ public interface UsersRepository {
    * @return true if any UsersEntity with emails in the collection exists, false otherwise.
    */
   boolean existsAnyByEmailIn(Collection<String> emails);
+
+  /**
+   * Deactivates a UsersEntity by its ID.
+   *
+   * @param id the UUID of the UsersEntity to deactivate.
+   */
+  void deactivateById(UUID id);
 }

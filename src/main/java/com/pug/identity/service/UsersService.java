@@ -96,6 +96,38 @@ public class UsersService {
   }
 
   /**
+   * Deactivate a user by ID.
+   *
+   * @param id the ID of the user to deactivate.
+   * @throws ResourceNotFoundException if the user does not exist.
+   */
+  @Transactional
+  public void deactivateById(UUID id) {
+    UsersEntity e =
+        repo.findOptionalById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+    if (Boolean.TRUE.equals(e.getActive())) {
+      e.setActive(false); // managed; flushed at tx end
+    }
+  }
+
+  /**
+   * Deactivate a user by ID.
+   *
+   * @param id the ID of the user to deactivate.
+   * @throws ResourceNotFoundException if the user does not exist.
+   */
+  @Transactional
+  public void activateById(UUID id) {
+    UsersEntity e =
+        repo.findOptionalById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+    if (Boolean.FALSE.equals(e.getActive())) {
+      e.setActive(true);
+    }
+  }
+
+  /**
    * List all users.
    *
    * @return the list of all users.
