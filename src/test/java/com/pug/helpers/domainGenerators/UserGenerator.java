@@ -45,7 +45,7 @@ public final class UserGenerator {
 
   private AccountType randomAccountType() {
     AccountType[] vals = AccountType.values();
-    return vals[rnd.nextInt(vals.length)];
+    return vals[ThreadLocalRandom.current().nextInt(vals.length)];
   }
 
   private static String capitalize(String s) {

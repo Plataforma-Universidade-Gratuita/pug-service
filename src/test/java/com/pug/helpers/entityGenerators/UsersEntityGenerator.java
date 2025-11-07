@@ -2,8 +2,10 @@ package com.pug.helpers.entityGenerators;
 
 import com.pug.helpers.CPFGenerator;
 import com.pug.identity.infra.persistence.UsersEntity;
+import com.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.junit.QuarkusTest;
 import java.time.OffsetDateTime;
+import java.util.Locale;
 import java.util.concurrent.ThreadLocalRandom;
 
 @QuarkusTest
@@ -15,7 +17,7 @@ public class UsersEntityGenerator {
         .cpf(generateRandomCPF())
         .name(generateRandomString(5, 150))
         .email(generateRandomEmail())
-        .accountType(generateRandomString(5, 16))
+        .accountType(randomAccountType().name())
         .passwordHash(generateRandomString(8, 255))
         .active(true)
         .createdAt(OffsetDateTime.now())
@@ -33,7 +35,17 @@ public class UsersEntityGenerator {
 
   /** Helper method to generate a random email address. Example: randomName1234@example.com */
   private String generateRandomEmail() {
-    return generateRandomString(5, 10) + "@example.com";
+    return generateRandomString(5, 10).toLowerCase(Locale.ROOT) + "@example.com";
+  }
+
+  /**
+   * Helper method to select a random AccountType enum value.
+   *
+   * @return A random AccountType.
+   */
+  private AccountType randomAccountType() {
+    AccountType[] vals = AccountType.values();
+    return vals[ThreadLocalRandom.current().nextInt(vals.length)];
   }
 
   /**

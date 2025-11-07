@@ -79,7 +79,8 @@
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
-│   │   │           │       └── PasswordService.java
+│   │   │           │       ├── PasswordService.java
+│   │   │           │       └── UsersService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── EntitiesRepository.java
@@ -247,6 +248,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
+│       │           │       └── UsersServiceTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/
 │       │           │   ├── infra/

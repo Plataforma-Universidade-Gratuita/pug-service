@@ -15,7 +15,9 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_ACCOUNT_TYPE("error.domain.identity.account.type"),
   INVALID_PASSWORD_HASH_TOOLONG("error.domain.identity.password.hash.toolong"),
   INVALID_ACTIVE_NULL("error.domain.identity.active.null"),
-  INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future");
+  INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future"),
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists"),
+  USER_NOT_FOUND("error.domain.identity.user.not.found");
 
   private final String bundleKey;
 
