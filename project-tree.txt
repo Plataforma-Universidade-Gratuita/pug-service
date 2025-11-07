@@ -58,17 +58,28 @@
 │   │   │           │       └── CitiesService.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── Admin.java
 │   │   │           │   │   ├── AdminsRepository.java
-│   │   │           │   │   └── UsersRepository.java
+│   │   │           │   │   ├── User.java
+│   │   │           │   │   ├── UsersRepository.java
+│   │   │           │   │   ├── errors/
+│   │   │           │   │   │   └── IdentityErrorCodes.java
+│   │   │           │   │   └── vos/
+│   │   │           │   │       ├── Cpf.java
+│   │   │           │   │       └── Email.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── AdminMapper.java
+│   │   │           │   │   ├── UserMapper.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── AdminsEntity.java
 │   │   │           │   │       ├── AdminsRepositoryImpl.java
 │   │   │           │   │       ├── UsersEntity.java
 │   │   │           │   │       └── UsersRepositoryImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
+│   │   │           │       └── PasswordService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── EntitiesRepository.java
@@ -102,6 +113,9 @@
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           └── shared/
+│   │   │               ├── domain/
+│   │   │               │   └── enums/
+│   │   │               │       └── AccountType.java
 │   │   │               ├── errors/
 │   │   │               │   ├── ErrorCodes.java
 │   │   │               │   └── GenericErrorCodes.java
@@ -196,6 +210,8 @@
 │       │           │   ├── CNPJGenerator.java
 │       │           │   ├── CPFGenerator.java
 │       │           │   ├── TestErrorCodes.java
+│       │           │   ├── domainGenerators/
+│       │           │   │   └── UserGenerator.java
 │       │           │   └── entityGenerators/
 │       │           │       ├── AdminsEntityGenerator.java
 │       │           │       ├── AttendancesEntityGenerator.java
@@ -211,8 +227,15 @@
 │       │           │       └── UsersEntityGenerator.java
 │       │           ├── identity/
 │       │           │   ├── domain/
+│       │           │   │   ├── UserTest.java
+│       │           │   │   └── vos/
+│       │           │   │       ├── CpfTest.java
+│       │           │   │       └── EmailTest.java
 │       │           │   ├── infra/
+│       │           │   │   ├── UserMapperTest.java
 │       │           │   │   └── persistence/
+│       │           │   │       ├── UsersRepositoryImplCRUDTest.java
+│       │           │   │       └── UsersRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/

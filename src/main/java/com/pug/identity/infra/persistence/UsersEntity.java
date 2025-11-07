@@ -21,9 +21,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 import org.hibernate.validator.constraints.br.CPF;
 
+/** Entity representing a user in the system. */
 @Getter
 @Setter
 @Builder
@@ -49,6 +54,7 @@ import org.hibernate.validator.constraints.br.CPF;
       @Index(name = "idx_users_cpf", columnList = "cpf")
     })
 @EntityListeners(TimestampColumnsListener.class)
+@Indexed
 public class UsersEntity extends BaseUuidV7Entity {
 
   @NotBlank
@@ -60,6 +66,10 @@ public class UsersEntity extends BaseUuidV7Entity {
 
   @NotBlank
   @Size(max = 150)
+  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
+  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
+  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
+  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 
