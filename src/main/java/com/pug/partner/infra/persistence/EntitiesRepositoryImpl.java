@@ -25,18 +25,24 @@ public class EntitiesRepositoryImpl
 
   @Transactional
   @Override
-  public void persist(Entity entity) {
+  public Entity persist(Entity entity) {
     if (entity == null) {
-      return;
+      return null;
     }
-    persistAndFlush(EntityMapper.toEntity(entity));
+    EntitiesEntity e = EntityMapper.toEntity(entity);
+    persistAndFlush(e);
+    EntitiesEntity loaded =
+        find("select e from EntitiesEntity e left join fetch e.city where e.id = ?1", e.getId())
+            .firstResultOptional()
+            .orElse(e);
+    return EntityMapper.toDomain(loaded);
   }
 
   @Transactional
   @Override
-  public void persistAll(Iterable<Entity> entities) {
+  public List<Entity> persistAll(Iterable<Entity> entities) {
     if (entities == null || !entities.iterator().hasNext()) {
-      return;
+      return List.of();
     }
     var batch = new ArrayList<EntitiesEntity>();
     for (var d : entities) {
@@ -45,10 +51,15 @@ public class EntitiesRepositoryImpl
       }
     }
     if (batch.isEmpty()) {
-      return;
+      return List.of();
     }
     persist(batch);
     flush();
+    var ids = batch.stream().map(EntitiesEntity::getId).toList();
+    List<EntitiesEntity> loaded =
+        find("select e from EntitiesEntity e left join fetch e.city where e.id in ?1", ids).list();
+    return (loaded.size() == batch.size() ? loaded : batch)
+        .stream().map(EntityMapper::toDomain).toList();
   }
 
   @Transactional

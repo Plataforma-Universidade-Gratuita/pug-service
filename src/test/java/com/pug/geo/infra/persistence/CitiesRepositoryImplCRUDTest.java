@@ -5,13 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.pug.geo.domain.CitiesRepository;
-import com.pug.helpers.entityGenerators.CitiesEntityGenerator;
+import com.pug.geo.domain.City;
+import com.pug.helpers.domainGenerators.CityGenerator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
@@ -20,79 +21,70 @@ public class CitiesRepositoryImplCRUDTest {
 
   @Inject CitiesRepository citiesRepository;
 
-  private final CitiesEntityGenerator citiesEntityGenerator = new CitiesEntityGenerator();
+  private final CityGenerator cityGen = new CityGenerator();
 
   @Test
   @Transactional
   public void testPersistCity() {
-    CitiesEntity city = citiesEntityGenerator.createRandomCitiesEntity();
+    City toSave = cityGen.randomCity();
+    City saved = citiesRepository.persist(toSave);
 
-    citiesRepository.persist(city);
-
-    Optional<CitiesEntity> result = citiesRepository.findOptionalById(city.getId());
+    Optional<City> result = citiesRepository.findOptionalById(saved.getId());
 
     assertTrue(result.isPresent());
-    assertEquals(city.getName(), result.get().getName());
-    assertEquals(city.getIbgeCode(), result.get().getIbgeCode());
+    assertEquals(saved.getName(), result.get().getName());
+    assertEquals(saved.getIbgeCode().toString(), result.get().getIbgeCode().toString());
   }
 
   @Test
   @Transactional
   public void testFindCityById() {
-    CitiesEntity city = citiesEntityGenerator.createRandomCitiesEntity();
-    citiesRepository.persist(city);
+    City saved = citiesRepository.persist(cityGen.randomCity());
 
-    Optional<CitiesEntity> result = citiesRepository.findOptionalById(city.getId());
+    Optional<City> result = citiesRepository.findOptionalById(saved.getId());
 
     assertTrue(result.isPresent());
-    assertEquals(city.getId(), result.get().getId());
+    assertEquals(saved.getId(), result.get().getId());
   }
 
   @Test
   @Transactional
   public void testFindCityByIbgeCode() {
-    CitiesEntity city = citiesEntityGenerator.createRandomCitiesEntity();
-    citiesRepository.persist(city);
+    City saved = citiesRepository.persist(cityGen.randomCity());
 
-    Optional<CitiesEntity> result = citiesRepository.findOptionalByIbgeCode(city.getIbgeCode());
+    Optional<City> result = citiesRepository.findOptionalByIbgeCode(saved.getIbgeCode().toString());
 
     assertTrue(result.isPresent());
-    assertEquals(city.getIbgeCode(), result.get().getIbgeCode());
+    assertEquals(saved.getIbgeCode().toString(), result.get().getIbgeCode().toString());
   }
 
   @Test
   @Transactional
   public void testCityNotFound() {
-    String nonExistingIbgeCode = "0000000";
-
-    Optional<CitiesEntity> result = citiesRepository.findOptionalByIbgeCode(nonExistingIbgeCode);
-
+    Optional<City> result = citiesRepository.findOptionalByIbgeCode("0000000");
     assertFalse(result.isPresent());
   }
 
   @Test
   @Transactional
   public void testPersistAll() {
-    List<CitiesEntity> cities =
-        Stream.generate(citiesEntityGenerator::createRandomCitiesEntity)
-            .limit(10)
-            .collect(Collectors.toList());
+    List<City> toSave = Stream.generate(cityGen::randomCity).limit(10).toList();
 
-    citiesRepository.persistAll(cities);
+    List<City> saved = citiesRepository.persistAll(toSave);
 
-    for (CitiesEntity city : cities) {
-      Optional<CitiesEntity> result = citiesRepository.findOptionalById(city.getId());
+    for (City c : saved) {
+      Optional<City> result = citiesRepository.findOptionalById(c.getId());
       assertTrue(result.isPresent());
-      assertEquals(city.getName(), result.get().getName());
-      assertEquals(city.getIbgeCode(), result.get().getIbgeCode());
+      assertEquals(c.getName(), result.get().getName());
+      assertEquals(c.getIbgeCode().toString(), result.get().getIbgeCode().toString());
     }
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_single() {
-    CitiesEntity c1 = citiesEntityGenerator.createRandomCitiesEntity();
-    CitiesEntity c2 = citiesEntityGenerator.createRandomCitiesEntity();
-    citiesRepository.persistAll(List.of(c1, c2));
+    City c1 = citiesRepository.persist(cityGen.randomCity());
+    City c2 = citiesRepository.persist(cityGen.randomCity());
 
     long deleted = citiesRepository.deleteByIds(List.of(c1.getId()));
     assertEquals(1L, deleted);
@@ -102,11 +94,11 @@ public class CitiesRepositoryImplCRUDTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_multiple() {
-    CitiesEntity c1 = citiesEntityGenerator.createRandomCitiesEntity();
-    CitiesEntity c2 = citiesEntityGenerator.createRandomCitiesEntity();
-    CitiesEntity c3 = citiesEntityGenerator.createRandomCitiesEntity();
-    citiesRepository.persistAll(List.of(c1, c2, c3));
+    City c1 = citiesRepository.persist(cityGen.randomCity());
+    City c2 = citiesRepository.persist(cityGen.randomCity());
+    City c3 = citiesRepository.persist(cityGen.randomCity());
 
     long deleted = citiesRepository.deleteByIds(List.of(c1.getId(), c3.getId()));
     assertEquals(2L, deleted);
@@ -117,11 +109,11 @@ public class CitiesRepositoryImplCRUDTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_mixedWithNonExisting() {
-    CitiesEntity c1 = citiesEntityGenerator.createRandomCitiesEntity();
-    citiesRepository.persist(c1);
+    City c1 = citiesRepository.persist(cityGen.randomCity());
+    UUID ghost = UUID.randomUUID();
 
-    java.util.UUID ghost = java.util.UUID.randomUUID();
     long deleted = citiesRepository.deleteByIds(List.of(c1.getId(), ghost));
     assertEquals(1L, deleted);
 

@@ -3,7 +3,10 @@ package com.pug.geo.infra.persistence;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.geo.domain.CitiesRepository;
+import com.pug.geo.domain.City;
+import com.pug.geo.domain.vos.IbgeCode;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -28,10 +31,31 @@ public class CitiesRepositoryImplSearchTest {
   @Transactional
   void seedTx() {
     em.createQuery("delete from CitiesEntity").executeUpdate();
-    em.persist(CitiesEntity.builder().name("Jaraguá do Sul").ibgeCode("1000001").build());
-    em.persist(CitiesEntity.builder().name("Joinville").ibgeCode("1000002").build());
-    em.persist(CitiesEntity.builder().name("Jaragoa do Sul").ibgeCode("1000003").build());
-    em.persist(CitiesEntity.builder().name("Araquari").ibgeCode("1000004").build());
+
+    citiesRepository.persist(
+        City.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name("Jaraguá do Sul")
+            .ibgeCode(new IbgeCode("1000001"))
+            .build());
+    citiesRepository.persist(
+        City.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name("Joinville")
+            .ibgeCode(new IbgeCode("1000002"))
+            .build());
+    citiesRepository.persist(
+        City.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name("Jaragoa do Sul")
+            .ibgeCode(new IbgeCode("1000003"))
+            .build());
+    citiesRepository.persist(
+        City.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name("Araquari")
+            .ibgeCode(new IbgeCode("1000004"))
+            .build());
   }
 
   @Test
@@ -46,8 +70,7 @@ public class CitiesRepositoryImplSearchTest {
 
   @Test
   void searchAraOrder() {
-    List<String> names =
-        citiesRepository.searchByName("ara").stream().map(CitiesEntity::getName).toList();
+    List<String> names = citiesRepository.searchByName("ara").stream().map(City::getName).toList();
     assertEquals(3, names.size());
     assertEquals("Araquari", names.get(0));
     assertEquals("Jaragoa do Sul", names.get(1));
@@ -57,7 +80,7 @@ public class CitiesRepositoryImplSearchTest {
   @Test
   void searchJaraguaOrder() {
     List<String> names =
-        citiesRepository.searchByName("jaragua").stream().map(CitiesEntity::getName).toList();
+        citiesRepository.searchByName("jaragua").stream().map(City::getName).toList();
     assertEquals(2, names.size());
     assertEquals("Jaraguá do Sul", names.get(0));
     assertEquals("Jaragoa do Sul", names.get(1));
@@ -66,7 +89,7 @@ public class CitiesRepositoryImplSearchTest {
   @Test
   void searchTypoJarguaDoSulOrder() {
     List<String> names =
-        citiesRepository.searchByName("jargua do sul").stream().map(CitiesEntity::getName).toList();
+        citiesRepository.searchByName("jargua do sul").stream().map(City::getName).toList();
     assertEquals(2, names.size());
     assertEquals("Jaraguá do Sul", names.get(0));
     assertEquals("Jaragoa do Sul", names.get(1));

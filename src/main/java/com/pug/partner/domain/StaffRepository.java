@@ -11,15 +11,17 @@ public interface StaffRepository {
    * Persists a Staff entity.
    *
    * @param staff the Staff entity to persist.
+   * @return the persisted Staff entity.
    */
-  void persist(Staff staff);
+  Staff persist(Staff staff);
 
   /**
    * Persists multiple Staff entities.
    *
    * @param staff an iterable of Staff entities to persist.
+   * @return a list of the persisted Staff entities.
    */
-  void persistAll(Iterable<Staff> staff);
+  List<Staff> persistAll(Iterable<Staff> staff);
 
   /**
    * Deletes Staff entities by their associated user IDs.

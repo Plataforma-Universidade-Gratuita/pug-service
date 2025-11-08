@@ -12,15 +12,17 @@ public interface EntitiesRepository {
    * Persists an Entity object.
    *
    * @param entity the Entity to persist.
+   * @return the persisted Entity.
    */
-  void persist(Entity entity);
+  Entity persist(Entity entity);
 
   /**
    * Persists multiple Entity objects.
    *
    * @param entities the iterable collection of Entity objects to persist.
+   * @return a list of the persisted Entity objects.
    */
-  void persistAll(Iterable<Entity> entities);
+  List<Entity> persistAll(Iterable<Entity> entities);
 
   /**
    * Deletes Entity objects by their IDs.

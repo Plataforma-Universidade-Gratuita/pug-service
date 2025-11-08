@@ -1,6 +1,5 @@
 package com.pug.geo.domain;
 
-import com.pug.geo.infra.persistence.CitiesEntity;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -12,15 +11,17 @@ public interface CitiesRepository {
    * Persists a city entity.
    *
    * @param city the city entity to persist.
+   * @return the persisted city entity.
    */
-  void persist(CitiesEntity city);
+  City persist(City city);
 
   /**
    * Persists multiple city entities.
    *
    * @param cities the iterable of city entities to persist.
+   * @return the list of persisted city entities.
    */
-  void persistAll(Iterable<CitiesEntity> cities);
+  List<City> persistAll(Iterable<City> cities);
 
   /**
    * Deletes city entities by their unique identifiers.
@@ -36,7 +37,7 @@ public interface CitiesRepository {
    * @param id the unique identifier of the city.
    * @return an Optional containing the city entity if found, otherwise empty.
    */
-  Optional<CitiesEntity> findOptionalById(UUID id);
+  Optional<City> findOptionalById(UUID id);
 
   /**
    * Finds a city entity by its IBGE code.
@@ -44,14 +45,14 @@ public interface CitiesRepository {
    * @param ibgeCodeDigits the IBGE code digits of the city.
    * @return an Optional containing the city entity if found, otherwise empty.
    */
-  Optional<CitiesEntity> findOptionalByIbgeCode(String ibgeCodeDigits);
+  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
 
   /**
    * Lists all city entities.
    *
    * @return a list of all city entities.
    */
-  List<CitiesEntity> listAllCities();
+  List<City> listAllCities();
 
   /**
    * Searches for city entities by name.
@@ -59,7 +60,7 @@ public interface CitiesRepository {
    * @param key the search key for the city name.
    * @return a list of city entities matching the given name.
    */
-  List<CitiesEntity> searchByName(String key);
+  List<City> searchByName(String key);
 
   /**
    * Checks if a city exists by its IBGE code.
@@ -76,4 +77,11 @@ public interface CitiesRepository {
    * @return true if any city with the given IBGE code exists, false otherwise.
    */
   boolean existsAnyByIbgeCodeIn(Collection<String> ibges);
+
+  /**
+   * Updates an existing city entity.
+   *
+   * @param updated the city entity with updated information.
+   */
+  void update(City updated);
 }

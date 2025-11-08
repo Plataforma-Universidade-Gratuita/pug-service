@@ -4,13 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.pug.helpers.entityGenerators.UsersEntityGenerator;
+import com.pug.identity.domain.User;
 import com.pug.identity.domain.UsersRepository;
+import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.domain.vos.Email;
+import com.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
@@ -18,70 +22,72 @@ public class UsersRepositoryImplCRUDTest {
 
   @Inject UsersRepository usersRepository;
 
-  private final UsersEntityGenerator gen = new UsersEntityGenerator();
+  private User randomUser() {
+    return User.builder()
+        .cpf(new Cpf("52998224725"))
+        .name("User " + System.nanoTime())
+        .email(new Email("u" + UUID.randomUUID() + "@example.com"))
+        .accountType(AccountType.ADMIN)
+        .passwordHash("x")
+        .active(true)
+        .build();
+  }
 
   @Test
   @Transactional
   public void testPersistUser() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
+    User saved = usersRepository.persist(randomUser());
 
-    Optional<UsersEntity> result = usersRepository.findOptionalById(u.getId());
+    Optional<User> result = usersRepository.findOptionalByEmail(saved.getEmail().toString());
     assertTrue(result.isPresent());
-    assertEquals(u.getName(), result.get().getName());
-    assertEquals(u.getEmail(), result.get().getEmail());
+    assertEquals(saved.getName(), result.get().getName());
+    assertEquals(saved.getEmail().toString(), result.get().getEmail().toString());
   }
 
   @Test
   @Transactional
   public void testFindUserById() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
+    User saved = usersRepository.persist(randomUser());
 
-    Optional<UsersEntity> found = usersRepository.findOptionalById(u.getId());
+    Optional<User> found = usersRepository.findOptionalById(saved.getId());
     assertTrue(found.isPresent());
-    assertEquals(u.getId(), found.get().getId());
+    assertEquals(saved.getId(), found.get().getId());
   }
 
   @Test
   @Transactional
   public void testFindUserByEmail() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
+    User saved = usersRepository.persist(randomUser());
 
-    Optional<UsersEntity> found = usersRepository.findOptionalByEmail(u.getEmail());
+    Optional<User> found = usersRepository.findOptionalByEmail(saved.getEmail().toString());
     assertTrue(found.isPresent());
-    assertEquals(u.getEmail(), found.get().getEmail());
+    assertEquals(saved.getEmail().toString(), found.get().getEmail().toString());
   }
 
   @Test
   @Transactional
   public void testUserNotFoundByEmail() {
-    Optional<UsersEntity> ghost = usersRepository.findOptionalByEmail("ghost@example.com");
+    Optional<User> ghost = usersRepository.findOptionalByEmail("ghost@example.com");
     assertFalse(ghost.isPresent());
   }
 
   @Test
   @Transactional
   public void testPersistAll() {
-    List<UsersEntity> users =
-        List.of(
-            gen.createRandomUsersEntity(),
-            gen.createRandomUsersEntity(),
-            gen.createRandomUsersEntity());
+    List<User> toSave = List.of(randomUser(), randomUser(), randomUser());
 
-    usersRepository.persistAll(users);
+    List<User> saved = usersRepository.persistAll(toSave);
 
-    for (UsersEntity u : users) {
-      assertTrue(usersRepository.findOptionalById(u.getId()).isPresent());
+    for (User u : saved) {
+      assertTrue(usersRepository.findOptionalByEmail(u.getEmail().toString()).isPresent());
     }
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_single() {
-    UsersEntity u1 = gen.createRandomUsersEntity();
-    UsersEntity u2 = gen.createRandomUsersEntity();
-    usersRepository.persistAll(List.of(u1, u2));
+    User u1 = usersRepository.persist(randomUser());
+    User u2 = usersRepository.persist(randomUser());
 
     long deleted = usersRepository.deleteByIds(List.of(u1.getId()));
     assertEquals(1L, deleted);
@@ -91,11 +97,11 @@ public class UsersRepositoryImplCRUDTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_multiple() {
-    UsersEntity u1 = gen.createRandomUsersEntity();
-    UsersEntity u2 = gen.createRandomUsersEntity();
-    UsersEntity u3 = gen.createRandomUsersEntity();
-    usersRepository.persistAll(List.of(u1, u2, u3));
+    User u1 = usersRepository.persist(randomUser());
+    User u2 = usersRepository.persist(randomUser());
+    User u3 = usersRepository.persist(randomUser());
 
     long deleted = usersRepository.deleteByIds(List.of(u1.getId(), u3.getId()));
     assertEquals(2L, deleted);
@@ -106,11 +112,11 @@ public class UsersRepositoryImplCRUDTest {
   }
 
   @Test
+  @Transactional
   public void testDeleteByIds_mixedWithNonExisting() {
-    UsersEntity u1 = gen.createRandomUsersEntity();
-    usersRepository.persist(u1);
+    User u1 = usersRepository.persist(randomUser());
+    UUID ghost = UUID.randomUUID();
 
-    java.util.UUID ghost = java.util.UUID.randomUUID();
     long deleted = usersRepository.deleteByIds(List.of(u1.getId(), ghost));
     assertEquals(1L, deleted);
 
@@ -120,20 +126,18 @@ public class UsersRepositoryImplCRUDTest {
   @Test
   @Transactional
   public void testExistsByEmail() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
-    assertTrue(usersRepository.existsByEmail(u.getEmail()));
+    User u = usersRepository.persist(randomUser());
+    assertTrue(usersRepository.existsByEmail(u.getEmail().toString()));
     assertFalse(usersRepository.existsByEmail("nope@example.com"));
   }
 
   @Test
   @Transactional
   public void testExistsAnyByEmailIn() {
-    UsersEntity u1 = gen.createRandomUsersEntity();
-    UsersEntity u2 = gen.createRandomUsersEntity();
-    usersRepository.persistAll(List.of(u1, u2));
+    User u1 = usersRepository.persist(randomUser());
+    User u2 = usersRepository.persist(randomUser());
 
-    assertTrue(usersRepository.existsAnyByEmailIn(List.of(u1.getEmail(), "x@y.z")));
+    assertTrue(usersRepository.existsAnyByEmailIn(List.of(u1.getEmail().toString(), "x@y.z")));
     assertFalse(usersRepository.existsAnyByEmailIn(List.of("x@y.z", "y@x.z")));
     assertFalse(usersRepository.existsAnyByEmailIn(List.of()));
   }
@@ -141,22 +145,39 @@ public class UsersRepositoryImplCRUDTest {
   @Test
   @Transactional
   public void testListByCpf_multiple() {
-    UsersEntity a = gen.createRandomUsersEntity();
-    UsersEntity b = gen.createRandomUsersEntity();
-    b.setCpf(a.getCpf());
-    usersRepository.persistAll(List.of(a, b));
+    User a =
+        usersRepository.persist(
+            User.builder()
+                .cpf(new Cpf("52998224725"))
+                .name("A")
+                .email(new Email("a" + UUID.randomUUID() + "@example.com"))
+                .accountType(AccountType.ADMIN)
+                .passwordHash("x")
+                .active(true)
+                .build());
+    User b =
+        usersRepository.persist(
+            User.builder()
+                .cpf(new Cpf("52998224725"))
+                .name("B")
+                .email(new Email("b" + UUID.randomUUID() + "@example.com"))
+                .accountType(AccountType.ADMIN)
+                .passwordHash("x")
+                .active(true)
+                .build());
 
-    var list = usersRepository.listByCpf(a.getCpf());
+    var list = usersRepository.listByCpf("52998224725");
     assertTrue(list.size() >= 2);
-    assertTrue(list.stream().anyMatch(u -> u.getEmail().equals(a.getEmail())));
-    assertTrue(list.stream().anyMatch(u -> u.getEmail().equals(b.getEmail())));
+    assertTrue(
+        list.stream().anyMatch(u -> u.getEmail().toString().equals(a.getEmail().toString())));
+    assertTrue(
+        list.stream().anyMatch(u -> u.getEmail().toString().equals(b.getEmail().toString())));
   }
 
   @Test
+  @Transactional
   public void testDeactivateById_setsActiveFalse() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    u.setActive(true);
-    usersRepository.persist(u);
+    User u = usersRepository.persist(randomUser());
 
     usersRepository.deactivateById(u.getId());
 
@@ -165,9 +186,9 @@ public class UsersRepositoryImplCRUDTest {
   }
 
   @Test
+  @Transactional
   public void testDeactivateById_idempotent() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
+    User u = usersRepository.persist(randomUser());
 
     usersRepository.deactivateById(u.getId());
     usersRepository.deactivateById(u.getId());
@@ -178,10 +199,9 @@ public class UsersRepositoryImplCRUDTest {
 
   @Test
   public void testDeactivateById_nonExisting_noop() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    usersRepository.persist(u);
+    User u = usersRepository.persist(randomUser());
 
-    usersRepository.deactivateById(java.util.UUID.randomUUID());
+    usersRepository.deactivateById(UUID.randomUUID());
 
     var after = usersRepository.findOptionalById(u.getId()).orElseThrow();
     assertTrue(after.getActive());
@@ -189,9 +209,7 @@ public class UsersRepositoryImplCRUDTest {
 
   @Test
   public void testDeactivateById_alreadyInactive() {
-    UsersEntity u = gen.createRandomUsersEntity();
-    u.setActive(false);
-    usersRepository.persist(u);
+    User u = usersRepository.persist(randomUser().toBuilder().active(false).build());
 
     usersRepository.deactivateById(u.getId());
 

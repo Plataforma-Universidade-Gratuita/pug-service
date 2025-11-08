@@ -1,27 +1,25 @@
 package com.pug.identity.service;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyCollection;
-import static org.mockito.Mockito.anyList;
 import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.pug.helpers.domainGenerators.UserGenerator;
-import com.pug.helpers.entityGenerators.UsersEntityGenerator;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UsersRepository;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.infra.persistence.UsersEntity;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.text.StringUtils;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -30,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 @QuarkusTest
 class UsersServiceTest {
@@ -39,33 +36,21 @@ class UsersServiceTest {
   @InjectMock UsersRepository repo;
 
   private final UserGenerator userGen = new UserGenerator();
-  private final UsersEntityGenerator entGen = new UsersEntityGenerator();
 
   @Test
   void save_newUser_persists_and_returns_domain() {
     User u = userGen.createRandomUser();
     when(repo.existsByEmail(u.getEmail().toString())).thenReturn(false);
-
-    doAnswer(
-            inv -> {
-              UsersEntity e = inv.getArgument(0);
-              e.setId(UUID.randomUUID());
-              e.setCreatedAt(OffsetDateTime.now());
-              return null;
-            })
-        .when(repo)
-        .persist(any(UsersEntity.class));
+    User saved = u.toBuilder().id(UUID.randomUUID()).createdAt(OffsetDateTime.now()).build();
+    when(repo.persist(u)).thenReturn(saved);
 
     User out = service.save(u);
 
     assertNotNull(out.getId());
-    assertEquals(u.getCpf().toString(), out.getCpf().toString());
-    assertEquals(u.getEmail().toString(), out.getEmail().toString());
-    assertEquals(u.getName(), out.getName());
-
-    ArgumentCaptor<UsersEntity> cap = ArgumentCaptor.forClass(UsersEntity.class);
-    verify(repo).persist(cap.capture());
-    assertEquals(u.getEmail().toString(), cap.getValue().getEmail());
+    assertEquals(saved.getEmail().toString(), out.getEmail().toString());
+    verify(repo).existsByEmail(u.getEmail().toString());
+    verify(repo).persist(u);
+    verify(repo, never()).findOptionalByEmail(any());
   }
 
   @Test
@@ -74,6 +59,7 @@ class UsersServiceTest {
     when(repo.existsByEmail(u.getEmail().toString())).thenReturn(true);
 
     assertThrows(DuplicateResourceException.class, () -> service.save(u));
+    verify(repo, never()).persist(any());
   }
 
   @Test
@@ -82,15 +68,22 @@ class UsersServiceTest {
     when(repo.existsAnyByEmailIn(anyCollection())).thenReturn(true);
 
     assertThrows(DuplicateResourceException.class, () -> service.saveAll(users));
+    verify(repo, never()).persistAll(any());
   }
 
   @Test
-  void saveAll_ok_persists_list() {
-    List<User> users = List.of(userGen.createRandomUser(), userGen.createRandomUser());
+  void saveAll_ok_persists_list_and_returns_saved() {
+    List<User> batch = List.of(userGen.createRandomUser(), userGen.createRandomUser());
     when(repo.existsAnyByEmailIn(anyCollection())).thenReturn(false);
+    List<User> saved =
+        batch.stream().map(u -> u.toBuilder().id(UUID.randomUUID()).build()).toList();
+    when(repo.persistAll(batch)).thenReturn(saved);
 
-    assertDoesNotThrow(() -> service.saveAll(users));
-    verify(repo).persistAll(anyList());
+    List<User> out = service.saveAll(batch);
+
+    assertEquals(2, out.size());
+    assertTrue(out.stream().allMatch(u -> u.getId() != null));
+    verify(repo).persistAll(batch);
   }
 
   @Test
@@ -105,15 +98,14 @@ class UsersServiceTest {
   @Test
   void update_email_taken_by_other_throws_duplicate() {
     UUID id = UUID.randomUUID();
-
-    UsersEntity current = entGen.createRandomUsersEntity();
-    current.setId(id);
-    current.setCreatedAt(OffsetDateTime.now());
-
+    User current =
+        userGen.createRandomUser().toBuilder().id(id).createdAt(OffsetDateTime.now()).build();
     User data = userGen.createRandomUser();
-
-    UsersEntity other = entGen.createRandomUsersEntity();
-    other.setId(UUID.randomUUID());
+    User other =
+        userGen.createRandomUser().toBuilder()
+            .id(UUID.randomUUID())
+            .createdAt(OffsetDateTime.now())
+            .build();
 
     when(repo.findOptionalById(id)).thenReturn(Optional.of(current));
     when(repo.findOptionalByEmail(data.getEmail().toString())).thenReturn(Optional.of(other));
@@ -124,24 +116,21 @@ class UsersServiceTest {
   @Test
   void update_ok_copies_fields() {
     UUID id = UUID.randomUUID();
-
-    UsersEntity current = entGen.createRandomUsersEntity();
-    current.setId(id);
-    current.setCreatedAt(OffsetDateTime.now());
-
+    User current =
+        userGen.createRandomUser().toBuilder().id(id).createdAt(OffsetDateTime.now()).build();
     User data =
         User.builder()
             .id(id)
-            .cpf(new Cpf(current.getCpf()))
+            .cpf(new Cpf(current.getCpf().toString()))
             .name(current.getName() + " Jr")
-            .email(new Email(current.getEmail()))
-            .accountType(com.pug.shared.domain.enums.AccountType.STUDENT)
+            .email(new Email(current.getEmail().toString()))
+            .accountType(AccountType.STUDENT)
             .passwordHash("hash")
             .active(Boolean.TRUE)
             .createdAt(current.getCreatedAt())
             .build();
 
-    when(repo.findOptionalById(id)).thenReturn(Optional.of(current));
+    when(repo.findOptionalById(id)).thenReturn(Optional.of(current), Optional.of(data));
     when(repo.findOptionalByEmail(data.getEmail().toString())).thenReturn(Optional.empty());
 
     User out = service.update(id, data);
@@ -149,6 +138,7 @@ class UsersServiceTest {
     assertEquals(data.getName(), out.getName());
     assertEquals(data.getEmail().toString(), out.getEmail().toString());
     assertEquals(data.getCpf().toString(), out.getCpf().toString());
+    verify(repo).update(any(User.class));
   }
 
   @Test
@@ -161,41 +151,34 @@ class UsersServiceTest {
   }
 
   @Test
-  void listAll_maps_entities_to_domain() {
-    UsersEntity e1 = entGen.createRandomUsersEntity();
-    UsersEntity e2 = entGen.createRandomUsersEntity();
-    e1.setCreatedAt(OffsetDateTime.now());
-    e2.setCreatedAt(OffsetDateTime.now());
-
-    when(repo.listAllUsers()).thenReturn(List.of(e1, e2));
+  void listAll_returns_domain() {
+    User u1 = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    User u2 = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    when(repo.listAllUsers()).thenReturn(List.of(u1, u2));
 
     var out = service.listAll();
     assertEquals(2, out.size());
-    assertTrue(out.stream().anyMatch(u -> u.getEmail().toString().equals(e1.getEmail())));
+    assertTrue(
+        out.stream().anyMatch(u -> u.getEmail().toString().equals(u1.getEmail().toString())));
   }
 
   @Test
   void listByCpf_returns_list() {
-    UsersEntity e = entGen.createRandomUsersEntity();
-    e.setCreatedAt(OffsetDateTime.now());
+    User u = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    when(repo.listByCpf(u.getCpf().toString())).thenReturn(List.of(u));
 
-    when(repo.listByCpf(e.getCpf())).thenReturn(List.of(e));
-
-    var out = service.listByCpf(e.getCpf());
+    var out = service.listByCpf(u.getCpf().toString());
     assertEquals(1, out.size());
-    assertEquals(e.getCpf(), out.getFirst().getCpf().toString());
+    assertEquals(u.getCpf().toString(), out.getFirst().getCpf().toString());
   }
 
   @Test
   void getById_success() {
-    UsersEntity e = entGen.createRandomUsersEntity();
-    e.setId(UUID.randomUUID());
-    e.setCreatedAt(OffsetDateTime.now());
+    User u = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    when(repo.findOptionalById(u.getId())).thenReturn(Optional.of(u));
 
-    when(repo.findOptionalById(e.getId())).thenReturn(Optional.of(e));
-
-    var out = service.getById(e.getId());
-    assertEquals(e.getEmail(), out.getEmail().toString());
+    var out = service.getById(u.getId());
+    assertEquals(u.getEmail().toString(), out.getEmail().toString());
   }
 
   @Test
@@ -208,13 +191,11 @@ class UsersServiceTest {
 
   @Test
   void getByEmail_success() {
-    UsersEntity e = entGen.createRandomUsersEntity();
-    e.setCreatedAt(OffsetDateTime.now());
+    User u = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    when(repo.findOptionalByEmail(u.getEmail().toString())).thenReturn(Optional.of(u));
 
-    when(repo.findOptionalByEmail(e.getEmail())).thenReturn(Optional.of(e));
-
-    var out = service.getByEmail(e.getEmail());
-    assertEquals(e.getCpf(), out.getCpf().toString());
+    var out = service.getByEmail(u.getEmail().toString());
+    assertEquals(u.getCpf().toString(), out.getCpf().toString());
   }
 
   @Test
@@ -225,14 +206,16 @@ class UsersServiceTest {
 
   @Test
   void search_maps_results() {
-    UsersEntity e1 = entGen.createRandomUsersEntity();
-    UsersEntity e2 = entGen.createRandomUsersEntity();
-    e1.setCreatedAt(OffsetDateTime.now());
-    e2.setCreatedAt(OffsetDateTime.now());
+    User u1 = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
+    User u2 = userGen.createRandomUser().toBuilder().id(UUID.randomUUID()).build();
 
-    when(repo.searchByName(anyString())).thenReturn(List.of(e1, e2));
+    when(repo.searchByName(anyString())).thenReturn(List.of(u1, u2));
 
-    var out = service.search(" João ");
+    String query = " João ";
+    String expectedKey = StringUtils.fold(query).toLowerCase(java.util.Locale.ROOT);
+
+    var out = service.search(query);
     assertEquals(2, out.size());
+    verify(repo).searchByName(expectedKey);
   }
 }

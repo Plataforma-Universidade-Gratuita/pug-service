@@ -1,6 +1,5 @@
 package com.pug.identity.domain;
 
-import com.pug.identity.infra.persistence.AdminsEntity;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -11,15 +10,17 @@ public interface AdminsRepository {
    * Persists the given AdminsEntity.
    *
    * @param entity the AdminsEntity to persist.
+   * @return the persisted AdminsEntity.
    */
-  void persist(AdminsEntity entity);
+  Admin persist(Admin entity);
 
   /**
    * Persists all given AdminsEntity instances.
    *
    * @param entities the iterable of AdminsEntity instances to persist.
+   * @return a list of persisted AdminsEntity instances.
    */
-  void persistAll(Iterable<AdminsEntity> entities);
+  List<Admin> persistAll(Iterable<Admin> entities);
 
   /**
    * Deletes AdminsEntity instances by their user IDs.
@@ -35,14 +36,14 @@ public interface AdminsRepository {
    * @param userId the user ID of the AdminsEntity to find.
    * @return an Optional containing the found AdminsEntity, or empty if not found.
    */
-  Optional<AdminsEntity> findOptionalById(UUID userId);
+  Optional<Admin> findOptionalById(UUID userId);
 
   /**
    * Lists all AdminsEntity instances.
    *
    * @return a list of all AdminsEntity instances.
    */
-  List<AdminsEntity> listAllAdmins();
+  List<Admin> listAllAdmins();
 
   /**
    * Checks if an AdminsEntity exists for the given user ID.

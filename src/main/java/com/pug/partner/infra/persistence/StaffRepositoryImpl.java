@@ -18,18 +18,29 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public void persist(Staff staff) {
+  public Staff persist(Staff staff) {
     if (staff == null) {
-      return;
+      return null;
     }
-    persistAndFlush(StaffMapper.toEntity(staff));
+    StaffEntity e = StaffMapper.toEntity(staff);
+    persistAndFlush(e);
+    StaffEntity loaded =
+        find(
+                "select s from StaffEntity s "
+                    + "left join fetch s.user "
+                    + "left join fetch s.entity "
+                    + "where s.userId = ?1",
+                e.getUserId())
+            .firstResultOptional()
+            .orElse(e);
+    return StaffMapper.toDomain(loaded);
   }
 
   @Transactional
   @Override
-  public void persistAll(Iterable<Staff> staff) {
+  public List<Staff> persistAll(Iterable<Staff> staff) {
     if (staff == null || !staff.iterator().hasNext()) {
-      return;
+      return List.of();
     }
     var batch = new ArrayList<StaffEntity>();
     for (var s : staff) {
@@ -38,10 +49,21 @@ public class StaffRepositoryImpl
       }
     }
     if (batch.isEmpty()) {
-      return;
+      return List.of();
     }
     persist(batch);
     flush();
+    var userIds = batch.stream().map(StaffEntity::getUserId).toList();
+    List<StaffEntity> loaded =
+        find(
+                "select s from StaffEntity s "
+                    + "left join fetch s.user "
+                    + "left join fetch s.entity "
+                    + "where s.userId in ?1",
+                userIds)
+            .list();
+    return (loaded.size() == batch.size() ? loaded : batch)
+        .stream().map(StaffMapper::toDomain).toList();
   }
 
   @Transactional

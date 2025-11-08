@@ -3,8 +3,6 @@ package com.pug.identity.service;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UsersRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.identity.infra.UserMapper;
-import com.pug.identity.infra.persistence.UsersEntity;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.text.StringUtils;
@@ -34,9 +32,7 @@ public class UsersService {
     if (repo.existsByEmail(email)) {
       throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
     }
-    UsersEntity e = UserMapper.toEntity(user);
-    repo.persist(e);
-    return UserMapper.toDomain(e);
+    return repo.persist(user);
   }
 
   /**
@@ -46,13 +42,12 @@ public class UsersService {
    * @throws DuplicateResourceException if any user with the same email already exists.
    */
   @Transactional
-  public void saveAll(Iterable<User> users) {
+  public List<User> saveAll(Iterable<User> users) {
     List<String> emails = toStream(users).map(u -> u.getEmail().toString()).toList();
     if (!emails.isEmpty() && repo.existsAnyByEmailIn(emails)) {
       throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
     }
-    List<UsersEntity> entities = toStream(users).map(UserMapper::toEntity).toList();
-    repo.persistAll(entities);
+    return repo.persistAll(users);
   }
 
   /**
@@ -66,12 +61,12 @@ public class UsersService {
    */
   @Transactional
   public User update(UUID id, User data) {
-    UsersEntity e =
+    User current =
         repo.findOptionalById(id)
             .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
 
     String newEmail = data.getEmail().toString();
-    if (!newEmail.equalsIgnoreCase(e.getEmail())) {
+    if (!newEmail.equalsIgnoreCase(current.getEmail().toString())) {
       repo.findOptionalByEmail(newEmail)
           .filter(found -> !found.getId().equals(id))
           .ifPresent(
@@ -80,8 +75,19 @@ public class UsersService {
               });
     }
 
-    UserMapper.copy(data, e);
-    return UserMapper.toDomain(e);
+    User updated =
+        current.toBuilder()
+            .cpf(data.getCpf())
+            .name(data.getName())
+            .email(data.getEmail())
+            .accountType(data.getAccountType())
+            .passwordHash(data.getPasswordHash())
+            .active(data.getActive())
+            .build();
+
+    repo.update(updated);
+    return repo.findOptionalById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
   }
 
   /**
@@ -103,12 +109,9 @@ public class UsersService {
    */
   @Transactional
   public void deactivateById(UUID id) {
-    UsersEntity e =
-        repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
-    if (Boolean.TRUE.equals(e.getActive())) {
-      e.setActive(false); // managed; flushed at tx end
-    }
+    repo.findOptionalById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+    repo.deactivateById(id);
   }
 
   /**
@@ -119,11 +122,11 @@ public class UsersService {
    */
   @Transactional
   public void activateById(UUID id) {
-    UsersEntity e =
-        repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
-    if (Boolean.FALSE.equals(e.getActive())) {
-      e.setActive(true);
+    repo.findOptionalById(id)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+    User u = getById(id);
+    if (Boolean.FALSE.equals(u.getActive())) {
+      repo.update(u.toBuilder().active(true).build());
     }
   }
 
@@ -133,7 +136,7 @@ public class UsersService {
    * @return the list of all users.
    */
   public List<User> listAll() {
-    return repo.listAllUsers().stream().map(UserMapper::toDomain).toList();
+    return repo.listAllUsers();
   }
 
   /**
@@ -145,7 +148,6 @@ public class UsersService {
    */
   public User getById(UUID id) {
     return repo.findOptionalById(id)
-        .map(UserMapper::toDomain)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
   }
 
@@ -158,7 +160,6 @@ public class UsersService {
    */
   public User getByEmail(String email) {
     return repo.findOptionalByEmail(email)
-        .map(UserMapper::toDomain)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
   }
 
@@ -169,7 +170,7 @@ public class UsersService {
    * @return the list of users with the given CPF.
    */
   public List<User> listByCpf(String cpf) {
-    return repo.listByCpf(cpf).stream().map(UserMapper::toDomain).toList();
+    return repo.listByCpf(cpf);
   }
 
   /**
@@ -180,7 +181,7 @@ public class UsersService {
    */
   public List<User> search(String query) {
     String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
-    return repo.searchByName(key).stream().map(UserMapper::toDomain).toList();
+    return repo.searchByName(key);
   }
 
   /**

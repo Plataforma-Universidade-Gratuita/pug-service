@@ -31,8 +31,7 @@ class AdminMapperTest {
 
     assertNotNull(e);
     assertEquals(u.getId(), e.getUserId());
-    assertNotNull(e.getUser());
-    assertEquals(u.getId(), e.getUser().getId());
+    assertNull(e.getUser());
     assertEquals(admin.getGrantedAt(), e.getGrantedAt());
   }
 

@@ -3,6 +3,7 @@ package com.pug.geo.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -12,8 +13,6 @@ import com.pug.geo.domain.CitiesRepository;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.errors.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.geo.infra.CityMapper;
-import com.pug.geo.infra.persistence.CitiesEntity;
 import com.pug.helpers.domainGenerators.CityGenerator;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 @QuarkusTest
 class CitiesServiceTest {
@@ -39,16 +37,22 @@ class CitiesServiceTest {
   private final CityGenerator gen = new CityGenerator();
 
   @Test
-  void save_ok_persists_and_returns_mapped_city() {
+  void save_ok_persists_and_returns_city() {
     City input = gen.randomCity();
+    City saved = input.toBuilder().id(UUID.randomUUID()).build();
+
     when(repo.existsByIbgeCode(input.getIbgeCode().toString())).thenReturn(false);
+    when(repo.persist(input)).thenReturn(saved);
 
     City out = service.save(input);
 
     assertNotNull(out);
-    assertEquals(input.getName(), out.getName());
-    assertEquals(input.getIbgeCode().toString(), out.getIbgeCode().toString());
-    verify(repo).persist(any(CitiesEntity.class));
+    assertEquals(saved.getId(), out.getId());
+    assertEquals(saved.getName(), out.getName());
+    assertEquals(saved.getIbgeCode().toString(), out.getIbgeCode().toString());
+    verify(repo).existsByIbgeCode(input.getIbgeCode().toString());
+    verify(repo).persist(input);
+    verify(repo, never()).findOptionalByIbgeCode(org.mockito.ArgumentMatchers.anyString());
   }
 
   @Test
@@ -67,15 +71,17 @@ class CitiesServiceTest {
   void saveAll_ok_persists_all_when_no_duplicates() {
     List<City> batch = Stream.generate(gen::randomCity).limit(3).toList();
     List<String> codes = batch.stream().map(c -> c.getIbgeCode().toString()).toList();
+    List<City> saved =
+        batch.stream().map(c -> c.toBuilder().id(UUID.randomUUID()).build()).toList();
+
     when(repo.existsAnyByIbgeCodeIn(codes)).thenReturn(false);
+    when(repo.persistAll(batch)).thenReturn(saved);
 
-    service.saveAll(batch);
+    List<City> out = service.saveAll(batch);
 
-    ArgumentCaptor<Iterable<CitiesEntity>> captor = ArgumentCaptor.forClass(Iterable.class);
-    verify(repo).persistAll(captor.capture());
-    int size = 0;
-    for (CitiesEntity ignored : captor.getValue()) size++;
-    assertEquals(3, size);
+    assertEquals(3, out.size());
+    assertTrue(out.stream().allMatch(c -> c.getId() != null));
+    verify(repo).persistAll(batch);
   }
 
   @Test
@@ -92,20 +98,19 @@ class CitiesServiceTest {
   }
 
   @Test
-  void update_ok_copies_fields_and_returns_domain() {
+  void update_ok_updates_and_returns_city() {
     UUID id = UUID.randomUUID();
     City existing =
         City.builder().id(id).name("Old Name").ibgeCode(new IbgeCode("1234567")).build();
-    CitiesEntity entity = CityMapper.toEntity(existing);
+    City updated = existing.toBuilder().name("New Name").ibgeCode(new IbgeCode("7654321")).build();
 
-    when(repo.findOptionalById(id)).thenReturn(Optional.of(entity));
+    when(repo.findOptionalById(id)).thenReturn(Optional.of(existing), Optional.of(updated));
 
-    City patch = City.builder().id(id).name("New Name").ibgeCode(new IbgeCode("7654321")).build();
-
-    City out = service.update(id, patch);
+    City out = service.update(id, updated);
 
     assertEquals("New Name", out.getName());
     assertEquals("7654321", out.getIbgeCode().toString());
+    verify(repo).update(any(City.class));
   }
 
   @Test
@@ -130,11 +135,10 @@ class CitiesServiceTest {
   }
 
   @Test
-  void listAll_maps_entities_to_domain() {
+  void listAll_returns_domain() {
     City c1 = gen.randomCity().toBuilder().id(UUID.randomUUID()).build();
     City c2 = gen.randomCity().toBuilder().id(UUID.randomUUID()).build();
-    when(repo.listAllCities())
-        .thenReturn(List.of(CityMapper.toEntity(c1), CityMapper.toEntity(c2)));
+    when(repo.listAllCities()).thenReturn(List.of(c1, c2));
 
     List<City> out = service.listAll();
 
@@ -146,7 +150,7 @@ class CitiesServiceTest {
   @Test
   void getById_ok_returns_city() {
     City c = gen.randomCity().toBuilder().id(UUID.randomUUID()).build();
-    when(repo.findOptionalById(c.getId())).thenReturn(Optional.of(CityMapper.toEntity(c)));
+    when(repo.findOptionalById(c.getId())).thenReturn(Optional.of(c));
 
     City out = service.getById(c.getId());
 
@@ -167,8 +171,7 @@ class CitiesServiceTest {
   @Test
   void getByIbgeCode_ok_returns_city() {
     City c = gen.randomCity().toBuilder().id(UUID.randomUUID()).build();
-    when(repo.findOptionalByIbgeCode(c.getIbgeCode().toString()))
-        .thenReturn(Optional.of(CityMapper.toEntity(c)));
+    when(repo.findOptionalByIbgeCode(c.getIbgeCode().toString())).thenReturn(Optional.of(c));
 
     City out = service.getByIbgeCode(c.getIbgeCode().toString());
 
@@ -186,12 +189,12 @@ class CitiesServiceTest {
   }
 
   @Test
-  void search_folds_and_lowercases_query_then_maps_results() {
+  void search_folds_and_lowercases_query_then_passes_to_repo() {
     City c = gen.randomCity().toBuilder().id(UUID.randomUUID()).build();
     String query = "JaráGuá do SÚL";
     String expectedKey = StringUtils.fold(query).toLowerCase(Locale.ROOT);
 
-    when(repo.searchByName(expectedKey)).thenReturn(List.of(CityMapper.toEntity(c)));
+    when(repo.searchByName(expectedKey)).thenReturn(List.of(c));
 
     List<City> out = service.search(query);
 

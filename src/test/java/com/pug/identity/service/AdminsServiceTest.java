@@ -6,11 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.pug.helpers.entityGenerators.UsersEntityGenerator;
+import com.pug.helpers.domainGenerators.UserGenerator;
+import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminsRepository;
+import com.pug.identity.domain.User;
 import com.pug.identity.domain.UsersRepository;
-import com.pug.identity.infra.persistence.AdminsEntity;
-import com.pug.identity.infra.persistence.UsersEntity;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import io.quarkus.test.junit.QuarkusTest;
@@ -27,19 +27,21 @@ class AdminsServiceTest {
   @Inject AdminsRepository adminsRepo;
   @Inject UsersRepository usersRepo;
 
-  private final UsersEntityGenerator userGen = new UsersEntityGenerator();
+  private final UserGenerator userGen = new UserGenerator();
 
-  private UsersEntity persistRandomUser(String hint) {
-    UsersEntity u = userGen.createRandomUsersEntity();
-    u.setEmail("admin_" + hint + "_" + System.nanoTime() + "@example.com");
+  private User persistRandomUser(String hint) {
+    User u =
+        userGen.createRandomUser().toBuilder()
+            .name("admin_" + hint + "_" + System.nanoTime())
+            .build();
     usersRepo.persist(u);
-    return u;
+    return usersRepo.findOptionalByEmail(u.getEmail().toString()).orElseThrow();
   }
 
   @Test
   @Transactional
   void grant_ok_creates_admin_row() {
-    UsersEntity u = persistRandomUser("grant_ok");
+    User u = persistRandomUser("grant_ok");
 
     var admin = adminsService.grant(u.getId());
 
@@ -58,7 +60,7 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void grant_duplicate_throws() {
-    UsersEntity u = persistRandomUser("grant_dup");
+    User u = persistRandomUser("grant_dup");
     adminsService.grant(u.getId());
     assertThrows(DuplicateResourceException.class, () -> adminsService.grant(u.getId()));
   }
@@ -66,7 +68,7 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void revoke_deletes_admin_and_deactivates_user() {
-    UsersEntity u = persistRandomUser("revoke_ok");
+    User u = persistRandomUser("revoke_ok");
     adminsService.grant(u.getId());
 
     adminsService.revoke(u.getId());
@@ -79,15 +81,15 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void revoke_not_admin_throws() {
-    UsersEntity u = persistRandomUser("revoke_na");
+    User u = persistRandomUser("revoke_na");
     assertThrows(ResourceNotFoundException.class, () -> adminsService.revoke(u.getId()));
   }
 
   @Test
   @Transactional
   void listAll() {
-    UsersEntity u = persistRandomUser("list_all1");
-    UsersEntity u2 = persistRandomUser("list_all2");
+    User u = persistRandomUser("list_all1");
+    User u2 = persistRandomUser("list_all2");
     adminsService.grant(u.getId());
     adminsService.grant(u2.getId());
     var admins = adminsService.listAll();
@@ -98,8 +100,9 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void reactivate_activates_user_and_creates_admin_if_missing() {
-    UsersEntity u = persistRandomUser("reactivate_new");
-    u.setActive(false);
+    User u = persistRandomUser("reactivate_new").toBuilder().active(false).build();
+    // persist updated active=false
+    usersRepo.update(u);
 
     var out = adminsService.reactivate(u.getId());
 
@@ -112,18 +115,18 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void reactivate_idempotent_when_already_admin_and_active() {
-    UsersEntity u = persistRandomUser("reactivate_idem");
+    User u = persistRandomUser("reactivate_idem");
     adminsService.grant(u.getId());
 
     OffsetDateTime beforeGranted =
-        adminsRepo.findOptionalById(u.getId()).map(AdminsEntity::getGrantedAt).orElseThrow();
+        adminsRepo.findOptionalById(u.getId()).map(Admin::getGrantedAt).orElseThrow();
 
     var out = adminsService.reactivate(u.getId());
 
     assertNotNull(out);
     assertTrue(adminsRepo.existsByUserId(u.getId()));
     OffsetDateTime afterGranted =
-        adminsRepo.findOptionalById(u.getId()).map(AdminsEntity::getGrantedAt).orElseThrow();
+        adminsRepo.findOptionalById(u.getId()).map(Admin::getGrantedAt).orElseThrow();
     assertEquals(beforeGranted, afterGranted);
     assertTrue(usersRepo.findOptionalById(u.getId()).orElseThrow().getActive());
   }
@@ -137,7 +140,7 @@ class AdminsServiceTest {
   @Test
   @Transactional
   void grant_then_revoke_then_reactivate_roundtrip() {
-    UsersEntity u = persistRandomUser("roundtrip");
+    User u = persistRandomUser("roundtrip");
     adminsService.grant(u.getId());
     adminsService.revoke(u.getId());
 
