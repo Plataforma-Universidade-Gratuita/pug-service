@@ -19,7 +19,6 @@ public class EntitiesEntityGenerator {
         .name(generateRandomString(5, 150))
         .cityId(cityId)
         .cnpj(cnpjGenerator.generateRandomCNPJ())
-        .active(true)
         .build();
   }
 

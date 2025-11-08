@@ -2,7 +2,7 @@ package com.pug.identity.service;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UsersRepository;
-import com.pug.identity.domain.errors.IdentityErrorCodes;
+import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.UserMapper;
 import com.pug.identity.infra.persistence.UsersEntity;
 import com.pug.shared.exceptions.DuplicateResourceException;

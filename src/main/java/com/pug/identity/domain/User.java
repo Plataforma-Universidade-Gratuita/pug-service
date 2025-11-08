@@ -1,6 +1,6 @@
 package com.pug.identity.domain;
 
-import com.pug.identity.domain.errors.IdentityErrorCodes;
+import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;

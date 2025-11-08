@@ -1,4 +1,4 @@
-package com.pug.identity.domain.errors;
+package com.pug.identity.domain.enums;
 
 import com.pug.shared.errors.GenericErrorCodes;
 import lombok.Getter;

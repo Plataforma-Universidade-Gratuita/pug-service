@@ -41,6 +41,7 @@ public class CitiesRepositoryImpl
     }
     long deleted = delete("id in ?1", ids);
     flush();
+    getEntityManager().clear();
     return deleted;
   }
 

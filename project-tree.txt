@@ -62,7 +62,7 @@
 │   │   │           │   │   ├── AdminsRepository.java
 │   │   │           │   │   ├── User.java
 │   │   │           │   │   ├── UsersRepository.java
-│   │   │           │   │   ├── errors/
+│   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── IdentityErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── Cpf.java
@@ -85,8 +85,16 @@
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── EntitiesRepository.java
-│   │   │           │   │   └── StaffRepository.java
+│   │   │           │   │   ├── Entity.java
+│   │   │           │   │   ├── Staff.java
+│   │   │           │   │   ├── StaffRepository.java
+│   │   │           │   │   ├── enums/
+│   │   │           │   │   │   └── PartnerErrorCodes.java
+│   │   │           │   │   └── vos/
+│   │   │           │   │       └── Cnpj.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── EntityMapper.java
+│   │   │           │   │   ├── StaffMapper.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── EntitiesEntity.java
 │   │   │           │   │       ├── EntitiesRepositoryImpl.java
@@ -240,6 +248,8 @@
 │       │           │   ├── domain/
 │       │           │   │   ├── AdminTest.java
 │       │           │   │   ├── UserTest.java
+│       │           │   │   ├── enums/
+│       │           │   │   │   └── IdentityErrorCodesTest.java
 │       │           │   │   └── vos/
 │       │           │   │       ├── CpfTest.java
 │       │           │   │       └── EmailTest.java

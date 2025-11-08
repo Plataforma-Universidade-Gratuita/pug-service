@@ -2,7 +2,7 @@ package com.pug.identity.service;
 
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminsRepository;
-import com.pug.identity.domain.errors.IdentityErrorCodes;
+import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.AdminMapper;
 import com.pug.identity.infra.persistence.AdminsEntity;
 import com.pug.identity.infra.persistence.UsersEntity;
