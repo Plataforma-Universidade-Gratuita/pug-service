@@ -103,6 +103,8 @@
 │   │   │           │   ├── presenter/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
+│   │   │           │       ├── EntitiesService.java
+│   │   │           │       └── StaffService.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── AttendancesRepository.java
@@ -228,6 +230,8 @@
 │       │           │   ├── domainGenerators/
 │       │           │   │   ├── AdminGenerator.java
 │       │           │   │   ├── CityGenerator.java
+│       │           │   │   ├── EntityGenerator.java
+│       │           │   │   ├── StaffGenerator.java
 │       │           │   │   ├── UserGenerator.java
 │       │           │   │   └── vos/
 │       │           │   │       └── IbgeCodeGenerator.java
@@ -268,7 +272,15 @@
 │       │           │       └── UsersServiceTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/
+│       │           │   │   ├── EntityTest.java
+│       │           │   │   ├── StaffTest.java
+│       │           │   │   ├── enums/
+│       │           │   │   │   └── PartnerErrorCodesTest.java
+│       │           │   │   └── vos/
+│       │           │   │       └── CnpjTest.java
 │       │           │   ├── infra/
+│       │           │   │   ├── EntityMapperTest.java
+│       │           │   │   ├── StaffMapperTest.java
 │       │           │   │   └── persistence/
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/

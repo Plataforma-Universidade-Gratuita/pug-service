@@ -40,6 +40,11 @@ public final class CityGenerator {
     return City.builder().id(null).name(randomCityName()).ibgeCode(code).build();
   }
 
+  /**
+   * Generates a random city name with 1 to 3 words, each 3 to 12 letters long.
+   *
+   * @return A random city name not exceeding 100 characters.
+   */
   private String randomCityName() {
     int words = rnd.nextInt(1, 4);
     StringBuilder b = new StringBuilder();

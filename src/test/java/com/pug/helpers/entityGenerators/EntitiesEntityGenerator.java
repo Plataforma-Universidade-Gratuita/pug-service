@@ -7,7 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class EntitiesEntityGenerator {
 
-  CNPJGenerator cnpjGenerator;
+  private final CNPJGenerator cnpjGenerator = new CNPJGenerator();
 
   /**
    * Helper method to create a random EntitiesEntity object.

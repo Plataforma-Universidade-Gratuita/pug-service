@@ -1,5 +1,6 @@
 package com.pug.helpers.entityGenerators;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.geo.infra.persistence.CitiesEntity;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -11,6 +12,17 @@ public class CitiesEntityGenerator {
         .name(generateRandomString(1, 100))
         .ibgeCode(generateRandomIBGECode())
         .build();
+  }
+
+  /**
+   * Helper method to create a random CitiesEntity object with a set ID.
+   *
+   * @return CitiesEntity with random data and a set ID.
+   */
+  public CitiesEntity createRandomCitiesEntityWithId() {
+    CitiesEntity c = createRandomCitiesEntity();
+    c.setId(UuidCreator.getTimeOrderedEpoch());
+    return c;
   }
 
   /**

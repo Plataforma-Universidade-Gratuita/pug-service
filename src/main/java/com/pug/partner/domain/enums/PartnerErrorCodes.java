@@ -12,7 +12,11 @@ public enum PartnerErrorCodes implements GenericErrorCodes {
   INVALID_CITY("error.domain.partner.invalid.city"),
   INVALID_ADDRESS_TOOLONG("error.domain.partner.invalid.address.toolong"),
   INVALID_STAFF_USER("error.domain.partner.invalid.staff_user"),
-  INVALID_STAFF_ENTITY("error.domain.partner.invalid.staff_entity");
+  INVALID_STAFF_ENTITY("error.domain.partner.invalid.staff_entity"),
+  ENTITY_ALREADY_EXISTS("error.domain.partner.entity.already.exists"),
+  ENTITY_NOT_FOUND("error.domain.partner.entity.not.found"),
+  STAFF_ALREADY_EXISTS("error.domain.partner.staff.already.exists"),
+  STAFF_NOT_FOUND("error.domain.partner.staff.not.found");
 
   private final String bundleKey;
 
