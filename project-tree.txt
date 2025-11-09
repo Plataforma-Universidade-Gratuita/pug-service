@@ -21,10 +21,23 @@
 │   │   │       └── pug/
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── Course.java
 │   │   │           │   │   ├── CoursesRepository.java
+│   │   │           │   │   ├── School.java
 │   │   │           │   │   ├── SchoolsRepository.java
-│   │   │           │   │   └── StudentsRepository.java
+│   │   │           │   │   ├── Student.java
+│   │   │           │   │   ├── StudentsRepository.java
+│   │   │           │   │   ├── enums/
+│   │   │           │   │   │   ├── AcademicErrorCodes.java
+│   │   │           │   │   │   └── Campi.java
+│   │   │           │   │   └── vos/
+│   │   │           │   │       ├── AcademicRegistration.java
+│   │   │           │   │       ├── CounterpartHours.java
+│   │   │           │   │       └── Period.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── CourseMapper.java
+│   │   │           │   │   ├── SchoolMapper.java
+│   │   │           │   │   ├── StudentMapper.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── CoursesEntity.java
 │   │   │           │   │       ├── CoursesRepositoryImpl.java
@@ -33,8 +46,12 @@
 │   │   │           │   │       ├── StudentsEntity.java
 │   │   │           │   │       └── StudentsRepositoryImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
+│   │   │           │       ├── CoursesService.java
+│   │   │           │       ├── SchoolsService.java
+│   │   │           │       └── StudentsService.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── CitiesRepository.java
@@ -101,29 +118,48 @@
 │   │   │           │   │       ├── StaffEntity.java
 │   │   │           │   │       └── StaffRepositoryImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
 │   │   │           │       ├── EntitiesService.java
 │   │   │           │       └── StaffService.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
+│   │   │           │   │   ├── Attendance.java
 │   │   │           │   │   ├── AttendancesRepository.java
+│   │   │           │   │   ├── Enrollment.java
 │   │   │           │   │   ├── EnrollmentsRepository.java
-│   │   │           │   │   ├── ProjectsBySchoolsRepository.java
-│   │   │           │   │   └── ProjectsRepository.java
+│   │   │           │   │   ├── Project.java
+│   │   │           │   │   ├── ProjectsRepository.java
+│   │   │           │   │   ├── enums/
+│   │   │           │   │   │   ├── AttendanceStatus.java
+│   │   │           │   │   │   ├── EnrollmentStatus.java
+│   │   │           │   │   │   ├── PartnerErrorCodes.java
+│   │   │           │   │   │   └── ProjectStatus.java
+│   │   │           │   │   └── vos/
+│   │   │           │   │       ├── AttendanceInfo.java
+│   │   │           │   │       ├── EnrollmentInfo.java
+│   │   │           │   │       ├── ProjectHours.java
+│   │   │           │   │       ├── ProjectInfo.java
+│   │   │           │   │       └── QrValidationInfo.java
 │   │   │           │   ├── infra/
+│   │   │           │   │   ├── AttendanceMapper.java
+│   │   │           │   │   ├── EnrollmentMapper.java
+│   │   │           │   │   ├── ProjectMapper.java
 │   │   │           │   │   └── persistence/
 │   │   │           │   │       ├── AttendancesEntity.java
 │   │   │           │   │       ├── AttendancesRepositoryImpl.java
 │   │   │           │   │       ├── EnrollmentsEntity.java
 │   │   │           │   │       ├── EnrollmentsRepositoryImpl.java
-│   │   │           │   │       ├── ProjectsBySchoolsEntity.java
-│   │   │           │   │       ├── ProjectsBySchoolsRepositoryImpl.java
 │   │   │           │   │       ├── ProjectsEntity.java
 │   │   │           │   │       └── ProjectsRepositoryImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
 │   │   │           │   └── service/
+│   │   │           │       ├── AttendancesService.java
+│   │   │           │       ├── EnrollmentsService.java
+│   │   │           │       └── ProjectsService.java
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   └── enums/
@@ -242,7 +278,6 @@
 │       │           │       ├── CoursesEntityGenerator.java
 │       │           │       ├── EnrollmentsEntityGenerator.java
 │       │           │       ├── EntitiesEntityGenerator.java
-│       │           │       ├── ProjectsBySchoolsEntityGenerator.java
 │       │           │       ├── ProjectsEntityGenerator.java
 │       │           │       ├── SchoolsEntityGenerator.java
 │       │           │       ├── StaffEntityGenerator.java

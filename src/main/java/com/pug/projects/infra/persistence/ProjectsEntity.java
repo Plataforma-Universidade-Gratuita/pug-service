@@ -81,6 +81,11 @@ public class ProjectsEntity extends BaseUuidV7Entity {
   @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal offeredHours;
 
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
   @NotBlank
   @Size(max = 16)
   @Column(name = "status", nullable = false, length = 16)

@@ -63,6 +63,11 @@ public class StudentsEntity {
   private BigDecimal requiredHours;
 
   @NotNull
+  @DecimalMin(value = "0.00")
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
+  @NotNull
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
 

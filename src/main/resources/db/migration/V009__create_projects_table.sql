@@ -8,12 +8,14 @@ CREATE TABLE projects
     created_at         TIMESTAMP WITH TIME ZONE NOT NULL,
     closed_at          TIMESTAMP WITH TIME ZONE,
     offered_hours      DECIMAL(6, 2)            NOT NULL,
+    completed_hours      DECIMAL(6, 2)          NOT NULL,
     status             varchar(16)              NOT NULL,
     max_participants   integer,
 
     CONSTRAINT uq_projects_entity_name UNIQUE (entity_id, name),
     CONSTRAINT chk_proj_hours_pos CHECK (offered_hours >= 0),
-    CONSTRAINT chk_proj_max_part CHECK (max_participants IS NULL OR max_participants >= 0)
+    CONSTRAINT chk_proj_max_part CHECK (max_participants IS NULL OR max_participants >= 0),
+    CONSTRAINT chk_proj_hours_completed CHECK (completed_hours >= 0 AND completed_hours <= offered_hours)
 );
 
 CREATE INDEX idx_projects_entity ON projects (entity_id);

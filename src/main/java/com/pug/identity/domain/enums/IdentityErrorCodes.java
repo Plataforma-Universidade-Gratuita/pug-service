@@ -3,7 +3,7 @@ package com.pug.identity.domain.enums;
 import com.pug.shared.errors.GenericErrorCodes;
 import lombok.Getter;
 
-/** Enumeration of error codes related to geographical data validation. */
+/** Enum representing error codes specific to the identity domain. */
 @Getter
 public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_CPF("error.domain.identity.cpf"),
