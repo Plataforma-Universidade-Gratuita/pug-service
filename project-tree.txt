@@ -47,20 +47,27 @@
 │   │   │           │   │   │   └── StudentRepositoryImpl.java
 │   │   │           │   │   └── queries/
 │   │   │           │   │       ├── CourseQueries.java
-│   │   │           │   │       └── CourseQueriesImpl.java
+│   │   │           │   │       ├── CourseQueriesImpl.java
+│   │   │           │   │       ├── StudentQueries.java
+│   │   │           │   │       └── StudentQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── CourseCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── CourseResponse.java
 │   │   │           │   │   │   ├── CourseView.java
 │   │   │           │   │   │   ├── SchoolCreateOrUpdateRequest.java
-│   │   │           │   │   │   └── SchoolResponse.java
+│   │   │           │   │   │   ├── SchoolResponse.java
+│   │   │           │   │   │   ├── StudentCreateRequest.java
+│   │   │           │   │   │   └── StudentView.java
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── CourseResource.java
-│   │   │           │   │       └── SchoolResource.java
+│   │   │           │   │       ├── SchoolResource.java
+│   │   │           │   │       └── StudentResource.java
 │   │   │           │   └── service/
 │   │   │           │       ├── CourseReadService.java
 │   │   │           │       ├── CourseService.java
 │   │   │           │       ├── SchoolService.java
+│   │   │           │       ├── StudentReadService.java
 │   │   │           │       └── StudentService.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
@@ -149,6 +156,7 @@
 │   │   │           │   │   │   ├── StaffAssignRequest.java
 │   │   │           │   │   │   ├── StaffCreateRequest.java
 │   │   │           │   │   │   └── StaffView.java
+│   │   │           │   │   ├── mappers/
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── EntityResource.java
 │   │   │           │   │       └── StaffResource.java
