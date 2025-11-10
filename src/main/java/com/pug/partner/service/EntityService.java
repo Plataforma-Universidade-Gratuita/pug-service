@@ -1,7 +1,7 @@
 package com.pug.partner.service;
 
-import com.pug.partner.domain.EntitiesRepository;
 import com.pug.partner.domain.Entity;
+import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -18,16 +18,40 @@ import java.util.UUID;
 
 /** Service for managing partner entities. */
 @ApplicationScoped
-public class EntitiesService {
+public class EntityService {
 
-  @Inject EntitiesRepository repo;
+  @Inject EntityRepository repo;
 
   /**
-   * Saves a new entity after checking for duplicates by CNPJ.
+   * Saves a new Entity.
    *
-   * @param entity the entity to be saved.
-   * @return the saved entity.
-   * @throws DuplicateResourceException if an entity with the same CNPJ already exists.
+   * @param cnpj the CNPJ of the entity
+   * @param name the name of the entity
+   * @param cityId the city ID where the entity is located
+   * @param address the address of the entity
+   * @return the saved Entity
+   * @throws DuplicateResourceException if an entity with the same CNPJ already exists
+   */
+  @Transactional
+  public Entity save(Cnpj cnpj, String name, UUID cityId, String address) {
+    Objects.requireNonNull(cnpj, "cnpj");
+    Objects.requireNonNull(name, "name");
+    Objects.requireNonNull(cityId, "cityId");
+
+    String code = cnpj.toString();
+    if (repo.existsByCnpj(code)) {
+      throw new DuplicateResourceException(PartnerErrorCodes.ENTITY_ALREADY_EXISTS);
+    }
+    var e = Entity.createNew(cnpj, name, cityId, address);
+    return repo.persist(e);
+  }
+
+  /**
+   * Saves a new Entity.
+   *
+   * @param entity the Entity to save
+   * @return the saved Entity
+   * @throws DuplicateResourceException if an entity with the same CNPJ already exists
    */
   @Transactional
   public Entity save(Entity entity) {
@@ -40,11 +64,11 @@ public class EntitiesService {
   }
 
   /**
-   * Saves multiple entities after checking for duplicates by CNPJ.
+   * Saves multiple Entities.
    *
-   * @param entities the entities to be saved.
-   * @return the list of saved entities.
-   * @throws DuplicateResourceException if any entity with the same CNPJ already exists.
+   * @param entities the iterable collection of Entities to save
+   * @return a list of the saved Entities
+   * @throws DuplicateResourceException if any entity with the same CNPJ already exists
    */
   @Transactional
   public List<Entity> saveAll(Iterable<Entity> entities) {
@@ -63,10 +87,10 @@ public class EntitiesService {
   }
 
   /**
-   * Deletes entities by their IDs.
+   * Deletes Entities by their IDs.
    *
-   * @param ids the IDs of the entities to be deleted.
-   * @return the number of entities deleted.
+   * @param ids the iterable collection of UUIDs representing the IDs of the Entities to delete
+   * @return the number of entities deleted
    */
   @Transactional
   public long deleteByIds(Iterable<UUID> ids) {
@@ -75,19 +99,19 @@ public class EntitiesService {
   }
 
   /**
-   * Lists all entities.
+   * Lists all Entities.
    *
-   * @return a list of all entities.
+   * @return a list of all Entities
    */
   public List<Entity> listAll() {
     return repo.listAllEntities();
   }
 
   /**
-   * Lists all entities by city ID.
+   * Lists all Entities by city ID.
    *
-   * @param cityId the ID of the city.
-   * @return a list of entities in the specified city.
+   * @param cityId the ID of the city
+   * @return a list of Entities located in the specified city
    */
   public List<Entity> listAllByCityId(UUID cityId) {
     Objects.requireNonNull(cityId, "cityId");
@@ -95,11 +119,11 @@ public class EntitiesService {
   }
 
   /**
-   * Retrieves an entity by its ID.
+   * Gets an Entity by its ID.
    *
-   * @param id the ID of the entity.
-   * @return the entity with the specified ID.
-   * @throws ResourceNotFoundException if no entity with the specified ID is found.
+   * @param id the UUID of the Entity
+   * @return the Entity with the specified ID
+   * @throws ResourceNotFoundException if the Entity is not found
    */
   public Entity getById(UUID id) {
     Objects.requireNonNull(id, "id");
@@ -108,11 +132,11 @@ public class EntitiesService {
   }
 
   /**
-   * Retrieves an entity by its CNPJ.
+   * Gets an Entity by its CNPJ.
    *
-   * @param cnpj the CNPJ of the entity.
-   * @return the entity with the specified CNPJ.
-   * @throws ResourceNotFoundException if no entity with the specified CNPJ is found.
+   * @param cnpj the CNPJ of the Entity
+   * @return the Entity with the specified CNPJ
+   * @throws ResourceNotFoundException if the Entity is not found
    */
   public Entity getByCnpj(Cnpj cnpj) {
     Objects.requireNonNull(cnpj, "cnpj");
@@ -121,10 +145,10 @@ public class EntitiesService {
   }
 
   /**
-   * Searches for entities by name.
+   * Searches for Entities by name.
    *
-   * @param query the search query.
-   * @return a list of entities matching the search query.
+   * @param query the search query for the entity name
+   * @return a list of Entities matching the given name
    */
   public List<Entity> search(String query) {
     Objects.requireNonNull(query, "query");
@@ -133,10 +157,10 @@ public class EntitiesService {
   }
 
   /**
-   * Checks if an entity exists by its CNPJ.
+   * Checks if an Entity exists by its CNPJ.
    *
-   * @param cnpj the CNPJ to check.
-   * @return true if an entity with the specified CNPJ exists, false otherwise.
+   * @param cnpj the CNPJ of the Entity
+   * @return true if the Entity exists, false otherwise
    */
   public boolean existsByCnpj(String cnpj) {
     Objects.requireNonNull(cnpj, "cnpj");

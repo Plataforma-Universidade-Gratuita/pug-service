@@ -20,7 +20,7 @@ import java.util.UUID;
 public class AdminService {
 
   @Inject AdminRepository adminsRepo;
-  @Inject UsersService usersService;
+  @Inject UserService userService;
   @Inject TimeProvider time;
   @Inject PasswordService passwords;
 
@@ -36,7 +36,7 @@ public class AdminService {
   @Transactional
   public Admin save(Cpf cpf, String name, Email email, String rawPassword) {
     String hash = passwords.hash(rawPassword);
-    var user = usersService.save(cpf, name, email, AccountType.ADMIN, hash);
+    var user = userService.save(cpf, name, email, AccountType.ADMIN, hash);
     var admin =
         Admin.builder().userId(user.getId()).grantedAt(OffsetDateTime.now(time.clock())).build();
     return adminsRepo.persist(admin);
@@ -53,7 +53,7 @@ public class AdminService {
         .findOptionalById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
     adminsRepo.deleteByIds(List.of(userId));
-    usersService.deleteByIds(List.of(userId));
+    userService.deleteByIds(List.of(userId));
   }
 
   /**

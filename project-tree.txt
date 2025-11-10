@@ -54,8 +54,8 @@
 │   │   │           │       └── StudentsService.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── CitiesRepository.java
 │   │   │           │   │   ├── City.java
+│   │   │           │   │   ├── CityRepository.java
 │   │   │           │   │   ├── errors/
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -63,16 +63,16 @@
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── CitiesEntity.java
-│   │   │           │   │       └── CitiesRepositoryImpl.java
+│   │   │           │   │       ├── CityEntity.java
+│   │   │           │   │       └── CityRepositoryImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── CityCreateOrUpdateRequest.java
 │   │   │           │   │   │   └── CityResponse.java
 │   │   │           │   │   └── rest/
-│   │   │           │   │       └── CitiesResource.java
+│   │   │           │   │       └── CityResource.java
 │   │   │           │   └── service/
-│   │   │           │       └── CitiesService.java
+│   │   │           │       └── CityService.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Admin.java
@@ -107,13 +107,12 @@
 │   │   │           │   └── service/
 │   │   │           │       ├── AdminReadService.java
 │   │   │           │       ├── AdminService.java
-│   │   │           │       ├── AuthenticationService.java
 │   │   │           │       ├── PasswordService.java
-│   │   │           │       └── UsersService.java
+│   │   │           │       └── UserService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
-│   │   │           │   │   ├── EntitiesRepository.java
 │   │   │           │   │   ├── Entity.java
+│   │   │           │   │   ├── EntityRepository.java
 │   │   │           │   │   ├── Staff.java
 │   │   │           │   │   ├── StaffRepository.java
 │   │   │           │   │   ├── enums/
@@ -123,16 +122,30 @@
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── EntityMapper.java
 │   │   │           │   │   ├── StaffMapper.java
-│   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── EntitiesEntity.java
-│   │   │           │   │       ├── EntitiesRepositoryImpl.java
-│   │   │           │   │       ├── StaffEntity.java
-│   │   │           │   │       └── StaffRepositoryImpl.java
+│   │   │           │   │   ├── persistence/
+│   │   │           │   │   │   ├── EntityEntity.java
+│   │   │           │   │   │   ├── EntityRepositoryImpl.java
+│   │   │           │   │   │   ├── StaffEntity.java
+│   │   │           │   │   │   └── StaffRepositoryImpl.java
+│   │   │           │   │   └── queries/
+│   │   │           │   │       ├── EntityQueries.java
+│   │   │           │   │       ├── EntityQueriesImpl.java
+│   │   │           │   │       ├── StaffQueries.java
+│   │   │           │   │       └── StaffQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
+│   │   │           │   │   │   ├── EntityCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── EntityView.java
+│   │   │           │   │   │   ├── StaffAssignRequest.java
+│   │   │           │   │   │   ├── StaffCreateRequest.java
+│   │   │           │   │   │   └── StaffView.java
 │   │   │           │   │   └── rest/
+│   │   │           │   │       ├── EntityResource.java
+│   │   │           │   │       └── StaffResource.java
 │   │   │           │   └── service/
-│   │   │           │       ├── EntitiesService.java
+│   │   │           │       ├── EntityReadService.java
+│   │   │           │       ├── EntityService.java
+│   │   │           │       ├── StaffReadService.java
 │   │   │           │       └── StaffService.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/

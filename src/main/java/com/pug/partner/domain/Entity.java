@@ -1,16 +1,16 @@
 package com.pug.partner.domain;
 
-import com.pug.geo.domain.City;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.text.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Domain model representing an Entity with validation logic. */
+/** Partner entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,13 +18,64 @@ public class Entity {
   private final UUID id;
   private final Cnpj cnpj;
   private final String name;
-  private final City city;
+  private final UUID cityId;
   private final String address;
 
   /**
-   * Validates the Entity instance fields according to business rules.
+   * Factory for new entities.
    *
-   * @throws AppValidationException if any validation rule is violated.
+   * @param cnpj the CNPJ.
+   * @param name the name.
+   * @param cityId the city ID.
+   * @param address the address.
+   * @return the created entity.
+   */
+  public static Entity createNew(Cnpj cnpj, String name, UUID cityId, String address) {
+    Entity e = new Entity(null, cnpj, StringUtils.trim(name), cityId, StringUtils.trim(address));
+    e.validate();
+    return e;
+  }
+
+  /**
+   * Behavior: change name.
+   *
+   * @param newName the new name.
+   * @return the updated entity.
+   */
+  public Entity changeName(String newName) {
+    Entity e = this.toBuilder().name(StringUtils.trim(newName)).build();
+    e.validate();
+    return e;
+  }
+
+  /**
+   * Behavior: change address.
+   *
+   * @param newAddress the new address.
+   * @return the updated entity.
+   */
+  public Entity changeAddress(String newAddress) {
+    Entity e = this.toBuilder().address(StringUtils.trim(newAddress)).build();
+    e.validate();
+    return e;
+  }
+
+  /**
+   * Behavior: move to another city.
+   *
+   * @param newCityId the new city ID.
+   * @return the updated entity.
+   */
+  public Entity moveToCity(UUID newCityId) {
+    Entity e = this.toBuilder().cityId(newCityId).build();
+    e.validate();
+    return e;
+  }
+
+  /**
+   * Validates the entity's attributes.
+   *
+   * @throws AppValidationException if any attribute is invalid.
    */
   private void validate() {
     if (cnpj == null) {
@@ -36,7 +87,7 @@ public class Entity {
     if (name.length() > 150) {
       throw new AppValidationException(PartnerErrorCodes.INVALID_NAME_TOOLONG);
     }
-    if (city == null) {
+    if (cityId == null) {
       throw new AppValidationException(PartnerErrorCodes.INVALID_CITY);
     }
     if (address != null && address.length() > 254) {
@@ -53,7 +104,7 @@ public class Entity {
      * @throws AppValidationException if validation fails.
      */
     public Entity build() {
-      Entity e = new Entity(id, cnpj, name, city, address);
+      Entity e = new Entity(id, cnpj, StringUtils.trim(name), cityId, StringUtils.trim(address));
       e.validate();
       return e;
     }

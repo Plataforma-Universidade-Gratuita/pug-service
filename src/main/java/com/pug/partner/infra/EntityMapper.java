@@ -1,78 +1,62 @@
 package com.pug.partner.infra;
 
-import com.pug.geo.domain.City;
-import com.pug.geo.infra.CityMapper;
-import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
-import com.pug.partner.infra.persistence.EntitiesEntity;
+import com.pug.partner.infra.persistence.EntityEntity;
 
-/** Maps between Entity domain and EntitiesEntity persistence. */
+/** Maps between Entity domain and EntityEntity persistence. */
 public final class EntityMapper {
   /** Private constructor to prevent instantiation. */
   private EntityMapper() {}
 
   /**
-   * Converts an EntitiesEntity to an Entity domain object.
+   * Persistence -> Domain.
    *
-   * @param e the EntitiesEntity.
-   * @return the corresponding Entity domain object.
+   * @param e the persistence entity.
+   * @return the domain entity.
    */
-  public static Entity toDomain(EntitiesEntity e) {
+  public static Entity toDomain(EntityEntity e) {
     if (e == null) {
       return null;
     }
-    City city =
-        (e.getCity() != null)
-            ? CityMapper.toDomain(e.getCity())
-            : (e.getCityId() != null) ? City.builder().id(e.getCityId()).build() : null;
-
     return Entity.builder()
         .id(e.getId())
         .cnpj(new Cnpj(e.getCnpj()))
         .name(e.getName())
-        .city(city)
+        .cityId(e.getCityId())
         .address(e.getAddress())
         .build();
   }
 
   /**
-   * Converts an Entity domain object to an EntitiesEntity for persistence.
+   * Domain -> Persistence (new).
    *
-   * @param d the Entity domain object.
-   * @return the corresponding EntitiesEntity.
+   * @param d the domain entity.
+   * @return the persistence entity.
    */
-  public static EntitiesEntity toEntity(Entity d) {
+  public static EntityEntity toEntity(Entity d) {
     if (d == null) {
       return null;
     }
-    var e = new EntitiesEntity();
+    var e = new EntityEntity();
     e.setId(d.getId());
     copy(d, e);
     return e;
   }
 
   /**
-   * Copies the data from domain to entity. <br>
-   * Useful for update operations.
+   * Domain -> Persistence (update).
    *
-   * @param d The domain object from which to copy data.
-   * @param e The entity object to which data will be copied.
+   * @param d the domain entity.
+   * @param e the persistence entity.
    */
-  public static void copy(Entity d, EntitiesEntity e) {
+  public static void copy(Entity d, EntityEntity e) {
     if (d == null || e == null) {
       return;
     }
     e.setCnpj(d.getCnpj().toString());
     e.setName(d.getName());
     e.setAddress(d.getAddress());
-
-    if (d.getCity() != null && d.getCity().getId() != null) {
-      var cityRef = new CityEntity();
-      cityRef.setId(d.getCity().getId());
-      e.setCity(cityRef);
-    } else {
-      e.setCity(null);
-    }
+    e.setCityId(d.getCityId());
   }
 }

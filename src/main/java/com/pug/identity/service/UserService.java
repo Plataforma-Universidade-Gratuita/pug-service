@@ -22,7 +22,7 @@ import java.util.stream.StreamSupport;
 
 /** Service for managing users. */
 @ApplicationScoped
-public class UsersService {
+public class UserService {
 
   @Inject UserRepository repo;
   @Inject TimeProvider time;

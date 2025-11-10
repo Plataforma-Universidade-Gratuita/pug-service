@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Repository port for partner entities. Works with domain models. */
-public interface EntitiesRepository {
+public interface EntityRepository {
 
   /**
    * Persists an Entity object.

@@ -55,5 +55,5 @@ public class StaffEntity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "entity_id", nullable = false, insertable = false, updatable = false)
-  private EntitiesEntity entity;
+  private EntityEntity entity;
 }

@@ -1,7 +1,7 @@
 package com.pug.partner.infra.persistence;
 
-import com.pug.partner.domain.EntitiesRepository;
 import com.pug.partner.domain.Entity;
+import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.EntityMapper;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -18,8 +18,8 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 
 /** Implementation of the EntitiesRepository using Panache. */
 @ApplicationScoped
-public class EntitiesRepositoryImpl
-    implements EntitiesRepository, PanacheRepositoryBase<EntitiesEntity, UUID> {
+public class EntityRepositoryImpl
+    implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
   @Inject EntityManager entityManager;
 
@@ -29,10 +29,10 @@ public class EntitiesRepositoryImpl
     if (entity == null) {
       return null;
     }
-    EntitiesEntity e = EntityMapper.toEntity(entity);
+    EntityEntity e = EntityMapper.toEntity(entity);
     persistAndFlush(e);
-    EntitiesEntity loaded =
-        find("select e from EntitiesEntity e left join fetch e.city where e.id = ?1", e.getId())
+    EntityEntity loaded =
+        find("select e from EntityEntity e where e.id = ?1", e.getId())
             .firstResultOptional()
             .orElse(e);
     return EntityMapper.toDomain(loaded);
@@ -44,7 +44,8 @@ public class EntitiesRepositoryImpl
     if (entities == null || !entities.iterator().hasNext()) {
       return List.of();
     }
-    var batch = new ArrayList<EntitiesEntity>();
+
+    var batch = new ArrayList<EntityEntity>();
     for (var d : entities) {
       if (d != null) {
         batch.add(EntityMapper.toEntity(d));
@@ -53,11 +54,13 @@ public class EntitiesRepositoryImpl
     if (batch.isEmpty()) {
       return List.of();
     }
+
     persist(batch);
     flush();
-    var ids = batch.stream().map(EntitiesEntity::getId).toList();
-    List<EntitiesEntity> loaded =
-        find("select e from EntitiesEntity e left join fetch e.city where e.id in ?1", ids).list();
+
+    var ids = batch.stream().map(EntityEntity::getId).toList();
+    List<EntityEntity> loaded = find("select e from EntityEntity e where e.id in ?1", ids).list();
+
     return (loaded.size() == batch.size() ? loaded : batch)
         .stream().map(EntityMapper::toDomain).toList();
   }
@@ -76,7 +79,7 @@ public class EntitiesRepositoryImpl
 
   @Override
   public Optional<Entity> findOptionalById(UUID id) {
-    return find("select e from EntitiesEntity e left join fetch e.city where e.id = ?1", id)
+    return find("select e from EntityEntity e where e.id = ?1", id)
         .firstResultOptional()
         .map(EntityMapper::toDomain);
   }
@@ -86,25 +89,19 @@ public class EntitiesRepositoryImpl
     if (cnpj == null) {
       return Optional.empty();
     }
-    return find(
-            "select e from EntitiesEntity e left join fetch e.city where e.cnpj = ?1",
-            cnpj.toString())
+    return find("select e from EntityEntity e where e.cnpj = ?1", cnpj.toString())
         .firstResultOptional()
         .map(EntityMapper::toDomain);
   }
 
   @Override
   public List<Entity> listAllEntities() {
-    return find("select e from EntitiesEntity e left join fetch e.city").list().stream()
-        .map(EntityMapper::toDomain)
-        .toList();
+    return listAll().stream().map(EntityMapper::toDomain).toList();
   }
 
   @Override
   public List<Entity> listAllByCityId(UUID cityId) {
-    return find("select e from EntitiesEntity e left join fetch e.city where e.cityId = ?1", cityId)
-        .list()
-        .stream()
+    return find("select e from EntityEntity e where e.cityId = ?1", cityId).list().stream()
         .map(EntityMapper::toDomain)
         .toList();
   }
@@ -117,8 +114,8 @@ public class EntitiesRepositoryImpl
     String[] tokens = query.split("\\s+");
     SearchSession s = Search.session(entityManager);
 
-    List<EntitiesEntity> hits =
-        s.search(EntitiesEntity.class)
+    List<EntityEntity> hits =
+        s.search(EntityEntity.class)
             .where(
                 f ->
                     f.bool(

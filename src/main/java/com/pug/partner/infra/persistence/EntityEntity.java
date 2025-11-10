@@ -1,14 +1,10 @@
 package com.pug.partner.infra.persistence;
 
-import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -50,7 +46,7 @@ import org.hibernate.type.SqlTypes;
     value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
     justification =
         "JPA association; exposing managed UsersEntity is required for ORM and fetch joins.")
-public class EntitiesEntity extends BaseUuidV7Entity {
+public class EntityEntity extends BaseUuidV7Entity {
 
   @NotBlank
   @Size(min = 14, max = 14)
@@ -70,10 +66,6 @@ public class EntitiesEntity extends BaseUuidV7Entity {
   @NotNull
   @Column(name = "city_id", nullable = false, insertable = false, updatable = false)
   private UUID cityId;
-
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "city_id", nullable = false)
-  private CityEntity city;
 
   @Size(max = 254)
   @Column(name = "address", length = 254)
