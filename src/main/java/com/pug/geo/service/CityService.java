@@ -6,13 +6,11 @@ import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.text.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -140,32 +138,6 @@ public class CityService {
   public City getById(UUID id) {
     return repo.findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));
-  }
-
-  /**
-   * Get a city by its IBGE code.
-   *
-   * @param ibgeCode the city IBGE code.
-   * @return the found city.
-   * @throws ResourceNotFoundException if the city does not exist.
-   */
-  public City getByIbgeCode(String ibgeCode) {
-    return repo.findOptionalByIbgeCode(ibgeCode)
-        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));
-  }
-
-  /**
-   * Search cities by name.
-   *
-   * @param query the search query.
-   * @return the list of matching cities.
-   */
-  public List<City> search(String query) {
-    if (query == null || query.isBlank()) {
-      return List.of();
-    }
-    String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
-    return repo.searchByName(key);
   }
 
   /**

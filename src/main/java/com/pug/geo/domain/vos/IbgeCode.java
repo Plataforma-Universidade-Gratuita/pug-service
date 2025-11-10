@@ -23,6 +23,11 @@ public record IbgeCode(String code) {
     }
   }
 
+  /**
+   * Returns the string representation of the IBGE code.
+   *
+   * @return the IBGE code as a string.
+   */
   @Override
   public @NotNull String toString() {
     return code;

@@ -5,7 +5,11 @@ import com.pug.shared.exceptions.AppValidationException;
 import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 
-/** Email value object with canonicalization. */
+/**
+ * Email value object with canonicalization.
+ *
+ * @param value the email address as a String.
+ */
 public record Email(String value) {
   private static final String SIMPLE_EMAIL_RX = "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$";
 

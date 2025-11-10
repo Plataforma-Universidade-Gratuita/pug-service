@@ -6,13 +6,12 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.text.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -90,12 +89,12 @@ public class EntityService {
    * Deletes Entities by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Entities to delete
-   * @return the number of entities deleted
+   * @return a map containing the count of deleted Entities
    */
   @Transactional
-  public long deleteByIds(Iterable<UUID> ids) {
+  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
     Objects.requireNonNull(ids, "ids");
-    return repo.deleteByIds(ids);
+    return Map.of("entities", repo.deleteByIds(ids));
   }
 
   /**
@@ -129,31 +128,6 @@ public class EntityService {
     Objects.requireNonNull(id, "id");
     return repo.findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND));
-  }
-
-  /**
-   * Gets an Entity by its CNPJ.
-   *
-   * @param cnpj the CNPJ of the Entity
-   * @return the Entity with the specified CNPJ
-   * @throws ResourceNotFoundException if the Entity is not found
-   */
-  public Entity getByCnpj(Cnpj cnpj) {
-    Objects.requireNonNull(cnpj, "cnpj");
-    return repo.findOptionalByCnpj(cnpj)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND));
-  }
-
-  /**
-   * Searches for Entities by name.
-   *
-   * @param query the search query for the entity name
-   * @return a list of Entities matching the given name
-   */
-  public List<Entity> search(String query) {
-    Objects.requireNonNull(query, "query");
-    String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
-    return repo.searchByName(key);
   }
 
   /**

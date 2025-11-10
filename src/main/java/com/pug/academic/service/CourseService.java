@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -90,11 +91,11 @@ public class CourseService {
    * Deletes Course entities by their IDs.
    *
    * @param ids the IDs of the Course entities to delete
-   * @return the number of deleted Course entities
+   * @return a map containing the count of deleted courses
    */
   @Transactional
-  public long deleteByIds(Iterable<UUID> ids) {
-    return repo.deleteByIds(ids);
+  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
+    return Map.of("courses", repo.deleteByIds(ids));
   }
 
   /**

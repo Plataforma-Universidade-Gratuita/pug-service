@@ -40,27 +40,11 @@ public interface CityRepository {
   Optional<City> findOptionalById(UUID id);
 
   /**
-   * Finds a city entity by its IBGE code.
-   *
-   * @param ibgeCodeDigits the IBGE code digits of the city.
-   * @return an Optional containing the city entity if found, otherwise empty.
-   */
-  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
-
-  /**
    * Lists all city entities.
    *
    * @return a list of all city entities.
    */
   List<City> listAllCities();
-
-  /**
-   * Searches for city entities by name.
-   *
-   * @param key the search key for the city name.
-   * @return a list of city entities matching the given name.
-   */
-  List<City> searchByName(String key);
 
   /**
    * Checks if a city exists by its IBGE code.

@@ -4,7 +4,11 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import org.jetbrains.annotations.NotNull;
 
-/** CPF value object. Accepts formatted input, stores only 11 digits, validates check digits. */
+/**
+ * CPF value object. Accepts formatted input, stores only 11 digits, validates check digits.
+ *
+ * @param value the CPF as a String.
+ */
 public record Cpf(String value) {
 
   /**

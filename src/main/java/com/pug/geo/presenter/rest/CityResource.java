@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+/** REST resource for managing cities. */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -46,6 +47,12 @@ public class CityResource {
 
   @Context UriInfo uri;
 
+  /**
+   * Creates a new city.
+   *
+   * @param req the city creation request.
+   * @return a Response containing the created city.
+   */
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
@@ -56,6 +63,12 @@ public class CityResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Creates multiple cities in bulk.
+   *
+   * @param req the bulk creation request.
+   * @return a Response indicating the result of the bulk creation.
+   */
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<CityCreateOrUpdateRequest> req) {
@@ -70,6 +83,13 @@ public class CityResource {
         .build();
   }
 
+  /**
+   * Updates an existing city.
+   *
+   * @param id the ID of the city to update.
+   * @param req the city update request.
+   * @return a Response containing the updated city.
+   */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid CityCreateOrUpdateRequest req) {
@@ -82,6 +102,12 @@ public class CityResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Lists or searches for cities.
+   *
+   * @param q the optional search query.
+   * @return a Response containing the list of cities.
+   */
   @GET
   public Response listOrSearch(@QueryParam("q") String q) {
     List<CityView> views =
@@ -90,6 +116,12 @@ public class CityResource {
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
   }
 
+  /**
+   * Retrieves a city by its ID.
+   *
+   * @param id the ID of the city.
+   * @return a Response containing the city.
+   */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
@@ -99,6 +131,12 @@ public class CityResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves a city by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code of the city.
+   * @return a Response containing the city.
+   */
   @GET
   @Path("/ibge/{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
@@ -108,6 +146,12 @@ public class CityResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Deletes cities by their IDs.
+   *
+   * @param req the request containing the IDs of the cities to delete.
+   * @return a Response indicating the result of the deletion.
+   */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");

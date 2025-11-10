@@ -1,6 +1,5 @@
 package com.pug.partner.domain;
 
-import com.pug.partner.domain.vos.Cnpj;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -42,14 +41,6 @@ public interface EntityRepository {
   Optional<Entity> findOptionalById(UUID id);
 
   /**
-   * Finds an Entity by its CNPJ.
-   *
-   * @param cnpj the CNPJ of the Entity to find.
-   * @return an Optional containing the found Entity, or empty if not found.
-   */
-  Optional<Entity> findOptionalByCnpj(Cnpj cnpj);
-
-  /**
    * Lists all Entity objects.
    *
    * @return a list of all Entity objects.
@@ -63,14 +54,6 @@ public interface EntityRepository {
    * @return a list of Entity objects located in the specified city.
    */
   List<Entity> listAllByCityId(UUID cityId);
-
-  /**
-   * Searches for entities by name.
-   *
-   * @param query the name query string.
-   * @return a list of entities matching the name query.
-   */
-  List<Entity> searchByName(String query);
 
   /**
    * Checks if an Entity exists by its CNPJ.

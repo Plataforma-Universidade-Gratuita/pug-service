@@ -16,11 +16,11 @@ public class StaffReadService {
   /**
    * Retrieves a StaffView by user ID.
    *
-   * @param userId the UUID of the user.
-   * @return the StaffView associated with the user ID, or null if not found.
+   * @param userId the user ID of the staff member.
+   * @return the StaffView if found, otherwise null.
    */
   public StaffView getView(UUID userId) {
-    return queries.findByUserId(userId).orElse(null);
+    return queries.findOptionalByUserId(userId).orElse(null);
   }
 
   /**
@@ -29,14 +29,14 @@ public class StaffReadService {
    * @return a list of all StaffViews.
    */
   public List<StaffView> listViews() {
-    return queries.listAll();
+    return queries.listAllStaff();
   }
 
   /**
-   * Lists all StaffViews by entity ID.
+   * Lists all StaffViews associated with a specific entity ID.
    *
-   * @param entityId the UUID of the entity.
-   * @return a list of StaffViews associated with the entity ID.
+   * @param entityId the entity ID.
+   * @return a list of StaffViews linked to the specified entity.
    */
   public List<StaffView> listViewsByEntityId(UUID entityId) {
     return queries.listAllByEntityId(entityId);

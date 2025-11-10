@@ -4,13 +4,15 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
-import com.pug.partner.presenter.dtos.StaffAssignRequest;
-import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.infra.read.dtos.StaffView;
+import com.pug.partner.presenter.dtos.StaffCreateRequest;
+import com.pug.partner.presenter.dtos.StaffResponse;
+import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -25,11 +27,14 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,14 +47,17 @@ public class StaffResource {
 
   @Inject StaffService service;
   @Inject StaffReadService read;
+  @Inject I18n i18n;
 
   @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
-   * Gets a staff member by user ID.
+   * Retrieves a staff member by user ID.
    *
-   * @param userId the user ID of the staff member.
-   * @return the staff member view.
+   * @param userId the user ID of the staff member
+   * @return the Response containing the StaffResponse
+   * @throws ResourceNotFoundException if the staff member is not found
    */
   @GET
   @Path("/{userId}")
@@ -59,26 +67,30 @@ public class StaffResource {
     if (v == null) {
       throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
     }
-    return Response.ok(ApiEnvelope.ok(v)).build();
+    StaffResponse out = StaffPresenter.toResponse(v, resolveLocale(), i18n);
+    return Response.ok(ApiEnvelope.ok(out)).build();
   }
 
   /**
    * Lists staff members, optionally filtered by entity ID.
    *
-   * @param entityId the entity ID to filter by (optional).
-   * @return the list of staff member views.
+   * @param entityId the optional entity ID to filter staff members
+   * @return the Response containing the list of StaffResponse
    */
   @GET
   public Response list(@QueryParam("entityId") UUID entityId) {
     List<StaffView> list = entityId == null ? read.listViews() : read.listViewsByEntityId(entityId);
-    return Response.ok(ApiEnvelope.ok(list)).build();
+    Locale locale = resolveLocale();
+    List<StaffResponse> out =
+        list.stream().map(v -> StaffPresenter.toResponse(v, locale, i18n)).toList();
+    return Response.ok(ApiEnvelope.ok(out)).build();
   }
 
   /**
    * Creates a new staff member.
    *
-   * @param req the staff creation request.
-   * @return the created staff member view.
+   * @param req the StaffCreateRequest containing staff details
+   * @return the Response containing the created StaffResponse
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {
@@ -86,48 +98,45 @@ public class StaffResource {
     var staff =
         service.assign(
             new Cpf(req.cpf()), req.name(), new Email(req.email()), req.password(), req.entityId());
-    return getResponse(staff);
-  }
-
-  /**
-   * Assigns an existing user as a staff member to an entity.
-   *
-   * @param req the staff assignment request.
-   * @return the assigned staff member view.
-   */
-  @POST
-  @Path("/assign")
-  public Response assign(@Valid StaffAssignRequest req) {
-    Objects.requireNonNull(req, "req");
-    var staff = service.assign(req.userId(), req.entityId());
-    return getResponse(staff);
-  }
-
-  /**
-   * Builds the response for a created or assigned staff member.
-   *
-   * @param staff the staff member.
-   * @return the response containing the staff member view.
-   */
-  private Response getResponse(Staff staff) {
-    StaffView v = read.getView(staff.getUserId());
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
-    }
-    URI location = uri.getAbsolutePathBuilder().path(staff.getUserId().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(v)).build();
+    return createdResponse(staff);
   }
 
   /**
    * Deletes staff members by user IDs.
    *
-   * @param req the request containing user IDs to delete.
-   * @return the result of the deletion.
+   * @param req the UuidsRequest containing user IDs to delete
+   * @return the Response containing the DeleteResult
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    long deleted = service.deleteByUserIds(req.ids());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly((int) deleted))).build();
+    Map<String, Long> deleted = service.deleteByUserIds(req.ids());
+    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+  }
+
+  /**
+   * Creates a Response for a created Staff resource.
+   *
+   * @param staff the created Staff
+   * @return the Response
+   */
+  private Response createdResponse(Staff staff) {
+    StaffView v = read.getView(staff.getUserId());
+    if (v == null) {
+      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+    }
+    StaffResponse out = StaffPresenter.toResponse(v, resolveLocale(), i18n);
+    URI location = uri.getAbsolutePathBuilder().path(staff.getUserId().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(out)).build();
+  }
+
+  /**
+   * Resolves the locale from the Accept-Language header.
+   *
+   * @return the resolved Locale.
+   */
+  private Locale resolveLocale() {
+    var acceptable = headers.getAcceptableLanguages();
+    return acceptable == null || acceptable.isEmpty() ? Locale.getDefault() : acceptable.getFirst();
   }
 }

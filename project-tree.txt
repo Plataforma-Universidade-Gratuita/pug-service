@@ -173,8 +173,9 @@
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── EntityCreateOrUpdateRequest.java
-│   │   │           │   │   │   ├── StaffAssignRequest.java
-│   │   │           │   │   │   └── StaffCreateRequest.java
+│   │   │           │   │   │   ├── EntityResponse.java
+│   │   │           │   │   │   ├── StaffCreateRequest.java
+│   │   │           │   │   │   └── StaffResponse.java
 │   │   │           │   │   ├── mappers/
 │   │   │           │   │   │   ├── EntityPresenter.java
 │   │   │           │   │   │   └── StaffPresenter.java

@@ -14,20 +14,31 @@ import java.util.UUID;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 
+/** Implementation of CityQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CityQueriesImpl implements CityQueries {
 
   @Inject EntityManager entityManager;
 
+  /**
+   * Converts a CityEntity to a CityView.
+   *
+   * @param c the CityEntity
+   * @return the CityView
+   */
   private static CityView toView(CityEntity c) {
-    if (c == null) return null;
+    if (c == null) {
+      return null;
+    }
     return new CityView(c.getId(), c.getName(), c.getIbgeCode());
   }
 
   @Override
   public Optional<CityView> findOptionalById(UUID id) {
-    if (id == null) return Optional.empty();
+    if (id == null) {
+      return Optional.empty();
+    }
     var q =
         entityManager.createQuery(
             "select new com.pug.geo.infra.read.dtos.CityView("
@@ -40,7 +51,9 @@ public class CityQueriesImpl implements CityQueries {
 
   @Override
   public Optional<CityView> findOptionalByIbgeCode(String ibgeCode) {
-    if (ibgeCode == null || ibgeCode.isBlank()) return Optional.empty();
+    if (ibgeCode == null || ibgeCode.isBlank()) {
+      return Optional.empty();
+    }
     var q =
         entityManager.createQuery(
             "select new com.pug.geo.infra.read.dtos.CityView("
@@ -64,7 +77,9 @@ public class CityQueriesImpl implements CityQueries {
 
   @Override
   public List<CityView> searchByName(String key) {
-    if (key == null || key.isBlank()) return List.of();
+    if (key == null || key.isBlank()) {
+      return List.of();
+    }
 
     String[] tokens = key.split("\\s+");
     SearchSession s = Search.session(entityManager);
@@ -93,7 +108,9 @@ public class CityQueriesImpl implements CityQueries {
             .sort(f -> f.score().then().field("name_sort"))
             .fetchAllHits();
 
-    if (hits.isEmpty()) return List.of();
+    if (hits.isEmpty()) {
+      return List.of();
+    }
 
     List<CityView> out = new ArrayList<>(hits.size());
     for (CityEntity c : hits) {

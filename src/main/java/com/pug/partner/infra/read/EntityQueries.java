@@ -1,6 +1,5 @@
 package com.pug.partner.infra.read;
 
-import com.pug.partner.domain.Entity;
 import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +21,7 @@ public interface EntityQueries {
    * @param cnpj the CNPJ of the EntityView to find.
    * @return an Optional containing the found EntityView, or empty if not found.
    */
-  Optional<EntityView> findByCnpj(String cnpj);
+  Optional<EntityView> findOptionalByCnpj(String cnpj);
 
   /**
    * Lists all EntityView objects.

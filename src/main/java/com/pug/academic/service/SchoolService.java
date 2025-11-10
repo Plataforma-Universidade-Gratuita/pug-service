@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -107,11 +108,11 @@ public class SchoolService {
    * Deletes schools by their IDs.
    *
    * @param ids an iterable of UUIDs representing the IDs of the schools to be deleted
-   * @return the number of schools deleted
+   * @return a map containing the count of deleted schools
    */
   @Transactional
-  public long deleteByIds(Iterable<UUID> ids) {
-    return repo.deleteByIds(ids);
+  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
+    return Map.of("schools", repo.deleteByIds(ids));
   }
 
   /**

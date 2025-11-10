@@ -1,10 +1,8 @@
 package com.pug.partner.presenter.rest;
 
-import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
-import com.pug.partner.domain.vos.Cnpj;
-import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
 import com.pug.partner.infra.read.dtos.EntityView;
+import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -13,6 +11,7 @@ import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -30,6 +29,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -46,14 +46,14 @@ public class EntityResource {
   @Context UriInfo uri;
 
   /**
-   * Retrieves an entity by its unique identifier.
+   * Get entity by ID.
    *
-   * @param id the UUID of the entity to retrieve.
-   * @return a Response containing the entity view if found, or a 404 error if not found.
+   * @param id the entity ID
+   * @return the response containing the entity view
    */
   @GET
   @Path("/{id}")
-  public Response get(@PathParam("id") UUID id) {
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
     Objects.requireNonNull(id, "id");
     EntityView v = readService.getView(id);
     if (v == null) {
@@ -63,17 +63,16 @@ public class EntityResource {
   }
 
   /**
-   * Retrieves an entity by its CNPJ.
+   * Get entity by CNPJ.
    *
-   * @param cnpjRaw the CNPJ of the entity to retrieve.
-   * @return a Response containing the entity view if found, or a 404 error if not found.
+   * @param cnpjRaw the raw CNPJ string
+   * @return the response containing the entity view
    */
   @GET
   @Path("/by-cnpj/{cnpj}")
   public Response getByCnpj(@PathParam("cnpj") String cnpjRaw) {
     Objects.requireNonNull(cnpjRaw, "cnpj");
-    var entity = service.getByCnpj(new Cnpj(cnpjRaw));
-    EntityView v = readService.getView(entity.getId());
+    EntityView v = readService.getViewByCnpj(cnpjRaw);
     if (v == null) {
       throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
     }
@@ -81,11 +80,11 @@ public class EntityResource {
   }
 
   /**
-   * Lists all entities or searches for entities based on query parameters.
+   * List or search entities.
    *
-   * @param q optional search query string.
-   * @param cityId optional city UUID to filter entities by city.
-   * @return a Response containing a list of entity views.
+   * @param q optional search query
+   * @param cityId optional city ID to filter by
+   * @return the response containing the list of entity views
    */
   @GET
   public Response listOrSearch(@QueryParam("q") String q, @QueryParam("cityId") UUID cityId) {
@@ -94,9 +93,7 @@ public class EntityResource {
       return Response.ok(ApiEnvelope.ok(views)).build();
     }
     if (q != null && !q.isBlank()) {
-      List<Entity> found = service.search(q);
-      List<EntityView> views =
-          found.stream().map(e -> readService.getView(e.getId())).filter(Objects::nonNull).toList();
+      List<EntityView> views = readService.searchViews(q);
       return Response.ok(ApiEnvelope.ok(views)).build();
     }
     List<EntityView> all = readService.listViews();
@@ -104,15 +101,20 @@ public class EntityResource {
   }
 
   /**
-   * Creates a new entity.
+   * Create a new entity.
    *
-   * @param req the request containing entity creation details.
-   * @return a Response containing the created entity view and location header.
+   * @param req the entity creation request
+   * @return the response containing the created entity view
    */
   @POST
   public Response create(@Valid EntityCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
-    var created = service.save(new Cnpj(req.cnpj()), req.name(), req.cityId(), req.address());
+    var created =
+        service.save(
+            new com.pug.partner.domain.vos.Cnpj(req.cnpj()),
+            req.name(),
+            req.cityId(),
+            req.address());
     EntityView v = readService.getView(created.getId());
     if (v == null) {
       throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
@@ -122,10 +124,10 @@ public class EntityResource {
   }
 
   /**
-   * Creates multiple entities in bulk.
+   * Create multiple entities in bulk.
    *
-   * @param req the request containing a list of entity creation details.
-   * @return a Response containing the result of the bulk creation.
+   * @param req the bulk creation request
+   * @return the response containing the bulk creation result
    */
   @POST
   @Path("/bulk")
@@ -133,7 +135,13 @@ public class EntityResource {
     Objects.requireNonNull(req, "req");
     var toSave =
         req.entities().stream()
-            .map(r -> Entity.createNew(new Cnpj(r.cnpj()), r.name(), r.cityId(), r.address()))
+            .map(
+                r ->
+                    com.pug.partner.domain.Entity.createNew(
+                        new com.pug.partner.domain.vos.Cnpj(r.cnpj()),
+                        r.name(),
+                        r.cityId(),
+                        r.address()))
             .toList();
     service.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
@@ -142,15 +150,15 @@ public class EntityResource {
   }
 
   /**
-   * Deletes entities by their unique identifiers.
+   * Delete entities by their IDs.
    *
-   * @param req the request containing a list of entity UUIDs to delete.
-   * @return a Response containing the result of the deletion.
+   * @param req the request containing the IDs to delete
+   * @return the response containing the deletion result
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    long deleted = service.deleteByIds(req.ids());
+    Map<String, Long> deleted = service.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 }

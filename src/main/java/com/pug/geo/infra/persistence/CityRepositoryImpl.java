@@ -13,8 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 
 /** Implementation of the CitiesRepository using Panache and Hibernate Search. */
 @ApplicationScoped
@@ -71,48 +69,8 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
   }
 
   @Override
-  public Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits) {
-    return find("ibgeCode", ibgeCodeDigits).firstResultOptional().map(CityMapper::toDomain);
-  }
-
-  @Override
   public List<City> listAllCities() {
     return listAll().stream().map(CityMapper::toDomain).toList();
-  }
-
-  @Override
-  public List<City> searchByName(String key) {
-    if (key == null || key.isBlank()) {
-      return List.of();
-    }
-    String[] tokens = key.split("\\s+");
-    SearchSession s = Search.session(entityManager);
-
-    List<CityEntity> hits =
-        s.search(CityEntity.class)
-            .where(
-                f ->
-                    f.bool(
-                        b -> {
-                          b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
-                          b.should(
-                              f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
-                          for (String t : tokens) {
-                            if (t.length() >= 3) {
-                              b.should(
-                                  f.wildcard()
-                                      .field("name_exact")
-                                      .matching("*" + t + "*")
-                                      .boost(3f));
-                            }
-                          }
-                          b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
-                          b.should(f.match().field("name_auto").matching(key).boost(2f));
-                        }))
-            .sort(f -> f.score().then().field("name_sort"))
-            .fetchAllHits();
-
-    return hits.stream().map(CityMapper::toDomain).toList();
   }
 
   @Override

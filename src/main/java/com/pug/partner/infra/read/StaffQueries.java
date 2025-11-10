@@ -7,26 +7,27 @@ import java.util.UUID;
 
 /** Queries related to Staff. */
 public interface StaffQueries {
+
   /**
    * Finds a StaffView by user ID.
    *
-   * @param userId the UUID of the user.
-   * @return an Optional containing the StaffView if found, or empty if not found.
+   * @param userId the user ID
+   * @return an Optional containing the StaffView if found, otherwise empty
    */
-  Optional<StaffView> findByUserId(UUID userId);
+  Optional<StaffView> findOptionalByUserId(UUID userId);
 
   /**
-   * Lists all StaffView entries.
+   * Lists all StaffView records.
    *
-   * @return a list of all StaffView entries.
+   * @return a list of all StaffView records
    */
-  List<StaffView> listAll();
+  List<StaffView> listAllStaff();
 
   /**
-   * Lists all StaffView entries by entity ID.
+   * Lists all StaffView records by entity ID.
    *
-   * @param entityId the UUID of the entity.
-   * @return a list of StaffView entries associated with the specified entity ID.
+   * @param entityId the entity ID
+   * @return a list of StaffView records associated with the given entity ID
    */
   List<StaffView> listAllByEntityId(UUID entityId);
 }

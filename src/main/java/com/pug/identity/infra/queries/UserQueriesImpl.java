@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 
+/** Implementation of UserQueries using JPA EntityManager and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class UserQueriesImpl implements UserQueries {

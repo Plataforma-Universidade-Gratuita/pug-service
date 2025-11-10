@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -60,27 +61,6 @@ public class StaffService {
   }
 
   /**
-   * Assigns an existing user as a staff member to a specified entity.
-   *
-   * @param userId the ID of the existing user.
-   * @param entityId the ID of the entity to which the staff member will be linked.
-   * @return the created Staff object.
-   * @throws DuplicateResourceException if a staff member with the same user ID already exists.
-   * @throws ResourceNotFoundException if the specified user or entity does not exist.
-   */
-  @Transactional
-  public Staff assign(UUID userId, UUID entityId) {
-    Objects.requireNonNull(userId);
-    Objects.requireNonNull(entityId);
-    if (repo.existsByUserId(userId)) {
-      throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
-    }
-    userService.getById(userId);
-    entityService.getById(entityId);
-    return repo.persist(Staff.createNew(userId, entityId));
-  }
-
-  /**
    * Assigns multiple existing users as staff members to a specified entity.
    *
    * @param entityId the ID of the entity to which the staff members will be linked.
@@ -115,31 +95,15 @@ public class StaffService {
   }
 
   /**
-   * Revokes staff privileges for a user and deletes the underlying user account.
-   *
-   * @param userId the ID of the staff user to be revoked.
-   * @throws ResourceNotFoundException if the specified staff member does not exist.
-   */
-  @Transactional
-  public void revoke(UUID userId) {
-    Objects.requireNonNull(userId);
-    repo.findOptionalByUserId(userId)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND));
-
-    repo.deleteByUserIds(List.of(userId));
-    userService.deleteByIds(List.of(userId));
-  }
-
-  /**
    * Deletes staff members by their user IDs and removes the associated user accounts.
    *
    * @param userIds an iterable of user IDs of the staff members to be deleted.
-   * @return the number of staff members deleted.
+   * @return a map containing the counts of deleted staff members and user accounts.
    */
   @Transactional
-  public long deleteByUserIds(Iterable<UUID> userIds) {
+  public Map<String, Long> deleteByUserIds(Iterable<UUID> userIds) {
     if (userIds == null) {
-      return 0L;
+      return Map.of();
     }
 
     List<UUID> existing = new ArrayList<>();
@@ -149,12 +113,12 @@ public class StaffService {
       }
     }
     if (existing.isEmpty()) {
-      return 0L;
+      return Map.of();
     }
 
-    long deleted = repo.deleteByUserIds(existing);
-    userService.deleteByIds(existing);
-    return deleted;
+    long staff = repo.deleteByUserIds(existing);
+    long user = userService.deleteByIds(existing);
+    return Map.of("staff", staff, "users", user);
   }
 
   /**
