@@ -5,7 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,7 +41,6 @@ import org.hibernate.type.SqlTypes;
 @Indexed
 public class CityEntity extends BaseUuidV7Entity {
 
-  @NotBlank
   @Size(max = 100)
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
@@ -51,7 +49,6 @@ public class CityEntity extends BaseUuidV7Entity {
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 
-  @NotBlank
   @Size(min = 7, max = 7)
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "ibge_code", nullable = false, length = 7, unique = true)

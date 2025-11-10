@@ -1,13 +1,10 @@
 package com.pug.partner.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -42,19 +39,13 @@ import org.hibernate.type.SqlTypes;
       @Index(name = "idx_entities_name", columnList = "name"),
       @Index(name = "idx_entities_city", columnList = "city_id")
     })
-@SuppressFBWarnings(
-    value = {"EI_EXPOSE_REP", "EI_EXPOSE_REP2"},
-    justification =
-        "JPA association; exposing managed UsersEntity is required for ORM and fetch joins.")
 public class EntityEntity extends BaseUuidV7Entity {
 
-  @NotBlank
   @Size(min = 14, max = 14)
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cnpj", nullable = false, length = 14, unique = true)
   private String cnpj;
 
-  @NotBlank
   @Size(max = 150)
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
@@ -63,7 +54,6 @@ public class EntityEntity extends BaseUuidV7Entity {
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 
-  @NotNull
   @Column(name = "city_id", nullable = false, insertable = false, updatable = false)
   private UUID cityId;
 

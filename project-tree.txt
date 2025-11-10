@@ -22,11 +22,11 @@
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Course.java
-│   │   │           │   │   ├── CoursesRepository.java
+│   │   │           │   │   ├── CourseRepository.java
 │   │   │           │   │   ├── School.java
-│   │   │           │   │   ├── SchoolsRepository.java
+│   │   │           │   │   ├── SchoolRepository.java
 │   │   │           │   │   ├── Student.java
-│   │   │           │   │   ├── StudentsRepository.java
+│   │   │           │   │   ├── StudentRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AcademicErrorCodes.java
 │   │   │           │   │   │   └── Campi.java
@@ -38,20 +38,30 @@
 │   │   │           │   │   ├── CourseMapper.java
 │   │   │           │   │   ├── SchoolMapper.java
 │   │   │           │   │   ├── StudentMapper.java
-│   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── CoursesEntity.java
-│   │   │           │   │       ├── CoursesRepositoryImpl.java
-│   │   │           │   │       ├── SchoolsEntity.java
-│   │   │           │   │       ├── SchoolsRepositoryImpl.java
-│   │   │           │   │       ├── StudentsEntity.java
-│   │   │           │   │       └── StudentsRepositoryImpl.java
+│   │   │           │   │   ├── persistence/
+│   │   │           │   │   │   ├── CourseEntity.java
+│   │   │           │   │   │   ├── CourseRepositoryImpl.java
+│   │   │           │   │   │   ├── SchoolEntity.java
+│   │   │           │   │   │   ├── SchoolRepositoryImpl.java
+│   │   │           │   │   │   ├── StudentEntity.java
+│   │   │           │   │   │   └── StudentRepositoryImpl.java
+│   │   │           │   │   └── queries/
+│   │   │           │   │       ├── CourseQueries.java
+│   │   │           │   │       └── CourseQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
+│   │   │           │   │   │   ├── CourseCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── CourseView.java
+│   │   │           │   │   │   ├── SchoolCreateOrUpdateRequest.java
+│   │   │           │   │   │   └── SchoolResponse.java
 │   │   │           │   │   └── rest/
+│   │   │           │   │       ├── CourseResource.java
+│   │   │           │   │       └── SchoolResource.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CoursesService.java
-│   │   │           │       ├── SchoolsService.java
-│   │   │           │       └── StudentsService.java
+│   │   │           │       ├── CourseReadService.java
+│   │   │           │       ├── CourseService.java
+│   │   │           │       ├── SchoolService.java
+│   │   │           │       └── StudentService.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java

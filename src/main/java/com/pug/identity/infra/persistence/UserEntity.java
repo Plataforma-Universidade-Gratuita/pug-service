@@ -11,7 +11,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
@@ -62,7 +61,6 @@ public class UserEntity extends BaseUuidV7Entity {
   @Column(name = "cpf", nullable = false, length = 11)
   private String cpf;
 
-  @NotBlank
   @Size(max = 150)
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")

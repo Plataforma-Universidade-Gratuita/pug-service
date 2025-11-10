@@ -6,7 +6,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -34,7 +33,6 @@ public class AdminEntity {
   @Column(name = "user_id", nullable = false, updatable = false)
   private UUID userId;
 
-  @NotNull
   @Column(name = "granted_at", nullable = false, updatable = false)
   private OffsetDateTime grantedAt;
 }
