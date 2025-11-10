@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /** Repository interface for managing CitiesEntity objects. */
-public interface CitiesRepository {
+public interface CityRepository {
   /**
    * Persists a city entity.
    *

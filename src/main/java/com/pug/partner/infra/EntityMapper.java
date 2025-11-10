@@ -2,7 +2,7 @@ package com.pug.partner.infra;
 
 import com.pug.geo.domain.City;
 import com.pug.geo.infra.CityMapper;
-import com.pug.geo.infra.persistence.CitiesEntity;
+import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.persistence.EntitiesEntity;
@@ -68,7 +68,7 @@ public final class EntityMapper {
     e.setAddress(d.getAddress());
 
     if (d.getCity() != null && d.getCity().getId() != null) {
-      var cityRef = new CitiesEntity();
+      var cityRef = new CityEntity();
       cityRef.setId(d.getCity().getId());
       e.setCity(cityRef);
     } else {

@@ -40,7 +40,7 @@ import org.hibernate.type.SqlTypes;
           columnNames = {"ibge_code"})
     })
 @Indexed
-public class CitiesEntity extends BaseUuidV7Entity {
+public class CityEntity extends BaseUuidV7Entity {
 
   @NotBlank
   @Size(max = 100)

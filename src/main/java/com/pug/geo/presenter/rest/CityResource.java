@@ -4,7 +4,7 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.geo.presenter.dtos.CityCreateOrUpdateRequest;
 import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.geo.service.CitiesService;
+import com.pug.geo.service.CityService;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -28,6 +28,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 /** REST resource for managing cities. */
@@ -35,23 +36,22 @@ import java.util.UUID;
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class CitiesResource {
+public class CityResource {
 
-  @Inject CitiesService service;
+  @Inject CityService service;
 
   @Context UriInfo uri;
 
   /**
-   * Create a new city.
+   * Creates a new city.
    *
    * @param req the city creation request.
-   * @return a Response with the created city.
+   * @return a Response containing the created city.
    */
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
-    City created =
-        service.save(
-            City.builder().name(req.name()).ibgeCode(new IbgeCode(req.ibgeCode())).build());
+    Objects.requireNonNull(req, "req");
+    City created = service.save(req.name(), new IbgeCode(req.ibgeCode()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location)
         .entity(ApiEnvelope.created(CityResponse.from(created)))
@@ -59,17 +59,18 @@ public class CitiesResource {
   }
 
   /**
-   * Create multiple cities in bulk.
+   * Creates multiple cities in bulk.
    *
    * @param req the bulk creation request.
-   * @return a Response with the bulk creation result.
+   * @return a Response containing the result of the bulk creation.
    */
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<CityCreateOrUpdateRequest> req) {
+    Objects.requireNonNull(req, "req");
     List<City> toSave =
         req.entities().stream()
-            .map(r -> City.builder().name(r.name()).ibgeCode(new IbgeCode(r.ibgeCode())).build())
+            .map(r -> City.createNew(r.name(), new IbgeCode(r.ibgeCode())))
             .toList();
     service.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
@@ -78,25 +79,27 @@ public class CitiesResource {
   }
 
   /**
-   * Update an existing city.
+   * Updates an existing city.
    *
-   * @param id the ID of the city to update.
+   * @param id the unique identifier of the city to update.
    * @param req the city update request.
-   * @return a Response with the updated city.
+   * @return a Response containing the updated city.
    */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid CityCreateOrUpdateRequest req) {
-    City patch = City.builder().name(req.name()).ibgeCode(new IbgeCode(req.ibgeCode())).build();
+    Objects.requireNonNull(id, "id");
+    Objects.requireNonNull(req, "req");
+    City patch = City.createNew(req.name(), new IbgeCode(req.ibgeCode()));
     City updated = service.update(id, patch);
     return Response.ok(ApiEnvelope.ok(CityResponse.from(updated))).build();
   }
 
   /**
-   * List all cities or search by query.
+   * Lists all cities or searches for cities by name.
    *
-   * @param q the search query (optional).
-   * @return a Response with the list of cities.
+   * @param q the optional search query.
+   * @return a Response containing the list of cities.
    */
   @GET
   public Response listOrSearch(@QueryParam("q") String q) {
@@ -106,39 +109,42 @@ public class CitiesResource {
   }
 
   /**
-   * Get a city by its ID.
+   * Retrieves a city by its unique identifier.
    *
-   * @param id the ID of the city.
-   * @return a Response with the city.
+   * @param id the unique identifier of the city.
+   * @return a Response containing the found city.
    */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
+    Objects.requireNonNull(id, "id");
     City found = service.getById(id);
     return Response.ok(ApiEnvelope.ok(CityResponse.from(found))).build();
   }
 
   /**
-   * Get a city by its IBGE code.
+   * Retrieves a city by its IBGE code.
    *
    * @param ibgeCode the IBGE code of the city.
-   * @return a Response with the city.
+   * @return a Response containing the found city.
    */
   @GET
   @Path("/ibge/{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
+    Objects.requireNonNull(ibgeCode, "ibgeCode");
     City found = service.getByIbgeCode(ibgeCode);
     return Response.ok(ApiEnvelope.ok(CityResponse.from(found))).build();
   }
 
   /**
-   * Delete cities by their IDs.
+   * Deletes cities by their unique identifiers.
    *
-   * @param req the request containing the IDs to delete.
-   * @return a Response with the deletion result.
+   * @param req the request containing the unique identifiers of the cities to delete.
+   * @return a Response containing the result of the deletion.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
+    Objects.requireNonNull(req, "req");
     long deleted = service.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }

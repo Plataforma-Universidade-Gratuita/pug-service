@@ -17,6 +17,8 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /** Service for managing users. */
 @ApplicationScoped
@@ -181,9 +183,7 @@ public class UsersService {
    * @param <T> The type of elements.
    * @return A stream of the iterable's elements.
    */
-  private static <T> java.util.stream.Stream<T> toStream(Iterable<T> it) {
-    return (it == null)
-        ? java.util.stream.Stream.empty()
-        : java.util.stream.StreamSupport.stream(it.spliterator(), false);
+  private static <T> Stream<T> toStream(Iterable<T> it) {
+    return (it == null) ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
   }
 }

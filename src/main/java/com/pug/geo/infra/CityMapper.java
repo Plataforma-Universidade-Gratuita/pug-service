@@ -2,22 +2,20 @@ package com.pug.geo.infra;
 
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.geo.infra.persistence.CitiesEntity;
+import com.pug.geo.infra.persistence.CityEntity;
 
-/**
- * Mapper class for converting between City domain objects and CitiesEntity persistence entities.
- */
+/** Maps between City domain and CityEntity persistence. */
 public final class CityMapper {
-
+  /** Private constructor. */
   private CityMapper() {}
 
   /**
-   * Converts a CitiesEntity to a City domain object.
+   * Entity -> Domain (uses domain builder).
    *
-   * @param e The CitiesEntity to convert.
-   * @return The corresponding City domain object.
+   * @param e entity.
+   * @return domain object or null if entity is null.
    */
-  public static City toDomain(CitiesEntity e) {
+  public static City toDomain(CityEntity e) {
     if (e == null) {
       return null;
     }
@@ -29,26 +27,28 @@ public final class CityMapper {
   }
 
   /**
-   * Converts a City domain object to a CitiesEntity.
+   * Domain -> Entity (for persist).
    *
-   * @param d The City domain object to convert.
-   * @return The corresponding CitiesEntity.
+   * @param d domain object.
+   * @return entity or null if domain is null.
    */
-  public static CitiesEntity toEntity(City d) {
+  public static CityEntity toEntity(City d) {
     if (d == null) {
       return null;
     }
-    return CitiesEntity.builder().name(d.getName()).ibgeCode(d.getIbgeCode().toString()).build();
+    return CityEntity.builder().name(d.getName()).ibgeCode(d.getIbgeCode().toString()).build();
   }
 
   /**
-   * Copies the data from domain to entity. <br>
-   * Useful for update operations.
+   * Copy domain fields into an existing entity (for update).
    *
-   * @param d The domain object from which to copy data.
-   * @param e The entity object to which data will be copied.
+   * @param d domain object.
+   * @param e entity to copy into.
    */
-  public static void copy(City d, CitiesEntity e) {
+  public static void copy(City d, CityEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
     e.setName(d.getName());
     e.setIbgeCode(d.getIbgeCode().toString());
   }

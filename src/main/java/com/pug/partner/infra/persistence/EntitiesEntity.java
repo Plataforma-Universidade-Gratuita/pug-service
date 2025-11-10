@@ -1,6 +1,6 @@
 package com.pug.partner.infra.persistence;
 
-import com.pug.geo.infra.persistence.CitiesEntity;
+import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
@@ -73,7 +73,7 @@ public class EntitiesEntity extends BaseUuidV7Entity {
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "city_id", nullable = false)
-  private CitiesEntity city;
+  private CityEntity city;
 
   @Size(max = 254)
   @Column(name = "address", length = 254)

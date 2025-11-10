@@ -1,7 +1,7 @@
 package com.pug.geo.infra.persistence;
 
-import com.pug.geo.domain.CitiesRepository;
 import com.pug.geo.domain.City;
+import com.pug.geo.domain.CityRepository;
 import com.pug.geo.infra.CityMapper;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,8 +18,7 @@ import org.hibernate.search.mapper.orm.session.SearchSession;
 
 /** Implementation of the CitiesRepository using Panache and Hibernate Search. */
 @ApplicationScoped
-public class CitiesRepositoryImpl
-    implements CitiesRepository, PanacheRepositoryBase<CitiesEntity, UUID> {
+public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
   @Inject EntityManager entityManager;
 
@@ -40,7 +39,7 @@ public class CitiesRepositoryImpl
     if (cities == null || !cities.iterator().hasNext()) {
       return List.of();
     }
-    var entities = new ArrayList<CitiesEntity>();
+    var entities = new ArrayList<CityEntity>();
     for (City c : cities) {
       if (c != null) {
         entities.add(CityMapper.toEntity(c));
@@ -89,8 +88,8 @@ public class CitiesRepositoryImpl
     String[] tokens = key.split("\\s+");
     SearchSession s = Search.session(entityManager);
 
-    List<CitiesEntity> hits =
-        s.search(CitiesEntity.class)
+    List<CityEntity> hits =
+        s.search(CityEntity.class)
             .where(
                 f ->
                     f.bool(
@@ -134,7 +133,7 @@ public class CitiesRepositoryImpl
     if (city == null || city.getId() == null) {
       return;
     }
-    CitiesEntity managed = findById(city.getId());
+    CityEntity managed = findById(city.getId());
     if (managed == null) {
       return;
     }

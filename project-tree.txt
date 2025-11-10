@@ -76,9 +76,9 @@
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Admin.java
-│   │   │           │   │   ├── AdminsRepository.java
+│   │   │           │   │   ├── AdminRepository.java
 │   │   │           │   │   ├── User.java
-│   │   │           │   │   ├── UsersRepository.java
+│   │   │           │   │   ├── UserRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── IdentityErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -87,16 +87,27 @@
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── AdminMapper.java
 │   │   │           │   │   ├── UserMapper.java
-│   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── AdminsEntity.java
-│   │   │           │   │       ├── AdminsRepositoryImpl.java
-│   │   │           │   │       ├── UsersEntity.java
-│   │   │           │   │       └── UsersRepositoryImpl.java
+│   │   │           │   │   ├── persistence/
+│   │   │           │   │   │   ├── AdminEntity.java
+│   │   │           │   │   │   ├── AdminRepositoryImpl.java
+│   │   │           │   │   │   ├── UserEntity.java
+│   │   │           │   │   │   └── UserRepositoryImpl.java
+│   │   │           │   │   └── queries/
+│   │   │           │   │       ├── AdminQueries.java
+│   │   │           │   │       └── AdminQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
+│   │   │           │   │   │   ├── AdminCreateRequest.java
+│   │   │           │   │   │   ├── AdminResponse.java
+│   │   │           │   │   │   └── AdminView.java
+│   │   │           │   │   ├── mappers/
+│   │   │           │   │   │   └── AdminPresenter.java
 │   │   │           │   │   └── rest/
+│   │   │           │   │       └── AdminResource.java
 │   │   │           │   └── service/
-│   │   │           │       ├── AdminsService.java
+│   │   │           │       ├── AdminReadService.java
+│   │   │           │       ├── AdminService.java
+│   │   │           │       ├── AuthenticationService.java
 │   │   │           │       ├── PasswordService.java
 │   │   │           │       └── UsersService.java
 │   │   │           ├── partner/
@@ -184,6 +195,7 @@
 │   │   │               │   └── search/
 │   │   │               │       └── EsAnalysis.java
 │   │   │               ├── presenter/
+│   │   │               │   ├── PresenterUtils.java
 │   │   │               │   ├── dtos/
 │   │   │               │   │   ├── BulkCreateRequest.java
 │   │   │               │   │   ├── BulkCreateResult.java
@@ -243,79 +255,31 @@
 │       │           │   └── service/
 │       │           ├── geo/
 │       │           │   ├── domain/
-│       │           │   │   ├── CityTest.java
 │       │           │   │   └── vos/
-│       │           │   │       └── IbgeCodeTest.java
 │       │           │   ├── infra/
-│       │           │   │   ├── CityMapperTest.java
 │       │           │   │   └── persistence/
-│       │           │   │       ├── CitiesRepositoryImplCRUDTest.java
-│       │           │   │       └── CitiesRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
 │       │           │   │   ├── dtos/
-│       │           │   │   │   ├── CityCreateOrUpdateRequestTest.java
-│       │           │   │   │   └── CityResponseTest.java
 │       │           │   │   └── rest/
-│       │           │   │       └── CitiesResourceTest.java
 │       │           │   └── service/
-│       │           │       └── CitiesServiceTest.java
 │       │           ├── helpers/
-│       │           │   ├── CNPJGenerator.java
-│       │           │   ├── CPFGenerator.java
 │       │           │   ├── TestErrorCodes.java
-│       │           │   ├── domainGenerators/
-│       │           │   │   ├── AdminGenerator.java
-│       │           │   │   ├── CityGenerator.java
-│       │           │   │   ├── EntityGenerator.java
-│       │           │   │   ├── StaffGenerator.java
-│       │           │   │   ├── UserGenerator.java
-│       │           │   │   └── vos/
-│       │           │   │       └── IbgeCodeGenerator.java
-│       │           │   └── entityGenerators/
-│       │           │       ├── AdminsEntityGenerator.java
-│       │           │       ├── AttendancesEntityGenerator.java
-│       │           │       ├── CitiesEntityGenerator.java
-│       │           │       ├── CoursesEntityGenerator.java
-│       │           │       ├── EnrollmentsEntityGenerator.java
-│       │           │       ├── EntitiesEntityGenerator.java
-│       │           │       ├── ProjectsEntityGenerator.java
-│       │           │       ├── SchoolsEntityGenerator.java
-│       │           │       ├── StaffEntityGenerator.java
-│       │           │       ├── StudentsEntityGenerator.java
-│       │           │       └── UsersEntityGenerator.java
+│       │           │   └── domainGenerators/
+│       │           │       └── vos/
 │       │           ├── identity/
 │       │           │   ├── domain/
-│       │           │   │   ├── AdminTest.java
-│       │           │   │   ├── UserTest.java
 │       │           │   │   ├── enums/
-│       │           │   │   │   └── IdentityErrorCodesTest.java
 │       │           │   │   └── vos/
-│       │           │   │       ├── CpfTest.java
-│       │           │   │       └── EmailTest.java
 │       │           │   ├── infra/
-│       │           │   │   ├── AdminMapperTest.java
-│       │           │   │   ├── UserMapperTest.java
 │       │           │   │   └── persistence/
-│       │           │   │       ├── AdminsRepositoryImplCRUDTest.java
-│       │           │   │       ├── UsersRepositoryImplCRUDTest.java
-│       │           │   │       └── UsersRepositoryImplSearchTest.java
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
-│       │           │       ├── AdminsServiceTest.java
-│       │           │       ├── PasswordServiceTest.java
-│       │           │       └── UsersServiceTest.java
 │       │           ├── partner/
 │       │           │   ├── domain/
-│       │           │   │   ├── EntityTest.java
-│       │           │   │   ├── StaffTest.java
 │       │           │   │   ├── enums/
-│       │           │   │   │   └── PartnerErrorCodesTest.java
 │       │           │   │   └── vos/
-│       │           │   │       └── CnpjTest.java
 │       │           │   ├── infra/
-│       │           │   │   ├── EntityMapperTest.java
-│       │           │   │   ├── StaffMapperTest.java
 │       │           │   │   └── persistence/
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
@@ -346,6 +310,7 @@
 │       │               │   └── persistence/
 │       │               │       └── UuidV7HibernateTest.java
 │       │               ├── presenter/
+│       │               │   ├── PresenterUtilsTest.java
 │       │               │   ├── dtos/
 │       │               │   │   ├── BulkCreateRequestTest.java
 │       │               │   │   ├── BulkCreateResultTest.java
