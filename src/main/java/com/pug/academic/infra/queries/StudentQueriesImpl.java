@@ -5,7 +5,6 @@ import com.pug.academic.presenter.dtos.StudentView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,14 +12,13 @@ import java.util.UUID;
 @ApplicationScoped
 public class StudentQueriesImpl implements StudentQueries {
 
-    @Inject
-    EntityManager em;
+  @Inject EntityManager em;
 
-    @Override
-    public Optional<StudentView> findById(UUID userId) {
-        var q =
-            em.createQuery(
-                """
+  @Override
+  public Optional<StudentView> findById(UUID userId) {
+    var q =
+        em.createQuery(
+            """
                     select new com.pug.academic.presenter.dtos.StudentView(
                       s.userId, u.cpf, u.name, u.email,
                       s.academicRegistration, s.campus,
@@ -36,14 +34,14 @@ public class StudentQueriesImpl implements StudentQueries {
                       join SchoolEntity sc on sc.id = c.schoolId
                     where s.userId = :id
                     """,
-                StudentView.class);
-        q.setParameter("id", userId);
-        return q.getResultList().stream().findFirst();
-    }
+            StudentView.class);
+    q.setParameter("id", userId);
+    return q.getResultList().stream().findFirst();
+  }
 
-    @Override
-    public List<StudentView> listAll() {
-        return em.createQuery(
+  @Override
+  public List<StudentView> listAll() {
+    return em.createQuery(
             """
                 select new com.pug.academic.presenter.dtos.StudentView(
                   s.userId, u.cpf, u.name, u.email,
@@ -60,15 +58,15 @@ public class StudentQueriesImpl implements StudentQueries {
                   join SchoolEntity sc on sc.id = c.schoolId
                 order by u.name
                 """,
-                StudentView.class)
-            .getResultList();
-    }
+            StudentView.class)
+        .getResultList();
+  }
 
-    @Override
-    public List<StudentView> listAllByCourseId(UUID courseId) {
-        var q =
-            em.createQuery(
-                """
+  @Override
+  public List<StudentView> listAllByCourseId(UUID courseId) {
+    var q =
+        em.createQuery(
+            """
                     select new com.pug.academic.presenter.dtos.StudentView(
                       s.userId, u.cpf, u.name, u.email,
                       s.academicRegistration, s.campus,
@@ -85,8 +83,8 @@ public class StudentQueriesImpl implements StudentQueries {
                     where s.courseId = :courseId
                     order by u.name
                     """,
-                StudentView.class);
-        q.setParameter("courseId", courseId);
-        return q.getResultList();
-    }
+            StudentView.class);
+    q.setParameter("courseId", courseId);
+    return q.getResultList();
+  }
 }

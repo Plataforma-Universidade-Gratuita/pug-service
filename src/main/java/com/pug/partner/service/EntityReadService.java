@@ -1,7 +1,7 @@
 package com.pug.partner.service;
 
-import com.pug.partner.infra.queries.EntityQueries;
-import com.pug.partner.presenter.dtos.EntityView;
+import com.pug.partner.infra.read.EntityQueries;
+import com.pug.partner.infra.read.dtos.EntityView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -20,7 +20,7 @@ public class EntityReadService {
    * @return the EntityView if found, otherwise null.
    */
   public EntityView getView(UUID id) {
-    return queries.findById(id).orElse(null);
+    return queries.findOptionalById(id).orElse(null);
   }
 
   /**
@@ -29,7 +29,7 @@ public class EntityReadService {
    * @return a list of all EntityViews.
    */
   public List<EntityView> listViews() {
-    return queries.listAll();
+    return queries.listAllEntities();
   }
 
   /**

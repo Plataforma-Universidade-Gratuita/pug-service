@@ -15,7 +15,7 @@ import java.util.Map;
 public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp) {
 
   /**
-   * Success response.
+   * Success response (200).
    *
    * @param data Data.
    * @param <T> Type of data.

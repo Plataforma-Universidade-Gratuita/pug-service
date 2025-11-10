@@ -3,9 +3,7 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.infra.persistence.AdminEntity;
 
-/**
- * Mapper class for converting between Admin domain objects and AdminsEntity persistence entities.
- */
+/** Maps between Admin domain and AdminsEntity persistence. */
 public final class AdminMapper {
   /** Private constructor to prevent instantiation. */
   private AdminMapper() {}

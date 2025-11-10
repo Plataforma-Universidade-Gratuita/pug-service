@@ -1,16 +1,13 @@
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.domain.enums.AccountType;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
-/** API response for Admin with localized account type. */
+/**
+ * AdminResponse record.
+ *
+ * @param userResponse the user details associated with the admin
+ * @param grantedAt the date and time when admin rights were granted
+ * @param grantedAtLabel the label for the granted date and time
+ */
 public record AdminResponse(
-    UUID userId,
-    String cpf,
-    String name,
-    String email,
-    AccountType accountType,
-    String accountTypeLabel,
-    OffsetDateTime createdAt,
-    OffsetDateTime grantedAt) {}
+    UserResponse userResponse, OffsetDateTime grantedAt, String grantedAtLabel) {}

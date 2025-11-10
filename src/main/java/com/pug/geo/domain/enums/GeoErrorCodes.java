@@ -1,4 +1,4 @@
-package com.pug.geo.domain.errors;
+package com.pug.geo.domain.enums;
 
 import com.pug.shared.errors.GenericErrorCodes;
 import lombok.Getter;

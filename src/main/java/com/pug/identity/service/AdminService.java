@@ -13,7 +13,11 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /** Service for managing admins. */
 @ApplicationScoped
@@ -43,17 +47,20 @@ public class AdminService {
   }
 
   /**
-   * Revokes admin privileges and deletes the underlying user.
+   * Revokes admin privileges for all given userIds and deletes the underlying users.
    *
-   * @param userId The ID of the admin user to be revoked.
+   * @param ids Iterable of admin userIds to delete.
+   * @return A map with counts of deleted admins and users.
    */
   @Transactional
-  public void revoke(UUID userId) {
-    adminsRepo
-        .findOptionalById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
-    adminsRepo.deleteByIds(List.of(userId));
-    userService.deleteByIds(List.of(userId));
+  public Map<String, Long> deleteAll(Iterable<UUID> ids) {
+    List<UUID> list = toStream(ids).filter(Objects::nonNull).toList();
+    if (list.isEmpty()) {
+      return Map.of();
+    }
+    var admins = adminsRepo.deleteByIds(list);
+    var users = userService.deleteByIds(list);
+    return Map.of("admins", admins, "users", users);
   }
 
   /**
@@ -75,5 +82,16 @@ public class AdminService {
    */
   public List<Admin> listAll() {
     return adminsRepo.listAllAdmins();
+  }
+
+  /**
+   * Converts an Iterable to a Stream.
+   *
+   * @param it The iterable to convert.
+   * @param <T> The type of elements.
+   * @return A stream of the iterable's elements.
+   */
+  private static <T> Stream<T> toStream(Iterable<T> it) {
+    return (it == null) ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
   }
 }

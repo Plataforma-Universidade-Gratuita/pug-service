@@ -6,7 +6,7 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.presenter.dtos.StaffAssignRequest;
 import com.pug.partner.presenter.dtos.StaffCreateRequest;
-import com.pug.partner.presenter.dtos.StaffView;
+import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.exceptions.ResourceNotFoundException;

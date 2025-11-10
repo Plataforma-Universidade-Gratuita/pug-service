@@ -8,6 +8,7 @@ import java.util.UUID;
 public interface StudentRepository {
   /**
    * Persists a Student entity.
+   *
    * @param student the Student to persist
    * @return the persisted Student
    */
@@ -15,6 +16,7 @@ public interface StudentRepository {
 
   /**
    * Persists multiple Student entities.
+   *
    * @param students the Students to persist
    * @return the list of persisted Students
    */
@@ -22,6 +24,7 @@ public interface StudentRepository {
 
   /**
    * Deletes Students by their IDs.
+   *
    * @param userIds the IDs of the Students to delete
    * @return the number of Students deleted
    */
@@ -29,6 +32,7 @@ public interface StudentRepository {
 
   /**
    * Finds a Student by their ID.
+   *
    * @param userId the ID of the Student to find
    * @return an Optional containing the Student if found, or empty if not found
    */
@@ -36,12 +40,14 @@ public interface StudentRepository {
 
   /**
    * Lists all Students.
+   *
    * @return a list of all Students
    */
   List<Student> listAllStudents();
 
   /**
    * Lists all Students by Course ID.
+   *
    * @param courseId the Course ID to filter Students
    * @return a list of Students enrolled in the specified Course
    */
@@ -49,6 +55,7 @@ public interface StudentRepository {
 
   /**
    * Checks if a Student exists by their registration.
+   *
    * @param registration the registration to check
    * @return true if a Student with the given registration exists, false otherwise
    */

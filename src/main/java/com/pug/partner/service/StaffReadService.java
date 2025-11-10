@@ -1,7 +1,7 @@
 package com.pug.partner.service;
 
-import com.pug.partner.infra.queries.StaffQueries;
-import com.pug.partner.presenter.dtos.StaffView;
+import com.pug.partner.infra.read.StaffQueries;
+import com.pug.partner.infra.read.dtos.StaffView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;

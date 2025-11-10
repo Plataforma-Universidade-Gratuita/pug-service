@@ -1,6 +1,6 @@
-package com.pug.partner.infra.queries;
+package com.pug.partner.infra.read;
 
-import com.pug.partner.presenter.dtos.StaffView;
+import com.pug.partner.infra.read.dtos.StaffView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

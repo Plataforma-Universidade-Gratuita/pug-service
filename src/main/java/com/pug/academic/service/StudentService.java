@@ -18,55 +18,51 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
 public class StudentService {
 
-    @Inject
-    StudentRepository repo;
-    @Inject
-    UserService users;
-    @Inject
-    PasswordService passwords;
+  @Inject StudentRepository repo;
+  @Inject UserService users;
+  @Inject PasswordService passwords;
 
-    @Transactional
-    public Student save(
-            Cpf cpf,
-            String name,
-            Email email,
-            String rawPassword,
-            AcademicRegistration reg,
-            Campi campus,
-            UUID courseId,
-            CounterpartHours hours,
-            Period period) {
+  @Transactional
+  public Student save(
+      Cpf cpf,
+      String name,
+      Email email,
+      String rawPassword,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
 
-        if (repo.existsByRegistration(reg.toString())) {
-            throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
-        }
-        String hash = passwords.hash(rawPassword);
-        var user = users.save(cpf, name, email, AccountType.STUDENT, hash);
-        var student = Student.createNew(user.getId(), reg, campus, courseId, hours, period);
-        return repo.persist(student);
+    if (repo.existsByRegistration(reg.toString())) {
+      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
     }
+    String hash = passwords.hash(rawPassword);
+    var user = users.save(cpf, name, email, AccountType.STUDENT, hash);
+    var student = Student.createNew(user.getId(), reg, campus, courseId, hours, period);
+    return repo.persist(student);
+  }
 
-    public Student get(UUID userId) {
-        return repo.findOptionalById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
-    }
+  public Student get(UUID userId) {
+    return repo.findOptionalById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+  }
 
-    public List<Student> listAll() {
-        return repo.listAllStudents();
-    }
+  public List<Student> listAll() {
+    return repo.listAllStudents();
+  }
 
-    @Transactional
-    public void revoke(UUID userId) {
-        repo.findOptionalById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
-        repo.deleteByIds(List.of(userId));
-        users.deleteByIds(List.of(userId));
-    }
+  @Transactional
+  public void revoke(UUID userId) {
+    repo.findOptionalById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+    repo.deleteByIds(List.of(userId));
+    users.deleteByIds(List.of(userId));
+  }
 }

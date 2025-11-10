@@ -1,6 +1,6 @@
 package com.pug.geo.domain.vos;
 
-import com.pug.geo.domain.errors.GeoErrorCodes;
+import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import org.jetbrains.annotations.NotNull;
 

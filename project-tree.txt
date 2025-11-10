@@ -73,22 +73,31 @@
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
 │   │   │           │   │   ├── CityRepository.java
-│   │   │           │   │   ├── errors/
+│   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       └── IbgeCode.java
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
-│   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── CityEntity.java
-│   │   │           │   │       └── CityRepositoryImpl.java
+│   │   │           │   │   ├── persistence/
+│   │   │           │   │   │   ├── CityEntity.java
+│   │   │           │   │   │   └── CityRepositoryImpl.java
+│   │   │           │   │   ├── queries/
+│   │   │           │   │   │   └── CityQueriesImpl.java
+│   │   │           │   │   └── read/
+│   │   │           │   │       ├── CityQueries.java
+│   │   │           │   │       └── dtos/
+│   │   │           │   │           └── CityView.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── CityCreateOrUpdateRequest.java
 │   │   │           │   │   │   └── CityResponse.java
+│   │   │           │   │   ├── mappers/
+│   │   │           │   │   │   └── CityPresenter.java
 │   │   │           │   │   └── rest/
 │   │   │           │   │       └── CityResource.java
 │   │   │           │   └── service/
+│   │   │           │       ├── CityReadService.java
 │   │   │           │       └── CityService.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
@@ -109,22 +118,30 @@
 │   │   │           │   │   │   ├── AdminRepositoryImpl.java
 │   │   │           │   │   │   ├── UserEntity.java
 │   │   │           │   │   │   └── UserRepositoryImpl.java
-│   │   │           │   │   └── queries/
+│   │   │           │   │   ├── queries/
+│   │   │           │   │   │   ├── AdminQueriesImpl.java
+│   │   │           │   │   │   └── UserQueriesImpl.java
+│   │   │           │   │   └── read/
 │   │   │           │   │       ├── AdminQueries.java
-│   │   │           │   │       └── AdminQueriesImpl.java
+│   │   │           │   │       ├── UserQueries.java
+│   │   │           │   │       └── dtos/
+│   │   │           │   │           ├── AdminView.java
+│   │   │           │   │           └── UserView.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── AdminCreateRequest.java
 │   │   │           │   │   │   ├── AdminResponse.java
-│   │   │           │   │   │   └── AdminView.java
+│   │   │           │   │   │   └── UserResponse.java
 │   │   │           │   │   ├── mappers/
-│   │   │           │   │   │   └── AdminPresenter.java
+│   │   │           │   │   │   ├── AdminPresenter.java
+│   │   │           │   │   │   └── UserPresenter.java
 │   │   │           │   │   └── rest/
 │   │   │           │   │       └── AdminResource.java
 │   │   │           │   └── service/
 │   │   │           │       ├── AdminReadService.java
 │   │   │           │       ├── AdminService.java
 │   │   │           │       ├── PasswordService.java
+│   │   │           │       ├── UserReadService.java
 │   │   │           │       └── UserService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
@@ -144,19 +161,23 @@
 │   │   │           │   │   │   ├── EntityRepositoryImpl.java
 │   │   │           │   │   │   ├── StaffEntity.java
 │   │   │           │   │   │   └── StaffRepositoryImpl.java
-│   │   │           │   │   └── queries/
+│   │   │           │   │   ├── queries/
+│   │   │           │   │   │   ├── EntityQueriesImpl.java
+│   │   │           │   │   │   └── StaffQueriesImpl.java
+│   │   │           │   │   └── read/
 │   │   │           │   │       ├── EntityQueries.java
-│   │   │           │   │       ├── EntityQueriesImpl.java
 │   │   │           │   │       ├── StaffQueries.java
-│   │   │           │   │       └── StaffQueriesImpl.java
+│   │   │           │   │       └── dtos/
+│   │   │           │   │           ├── EntityView.java
+│   │   │           │   │           └── StaffView.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── EntityCreateOrUpdateRequest.java
-│   │   │           │   │   │   ├── EntityView.java
 │   │   │           │   │   │   ├── StaffAssignRequest.java
-│   │   │           │   │   │   ├── StaffCreateRequest.java
-│   │   │           │   │   │   └── StaffView.java
+│   │   │           │   │   │   └── StaffCreateRequest.java
 │   │   │           │   │   ├── mappers/
+│   │   │           │   │   │   ├── EntityPresenter.java
+│   │   │           │   │   │   └── StaffPresenter.java
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── EntityResource.java
 │   │   │           │   │       └── StaffResource.java

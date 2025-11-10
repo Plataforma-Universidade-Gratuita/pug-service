@@ -1,6 +1,6 @@
-package com.pug.identity.infra.queries;
+package com.pug.identity.infra.read;
 
-import com.pug.identity.presenter.dtos.AdminView;
+import com.pug.identity.infra.read.dtos.AdminView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,12 +13,12 @@ public interface AdminQueries {
    * @param userId the user ID of the admin.
    * @return an Optional containing the AdminView if found, otherwise empty.
    */
-  Optional<AdminView> findById(UUID userId);
+  Optional<AdminView> findOptionalById(UUID userId);
 
   /**
    * List all AdminViews.
    *
    * @return a list of all AdminViews.
    */
-  List<AdminView> listAll();
+  List<AdminView> listAllAdmins();
 }

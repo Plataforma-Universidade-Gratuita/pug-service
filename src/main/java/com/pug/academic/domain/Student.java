@@ -6,12 +6,11 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.exceptions.AppValidationException;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.UUID;
 
 /** Domain entity representing a Student with validation and modification methods. */
 @Getter
@@ -27,6 +26,7 @@ public class Student {
 
   /**
    * Factory method to create a new Student with validation.
+   *
    * @param userId the unique identifier of the user.
    * @param reg the academic registration details.
    * @param campus the campus of the student.
@@ -36,12 +36,12 @@ public class Student {
    * @return a validated Student instance.
    */
   public static Student createNew(
-          UUID userId,
-          AcademicRegistration reg,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours hours,
-          Period period) {
+      UUID userId,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
     Student s = new Student(userId, reg, campus, courseId, hours, period);
     s.validate();
     return s;
@@ -49,6 +49,7 @@ public class Student {
 
   /**
    * Behavior: Change the campus of the student.
+   *
    * @param newCampus the new campus to set.
    * @return a new Student instance with the updated campus.
    */
@@ -60,6 +61,7 @@ public class Student {
 
   /**
    * Behavior: Move the student to a new course.
+   *
    * @param newCourseId the new course identifier.
    * @return a new Student instance with the updated course.
    */
@@ -71,6 +73,7 @@ public class Student {
 
   /**
    * Behavior: Update the counterpart hours of the student.
+   *
    * @param newHours the new counterpart hours to set.
    * @return a new Student instance with the updated hours.
    */
@@ -82,6 +85,7 @@ public class Student {
 
   /**
    * Behavior: Change the academic period of the student.
+   *
    * @param newPeriod the new period to set.
    * @return a new Student instance with the updated period.
    */
@@ -93,6 +97,7 @@ public class Student {
 
   /**
    * Validates the Student entity to ensure all fields are properly set.
+   *
    * @throws AppValidationException if any field is invalid.
    */
   private void validate() {
@@ -120,6 +125,7 @@ public class Student {
   public static class StudentBuilder {
     /**
      * Builds and returns a validated Student instance.
+     *
      * @return a validated Student instance.
      */
     public Student build() {

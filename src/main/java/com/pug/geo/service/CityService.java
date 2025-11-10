@@ -2,7 +2,7 @@ package com.pug.geo.service;
 
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
-import com.pug.geo.domain.errors.GeoErrorCodes;
+import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -13,6 +13,7 @@ import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -109,11 +110,15 @@ public class CityService {
    * Delete cities by their IDs.
    *
    * @param ids the iterable of city IDs to delete.
-   * @return the number of deleted cities.
+   * @return a map with the number of deleted cities.
    */
   @Transactional
-  public long deleteByIds(Iterable<UUID> ids) {
-    return repo.deleteByIds(ids);
+  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
+    List<UUID> list = toStream(ids).filter(Objects::nonNull).toList();
+    if (list.isEmpty()) {
+      return Map.of();
+    }
+    return Map.of("cities", repo.deleteByIds(list));
   }
 
   /**

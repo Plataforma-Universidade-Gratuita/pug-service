@@ -6,7 +6,6 @@ import com.pug.academic.infra.StudentMapper;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +14,7 @@ import java.util.UUID;
 /** Implementation of StudentRepository using Panache for persistence operations. */
 @ApplicationScoped
 public class StudentRepositoryImpl
-        implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+    implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
   @Transactional
   @Override

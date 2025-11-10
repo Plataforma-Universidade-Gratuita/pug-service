@@ -3,9 +3,9 @@ package com.pug.identity.presenter.rest;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AdminCreateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
-import com.pug.identity.presenter.dtos.AdminView;
 import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
@@ -15,6 +15,8 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.PresenterUtils;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
+import com.pug.shared.presenter.dtos.DeleteResult;
+import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.validation.UuidV7;
 import jakarta.inject.Inject;
@@ -35,6 +37,7 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -60,9 +63,6 @@ public class AdminResource {
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     AdminView v = readService.getView(id);
-    if (v == null) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
-    }
     Locale locale = PresenterUtils.pickLocale(headers.getAcceptableLanguages());
     AdminResponse body = AdminPresenter.toResponse(v, locale, i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -189,13 +189,12 @@ public class AdminResource {
   /**
    * Delete (revoke) an admin by ID.
    *
-   * @param id Admin user ID.
-   * @return No content response.
+   * @param req Iterable of admin user IDs to delete.
+   * @return Response with deletion result.
    */
   @DELETE
-  @Path("{id}")
-  public Response delete(@PathParam("id") @UuidV7 UUID id) {
-    adminService.revoke(id);
-    return Response.noContent().build();
+  public Response delete(@Valid UuidsRequest req) {
+    Map<String, Long> result = adminService.deleteAll(req.ids());
+    return Response.ok(ApiEnvelope.ok(new DeleteResult(result))).build();
   }
 }

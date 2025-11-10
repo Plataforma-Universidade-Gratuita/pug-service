@@ -4,7 +4,7 @@ import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
-import com.pug.partner.presenter.dtos.EntityView;
+import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
 import com.pug.shared.exceptions.ResourceNotFoundException;

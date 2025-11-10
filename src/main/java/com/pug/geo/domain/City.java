@@ -1,6 +1,6 @@
 package com.pug.geo.domain;
 
-import com.pug.geo.domain.errors.GeoErrorCodes;
+import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.text.StringUtils;

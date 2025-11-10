@@ -1,7 +1,9 @@
 package com.pug.identity.service;
 
-import com.pug.identity.infra.queries.AdminQueries;
-import com.pug.identity.presenter.dtos.AdminView;
+import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.identity.infra.read.AdminQueries;
+import com.pug.identity.infra.read.dtos.AdminView;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -17,10 +19,13 @@ public class AdminReadService {
    * Gets the admin view by user ID.
    *
    * @param userId the user ID.
-   * @return the admin view, or null if not found.
+   * @return the admin view.
+   * @throws ResourceNotFoundException if the admin is not found.
    */
   public AdminView getView(UUID userId) {
-    return queries.findById(userId).orElse(null);
+    return queries
+        .findOptionalById(userId)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
   }
 
   /**
@@ -29,6 +34,6 @@ public class AdminReadService {
    * @return the list of admin views.
    */
   public List<AdminView> listViews() {
-    return queries.listAll();
+    return queries.listAllAdmins();
   }
 }
