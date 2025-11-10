@@ -3,6 +3,7 @@ package com.pug.identity.domain;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Admin {
-  private final User user;
+  private final UUID userId;
   private final OffsetDateTime grantedAt;
 
   /**
@@ -22,7 +23,7 @@ public class Admin {
    * @throws AppValidationException if validation fails.
    */
   private void validate() {
-    if (user == null || user.getId() == null) {
+    if (userId == null) {
       throw new AppValidationException(IdentityErrorCodes.INVALID_ADMIN_USER);
     }
   }
@@ -36,7 +37,7 @@ public class Admin {
      * @throws AppValidationException if validation fails.
      */
     public Admin build() {
-      Admin a = new Admin(user, grantedAt);
+      Admin a = new Admin(userId, grantedAt);
       a.validate();
       return a;
     }

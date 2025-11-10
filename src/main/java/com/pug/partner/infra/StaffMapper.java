@@ -2,7 +2,7 @@ package com.pug.partner.infra;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.infra.UserMapper;
-import com.pug.identity.infra.persistence.UsersEntity;
+import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.persistence.EntitiesEntity;
@@ -53,7 +53,7 @@ public final class StaffMapper {
     se.setUserId(d.getUser().getId());
     se.setEntityId(d.getEntity().getId());
 
-    var ue = UsersEntity.builder().build();
+    var ue = UserEntity.builder().build();
     ue.setId(d.getUser().getId());
     se.setUser(ue);
 

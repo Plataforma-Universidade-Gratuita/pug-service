@@ -1,7 +1,7 @@
 package com.pug.identity.infra;
 
 import com.pug.identity.domain.Admin;
-import com.pug.identity.infra.persistence.AdminsEntity;
+import com.pug.identity.infra.persistence.AdminEntity;
 
 /**
  * Mapper class for converting between Admin domain objects and AdminsEntity persistence entities.
@@ -16,14 +16,11 @@ public final class AdminMapper {
    * @param e the AdminsEntity to convert.
    * @return the corresponding Admin domain object.
    */
-  public static Admin toDomain(AdminsEntity e) {
+  public static Admin toDomain(AdminEntity e) {
     if (e == null) {
       return null;
     }
-    return Admin.builder()
-        .user(UserMapper.toDomain(e.getUser()))
-        .grantedAt(e.getGrantedAt())
-        .build();
+    return Admin.builder().userId(e.getUserId()).grantedAt(e.getGrantedAt()).build();
   }
 
   /**
@@ -32,10 +29,10 @@ public final class AdminMapper {
    * @param d the Admin domain object to convert.
    * @return the corresponding AdminsEntity.
    */
-  public static AdminsEntity toEntity(Admin d) {
+  public static AdminEntity toEntity(Admin d) {
     if (d == null) {
       return null;
     }
-    return AdminsEntity.builder().userId(d.getUser().getId()).grantedAt(d.getGrantedAt()).build();
+    return AdminEntity.builder().userId(d.getUserId()).grantedAt(d.getGrantedAt()).build();
   }
 }

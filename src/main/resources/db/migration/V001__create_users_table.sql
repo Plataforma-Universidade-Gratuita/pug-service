@@ -6,7 +6,6 @@ CREATE TABLE users
     email               varchar(254)             NOT NULL,
     account_type        varchar(16)              NOT NULL,
     password_hash       varchar(255),
-    active              boolean                  NOT NULL DEFAULT true,
     created_at          TIMESTAMP WITH TIME ZONE NOT NULL,
 
     UNIQUE (email),

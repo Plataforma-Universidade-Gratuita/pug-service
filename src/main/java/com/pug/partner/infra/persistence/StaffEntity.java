@@ -1,6 +1,6 @@
 package com.pug.partner.infra.persistence;
 
-import com.pug.identity.infra.persistence.UsersEntity;
+import com.pug.identity.infra.persistence.UserEntity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,7 +51,7 @@ public class StaffEntity {
   @OneToOne(fetch = FetchType.LAZY, optional = false)
   @MapsId
   @JoinColumn(name = "user_id", nullable = false)
-  private UsersEntity user;
+  private UserEntity user;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "entity_id", nullable = false, insertable = false, updatable = false)

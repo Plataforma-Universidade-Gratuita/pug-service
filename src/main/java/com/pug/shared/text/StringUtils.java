@@ -29,4 +29,14 @@ public final class StringUtils {
   public static boolean isEmpty(String s) {
     return s == null || s.isBlank();
   }
+
+  /**
+   * Trim string. Null-safe.
+   *
+   * @param s string to trim.
+   * @return trimmed string or null if input was null.
+   */
+  public static String trim(String s) {
+    return s == null ? null : s.trim();
+  }
 }

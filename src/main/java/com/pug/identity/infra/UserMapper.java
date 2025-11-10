@@ -3,22 +3,19 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.infra.persistence.UsersEntity;
-import com.pug.shared.domain.enums.AccountType;
-import java.util.Locale;
+import com.pug.identity.infra.persistence.UserEntity;
 
 /** Maps between User domain and UsersEntity persistence. */
 public final class UserMapper {
-  /** Private constructor to prevent instantiation. */
   private UserMapper() {}
 
   /**
-   * Converts a UsersEntity to a User domain object.
+   * Entity -> Domain (uses domain builder).
    *
-   * @param e the UsersEntity.
-   * @return the corresponding User domain object.
+   * @param e entity.
+   * @return domain object or null if entity is null
    */
-  public static User toDomain(UsersEntity e) {
+  public static User toDomain(UserEntity e) {
     if (e == null) {
       return null;
     }
@@ -27,55 +24,46 @@ public final class UserMapper {
         .cpf(new Cpf(e.getCpf()))
         .name(e.getName())
         .email(new Email(e.getEmail()))
-        .accountType(parseAccountType(e.getAccountType()))
+        .accountType(e.getAccountType())
         .passwordHash(e.getPasswordHash())
-        .active(e.getActive())
         .createdAt(e.getCreatedAt())
         .build();
   }
 
   /**
-   * Converts a User domain object to a UsersEntity for persistence.
+   * Domain -> Entity (for persist).
    *
-   * @param d the User domain object.
-   * @return the corresponding UsersEntity.
+   * @param d domain object.
+   * @return entity or null if domain is null.
    */
-  public static UsersEntity toEntity(User d) {
+  public static UserEntity toEntity(User d) {
     if (d == null) {
       return null;
     }
-    return UsersEntity.builder()
+    return UserEntity.builder()
         .cpf(d.getCpf().toString())
         .name(d.getName())
         .email(d.getEmail().toString())
-        .accountType(d.getAccountType().name())
+        .accountType(d.getAccountType())
         .passwordHash(d.getPasswordHash())
-        .active(d.getActive() == null ? Boolean.TRUE : d.getActive())
+        .createdAt(d.getCreatedAt())
         .build();
   }
 
   /**
-   * Copies fields from a User domain object to an existing UsersEntity.
+   * Copy domain fields into an existing entity (for update).
    *
-   * @param d the User domain object.
-   * @param e the UsersEntity to copy data into.
+   * @param d domain object.
+   * @param e entity to copy into.
    */
-  public static void copy(User d, UsersEntity e) {
+  public static void copy(User d, UserEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
     e.setCpf(d.getCpf().toString());
     e.setName(d.getName());
     e.setEmail(d.getEmail().toString());
-    e.setAccountType(d.getAccountType().name());
+    e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
-    e.setActive(d.getActive());
-  }
-
-  /**
-   * Parses a string to an AccountType enum, handling nulls and case insensitivity.
-   *
-   * @param v the string to parse.
-   * @return the corresponding AccountType enum or null if input is null.
-   */
-  private static AccountType parseAccountType(String v) {
-    return (v == null) ? null : AccountType.valueOf(v.trim().toUpperCase(Locale.ROOT));
   }
 }

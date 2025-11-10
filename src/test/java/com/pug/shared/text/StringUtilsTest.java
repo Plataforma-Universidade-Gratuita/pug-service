@@ -2,6 +2,7 @@ package com.pug.shared.text;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -74,5 +75,15 @@ public class StringUtilsTest {
   void isEmptyReturnsFalseForNonWhitespace() {
     assertFalse(StringUtils.isEmpty("a"));
     assertFalse(StringUtils.isEmpty(" abc "));
+  }
+
+  @Test
+  void trimNullReturnsNull() {
+    assertNull(StringUtils.trim(null));
+  }
+
+  @Test
+  void trimRemovesOuterWhitespaceOnly() {
+    assertEquals("a  b", StringUtils.trim("  a  b  "));
   }
 }
