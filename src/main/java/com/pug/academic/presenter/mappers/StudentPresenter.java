@@ -2,7 +2,7 @@ package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.identity.presenter.mappers.UserPresenter;
+import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ public final class StudentPresenter {
     String remainingDaysLabel = StringUtils.toStringFormatted(remainingDays, locale);
 
     return new StudentResponse(
-        UserPresenter.toResponse(v.user(), locale, i18n),
+        AccountPresenter.toResponse(v.user(), locale, i18n),
         v.academicRegistration(),
         v.campus(),
         CoursePresenter.toResponse(v.course()),

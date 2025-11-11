@@ -1,5 +1,6 @@
 package com.pug.partner.infra.queries;
 
+import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.partner.infra.read.StaffQueries;
 import com.pug.partner.infra.read.dtos.StaffView;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,7 +37,7 @@ public class StaffQueriesImpl implements StaffQueries {
                     )
                   )
                   from StaffEntity s
-                    join UserEntity u on u.id = s.userId
+                    join AccountEntity u on u.id = s.userId
                     join EntityEntity e on e.id = s.entityId
                     join CityEntity c on c.id = e.cityId
                   """;
@@ -97,8 +98,8 @@ public class StaffQueriesImpl implements StaffQueries {
     String[] tokens = key.split("\\s+");
     SearchSession s = Search.session(em);
 
-    List<com.pug.identity.infra.persistence.UserEntity> hits =
-      s.search(com.pug.identity.infra.persistence.UserEntity.class)
+    List<AccountEntity> hits =
+      s.search(AccountEntity.class)
         .where(f ->
           f.bool(b -> {
             b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));

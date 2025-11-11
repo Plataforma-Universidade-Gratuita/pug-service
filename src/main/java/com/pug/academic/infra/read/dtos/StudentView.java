@@ -1,6 +1,6 @@
 package com.pug.academic.infra.read.dtos;
 
-import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.identity.infra.read.dtos.AccountView;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -15,7 +15,7 @@ import java.time.LocalDate;
  * @param dueDate the due date for program completion
  */
 public record StudentView(
-    UserView user,
+    AccountView user,
     String academicRegistration,
     String campus,
     CourseView course,

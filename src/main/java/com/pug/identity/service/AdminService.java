@@ -24,7 +24,8 @@ import java.util.stream.StreamSupport;
 public class AdminService {
 
   @Inject AdminRepository adminsRepo;
-  @Inject UserService userService;
+  @Inject
+  AccountService accountService;
   @Inject TimeProvider time;
   @Inject PasswordService passwords;
 
@@ -40,7 +41,7 @@ public class AdminService {
   @Transactional
   public Admin save(Cpf cpf, String name, Email email, String rawPassword) {
     String hash = passwords.hash(rawPassword);
-    var user = userService.save(cpf, name, email, AccountType.ADMIN, hash);
+    var user = accountService.save(cpf, name, email, AccountType.ADMIN, hash);
     var admin =
         Admin.builder().userId(user.getId()).grantedAt(OffsetDateTime.now(time.clock())).build();
     return adminsRepo.persist(admin);
@@ -59,7 +60,7 @@ public class AdminService {
       return Map.of();
     }
     var admins = adminsRepo.deleteByIds(list);
-    var users = userService.deleteByIds(list);
+    var users = accountService.deleteAll(list);
     return Map.of("admins", admins, "users", users);
   }
 
@@ -82,6 +83,16 @@ public class AdminService {
    */
   public List<Admin> listAll() {
     return adminsRepo.listAllAdmins();
+  }
+
+  /**
+   * Checks if any admin exists with the given user IDs.
+   *
+   * @param ids Iterable of user IDs to check.
+   * @return true if any admin exists with the given user IDs, false otherwise.
+   */
+  public boolean existsAnyByUserIdIn(Iterable<UUID> ids) {
+    return adminsRepo.existsAnyByUserIdIn(ids);
   }
 
   /**

@@ -1,6 +1,6 @@
 package com.pug.academic.presenter.dtos;
 
-import com.pug.identity.presenter.dtos.UserResponse;
+import com.pug.identity.presenter.dtos.AccountResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -22,7 +22,7 @@ import java.time.LocalDate;
  * @param remainingDaysLabel the remaining days label
  */
 public record StudentResponse(
-    UserResponse user,
+    AccountResponse user,
     String academicRegistration,
     String campus,
     CourseResponse course,

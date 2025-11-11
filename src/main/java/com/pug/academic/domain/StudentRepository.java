@@ -75,4 +75,12 @@ public interface StudentRepository {
    * @return true if a Student with the given registration exists, false otherwise
    */
   boolean existsByRegistration(String registration);
+
+  /**
+   * Checks if any Student exists by a collection of user IDs.
+   *
+   * @param userIds the user IDs to check
+   * @return true if any Student with the given user IDs exists, false otherwise
+   */
+  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
 }

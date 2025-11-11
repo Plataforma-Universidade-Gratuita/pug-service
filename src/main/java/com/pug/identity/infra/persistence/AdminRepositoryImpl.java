@@ -71,7 +71,10 @@ public class AdminRepositoryImpl
   }
 
   @Override
-  public boolean existsByUserId(UUID userId) {
-    return find("userId", userId).firstResultOptional().isPresent();
+  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return false;
+    }
+    return find("userId in ?1", userIds).firstResultOptional().isPresent();
   }
 }

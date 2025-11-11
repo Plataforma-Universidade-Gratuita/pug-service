@@ -19,7 +19,7 @@ public class StudentQueriesImpl implements StudentQueries {
 
   private static final String SELECT_VIEW =
       "select new com.pug.academic.infra.read.dtos.StudentView("
-          + "  new com.pug.identity.infra.read.dtos.UserView("
+          + "  new com.pug.identity.infra.read.dtos.AccountView("
           + "    u.id, u.cpf, u.name, u.email, u.accountType, u.createdAt"
           + "  ),"
           + "  s.academicRegistration,"
@@ -34,7 +34,7 @@ public class StudentQueriesImpl implements StudentQueries {
           + "  s.dueDate"
           + ") "
           + "from com.pug.academic.infra.persistence.StudentEntity s "
-          + "join com.pug.identity.infra.persistence.UserEntity u on u.id = s.userId "
+          + "join com.pug.identity.infra.persistence.AccountEntity u on u.id = s.userId "
           + "join com.pug.academic.infra.persistence.CourseEntity c on c.id = s.courseId "
           + "join com.pug.academic.infra.persistence.SchoolEntity sc on sc.id = c.schoolId ";
 

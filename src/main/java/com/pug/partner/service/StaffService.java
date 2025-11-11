@@ -3,7 +3,7 @@ package com.pug.partner.service;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.UserService;
+import com.pug.identity.service.AccountService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
@@ -27,7 +27,8 @@ import java.util.stream.StreamSupport;
 public class StaffService {
 
   @Inject StaffRepository repo;
-  @Inject UserService userService;
+  @Inject
+  AccountService accountService;
   @Inject EntityService entityService;
   @Inject PasswordService passwords;
 
@@ -52,7 +53,7 @@ public class StaffService {
     Objects.requireNonNull(entityId);
 
     entityService.getById(entityId);
-    var user = userService.save(cpf, name, email, AccountType.PARTNER, passwords.hash(rawPassword));
+    var user = accountService.save(cpf, name, email, AccountType.PARTNER, passwords.hash(rawPassword));
 
     if (repo.existsByUserId(user.getId())) {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
@@ -88,7 +89,7 @@ public class StaffService {
       if (repo.existsByUserId(uid)) {
         throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
       }
-      userService.getById(uid);
+      accountService.getById(uid);
       batch.add(Staff.createNew(uid, entityId));
     }
     return repo.persistAll(batch);
@@ -117,7 +118,7 @@ public class StaffService {
     }
 
     long staff = repo.deleteByUserIds(existing);
-    long user = userService.deleteByIds(existing);
+    long user = accountService.deleteAll(existing);
     return Map.of("staff", staff, "users", user);
   }
 
@@ -163,5 +164,18 @@ public class StaffService {
   public boolean existsByUserId(UUID userId) {
     Objects.requireNonNull(userId);
     return repo.existsByUserId(userId);
+  }
+
+  /**
+   * Checks if any staff members exist for the given user IDs.
+   *
+   * @param userIds an iterable of user IDs to check.
+   * @return true if any staff members exist for the provided user IDs, false otherwise.
+   */
+  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return false;
+    }
+    return repo.existsAnyByUserIdIn(userIds);
   }
 }

@@ -4,102 +4,92 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
 import com.pug.identity.infra.UserMapper;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 
-/**
- * Implementation of the UsersRepository using PanacheRepositoryBase for CRUD operations on
- * UsersEntity.
- */
-@ApplicationScoped
+/** Repository implementation for Person aggregate. */
 public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 
-  @Inject EntityManager entityManager;
-
-  @Transactional
-  @Override
-  public User persist(User user) {
-    if (user == null) {
-      return null;
+    @Transactional
+    @Override
+    public User persist(User user) {
+        if (user == null) {
+            return null;
+        }
+        UserEntity e = UserMapper.toEntity(user);
+        persistAndFlush(e);
+        return UserMapper.toDomain(e);
     }
-    UserEntity e = UserMapper.toEntity(user);
-    persistAndFlush(e);
-    return UserMapper.toDomain(e);
-  }
 
-  @Transactional
-  @Override
-  public List<User> persistAll(Iterable<User> users) {
-    if (users == null || !users.iterator().hasNext()) {
-      return List.of();
+    @Transactional
+    @Override
+    public List<User> persistAll(Iterable<User> people) {
+        if (people == null || !people.iterator().hasNext()) {
+            return List.of();
+        }
+        var batch = new ArrayList<UserEntity>();
+        for (User p : people) {
+            if (p != null) {
+                batch.add(UserMapper.toEntity(p));
+            }
+        }
+        if (batch.isEmpty()) {
+            return List.of();
+        }
+        persist(batch);
+        flush();
+        return batch.stream().map(UserMapper::toDomain).toList();
     }
-    var batch = new ArrayList<UserEntity>();
-    for (User d : users) {
-      if (d != null) {
-        batch.add(UserMapper.toEntity(d));
-      }
-    }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-    persist(batch);
-    flush();
-    return batch.stream().map(UserMapper::toDomain).toList();
-  }
 
-  @Transactional
-  @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (!ids.iterator().hasNext()) {
-      return 0L;
+    @Transactional
+    @Override
+    public void update(User user) {
+        if (user == null || user.getId() == null) {
+            return;
+        }
+        UserEntity e = findById(user.getId());
+        if (e == null) {
+            return;
+        }
+        UserMapper.copy(user, e);
     }
-    long deleted = delete("id in ?1", ids);
-    flush();
-    getEntityManager().clear();
-    return deleted;
-  }
 
-  @Override
-  public Optional<User> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(UserMapper::toDomain);
-  }
-
-  @Override
-  public List<User> listAllUsers() {
-    return listAll().stream().map(UserMapper::toDomain).toList();
-  }
-
-  @Override
-  public boolean existsByEmail(String email) {
-    return find("email", email).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByEmailIn(Collection<String> emails) {
-    if (emails == null || emails.isEmpty()) {
-      return false;
+    @Transactional
+    @Override
+    public long deleteByIds(Iterable<UUID> ids) {
+        if (ids == null || !ids.iterator().hasNext()) {
+            return 0L;
+        }
+        long n = delete("id in ?1", ids);
+        flush();
+        getEntityManager().clear();
+        return n;
     }
-    return find("email in ?1", emails).firstResultOptional().isPresent();
-  }
 
-  @Override
-  public void update(User user) {
-    if (user == null || user.getId() == null) {
-      return;
+    @Override
+    public Optional<User> findOptionalById(UUID id) {
+        return findByIdOptional(id).map(UserMapper::toDomain);
     }
-    UserEntity managed = findById(user.getId());
-    if (managed == null) {
-      return;
+
+    @Override
+    public List<User> listAllPeople() {
+        return listAll().stream().map(UserMapper::toDomain).toList();
     }
-    UserMapper.copy(user, managed);
-  }
+
+    @Override
+    public boolean existsByCpf(String cpf) {
+        return find("cpf", cpf).firstResultOptional().isPresent();
+    }
+
+    @Override
+    public boolean existsAnyByCpfIn(Iterable<String> cpfs) {
+        if (cpfs == null || !cpfs.iterator().hasNext()) {
+            return false;
+        }
+        return find("cpf in ?1", cpfs).firstResultOptional().isPresent();
+    }
 }

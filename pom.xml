@@ -196,8 +196,8 @@
                 <version>${surefire-plugin.version}</version>
                 <configuration>
                     <systemPropertyVariables>
-                        <user.language>en</user.language>
-                        <user.country>US</user.country>
+                        <account.language>en</account.language>
+                        <account.country>US</account.country>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
@@ -217,8 +217,8 @@
                 </executions>
                 <configuration>
                     <systemPropertyVariables>
-                        <user.language>en</user.language>
-                        <user.country>US</user.country>
+                        <account.language>en</account.language>
+                        <account.country>US</account.country>
                         <native.image.path>${project.build.directory}/${project.build.finalName}-runner
                         </native.image.path>
                         <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>

@@ -102,4 +102,12 @@ public class StudentRepositoryImpl
     }
     return find("academicRegistration", registration.trim()).firstResultOptional().isPresent();
   }
+
+  @Override
+  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return false;
+    }
+    return find("userId in ?1", userIds).firstResultOptional().isPresent();
+  }
 }

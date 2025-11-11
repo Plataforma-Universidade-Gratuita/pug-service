@@ -13,7 +13,7 @@ import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.UserService;
+import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
@@ -55,7 +55,8 @@ public class StudentResource {
 
   @Inject StudentService writeService;
   @Inject StudentReadService readService;
-  @Inject UserService users;
+  @Inject
+  AccountService users;
   @Inject I18n i18n;
 
   @Context UriInfo uri;

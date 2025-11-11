@@ -10,7 +10,7 @@ import com.pug.academic.domain.vos.Period;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.UserService;
+import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -29,7 +29,8 @@ import java.util.stream.StreamSupport;
 public class StudentService {
 
   @Inject StudentRepository repo;
-  @Inject UserService users;
+  @Inject
+  AccountService users;
   @Inject PasswordService passwords;
 
   /**
@@ -172,8 +173,21 @@ public class StudentService {
     }
 
     long students = repo.deleteByIds(ids);
-    long usersDeleted = users.deleteByIds(ids);
+    long usersDeleted = users.deleteAll(ids);
     return Map.of("students", students, "users", usersDeleted);
+  }
+
+  /**
+   * Check if any Student exists by a list of user IDs.
+   *
+   * @param userIds the list of user IDs
+   * @return true if any Student exists, false otherwise
+   */
+  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return false;
+    }
+    return repo.existsAnyByUserIdIn(userIds);
   }
 
   /**

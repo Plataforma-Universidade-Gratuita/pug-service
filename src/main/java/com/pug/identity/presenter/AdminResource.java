@@ -1,4 +1,4 @@
-package com.pug.identity.presenter.rest;
+package com.pug.identity.presenter;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
@@ -9,7 +9,7 @@ import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
-import com.pug.identity.service.UserService;
+import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
@@ -49,7 +49,8 @@ public class AdminResource {
 
   @Inject AdminReadService readService;
   @Inject AdminService adminService;
-  @Inject UserService userService;
+  @Inject
+  AccountService accountService;
   @Inject I18n i18n;
   @Context HttpHeaders headers;
 
@@ -95,7 +96,7 @@ public class AdminResource {
     Locale locale = PresenterUtils.pickLocale(headers.getAcceptableLanguages());
     String cpf = new Cpf(cpfRaw).toString();
     var users =
-        userService.listByCpf(cpf).stream()
+        accountService.listByCpf(cpf).stream()
             .filter(u -> u.getAccountType() == AccountType.ADMIN)
             .toList();
 
@@ -124,7 +125,7 @@ public class AdminResource {
     if (email == null || email.isBlank()) {
       return list();
     }
-    var user = userService.getByEmail(email);
+    var user = accountService.getByEmail(email);
     if (user.getAccountType() != AccountType.ADMIN) {
       throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
     }
@@ -151,7 +152,7 @@ public class AdminResource {
     }
     Locale locale = PresenterUtils.pickLocale(headers.getAcceptableLanguages());
     var users =
-        userService.search(query).stream()
+        accountService.search(query).stream()
             .filter(u -> u.getAccountType() == AccountType.ADMIN)
             .toList();
 

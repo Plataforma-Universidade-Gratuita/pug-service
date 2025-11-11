@@ -1,6 +1,6 @@
 package com.pug.partner.presenter.mappers;
 
-import com.pug.identity.presenter.mappers.UserPresenter;
+import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.shared.i18n.I18n;
@@ -24,6 +24,6 @@ public final class StaffPresenter {
       return null;
     }
     return new StaffResponse(
-        UserPresenter.toResponse(v.user(), locale, i18n), EntityPresenter.toResponse(v.entity()));
+        AccountPresenter.toResponse(v.user(), locale, i18n), EntityPresenter.toResponse(v.entity()));
   }
 }

@@ -1,31 +1,39 @@
 package com.pug.identity.service;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.UserRepository;
+import com.pug.academic.service.StudentService;
+import com.pug.identity.domain.Account;
+import com.pug.identity.domain.AccountRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.partner.service.StaffService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.StringUtils;
 import com.pug.shared.time.TimeProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /** Service for managing users. */
 @ApplicationScoped
-public class UserService {
+public class AccountService {
 
-  @Inject UserRepository repo;
+  @Inject
+  AccountRepository repo;
   @Inject TimeProvider time;
+  @Inject AdminService adminService;
+  @Inject
+  StaffService staffService;
+  @Inject
+  StudentService studentService;
 
   /**
    * Saves a new user.
@@ -39,13 +47,13 @@ public class UserService {
    * @throws DuplicateResourceException if a user with the same email already exists.
    */
   @Transactional
-  public User save(Cpf cpf, String name, Email email, AccountType type, String passwordHash) {
+  public Account save(Cpf cpf, String name, Email email, AccountType type, String passwordHash) {
     String e = email.toString();
     if (repo.existsByEmail(e)) {
-      throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
+      throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", e));
     }
-    User user = User.createNew(cpf, name, email, type, passwordHash, time);
-    return repo.persist(user);
+    Account account = Account.createNew(cpf, name, email, type, passwordHash, time);
+    return repo.persist(account);
   }
 
   /**
@@ -56,12 +64,12 @@ public class UserService {
    * @throws DuplicateResourceException if any user with the same email already exists.
    */
   @Transactional
-  public List<User> saveAll(Iterable<User> users) {
+  public List<Account> saveAll(Iterable<Account> users) {
     List<String> emails = toStream(users).map(u -> u.getEmail().toString()).toList();
     if (!emails.isEmpty() && repo.existsAnyByEmailIn(emails)) {
       throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
     }
-    List<User> normalized =
+    List<Account> normalized =
         toStream(users)
             .map(
                 u ->
@@ -79,32 +87,29 @@ public class UserService {
    * @param data The new user data.
    * @return The updated user.
    * @throws ResourceNotFoundException if the user does not exist.
-   * @throws DuplicateResourceException if a user with the same email already exists.
+   * @throws DuplicateResourceException if a user with the same email or cpf already exists.
    */
   @Transactional
-  public User update(UUID id, User data) {
-    User current =
+  public Account update(UUID id, Account data) {
+    Account current =
         repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
 
     String newEmail = data.getEmail().toString();
-    if (!newEmail.equalsIgnoreCase(current.getEmail().toString())) {
-      repo.findOptionalByEmail(newEmail)
-          .filter(found -> !found.getId().equals(id))
-          .ifPresent(
-              x -> {
-                throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
-              });
+    if (!newEmail.equalsIgnoreCase(current.getEmail().toString())
+          && repo.existsByEmail(newEmail)) {
+      throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", newEmail));
     }
-    User updated =
+    if (!data.getCpf().equals(current.getCpf())
+          && repo.existsByCpf(data.getCpf())) {
+      throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("cpf", data.getCpf().toString()));
+    }
+    Account updated =
         current
             .changeName(data.getName())
             .changeEmail(data.getEmail())
             .setPasswordHash(data.getPasswordHash())
-            .toBuilder()
-            .accountType(data.getAccountType())
-            .cpf(data.getCpf())
-            .build();
+            .changeCpf(data.getCpf());
 
     repo.update(updated);
     return repo.findOptionalById(id)
@@ -116,9 +121,22 @@ public class UserService {
    *
    * @param ids The IDs of the users to delete.
    * @return The number of users deleted.
+   * @throws ReferencedEntityException if any user is referenced by other entities.
    */
   @Transactional
-  public long deleteByIds(Iterable<UUID> ids) {
+  public long deleteAll(Iterable<UUID> ids) {
+    if (ids == null || !ids.iterator().hasNext()) {
+      return 0L;
+    }
+    if (adminService.existsAnyByUserIdIn(ids)) {
+      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_ADMIN);
+    }
+    if (staffService.existsAnyByUserIdIn(ids)) {
+      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_STAFF);
+    }
+    if (studentService.existsAnyByUserIdIn(ids)) {
+      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_STUDENT);
+    }
     return repo.deleteByIds(ids);
   }
 
@@ -127,7 +145,7 @@ public class UserService {
    *
    * @return A list of all users.
    */
-  public List<User> listAll() {
+  public List<Account> listAll() {
     return repo.listAllUsers();
   }
 
@@ -138,42 +156,9 @@ public class UserService {
    * @return The user.
    * @throws ResourceNotFoundException if the user does not exist.
    */
-  public User getById(UUID id) {
+  public Account getById(UUID id) {
     return repo.findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
-  }
-
-  /**
-   * Gets a user by email.
-   *
-   * @param email The email of the user.
-   * @return The user.
-   * @throws ResourceNotFoundException if the user does not exist.
-   */
-  public User getByEmail(String email) {
-    return repo.findOptionalByEmail(email)
-        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
-  }
-
-  /**
-   * Lists users by CPF.
-   *
-   * @param cpf The CPF to filter by.
-   * @return A list of users with the given CPF.
-   */
-  public List<User> listByCpf(String cpf) {
-    return repo.listByCpf(cpf);
-  }
-
-  /**
-   * Searches users by name.
-   *
-   * @param query The search query.
-   * @return A list of users matching the query.
-   */
-  public List<User> search(String query) {
-    String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
-    return repo.searchByName(key);
   }
 
   /**

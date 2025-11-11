@@ -61,4 +61,12 @@ public interface StaffRepository {
    * @return true if a Staff entity exists for the given user ID, false otherwise.
    */
   boolean existsByUserId(UUID userId);
+
+  /**
+   * Checks if any Staff entities exist for the given user IDs.
+   *
+   * @param userIds an iterable of user IDs to check.
+   * @return true if any Staff entities exist for the given user IDs, false otherwise.
+   */
+  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
 }

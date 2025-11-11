@@ -11,20 +11,24 @@ import lombok.Getter;
  */
 @Getter
 public enum IdentityErrorCodes implements GenericErrorCodes {
+  ADMIN_ALREADY_EXISTS("error.domain.identity.admin.already.exists"),
+  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found"),
   INVALID_CPF("error.domain.identity.cpf"),
-  INVALID_USER_NAME_BLANK("error.domain.identity.user.name.blank"),
-  INVALID_USER_NAME_TOOLONG("error.domain.identity.user.name.toolong"),
+  INVALID_NAME_BLANK("error.domain.identity.name.blank"),
+  INVALID_NAME_TOOLONG("error.domain.identity.name.toolong"),
+  INVALID_PERSON("error.domain.identity.person.invalid"),
   INVALID_EMAIL_BLANK("error.domain.identity.email.blank"),
   INVALID_EMAIL_TOOLONG("error.domain.identity.email.toolong"),
   INVALID_EMAIL_FORMAT("error.domain.identity.email.format"),
   INVALID_ACCOUNT_TYPE("error.domain.identity.account.type"),
   INVALID_PASSWORD_HASH_TOOLONG("error.domain.identity.password.hash.toolong"),
   INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future"),
+  INVALID_ADMIN_USER("error.domain.identity.admin.user.invalid"),
   USER_ALREADY_EXISTS("error.domain.identity.user.already.exists"),
   USER_NOT_FOUND("error.domain.identity.user.not.found"),
-  INVALID_ADMIN_USER("error.domain.identity.admin.user.invalid"),
-  ADMIN_ALREADY_EXISTS("error.domain.identity.admin.already.exists"),
-  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found");
+  USER_REFERENCED_BY_ADMIN("error.domain.identity.user.referenced.by.admin"),
+  USER_REFERENCED_BY_STAFF("error.domain.identity.user.referenced.by.staff"),
+  USER_REFERENCED_BY_STUDENT("error.domain.identity.user.referenced.by.student");
 
   private final String bundleKey;
 

@@ -1,8 +1,8 @@
 package com.pug.identity.service;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.identity.infra.read.UserQueries;
-import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.identity.infra.read.AccountQueries;
+import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -13,9 +13,10 @@ import java.util.UUID;
 
 /** Service for reading user data. */
 @ApplicationScoped
-public class UserReadService {
+public class AccountReadService {
 
-  @Inject UserQueries queries;
+  @Inject
+  AccountQueries queries;
 
   /**
    * Gets the user view by ID.
@@ -24,7 +25,7 @@ public class UserReadService {
    * @return the user view.
    * @throws ResourceNotFoundException if the user is not found.
    */
-  public UserView getView(UUID id) {
+  public AccountView getView(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
@@ -37,7 +38,7 @@ public class UserReadService {
    * @return the user view.
    * @throws ResourceNotFoundException if the user is not found.
    */
-  public UserView getByEmail(String email) {
+  public AccountView getByEmail(String email) {
     return queries
         .findOptionalByEmail(email)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
@@ -48,7 +49,7 @@ public class UserReadService {
    *
    * @return the list of user views.
    */
-  public List<UserView> listViews() {
+  public List<AccountView> listViews() {
     return queries.listAllUsers();
   }
 
@@ -58,7 +59,7 @@ public class UserReadService {
    * @param cpf the user CPF.
    * @return the list of user views with the given CPF.
    */
-  public List<UserView> listByCpf(String cpf) {
+  public List<AccountView> listByCpf(String cpf) {
     return queries.listByCpf(cpf);
   }
 
@@ -68,7 +69,7 @@ public class UserReadService {
    * @param query the search query.
    * @return the list of user views matching the query.
    */
-  public List<UserView> search(String query) {
+  public List<AccountView> search(String query) {
     String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
     return queries.searchByName(key);
   }
