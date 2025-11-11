@@ -31,12 +31,27 @@ public interface StudentRepository {
   long deleteByIds(Iterable<UUID> userIds);
 
   /**
+   * Updates a Student entity.
+   *
+   * @param student the Student to update
+   */
+  void update(Student student);
+
+  /**
    * Finds a Student by their ID.
    *
    * @param userId the ID of the Student to find
    * @return an Optional containing the Student if found, or empty if not found
    */
   Optional<Student> findOptionalById(UUID userId);
+
+  /**
+   * Lists all Students by their IDs.
+   *
+   * @param userIds the IDs of the Students to list
+   * @return a list of Students with the specified IDs
+   */
+  List<Student> listAllByIds(Iterable<UUID> userIds);
 
   /**
    * Lists all Students.

@@ -1,8 +1,10 @@
 package com.pug.academic.presenter.rest;
 
 import com.pug.academic.domain.Course;
+import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.presenter.dtos.CourseCreateOrUpdateRequest;
-import com.pug.academic.presenter.dtos.CourseView;
+import com.pug.academic.presenter.dtos.CourseResponse;
+import com.pug.academic.presenter.mappers.CoursePresenter;
 import com.pug.academic.service.CourseReadService;
 import com.pug.academic.service.CourseService;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
@@ -39,68 +41,82 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject CourseService service;
+  @Inject CourseService writeService;
   @Inject CourseReadService readService;
 
   @Context UriInfo uri;
 
   /**
-   * Retrieves a course by its ID.
+   * Get course by id.
    *
-   * @param id the course ID
-   * @return the course view wrapped in an ApiEnvelope
+   * @param id the course id
+   * @return the response
    */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
     Objects.requireNonNull(id, "id");
     CourseView v = readService.getView(id);
-    return Response.ok(ApiEnvelope.ok(v)).build();
+    CourseResponse body = CoursePresenter.toResponse(v);
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Lists or searches courses based on query parameters.
+   * Get courses in bulk by ids.
    *
-   * @param q optional search query
-   * @param schoolId optional school ID to filter courses
-   * @return the list of course views wrapped in an ApiEnvelope
+   * @param req the uuids request
+   * @return the response
+   */
+  @GET
+  @Path("/bulk")
+  public Response getBulk(@Valid UuidsRequest req) {
+    Objects.requireNonNull(req, "req");
+    List<CourseView> views = readService.listViewsByIds(req.ids());
+    List<CourseResponse> body = views.stream().map(CoursePresenter::toResponse).toList();
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * List or search courses.
+   *
+   * @param q the search query
+   * @param schoolId the school id to filter by
+   * @return the response
    */
   @GET
   public Response listOrSearch(@QueryParam("q") String q, @QueryParam("schoolId") UUID schoolId) {
+    List<CourseView> views;
     if (schoolId != null) {
-      List<CourseView> views = readService.listViewsBySchoolId(schoolId);
-      return Response.ok(ApiEnvelope.ok(views)).build();
+      views = readService.listViewsBySchoolId(schoolId);
+    } else if (q != null && !q.isBlank()) {
+      views = readService.searchByName(q);
+    } else {
+      views = readService.listViews();
     }
-    if (q != null && !q.isBlank()) {
-      List<Course> found = service.search(q);
-      List<CourseView> views =
-          found.stream().map(c -> readService.getView(c.getId())).filter(Objects::nonNull).toList();
-      return Response.ok(ApiEnvelope.ok(views)).build();
-    }
-    List<CourseView> all = readService.listViews();
-    return Response.ok(ApiEnvelope.ok(all)).build();
+    List<CourseResponse> body = views.stream().map(CoursePresenter::toResponse).toList();
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Creates a new course.
+   * Create a new course.
    *
-   * @param req the course creation request
-   * @return the created course view wrapped in an ApiEnvelope with location header
+   * @param req the create request
+   * @return the response
    */
   @POST
   public Response create(@Valid CourseCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
-    Course created = service.save(req.name(), req.schoolId());
-    CourseView v = readService.getView(created.getId());
+    Course created = writeService.save(req.name(), req.schoolId());
+    CourseResponse body = CoursePresenter.toResponse(readService.getView(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(v)).build();
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
-   * Creates multiple courses in bulk.
+   * Create courses in bulk.
    *
-   * @param req the bulk course creation request
-   * @return the bulk creation result wrapped in an ApiEnvelope
+   * @param req the bulk create request
+   * @return the response
    */
   @POST
   @Path("/bulk")
@@ -108,18 +124,18 @@ public class CourseResource {
     Objects.requireNonNull(req, "req");
     var toSave =
         req.entities().stream().map(r -> Course.createNew(r.name(), r.schoolId())).toList();
-    service.saveAll(toSave);
+    writeService.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
         .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(toSave.size())))
         .build();
   }
 
   /**
-   * Updates an existing course.
+   * Update an existing course.
    *
-   * @param id the course ID
-   * @param req the course update request
-   * @return the updated course view wrapped in an ApiEnvelope
+   * @param id the course id
+   * @param req the update request
+   * @return the response
    */
   @PUT
   @Path("/{id}")
@@ -127,21 +143,21 @@ public class CourseResource {
     Objects.requireNonNull(id, "id");
     Objects.requireNonNull(req, "req");
     Course patch = Course.createNew(req.name(), req.schoolId());
-    Course updated = service.update(id, patch);
-    CourseView v = readService.getView(updated.getId());
-    return Response.ok(ApiEnvelope.ok(v)).build();
+    Course updated = writeService.update(id, patch);
+    CourseResponse body = CoursePresenter.toResponse(readService.getView(updated.getId()));
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Deletes courses by their IDs.
+   * Delete courses by ids.
    *
-   * @param req the request containing IDs of courses to delete
-   * @return the deletion result wrapped in an ApiEnvelope
+   * @param req the uuids request
+   * @return the response
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = service.deleteByIds(req.ids());
+    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 }

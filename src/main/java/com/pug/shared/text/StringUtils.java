@@ -1,6 +1,7 @@
 package com.pug.shared.text;
 
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -68,5 +69,32 @@ public final class StringUtils {
     Locale loc = (locale != null) ? locale : Locale.getDefault();
     DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withLocale(loc);
     return dateTime.format(fmt);
+  }
+
+  /**
+   * Format a LocalDate into a human-readable string using the given locale. Null-safe: returns ""
+   * if date is null.
+   *
+   * @param date the date to format
+   * @param locale the target locale; if null, system default is used
+   * @return localized date string, or "" if date is null
+   */
+  public static String formatLocalDate(LocalDate date, Locale locale) {
+    if (date == null) {
+      return "";
+    }
+    Locale loc = (locale != null) ? locale : Locale.getDefault();
+    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(loc);
+    return date.format(fmt);
+  }
+
+  /**
+   * Format LocalDate to string using default locale.
+   *
+   * @param date the date to format.
+   * @return formatted date string.
+   */
+  public static String formatLocalDate(LocalDate date) {
+    return formatLocalDate(date, Locale.getDefault());
   }
 }

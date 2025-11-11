@@ -59,9 +59,30 @@ public class StudentRepositoryImpl
     return n;
   }
 
+  @Transactional
+  @Override
+  public void update(Student student) {
+    if (student == null) {
+      return;
+    }
+    StudentEntity entity = findById(student.getUserId());
+    if (entity == null) {
+      return;
+    }
+    StudentMapper.copy(student, entity);
+  }
+
   @Override
   public Optional<Student> findOptionalById(UUID userId) {
     return findByIdOptional(userId).map(StudentMapper::toDomain);
+  }
+
+  @Override
+  public List<Student> listAllByIds(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return List.of();
+    }
+    return find("userId in ?1", userIds).list().stream().map(StudentMapper::toDomain).toList();
   }
 
   @Override

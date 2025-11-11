@@ -11,7 +11,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -137,17 +136,14 @@ public class SchoolService {
   }
 
   /**
-   * Searches for School entities by name.
+   * Retrieves multiple School entities by their IDs.
    *
-   * @param query the search query string
-   * @return a list of matching School entities
+   * @param ids an iterable of UUIDs representing the school IDs
+   * @return a list of School entities corresponding to the given IDs
    */
-  public List<School> search(String query) {
-    if (query == null || query.isBlank()) {
-      return List.of();
-    }
-    String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
-    return repo.searchByName(key);
+  public List<School> getAllByIds(Iterable<UUID> ids) {
+    Objects.requireNonNull(ids, "ids");
+    return repo.listAllByIds(ids);
   }
 
   /**

@@ -19,6 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+/** StudentEntity represents the student data stored in the database. */
 @Getter
 @Setter
 @Builder

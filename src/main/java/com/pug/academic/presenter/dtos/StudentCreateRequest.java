@@ -1,4 +1,3 @@
-// src/main/java/com/pug/academic/presenter/dtos/StudentCreateRequest.java
 package com.pug.academic.presenter.dtos;
 
 import com.pug.shared.validation.UuidV7;

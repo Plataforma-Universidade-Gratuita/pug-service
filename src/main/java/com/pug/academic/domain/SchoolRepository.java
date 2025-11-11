@@ -40,19 +40,19 @@ public interface SchoolRepository {
   Optional<School> findOptionalById(UUID id);
 
   /**
+   * List all schools by their IDs.
+   *
+   * @param ids the iterable of UUIDs of the schools to list
+   * @return a list of schools corresponding to the given IDs
+   */
+  List<School> listAllByIds(Iterable<UUID> ids);
+
+  /**
    * List all schools.
    *
    * @return a list of all schools
    */
   List<School> listAllSchools();
-
-  /**
-   * Search for schools by name.
-   *
-   * @param key the search key for the school name
-   * @return a list of schools matching the search key
-   */
-  List<School> searchByName(String key);
 
   /**
    * Check if a school exists by its name.

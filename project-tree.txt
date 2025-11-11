@@ -45,20 +45,30 @@
 │   │   │           │   │   │   ├── SchoolRepositoryImpl.java
 │   │   │           │   │   │   ├── StudentEntity.java
 │   │   │           │   │   │   └── StudentRepositoryImpl.java
-│   │   │           │   │   └── queries/
+│   │   │           │   │   ├── queries/
+│   │   │           │   │   │   ├── CourseQueriesImpl.java
+│   │   │           │   │   │   ├── SchoolQueriesImpl.java
+│   │   │           │   │   │   └── StudentQueriesImpl.java
+│   │   │           │   │   └── read/
 │   │   │           │   │       ├── CourseQueries.java
-│   │   │           │   │       ├── CourseQueriesImpl.java
+│   │   │           │   │       ├── SchoolQueries.java
 │   │   │           │   │       ├── StudentQueries.java
-│   │   │           │   │       └── StudentQueriesImpl.java
+│   │   │           │   │       └── dtos/
+│   │   │           │   │           ├── CourseView.java
+│   │   │           │   │           ├── SchoolView.java
+│   │   │           │   │           └── StudentView.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── CourseCreateOrUpdateRequest.java
 │   │   │           │   │   │   ├── CourseResponse.java
-│   │   │           │   │   │   ├── CourseView.java
 │   │   │           │   │   │   ├── SchoolCreateOrUpdateRequest.java
 │   │   │           │   │   │   ├── SchoolResponse.java
 │   │   │           │   │   │   ├── StudentCreateRequest.java
-│   │   │           │   │   │   └── StudentView.java
+│   │   │           │   │   │   └── StudentResponse.java
+│   │   │           │   │   ├── mappers/
+│   │   │           │   │   │   ├── CoursePresenter.java
+│   │   │           │   │   │   ├── SchoolPresenter.java
+│   │   │           │   │   │   └── StudentPresenter.java
 │   │   │           │   │   └── rest/
 │   │   │           │   │       ├── CourseResource.java
 │   │   │           │   │       ├── SchoolResource.java
@@ -66,6 +76,7 @@
 │   │   │           │   └── service/
 │   │   │           │       ├── CourseReadService.java
 │   │   │           │       ├── CourseService.java
+│   │   │           │       ├── SchoolReadService.java
 │   │   │           │       ├── SchoolService.java
 │   │   │           │       ├── StudentReadService.java
 │   │   │           │       └── StudentService.java

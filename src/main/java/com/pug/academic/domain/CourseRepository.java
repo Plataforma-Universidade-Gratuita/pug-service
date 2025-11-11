@@ -35,7 +35,6 @@ public interface CourseRepository {
    *
    * @param id the ID of the course.
    * @return the found course.
-   * @throws java.util.NoSuchElementException if no course is found.
    */
   Optional<Course> findOptionalById(UUID id);
 
@@ -55,12 +54,12 @@ public interface CourseRepository {
   List<Course> listAllBySchoolId(UUID schoolId);
 
   /**
-   * Search courses by name.
+   * List all courses by their IDs.
    *
-   * @param query the search query.
-   * @return the list of matching courses.
+   * @param ids the IDs of the courses.
+   * @return the list of courses with the given IDs.
    */
-  List<Course> searchByName(String query);
+  List<Course> listAllByIds(Iterable<UUID> ids);
 
   /**
    * Check if a course exists by name.

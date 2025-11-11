@@ -3,12 +3,15 @@ package com.pug.academic.presenter.rest;
 import com.pug.academic.domain.School;
 import com.pug.academic.presenter.dtos.SchoolCreateOrUpdateRequest;
 import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.mappers.SchoolPresenter;
+import com.pug.academic.service.SchoolReadService;
 import com.pug.academic.service.SchoolService;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -38,96 +41,114 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class SchoolResource {
 
-  @Inject SchoolService service;
+  @Inject SchoolService writeService;
+  @Inject SchoolReadService readService;
   @Context UriInfo uri;
 
   /**
-   * Create a new school.
+   * Creates a new school.
    *
-   * @param req the create request.
-   * @return the response with location header.
+   * @param req the school creation request
+   * @return the response containing the created school
    */
   @POST
   public Response create(@Valid SchoolCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
-    School created = service.save(req.name());
+    School created = writeService.save(req.name());
+    var view = readService.getById(created.getId());
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location)
-        .entity(ApiEnvelope.created(SchoolResponse.from(created)))
+        .entity(ApiEnvelope.created(SchoolPresenter.toResponse(view)))
         .build();
   }
 
   /**
-   * Create multiple schools in bulk.
+   * Creates multiple schools in bulk.
    *
-   * @param req the bulk create request.
-   * @return the response with number of created entities.
+   * @param req the bulk creation request
+   * @return the response containing the result of the bulk creation
    */
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<SchoolCreateOrUpdateRequest> req) {
     Objects.requireNonNull(req, "req");
     List<School> toSave = req.entities().stream().map(r -> School.createNew(r.name())).toList();
-    service.saveAll(toSave);
+    writeService.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
         .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(toSave.size())))
         .build();
   }
 
   /**
-   * Update an existing school.
+   * Updates an existing school.
    *
-   * @param id the id of the school to update.
-   * @param req the update request.
-   * @return the response with updated school.
+   * @param id the ID of the school to update
+   * @param req the school update request
+   * @return the response containing the updated school
    */
   @PUT
   @Path("/{id}")
-  public Response update(@PathParam("id") UUID id, @Valid SchoolCreateOrUpdateRequest req) {
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolCreateOrUpdateRequest req) {
     Objects.requireNonNull(id, "id");
     Objects.requireNonNull(req, "req");
     School patch = School.createNew(req.name());
-    School updated = service.update(id, patch);
-    return Response.ok(ApiEnvelope.ok(SchoolResponse.from(updated))).build();
+    writeService.update(id, patch);
+    var view = readService.getById(id);
+    return Response.ok(ApiEnvelope.ok(SchoolPresenter.toResponse(view))).build();
   }
 
   /**
-   * List all schools or search by query.
+   * Lists all schools or searches schools by name.
    *
-   * @param q the optional search query.
-   * @return the response with list of schools.
+   * @param q the optional search query
+   * @return the response containing the list of schools
    */
   @GET
   public Response listOrSearch(@QueryParam("q") String q) {
-    List<School> result = (q == null || q.isBlank()) ? service.listAll() : service.search(q);
-    List<SchoolResponse> body = result.stream().map(SchoolResponse::from).toList();
+    var views = (q == null || q.isBlank()) ? readService.listAll() : readService.searchByName(q);
+    List<SchoolResponse> body = views.stream().map(SchoolPresenter::toResponse).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Get a school by id.
+   * Retrieves a school by its ID.
    *
-   * @param id the id of the school.
-   * @return the response with the school.
+   * @param id the ID of the school
+   * @return the response containing the school
    */
   @GET
   @Path("/{id}")
-  public Response get(@PathParam("id") UUID id) {
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
     Objects.requireNonNull(id, "id");
-    School found = service.getById(id);
-    return Response.ok(ApiEnvelope.ok(SchoolResponse.from(found))).build();
+    var view = readService.getById(id);
+    return Response.ok(ApiEnvelope.ok(SchoolPresenter.toResponse(view))).build();
   }
 
   /**
-   * Delete schools by their ids.
+   * Retrieves multiple schools by their IDs.
    *
-   * @param req the request containing ids to delete.
-   * @return the response with number of deleted entities.
+   * @param req the request containing the IDs of schools to retrieve
+   * @return the response containing the list of schools
+   */
+  @GET
+  @Path("/bulk")
+  public Response getBulk(@Valid UuidsRequest req) {
+    Objects.requireNonNull(req, "ids");
+    var views = readService.getAllByIds(req.ids());
+    List<SchoolResponse> body = views.stream().map(SchoolPresenter::toResponse).toList();
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Deletes schools by their IDs.
+   *
+   * @param req the request containing the IDs of schools to delete
+   * @return the response containing the result of the deletion
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = service.deleteByIds(req.ids());
+    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 }

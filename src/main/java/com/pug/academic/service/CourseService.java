@@ -11,7 +11,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -42,22 +41,6 @@ public class CourseService {
       throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
     }
     return repo.persist(Course.createNew(n, schoolId));
-  }
-
-  /**
-   * Saves the given Course entity.
-   *
-   * @param course the Course entity to save
-   * @return the saved Course entity
-   * @throws DuplicateResourceException if a course with the same name already exists
-   */
-  @Transactional
-  public Course save(Course course) {
-    Objects.requireNonNull(course, "course");
-    if (repo.existsByName(course.getName())) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
-    }
-    return repo.persist(course);
   }
 
   /**
@@ -131,6 +114,19 @@ public class CourseService {
   }
 
   /**
+   * Lists all Course entities by their IDs.
+   *
+   * @param ids the IDs of the Course entities
+   * @return the list of Course entities
+   */
+  public List<Course> listAllByIds(Iterable<UUID> ids) {
+    if (ids == null || !ids.iterator().hasNext()) {
+      return List.of();
+    }
+    return repo.listAllByIds(ids);
+  }
+
+  /**
    * Updates an existing Course entity.
    *
    * @param id the ID of the Course entity to update
@@ -159,19 +155,6 @@ public class CourseService {
 
     return repo.findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND));
-  }
-
-  /**
-   * Searches for Course entities by name.
-   *
-   * @param query the search query
-   * @return the list of matching Course entities
-   */
-  public List<Course> search(String query) {
-    if (query == null || query.isBlank()) {
-      return List.of();
-    }
-    return repo.searchByName(StringUtils.fold(query).toLowerCase(Locale.ROOT));
   }
 
   /**
