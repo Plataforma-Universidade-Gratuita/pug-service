@@ -42,7 +42,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject CityService service;
+  @Inject CityService writeService;
   @Inject CityReadService readService;
 
   @Context UriInfo uri;
@@ -56,9 +56,8 @@ public class CityResource {
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
-    City created = service.save(req.name(), new IbgeCode(req.ibgeCode()));
-    CityView view = readService.getView(created.getId());
-    CityResponse body = CityPresenter.toResponse(view);
+    City created = writeService.save(req.name(), new IbgeCode(req.ibgeCode()));
+    CityResponse body = CityPresenter.toResponse(readService.getView(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -77,9 +76,9 @@ public class CityResource {
         req.entities().stream()
             .map(r -> City.createNew(r.name(), new IbgeCode(r.ibgeCode())))
             .toList();
-    service.saveAll(toSave);
+    List<City> created = writeService.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(toSave.size())))
+        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(created.size())))
         .build();
   }
 
@@ -96,24 +95,22 @@ public class CityResource {
     Objects.requireNonNull(id, "id");
     Objects.requireNonNull(req, "req");
     City patch = City.createNew(req.name(), new IbgeCode(req.ibgeCode()));
-    City updated = service.update(id, patch);
-    CityView view = readService.getView(updated.getId());
-    CityResponse body = CityPresenter.toResponse(view);
+    City updated = writeService.update(id, patch);
+    CityResponse body = CityPresenter.toResponse(readService.getView(updated.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Lists or searches for cities.
+   * Deletes cities by their IDs.
    *
-   * @param q the optional search query.
-   * @return a Response containing the list of cities.
+   * @param req the request containing the IDs of the cities to delete.
+   * @return a Response indicating the result of the deletion.
    */
-  @GET
-  public Response listOrSearch(@QueryParam("q") String q) {
-    List<CityView> views =
-        (q == null || q.isBlank()) ? readService.listViews() : readService.search(q);
-    List<CityResponse> body = views.stream().map(CityPresenter::toResponse).toList();
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
+  @DELETE
+  public Response delete(@Valid UuidsRequest req) {
+    Objects.requireNonNull(req, "req");
+    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
+    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 
   /**
@@ -126,8 +123,7 @@ public class CityResource {
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
     Objects.requireNonNull(id, "id");
-    CityView view = readService.getView(id);
-    CityResponse body = CityPresenter.toResponse(view);
+    CityResponse body = CityPresenter.toResponse(readService.getView(id));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -141,21 +137,21 @@ public class CityResource {
   @Path("/ibge/{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
     Objects.requireNonNull(ibgeCode, "ibgeCode");
-    CityView view = readService.getByIbgeCode(ibgeCode);
-    CityResponse body = CityPresenter.toResponse(view);
+    CityResponse body = CityPresenter.toResponse(readService.getViewByIbgeCode(ibgeCode));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Deletes cities by their IDs.
+   * Lists or searches for cities.
    *
-   * @param req the request containing the IDs of the cities to delete.
-   * @return a Response indicating the result of the deletion.
+   * @param q the optional search query.
+   * @return a Response containing the list of cities.
    */
-  @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = service.deleteByIds(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+  @GET
+  public Response listOrSearch(@QueryParam("q") String q) {
+    List<CityView> views =
+            (q == null || q.isBlank()) ? readService.listViews() : readService.search(q);
+    List<CityResponse> body = views.stream().map(CityPresenter::toResponse).toList();
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
   }
 }

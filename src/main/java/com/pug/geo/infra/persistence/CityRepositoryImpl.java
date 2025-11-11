@@ -9,7 +9,6 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -51,6 +50,18 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
     return entities.stream().map(CityMapper::toDomain).toList();
   }
 
+  @Override
+  public void update(City city) {
+    if (city == null || city.getId() == null) {
+      return;
+    }
+    CityEntity managed = findById(city.getId());
+    if (managed == null) {
+      return;
+    }
+    CityMapper.copy(city, managed);
+  }
+
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
@@ -69,32 +80,15 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
   }
 
   @Override
-  public List<City> listAllCities() {
-    return listAll().stream().map(CityMapper::toDomain).toList();
-  }
-
-  @Override
   public boolean existsByIbgeCode(String ibgeCodeDigits) {
     return find("ibgeCode", ibgeCodeDigits).firstResultOptional().isPresent();
   }
 
   @Override
-  public boolean existsAnyByIbgeCodeIn(Collection<String> ibges) {
-    if (ibges == null || ibges.isEmpty()) {
+  public boolean existsAnyByIbgeCodeIn(Iterable<String> ibges) {
+    if (ibges == null || !ibges.iterator().hasNext()) {
       return false;
     }
     return find("ibgeCode in ?1", ibges).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public void update(City city) {
-    if (city == null || city.getId() == null) {
-      return;
-    }
-    CityEntity managed = findById(city.getId());
-    if (managed == null) {
-      return;
-    }
-    com.pug.geo.infra.CityMapper.copy(city, managed);
   }
 }

@@ -96,7 +96,7 @@ public class StaffResource {
   public Response create(@Valid StaffCreateRequest req) {
     Objects.requireNonNull(req, "req");
     var staff =
-        service.assign(
+        service.save(
             new Cpf(req.cpf()), req.name(), new Email(req.email()), req.password(), req.entityId());
     return createdResponse(staff);
   }

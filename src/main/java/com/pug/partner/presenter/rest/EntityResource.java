@@ -1,13 +1,15 @@
 package com.pug.partner.presenter.rest;
 
+import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
+import com.pug.partner.presenter.dtos.EntityResponse;
+import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.dtos.BulkCreateRequest;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -19,6 +21,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -40,10 +43,66 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
 
-  @Inject EntityService service;
+  @Inject EntityService writeService;
   @Inject EntityReadService readService;
 
   @Context UriInfo uri;
+
+  /**
+   * Create a new entity.
+   *
+   * @param req the entity creation request
+   * @return the response containing the created entity view
+   */
+  @POST
+  public Response create(@Valid EntityCreateOrUpdateRequest req) {
+    Objects.requireNonNull(req, "req");
+    var created =
+        writeService.save(
+            new Cnpj(req.cnpj()),
+            req.name(),
+            req.cityId(),
+            req.address());
+    EntityResponse body = EntityPresenter.toResponse(readService.getView(created.getId()));
+    URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
+   * Update an existing entity.
+   *
+   * @param id the entity ID
+   * @param req the entity update request
+   * @return the response containing the updated entity view
+   */
+  @PUT
+  @Path("/{id}")
+  public Response update(@PathParam("id") UUID id, @Valid EntityCreateOrUpdateRequest req) {
+    Objects.requireNonNull(req, "req");
+    Objects.requireNonNull(id, "id");
+    writeService.update(
+        id,
+        Entity.createNew(
+          new Cnpj(req.cnpj()),
+          req.name(),
+          req.cityId(),
+          req.address()));
+    EntityResponse body = EntityPresenter.toResponse(readService.getView(id));
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Delete entities by their IDs.
+   *
+   * @param req the request containing the IDs to delete
+   * @return the response containing the deletion result
+   */
+  @DELETE
+  public Response delete(@Valid UuidsRequest req) {
+    Objects.requireNonNull(req, "req");
+    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
+    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+  }
 
   /**
    * Get entity by ID.
@@ -55,11 +114,8 @@ public class EntityResource {
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     Objects.requireNonNull(id, "id");
-    EntityView v = readService.getView(id);
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
-    }
-    return Response.ok(ApiEnvelope.ok(v)).build();
+    EntityResponse body = EntityPresenter.toResponse(readService.getView(id));
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
@@ -72,11 +128,8 @@ public class EntityResource {
   @Path("/by-cnpj/{cnpj}")
   public Response getByCnpj(@PathParam("cnpj") String cnpjRaw) {
     Objects.requireNonNull(cnpjRaw, "cnpj");
-    EntityView v = readService.getViewByCnpj(cnpjRaw);
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
-    }
-    return Response.ok(ApiEnvelope.ok(v)).build();
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw));
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
@@ -90,75 +143,16 @@ public class EntityResource {
   public Response listOrSearch(@QueryParam("q") String q, @QueryParam("cityId") UUID cityId) {
     if (cityId != null) {
       List<EntityView> views = readService.listViewsByCityId(cityId);
-      return Response.ok(ApiEnvelope.ok(views)).build();
+      List<EntityResponse> body = views.stream().map(EntityPresenter::toResponse).toList();
+      return Response.ok(ApiEnvelope.ok(body)).build();
     }
     if (q != null && !q.isBlank()) {
       List<EntityView> views = readService.searchViews(q);
-      return Response.ok(ApiEnvelope.ok(views)).build();
+      List<EntityResponse> body = views.stream().map(EntityPresenter::toResponse).toList();
+      return Response.ok(ApiEnvelope.ok(body)).build();
     }
     List<EntityView> all = readService.listViews();
-    return Response.ok(ApiEnvelope.ok(all)).build();
-  }
-
-  /**
-   * Create a new entity.
-   *
-   * @param req the entity creation request
-   * @return the response containing the created entity view
-   */
-  @POST
-  public Response create(@Valid EntityCreateOrUpdateRequest req) {
-    Objects.requireNonNull(req, "req");
-    var created =
-        service.save(
-            new com.pug.partner.domain.vos.Cnpj(req.cnpj()),
-            req.name(),
-            req.cityId(),
-            req.address());
-    EntityView v = readService.getView(created.getId());
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
-    }
-    URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(v)).build();
-  }
-
-  /**
-   * Create multiple entities in bulk.
-   *
-   * @param req the bulk creation request
-   * @return the response containing the bulk creation result
-   */
-  @POST
-  @Path("/bulk")
-  public Response createBulk(@Valid BulkCreateRequest<EntityCreateOrUpdateRequest> req) {
-    Objects.requireNonNull(req, "req");
-    var toSave =
-        req.entities().stream()
-            .map(
-                r ->
-                    com.pug.partner.domain.Entity.createNew(
-                        new com.pug.partner.domain.vos.Cnpj(r.cnpj()),
-                        r.name(),
-                        r.cityId(),
-                        r.address()))
-            .toList();
-    service.saveAll(toSave);
-    return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(toSave.size())))
-        .build();
-  }
-
-  /**
-   * Delete entities by their IDs.
-   *
-   * @param req the request containing the IDs to delete
-   * @return the response containing the deletion result
-   */
-  @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = service.deleteByIds(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+    List<EntityResponse> body = all.stream().map(EntityPresenter::toResponse).toList();
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 }

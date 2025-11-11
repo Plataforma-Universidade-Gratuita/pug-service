@@ -35,7 +35,7 @@ public class CityReadService {
    * @return the CityView corresponding to the given IBGE code
    * @throws ResourceNotFoundException if no city is found with the given IBGE code
    */
-  public CityView getByIbgeCode(String ibgeCode) {
+  public CityView getViewByIbgeCode(String ibgeCode) {
     return queries
         .findOptionalByIbgeCode(ibgeCode)
         .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));

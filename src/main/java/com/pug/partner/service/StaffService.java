@@ -32,7 +32,7 @@ public class StaffService {
   @Inject PasswordService passwords;
 
   /**
-   * Assigns a new staff member by creating a user and linking them to an entity.
+   * Save a new staff member by creating a user and linking them to an entity.
    *
    * @param cpf the CPF of the staff member.
    * @param name the name of the staff member.
@@ -44,7 +44,7 @@ public class StaffService {
    * @throws ResourceNotFoundException if the specified entity does not exist.
    */
   @Transactional
-  public Staff assign(Cpf cpf, String name, Email email, String rawPassword, UUID entityId) {
+  public Staff save(Cpf cpf, String name, Email email, String rawPassword, UUID entityId) {
     Objects.requireNonNull(cpf);
     Objects.requireNonNull(name);
     Objects.requireNonNull(email);
@@ -61,7 +61,7 @@ public class StaffService {
   }
 
   /**
-   * Assigns multiple existing users as staff members to a specified entity.
+   * Save multiple existing users as staff members to a specified entity.
    *
    * @param entityId the ID of the entity to which the staff members will be linked.
    * @param userIds an iterable of user IDs to be assigned as staff members.
@@ -70,7 +70,7 @@ public class StaffService {
    * @throws ResourceNotFoundException if the specified entity or any user does not exist.
    */
   @Transactional
-  public List<Staff> assignAll(UUID entityId, Iterable<UUID> userIds) {
+  public List<Staff> saveAll(UUID entityId, Iterable<UUID> userIds) {
     Objects.requireNonNull(entityId);
     Objects.requireNonNull(userIds);
     entityService.getById(entityId);

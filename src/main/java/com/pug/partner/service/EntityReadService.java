@@ -1,12 +1,14 @@
 package com.pug.partner.service;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /** Read-only service for entity views. */
@@ -25,20 +27,21 @@ public class EntityReadService {
   public EntityView getView(UUID id) {
     return queries
         .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
    * Retrieves an EntityView by its CNPJ.
    *
-   * @param cnpj the CNPJ of the entity
+   * @param cnpjRaw the CNPJ of the entity
    * @return the EntityView
    * @throws ResourceNotFoundException if the entity is not found
    */
-  public EntityView getViewByCnpj(String cnpj) {
+  public EntityView getViewByCnpj(String cnpjRaw) {
+    Cnpj cnpj = new Cnpj(cnpjRaw);
     return queries
-        .findOptionalByCnpj(cnpj)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND));
+        .findOptionalByCnpj(cnpj.toString())
+        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj.formatted())));
   }
 
   /**

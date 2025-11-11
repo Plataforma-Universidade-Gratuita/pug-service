@@ -38,29 +38,15 @@ public class EntityRepositoryImpl
 
   @Transactional
   @Override
-  public List<Entity> persistAll(Iterable<Entity> entities) {
-    if (entities == null || !entities.iterator().hasNext()) {
-      return List.of();
+  public void update(Entity entity) {
+    if (entity == null) {
+      return;
     }
-
-    var batch = new ArrayList<EntityEntity>();
-    for (var d : entities) {
-      if (d != null) {
-        batch.add(EntityMapper.toEntity(d));
-      }
+    EntityEntity managed = getEntityManager().find(EntityEntity.class, entity.getId());
+    if (managed == null) {
+      return;
     }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-
-    persist(batch);
-    flush();
-
-    var ids = batch.stream().map(EntityEntity::getId).toList();
-    List<EntityEntity> loaded = find("select e from EntityEntity e where e.id in ?1", ids).list();
-
-    return (loaded.size() == batch.size() ? loaded : batch)
-        .stream().map(EntityMapper::toDomain).toList();
+    EntityMapper.copy(entity, managed);
   }
 
   @Transactional
@@ -88,18 +74,19 @@ public class EntityRepositoryImpl
   }
 
   @Override
-  public List<Entity> listAllByCityId(UUID cityId) {
-    return find("select e from EntityEntity e where e.cityId = ?1", cityId).list().stream()
-        .map(EntityMapper::toDomain)
-        .toList();
-  }
-
-  @Override
   public boolean existsByCnpj(String cnpj) {
     String digits = Cnpj.sanitize(cnpj);
     if (digits == null) {
       return false;
     }
     return find("cnpj", digits).firstResultOptional().isPresent();
+  }
+
+  @Override
+  public boolean existsAnyByCityIdIn(Iterable<UUID> cityIds) {
+    if (cityIds == null || !cityIds.iterator().hasNext()) {
+      return false;
+    }
+    return find("cityId in ?1", cityIds).firstResultOptional().isPresent();
   }
 }

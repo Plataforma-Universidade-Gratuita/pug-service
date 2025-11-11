@@ -4,11 +4,14 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
+import com.pug.partner.domain.EntityRepository;
 import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,8 @@ import java.util.stream.StreamSupport;
 public class CityService {
 
   @Inject CityRepository repo;
+  @Inject
+  EntityRepository entityRepo;
 
   /**
    * Factory-style save.
@@ -85,23 +90,18 @@ public class CityService {
   public City update(UUID id, City data) {
     Objects.requireNonNull(id, "id");
     Objects.requireNonNull(data, "data");
-
-    City current =
-        repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));
-
+    City current = getById(id);
     String newCode = data.getIbgeCode().toString();
     String curCode = current.getIbgeCode().toString();
+
     if (!newCode.equals(curCode) && repo.existsByIbgeCode(newCode)) {
       throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
     }
 
     City updated = current.changeName(data.getName()).changeIbgeCode(data.getIbgeCode());
-
     repo.update(updated);
 
-    return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));
+    return getById(id);
   }
 
   /**
@@ -116,16 +116,10 @@ public class CityService {
     if (list.isEmpty()) {
       return Map.of();
     }
+    if (entityRepo.existsAnyByCityIdIn(list)) {
+      throw new ReferencedEntityException(GeoErrorCodes.CITY_REFERENCED_BY_ENTITY);
+    }
     return Map.of("cities", repo.deleteByIds(list));
-  }
-
-  /**
-   * List all cities.
-   *
-   * @return the list of all cities.
-   */
-  public List<City> listAll() {
-    return repo.listAllCities();
   }
 
   /**

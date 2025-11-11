@@ -74,18 +74,8 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
-  public Optional<User> findOptionalByEmail(String email) {
-    return find("email", email).firstResultOptional().map(UserMapper::toDomain);
-  }
-
-  @Override
   public List<User> listAllUsers() {
     return listAll().stream().map(UserMapper::toDomain).toList();
-  }
-
-  @Override
-  public List<User> listByCpf(String cpf) {
-    return find("cpf", cpf).list().stream().map(UserMapper::toDomain).toList();
   }
 
   @Override
@@ -99,41 +89,6 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
       return false;
     }
     return find("email in ?1", emails).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public List<User> searchByName(String key) {
-    if (key == null || key.isBlank()) {
-      return List.of();
-    }
-    String[] tokens = key.split("\\s+");
-    SearchSession s = Search.session(entityManager);
-
-    List<UserEntity> hits =
-        s.search(UserEntity.class)
-            .where(
-                f ->
-                    f.bool(
-                        b -> {
-                          b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
-                          b.should(
-                              f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
-                          for (String t : tokens) {
-                            if (t.length() >= 3) {
-                              b.should(
-                                  f.wildcard()
-                                      .field("name_exact")
-                                      .matching("*" + t + "*")
-                                      .boost(3f));
-                            }
-                          }
-                          b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
-                          b.should(f.match().field("name_auto").matching(key).boost(2f));
-                        }))
-            .sort(f -> f.score().then().field("name_sort"))
-            .fetchAllHits();
-
-    return hits.stream().map(UserMapper::toDomain).toList();
   }
 
   @Override

@@ -16,12 +16,11 @@ public interface EntityRepository {
   Entity persist(Entity entity);
 
   /**
-   * Persists multiple Entity objects.
+   * Updates an existing Entity object.
    *
-   * @param entities the iterable collection of Entity objects to persist.
-   * @return a list of the persisted Entity objects.
+   * @param entity the Entity to update.
    */
-  List<Entity> persistAll(Iterable<Entity> entities);
+  void update(Entity entity);
 
   /**
    * Deletes Entity objects by their IDs.
@@ -48,18 +47,18 @@ public interface EntityRepository {
   List<Entity> listAllEntities();
 
   /**
-   * Lists all Entity objects by city ID.
-   *
-   * @param cityId the ID of the city.
-   * @return a list of Entity objects located in the specified city.
-   */
-  List<Entity> listAllByCityId(UUID cityId);
-
-  /**
    * Checks if an Entity exists by its CNPJ.
    *
    * @param cnpj the CNPJ to check.
    * @return true if an Entity with the given CNPJ exists, false otherwise.
    */
   boolean existsByCnpj(String cnpj);
+
+  /**
+   * Checks if any Entity exists with a city ID in the provided list.
+   *
+   * @param cityIds the list of city IDs to check.
+   * @return true if any Entity exists with a city ID in the list, false otherwise.
+   */
+  boolean existsAnyByCityIdIn(Iterable<UUID> cityIds);
 }

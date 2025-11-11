@@ -1,6 +1,5 @@
 package com.pug.geo.domain;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,6 +23,13 @@ public interface CityRepository {
   List<City> persistAll(Iterable<City> cities);
 
   /**
+   * Updates an existing city entity.
+   *
+   * @param updated the city entity with updated information.
+   */
+  void update(City updated);
+
+  /**
    * Deletes city entities by their unique identifiers.
    *
    * @param ids the iterable of unique identifiers of the cities to delete.
@@ -40,13 +46,6 @@ public interface CityRepository {
   Optional<City> findOptionalById(UUID id);
 
   /**
-   * Lists all city entities.
-   *
-   * @return a list of all city entities.
-   */
-  List<City> listAllCities();
-
-  /**
    * Checks if a city exists by its IBGE code.
    *
    * @param ibgeCodeDigits the IBGE code digits of the city.
@@ -60,12 +59,5 @@ public interface CityRepository {
    * @param ibges a collection of IBGE code digits.
    * @return true if any city with the given IBGE code exists, false otherwise.
    */
-  boolean existsAnyByIbgeCodeIn(Collection<String> ibges);
-
-  /**
-   * Updates an existing city entity.
-   *
-   * @param updated the city entity with updated information.
-   */
-  void update(City updated);
+  boolean existsAnyByIbgeCodeIn(Iterable<String> ibges);
 }

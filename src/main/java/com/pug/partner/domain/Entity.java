@@ -61,6 +61,18 @@ public class Entity {
   }
 
   /**
+   * Behavior: change CNPJ.
+   *
+   * @param newCnpj the new CNPJ.
+   * @return the updated entity.
+   */
+  public Entity changeCnpj(Cnpj newCnpj) {
+    Entity e = this.toBuilder().cnpj(newCnpj).build();
+    e.validate();
+    return e;
+  }
+
+  /**
    * Behavior: move to another city.
    *
    * @param newCityId the new city ID.

@@ -25,6 +25,13 @@ public interface UserRepository {
   List<User> persistAll(Iterable<User> entities);
 
   /**
+   * Updates a Users object.
+   *
+   * @param user the Users to update.
+   */
+  void update(User user);
+
+  /**
    * Deletes Users objects by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Users objects to
@@ -42,35 +49,11 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
-   * Finds a Users by its email.
-   *
-   * @param email the email of the Users to find.
-   * @return an Optional containing the found Users, or empty if not found.
-   */
-  Optional<User> findOptionalByEmail(String email);
-
-  /**
    * Lists all Users objects.
    *
    * @return a list of all Users objects.
    */
   List<User> listAllUsers();
-
-  /**
-   * Lists Users objects by CPF.
-   *
-   * @param cpf the CPF to filter Users objects.
-   * @return a list of Users objects matching the given CPF.
-   */
-  List<User> listByCpf(String cpf);
-
-  /**
-   * Searches for Users objects by name.
-   *
-   * @param key the name key to search for.
-   * @return a list of Users objects matching the search key.
-   */
-  List<User> searchByName(String key);
 
   /**
    * Checks if a Users exists by email.
@@ -87,11 +70,4 @@ public interface UserRepository {
    * @return true if any Users with emails in the collection exists, false otherwise.
    */
   boolean existsAnyByEmailIn(Collection<String> emails);
-
-  /**
-   * Updates a Users object.
-   *
-   * @param user the Users to update.
-   */
-  void update(User user);
 }
