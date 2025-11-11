@@ -2,10 +2,9 @@ package com.pug.shared.presenter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.pug.shared.utils.PresenterUtils;
 import java.util.List;
 import java.util.Locale;
-
-import com.pug.shared.utils.PresenterUtils;
 import org.junit.jupiter.api.Test;
 
 public class PresenterUtilsTest {

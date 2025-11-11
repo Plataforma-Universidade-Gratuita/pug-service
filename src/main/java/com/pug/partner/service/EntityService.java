@@ -3,7 +3,6 @@ package com.pug.partner.service;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.Staff;
-import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -11,12 +10,10 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -25,8 +22,7 @@ import java.util.stream.StreamSupport;
 public class EntityService {
 
   @Inject EntityRepository repo;
-  @Inject
-  StaffService staffService;
+  @Inject StaffService staffService;
 
   /**
    * Saves a new Entity.
@@ -46,7 +42,8 @@ public class EntityService {
 
     String code = cnpj.toString();
     if (repo.existsByCnpj(code)) {
-      throw new DuplicateResourceException(PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cnpj.formatted()));
+      throw new DuplicateResourceException(
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cnpj.formatted()));
     }
     var e = Entity.createNew(cnpj, name, cityId, address);
     return repo.persist(e);
@@ -66,9 +63,9 @@ public class EntityService {
     Objects.requireNonNull(data, "data");
     var current = getById(id);
 
-    if (!data.getCnpj().equals(current.getCnpj())
-            && repo.existsByCnpj(data.getCnpj().toString())) {
-      throw new DuplicateResourceException(PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", data.getCnpj().formatted()));
+    if (!data.getCnpj().equals(current.getCnpj()) && repo.existsByCnpj(data.getCnpj().toString())) {
+      throw new DuplicateResourceException(
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", data.getCnpj().formatted()));
     }
 
     Entity updated =
@@ -81,8 +78,8 @@ public class EntityService {
   }
 
   /**
-   * Deletes Entities by their IDs.
-   * Also deletes associated staff members and their underlying users.
+   * Deletes Entities by their IDs. Also deletes associated staff members and their underlying
+   * users.
    *
    * @param ids the UUIDs of the Entities to delete
    * @return a map containing the count of deleted entities, staff and users
@@ -92,17 +89,19 @@ public class EntityService {
     if (ids == null || !ids.iterator().hasNext()) {
       return Map.of();
     }
-    List<UUID> staffIds = toStream(ids).filter(Objects::nonNull).map(id->
-            staffService.listByEntity(id))
+    List<UUID> staffIds =
+        toStream(ids)
+            .filter(Objects::nonNull)
+            .map(id -> staffService.listByEntity(id))
             .flatMap(List::stream)
             .map(Staff::getUserId)
             .toList();
     var staff = staffService.deleteByUserIds(staffIds);
     var entities = repo.deleteByIds(ids);
     return Map.of(
-            "entities", entities,
-            "staff", staff.get("staff"),
-            "users", staff.get("users"));
+        "entities", entities,
+        "staff", staff.get("staff"),
+        "users", staff.get("users"));
   }
 
   /**
@@ -115,7 +114,10 @@ public class EntityService {
   public Entity getById(UUID id) {
     Objects.requireNonNull(id, "id");
     return repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**

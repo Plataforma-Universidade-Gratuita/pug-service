@@ -20,8 +20,10 @@ public final class AdminPresenter {
    * @return the corresponding AdminResponse
    */
   public static AdminResponse toResponse(AdminView a, Locale locale, I18n i18n) {
-    String grantedAtLabel = StringUtils.toStringFormatted(a.grantedAt(), locale);
+    String grantedAtFormatted = StringUtils.toStringFormatted(a.grantedAt(), locale);
     return new AdminResponse(
-        AccountPresenter.toResponse(a.accountView(), locale, i18n), a.grantedAt(), grantedAtLabel);
+        AccountPresenter.toResponse(a.accountView(), locale, i18n),
+        a.grantedAt(),
+        grantedAtFormatted);
   }
 }

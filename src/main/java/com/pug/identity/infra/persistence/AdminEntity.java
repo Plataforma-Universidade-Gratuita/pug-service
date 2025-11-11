@@ -22,16 +22,16 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "userId")
-@ToString(of = {"userId"})
+@EqualsAndHashCode(of = "accountId")
+@ToString(of = {"accountId"})
 @Entity
 @Table(name = "admins")
 @EntityListeners(TimestampColumnsListener.class)
 public class AdminEntity {
 
   @Id
-  @Column(name = "user_id", nullable = false, updatable = false)
-  private UUID userId;
+  @Column(name = "account_id", nullable = false, updatable = false)
+  private UUID accountId;
 
   @Column(name = "granted_at", nullable = false, updatable = false)
   private OffsetDateTime grantedAt;

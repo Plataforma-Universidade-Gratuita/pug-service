@@ -18,7 +18,7 @@ public final class AdminMapper {
     if (e == null) {
       return null;
     }
-    return Admin.builder().userId(e.getUserId()).grantedAt(e.getGrantedAt()).build();
+    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).build();
   }
 
   /**
@@ -31,6 +31,6 @@ public final class AdminMapper {
     if (d == null) {
       return null;
     }
-    return AdminEntity.builder().userId(d.getUserId()).grantedAt(d.getGrantedAt()).build();
+    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).build();
   }
 }

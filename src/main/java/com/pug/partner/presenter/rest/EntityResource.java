@@ -1,7 +1,6 @@
 package com.pug.partner.presenter.rest;
 
 import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
@@ -9,7 +8,6 @@ import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -57,12 +55,7 @@ public class EntityResource {
   @POST
   public Response create(@Valid EntityCreateOrUpdateRequest req) {
     Objects.requireNonNull(req, "req");
-    var created =
-        writeService.save(
-            new Cnpj(req.cnpj()),
-            req.name(),
-            req.cityId(),
-            req.address());
+    var created = writeService.save(new Cnpj(req.cnpj()), req.name(), req.cityId(), req.address());
     EntityResponse body = EntityPresenter.toResponse(readService.getView(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
@@ -81,12 +74,7 @@ public class EntityResource {
     Objects.requireNonNull(req, "req");
     Objects.requireNonNull(id, "id");
     writeService.update(
-        id,
-        Entity.createNew(
-          new Cnpj(req.cnpj()),
-          req.name(),
-          req.cityId(),
-          req.address()));
+        id, Entity.createNew(new Cnpj(req.cnpj()), req.name(), req.cityId(), req.address()));
     EntityResponse body = EntityPresenter.toResponse(readService.getView(id));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }

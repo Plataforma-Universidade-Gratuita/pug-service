@@ -18,24 +18,24 @@ public class AdminRepositoryImpl
 
   @Transactional
   @Override
-  public Admin persist(Admin admin) {
-    if (admin == null || admin.getUserId() == null) {
+  public Admin persist(Admin entity) {
+    if (entity == null || entity.getAccountId() == null) {
       return null;
     }
-    AdminEntity e = AdminMapper.toEntity(admin);
+    AdminEntity e = AdminMapper.toEntity(entity);
     persistAndFlush(e);
     return AdminMapper.toDomain(e);
   }
 
   @Transactional
   @Override
-  public List<Admin> persistAll(Iterable<Admin> admins) {
-    if (admins == null) {
+  public List<Admin> persistAll(Iterable<Admin> entities) {
+    if (entities == null) {
       return List.of();
     }
     var batch = new ArrayList<AdminEntity>();
-    for (Admin d : admins) {
-      if (d == null || d.getUserId() == null) {
+    for (Admin d : entities) {
+      if (d == null || d.getAccountId() == null) {
         continue;
       }
       batch.add(AdminMapper.toEntity(d));
@@ -54,15 +54,15 @@ public class AdminRepositoryImpl
     if (ids == null || !ids.iterator().hasNext()) {
       return 0L;
     }
-    long n = delete("userId in ?1", ids);
+    long n = delete("accountId in ?1", ids);
     flush();
     getEntityManager().clear();
     return n;
   }
 
   @Override
-  public Optional<Admin> findOptionalById(UUID userId) {
-    return find("userId", userId).firstResultOptional().map(AdminMapper::toDomain);
+  public Optional<Admin> findOptionalById(UUID accountId) {
+    return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 
   @Override
@@ -71,10 +71,10 @@ public class AdminRepositoryImpl
   }
 
   @Override
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (userIds == null || !userIds.iterator().hasNext()) {
+  public boolean existsAnyByIdIn(Iterable<UUID> accountIds) {
+    if (accountIds == null || !accountIds.iterator().hasNext()) {
       return false;
     }
-    return find("userId in ?1", userIds).firstResultOptional().isPresent();
+    return find("accountId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }

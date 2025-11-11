@@ -24,8 +24,7 @@ import java.util.stream.StreamSupport;
 public class AdminService {
 
   @Inject AdminRepository adminsRepo;
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
   @Inject TimeProvider time;
   @Inject PasswordService passwords;
 
@@ -92,7 +91,7 @@ public class AdminService {
    * @return true if any admin exists with the given user IDs, false otherwise.
    */
   public boolean existsAnyByUserIdIn(Iterable<UUID> ids) {
-    return adminsRepo.existsAnyByUserIdIn(ids);
+    return adminsRepo.existsAnyByIdIn(ids);
   }
 
   /**

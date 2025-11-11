@@ -13,9 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -35,7 +33,7 @@ public class Account {
    * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
    * @param time time provider
-   * @return new User instance
+   * @return new Account instance
    */
   public static Account createNew(
       UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
@@ -49,7 +47,7 @@ public class Account {
    * Behavior: change the Account's email.
    *
    * @param newEmail new email for the Account
-   * @return new User instance with changed email
+   * @return new Account instance with changed email
    */
   public Account changeEmail(Email newEmail) {
     Account u = this.toBuilder().email(newEmail).build();
@@ -61,7 +59,7 @@ public class Account {
    * Behavior: set the Account's password hash.
    *
    * @param newHash new password hash
-   * @return new User instance with changed password hash
+   * @return new Account instance with changed password hash
    */
   public Account setPasswordHash(String newHash) {
     Account u = this.toBuilder().passwordHash(newHash).build();
@@ -70,25 +68,25 @@ public class Account {
   }
 
   /**
-   * Validates the User instance to ensure all required fields are properly set.
+   * Validates the Account instance to ensure all required fields are properly set.
    *
-   * <p>Checks that personId, email, and accountType are not null, passwordHash is within length limits if provided,
-   * and createdAt is not in the future.</p>
+   * <p>Checks that personId, email, and accountType are not null, passwordHash is within length
+   * limits if provided, and createdAt is not in the future.
    *
    * @throws AppValidationException if any validation fails
    */
   private void validateAt(Clock clock) {
     if (userId == null) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_PERSON);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_USER_BLANK);
     }
     if (email == null) {
       throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_BLANK);
     }
     if (accountType == null) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_ACCOUNT_TYPE);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK);
     }
-    if (passwordHash != null && passwordHash.length() > 255) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_PASSWORD_HASH_TOOLONG);
+    if (passwordHash.length() > 255) {
+      throw new AppValidationException(IdentityErrorCodes.INVALID_PASSWORD_HASH_LENGTH);
     }
     if (createdAt != null && createdAt.isAfter(OffsetDateTime.now(clock))) {
       throw new AppValidationException(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE);
@@ -96,7 +94,7 @@ public class Account {
   }
 
   /**
-   * Validates the User instance using the system UTC clock.
+   * Validates the Account instance using the system UTC clock.
    *
    * @throws AppValidationException if validation fails
    */
@@ -105,18 +103,18 @@ public class Account {
   }
 
   /**
-   * Builder class for User.
-   * <p>Overrides the build method to include validation.</p>
+   * Builder class for Account.
+   *
+   * <p>Overrides the build method to include validation.
    */
-  public static class UserBuilder {
+  public static class AccountBuilder {
     /**
-     * Builds the User instance and validates it.
+     * Builds the Account instance and validates it.
      *
-     * @return the constructed and validated User instance
+     * @return the constructed and validated Account instance
      */
     public Account build() {
-      Account u =
-          new Account(id, userId, email, accountType, passwordHash, createdAt);
+      Account u = new Account(id, userId, email, accountType, passwordHash, createdAt);
       u.validate();
       return u;
     }

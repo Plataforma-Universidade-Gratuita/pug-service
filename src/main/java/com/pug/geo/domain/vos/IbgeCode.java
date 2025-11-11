@@ -15,7 +15,8 @@ public record IbgeCode(String code) {
    * Constructs an IbgeCode after validating the input code.
    *
    * @param code the IBGE code string
-   * @throws AppValidationException if the code is null, not exactly 7 characters long or contains non-digit characters
+   * @throws AppValidationException if the code is null, not exactly 7 characters long or contains
+   *     non-digit characters
    */
   public IbgeCode {
     if (code == null || code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {

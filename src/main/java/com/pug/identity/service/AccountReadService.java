@@ -15,8 +15,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class AccountReadService {
 
-  @Inject
-  AccountQueries queries;
+  @Inject AccountQueries queries;
 
   /**
    * Gets the user view by ID.

@@ -14,11 +14,9 @@ import java.util.UUID;
  * @param createdAtFormatted the formatted creation date and time
  */
 public record UserResponse(
-        UUID id,
-        String cpf,
-        String cpfFormatted,
-        String name,
-        OffsetDateTime createdAt,
-        String createdAtFormatted
-){
-}
+    UUID id,
+    String cpf,
+    String cpfFormatted,
+    String name,
+    OffsetDateTime createdAt,
+    String createdAtFormatted) {}

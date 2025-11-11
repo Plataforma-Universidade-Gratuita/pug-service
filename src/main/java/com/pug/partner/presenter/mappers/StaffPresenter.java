@@ -24,6 +24,7 @@ public final class StaffPresenter {
       return null;
     }
     return new StaffResponse(
-        AccountPresenter.toResponse(v.user(), locale, i18n), EntityPresenter.toResponse(v.entity()));
+        AccountPresenter.toResponse(v.user(), locale, i18n),
+        EntityPresenter.toResponse(v.entity()));
   }
 }

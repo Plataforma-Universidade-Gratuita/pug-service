@@ -2,8 +2,8 @@ package com.pug.partner.service;
 
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.AccountService;
+import com.pug.identity.service.PasswordService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
@@ -27,8 +27,7 @@ import java.util.stream.StreamSupport;
 public class StaffService {
 
   @Inject StaffRepository repo;
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
   @Inject EntityService entityService;
   @Inject PasswordService passwords;
 
@@ -53,7 +52,8 @@ public class StaffService {
     Objects.requireNonNull(entityId);
 
     entityService.getById(entityId);
-    var user = accountService.save(cpf, name, email, AccountType.PARTNER, passwords.hash(rawPassword));
+    var user =
+        accountService.save(cpf, name, email, AccountType.PARTNER, passwords.hash(rawPassword));
 
     if (repo.existsByUserId(user.getId())) {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);

@@ -3,6 +3,9 @@ package com.pug.geo.infra.queries;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.geo.infra.read.CityQueries;
 import com.pug.geo.infra.read.dtos.CityView;
+import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -11,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 
 /** Implementation of CityQueries using JPA and Hibernate Search. */
 @ApplicationScoped
@@ -51,7 +52,7 @@ public class CityQueriesImpl implements CityQueries {
 
   @Override
   public Optional<CityView> findOptionalByIbgeCode(String ibgeCode) {
-    if (ibgeCode == null || ibgeCode.isBlank()) {
+    if (StringUtils.isEmpty(ibgeCode)) {
       return Optional.empty();
     }
     var q =
@@ -77,36 +78,7 @@ public class CityQueriesImpl implements CityQueries {
 
   @Override
   public List<CityView> searchByName(String key) {
-    if (key == null || key.isBlank()) {
-      return List.of();
-    }
-
-    String[] tokens = key.split("\\s+");
-    SearchSession s = Search.session(entityManager);
-
-    List<CityEntity> hits =
-        s.search(CityEntity.class)
-            .where(
-                f ->
-                    f.bool(
-                        b -> {
-                          b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
-                          b.should(
-                              f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
-                          for (String t : tokens) {
-                            if (t.length() >= 3) {
-                              b.should(
-                                  f.wildcard()
-                                      .field("name_exact")
-                                      .matching("*" + t + "*")
-                                      .boost(3f));
-                            }
-                          }
-                          b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
-                          b.should(f.match().field("name_auto").matching(key).boost(2f));
-                        }))
-            .sort(f -> f.score().then().field("name_sort"))
-            .fetchAllHits();
+    List<CityEntity> hits = HibernateSearchUtils.searchByName(entityManager, CityEntity.class, key);
 
     if (hits.isEmpty()) {
       return List.of();

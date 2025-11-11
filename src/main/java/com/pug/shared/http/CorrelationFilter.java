@@ -1,5 +1,6 @@
 package com.pug.shared.http;
 
+import com.pug.shared.utils.StringUtils;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -22,7 +23,7 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   @Override
   public void filter(ContainerRequestContext req) {
     String cid = req.getHeaderString(HDR);
-    if (cid == null || cid.isBlank()) {
+    if (StringUtils.isEmpty(cid)) {
       cid = java.util.UUID.randomUUID().toString();
     }
     req.setProperty(HDR, cid);

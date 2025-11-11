@@ -6,29 +6,27 @@ import lombok.Getter;
 /**
  * Enum representing error codes specific to the identity domain.
  *
- * <p>Each error code is associated with a specific validation failure scenario
- * and has a {@code bundleKey} that results into a located error message</p>
+ * <p>Each error code is associated with a specific validation failure scenario and has a {@code
+ * bundleKey} that results into a located error message
  */
 @Getter
 public enum IdentityErrorCodes implements GenericErrorCodes {
-  ADMIN_ALREADY_EXISTS("error.domain.identity.admin.already.exists"),
-  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found"),
-  INVALID_CPF("error.domain.identity.cpf"),
-  INVALID_NAME_BLANK("error.domain.identity.name.blank"),
-  INVALID_NAME_TOOLONG("error.domain.identity.name.toolong"),
-  INVALID_PERSON("error.domain.identity.person.invalid"),
-  INVALID_EMAIL_BLANK("error.domain.identity.email.blank"),
-  INVALID_EMAIL_TOOLONG("error.domain.identity.email.toolong"),
-  INVALID_EMAIL_FORMAT("error.domain.identity.email.format"),
-  INVALID_ACCOUNT_TYPE("error.domain.identity.account.type"),
-  INVALID_PASSWORD_HASH_TOOLONG("error.domain.identity.password.hash.toolong"),
-  INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future"),
-  INVALID_ADMIN_USER("error.domain.identity.admin.user.invalid"),
-  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists"),
-  USER_NOT_FOUND("error.domain.identity.user.not.found"),
-  USER_REFERENCED_BY_ADMIN("error.domain.identity.user.referenced.by.admin"),
-  USER_REFERENCED_BY_STAFF("error.domain.identity.user.referenced.by.staff"),
-  USER_REFERENCED_BY_STUDENT("error.domain.identity.user.referenced.by.student");
+  INVALID_CPF_BLANK("identity.error.cpf.blank"),
+  INVALID_CPF_LENGTH("identity.error.cpf.length"),
+  INVALID_CPF_FORMAT("identity.error.cpf.format"),
+  INVALID_EMAIL_BLANK("identity.error.email.blank"),
+  INVALID_EMAIL_LENGTH("identity.error.email.length"),
+  INVALID_EMAIL_FORMAT("identity.error.email.format"),
+  INVALID_USER_BLANK("identity.error.user.blank"),
+  INVALID_ACCOUNT_TYPE_BLANK("identity.error.account.type.blank"),
+  INVALID_PASSWORD_HASH_LENGTH("identity.error.password.length"),
+  INVALID_CREATED_AT_FUTURE("identity.error.created.at.future"),
+  INVALID_ACCOUNT_BLANK("identity.error.account.blank"),
+  INVALID_NAME_BLANK("identity.error.name.blank"),
+  INVALID_NAME_LENGTH("identity.error.name.length"),
+  USER_NOT_FOUND("identity.error.user.not.found"),
+  USER_ALREADY_EXISTS("identity.error.user.already.exists"),
+  USER_STILL_REFERENCED("identity.error.user.still.referenced");
 
   private final String bundleKey;
 

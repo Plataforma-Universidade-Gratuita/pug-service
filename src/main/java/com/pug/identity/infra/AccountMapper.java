@@ -4,7 +4,7 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.persistence.AccountEntity;
 
-/** Maps between User domain and UsersEntity persistence. */
+/** Maps between Account domain and AccountsEntity persistence. */
 public final class AccountMapper {
   /** Private constructor to prevent instantiation. */
   private AccountMapper() {}
@@ -21,7 +21,7 @@ public final class AccountMapper {
     }
     return Account.builder()
         .id(e.getId())
-        .userId(e.getPersonId())
+        .userId(e.getUserId())
         .email(new Email(e.getEmail()))
         .accountType(e.getAccountType())
         .passwordHash(e.getPasswordHash())
@@ -40,7 +40,7 @@ public final class AccountMapper {
       return null;
     }
     return AccountEntity.builder()
-        .personId(d.getUserId())
+        .userId(d.getUserId())
         .email(d.getEmail().toString())
         .accountType(d.getAccountType())
         .passwordHash(d.getPasswordHash())

@@ -9,9 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * School entity aggregate.
- */
+/** School entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -22,7 +20,7 @@ public class School {
   /**
    * Factory for new schools.
    *
-   * <p>Behavior: create new School and validate its attributes</p>
+   * <p>Behavior: create new School and validate its attributes
    *
    * @param name the name of the school
    * @return the created school
@@ -48,7 +46,7 @@ public class School {
   /**
    * Validates the School aggregate.
    *
-   * <p>Checks that the name is not blank and does not exceed length limits.</p>
+   * <p>Checks that the name is not blank and does not exceed length limits.
    *
    * @throws AppValidationException if validation fails.
    */
@@ -63,7 +61,8 @@ public class School {
 
   /**
    * Builder class for School.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class SchoolBuilder {
     /**

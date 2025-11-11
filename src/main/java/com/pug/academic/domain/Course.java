@@ -9,9 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Course entity aggregate.
- */
+/** Course entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,7 +21,7 @@ public class Course {
   /**
    * Factory for new courses.
    *
-   * <p>Behavior: create a new course and validate its attributes</p>
+   * <p>Behavior: create a new course and validate its attributes
    *
    * @param name the name of the course
    * @param schoolId the ID of the school
@@ -62,7 +60,8 @@ public class Course {
   /**
    * Validates the course aggregate.
    *
-   * <p>Checks that the name is not blank and does not exceed 120 characters, and that the school ID is not null.</p>
+   * <p>Checks that the name is not blank and does not exceed 120 characters, and that the school ID
+   * is not null.
    *
    * @throws AppValidationException if any attribute is invalid
    */
@@ -80,7 +79,8 @@ public class Course {
 
   /**
    * Builder class for Course.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class CourseBuilder {
     /**

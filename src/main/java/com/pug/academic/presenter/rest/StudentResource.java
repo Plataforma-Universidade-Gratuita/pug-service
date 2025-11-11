@@ -55,8 +55,7 @@ public class StudentResource {
 
   @Inject StudentService writeService;
   @Inject StudentReadService readService;
-  @Inject
-  AccountService users;
+  @Inject AccountService users;
   @Inject I18n i18n;
 
   @Context UriInfo uri;

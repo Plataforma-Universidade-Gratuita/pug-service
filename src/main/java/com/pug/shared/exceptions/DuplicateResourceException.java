@@ -1,7 +1,6 @@
 package com.pug.shared.exceptions;
 
 import com.pug.shared.domain.enums.GenericErrorCodes;
-
 import java.util.Map;
 
 /** Exception thrown when attempting to create or add a resource that already exists. */

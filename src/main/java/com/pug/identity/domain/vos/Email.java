@@ -3,6 +3,8 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import java.util.Locale;
+
+import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -20,15 +22,12 @@ public record Email(String value) {
    * @throws AppValidationException if the email is null, empty, too long, or has an invalid format
    */
   public Email {
-    if (value == null) {
+    if (StringUtils.isEmpty(value)) {
       throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_BLANK);
     }
     String v = value.trim();
-    if (v.isEmpty()) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_BLANK);
-    }
     if (v.length() > 254) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_TOOLONG);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_LENGTH);
     }
     if (!v.matches(SIMPLE_EMAIL_RX)) {
       throw new AppValidationException(IdentityErrorCodes.INVALID_EMAIL_FORMAT);

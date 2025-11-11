@@ -25,10 +25,10 @@ public interface AdminRepository {
   /**
    * Deletes AdminsEntity instances by their user IDs.
    *
-   * @param ids the iterable of user IDs whose AdminsEntity instances should be deleted.
+   * @param userIds the iterable of user IDs whose AdminsEntity instances should be deleted.
    * @return the number of entities deleted.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  long deleteByIds(Iterable<UUID> userIds);
 
   /**
    * Finds an AdminsEntity by its user ID.
@@ -51,5 +51,5 @@ public interface AdminRepository {
    * @param userIds the iterable of user IDs to check.
    * @return true if an AdminsEntity exists for any of the given user IDs, false otherwise.
    */
-  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
+  boolean existsAnyByIdIn(Iterable<UUID> userIds);
 }

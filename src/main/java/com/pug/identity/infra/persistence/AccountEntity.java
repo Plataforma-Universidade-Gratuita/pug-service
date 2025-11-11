@@ -14,7 +14,6 @@ import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -32,23 +31,23 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(
     callSuper = true,
-    of = {"email", "personId"})
+    of = {"email", "userId"})
 @Entity
 @Table(
-    name = "users",
+    name = "accounts",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "uq_users_email",
+          name = "uq_accounts_email",
           columnNames = {"email"})
     },
     indexes = {
-      @Index(name = "idx_users_email", columnList = "email"),
+      @Index(name = "idx_accounts_email", columnList = "email"),
     })
 @EntityListeners(TimestampColumnsListener.class)
 public class AccountEntity extends BaseUuidV7Entity {
 
-  @Column(name = "person_id", nullable = false, updatable = false)
-  private UUID personId;
+  @Column(name = "user_id", nullable = false, updatable = false)
+  private UUID userId;
 
   @Size(max = 254)
   @Column(name = "email", nullable = false, length = 254)

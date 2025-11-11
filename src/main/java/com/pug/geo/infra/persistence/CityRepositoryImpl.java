@@ -3,6 +3,7 @@ package com.pug.geo.infra.persistence;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.infra.CityMapper;
+import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -81,6 +82,9 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
 
   @Override
   public boolean existsByIbgeCode(String ibgeCodeDigits) {
+    if (StringUtils.isEmpty(ibgeCodeDigits)) {
+        return false;
+    }
     return find("ibgeCode", ibgeCodeDigits).firstResultOptional().isPresent();
   }
 

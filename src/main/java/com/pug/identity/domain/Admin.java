@@ -9,32 +9,31 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Admin entity aggregate.
- */
+/** Admin entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Admin {
-  private final UUID userId;
+  private final UUID accountId;
   private final OffsetDateTime grantedAt;
 
   /**
    * Validates the Admin instance to ensure all required fields are properly set.
    *
-   * <p>Checks that userId is not null.</p>
+   * <p>Checks that accountId is not null.
    *
    * @throws AppValidationException if any validation fails
    */
   private void validate() {
-    if (userId == null) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_ADMIN_USER);
+    if (accountId == null) {
+      throw new AppValidationException(IdentityErrorCodes.INVALID_ACCOUNT_BLANK);
     }
   }
 
   /**
    * Builder class for Admin.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class AdminBuilder {
     /**
@@ -43,7 +42,7 @@ public class Admin {
      * @return a validated Admin instance
      */
     public Admin build() {
-      Admin a = new Admin(userId, grantedAt);
+      Admin a = new Admin(accountId, grantedAt);
       a.validate();
       return a;
     }

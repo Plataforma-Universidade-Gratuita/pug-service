@@ -2,12 +2,13 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas).
  *
- * <p> Also includes a method to return the formatted version of the CPF.</p>
+ * <p>Also includes a method to return the formatted version of the CPF.
  *
  * @param value the CPF as a String
  */
@@ -17,22 +18,22 @@ public record Cpf(String value) {
    * Constructs a Cpf value object and validates the input.
    *
    * @param value the CPF as a String
-   * @throws AppValidationException if the CPF is null, isn't exactly 11 digits long, has the same digit repeated or
-   * has invalid check digits.
+   * @throws AppValidationException if the CPF is null, isn't exactly 11 digits long, has the same
+   *     digit repeated or has invalid check digits.
    */
   public Cpf {
-    if (value == null) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF);
+    if (StringUtils.isEmpty(value)) {
+      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF_BLANK);
     }
     String digits = value.replaceAll("\\D", "");
     if (digits.length() != 11) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF_LENGTH);
     }
     if (allSameDigit(digits)) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF_FORMAT);
     }
     if (!validCheckDigits(digits)) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF);
+      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF_FORMAT);
     }
     value = digits;
   }

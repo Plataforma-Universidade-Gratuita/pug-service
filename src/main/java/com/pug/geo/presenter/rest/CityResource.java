@@ -13,6 +13,7 @@ import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -150,7 +151,7 @@ public class CityResource {
   @GET
   public Response listOrSearch(@QueryParam("q") String q) {
     List<CityView> views =
-            (q == null || q.isBlank()) ? readService.listViews() : readService.search(q);
+        (StringUtils.isEmpty(q)) ? readService.listViews() : readService.search(q);
     List<CityResponse> body = views.stream().map(CityPresenter::toResponse).toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
   }

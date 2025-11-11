@@ -9,8 +9,8 @@ import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.AccountService;
+import com.pug.identity.service.PasswordService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -29,8 +29,7 @@ import java.util.stream.StreamSupport;
 public class StudentService {
 
   @Inject StudentRepository repo;
-  @Inject
-  AccountService users;
+  @Inject AccountService users;
   @Inject PasswordService passwords;
 
   /**

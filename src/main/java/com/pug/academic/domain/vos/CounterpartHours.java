@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 /**
  * Value Object representing Counterpart Hours with validation.
  *
- * <p> Also provides a method to calculate missing hours.</p>
+ * <p>Also provides a method to calculate missing hours.
  *
  * @param requiredHours the required hours
  * @param completedHours the completed hours
@@ -18,7 +18,8 @@ public record CounterpartHours(BigDecimal requiredHours, BigDecimal completedHou
    *
    * @param requiredHours the required hours
    * @param completedHours the completed hours
-   * @throws AppValidationException if the hours are null, negative, or if completed hours exceed required hours
+   * @throws AppValidationException if the hours are null, negative, or if completed hours exceed
+   *     required hours
    */
   public CounterpartHours {
     if (requiredHours == null || completedHours == null) {

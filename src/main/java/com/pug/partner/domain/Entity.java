@@ -10,9 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Entity entity aggregate.
- */
+/** Entity entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -114,7 +112,8 @@ public class Entity {
 
   /**
    * Builder class for Entity.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class EntityBuilder {
     /**

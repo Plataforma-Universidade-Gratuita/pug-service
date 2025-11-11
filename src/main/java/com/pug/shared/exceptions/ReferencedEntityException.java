@@ -2,10 +2,14 @@ package com.pug.shared.exceptions;
 
 import com.pug.shared.domain.enums.GenericErrorCodes;
 
-/** Exception thrown when an entity is referenced by another entity and cannot be deleted or modified. */
+/**
+ * Exception thrown when an entity is referenced by another entity and cannot be deleted or
+ * modified.
+ */
 public class ReferencedEntityException extends DomainException {
   /**
    * Constructor.
+   *
    * @param code the error code.
    */
   public ReferencedEntityException(GenericErrorCodes code) {
@@ -14,6 +18,7 @@ public class ReferencedEntityException extends DomainException {
 
   /**
    * Constructor.
+   *
    * @param code the error code.
    * @param cause the cause.
    */

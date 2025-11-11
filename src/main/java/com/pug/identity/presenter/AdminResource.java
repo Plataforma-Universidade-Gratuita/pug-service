@@ -7,17 +7,17 @@ import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AdminCreateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.identity.presenter.mappers.AdminPresenter;
+import com.pug.identity.service.AccountService;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
-import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -49,8 +49,7 @@ public class AdminResource {
 
   @Inject AdminReadService readService;
   @Inject AdminService adminService;
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
   @Inject I18n i18n;
   @Context HttpHeaders headers;
 

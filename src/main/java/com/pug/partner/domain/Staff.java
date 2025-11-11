@@ -8,9 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Staff entity aggregate.
- */
+/** Staff entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -34,7 +32,7 @@ public class Staff {
   /**
    * Validates the Staff instance to ensure all required fields are properly set.
    *
-   * <p>Checks that userId and entityId are not null.</p>
+   * <p>Checks that userId and entityId are not null.
    *
    * @throws AppValidationException if validation fails
    */
@@ -49,7 +47,8 @@ public class Staff {
 
   /**
    * Builder class for Staff.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class StaffBuilder {
     /**

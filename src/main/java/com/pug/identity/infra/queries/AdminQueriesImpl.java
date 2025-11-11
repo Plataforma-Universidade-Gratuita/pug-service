@@ -15,39 +15,37 @@ public class AdminQueriesImpl implements AdminQueries {
 
   @Inject EntityManager em;
 
+  private static final String SELECT_BASE =
+      """
+                  select new com.pug.identity.infra.read.dtos.AdminView(
+                    new com.pug.identity.infra.read.dtos.AccountView(
+                      acc.id,
+                      new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
+                      acc.email,
+                      acc.accountType,
+                      acc.createdAt
+                    ),
+                    a.grantedAt
+                  )
+                  from AdminEntity a
+                    join AccountEntity acc on acc.id = a.accountId
+                    join UserEntity u on u.id = acc.userId
+                  """;
+
+  private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
+
   @Override
-  public Optional<AdminView> findOptionalById(UUID userId) {
-    var q =
-        em.createQuery(
-            """
-                            select new com.pug.identity.infra.read.dtos.AdminView(
-                              new com.pug.identity.infra.read.dtos.UserView(
-                              u.id, u.cpf, u.name, u.email, u.accountType, u.createdAt
-                              ), a.grantedAt
-                            )
-                            from AdminEntity a
-                              join UserEntity u on u.id = a.userId
-                            where a.userId = :id
-                            """,
-            AdminView.class);
-    q.setParameter("id", userId);
-    return q.getResultList().stream().findFirst();
+  public Optional<AdminView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where a.accountId = :id", AdminView.class);
+    q.setParameter("id", accountId);
+    return q.getResultStream().findFirst();
   }
 
   @Override
   public List<AdminView> listAllAdmins() {
-    return em.createQuery(
-            """
-                            select new com.pug.identity.infra.read.dtos.AdminView(
-                              new com.pug.identity.infra.read.dtos.UserView(
-                              u.id, u.cpf, u.name, u.email, u.accountType, u.createdAt
-                              ), a.grantedAt
-                            )
-                            from AdminEntity a
-                              join UserEntity u on u.id = a.userId
-                            order by u.name
-                            """,
-            AdminView.class)
-        .getResultList();
+    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, AdminView.class).getResultList();
   }
 }

@@ -16,27 +16,28 @@ import java.util.UUID;
  * UsersEntity.
  */
 @ApplicationScoped
-public class AccountRepositoryImpl implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+public class AccountRepositoryImpl
+    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
-  public Account persist(Account account) {
-    if (account == null) {
+  public Account persist(Account entity) {
+    if (entity == null) {
       return null;
     }
-    AccountEntity e = AccountMapper.toEntity(account);
+    AccountEntity e = AccountMapper.toEntity(entity);
     persistAndFlush(e);
     return AccountMapper.toDomain(e);
   }
 
   @Transactional
   @Override
-  public List<Account> persistAll(Iterable<Account> users) {
-    if (users == null || !users.iterator().hasNext()) {
+  public List<Account> persistAll(Iterable<Account> entities) {
+    if (entities == null || !entities.iterator().hasNext()) {
       return List.of();
     }
     var batch = new ArrayList<AccountEntity>();
-    for (Account d : users) {
+    for (Account d : entities) {
       if (d != null) {
         batch.add(AccountMapper.toEntity(d));
       }
@@ -51,15 +52,15 @@ public class AccountRepositoryImpl implements AccountRepository, PanacheReposito
 
   @Transactional
   @Override
-  public void update(Account account) {
-    if (account == null || account.getId() == null) {
+  public void update(Account entity) {
+    if (entity == null || entity.getId() == null) {
       return;
     }
-    AccountEntity managed = findById(account.getId());
+    AccountEntity managed = findById(entity.getId());
     if (managed == null) {
       return;
     }
-    AccountMapper.copy(account, managed);
+    AccountMapper.copy(entity, managed);
   }
 
   @Transactional
@@ -80,7 +81,7 @@ public class AccountRepositoryImpl implements AccountRepository, PanacheReposito
   }
 
   @Override
-  public List<Account> listAllUsers() {
+  public List<Account> listAllAccounts() {
     return listAll().stream().map(AccountMapper::toDomain).toList();
   }
 
@@ -95,5 +96,13 @@ public class AccountRepositoryImpl implements AccountRepository, PanacheReposito
       return false;
     }
     return find("email in ?1", emails).firstResultOptional().isPresent();
+  }
+
+  @Override
+  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+    if (userIds == null || !userIds.iterator().hasNext()) {
+      return false;
+    }
+    return find("userId in ?1", userIds).firstResultOptional().isPresent();
   }
 }

@@ -10,9 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * City entity aggregate.
- */
+/** City entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -62,12 +60,13 @@ public class City {
   /**
    * Validates the City instance.
    *
-   * <p>Checks that the name is not null, not blank, and does not exceed 100 characters. Also checks that the IBGE code is not null.</p>
+   * <p>Checks that the name is not null, not blank, and does not exceed 100 characters. Also checks
+   * that the IBGE code is not null.
    *
    * @throws AppValidationException if any validation fails
    */
   private void validate() {
-    if (name == null || name.isBlank()) {
+    if (StringUtils.isEmpty(name)) {
       throw new AppValidationException(GeoErrorCodes.INVALID_CITY_NAME_BLANK);
     }
     if (name.length() > 100) {
@@ -80,7 +79,8 @@ public class City {
 
   /**
    * Builder class for City.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class CityBuilder {
     /**

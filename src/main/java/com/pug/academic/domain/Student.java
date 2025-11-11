@@ -12,9 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/**
- * Student entity aggregate.
- */
+/** Student entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -100,7 +98,7 @@ public class Student {
   /**
    * Validates the Student aggregate
    *
-   * <p>Checks that all required fields are not null.</p>
+   * <p>Checks that all required fields are not null.
    *
    * @throws AppValidationException if any field is invalid.
    */
@@ -127,7 +125,8 @@ public class Student {
 
   /**
    * Builder class for Student.
-   * <p>Overrides the build method to include validation.</p>
+   *
+   * <p>Overrides the build method to include validation.
    */
   public static class StudentBuilder {
     /**

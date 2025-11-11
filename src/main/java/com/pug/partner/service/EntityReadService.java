@@ -27,7 +27,10 @@ public class EntityReadService {
   public EntityView getView(UUID id) {
     return queries
         .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
@@ -41,7 +44,10 @@ public class EntityReadService {
     Cnpj cnpj = new Cnpj(cnpjRaw);
     return queries
         .findOptionalByCnpj(cnpj.toString())
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj.formatted())));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj.formatted())));
   }
 
   /**

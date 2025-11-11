@@ -1,5 +1,6 @@
 package com.pug.shared.validation;
 
+import com.pug.shared.utils.StringUtils;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.UUID;
@@ -15,7 +16,7 @@ public final class UuidV7ForString implements ConstraintValidator<UuidV7, String
    */
   @Override
   public boolean isValid(String value, ConstraintValidatorContext ctx) {
-    if (value == null || value.isBlank()) {
+    if (StringUtils.isEmpty(value)) {
       return true;
     }
     try {

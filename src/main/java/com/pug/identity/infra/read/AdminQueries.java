@@ -8,12 +8,12 @@ import java.util.UUID;
 /** Queries related to Admins. */
 public interface AdminQueries {
   /**
-   * Find AdminView by userId.
+   * Find AdminView by accountId.
    *
-   * @param userId the user ID of the admin.
+   * @param accountId the account ID of the admin.
    * @return an Optional containing the AdminView if found, otherwise empty.
    */
-  Optional<AdminView> findOptionalById(UUID userId);
+  Optional<AdminView> findOptionalById(UUID accountId);
 
   /**
    * List all AdminViews.

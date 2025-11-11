@@ -4,17 +4,11 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * PersonView DTO.
+ * UserView DTO.
  *
- * @param id the unique identifier of the person
- * @param cpf the CPF (Cadastro de Pessoas Físicas) number of the person
- * @param name the name of the person
- * @param createdAt the timestamp when the person record was created
+ * @param id the unique identifier of the user
+ * @param cpf the CPF (Cadastro de Pessoas Físicas) number of the user
+ * @param name the name of the user
+ * @param createdAt the timestamp when the user record was created
  */
-public record UserView(
-        UUID id,
-        String cpf,
-        String name,
-        OffsetDateTime createdAt
-){
-}
+public record UserView(UUID id, String cpf, String name, OffsetDateTime createdAt) {}

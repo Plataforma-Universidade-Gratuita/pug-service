@@ -7,7 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Value object representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica).
  *
- * <p>Also contains a method to format the CNPJ in the standard pattern XX.XXX.XXX/XXXX-XX</p>
+ * <p>Also contains a method to format the CNPJ in the standard pattern XX.XXX.XXX/XXXX-XX
  *
  * @param value the CNPJ value as a string of digits
  */
@@ -17,7 +17,8 @@ public record Cnpj(String value) {
    * Constructs a Cnpj value object after validating the input.
    *
    * @param value the CNPJ value as a string
-   * @throws AppValidationException if the CNPJ is null, has an invalid length, contains non-digit characters, or fails the checksum validation
+   * @throws AppValidationException if the CNPJ is null, has an invalid length, contains non-digit
+   *     characters, or fails the checksum validation
    */
   public Cnpj {
     String digits = sanitize(value);

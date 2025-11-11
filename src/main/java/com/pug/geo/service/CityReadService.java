@@ -26,7 +26,8 @@ public class CityReadService {
   public CityView getView(UUID id) {
     return queries
         .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+        .orElseThrow(
+            () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
@@ -39,7 +40,10 @@ public class CityReadService {
   public CityView getViewByIbgeCode(String ibgeCode) {
     return queries
         .findOptionalByIbgeCode(ibgeCode)
-        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode)));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode)));
   }
 
   /**

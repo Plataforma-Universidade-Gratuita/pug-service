@@ -7,26 +7,22 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
 
-/**
- * Implementation of StaffQueries using JPQL constructor projections.
- */
+/** Implementation of StaffQueries using JPQL constructor projections. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class StaffQueriesImpl implements StaffQueries {
 
-  @Inject
-  EntityManager em;
+  @Inject EntityManager em;
 
   private static final String SELECT_VIEW =
-          """
+      """
                   select new com.pug.partner.infra.read.dtos.StaffView(
                     new com.pug.identity.infra.read.dtos.UserView(
                       u.id, u.cpf, u.name, u.email, u.accountType, u.createdAt
@@ -67,7 +63,8 @@ public class StaffQueriesImpl implements StaffQueries {
     if (cpf == null || cpf.isBlank()) {
       return List.of();
     }
-    var q = em.createQuery(SELECT_VIEW + " where u.cpf = :cpf order by u.name asc", StaffView.class);
+    var q =
+        em.createQuery(SELECT_VIEW + " where u.cpf = :cpf order by u.name asc", StaffView.class);
     q.setParameter("cpf", cpf);
     return q.getResultList();
   }
@@ -82,9 +79,7 @@ public class StaffQueriesImpl implements StaffQueries {
     if (entityId == null) {
       return List.of();
     }
-    var q =
-      em.createQuery(
-      SELECT_VIEW + " where e.id = :eid order by u.name asc", StaffView.class);
+    var q = em.createQuery(SELECT_VIEW + " where e.id = :eid order by u.name asc", StaffView.class);
     q.setParameter("eid", entityId);
     return q.getResultList();
   }
@@ -99,21 +94,28 @@ public class StaffQueriesImpl implements StaffQueries {
     SearchSession s = Search.session(em);
 
     List<AccountEntity> hits =
-      s.search(AccountEntity.class)
-        .where(f ->
-          f.bool(b -> {
-            b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
-            b.should(f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
-            for (String t : tokens) {
-              if (t.length() >= 3) {
-                b.should(f.wildcard().field("name_exact").matching("*" + t + "*").boost(3f));
-              }
-            }
-            b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
-            b.should(f.match().field("name_auto").matching(key).boost(2f));
-          }))
-        .sort(f -> f.score().then().field("name_sort"))
-        .fetchAllHits();
+        s.search(AccountEntity.class)
+            .where(
+                f ->
+                    f.bool(
+                        b -> {
+                          b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
+                          b.should(
+                              f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
+                          for (String t : tokens) {
+                            if (t.length() >= 3) {
+                              b.should(
+                                  f.wildcard()
+                                      .field("name_exact")
+                                      .matching("*" + t + "*")
+                                      .boost(3f));
+                            }
+                          }
+                          b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
+                          b.should(f.match().field("name_auto").matching(key).boost(2f));
+                        }))
+            .sort(f -> f.score().then().field("name_sort"))
+            .fetchAllHits();
 
     if (hits.isEmpty()) {
       return List.of();
@@ -130,8 +132,7 @@ public class StaffQueriesImpl implements StaffQueries {
     }
 
     var q =
-      em.createQuery(
-      SELECT_VIEW + " where u.id in :ids order by u.name asc", StaffView.class);
+        em.createQuery(SELECT_VIEW + " where u.id in :ids order by u.name asc", StaffView.class);
     q.setParameter("ids", userIds);
     return q.getResultList();
   }

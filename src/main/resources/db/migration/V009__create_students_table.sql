@@ -1,11 +1,11 @@
 CREATE TABLE students
 (
-    user_id               uuid PRIMARY KEY REFERENCES users (id),
+    account_id            uuid PRIMARY KEY REFERENCES accounts (id),
     academic_registration varchar(15)   NOT NULL UNIQUE,
     campus                varchar(150)  NOT NULL,
     course_id             uuid          NOT NULL REFERENCES courses (id),
     required_hours        DECIMAL(6, 2) NOT NULL,
-    completed_hours        DECIMAL(6, 2) NOT NULL,
+    completed_hours       DECIMAL(6, 2) NOT NULL,
     start_date            date          NOT NULL,
     due_date              date          NOT NULL,
 
