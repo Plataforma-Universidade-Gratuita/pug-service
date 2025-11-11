@@ -3,14 +3,16 @@ package com.pug.partner.domain;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Partner entity aggregate. */
+/**
+ * Entity entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -24,11 +26,11 @@ public class Entity {
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ.
-   * @param name the name.
-   * @param cityId the city ID.
-   * @param address the address.
-   * @return the created entity.
+   * @param cnpj the CNPJ of the entity
+   * @param name the name of the entity.
+   * @param cityId the ID of the city where the entity is located
+   * @param address the address where the entity is located
+   * @return the created entity
    */
   public static Entity createNew(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity e = new Entity(null, cnpj, StringUtils.trim(name), cityId, StringUtils.trim(address));
@@ -37,10 +39,10 @@ public class Entity {
   }
 
   /**
-   * Behavior: change name.
+   * Behavior: change the name of the entity.
    *
-   * @param newName the new name.
-   * @return the updated entity.
+   * @param newName the new name of the entity
+   * @return the updated entity with the new name
    */
   public Entity changeName(String newName) {
     Entity e = this.toBuilder().name(StringUtils.trim(newName)).build();
@@ -49,10 +51,10 @@ public class Entity {
   }
 
   /**
-   * Behavior: change address.
+   * Behavior: change the address where the entity is located.
    *
-   * @param newAddress the new address.
-   * @return the updated entity.
+   * @param newAddress the new address of the entity
+   * @return the updated entity with the new address
    */
   public Entity changeAddress(String newAddress) {
     Entity e = this.toBuilder().address(StringUtils.trim(newAddress)).build();
@@ -61,10 +63,10 @@ public class Entity {
   }
 
   /**
-   * Behavior: change CNPJ.
+   * Behavior: change the CNPJ of the entity.
    *
-   * @param newCnpj the new CNPJ.
-   * @return the updated entity.
+   * @param newCnpj the new CNPJ for the entity
+   * @return the updated entity with the new CNPJ
    */
   public Entity changeCnpj(Cnpj newCnpj) {
     Entity e = this.toBuilder().cnpj(newCnpj).build();
@@ -73,10 +75,10 @@ public class Entity {
   }
 
   /**
-   * Behavior: move to another city.
+   * Behavior: move entity to another city.
    *
-   * @param newCityId the new city ID.
-   * @return the updated entity.
+   * @param newCityId the new city ID where the entity will be located
+   * @return the updated entity with the new city ID
    */
   public Entity moveToCity(UUID newCityId) {
     Entity e = this.toBuilder().cityId(newCityId).build();
@@ -87,7 +89,10 @@ public class Entity {
   /**
    * Validates the entity's attributes.
    *
-   * @throws AppValidationException if any attribute is invalid.
+   * <p>Checks that CNPJ is not null, name is not null or blank and does not exceed 150 characters,
+   * cityId is not null, and address does not exceed 254 characters if provided.</
+   *
+   * @throws AppValidationException if any attribute is invalid
    */
   private void validate() {
     if (cnpj == null) {
@@ -107,13 +112,15 @@ public class Entity {
     }
   }
 
-  /** Builder class for constructing Entity instances with validation. */
+  /**
+   * Builder class for Entity.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class EntityBuilder {
     /**
      * Builds the Entity instance and performs validation.
      *
-     * @return a validated Entity instance.
-     * @throws AppValidationException if validation fails.
+     * @return a validated Entity instance
      */
     public Entity build() {
       Entity e = new Entity(id, cnpj, StringUtils.trim(name), cityId, StringUtils.trim(address));

@@ -1,4 +1,4 @@
-package com.pug.shared.text;
+package com.pug.shared.utils;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -19,7 +19,6 @@ public final class StringUtils {
     if (s == null) {
       return "";
     }
-    ;
     String n = Normalizer.normalize(s, Normalizer.Form.NFD);
     return DIACRITICS.matcher(n).replaceAll("").toLowerCase(Locale.ROOT).trim();
   }
@@ -45,16 +44,6 @@ public final class StringUtils {
   }
 
   /**
-   * Format OffsetDateTime to string using default locale.
-   *
-   * @param dateTime the date time to format.
-   * @return formatted date time string.
-   */
-  public static String formatDateTime(OffsetDateTime dateTime) {
-    return formatDateTime(dateTime, Locale.getDefault());
-  }
-
-  /**
    * Format an OffsetDateTime into a human-readable string using the given locale. Null-safe:
    * returns "" if dateTime is null.
    *
@@ -62,7 +51,7 @@ public final class StringUtils {
    * @param locale the target locale; if null, system default is used
    * @return localized date-time string, or "" if dateTime is null
    */
-  public static String formatDateTime(OffsetDateTime dateTime, Locale locale) {
+  public static String toStringFormatted(OffsetDateTime dateTime, Locale locale) {
     if (dateTime == null) {
       return "";
     }
@@ -79,22 +68,12 @@ public final class StringUtils {
    * @param locale the target locale; if null, system default is used
    * @return localized date string, or "" if date is null
    */
-  public static String formatLocalDate(LocalDate date, Locale locale) {
+  public static String toStringFormatted(LocalDate date, Locale locale) {
     if (date == null) {
       return "";
     }
     Locale loc = (locale != null) ? locale : Locale.getDefault();
     DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(loc);
     return date.format(fmt);
-  }
-
-  /**
-   * Format LocalDate to string using default locale.
-   *
-   * @param date the date to format.
-   * @return formatted date string.
-   */
-  public static String formatLocalDate(LocalDate date) {
-    return formatLocalDate(date, Locale.getDefault());
   }
 }

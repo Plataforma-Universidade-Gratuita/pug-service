@@ -5,16 +5,20 @@ import com.pug.shared.exceptions.AppValidationException;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * CPF value object. Accepts formatted input, stores only 11 digits, validates check digits.
+ * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas).
  *
- * @param value the CPF as a String.
+ * <p> Also includes a method to return the formatted version of the CPF.</p>
+ *
+ * @param value the CPF as a String
  */
 public record Cpf(String value) {
 
   /**
    * Constructs a Cpf value object and validates the input.
    *
-   * @param value the CPF as a String.
+   * @param value the CPF as a String
+   * @throws AppValidationException if the CPF is null, isn't exactly 11 digits long, has the same digit repeated or
+   * has invalid check digits.
    */
   public Cpf {
     if (value == null) {
@@ -36,8 +40,8 @@ public record Cpf(String value) {
   /**
    * Checks if all characters in the string are the same digit.
    *
-   * @param s the string to check.
-   * @return true if all characters are the same, false otherwise.
+   * @param s the string to check
+   * @return true if all characters are the same, false otherwise
    */
   private static boolean allSameDigit(String s) {
     char c = s.charAt(0);
@@ -52,8 +56,8 @@ public record Cpf(String value) {
   /**
    * Validates the CPF check digits.
    *
-   * @param s the string with 11 digits.
-   * @return true if check digits are valid, false otherwise.
+   * @param s the string with 11 digits
+   * @return true if check digits are valid, false otherwise
    */
   private static boolean validCheckDigits(String s) {
     int d1 = calcDigit(s, 9);
@@ -64,9 +68,9 @@ public record Cpf(String value) {
   /**
    * Calculates a CPF check digit.
    *
-   * @param s the string with digits.
-   * @param len number of digits to use for calculation (9 or 10).
-   * @return the calculated check digit.
+   * @param s the string with digits
+   * @param len number of digits to use for calculation (9 or 10)
+   * @return the calculated check digit
    */
   private static int calcDigit(String s, int len) {
     int sum = 0;
@@ -81,7 +85,7 @@ public record Cpf(String value) {
   /**
    * Returns the string representation of the CPF (11 digits).
    *
-   * @return the CPF as a String.
+   * @return the CPF as a String
    */
   @Override
   public @NotNull String toString() {
@@ -91,7 +95,7 @@ public record Cpf(String value) {
   /**
    * Returns the formatted representation of the CPF (xxx.xxx.xxx-xx).
    *
-   * @return the formatted CPF as a String.
+   * @return the formatted CPF as a String
    */
   public String formatted() {
     String v = value;

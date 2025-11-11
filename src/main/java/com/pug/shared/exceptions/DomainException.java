@@ -1,6 +1,6 @@
 package com.pug.shared.exceptions;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;

@@ -89,7 +89,9 @@ public class EntityService {
    */
   @Transactional
   public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
-    Objects.requireNonNull(ids, "ids");
+    if (ids == null || !ids.iterator().hasNext()) {
+      return Map.of();
+    }
     List<UUID> staffIds = toStream(ids).filter(Objects::nonNull).map(id->
             staffService.listByEntity(id))
             .flatMap(List::stream)
@@ -123,6 +125,19 @@ public class EntityService {
    */
   public List<Entity> listAll() {
     return repo.listAllEntities();
+  }
+
+  /**
+   * Checks if any Entity exists in the given city IDs.
+   *
+   * @param cityIds the iterable of city UUIDs
+   * @return true if any Entity exists in the specified cities, false otherwise
+   */
+  public boolean existsAnyByCityIdIn(Iterable<UUID> cityIds) {
+    if (cityIds == null || !cityIds.iterator().hasNext()) {
+      return false;
+    }
+    return repo.existsAnyByCityIdIn(cityIds);
   }
 
   /**

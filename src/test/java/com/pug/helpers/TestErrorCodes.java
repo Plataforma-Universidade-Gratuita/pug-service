@@ -1,6 +1,6 @@
 package com.pug.helpers;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
 @Getter

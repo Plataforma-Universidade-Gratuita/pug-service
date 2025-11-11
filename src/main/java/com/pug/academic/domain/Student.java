@@ -12,7 +12,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Domain entity representing a Student with validation and modification methods. */
+/**
+ * Student entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,15 +27,15 @@ public class Student {
   private final Period period;
 
   /**
-   * Factory method to create a new Student with validation.
+   * Factory for new students.
    *
-   * @param userId the unique identifier of the user.
-   * @param reg the academic registration details.
-   * @param campus the campus of the student.
-   * @param courseId the course identifier.
-   * @param hours the counterpart hours details.
-   * @param period the academic period details.
-   * @return a validated Student instance.
+   * @param userId the unique identifier of the user
+   * @param reg the academic registration for the student
+   * @param campus the campus at which the student is enrolled
+   * @param courseId the course identifier the student is enrolled in
+   * @param hours the counterpart hours details
+   * @param period the academic period details
+   * @return the created student
    */
   public static Student createNew(
       UUID userId,
@@ -48,10 +50,10 @@ public class Student {
   }
 
   /**
-   * Behavior: Change the campus of the student.
+   * Behavior: Change the campus at which the student is enrolled.
    *
-   * @param newCampus the new campus to set.
-   * @return a new Student instance with the updated campus.
+   * @param newCampus the new campus to set
+   * @return a new student instance with the updated campus
    */
   public Student changeCampus(Campi newCampus) {
     Student s = this.toBuilder().campus(newCampus).build();
@@ -62,8 +64,8 @@ public class Student {
   /**
    * Behavior: Move the student to a new course.
    *
-   * @param newCourseId the new course identifier.
-   * @return a new Student instance with the updated course.
+   * @param newCourseId the new course identifier to which the student is moving
+   * @return a new student instance with the updated course
    */
   public Student moveToCourse(UUID newCourseId) {
     Student s = this.toBuilder().courseId(newCourseId).build();
@@ -74,8 +76,8 @@ public class Student {
   /**
    * Behavior: Update the counterpart hours of the student.
    *
-   * @param newHours the new counterpart hours to set.
-   * @return a new Student instance with the updated hours.
+   * @param newHours the new counterpart hours to set
+   * @return a new student instance with the updated hours
    */
   public Student changeHours(CounterpartHours newHours) {
     Student s = this.toBuilder().counterpartHours(newHours).build();
@@ -86,8 +88,8 @@ public class Student {
   /**
    * Behavior: Change the academic period of the student.
    *
-   * @param newPeriod the new period to set.
-   * @return a new Student instance with the updated period.
+   * @param newPeriod the new period to set
+   * @return a new student instance with the updated period
    */
   public Student changePeriod(Period newPeriod) {
     Student s = this.toBuilder().period(newPeriod).build();
@@ -96,7 +98,9 @@ public class Student {
   }
 
   /**
-   * Validates the Student entity to ensure all fields are properly set.
+   * Validates the Student aggregate
+   *
+   * <p>Checks that all required fields are not null.</p>
    *
    * @throws AppValidationException if any field is invalid.
    */
@@ -121,7 +125,10 @@ public class Student {
     }
   }
 
-  /** Builder class for constructing Student instances. */
+  /**
+   * Builder class for Student.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class StudentBuilder {
     /**
      * Builds and returns a validated Student instance.

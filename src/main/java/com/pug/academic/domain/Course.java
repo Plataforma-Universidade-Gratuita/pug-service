@@ -2,14 +2,16 @@ package com.pug.academic.domain;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Course entity aggregate. */
+/**
+ * Course entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,9 +23,11 @@ public class Course {
   /**
    * Factory for new courses.
    *
-   * @param name the name.
-   * @param schoolId the school ID.
-   * @return the created course.
+   * <p>Behavior: create a new course and validate its attributes</p>
+   *
+   * @param name the name of the course
+   * @param schoolId the ID of the school
+   * @return the created course
    */
   public static Course createNew(String name, UUID schoolId) {
     Course c = new Course(null, StringUtils.trim(name), schoolId);
@@ -32,10 +36,10 @@ public class Course {
   }
 
   /**
-   * Behavior: change name.
+   * Behavior: change the name of the course.
    *
-   * @param newName the new name.
-   * @return the updated course.
+   * @param newName the new name for the course
+   * @return the updated course with the new name
    */
   public Course changeName(String newName) {
     Course c = this.toBuilder().name(StringUtils.trim(newName)).build();
@@ -44,10 +48,10 @@ public class Course {
   }
 
   /**
-   * Behavior: move to another school.
+   * Behavior: move the course to another school.
    *
-   * @param newSchoolId the new school ID.
-   * @return the updated course.
+   * @param newSchoolId the ID of the new school
+   * @return the updated course with the new school ID
    */
   public Course moveToSchool(UUID newSchoolId) {
     Course c = this.toBuilder().schoolId(newSchoolId).build();
@@ -56,9 +60,11 @@ public class Course {
   }
 
   /**
-   * Validates the course attributes.
+   * Validates the course aggregate.
    *
-   * @throws AppValidationException if any attribute is invalid.
+   * <p>Checks that the name is not blank and does not exceed 120 characters, and that the school ID is not null.</p>
+   *
+   * @throws AppValidationException if any attribute is invalid
    */
   private void validate() {
     if (name == null || name.isBlank()) {
@@ -72,12 +78,15 @@ public class Course {
     }
   }
 
-  /** Builder class for Course. */
+  /**
+   * Builder class for Course.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class CourseBuilder {
     /**
      * Builds the Course instance after validation.
      *
-     * @return the built Course.
+     * @return the built Course instance
      */
     public Course build() {
       Course c = new Course(id, StringUtils.trim(name), schoolId);

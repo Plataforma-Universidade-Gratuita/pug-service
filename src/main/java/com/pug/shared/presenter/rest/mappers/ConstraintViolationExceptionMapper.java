@@ -1,6 +1,6 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import com.pug.shared.errors.ErrorCodes;
+import com.pug.shared.domain.enums.ErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import jakarta.enterprise.context.ApplicationScoped;

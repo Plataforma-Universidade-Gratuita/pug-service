@@ -4,13 +4,17 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import org.jetbrains.annotations.NotNull;
 
-/** Value Object representing an Academic Registration. */
+/**
+ * Value Object representing an Academic Registration.
+ *
+ * @param registration the registration string
+ */
 public record AcademicRegistration(String registration) {
   /**
    * Constructs an AcademicRegistration after validating the input.
    *
    * @param registration the registration string
-   * @throws AppValidationException if the registration is invalid
+   * @throws AppValidationException if the registration is null, blank, or too long
    */
   public AcademicRegistration {
     if (registration == null) {

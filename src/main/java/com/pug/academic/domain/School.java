@@ -2,14 +2,16 @@ package com.pug.academic.domain;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** School aggregate root. */
+/**
+ * School entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,8 +22,10 @@ public class School {
   /**
    * Factory for new schools.
    *
-   * @param name school name.
-   * @return new School.
+   * <p>Behavior: create new School and validate its attributes</p>
+   *
+   * @param name the name of the school
+   * @return the created school
    */
   public static School createNew(String name) {
     School s = new School(null, StringUtils.trim(name));
@@ -30,10 +34,10 @@ public class School {
   }
 
   /**
-   * Behavior: change name.
+   * Behavior: change the school name.
    *
-   * @param newName new name.
-   * @return new School with updated name.
+   * @param newName new name for the school
+   * @return new school with updated name
    */
   public School changeName(String newName) {
     School s = this.toBuilder().name(StringUtils.trim(newName)).build();
@@ -43,6 +47,8 @@ public class School {
 
   /**
    * Validates the School aggregate.
+   *
+   * <p>Checks that the name is not blank and does not exceed length limits.</p>
    *
    * @throws AppValidationException if validation fails.
    */
@@ -55,12 +61,15 @@ public class School {
     }
   }
 
-  /** Builder that trims and validates on build. */
+  /**
+   * Builder class for School.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class SchoolBuilder {
     /**
      * Builds the School instance after trimming and validating.
      *
-     * @return the built School instance.
+     * @return the built School instance
      */
     public School build() {
       School s = new School(id, StringUtils.trim(name));

@@ -8,7 +8,7 @@ import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import com.pug.shared.time.TimeProvider;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

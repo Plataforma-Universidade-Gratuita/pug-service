@@ -1,4 +1,4 @@
-package com.pug.shared.presenter;
+package com.pug.shared.utils;
 
 import java.util.List;
 import java.util.Locale;

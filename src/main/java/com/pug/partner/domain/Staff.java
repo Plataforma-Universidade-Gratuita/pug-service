@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Domain model representing a Staff member associated with a User and an Entity. */
+/**
+ * Staff entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,10 +21,9 @@ public class Staff {
   /**
    * Factory method to create a new Staff instance with validation.
    *
-   * @param userId the unique identifier of the user.
-   * @param entityId the unique identifier of the entity.
-   * @return a validated Staff instance.
-   * @throws AppValidationException if validation fails.
+   * @param userId the unique identifier of the user
+   * @param entityId the unique identifier of the entity
+   * @return a validated Staff instance
    */
   public static Staff createNew(UUID userId, UUID entityId) {
     Staff s = new Staff(userId, entityId);
@@ -33,7 +34,9 @@ public class Staff {
   /**
    * Validates the Staff instance to ensure all required fields are properly set.
    *
-   * @throws AppValidationException if validation fails.
+   * <p>Checks that userId and entityId are not null.</p>
+   *
+   * @throws AppValidationException if validation fails
    */
   private void validate() {
     if (userId == null) {
@@ -44,13 +47,15 @@ public class Staff {
     }
   }
 
-  /** Builder class for constructing Staff instances with validation. */
+  /**
+   * Builder class for Staff.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class StaffBuilder {
     /**
      * Builds the Staff instance and performs validation.
      *
-     * @return a validated Staff instance.
-     * @throws AppValidationException if validation fails.
+     * @return a validated Staff instance
      */
     public Staff build() {
       return createNew(userId, entityId);

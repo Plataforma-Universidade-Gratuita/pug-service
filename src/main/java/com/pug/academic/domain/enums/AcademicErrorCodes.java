@@ -1,9 +1,14 @@
 package com.pug.academic.domain.enums;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
-/** Enum representing error codes specific to the academic domain. */
+/**
+ * Enum representing error codes specific to the academic domain.
+ *
+ * <p>Each error code is associated with a specific validation failure scenario
+ * and has a {@code bundleKey} that results into a located error message</p>
+ */
 @Getter
 public enum AcademicErrorCodes implements GenericErrorCodes {
   INVALID_SCHOOL_NAME_BLANK("academic.error.invalid_school_name_blank"),

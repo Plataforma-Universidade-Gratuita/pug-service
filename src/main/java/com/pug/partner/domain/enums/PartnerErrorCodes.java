@@ -1,9 +1,14 @@
 package com.pug.partner.domain.enums;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
-/** Enumeration of error codes related to partner identity validation. */
+/**
+ * Enum representing error codes specific to the partner domain.
+ *
+ * <p>Each error code is associated with a specific validation failure scenario
+ * and has a {@code bundleKey} that results into a located error message</p>
+ */
 @Getter
 public enum PartnerErrorCodes implements GenericErrorCodes {
   INVALID_CNPJ("error.domain.partner.invalid.cnpj"),

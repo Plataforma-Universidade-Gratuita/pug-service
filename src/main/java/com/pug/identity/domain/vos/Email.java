@@ -6,7 +6,7 @@ import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Email value object with canonicalization.
+ * Value object representing an email address.
  *
  * @param value the email address as a String.
  */
@@ -16,7 +16,8 @@ public record Email(String value) {
   /**
    * Constructs an Email value object and validates the input.
    *
-   * @param value the email address as a String.
+   * @param value the email address as a String
+   * @throws AppValidationException if the email is null, empty, too long, or has an invalid format
    */
   public Email {
     if (value == null) {
@@ -38,7 +39,7 @@ public record Email(String value) {
   /**
    * Returns the string representation of the email.
    *
-   * @return the email address as a String.
+   * @return the email address as a String
    */
   @Override
   public @NotNull String toString() {

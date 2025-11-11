@@ -1,9 +1,14 @@
 package com.pug.geo.domain.enums;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
-/** Enumeration of error codes related to geographical data validation. */
+/**
+ * Enum representing error codes specific to the geographic domain.
+ *
+ * <p>Each error code is associated with a specific validation failure scenario
+ * and has a {@code bundleKey} that results into a located error message</p>
+ */
 @Getter
 public enum GeoErrorCodes implements GenericErrorCodes {
   INVALID_IBGE_CODE("error.domain.geo.ibge-code.invalid"),

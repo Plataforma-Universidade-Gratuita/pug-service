@@ -5,7 +5,7 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import com.pug.shared.time.TimeProvider;
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -15,7 +15,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** User aggregate root. */
+/**
+ * User entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,7 +30,17 @@ public class User {
   private final String passwordHash;
   private final OffsetDateTime createdAt;
 
-  /** Factory for new users. */
+  /**
+   * Factory for new users.
+   *
+   * @param cpf user's CPF
+   * @param name user's name
+   * @param email user's email
+   * @param type the account type for the user
+   * @param passwordHash the password of the user hashed
+   * @param time time provider
+   * @return new User instance
+   */
   public static User createNew(
       Cpf cpf, String name, Email email, AccountType type, String passwordHash, TimeProvider time) {
     var created = OffsetDateTime.now(time.clock());
@@ -38,10 +50,10 @@ public class User {
   }
 
   /**
-   * Behavior: change name.
+   * Behavior: change the user's name.
    *
-   * @param newName new name.
-   * @return new User instance with changed name.
+   * @param newName new name of the user
+   * @return new User instance with changed name
    */
   public User changeName(String newName) {
     User u = this.toBuilder().name(StringUtils.trim(newName)).build();
@@ -50,10 +62,10 @@ public class User {
   }
 
   /**
-   * Behavior: change email. Uniqueness is enforced at repository/service level.
+   * Behavior: change the user's email.
    *
-   * @param newEmail new email.
-   * @return new User instance with changed email.
+   * @param newEmail new email for the user
+   * @return new User instance with changed email
    */
   public User changeEmail(Email newEmail) {
     User u = this.toBuilder().email(newEmail).build();
@@ -62,10 +74,10 @@ public class User {
   }
 
   /**
-   * Behavior: set password hash produced elsewhere (domain does not hash).
+   * Behavior: set the user's password hash.
    *
-   * @param newHash new password hash.
-   * @return new User instance with changed password hash.
+   * @param newHash new password hash
+   * @return new User instance with changed password hash
    */
   public User setPasswordHash(String newHash) {
     User u = this.toBuilder().passwordHash(newHash).build();
@@ -76,7 +88,10 @@ public class User {
   /**
    * Validates the User instance to ensure all required fields are properly set.
    *
-   * @throws AppValidationException if validation fails.
+   * <p>Checks that cpf, email, name, accountType are not null, name is not blank and within length limits,
+   * passwordHash is within length limits if provided, and createdAt is not in the future.</p>
+   *
+   * @throws AppValidationException if any validation fails
    */
   private void validateAt(Clock clock) {
     if (cpf == null) {
@@ -105,19 +120,21 @@ public class User {
   /**
    * Validates the User instance using the system UTC clock.
    *
-   * @throws AppValidationException if validation fails.
+   * @throws AppValidationException if validation fails
    */
   private void validate() {
     validateAt(Clock.systemUTC());
   }
 
-  /** Builder class for User to enforce validation on build. */
+  /**
+   * Builder class for User.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class UserBuilder {
     /**
      * Builds the User instance and validates it.
      *
-     * @return the constructed and validated User instance.
-     * @throws AppValidationException if validation fails.
+     * @return the constructed and validated User instance
      */
     public User build() {
       User u =

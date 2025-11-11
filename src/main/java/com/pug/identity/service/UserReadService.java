@@ -4,7 +4,7 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.UserQueries;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;

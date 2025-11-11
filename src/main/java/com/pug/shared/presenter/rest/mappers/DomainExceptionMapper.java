@@ -1,6 +1,6 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import com.pug.shared.errors.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import com.pug.shared.exceptions.DomainException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;

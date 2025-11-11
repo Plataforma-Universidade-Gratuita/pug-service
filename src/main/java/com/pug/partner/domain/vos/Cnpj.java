@@ -5,18 +5,19 @@ import com.pug.shared.exceptions.AppValidationException;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * CNPJ (Cadastro Nacional da Pessoa Jurídica) value object representing a Brazilian company
- * identification number.
+ * Value object representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica).
  *
- * @param value the CNPJ value as a string of digits.
+ * <p>Also contains a method to format the CNPJ in the standard pattern XX.XXX.XXX/XXXX-XX</p>
+ *
+ * @param value the CNPJ value as a string of digits
  */
 public record Cnpj(String value) {
 
   /**
    * Constructs a Cnpj value object after validating the input.
    *
-   * @param value the CNPJ value as a string.
-   * @throws AppValidationException if the CNPJ is invalid.
+   * @param value the CNPJ value as a string
+   * @throws AppValidationException if the CNPJ is null, has an invalid length, contains non-digit characters, or fails the checksum validation
    */
   public Cnpj {
     String digits = sanitize(value);
@@ -32,8 +33,8 @@ public record Cnpj(String value) {
   /**
    * Sanitizes the input string by removing all non-digit characters.
    *
-   * @param s the input string.
-   * @return a string containing only digits, or null if the input was null.
+   * @param s the input string
+   * @return a string containing only digits, or null if the input was null
    */
   public static String sanitize(String s) {
     if (s == null) {
@@ -45,8 +46,8 @@ public record Cnpj(String value) {
   /**
    * Validates the CNPJ using its checksum algorithm.
    *
-   * @param cnpj the CNPJ string containing only digits.
-   * @return true if the CNPJ is valid, false otherwise.
+   * @param cnpj the CNPJ string containing only digits
+   * @return true if the CNPJ is valid, false otherwise
    */
   private static boolean isValid(String cnpj) {
     if (cnpj.chars().distinct().count() == 1) {
@@ -61,9 +62,9 @@ public record Cnpj(String value) {
   /**
    * Calculates the checksum digit for the CNPJ.
    *
-   * @param cnpj the CNPJ string containing only digits.
-   * @param weights the weights used in the checksum calculation.
-   * @return the calculated checksum digit.
+   * @param cnpj the CNPJ string containing only digits
+   * @param weights the weights used in the checksum calculation
+   * @return the calculated checksum digit
    */
   private static int checksum(String cnpj, int[] weights) {
     int sum = 0;
@@ -78,7 +79,7 @@ public record Cnpj(String value) {
   /**
    * Returns the formatted CNPJ string in the pattern XX.XXX.XXX/XXXX-XX.
    *
-   * @return the formatted CNPJ string.
+   * @return the formatted CNPJ string
    */
   public String formatted() {
     return value.substring(0, 2)
@@ -95,7 +96,7 @@ public record Cnpj(String value) {
   /**
    * Returns the string representation of the CNPJ.
    *
-   * @return the CNPJ value as a string.
+   * @return the CNPJ value as a string
    */
   @Override
   public @NotNull String toString() {

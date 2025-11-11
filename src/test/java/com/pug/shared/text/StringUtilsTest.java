@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.pug.shared.utils.StringUtils;
 import org.junit.jupiter.api.Test;
 
 public class StringUtilsTest {

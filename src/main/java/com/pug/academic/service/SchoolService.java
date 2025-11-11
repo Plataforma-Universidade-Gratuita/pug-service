@@ -5,7 +5,7 @@ import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.text.StringUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

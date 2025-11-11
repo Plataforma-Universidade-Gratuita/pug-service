@@ -4,7 +4,7 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.partner.domain.EntityRepository;
+import com.pug.partner.service.EntityService;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -27,7 +27,7 @@ public class CityService {
 
   @Inject CityRepository repo;
   @Inject
-  EntityRepository entityRepo;
+  EntityService entityService;
 
   /**
    * Factory-style save.
@@ -42,7 +42,7 @@ public class CityService {
     Objects.requireNonNull(ibgeCode, "ibgeCode");
     String code = ibgeCode.toString();
     if (repo.existsByIbgeCode(code)) {
-      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
+      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", ibgeCode));
     }
     return repo.persist(City.createNew(name, ibgeCode));
   }
@@ -65,7 +65,7 @@ public class CityService {
     for (City c : list) {
       String code = c.getIbgeCode().toString();
       if (!seen.add(code)) {
-        throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
+        throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", code));
       }
     }
 
@@ -95,7 +95,7 @@ public class CityService {
     String curCode = current.getIbgeCode().toString();
 
     if (!newCode.equals(curCode) && repo.existsByIbgeCode(newCode)) {
-      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
+      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", newCode));
     }
 
     City updated = current.changeName(data.getName()).changeIbgeCode(data.getIbgeCode());
@@ -116,7 +116,7 @@ public class CityService {
     if (list.isEmpty()) {
       return Map.of();
     }
-    if (entityRepo.existsAnyByCityIdIn(list)) {
+    if (entityService.existsAnyByCityIdIn(list)) {
       throw new ReferencedEntityException(GeoErrorCodes.CITY_REFERENCED_BY_ENTITY);
     }
     return Map.of("cities", repo.deleteByIds(list));
@@ -131,7 +131,7 @@ public class CityService {
    */
   public City getById(UUID id) {
     return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**

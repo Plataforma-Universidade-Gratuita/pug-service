@@ -9,7 +9,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Domain model representing an Admin user with associated metadata. */
+/**
+ * Admin entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,7 +22,9 @@ public class Admin {
   /**
    * Validates the Admin instance to ensure all required fields are properly set.
    *
-   * @throws AppValidationException if validation fails.
+   * <p>Checks that userId is not null.</p>
+   *
+   * @throws AppValidationException if any validation fails
    */
   private void validate() {
     if (userId == null) {
@@ -28,13 +32,15 @@ public class Admin {
     }
   }
 
-  /** Builder class for constructing Admin instances with validation. */
+  /**
+   * Builder class for Admin.
+   * <p>Overrides the build method to include validation.</p>
+   */
   public static class AdminBuilder {
     /**
      * Builds the Admin instance and performs validation.
      *
-     * @return a validated Admin instance.
-     * @throws AppValidationException if validation fails.
+     * @return a validated Admin instance
      */
     public Admin build() {
       Admin a = new Admin(userId, grantedAt);

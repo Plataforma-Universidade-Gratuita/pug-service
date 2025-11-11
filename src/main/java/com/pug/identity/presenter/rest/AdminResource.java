@@ -13,7 +13,7 @@ import com.pug.identity.service.UserService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.PresenterUtils;
+import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
