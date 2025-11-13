@@ -38,9 +38,9 @@ public class Account {
   public static Account createNew(
       UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
     var created = OffsetDateTime.now(time.clock());
-    var u = new Account(null, userId, email, type, passwordHash, created);
-    u.validateAt(time.clock());
-    return u;
+    var a = new Account(null, userId, email, type, passwordHash, created);
+    a.validateAt(time.clock());
+    return a;
   }
 
   /**

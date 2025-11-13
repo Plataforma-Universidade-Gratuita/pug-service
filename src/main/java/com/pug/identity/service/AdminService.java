@@ -1,9 +1,11 @@
 package com.pug.identity.service;
 
+import com.pug.identity.domain.Account;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.service.dtos.CreateAdminCommand;
+import com.pug.identity.service.dtos.UpdateAdminCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
@@ -11,7 +13,6 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,12 +36,7 @@ public class AdminService {
   @Transactional
   public Admin save(CreateAdminCommand cmd) {
     var account = accountService.save(cmd.accountCommand());
-    var admin =
-        Admin.builder()
-            .accountId(account.getId())
-            .grantedAt(OffsetDateTime.now(time.clock()))
-            .build();
-
+    var admin = Admin.createNew(account.getId(), time);
     return adminsRepo.persist(admin);
   }
 
@@ -62,13 +58,25 @@ public class AdminService {
         CollectionUtils.toStream(cmds).map(CreateAdminCommand::accountCommand).toList();
     var accounts = accountService.saveAll(accountCmds);
 
-    var now = java.time.OffsetDateTime.now(time.clock());
-    var admins =
-        accounts.stream()
-            .map(a -> Admin.builder().accountId(a.getId()).grantedAt(now).build())
-            .toList();
+    var admins = accounts.stream().map(a -> Admin.createNew(a.getId(), time)).toList();
 
     return adminsRepo.persistAll(admins);
+  }
+
+  /**
+   * Updates an existing Admin.
+   *
+   * <p>This method also updates the associated Account.
+   *
+   * @param id the ID of the Admin to update.
+   * @param cmd the command containing the data to update the Admin.
+   * @return the updated Admin.
+   * @throws ResourceNotFoundException if the Admin with the given ID does not exist.
+   */
+  @Transactional
+  public Admin update(UUID id, UpdateAdminCommand cmd) {
+    Account updated = accountService.update(id, cmd.accountCommand());
+    return getById(updated.getId());
   }
 
   /**
@@ -98,15 +106,15 @@ public class AdminService {
   }
 
   /**
-   * Retrieves an Admin by user ID.
+   * Retrieves an Admin by account ID.
    *
-   * @param userId the UUID of the user.
+   * @param accountId the UUID of the account.
    * @return the Admin entity.
-   * @throws ResourceNotFoundException if the Admin with the given user ID does not exist.
+   * @throws ResourceNotFoundException if the Admin with the given account ID does not exist.
    */
-  public Admin get(UUID userId) {
+  public Admin getById(UUID accountId) {
     return adminsRepo
-        .findOptionalById(userId)
+        .findOptionalById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
   }
 

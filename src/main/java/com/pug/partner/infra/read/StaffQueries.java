@@ -9,12 +9,12 @@ import java.util.UUID;
 public interface StaffQueries {
 
   /**
-   * Finds a StaffView by user ID.
+   * Finds a StaffView by account ID.
    *
-   * @param userId the user ID
+   * @param id the account ID
    * @return an Optional containing the StaffView if found, otherwise empty
    */
-  Optional<StaffView> findOptionalByUserId(UUID userId);
+  Optional<StaffView> findOptionalById(UUID id);
 
   /**
    * Finds a StaffView by email.
@@ -25,19 +25,19 @@ public interface StaffQueries {
   Optional<StaffView> findOptionalByEmail(String email);
 
   /**
+   * Lists all StaffView records.
+   *
+   * @return a list of all StaffView records
+   */
+  List<StaffView> listAllStaff();
+
+  /**
    * Lists StaffView records by CPF.
    *
    * @param cpf the CPF
    * @return a list of StaffView records matching the given CPF
    */
   List<StaffView> listByCpf(String cpf);
-
-  /**
-   * Lists all StaffView records.
-   *
-   * @return a list of all StaffView records
-   */
-  List<StaffView> listAllStaff();
 
   /**
    * Lists all StaffView records by entity ID.

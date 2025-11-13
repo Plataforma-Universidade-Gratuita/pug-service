@@ -94,19 +94,19 @@ public class Entity {
    */
   private void validate() {
     if (cnpj == null) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ);
+      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ_BLANK);
     }
-    if (name == null || name.isBlank()) {
+    if (StringUtils.isEmpty(name)) {
       throw new AppValidationException(PartnerErrorCodes.INVALID_NAME_BLANK);
     }
     if (name.length() > 150) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_NAME_TOOLONG);
+      throw new AppValidationException(PartnerErrorCodes.INVALID_NAME_LENGTH);
     }
     if (cityId == null) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_CITY);
+      throw new AppValidationException(PartnerErrorCodes.INVALID_CITY_BLANK);
     }
     if (address != null && address.length() > 254) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_ADDRESS_TOOLONG);
+      throw new AppValidationException(PartnerErrorCodes.INVALID_ADDRESS_LENGTH);
     }
   }
 

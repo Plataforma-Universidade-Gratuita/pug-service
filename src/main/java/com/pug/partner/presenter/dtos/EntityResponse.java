@@ -8,9 +8,10 @@ import java.util.UUID;
  *
  * @param id the unique identifier of the entity
  * @param cnpj the CNPJ of the entity
+ * @param cnpjFormatted the formatted CNPJ of the entity
  * @param name the name of the entity
  * @param address the address of the entity
  * @param city the city response associated with the entity
  */
 public record EntityResponse(
-    UUID id, String cnpj, String name, String address, CityResponse city) {}
+    UUID id, String cnpj, String cnpjFormatted, String name, String address, CityResponse city) {}

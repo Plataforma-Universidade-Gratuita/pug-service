@@ -53,7 +53,7 @@ public class UserReadOnlyResource {
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    UserResponse body = UserPresenter.toResponse(readService.getView(id), locale());
+    UserResponse body = UserPresenter.toResponse(readService.getViewById(id), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

@@ -100,16 +100,17 @@
 │   │   │           │   │       └── dtos/
 │   │   │           │   │           └── CityView.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── CityResource.java
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── CityCreateOrUpdateRequest.java
 │   │   │           │   │   │   └── CityResponse.java
-│   │   │           │   │   ├── mappers/
-│   │   │           │   │   │   └── CityPresenter.java
-│   │   │           │   │   └── rest/
-│   │   │           │   │       └── CityResource.java
+│   │   │           │   │   └── mappers/
+│   │   │           │   │       └── CityPresenter.java
 │   │   │           │   └── service/
 │   │   │           │       ├── CityReadService.java
-│   │   │           │       └── CityService.java
+│   │   │           │       ├── CityService.java
+│   │   │           │       └── dtos/
+│   │   │           │           └── CreateOrUpdateCityCommand.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Account.java
@@ -144,9 +145,11 @@
 │   │   │           │   │       ├── UserQueries.java
 │   │   │           │   │       └── dtos/
 │   │   │           │   │           ├── AccountView.java
+│   │   │           │   │           ├── AdminAcc.java
 │   │   │           │   │           ├── AdminView.java
 │   │   │           │   │           └── UserView.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── AccountReadOnlyResource.java
 │   │   │           │   │   ├── AdminResource.java
 │   │   │           │   │   ├── UserReadOnlyResource.java
 │   │   │           │   │   ├── dtos/
@@ -165,7 +168,12 @@
 │   │   │           │       ├── AdminService.java
 │   │   │           │       ├── PasswordService.java
 │   │   │           │       ├── UserReadService.java
-│   │   │           │       └── UserService.java
+│   │   │           │       ├── UserService.java
+│   │   │           │       └── dtos/
+│   │   │           │           ├── CreateAccountCommand.java
+│   │   │           │           ├── CreateAdminCommand.java
+│   │   │           │           ├── CreateOrUpdateUserCommand.java
+│   │   │           │           └── UpdateAccountCommand.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Entity.java
@@ -251,6 +259,7 @@
 │   │   │               ├── domain/
 │   │   │               │   └── enums/
 │   │   │               │       ├── AccountType.java
+│   │   │               │       ├── DeleteKeys.java
 │   │   │               │       ├── ErrorCodes.java
 │   │   │               │       └── GenericErrorCodes.java
 │   │   │               ├── exceptions/

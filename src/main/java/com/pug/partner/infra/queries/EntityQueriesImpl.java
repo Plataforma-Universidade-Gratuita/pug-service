@@ -4,18 +4,18 @@ import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
+import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import org.hibernate.search.mapper.orm.Search;
-import org.hibernate.search.mapper.orm.session.SearchSession;
 
 /** Implementation of EntityQueries using JPA and Hibernate Search. */
 @ApplicationScoped
@@ -24,6 +24,18 @@ public class EntityQueriesImpl implements EntityQueries {
 
   @Inject EntityManager em;
 
+  private static final String SELECT_BASE =
+      """
+                  select new com.pug.partner.infra.read.dtos.EntityView(
+                    e.id, e.cnpj, e.name, e.address,
+                    new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
+                  )
+                  from EntityEntity e
+                    join CityEntity c on c.id = e.cityId
+                  """;
+
+  private static final String ORDER_BY_NAME_ASC = " order by e.name asc";
+
   @Override
   public Optional<EntityView> findOptionalById(UUID id) {
     if (id == null) {
@@ -31,57 +43,25 @@ public class EntityQueriesImpl implements EntityQueries {
     }
 
     var q =
-        em.createQuery(
-            """
-                select new com.pug.partner.infra.read.dtos.EntityView(
-                  e.id, e.cnpj, e.name, e.address,
-                  new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
-                )
-                from EntityEntity e
-                  join CityEntity c on c.id = e.cityId
-                where e.id = :id
-                """,
-            EntityView.class);
-    q.setParameter("id", id);
+        em.createQuery(SELECT_BASE + " where e.id = :id", EntityView.class).setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 
   @Override
   public Optional<EntityView> findOptionalByCnpj(String cnpj) {
-    if (cnpj == null || cnpj.isBlank()) {
+    if (StringUtils.isEmpty(cnpj)) {
       return Optional.empty();
     }
 
     var q =
-        em.createQuery(
-            """
-                select new com.pug.partner.infra.read.dtos.EntityView(
-                  e.id, e.cnpj, e.name, e.address,
-                  new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
-                )
-                from EntityEntity e
-                  join CityEntity c on c.id = e.cityId
-                where e.cnpj = :cnpj
-                """,
-            EntityView.class);
-    q.setParameter("cnpj", cnpj);
+        em.createQuery(SELECT_BASE + " where e.cnpj = :cnpj", EntityView.class)
+            .setParameter("cnpj", cnpj);
     return q.getResultStream().findFirst();
   }
 
   @Override
   public List<EntityView> listAllEntities() {
-    return em.createQuery(
-            """
-                select new com.pug.partner.infra.read.dtos.EntityView(
-                  e.id, e.cnpj, e.name, e.address,
-                  new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
-                )
-                from EntityEntity e
-                  join CityEntity c on c.id = e.cityId
-                order by e.name asc
-                """,
-            EntityView.class)
-        .getResultList();
+    return em.createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, EntityView.class).getResultList();
   }
 
   @Override
@@ -92,72 +72,35 @@ public class EntityQueriesImpl implements EntityQueries {
 
     var q =
         em.createQuery(
-            """
-                select new com.pug.partner.infra.read.dtos.EntityView(
-                  e.id, e.cnpj, e.name, e.address,
-                  new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
-                )
-                from EntityEntity e
-                  join CityEntity c on c.id = e.cityId
-                where e.cityId = :cityId
-                order by e.name asc
-                """,
-            EntityView.class);
-    q.setParameter("cityId", cityId);
+                SELECT_BASE + " where e.cityId = :cityId" + ORDER_BY_NAME_ASC, EntityView.class)
+            .setParameter("cityId", cityId);
     return q.getResultList();
   }
 
   @Override
   public List<EntityView> searchByName(String key) {
-    if (key == null || key.isBlank()) {
-      return List.of();
-    }
-
-    String[] tokens = key.split("\\s+");
-    SearchSession s = Search.session(em);
-
-    List<EntityEntity> hits =
-        s.search(EntityEntity.class)
-            .where(
-                f ->
-                    f.bool(
-                        b -> {
-                          b.should(f.wildcard().field("name_exact").matching(key + "*").boost(8f));
-                          b.should(
-                              f.wildcard().field("name_exact").matching("*" + key + "*").boost(6f));
-                          for (String t : tokens) {
-                            if (t.length() >= 3) {
-                              b.should(
-                                  f.wildcard()
-                                      .field("name_exact")
-                                      .matching("*" + t + "*")
-                                      .boost(3f));
-                            }
-                          }
-                          b.should(f.match().field("name").matching(key).fuzzy(1).boost(4f));
-                          b.should(f.match().field("name_auto").matching(key).boost(2f));
-                        }))
-            .sort(f -> f.score().then().field("name_sort"))
-            .fetchAllHits();
-
+    List<EntityEntity> hits = HibernateSearchUtils.searchByName(em, EntityEntity.class, key);
     if (hits.isEmpty()) {
       return List.of();
     }
 
-    var cityIds = hits.stream().map(EntityEntity::getCityId).distinct().toList();
-    var cityMap =
-        em
-            .createQuery(
+    List<UUID> cityIds = hits.stream().map(EntityEntity::getCityId).distinct().toList();
+
+    List<CityView> cities =
+        em.createQuery(
                 """
-                    select new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
-                    from CityEntity c
-                    where c.id in :ids
-                    """,
+                                    select new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
+                                    from CityEntity c
+                                    where c.id in :ids
+                                    """,
                 CityView.class)
             .setParameter("ids", cityIds)
-            .getResultList()
-            .stream()
-            .collect(Collectors.toMap(CityView::id, Function.identity()));
+            .getResultList();
+
+    Map<UUID, CityView> cityMap = new HashMap<>();
+    for (CityView c : cities) {
+      cityMap.put(c.id(), c);
+    }
 
     List<EntityView> out = new ArrayList<>(hits.size());
     for (EntityEntity e : hits) {

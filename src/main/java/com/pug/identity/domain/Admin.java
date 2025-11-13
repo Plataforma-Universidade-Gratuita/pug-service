@@ -2,6 +2,7 @@ package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.time.TimeProvider;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -16,6 +17,20 @@ import lombok.Getter;
 public class Admin {
   private final UUID accountId;
   private final OffsetDateTime grantedAt;
+
+  /**
+   * Factory for new Admin.
+   *
+   * @param accountId the ID of the Account associated with the Admin
+   * @param time time provider
+   * @return new Admin instance
+   */
+  public static Admin createNew(UUID accountId, TimeProvider time) {
+    var granted = OffsetDateTime.now(time.clock());
+    var a = new Admin(accountId, granted);
+    a.validate();
+    return a;
+  }
 
   /**
    * Validates the Admin instance to ensure all required fields are properly set.

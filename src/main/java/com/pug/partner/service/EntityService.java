@@ -5,8 +5,11 @@ import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
+import com.pug.partner.service.dtos.CreateOrUpdateEntityCommand;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -14,8 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /** Service for managing partner entities. */
 @ApplicationScoped
@@ -27,25 +28,17 @@ public class EntityService {
   /**
    * Saves a new Entity.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity
-   * @param cityId the city ID where the entity is located
-   * @param address the address of the entity
+   * @param cmd the command containing the data to create the Entity
    * @return the saved Entity
    * @throws DuplicateResourceException if an entity with the same CNPJ already exists
    */
   @Transactional
-  public Entity save(Cnpj cnpj, String name, UUID cityId, String address) {
-    Objects.requireNonNull(cnpj, "cnpj");
-    Objects.requireNonNull(name, "name");
-    Objects.requireNonNull(cityId, "cityId");
-
-    String code = cnpj.toString();
-    if (repo.existsByCnpj(code)) {
+  public Entity save(CreateOrUpdateEntityCommand cmd) {
+    if (existsByCnpj(cmd.cnpj())) {
       throw new DuplicateResourceException(
-          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cnpj.formatted()));
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
     }
-    var e = Entity.createNew(cnpj, name, cityId, address);
+    var e = Entity.createNew(cmd.cnpj(), cmd.name(), cmd.cityId(), cmd.address());
     return repo.persist(e);
   }
 
@@ -53,55 +46,61 @@ public class EntityService {
    * Updates an existing Entity.
    *
    * @param id the UUID of the Entity to update
-   * @param data the new data for the Entity
+   * @param cmd the command containing the updated data for the Entity
    * @throws ResourceNotFoundException if the Entity is not found
    * @throws DuplicateResourceException if an entity with the same CNPJ already exists
    */
   @Transactional
-  public void update(UUID id, Entity data) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(data, "data");
+  public Entity update(UUID id, CreateOrUpdateEntityCommand cmd) {
     var current = getById(id);
 
-    if (!data.getCnpj().equals(current.getCnpj()) && repo.existsByCnpj(data.getCnpj().toString())) {
-      throw new DuplicateResourceException(
-          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", data.getCnpj().formatted()));
+    Cnpj cnpj;
+    if (cmd.cnpj() != null) {
+      if (!cmd.cnpj().equals(current.getCnpj()) && existsByCnpj(cmd.cnpj())) {
+        throw new DuplicateResourceException(
+            PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
+      }
+      cnpj = cmd.cnpj();
+    } else {
+      cnpj = current.getCnpj();
     }
+    var cityId = cmd.cityId() != null ? cmd.cityId() : current.getCityId();
+    var name = cmd.name() != null ? cmd.name() : current.getName();
+    var address = cmd.address() != null ? cmd.address() : current.getAddress();
 
     Entity updated =
-        current
-            .changeName(data.getName())
-            .changeCnpj(data.getCnpj())
-            .changeAddress(data.getAddress())
-            .moveToCity(data.getCityId());
+        current.changeName(name).changeCnpj(cnpj).changeAddress(address).moveToCity(cityId);
     repo.update(updated);
+    return getById(id);
   }
 
   /**
-   * Deletes Entities by their IDs. Also deletes associated staff members and their underlying
-   * users.
+   * Deletes Entities by their IDs.
+   *
+   * <p>Also deletes associated staff members and their underlying users.
    *
    * @param ids the UUIDs of the Entities to delete
-   * @return a map containing the count of deleted entities, staff and users
+   * @return a map containing the count of deleted entities, staff and accounts
    */
   @Transactional
-  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+  public Map<DeleteKeys, Long> deleteByIds(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
       return Map.of();
     }
     List<UUID> staffIds =
-        toStream(ids)
+        CollectionUtils.toStream(ids)
             .filter(Objects::nonNull)
             .map(id -> staffService.listByEntity(id))
             .flatMap(List::stream)
-            .map(Staff::getUserId)
+            .map(Staff::getAccountId)
             .toList();
     var staff = staffService.deleteByUserIds(staffIds);
     var entities = repo.deleteByIds(ids);
     return Map.of(
-        "entities", entities,
-        "staff", staff.get("staff"),
-        "users", staff.get("users"));
+        DeleteKeys.ENTITY, entities,
+        DeleteKeys.STAFF, staff.getOrDefault(DeleteKeys.STAFF, 0L),
+        DeleteKeys.ACCOUNTS, staff.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, staff.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -112,7 +111,6 @@ public class EntityService {
    * @throws ResourceNotFoundException if the Entity is not found
    */
   public Entity getById(UUID id) {
-    Objects.requireNonNull(id, "id");
     return repo.findOptionalById(id)
         .orElseThrow(
             () ->
@@ -130,26 +128,28 @@ public class EntityService {
   }
 
   /**
+   * Checks if an Entity exists by its CNPJ.
+   *
+   * @param cnpj the CNPJ to check
+   * @return true if an Entity with the given CNPJ exists, false otherwise
+   */
+  public boolean existsByCnpj(Cnpj cnpj) {
+    if (cnpj == null) {
+      return false;
+    }
+    return repo.existsByCnpj(cnpj.toString());
+  }
+
+  /**
    * Checks if any Entity exists in the given city IDs.
    *
    * @param cityIds the iterable of city UUIDs
    * @return true if any Entity exists in the specified cities, false otherwise
    */
   public boolean existsAnyByCityIdIn(Iterable<UUID> cityIds) {
-    if (cityIds == null || !cityIds.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(cityIds)) {
       return false;
     }
     return repo.existsAnyByCityIdIn(cityIds);
-  }
-
-  /**
-   * Converts an Iterable to a Stream.
-   *
-   * @param it The iterable to convert.
-   * @param <T> The type of elements.
-   * @return A stream of the iterable's elements.
-   */
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return (it == null) ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
   }
 }

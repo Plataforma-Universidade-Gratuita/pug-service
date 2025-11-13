@@ -24,7 +24,7 @@ public class AdminReadService {
    * @return the admin view.
    * @throws ResourceNotFoundException if the admin is not found.
    */
-  public AdminView getView(UUID accountId) {
+  public AdminView getViewById(UUID accountId) {
     return queries
         .findOptionalById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));

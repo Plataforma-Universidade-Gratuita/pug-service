@@ -4,7 +4,7 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.presenter.dtos.AdminCreateRequest;
+import com.pug.identity.presenter.dtos.AdminCreateOrUpdateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
@@ -13,6 +13,8 @@ import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.CreateAccountCommand;
 import com.pug.identity.service.dtos.CreateAdminCommand;
 import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
+import com.pug.identity.service.dtos.UpdateAccountCommand;
+import com.pug.identity.service.dtos.UpdateAdminCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -30,6 +32,7 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -77,7 +80,7 @@ public class AdminResource {
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    AdminView v = readService.getView(id);
+    AdminView v = readService.getViewById(id);
     AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -129,7 +132,7 @@ public class AdminResource {
       return list();
     }
     String email = new Email(emailRaw).toString();
-    var view = readService.getViewByEmail(email); // throws if not found
+    var view = readService.getViewByEmail(email);
     AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -161,7 +164,7 @@ public class AdminResource {
    * @return the response with the created admin.
    */
   @POST
-  public Response create(@Valid AdminCreateRequest req, @Context UriInfo uriInfo) {
+  public Response create(@Valid AdminCreateOrUpdateRequest req, @Context UriInfo uriInfo) {
     String hashedPassword = passwordService.hash(req.password());
     var cmd =
         new CreateAdminCommand(
@@ -173,7 +176,7 @@ public class AdminResource {
     var admin = writeService.save(cmd);
 
     AdminResponse body =
-        AdminPresenter.toResponse(readService.getView(admin.getAccountId()), locale(), i18n);
+        AdminPresenter.toResponse(readService.getViewById(admin.getAccountId()), locale(), i18n);
     URI location = uriInfo.getAbsolutePathBuilder().path(admin.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -186,7 +189,7 @@ public class AdminResource {
    */
   @POST
   @Path("bulk")
-  public Response createBulk(@Valid List<AdminCreateRequest> reqs) {
+  public Response createBulk(@Valid List<AdminCreateOrUpdateRequest> reqs) {
     var cmds =
         reqs.stream()
             .map(
@@ -207,9 +210,33 @@ public class AdminResource {
             .map(
                 admin ->
                     AdminPresenter.toResponse(
-                        readService.getView(admin.getAccountId()), locale(), i18n))
+                        readService.getViewById(admin.getAccountId()), locale(), i18n))
             .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly(bodies.size()))).build();
+  }
+
+  /**
+   * Updates an existing admin.
+   *
+   * @param id the admin ID.
+   * @param req the admin update request.
+   * @return the response with the updated admin.
+   */
+  @PUT
+  @Path("{id}")
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminCreateOrUpdateRequest req) {
+    String hashedPassword = passwordService.hash(req.password());
+    var cmd =
+        new UpdateAdminCommand(
+            new UpdateAccountCommand(
+                new Email(req.email()),
+                hashedPassword,
+                new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name())));
+    var updated = writeService.update(id, cmd);
+
+    AdminResponse body =
+        AdminPresenter.toResponse(readService.getViewById(updated.getAccountId()), locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**

@@ -21,8 +21,8 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(of = "userId")
-@ToString(of = {"userId", "entityId"})
+@EqualsAndHashCode(of = "accountId")
+@ToString(of = {"accountId", "entityId"})
 @Entity
 @Table(
     name = "staff",
@@ -30,8 +30,8 @@ import lombok.ToString;
 public class StaffEntity {
 
   @Id
-  @Column(name = "user_id", nullable = false, updatable = false)
-  private UUID userId;
+  @Column(name = "account_id", nullable = false, updatable = false)
+  private UUID accountId;
 
   @NotNull
   @Column(name = "entity_id", nullable = false)

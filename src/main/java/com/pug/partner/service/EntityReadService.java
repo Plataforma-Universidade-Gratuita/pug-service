@@ -1,7 +1,6 @@
 package com.pug.partner.service;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
-import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -24,7 +23,7 @@ public class EntityReadService {
    * @return the EntityView
    * @throws ResourceNotFoundException if the entity is not found
    */
-  public EntityView getView(UUID id) {
+  public EntityView getViewById(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(
@@ -36,18 +35,17 @@ public class EntityReadService {
   /**
    * Retrieves an EntityView by its CNPJ.
    *
-   * @param cnpjRaw the CNPJ of the entity
+   * @param cnpj the CNPJ of the entity
    * @return the EntityView
    * @throws ResourceNotFoundException if the entity is not found
    */
-  public EntityView getViewByCnpj(String cnpjRaw) {
-    Cnpj cnpj = new Cnpj(cnpjRaw);
+  public EntityView getViewByCnpj(String cnpj) {
     return queries
-        .findOptionalByCnpj(cnpj.toString())
+        .findOptionalByCnpj(cnpj)
         .orElseThrow(
             () ->
                 new ResourceNotFoundException(
-                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj.formatted())));
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj)));
   }
 
   /**

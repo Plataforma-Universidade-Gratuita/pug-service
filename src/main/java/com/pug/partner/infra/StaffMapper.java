@@ -18,7 +18,7 @@ public final class StaffMapper {
     if (e == null) {
       return null;
     }
-    return Staff.builder().userId(e.getUserId()).entityId(e.getEntityId()).build();
+    return Staff.builder().accountId(e.getAccountId()).entityId(e.getEntityId()).build();
   }
 
   /**
@@ -32,7 +32,7 @@ public final class StaffMapper {
       return null;
     }
     var e = new StaffEntity();
-    e.setUserId(d.getUserId());
+    e.setAccountId(d.getAccountId());
     e.setEntityId(d.getEntityId());
     return e;
   }

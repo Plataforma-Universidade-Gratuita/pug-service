@@ -8,6 +8,7 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
@@ -56,7 +57,7 @@ public class StaffService {
     var user =
         accountService.save(cpf, name, email, AccountType.PARTNER, passwords.hash(rawPassword));
 
-    if (repo.existsByUserId(user.getId())) {
+    if (repo.existsByAccountId(user.getId())) {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
     }
     return repo.persist(Staff.createNew(user.getId(), entityId));
@@ -87,7 +88,7 @@ public class StaffService {
 
     List<Staff> batch = new ArrayList<>(unique.size());
     for (UUID uid : unique) {
-      if (repo.existsByUserId(uid)) {
+      if (repo.existsByAccountId(uid)) {
         throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
       }
       accountService.getById(uid);
@@ -103,14 +104,14 @@ public class StaffService {
    * @return a map containing the counts of deleted staff members and user accounts.
    */
   @Transactional
-  public Map<String, Long> deleteByUserIds(Iterable<UUID> userIds) {
+  public Map<DeleteKeys, Long> deleteByUserIds(Iterable<UUID> userIds) {
     if (userIds == null) {
       return Map.of();
     }
 
     List<UUID> existing = new ArrayList<>();
     for (UUID id : userIds) {
-      if (id != null && repo.existsByUserId(id)) {
+      if (id != null && repo.existsByAccountId(id)) {
         existing.add(id);
       }
     }
@@ -118,7 +119,7 @@ public class StaffService {
       return Map.of();
     }
 
-    long staff = repo.deleteByUserIds(existing);
+    long staff = repo.deleteByIds(existing);
     long user = accountService.deleteAll(existing);
     return Map.of("staff", staff, "users", user);
   }
@@ -132,7 +133,7 @@ public class StaffService {
    */
   public Staff get(UUID userId) {
     Objects.requireNonNull(userId);
-    return repo.findOptionalByUserId(userId)
+    return repo.findOptionalById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND));
   }
 
@@ -164,7 +165,7 @@ public class StaffService {
    */
   public boolean existsByUserId(UUID userId) {
     Objects.requireNonNull(userId);
-    return repo.existsByUserId(userId);
+    return repo.existsByAccountId(userId);
   }
 
   public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {

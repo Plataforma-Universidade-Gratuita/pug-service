@@ -1,6 +1,5 @@
 package com.pug.identity.presenter.mappers;
 
-import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.utils.StringUtils;
@@ -20,8 +19,22 @@ public final class UserPresenter {
    */
   public static UserResponse toResponse(UserView v, Locale locale) {
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
-    String cpfFormatted = new Cpf(v.cpf()).formatted();
     return new UserResponse(
-        v.id(), v.cpf(), cpfFormatted, v.name(), v.createdAt(), createdAtFormatted);
+        v.id(), v.cpf(), formatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted);
+  }
+
+  /**
+   * Returns the formatted representation of the CPF (xxx.xxx.xxx-xx).
+   *
+   * @return the formatted CPF as a String
+   */
+  private static String formatted(String v) {
+    return v.substring(0, 3)
+        + "."
+        + v.substring(3, 6)
+        + "."
+        + v.substring(6, 9)
+        + "-"
+        + v.substring(9);
   }
 }

@@ -7,5 +7,6 @@ public enum DeleteKeys {
   ACCOUNTS,
   ADMINS,
   STAFF,
-  STUDENTS;
+  STUDENTS,
+  ENTITY;
 }

@@ -1,6 +1,5 @@
-package com.pug.partner.presenter.rest;
+package com.pug.partner.presenter;
 
-import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
@@ -8,9 +7,12 @@ import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
+import com.pug.partner.service.dtos.CreateOrUpdateEntityCommand;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -31,7 +33,6 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 /** REST resource for managing partner entities. */
@@ -54,9 +55,11 @@ public class EntityResource {
    */
   @POST
   public Response create(@Valid EntityCreateOrUpdateRequest req) {
-    Objects.requireNonNull(req, "req");
-    var created = writeService.save(new Cnpj(req.cnpj()), req.name(), req.cityId(), req.address());
-    EntityResponse body = EntityPresenter.toResponse(readService.getView(created.getId()));
+    var cmd =
+        new CreateOrUpdateEntityCommand(
+            req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
+    var created = writeService.save(cmd);
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewById(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -71,11 +74,11 @@ public class EntityResource {
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid EntityCreateOrUpdateRequest req) {
-    Objects.requireNonNull(req, "req");
-    Objects.requireNonNull(id, "id");
-    writeService.update(
-        id, Entity.createNew(new Cnpj(req.cnpj()), req.name(), req.cityId(), req.address()));
-    EntityResponse body = EntityPresenter.toResponse(readService.getView(id));
+    var cmd =
+        new CreateOrUpdateEntityCommand(
+            req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
+    var updated = writeService.update(id, cmd);
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewById(updated.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -87,8 +90,7 @@ public class EntityResource {
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
+    Map<DeleteKeys, Long> deleted = writeService.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 
@@ -101,8 +103,7 @@ public class EntityResource {
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    Objects.requireNonNull(id, "id");
-    EntityResponse body = EntityPresenter.toResponse(readService.getView(id));
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewById(id));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -115,8 +116,8 @@ public class EntityResource {
   @GET
   @Path("/by-cnpj/{cnpj}")
   public Response getByCnpj(@PathParam("cnpj") String cnpjRaw) {
-    Objects.requireNonNull(cnpjRaw, "cnpj");
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw));
+    Cnpj cnpj = new Cnpj(cnpjRaw);
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpj.toString()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -134,7 +135,7 @@ public class EntityResource {
       List<EntityResponse> body = views.stream().map(EntityPresenter::toResponse).toList();
       return Response.ok(ApiEnvelope.ok(body)).build();
     }
-    if (q != null && !q.isBlank()) {
+    if (!StringUtils.isEmpty(q)) {
       List<EntityView> views = readService.searchViews(q);
       List<EntityResponse> body = views.stream().map(EntityPresenter::toResponse).toList();
       return Response.ok(ApiEnvelope.ok(body)).build();

@@ -57,7 +57,7 @@ public class AccountReadOnlyResource {
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    var body = AccountPresenter.toResponse(readService.getView(id), locale(), i18n);
+    var body = AccountPresenter.toResponse(readService.getViewById(id), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

@@ -2,8 +2,9 @@ package com.pug.partner.infra.persistence;
 
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
-import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.EntityMapper;
+import com.pug.shared.utils.CollectionUtils;
+import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -51,7 +52,7 @@ public class EntityRepositoryImpl
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long n = delete("id in ?1", ids);
@@ -74,16 +75,15 @@ public class EntityRepositoryImpl
 
   @Override
   public boolean existsByCnpj(String cnpj) {
-    String digits = Cnpj.sanitize(cnpj);
-    if (digits == null) {
+    if (StringUtils.isEmpty(cnpj)) {
       return false;
     }
-    return find("cnpj", digits).firstResultOptional().isPresent();
+    return find("cnpj", cnpj).firstResultOptional().isPresent();
   }
 
   @Override
   public boolean existsAnyByCityIdIn(Iterable<UUID> cityIds) {
-    if (cityIds == null || !cityIds.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(cityIds)) {
       return false;
     }
     return find("cityId in ?1", cityIds).firstResultOptional().isPresent();

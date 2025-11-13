@@ -24,7 +24,7 @@ public class AccountReadService {
    * @return the user view.
    * @throws ResourceNotFoundException if the user is not found.
    */
-  public AccountView getView(UUID id) {
+  public AccountView getViewById(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));

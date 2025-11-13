@@ -1,4 +1,4 @@
-package com.pug.partner.presenter.rest;
+package com.pug.partner.presenter;
 
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
@@ -121,12 +121,12 @@ public class StaffResource {
    * @return the Response
    */
   private Response createdResponse(Staff staff) {
-    StaffView v = read.getView(staff.getUserId());
+    StaffView v = read.getView(staff.getAccountId());
     if (v == null) {
       throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
     }
     StaffResponse out = StaffPresenter.toResponse(v, resolveLocale(), i18n);
-    URI location = uri.getAbsolutePathBuilder().path(staff.getUserId().toString()).build();
+    URI location = uri.getAbsolutePathBuilder().path(staff.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(out)).build();
   }
 

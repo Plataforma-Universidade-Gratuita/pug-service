@@ -13,18 +13,18 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Staff {
-  private final UUID userId;
+  private final UUID accountId;
   private final UUID entityId;
 
   /**
    * Factory method to create a new Staff instance with validation.
    *
-   * @param userId the unique identifier of the user
+   * @param accountId the unique identifier of the account
    * @param entityId the unique identifier of the entity
    * @return a validated Staff instance
    */
-  public static Staff createNew(UUID userId, UUID entityId) {
-    Staff s = new Staff(userId, entityId);
+  public static Staff createNew(UUID accountId, UUID entityId) {
+    Staff s = new Staff(accountId, entityId);
     s.validate();
     return s;
   }
@@ -32,16 +32,16 @@ public class Staff {
   /**
    * Validates the Staff instance to ensure all required fields are properly set.
    *
-   * <p>Checks that userId and entityId are not null.
+   * <p>Checks that accountId and entityId are not null.
    *
    * @throws AppValidationException if validation fails
    */
   private void validate() {
-    if (userId == null) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_STAFF_USER);
+    if (accountId == null) {
+      throw new AppValidationException(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK);
     }
     if (entityId == null) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_STAFF_ENTITY);
+      throw new AppValidationException(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK);
     }
   }
 
@@ -57,7 +57,7 @@ public class Staff {
      * @return a validated Staff instance
      */
     public Staff build() {
-      return createNew(userId, entityId);
+      return createNew(accountId, entityId);
     }
   }
 }

@@ -3,6 +3,7 @@ package com.pug.partner.infra.persistence;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.infra.StaffMapper;
+import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -18,25 +19,25 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public Staff persist(Staff staff) {
-    if (staff == null) {
+  public Staff persist(Staff entity) {
+    if (entity == null) {
       return null;
     }
-    StaffEntity e = StaffMapper.toEntity(staff);
+    StaffEntity e = StaffMapper.toEntity(entity);
     persistAndFlush(e);
-    StaffEntity loaded = find("userId = ?1", e.getUserId()).firstResultOptional().orElse(e);
+    StaffEntity loaded = find("accountId = ?1", e.getAccountId()).firstResultOptional().orElse(e);
     return StaffMapper.toDomain(loaded);
   }
 
   @Transactional
   @Override
-  public List<Staff> persistAll(Iterable<Staff> staff) {
-    if (staff == null || !staff.iterator().hasNext()) {
+  public List<Staff> persistAll(Iterable<Staff> entities) {
+    if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
 
     var batch = new ArrayList<StaffEntity>();
-    for (var s : staff) {
+    for (var s : entities) {
       if (s != null) {
         batch.add(StaffMapper.toEntity(s));
       }
@@ -48,8 +49,8 @@ public class StaffRepositoryImpl
     persist(batch);
     flush();
 
-    var userIds = batch.stream().map(StaffEntity::getUserId).toList();
-    List<StaffEntity> loaded = find("userId in ?1", userIds).list();
+    var accountIds = batch.stream().map(StaffEntity::getAccountId).toList();
+    List<StaffEntity> loaded = find("accountId in ?1", accountIds).list();
 
     return (loaded.size() == batch.size() ? loaded : batch)
         .stream().map(StaffMapper::toDomain).toList();
@@ -57,19 +58,19 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public long deleteByUserIds(Iterable<UUID> userIds) {
-    if (userIds == null || !userIds.iterator().hasNext()) {
+  public long deleteByIds(Iterable<UUID> accountIds) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return 0L;
     }
-    long n = delete("userId in ?1", userIds);
+    long n = delete("accountId in ?1", accountIds);
     flush();
     getEntityManager().clear();
     return n;
   }
 
   @Override
-  public Optional<Staff> findOptionalByUserId(UUID userId) {
-    return find("userId = ?1", userId).firstResultOptional().map(StaffMapper::toDomain);
+  public Optional<Staff> findOptionalById(UUID accountId) {
+    return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
   @Override
@@ -83,15 +84,15 @@ public class StaffRepositoryImpl
   }
 
   @Override
-  public boolean existsByUserId(UUID userId) {
-    return find("userId", userId).firstResultOptional().isPresent();
+  public boolean existsByAccountId(UUID accountId) {
+    return find("accountId", accountId).firstResultOptional().isPresent();
   }
 
   @Override
   public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    if (accountIds == null || !accountIds.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return false;
     }
-    return find("userId in ?1", accountIds).firstResultOptional().isPresent();
+    return find("accountId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }

@@ -20,7 +20,7 @@ public class StaffReadService {
    * @return the StaffView if found, otherwise null.
    */
   public StaffView getView(UUID userId) {
-    return queries.findOptionalByUserId(userId).orElse(null);
+    return queries.findOptionalById(userId).orElse(null);
   }
 
   /**

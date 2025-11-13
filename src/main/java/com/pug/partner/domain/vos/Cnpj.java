@@ -2,6 +2,7 @@ package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -22,11 +23,14 @@ public record Cnpj(String value) {
    */
   public Cnpj {
     String digits = sanitize(value);
-    if (digits == null
-        || digits.length() != 14
-        || !digits.chars().allMatch(Character::isDigit)
-        || !isValid(digits)) {
-      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ);
+    if (StringUtils.isEmpty(digits)) {
+      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ_BLANK);
+    }
+    if (digits.length() != 14) {
+      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ_LENGTH);
+    }
+    if (!digits.chars().allMatch(Character::isDigit) || !isValid(digits)) {
+      throw new AppValidationException(PartnerErrorCodes.INVALID_CNPJ_FORMAT);
     }
     value = digits;
   }
@@ -75,23 +79,6 @@ public record Cnpj(String value) {
     int mod = sum % 11;
     int digit = 11 - mod;
     return digit >= 10 ? 0 : digit;
-  }
-
-  /**
-   * Returns the formatted CNPJ string in the pattern XX.XXX.XXX/XXXX-XX.
-   *
-   * @return the formatted CNPJ string
-   */
-  public String formatted() {
-    return value.substring(0, 2)
-        + "."
-        + value.substring(2, 5)
-        + "."
-        + value.substring(5, 8)
-        + "/"
-        + value.substring(8, 12)
-        + "-"
-        + value.substring(12, 14);
   }
 
   /**

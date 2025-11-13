@@ -5,7 +5,7 @@ import com.pug.identity.infra.read.dtos.AccountView;
 /**
  * View representation of a Staff member.
  *
- * @param user the user view associated with the staff member
+ * @param account the account view associated with the staff member
  * @param entity the entity view associated with the staff member
  */
-public record StaffView(AccountView user, EntityView entity) {}
+public record StaffView(AccountView account, EntityView entity) {}

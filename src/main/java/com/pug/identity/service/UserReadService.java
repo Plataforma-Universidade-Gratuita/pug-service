@@ -25,7 +25,7 @@ public class UserReadService {
    * @return the UserView
    * @throws ResourceNotFoundException if no user with the given ID is found
    */
-  public UserView getView(UUID id) {
+  public UserView getViewById(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(

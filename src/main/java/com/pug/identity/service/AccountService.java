@@ -51,7 +51,7 @@ public class AccountService {
    */
   @Transactional
   public Account save(CreateAccountCommand cmd) {
-    if (existsByEmail(cmd.email().toString())) {
+    if (existsByEmail(cmd.email())) {
       throw new DuplicateResourceException(
           IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("email", cmd.email()));
     }
@@ -145,10 +145,8 @@ public class AccountService {
   public Account update(UUID id, UpdateAccountCommand cmd) {
     Account current = getById(id);
 
-    String newEmail = cmd.email() != null ? cmd.email().toString() : null;
-    if (newEmail != null
-        && !newEmail.equalsIgnoreCase(current.getEmail().toString())
-        && existsByEmail(newEmail)) {
+    Email newEmail = cmd.email() != null ? cmd.email() : null;
+    if (newEmail != null && !newEmail.equals(current.getEmail()) && existsByEmail(newEmail)) {
       throw new DuplicateResourceException(
           IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", newEmail));
     }
@@ -245,8 +243,11 @@ public class AccountService {
    * @param e the emails to check
    * @return true if any account exists with the email, false otherwise
    */
-  public boolean existsByEmail(String e) {
-    return repo.existsByEmail(e);
+  public boolean existsByEmail(Email e) {
+    if (e == null) {
+      return false;
+    }
+    return repo.existsByEmail(e.toString());
   }
 
   /**

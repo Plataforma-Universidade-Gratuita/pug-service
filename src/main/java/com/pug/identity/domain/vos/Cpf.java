@@ -92,20 +92,4 @@ public record Cpf(String value) {
   public @NotNull String toString() {
     return value;
   }
-
-  /**
-   * Returns the formatted representation of the CPF (xxx.xxx.xxx-xx).
-   *
-   * @return the formatted CPF as a String
-   */
-  public String formatted() {
-    String v = value;
-    return v.substring(0, 3)
-        + "."
-        + v.substring(3, 6)
-        + "."
-        + v.substring(6, 9)
-        + "-"
-        + v.substring(9);
-  }
 }
