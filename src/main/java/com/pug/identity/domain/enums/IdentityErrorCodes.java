@@ -26,7 +26,13 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_NAME_LENGTH("identity.error.name.length"),
   USER_NOT_FOUND("identity.error.user.not.found"),
   USER_ALREADY_EXISTS("identity.error.user.already.exists"),
-  USER_STILL_REFERENCED("identity.error.user.still.referenced");
+  USER_STILL_REFERENCED("identity.error.user.still.referenced"),
+  ACCOUNT_NOT_FOUND("identity.error.account.not.found"),
+  ACCOUNT_ALREADY_EXISTS("identity.error.account.already.exists"),
+  ACCOUNT_STILL_REFERENCED_BY_ADMIN("identity.error.account.still.referenced.by.admin"),
+  ACCOUNT_STILL_REFERENCED_BY_STAFF("identity.error.account.still.referenced.by.staff"),
+  ACCOUNT_STILL_REFERENCED_BY_STUDENT("identity.error.account.still.referenced.by.student"),
+  ADMIN_NOT_FOUND("identity.error.admin.not.found");
 
   private final String bundleKey;
 

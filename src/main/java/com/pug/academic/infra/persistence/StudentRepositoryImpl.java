@@ -104,7 +104,7 @@ public class StudentRepositoryImpl
   }
 
   @Override
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
+  public boolean existsAnyByAccountIdIn(Iterable<UUID> userIds) {
     if (userIds == null || !userIds.iterator().hasNext()) {
       return false;
     }

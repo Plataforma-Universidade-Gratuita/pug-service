@@ -55,6 +55,26 @@ public interface AccountRepository {
   List<Account> listAllAccounts();
 
   /**
+   * Lists all Account user IDs by their Account IDs.
+   *
+   * @param ids the iterable collection of UUIDs representing the Account IDs.
+   * @return a list of UUIDs representing the user IDs associated with the given Account IDs.
+   */
+  List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids);
+
+  /**
+   * Finds user IDs that have Accounts, excluding those associated with the given Account IDs.
+   *
+   * @param excludedAccountIds the iterable collection of UUIDs representing the Account IDs to
+   *     exclude.
+   * @param candidateUserIds the iterable collection of UUIDs representing the candidate user IDs to
+   *     check.
+   * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
+   *     associated with the excluded Account IDs.
+   */
+  List<UUID> findUserIdsWithAccountsExcluding(Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+
+  /**
    * Checks if a Accounts exists by email.
    *
    * @param email the email to check for existence.

@@ -7,152 +7,251 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.dtos.CreateNewAccountCommand;
+import com.pug.identity.service.dtos.CreateNewUserCommand;
+import com.pug.identity.service.dtos.UpdateAccountCommand;
 import com.pug.partner.service.StaffService;
-import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
-import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
-/**
- * Service for managing accounts (login).
- */
+/** Service for managing accounts. */
 @ApplicationScoped
 public class AccountService {
 
-  @Inject
-  AccountRepository repo;
-  @Inject
-  TimeProvider time;
-  @Inject
-  UserService userService;
-  @Inject
-  AdminService adminService;
-  @Inject
-  StaffService staffService;
-  @Inject
-  StudentService studentService;
+  @Inject AccountRepository repo;
+  @Inject TimeProvider time;
+  @Inject UserService userService;
+  @Inject AdminService adminService;
+  @Inject StaffService staffService;
+  @Inject StudentService studentService;
 
+  /**
+   * Creates and saves a new Account.
+   *
+   * <p>If the associated {@link User} does not exist, it will be created.
+   *
+   * @param cmd the command containing the data to create the new Account.
+   * @return the saved Account.
+   * @throws DuplicateResourceException if an account with the given email already exists.
+   */
   @Transactional
-  public Account save(Cpf cpf, String name, Email email, AccountType type, String passwordHash) {
-    String e = email.toString();
-    if (repo.existsByEmail(e)) {
+  public Account save(CreateNewAccountCommand cmd) {
+    if (existsByEmail(cmd.email().toString())) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", e));
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("email", cmd.email()));
     }
-
-    UUID userId = resolveUserId(cpf, name);
-    Account account = Account.createNew(userId, email, type, passwordHash, time);
+    UUID userId;
+    if (userService.existsByCpf(cmd.userCommand().cpf())) {
+      userId = userService.getByCpf(cmd.userCommand().cpf()).getId();
+    } else {
+      userId = userService.save(new CreateNewUserCommand(cmd.userCommand().cpf(), cmd.userCommand().name())).getId();
+    }
+    Account account = Account.createNew(userId, cmd.email(), cmd.type(), cmd.passwordHash(), time);
     return repo.persist(account);
   }
 
+  /**
+   * Saves multiple Account entities.
+   *
+   * <p>It is implied that all necessary {@link User}s have been created already.
+   *
+   * @param cmds a list of commands containing the data to create new Account entities.
+   * @return a list of saved Account entities.
+   * @throws DuplicateResourceException if any account email is duplicated in the input or already
+   *     exists.
+   */
   @Transactional
-  public List<Account> saveAll(Iterable<Account> accounts) {
-    List<String> emails = toStream(accounts).map(a -> a.getEmail().toString()).toList();
-    if (!emails.isEmpty() && repo.existsAnyByEmailIn(emails)) {
-      throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
+  public List<Account> saveAll(List<CreateNewAccountCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
     }
-    List<Account> normalized =
-            toStream(accounts)
-                    .map(
-                            a ->
-                                    a.getCreatedAt() == null
-                                            ? a.toBuilder().createdAt(OffsetDateTime.now(time.clock())).build()
-                                            : a)
-                    .toList();
-    return repo.persistAll(normalized);
+
+    var duplicateEmails = new HashSet<String>();
+    var seen = new HashSet<String>();
+    for (var c : cmds) {
+      var e = c.email().toString();
+      if (!seen.add(e)) {
+        duplicateEmails.add(e);
+      }
+    }
+    if (!duplicateEmails.isEmpty()) {
+      throw new DuplicateResourceException(
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("emails", duplicateEmails));
+    }
+
+    var emails = cmds.stream().map(c -> c.email().toString()).toList();
+    if (existsAnyByEmailIn(emails)) {
+      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
+    }
+
+    var cpfs = cmds.stream().map(cmd -> cmd.userCommand().cpf()).distinct().toList();
+    Map<Cpf, UUID> existing =
+        userService.getAllByCpf(cpfs).stream().collect(Collectors.toMap(User::getCpf, User::getId));
+    var namesByCpf = new LinkedHashMap<Cpf, String>();
+    for (var c : cmds) {
+      namesByCpf.putIfAbsent(c.userCommand().cpf(), c.userCommand().name());
+    }
+    var missingCpfs = cpfs.stream().filter(c -> !existing.containsKey(c)).toList();
+    List<CreateNewUserCommand> toCreate =
+        missingCpfs.stream()
+            .map(cpf -> new CreateNewUserCommand(cpf, namesByCpf.get(cpf)))
+            .toList();
+    List<User> createdUsers = userService.saveAll(toCreate);
+    Map<Cpf, UUID> userIdsByCpf = new HashMap<>(existing);
+    userIdsByCpf.putAll(createdUsers.stream().collect(Collectors.toMap(User::getCpf, User::getId)));
+
+    var accounts = new ArrayList<Account>(cmds.size());
+    for (var c : cmds) {
+      accounts.add(
+          Account.createNew(userIdsByCpf.get(c.userCommand().cpf()), c.email(), c.type(), c.passwordHash(), time));
+    }
+    return repo.persistAll(accounts);
   }
 
+  /**
+   * Updates an existing Account with the given ID using the provided data.
+   *
+   * @param id the UUID of the Account to be updated.
+   * @param cmd the command containing the data to update the Account.
+   * @return the updated Account entity
+   * @throws ResourceNotFoundException if the account with the given ID does not exist
+   * @throws DuplicateResourceException if an account with the updated email already exists
+   */
   @Transactional
-  public Account update(UUID id, Account data) {
-    Account current =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () ->
-                                    new ResourceNotFoundException(
-                                            IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
+  public Account update(UUID id, UpdateAccountCommand cmd) {
+    Account current = getById(id);
 
-    String newEmail = data.getEmail() != null ? data.getEmail().toString() : null;
+    String newEmail = cmd.email() != null ? cmd.email().toString() : null;
     if (newEmail != null
-            && !newEmail.equalsIgnoreCase(current.getEmail().toString())
-            && repo.existsByEmail(newEmail)) {
+        && !newEmail.equalsIgnoreCase(current.getEmail().toString())
+        && existsByEmail(newEmail)) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", newEmail));
+          IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("email", newEmail));
     }
 
+    if (cmd.userCommand() != null) {
+      userService.update(current.getUserId(), cmd.userCommand());
+    }
+
+    String passwordHash =
+        cmd.passwordHash() != null
+            ? cmd.passwordHash()
+            : current.getPasswordHash();
+    Email email = cmd.email() != null ? cmd.email() : current.getEmail();
     Account updated =
-            current
-                    .changeEmail(data.getEmail() != null ? data.getEmail() : current.getEmail())
-                    .setPasswordHash(
-                            data.getPasswordHash() != null ? data.getPasswordHash() : current.getPasswordHash());
+        current
+            .changeEmail(email)
+            .setPasswordHash(passwordHash);
 
     repo.update(updated);
-    return repo
-            .findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+    return getById(id);
   }
 
+  /**
+   * Deletes multiple Account entities by their IDs.
+   *
+   * <p>Also deletes associated User entities if they are not referenced elsewhere.
+   *
+   * @param ids the iterable of UUIDs representing the IDs of the Account entities to be deleted.
+   * @return a map containing the count of deleted Accounts and Users.
+   * @throws ReferencedEntityException if any account is still referenced by Admin, Staff, or
+   *     Student entities.
+   */
   @Transactional
-  public long deleteAll(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) return 0L;
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Map.of(DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
+    }
 
     if (adminService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_ADMIN);
+      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_ADMIN);
     }
     if (staffService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_STAFF);
+      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STAFF);
     }
     if (studentService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.USER_REFERENCED_BY_STUDENT);
+      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
     }
-    return repo.deleteByIds(ids);
+
+    var toDeleteUserIds = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
+    var stillReferencedUsersIds = new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, toDeleteUserIds));
+    toDeleteUserIds.removeAll(stillReferencedUsersIds);
+
+    long accounts = repo.deleteByIds(ids);
+    long users = 0L;
+    if (!toDeleteUserIds.isEmpty()) {
+      users = userService.deleteAll(toDeleteUserIds).getOrDefault(DeleteKeys.USERS, 0L);
+    }
+
+    return Map.of(
+            DeleteKeys.ACCOUNTS, accounts,
+            DeleteKeys.USERS, users
+    );
   }
 
+  /**
+   * Lists all Account entities.
+   *
+   * @return a list of all Account entities.
+   */
   public List<Account> listAll() {
     return repo.listAllAccounts();
   }
 
+  /**
+   * Retrieves an Account by its ID.
+   *
+   * @param id the UUID of the Account.
+   * @return the Account entity.
+   * @throws ResourceNotFoundException if the account with the given ID does not exist.
+   */
   public Account getById(UUID id) {
     return repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
   }
 
+  /**
+   * Checks if any account exists with a user ID in the provided list.
+   *
+   * @param userIds the list of user IDs to check
+   * @return true if any account exists with a user ID in the list, false otherwise
+   */
   public boolean existsByUserIdIn(Iterable<UUID> userIds) {
     return repo.existsAnyByUserIdIn(userIds);
   }
 
-  private UUID resolveUserId(Cpf cpf, String name) {
-    try {
-      User u = userService.save(cpf, name); // create if not exists
-      return u.getId();
-    } catch (DuplicateResourceException alreadyExists) {
-      return findExistingUserIdByCpf(cpf);
-    }
+  /**
+   * Checks if any account exists with an email with the provided.
+   *
+   * @param e the emails to check
+   * @return true if any account exists with the email, false otherwise
+   */
+  public boolean existsByEmail(String e) {
+    return repo.existsByEmail(e);
   }
 
-  private UUID findExistingUserIdByCpf(Cpf cpf) {
-    String code = cpf.toString();
-    return userService.listAll().stream()
-            .filter(u -> u.getCpf().toString().equals(code))
-            .map(User::getId)
-            .findFirst()
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", code)));
-  }
-
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return (it == null) ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  /**
+   * Checks if any account exists with an email in the provided list.
+   *
+   * @param emails the list of emails to check
+   * @return true if any account exists with an email in the list, false otherwise
+   */
+  public boolean existsAnyByEmailIn(Iterable<String> emails) {
+    return repo.existsAnyByEmailIn(emails);
   }
 }

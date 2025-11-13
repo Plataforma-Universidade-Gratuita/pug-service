@@ -90,7 +90,8 @@ public class AccountQueriesImpl implements AccountQueries {
 
   @Override
   public List<AccountView> searchByName(String key) {
-    List<UserEntity> personHits = HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
+    List<UserEntity> personHits =
+        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
 
     if (personHits.isEmpty()) {
       return List.of();

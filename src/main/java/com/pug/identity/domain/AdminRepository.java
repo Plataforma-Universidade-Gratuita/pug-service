@@ -46,10 +46,10 @@ public interface AdminRepository {
   List<Admin> listAllAdmins();
 
   /**
-   * Checks if an AdminsEntity exists for the given iterable of user IDs.
+   * Checks if an AdminsEntity exists for the given iterable of account IDs.
    *
-   * @param userIds the iterable of user IDs to check.
-   * @return true if an AdminsEntity exists for any of the given user IDs, false otherwise.
+   * @param accountIds the iterable of account IDs to check.
+   * @return true if an AdminsEntity exists for any of the given account IDs, false otherwise.
    */
-  boolean existsAnyByIdIn(Iterable<UUID> userIds);
+  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
 }

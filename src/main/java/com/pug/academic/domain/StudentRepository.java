@@ -79,8 +79,8 @@ public interface StudentRepository {
   /**
    * Checks if any Student exists by a collection of user IDs.
    *
-   * @param userIds the user IDs to check
+   * @param accountIds the user IDs to check
    * @return true if any Student with the given user IDs exists, false otherwise
    */
-  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
+  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
 }

@@ -5,9 +5,13 @@ import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.dtos.CreateNewAccountCommand;
+import com.pug.identity.service.dtos.CreateNewAdminCommand;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -26,48 +30,87 @@ public class AdminService {
   @Inject AdminRepository adminsRepo;
   @Inject AccountService accountService;
   @Inject TimeProvider time;
-  @Inject PasswordService passwords;
 
   /**
-   * Creates and saves a new admin user.
+   * Creates and saves a new Admin.
    *
-   * @param cpf The CPF of the admin.
-   * @param name The name of the admin.
-   * @param email The email of the admin.
-   * @param rawPassword The raw password for the admin.
-   * @return The saved Admin entity.
+   * <p>This method also creates and saves the associated Account.</p>
+   *
+   * @param cmd the command containing the data to create the new Admin.
+   * @return the saved Admin.
    */
   @Transactional
-  public Admin save(Cpf cpf, String name, Email email, String rawPassword) {
-    String hash = passwords.hash(rawPassword);
-    var user = accountService.save(cpf, name, email, AccountType.ADMIN, hash);
+  public Admin save(CreateNewAdminCommand cmd) {
+    var account = accountService.save(cmd.accountCommand());
     var admin =
-        Admin.builder().userId(user.getId()).grantedAt(OffsetDateTime.now(time.clock())).build();
+        Admin.builder().accountId(account.getId()).grantedAt(OffsetDateTime.now(time.clock())).build();
+
     return adminsRepo.persist(admin);
   }
 
   /**
-   * Revokes admin privileges for all given userIds and deletes the underlying users.
+   * Creates and saves multiple new Admins.
    *
-   * @param ids Iterable of admin userIds to delete.
-   * @return A map with counts of deleted admins and users.
+   * <p>This method also creates and saves the associated Accounts.</p>
+   *
+   * @param cmds the commands containing the data to create the new Admins.
+   * @return the list of saved Admins.
    */
   @Transactional
-  public Map<String, Long> deleteAll(Iterable<UUID> ids) {
-    List<UUID> list = toStream(ids).filter(Objects::nonNull).toList();
-    if (list.isEmpty()) {
-      return Map.of();
+  public List<Admin> saveAll(Iterable<CreateNewAdminCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
     }
-    var admins = adminsRepo.deleteByIds(list);
-    var users = accountService.deleteAll(list);
-    return Map.of("admins", admins, "users", users);
+
+    var accountCmds = CollectionUtils.toStream(cmds)
+            .map(CreateNewAdminCommand::accountCommand)
+            .toList();
+    var accounts = accountService.saveAll(accountCmds);
+
+    var now = java.time.OffsetDateTime.now(time.clock());
+    var admins = accounts.stream()
+            .map(a -> Admin.builder()
+                    .accountId(a.getId())
+                    .grantedAt(now)
+                    .build())
+            .toList();
+
+    return adminsRepo.persistAll(admins);
+  }
+
+
+  /**
+   * Deletes all Admins with the given IDs.
+   *
+   * <p>This method also deletes the associated Accounts.</p>
+   *
+   * @param ids the IDs of the Admins to delete.
+   * @return a map containing the count of deleted Admins and Accounts.
+   */
+  @Transactional
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+        return Map.of(
+                DeleteKeys.ADMINS, 0L,
+                DeleteKeys.ACCOUNTS, 0L,
+                DeleteKeys.USERS, 0L);
+    }
+
+    var admins = adminsRepo.deleteByIds(ids);
+    var accounts = accountService.deleteAll(ids);
+
+    return Map.of(
+        DeleteKeys.ADMINS, admins,
+        DeleteKeys.ACCOUNTS, accounts.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, accounts.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
-   * Retrieves an admin by user ID.
+   * Retrieves an Admin by user ID.
    *
-   * @param userId The ID of the admin user.
-   * @return The Admin entity.
+   * @param userId the UUID of the user.
+   * @return the Admin entity.
+   * @throws ResourceNotFoundException if the Admin with the given user ID does not exist.
    */
   public Admin get(UUID userId) {
     return adminsRepo
@@ -76,32 +119,24 @@ public class AdminService {
   }
 
   /**
-   * Lists all admins.
+   * Lists all Admin entities.
    *
-   * @return A list of all Admin entities.
+   * @return a list of all Admin entities.
    */
   public List<Admin> listAll() {
     return adminsRepo.listAllAdmins();
   }
 
   /**
-   * Checks if any admin exists with the given user IDs.
+   * Checks if any Admin exists with account IDs in the provided iterable.
    *
-   * @param ids Iterable of user IDs to check.
-   * @return true if any admin exists with the given user IDs, false otherwise.
+   * @param ids the iterable of account IDs to check.
+   * @return true if any Admin exists with the given account IDs, false otherwise.
    */
-  public boolean existsAnyByUserIdIn(Iterable<UUID> ids) {
-    return adminsRepo.existsAnyByIdIn(ids);
-  }
-
-  /**
-   * Converts an Iterable to a Stream.
-   *
-   * @param it The iterable to convert.
-   * @param <T> The type of elements.
-   * @return A stream of the iterable's elements.
-   */
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return (it == null) ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  public boolean existsAnyByAccountIdIn(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return false;
+    }
+    return adminsRepo.existsAnyByAccountIdIn(ids);
   }
 }

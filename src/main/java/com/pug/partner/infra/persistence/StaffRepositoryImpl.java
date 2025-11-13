@@ -88,10 +88,10 @@ public class StaffRepositoryImpl
   }
 
   @Override
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (userIds == null || !userIds.iterator().hasNext()) {
+  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
+    if (accountIds == null || !accountIds.iterator().hasNext()) {
       return false;
     }
-    return find("userId in ?1", userIds).firstResultOptional().isPresent();
+    return find("userId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }

@@ -3,6 +3,8 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
 import com.pug.identity.infra.UserMapper;
+import com.pug.shared.utils.CollectionUtils;
+import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -29,7 +31,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   @Transactional
   @Override
   public List<User> persistAll(Iterable<User> entities) {
-    if (entities == null || !entities.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
     var batch = new ArrayList<UserEntity>();
@@ -62,7 +64,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long n = delete("id in ?1", ids);
@@ -77,18 +79,37 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
+  public Optional<User> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
+  }
+
+  @Override
   public List<User> listAllUsers() {
     return listAll().stream().map(UserMapper::toDomain).toList();
   }
 
   @Override
+  public List<User> listByCpfs(Iterable<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return List.of();
+    }
+    return find("cpf in ?1", cpfs).list().stream().map(UserMapper::toDomain).toList();
+  }
+
+  @Override
   public boolean existsByCpf(String cpf) {
-    return find("cpf", cpf).firstResultOptional().isPresent();
+    if (StringUtils.isEmpty(cpf)) {
+      return false;
+    }
+    return count("cpf = ?1", cpf) > 0;
   }
 
   @Override
   public boolean existsAnyByCpfIn(Iterable<String> cpfs) {
-    if (cpfs == null || !cpfs.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(cpfs)) {
       return false;
     }
     return find("cpf in ?1", cpfs).firstResultOptional().isPresent();

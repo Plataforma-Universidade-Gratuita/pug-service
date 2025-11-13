@@ -16,9 +16,33 @@ public interface AdminQueries {
   Optional<AdminView> findOptionalById(UUID accountId);
 
   /**
+   * Finds a AdminView by its email.
+   *
+   * @param email the email of the AdminView to find.
+   * @return an Optional containing the found AdminView, or empty if not found.
+   */
+  Optional<AdminView> findOptionalByEmail(String email);
+
+  /**
    * List all AdminViews.
    *
    * @return a list of all AdminViews.
    */
   List<AdminView> listAllAdmins();
+
+  /**
+   * Lists AdminView objects by CPF.
+   *
+   * @param cpf the CPF to filter AdminView objects.
+   * @return a list of AdminView objects matching the given CPF.
+   */
+  List<AdminView> listByCpf(String cpf);
+
+  /**
+   * Searches for AdminView objects by name.
+   *
+   * @param key the name key to search for.
+   * @return a list of AdminView objects matching the search key.
+   */
+  List<AdminView> searchByName(String key);
 }

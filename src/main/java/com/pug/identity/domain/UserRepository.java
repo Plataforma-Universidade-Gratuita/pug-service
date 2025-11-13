@@ -47,11 +47,27 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
+   * Finds a Person by their CPF.
+   *
+   * @param cpf the CPF of the Person to find
+   * @return an Optional containing the Person if found, or empty if not found
+   */
+  Optional<User> findOptionalByCpf(String cpf);
+
+  /**
    * Lists all People by their IDs.
    *
    * @return a list of all People
    */
   List<User> listAllUsers();
+
+  /**
+   * Lists all People by their CPFs.
+   *
+   * @param cpfs an iterable of CPFs
+   * @return a list of People with the given CPFs
+   */
+  List<User> listByCpfs(Iterable<String> cpfs);
 
   /**
    * Checks if a Person exists with the given CPF.

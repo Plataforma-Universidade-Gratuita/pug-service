@@ -3,6 +3,7 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
 import com.pug.identity.infra.AccountMapper;
+import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -33,7 +34,7 @@ public class AccountRepositoryImpl
   @Transactional
   @Override
   public List<Account> persistAll(Iterable<Account> entities) {
-    if (entities == null || !entities.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
     var batch = new ArrayList<AccountEntity>();
@@ -66,7 +67,7 @@ public class AccountRepositoryImpl
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (!ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long deleted = delete("id in ?1", ids);
@@ -86,13 +87,46 @@ public class AccountRepositoryImpl
   }
 
   @Override
+  public List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return List.of();
+    }
+    return find("id in ?1", ids)
+        .stream()
+        .map(AccountEntity::getUserId)
+        .toList();
+  }
+
+  @Override
+  public List<UUID> findUserIdsWithAccountsExcluding(Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
+    if (CollectionUtils.isEmpty(userIds)) {
+      return List.of();
+    }
+    String query = "userId in ?1";
+    if (!CollectionUtils.isEmpty(excludeAccountIds)) {
+      query += " and id not in ?2";
+      return find(query, userIds, excludeAccountIds)
+          .stream()
+          .map(AccountEntity::getUserId)
+          .distinct()
+          .toList();
+    } else {
+      return find(query, userIds)
+          .stream()
+          .map(AccountEntity::getUserId)
+          .distinct()
+          .toList();
+    }
+  }
+
+  @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();
   }
 
   @Override
   public boolean existsAnyByEmailIn(Iterable<String> emails) {
-    if (emails == null || !emails.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(emails)) {
       return false;
     }
     return find("email in ?1", emails).firstResultOptional().isPresent();
@@ -100,7 +134,7 @@ public class AccountRepositoryImpl
 
   @Override
   public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (userIds == null || !userIds.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(userIds)) {
       return false;
     }
     return find("userId in ?1", userIds).firstResultOptional().isPresent();

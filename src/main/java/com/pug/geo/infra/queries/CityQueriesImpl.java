@@ -3,7 +3,6 @@ package com.pug.geo.infra.queries;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.geo.infra.read.CityQueries;
 import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;

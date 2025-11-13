@@ -22,11 +22,6 @@ public final class UserPresenter {
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
     String cpfFormatted = new Cpf(v.cpf()).formatted();
     return new UserResponse(
-            v.id(),
-            v.cpf(),
-            cpfFormatted,
-            v.name(),
-            v.createdAt(),
-            createdAtFormatted);
+        v.id(), v.cpf(), cpfFormatted, v.name(), v.createdAt(), createdAtFormatted);
   }
 }

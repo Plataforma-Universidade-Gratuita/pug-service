@@ -3,6 +3,7 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.infra.AdminMapper;
+import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -30,7 +31,7 @@ public class AdminRepositoryImpl
   @Transactional
   @Override
   public List<Admin> persistAll(Iterable<Admin> entities) {
-    if (entities == null) {
+    if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
     var batch = new ArrayList<AdminEntity>();
@@ -51,7 +52,7 @@ public class AdminRepositoryImpl
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long n = delete("accountId in ?1", ids);
@@ -71,8 +72,8 @@ public class AdminRepositoryImpl
   }
 
   @Override
-  public boolean existsAnyByIdIn(Iterable<UUID> accountIds) {
-    if (accountIds == null || !accountIds.iterator().hasNext()) {
+  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return false;
     }
     return find("accountId in ?1", accountIds).firstResultOptional().isPresent();

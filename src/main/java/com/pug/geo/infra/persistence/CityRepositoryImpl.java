@@ -83,7 +83,7 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
   @Override
   public boolean existsByIbgeCode(String ibgeCodeDigits) {
     if (StringUtils.isEmpty(ibgeCodeDigits)) {
-        return false;
+      return false;
     }
     return find("ibgeCode", ibgeCodeDigits).firstResultOptional().isPresent();
   }

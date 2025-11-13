@@ -37,7 +37,7 @@ public class AccountReadService {
    * @return the user view.
    * @throws ResourceNotFoundException if the user is not found.
    */
-  public AccountView getByEmail(String email) {
+  public AccountView getViewByEmail(String email) {
     return queries
         .findOptionalByEmail(email)
         .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
@@ -49,7 +49,7 @@ public class AccountReadService {
    * @return the list of user views.
    */
   public List<AccountView> listViews() {
-    return queries.listAllUsers();
+    return queries.listAllAccounts();
   }
 
   /**
@@ -58,7 +58,7 @@ public class AccountReadService {
    * @param cpf the user CPF.
    * @return the list of user views with the given CPF.
    */
-  public List<AccountView> listByCpf(String cpf) {
+  public List<AccountView> listViewsByCpf(String cpf) {
     return queries.listByCpf(cpf);
   }
 

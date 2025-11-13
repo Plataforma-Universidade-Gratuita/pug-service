@@ -2,9 +2,8 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-import java.util.Locale;
-
 import com.pug.shared.utils.StringUtils;
+import java.util.Locale;
 import org.jetbrains.annotations.NotNull;
 
 /**

@@ -10,6 +10,7 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -166,16 +167,10 @@ public class StaffService {
     return repo.existsByUserId(userId);
   }
 
-  /**
-   * Checks if any staff members exist for the given user IDs.
-   *
-   * @param userIds an iterable of user IDs to check.
-   * @return true if any staff members exist for the provided user IDs, false otherwise.
-   */
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (userIds == null || !userIds.iterator().hasNext()) {
+  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return false;
     }
-    return repo.existsAnyByUserIdIn(userIds);
+    return repo.existsAnyByAccountIdIn(accountIds);
   }
 }
