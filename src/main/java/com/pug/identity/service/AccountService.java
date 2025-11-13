@@ -7,8 +7,8 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.dtos.CreateNewAccountCommand;
-import com.pug.identity.service.dtos.CreateNewUserCommand;
+import com.pug.identity.service.dtos.CreateAccountCommand;
+import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
 import com.pug.identity.service.dtos.UpdateAccountCommand;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.domain.enums.DeleteKeys;
@@ -50,7 +50,7 @@ public class AccountService {
    * @throws DuplicateResourceException if an account with the given email already exists.
    */
   @Transactional
-  public Account save(CreateNewAccountCommand cmd) {
+  public Account save(CreateAccountCommand cmd) {
     if (existsByEmail(cmd.email().toString())) {
       throw new DuplicateResourceException(
           IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("email", cmd.email()));
@@ -59,7 +59,11 @@ public class AccountService {
     if (userService.existsByCpf(cmd.userCommand().cpf())) {
       userId = userService.getByCpf(cmd.userCommand().cpf()).getId();
     } else {
-      userId = userService.save(new CreateNewUserCommand(cmd.userCommand().cpf(), cmd.userCommand().name())).getId();
+      userId =
+          userService
+              .save(
+                  new CreateOrUpdateUserCommand(cmd.userCommand().cpf(), cmd.userCommand().name()))
+              .getId();
     }
     Account account = Account.createNew(userId, cmd.email(), cmd.type(), cmd.passwordHash(), time);
     return repo.persist(account);
@@ -76,7 +80,7 @@ public class AccountService {
    *     exists.
    */
   @Transactional
-  public List<Account> saveAll(List<CreateNewAccountCommand> cmds) {
+  public List<Account> saveAll(List<CreateAccountCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
@@ -107,9 +111,9 @@ public class AccountService {
       namesByCpf.putIfAbsent(c.userCommand().cpf(), c.userCommand().name());
     }
     var missingCpfs = cpfs.stream().filter(c -> !existing.containsKey(c)).toList();
-    List<CreateNewUserCommand> toCreate =
+    List<CreateOrUpdateUserCommand> toCreate =
         missingCpfs.stream()
-            .map(cpf -> new CreateNewUserCommand(cpf, namesByCpf.get(cpf)))
+            .map(cpf -> new CreateOrUpdateUserCommand(cpf, namesByCpf.get(cpf)))
             .toList();
     List<User> createdUsers = userService.saveAll(toCreate);
     Map<Cpf, UUID> userIdsByCpf = new HashMap<>(existing);
@@ -118,7 +122,12 @@ public class AccountService {
     var accounts = new ArrayList<Account>(cmds.size());
     for (var c : cmds) {
       accounts.add(
-          Account.createNew(userIdsByCpf.get(c.userCommand().cpf()), c.email(), c.type(), c.passwordHash(), time));
+          Account.createNew(
+              userIdsByCpf.get(c.userCommand().cpf()),
+              c.email(),
+              c.type(),
+              c.passwordHash(),
+              time));
     }
     return repo.persistAll(accounts);
   }
@@ -149,14 +158,9 @@ public class AccountService {
     }
 
     String passwordHash =
-        cmd.passwordHash() != null
-            ? cmd.passwordHash()
-            : current.getPasswordHash();
+        cmd.passwordHash() != null ? cmd.passwordHash() : current.getPasswordHash();
     Email email = cmd.email() != null ? cmd.email() : current.getEmail();
-    Account updated =
-        current
-            .changeEmail(email)
-            .setPasswordHash(passwordHash);
+    Account updated = current.changeEmail(email).setPasswordHash(passwordHash);
 
     repo.update(updated);
     return getById(id);
@@ -189,7 +193,8 @@ public class AccountService {
     }
 
     var toDeleteUserIds = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
-    var stillReferencedUsersIds = new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, toDeleteUserIds));
+    var stillReferencedUsersIds =
+        new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, toDeleteUserIds));
     toDeleteUserIds.removeAll(stillReferencedUsersIds);
 
     long accounts = repo.deleteByIds(ids);
@@ -199,9 +204,8 @@ public class AccountService {
     }
 
     return Map.of(
-            DeleteKeys.ACCOUNTS, accounts,
-            DeleteKeys.USERS, users
-    );
+        DeleteKeys.ACCOUNTS, accounts,
+        DeleteKeys.USERS, users);
   }
 
   /**

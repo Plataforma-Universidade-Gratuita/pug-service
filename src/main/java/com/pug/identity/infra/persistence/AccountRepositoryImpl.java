@@ -91,31 +91,24 @@ public class AccountRepositoryImpl
     if (CollectionUtils.isEmpty(ids)) {
       return List.of();
     }
-    return find("id in ?1", ids)
-        .stream()
-        .map(AccountEntity::getUserId)
-        .toList();
+    return find("id in ?1", ids).stream().map(AccountEntity::getUserId).toList();
   }
 
   @Override
-  public List<UUID> findUserIdsWithAccountsExcluding(Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
+  public List<UUID> findUserIdsWithAccountsExcluding(
+      Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
     if (CollectionUtils.isEmpty(userIds)) {
       return List.of();
     }
     String query = "userId in ?1";
     if (!CollectionUtils.isEmpty(excludeAccountIds)) {
       query += " and id not in ?2";
-      return find(query, userIds, excludeAccountIds)
-          .stream()
+      return find(query, userIds, excludeAccountIds).stream()
           .map(AccountEntity::getUserId)
           .distinct()
           .toList();
     } else {
-      return find(query, userIds)
-          .stream()
-          .map(AccountEntity::getUserId)
-          .distinct()
-          .toList();
+      return find(query, userIds).stream().map(AccountEntity::getUserId).distinct().toList();
     }
   }
 

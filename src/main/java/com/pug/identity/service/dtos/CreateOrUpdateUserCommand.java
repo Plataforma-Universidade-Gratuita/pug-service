@@ -8,4 +8,4 @@ import com.pug.identity.domain.vos.Cpf;
  * @param cpf the CPF of the user
  * @param name the name of the user
  */
-public record CreateNewUserCommand(Cpf cpf, String name) {}
+public record CreateOrUpdateUserCommand(Cpf cpf, String name) {}

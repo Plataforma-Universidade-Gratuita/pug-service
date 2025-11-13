@@ -9,4 +9,5 @@ import com.pug.identity.domain.vos.Email;
  * @param passwordHash the new hashed password for the account
  * @param userCommand the command containing user update details
  */
-public record UpdateAccountCommand(Email email, String passwordHash, UpdateUserCommand userCommand) {}
+public record UpdateAccountCommand(
+    Email email, String passwordHash, CreateOrUpdateUserCommand userCommand) {}

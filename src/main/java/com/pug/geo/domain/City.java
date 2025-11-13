@@ -70,10 +70,10 @@ public class City {
       throw new AppValidationException(GeoErrorCodes.INVALID_CITY_NAME_BLANK);
     }
     if (name.length() > 100) {
-      throw new AppValidationException(GeoErrorCodes.INVALID_CITY_NAME_TOOLONG);
+      throw new AppValidationException(GeoErrorCodes.INVALID_CITY_NAME_LENGTH);
     }
     if (ibgeCode == null) {
-      throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE);
+      throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE_BLANK);
     }
   }
 

@@ -1,4 +1,4 @@
-package com.pug.geo.presenter.rest;
+package com.pug.geo.presenter;
 
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.vos.IbgeCode;
@@ -8,6 +8,8 @@ import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.geo.service.CityReadService;
 import com.pug.geo.service.CityService;
+import com.pug.geo.service.dtos.CreateOrUpdateCityCommand;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -33,7 +35,6 @@ import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 /** REST resource for managing cities. */
@@ -56,8 +57,8 @@ public class CityResource {
    */
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
-    Objects.requireNonNull(req, "req");
-    City created = writeService.save(req.name(), new IbgeCode(req.ibgeCode()));
+    City created =
+        writeService.save(new CreateOrUpdateCityCommand(req.name(), new IbgeCode(req.ibgeCode())));
     CityResponse body = CityPresenter.toResponse(readService.getView(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
@@ -72,10 +73,9 @@ public class CityResource {
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<CityCreateOrUpdateRequest> req) {
-    Objects.requireNonNull(req, "req");
-    List<City> toSave =
+    List<CreateOrUpdateCityCommand> toSave =
         req.entities().stream()
-            .map(r -> City.createNew(r.name(), new IbgeCode(r.ibgeCode())))
+            .map(r -> new CreateOrUpdateCityCommand(r.name(), new IbgeCode(r.ibgeCode())))
             .toList();
     List<City> created = writeService.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
@@ -93,10 +93,9 @@ public class CityResource {
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid CityCreateOrUpdateRequest req) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(req, "req");
-    City patch = City.createNew(req.name(), new IbgeCode(req.ibgeCode()));
-    City updated = writeService.update(id, patch);
+    City updated =
+        writeService.update(
+            id, new CreateOrUpdateCityCommand(req.name(), new IbgeCode(req.ibgeCode())));
     CityResponse body = CityPresenter.toResponse(readService.getView(updated.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -109,8 +108,7 @@ public class CityResource {
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = writeService.deleteByIds(req.ids());
+    Map<DeleteKeys, Long> deleted = writeService.deleteByIds(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 
@@ -123,7 +121,6 @@ public class CityResource {
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
-    Objects.requireNonNull(id, "id");
     CityResponse body = CityPresenter.toResponse(readService.getView(id));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -137,7 +134,6 @@ public class CityResource {
   @GET
   @Path("/ibge/{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
-    Objects.requireNonNull(ibgeCode, "ibgeCode");
     CityResponse body = CityPresenter.toResponse(readService.getViewByIbgeCode(ibgeCode));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }

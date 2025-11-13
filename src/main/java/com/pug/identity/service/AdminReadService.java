@@ -7,19 +7,15 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * Service for reading admin data.
- */
+/** Service for reading admin data. */
 @ApplicationScoped
 public class AdminReadService {
 
-  @Inject
-  AdminQueries queries;
+  @Inject AdminQueries queries;
 
   /**
    * Gets the admin view by account ID.
@@ -30,8 +26,8 @@ public class AdminReadService {
    */
   public AdminView getView(UUID accountId) {
     return queries
-            .findOptionalById(accountId)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
+        .findOptionalById(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
   }
 
   /**
@@ -43,8 +39,8 @@ public class AdminReadService {
    */
   public AdminView getViewByEmail(String email) {
     return queries
-            .findOptionalByEmail(email)
-            .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
+        .findOptionalByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND));
   }
 
   /**

@@ -4,7 +4,9 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
+import com.pug.geo.service.dtos.CreateOrUpdateCityCommand;
 import com.pug.partner.service.EntityService;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -15,7 +17,6 @@ import jakarta.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -29,76 +30,77 @@ public class CityService {
   /**
    * Factory-style save.
    *
-   * @param name the city name.
-   * @param ibgeCode the city IBGE code.
+   * @param cmd the command with city data.
    * @return the saved city.
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
    */
   @Transactional
-  public City save(String name, IbgeCode ibgeCode) {
-    Objects.requireNonNull(ibgeCode, "ibgeCode");
-    String code = ibgeCode.toString();
-    if (repo.existsByIbgeCode(code)) {
+  public City save(CreateOrUpdateCityCommand cmd) {
+    if (existsByIbge(cmd.ibgeCode())) {
       throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", ibgeCode));
+          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", cmd.ibgeCode()));
     }
-    return repo.persist(City.createNew(name, ibgeCode));
+    return repo.persist(City.createNew(cmd.name(), cmd.ibgeCode()));
   }
 
   /**
    * Bulk save with intra-payload duplicate check.
    *
-   * @param cities the cities to save.
+   * @param cmds the iterable of commands with city data.
    * @return the saved cities.
    * @throws DuplicateResourceException if any city with the same IBGE code already exists.
    */
   @Transactional
-  public List<City> saveAll(Iterable<City> cities) {
-    List<City> list = CollectionUtils.toStream(cities).filter(Objects::nonNull).toList();
-    if (list.isEmpty()) {
+  public List<City> saveAll(Iterable<CreateOrUpdateCityCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
 
     Set<String> seen = new HashSet<>();
-    for (City c : list) {
-      String code = c.getIbgeCode().toString();
+    for (CreateOrUpdateCityCommand c : cmds) {
+      String code = c.ibgeCode().toString();
       if (!seen.add(code)) {
         throw new DuplicateResourceException(
             GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", code));
       }
     }
 
-    List<String> codes = list.stream().map(c -> c.getIbgeCode().toString()).toList();
+    List<String> codes = CollectionUtils.toStream(cmds).map(c -> c.ibgeCode().toString()).toList();
     if (repo.existsAnyByIbgeCodeIn(codes)) {
       throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
     }
 
-    return repo.persistAll(list);
+    List<City> cities =
+        CollectionUtils.toStream(cmds).map(c -> City.createNew(c.name(), c.ibgeCode())).toList();
+    return repo.persistAll(cities);
   }
 
   /**
    * Update name and/or IBGE code.
    *
    * @param id the city ID.
-   * @param data the new city data.
+   * @param cmd the command with updated city data.
    * @return the updated city.
    * @throws ResourceNotFoundException if the city does not exist.
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
    */
   @Transactional
-  public City update(UUID id, City data) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(data, "data");
+  public City update(UUID id, CreateOrUpdateCityCommand cmd) {
     City current = getById(id);
-    String newCode = data.getIbgeCode().toString();
-    String curCode = current.getIbgeCode().toString();
+    IbgeCode code;
 
-    if (!newCode.equals(curCode) && repo.existsByIbgeCode(newCode)) {
-      throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", newCode));
+    if (cmd.ibgeCode() != null) {
+      if (!cmd.ibgeCode().equals(current.getIbgeCode()) && existsByIbge(cmd.ibgeCode())) {
+        throw new DuplicateResourceException(
+            GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", cmd.ibgeCode()));
+      }
+      code = cmd.ibgeCode();
+    } else {
+      code = current.getIbgeCode();
     }
 
-    City updated = current.changeName(data.getName()).changeIbgeCode(data.getIbgeCode());
+    String name = cmd.name() != null ? cmd.name() : current.getName();
+    City updated = current.changeName(name).changeIbgeCode(code);
     repo.update(updated);
 
     return getById(id);
@@ -111,15 +113,14 @@ public class CityService {
    * @return a map with the number of deleted cities.
    */
   @Transactional
-  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
-    List<UUID> list = CollectionUtils.toStream(ids).filter(Objects::nonNull).toList();
-    if (list.isEmpty()) {
-      return Map.of();
+  public Map<DeleteKeys, Long> deleteByIds(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Map.of(DeleteKeys.CITIES, 0L);
     }
-    if (entityService.existsAnyByCityIdIn(list)) {
-      throw new ReferencedEntityException(GeoErrorCodes.CITY_REFERENCED_BY_ENTITY);
+    if (entityService.existsAnyByCityIdIn(ids)) {
+      throw new ReferencedEntityException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
     }
-    return Map.of("cities", repo.deleteByIds(list));
+    return Map.of(DeleteKeys.CITIES, repo.deleteByIds(ids));
   }
 
   /**
@@ -133,5 +134,18 @@ public class CityService {
     return repo.findOptionalById(id)
         .orElseThrow(
             () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+  }
+
+  /**
+   * Check if a city exists by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code.
+   * @return true if the city exists, false otherwise.
+   */
+  public boolean existsByIbge(IbgeCode ibgeCode) {
+    if (ibgeCode == null) {
+      return false;
+    }
+    return repo.existsByIbgeCode(ibgeCode.toString());
   }
 }

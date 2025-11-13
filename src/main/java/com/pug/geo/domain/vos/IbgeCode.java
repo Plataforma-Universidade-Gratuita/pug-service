@@ -19,8 +19,11 @@ public record IbgeCode(String code) {
    *     non-digit characters
    */
   public IbgeCode {
-    if (code == null || code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-      throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE);
+    if (code == null) {
+      throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE_BLANK);
+    }
+    if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
+      throw new AppValidationException(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT);
     }
   }
 

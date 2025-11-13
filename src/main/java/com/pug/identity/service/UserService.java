@@ -4,8 +4,7 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.service.dtos.CreateNewUserCommand;
-import com.pug.identity.service.dtos.UpdateUserCommand;
+import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ReferencedEntityException;
@@ -36,7 +35,7 @@ public class UserService {
    * @throws DuplicateResourceException if a user with the same CPF already exists
    */
   @Transactional
-  public User save(CreateNewUserCommand cmd) {
+  public User save(CreateOrUpdateUserCommand cmd) {
     if (existsByCpf(cmd.cpf())) {
       throw new DuplicateResourceException(
           IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("cpf", cmd.cpf()));
@@ -53,7 +52,7 @@ public class UserService {
    * @throws DuplicateResourceException if any user CPF is duplicated in the input or already exists
    */
   @Transactional
-  public List<User> saveAll(Iterable<CreateNewUserCommand> cmds) {
+  public List<User> saveAll(Iterable<CreateOrUpdateUserCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
@@ -90,7 +89,7 @@ public class UserService {
    * @throws DuplicateResourceException if a user with the updated CPF already exists
    */
   @Transactional
-  public User update(UUID id, UpdateUserCommand cmd) {
+  public User update(UUID id, CreateOrUpdateUserCommand cmd) {
     var current = getById(id);
 
     Cpf cpf;

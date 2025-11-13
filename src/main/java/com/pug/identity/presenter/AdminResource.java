@@ -10,9 +10,9 @@ import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.CreateNewAccountCommand;
-import com.pug.identity.service.dtos.CreateNewAdminCommand;
-import com.pug.identity.service.dtos.CreateNewUserCommand;
+import com.pug.identity.service.dtos.CreateAccountCommand;
+import com.pug.identity.service.dtos.CreateAdminCommand;
+import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -39,34 +39,25 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-/**
- * REST resource for managing admin users (read + create/delete).
- */
+/** REST resource for managing admin users (read + create/delete). */
 @Path("/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource {
 
-  @Inject
-  PasswordService passwordService;
-  @Inject
-  AdminReadService readService;
-  @Inject
-  AdminService writeService;
-  @Inject
-  I18n i18n;
+  @Inject PasswordService passwordService;
+  @Inject AdminReadService readService;
+  @Inject AdminService writeService;
+  @Inject I18n i18n;
 
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   /**
    * Picks the best locale from the request headers.
@@ -99,9 +90,9 @@ public class AdminResource {
   @GET
   public Response list() {
     List<AdminResponse> list =
-            readService.listViews().stream()
-                    .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-                    .toList();
+        readService.listViews().stream()
+            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
+            .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -116,9 +107,9 @@ public class AdminResource {
   public Response getByCpf(@PathParam("cpf") String cpfRaw) {
     String cpf = new Cpf(cpfRaw).toString();
     List<AdminResponse> list =
-            readService.listViewsByCpf(cpf).stream()
-                    .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-                    .toList();
+        readService.listViewsByCpf(cpf).stream()
+            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
+            .toList();
     if (list.isEmpty()) {
       throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
     }
@@ -156,16 +147,16 @@ public class AdminResource {
       return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(new ArrayList<>()))).build();
     }
     List<AdminResponse> list =
-            readService.search(query).stream()
-                    .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-                    .toList();
+        readService.search(query).stream()
+            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
+            .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
   /**
    * Creates a new admin.
    *
-   * @param req     the admin creation request.
+   * @param req the admin creation request.
    * @param uriInfo the URI info.
    * @return the response with the created admin.
    */
@@ -173,46 +164,50 @@ public class AdminResource {
   public Response create(@Valid AdminCreateRequest req, @Context UriInfo uriInfo) {
     String hashedPassword = passwordService.hash(req.password());
     var cmd =
-            new CreateNewAdminCommand(
-                    new CreateNewAccountCommand(
-                            new CreateNewUserCommand(
-                                    new Cpf(req.cpf()),
-                                    req.name()),
-                            new Email(req.email()),
-                            AccountType.ADMIN,
-                            hashedPassword));
+        new CreateAdminCommand(
+            new CreateAccountCommand(
+                new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name()),
+                new Email(req.email()),
+                AccountType.ADMIN,
+                hashedPassword));
     var admin = writeService.save(cmd);
 
-    AdminResponse body = AdminPresenter.toResponse(readService.getView(admin.getAccountId()), locale(), i18n);
-    URI location =
-            uriInfo.getAbsolutePathBuilder().path(admin.getAccountId().toString()).build();
+    AdminResponse body =
+        AdminPresenter.toResponse(readService.getView(admin.getAccountId()), locale(), i18n);
+    URI location = uriInfo.getAbsolutePathBuilder().path(admin.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
    * Creates multiple new admins in bulk.
    *
-   * @param reqs    the list of admin creation requests.
+   * @param reqs the list of admin creation requests.
    * @return the response with the amount of admins created.
    */
   @POST
   @Path("bulk")
-    public Response createBulk(@Valid List<AdminCreateRequest> reqs) {
-    var cmds = reqs.stream().map(req -> {
-      String hashedPassword = passwordService.hash(req.password());
-      return new CreateNewAdminCommand(
-              new CreateNewAccountCommand(
-                      new CreateNewUserCommand(
-                              new Cpf(req.cpf()),
-                              req.name()),
-                      new Email(req.email()),
-                      AccountType.ADMIN,
-                      hashedPassword));
-    }).toList();
+  public Response createBulk(@Valid List<AdminCreateRequest> reqs) {
+    var cmds =
+        reqs.stream()
+            .map(
+                req -> {
+                  String hashedPassword = passwordService.hash(req.password());
+                  return new CreateAdminCommand(
+                      new CreateAccountCommand(
+                          new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name()),
+                          new Email(req.email()),
+                          AccountType.ADMIN,
+                          hashedPassword));
+                })
+            .toList();
 
     var admins = writeService.saveAll(cmds);
-    List<AdminResponse> bodies = admins.stream()
-            .map(admin -> AdminPresenter.toResponse(readService.getView(admin.getAccountId()), locale(), i18n))
+    List<AdminResponse> bodies =
+        admins.stream()
+            .map(
+                admin ->
+                    AdminPresenter.toResponse(
+                        readService.getView(admin.getAccountId()), locale(), i18n))
             .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly(bodies.size()))).build();
   }

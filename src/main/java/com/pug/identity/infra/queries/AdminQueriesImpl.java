@@ -14,7 +14,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,18 +21,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of AdminQueries using JPA EntityManager.
- */
+/** Implementation of AdminQueries using JPA EntityManager. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AdminQueriesImpl implements AdminQueries {
 
-  @Inject
-  EntityManager em;
+  @Inject EntityManager em;
 
   private static final String SELECT_BASE =
-          """
+      """
                   select new com.pug.identity.infra.read.dtos.AdminView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
@@ -81,7 +77,9 @@ public class AdminQueriesImpl implements AdminQueries {
     if (StringUtils.isEmpty(cpf)) {
       return List.of();
     }
-    var q = em.createQuery(SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
     q.setParameter("cpf", cpf);
     return q.getResultList();
   }
@@ -95,11 +93,14 @@ public class AdminQueriesImpl implements AdminQueries {
 
     List<UUID> userIds = personHits.stream().map(UserEntity::getId).toList();
 
-    var rows = em.createQuery("""
-              select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-              from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-              where acc.userId in :ids
-              """, AdminAcc.class)
+    var rows =
+        em.createQuery(
+                """
+                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                        where acc.userId in :ids
+                        """,
+                AdminAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
 
@@ -123,12 +124,12 @@ public class AdminQueriesImpl implements AdminQueries {
 
   private static AdminView toView(AdminEntity a, AccountEntity acc, UserEntity u) {
     return new AdminView(
-            new AccountView(
-                    acc.getId(),
-                    new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()),
-                    acc.getEmail(),
-                    acc.getAccountType(),
-                    acc.getCreatedAt()),
-            a.getGrantedAt());
+        new AccountView(
+            acc.getId(),
+            new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()),
+            acc.getEmail(),
+            acc.getAccountType(),
+            acc.getCreatedAt()),
+        a.getGrantedAt());
   }
 }

@@ -72,7 +72,8 @@ public interface AccountRepository {
    * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
    *     associated with the excluded Account IDs.
    */
-  List<UUID> findUserIdsWithAccountsExcluding(Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+  List<UUID> findUserIdsWithAccountsExcluding(
+      Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
 
   /**
    * Checks if a Accounts exists by email.

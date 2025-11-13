@@ -26,16 +26,16 @@ public class AccountQueriesImpl implements AccountQueries {
 
   private static final String SELECT_BASE =
       """
-      select new com.pug.identity.infra.read.dtos.AccountView(
-        u.id,
-        new com.pug.identity.infra.read.dtos.UserView(p.id, p.cpf, p.name, p.createdAt),
-        u.email,
-        u.accountType,
-        u.createdAt
-      )
-      from AccountEntity u, UserEntity p
-      where p.id = u.userId
-      """;
+                  select new com.pug.identity.infra.read.dtos.AccountView(
+                    u.id,
+                    new com.pug.identity.infra.read.dtos.UserView(p.id, p.cpf, p.name, p.createdAt),
+                    u.email,
+                    u.accountType,
+                    u.createdAt
+                  )
+                  from AccountEntity u, UserEntity p
+                  where p.id = u.userId
+                  """;
 
   private static final String ORDER_BY_NAME_ASC = " order by p.name asc";
 

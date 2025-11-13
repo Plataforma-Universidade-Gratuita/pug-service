@@ -3,11 +3,7 @@ package com.pug.identity.service;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.dtos.CreateNewAccountCommand;
-import com.pug.identity.service.dtos.CreateNewAdminCommand;
-import com.pug.shared.domain.enums.AccountType;
+import com.pug.identity.service.dtos.CreateAdminCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
@@ -18,10 +14,7 @@ import jakarta.transaction.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /** Service for managing admins. */
 @ApplicationScoped
@@ -34,16 +27,19 @@ public class AdminService {
   /**
    * Creates and saves a new Admin.
    *
-   * <p>This method also creates and saves the associated Account.</p>
+   * <p>This method also creates and saves the associated Account.
    *
    * @param cmd the command containing the data to create the new Admin.
    * @return the saved Admin.
    */
   @Transactional
-  public Admin save(CreateNewAdminCommand cmd) {
+  public Admin save(CreateAdminCommand cmd) {
     var account = accountService.save(cmd.accountCommand());
     var admin =
-        Admin.builder().accountId(account.getId()).grantedAt(OffsetDateTime.now(time.clock())).build();
+        Admin.builder()
+            .accountId(account.getId())
+            .grantedAt(OffsetDateTime.now(time.clock()))
+            .build();
 
     return adminsRepo.persist(admin);
   }
@@ -51,38 +47,34 @@ public class AdminService {
   /**
    * Creates and saves multiple new Admins.
    *
-   * <p>This method also creates and saves the associated Accounts.</p>
+   * <p>This method also creates and saves the associated Accounts.
    *
    * @param cmds the commands containing the data to create the new Admins.
    * @return the list of saved Admins.
    */
   @Transactional
-  public List<Admin> saveAll(Iterable<CreateNewAdminCommand> cmds) {
+  public List<Admin> saveAll(Iterable<CreateAdminCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
 
-    var accountCmds = CollectionUtils.toStream(cmds)
-            .map(CreateNewAdminCommand::accountCommand)
-            .toList();
+    var accountCmds =
+        CollectionUtils.toStream(cmds).map(CreateAdminCommand::accountCommand).toList();
     var accounts = accountService.saveAll(accountCmds);
 
     var now = java.time.OffsetDateTime.now(time.clock());
-    var admins = accounts.stream()
-            .map(a -> Admin.builder()
-                    .accountId(a.getId())
-                    .grantedAt(now)
-                    .build())
+    var admins =
+        accounts.stream()
+            .map(a -> Admin.builder().accountId(a.getId()).grantedAt(now).build())
             .toList();
 
     return adminsRepo.persistAll(admins);
   }
 
-
   /**
    * Deletes all Admins with the given IDs.
    *
-   * <p>This method also deletes the associated Accounts.</p>
+   * <p>This method also deletes the associated Accounts.
    *
    * @param ids the IDs of the Admins to delete.
    * @return a map containing the count of deleted Admins and Accounts.
@@ -90,10 +82,10 @@ public class AdminService {
   @Transactional
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
-        return Map.of(
-                DeleteKeys.ADMINS, 0L,
-                DeleteKeys.ACCOUNTS, 0L,
-                DeleteKeys.USERS, 0L);
+      return Map.of(
+          DeleteKeys.ADMINS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     var admins = adminsRepo.deleteByIds(ids);
