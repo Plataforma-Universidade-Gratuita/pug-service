@@ -7,7 +7,7 @@ import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
-import com.pug.partner.service.dtos.CreateOrUpdateEntityCommand;
+import com.pug.partner.service.dtos.EntityCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
@@ -56,7 +56,7 @@ public class EntityResource {
   @POST
   public Response create(@Valid EntityCreateOrUpdateRequest req) {
     var cmd =
-        new CreateOrUpdateEntityCommand(
+        new EntityCreateOrUpdateCommand(
             req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
     var created = writeService.save(cmd);
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(created.getId()));
@@ -75,7 +75,7 @@ public class EntityResource {
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid EntityCreateOrUpdateRequest req) {
     var cmd =
-        new CreateOrUpdateEntityCommand(
+        new EntityCreateOrUpdateCommand(
             req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
     var updated = writeService.update(id, cmd);
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(updated.getId()));
@@ -90,7 +90,7 @@ public class EntityResource {
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteByIds(req.ids());
+    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 

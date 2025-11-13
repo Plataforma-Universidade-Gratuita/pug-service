@@ -2,26 +2,38 @@ package com.pug.partner.presenter;
 
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.partner.domain.Staff;
-import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.identity.service.dtos.CreateAccountCommand;
+import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
+import com.pug.identity.service.dtos.UpdateAccountCommand;
 import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.partner.presenter.dtos.StaffCreateRequest;
+import com.pug.partner.presenter.dtos.StaffCreateBulkRequest;
+import com.pug.partner.presenter.dtos.StaffCreateOrUpdateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.partner.service.dtos.StaffCreateBulkCommand;
+import com.pug.partner.service.dtos.StaffCreateCommand;
+import com.pug.partner.service.dtos.StaffUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
+import com.pug.shared.utils.StringUtils;
+import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -31,112 +43,241 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
-/** REST resource for partner staff. */
+/**
+ * REST resource for managing partner staff.
+ */
 @ApplicationScoped
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StaffResource {
 
-  @Inject StaffService service;
-  @Inject StaffReadService read;
-  @Inject I18n i18n;
+  @Inject
+  StaffService writeService;
+  @Inject
+  StaffReadService readService;
+  @Inject
+  I18n i18n;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Retrieves a staff member by user ID.
+   * Picks the best matching locale from the request headers.
    *
-   * @param userId the user ID of the staff member
-   * @return the Response containing the StaffResponse
-   * @throws ResourceNotFoundException if the staff member is not found
+   * @return the selected Locale
+   */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
+  }
+
+  /**
+   * Retrieves a staff member by their unique identifier.
+   *
+   * @param id the UUID of the staff member
+   * @return a Response containing the staff member details
    */
   @GET
-  @Path("/{userId}")
-  public Response get(@PathParam("userId") UUID userId) {
-    Objects.requireNonNull(userId, "userId");
-    StaffView v = read.getView(userId);
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+  @Path("{id}")
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
+    StaffView v = readService.getViewById(id);
+    StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Lists all staff members.
+   *
+   * @return a Response containing a list of all staff members
+   */
+  @GET
+  public Response list() {
+    List<StaffResponse> list =
+            readService.listViews().stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .toList();
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  }
+
+  /**
+   * Retrieves staff members by their CPF.
+   *
+   * @param rawCpf the CPF of the staff members
+   * @return a Response containing the staff members details
+   */
+  @GET
+  @Path("by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") String rawCpf) {
+    var list =
+            readService.listViewsByCpf(new Cpf(rawCpf).toString()).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .toList();
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  }
+
+  /**
+   * Retrieves a staff member by their email address.
+   *
+   * @param rawEmail the email address of the staff member
+   * @return a Response containing the staff member details
+   */
+  @GET
+  @Path("by-email")
+  public Response getByEmail(@QueryParam("email") String rawEmail) {
+    if (StringUtils.isEmpty(rawEmail)) {
+      return list();
     }
-    StaffResponse out = StaffPresenter.toResponse(v, resolveLocale(), i18n);
+    StaffView v = readService.getViewByEmail(new Email(rawEmail).toString());
+    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(out)).build();
   }
 
   /**
-   * Lists staff members, optionally filtered by entity ID.
+   * Searches for staff members by name.
    *
-   * @param entityId the optional entity ID to filter staff members
-   * @return the Response containing the list of StaffResponse
+   * @param query the name query string
+   * @return a Response containing a list of matching staff members
    */
   @GET
-  public Response list(@QueryParam("entityId") UUID entityId) {
-    List<StaffView> list = entityId == null ? read.listViews() : read.listViewsByEntityId(entityId);
-    Locale locale = resolveLocale();
-    List<StaffResponse> out =
-        list.stream().map(v -> StaffPresenter.toResponse(v, locale, i18n)).toList();
-    return Response.ok(ApiEnvelope.ok(out)).build();
+  @Path("by-name")
+  public Response listByName(@QueryParam("q") String query) {
+    if (StringUtils.isEmpty(query)) {
+      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(List.of()))).build();
+    }
+
+    List<StaffResponse> list =
+            readService.search(query).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .toList();
+
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  }
+
+  /**
+   * Lists staff members associated with a specific entity.
+   *
+   * @param entityId the UUID of the entity
+   * @return a Response containing a list of staff members for the entity
+   */
+  @GET
+  @Path("by-entity/{entityId}")
+  public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
+    List<StaffResponse> list =
+            readService.listViewsByEntityId(entityId).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .toList();
+
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
   /**
    * Creates a new staff member.
    *
-   * @param req the StaffCreateRequest containing staff details
-   * @return the Response containing the created StaffResponse
+   * @param req      the request containing staff member details
+   * @param entityId the id of the entity the staff member represents
+   * @return a Response containing the created staff member details
    */
   @POST
-  public Response create(@Valid StaffCreateRequest req) {
-    Objects.requireNonNull(req, "req");
-    var staff =
-        service.save(
-            new Cpf(req.cpf()), req.name(), new Email(req.email()), req.password(), req.entityId());
-    return createdResponse(staff);
-  }
+  public Response create(@Valid StaffCreateOrUpdateRequest req, @Valid @NotNull @UuidV7 UUID entityId) {
+    var cmd =
+            new StaffCreateCommand(
+                    new CreateAccountCommand(
+                            new CreateOrUpdateUserCommand(
+                                    new Cpf(req.cpf()),
+                                    req.name()),
+                            new Email(req.email()),
+                            AccountType.PARTNER,
+                            req.password()
+                    ),
+                    entityId);
 
-  /**
-   * Deletes staff members by user IDs.
-   *
-   * @param req the UuidsRequest containing user IDs to delete
-   * @return the Response containing the DeleteResult
-   */
-  @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = service.deleteByUserIds(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
-  }
+    var staff = writeService.save(cmd);
+    StaffView v = readService.getViewById(staff.getAccountId());
+    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
 
-  /**
-   * Creates a Response for a created Staff resource.
-   *
-   * @param staff the created Staff
-   * @return the Response
-   */
-  private Response createdResponse(Staff staff) {
-    StaffView v = read.getView(staff.getAccountId());
-    if (v == null) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
-    }
-    StaffResponse out = StaffPresenter.toResponse(v, resolveLocale(), i18n);
-    URI location = uri.getAbsolutePathBuilder().path(staff.getAccountId().toString()).build();
+    URI location =
+            uri.getAbsolutePathBuilder().path(staff.getAccountId().toString()).build();
+
     return Response.created(location).entity(ApiEnvelope.created(out)).build();
   }
 
   /**
-   * Resolves the locale from the Accept-Language header.
+   * Creates multiple staff members in bulk.
    *
-   * @return the resolved Locale.
+   * @param reqs the list of requests containing staff member details
+   * @return a Response containing the result of the bulk creation
    */
-  private Locale resolveLocale() {
-    var acceptable = headers.getAcceptableLanguages();
-    return acceptable == null || acceptable.isEmpty() ? Locale.getDefault() : acceptable.getFirst();
+  @POST
+  @Path("bulk")
+  public Response createBulk(@Valid List<StaffCreateBulkRequest> reqs) {
+    var cmds = reqs.stream().map(r ->
+            new StaffCreateBulkCommand(
+                    r.staffCreateOrUpdateRequests().stream().map(acmd ->
+                            new CreateAccountCommand(
+                                    new CreateOrUpdateUserCommand(
+                                            new Cpf(acmd.cpf()),
+                                            acmd.name()),
+                                    new Email(acmd.email()),
+                                    AccountType.PARTNER,
+                                    acmd.password()
+                            )
+                    ).toList(),
+                    r.entityId()
+            )
+    ).toList();
+
+    var staffList = writeService.saveAll(cmds);
+
+    return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly(staffList.size()))).build();
+  }
+
+  /**
+   * Updates an existing staff member.
+   *
+   * @param id  the UUID of the staff member to update
+   * @param req the request containing updated staff member details
+   * @return a Response containing the updated staff member details
+   */
+  @PUT
+  @Path("{id}")
+  public Response update(
+          @PathParam("id") @UuidV7 UUID id, @Valid StaffCreateOrUpdateRequest req) {
+
+    var cmd =
+            new StaffUpdateCommand(
+                    new UpdateAccountCommand(
+                            new Email(req.email()),
+                            req.password(),
+                            new CreateOrUpdateUserCommand(
+                                    new Cpf(req.cpf()),
+                                    req.name())
+                    ));
+
+    var updated = writeService.update(id, cmd);
+    StaffView v = readService.getViewById(updated.getAccountId());
+    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(out)).build();
+  }
+
+  /**
+   * Deletes staff members by their unique identifiers.
+   *
+   * @param req the request containing the list of staff member IDs to delete
+   * @return a Response containing the result of the deletion
+   */
+  @DELETE
+  public Response delete(@Valid UuidsRequest req) {
+    Map<DeleteKeys, Long> result = writeService.deleteAll(req.ids());
+    return Response.ok(ApiEnvelope.ok(new DeleteResult(result))).build();
   }
 }

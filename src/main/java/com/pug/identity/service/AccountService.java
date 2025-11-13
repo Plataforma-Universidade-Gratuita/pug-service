@@ -70,17 +70,17 @@ public class AccountService {
   }
 
   /**
-   * Saves multiple Account entities.
+   * Creates and saves multiple new Accounts.
    *
-   * <p>It is implied that all necessary {@link User}s have been created already.
+   * <p>If the associated {@link User} entities do not exist, they will be created.
    *
-   * @param cmds a list of commands containing the data to create new Account entities.
-   * @return a list of saved Account entities.
-   * @throws DuplicateResourceException if any account email is duplicated in the input or already
-   *     exists.
+   * @param cmds the commands containing the data to create the new Accounts.
+   * @return the list of saved Accounts.
+   * @throws DuplicateResourceException if any account with the given emails already exists or if
+   *     there are duplicate emails in the input commands.
    */
   @Transactional
-  public List<Account> saveAll(List<CreateAccountCommand> cmds) {
+  public List<Account> saveAll(Iterable<CreateAccountCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
@@ -98,12 +98,12 @@ public class AccountService {
           IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("emails", duplicateEmails));
     }
 
-    var emails = cmds.stream().map(c -> c.email().toString()).toList();
+    var emails = CollectionUtils.toStream(cmds).map(c -> c.email().toString()).toList();
     if (existsAnyByEmailIn(emails)) {
       throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
     }
 
-    var cpfs = cmds.stream().map(cmd -> cmd.userCommand().cpf()).distinct().toList();
+    var cpfs = CollectionUtils.toStream(cmds).map(cmd -> cmd.userCommand().cpf()).distinct().toList();
     Map<Cpf, UUID> existing =
         userService.getAllByCpf(cpfs).stream().collect(Collectors.toMap(User::getCpf, User::getId));
     var namesByCpf = new LinkedHashMap<Cpf, String>();
@@ -119,7 +119,7 @@ public class AccountService {
     Map<Cpf, UUID> userIdsByCpf = new HashMap<>(existing);
     userIdsByCpf.putAll(createdUsers.stream().collect(Collectors.toMap(User::getCpf, User::getId)));
 
-    var accounts = new ArrayList<Account>(cmds.size());
+    var accounts = new ArrayList<Account>();
     for (var c : cmds) {
       accounts.add(
           Account.createNew(

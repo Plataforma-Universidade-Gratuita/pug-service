@@ -23,21 +23,27 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for read-only operations on accounts. */
+/**
+ * REST resource for read-only operations on accounts.
+ */
 @Path("/identity/accounts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountReadOnlyResource {
 
-  @Inject AccountReadService readService;
-  @Inject I18n i18n;
+  @Inject
+  AccountReadService readService;
+  @Inject
+  I18n i18n;
 
-  @Context HttpHeaders headers;
+  @Context
+  HttpHeaders headers;
 
   /**
    * Picks the best locale from the Accept-Language header.
@@ -69,9 +75,9 @@ public class AccountReadOnlyResource {
   @GET
   public Response list() {
     List<AccountResponse> list =
-        readService.listViews().stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .toList();
+            readService.listViews().stream()
+                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+                    .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -100,9 +106,9 @@ public class AccountReadOnlyResource {
   public Response listByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
     String cpf = new Cpf(cpfRaw).toString();
     List<AccountResponse> list =
-        readService.listViewsByCpf(cpf).stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .toList();
+            readService.listViewsByCpf(cpf).stream()
+                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+                    .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -120,9 +126,9 @@ public class AccountReadOnlyResource {
     }
 
     List<AccountResponse> list =
-        readService.search(query).stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .toList();
+            readService.search(query).stream()
+                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+                    .toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 }

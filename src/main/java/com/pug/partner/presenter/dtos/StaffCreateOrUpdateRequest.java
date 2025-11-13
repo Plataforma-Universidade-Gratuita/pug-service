@@ -1,18 +1,18 @@
-package com.pug.identity.presenter.dtos;
+package com.pug.partner.presenter.dtos;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
- * AdminCreateOrUpdateRequest record.
+ * Request to create a new staff member.
  *
- * @param cpf      the CPF number
- * @param name     the name of the user
- * @param email    the email of the user
- * @param password the password of the user
+ * @param cpf      the CPF of the staff member
+ * @param name     the name of the staff member
+ * @param email    the email of the staff member
+ * @param password the password for the staff member's account
  */
-public record AdminCreateOrUpdateRequest(
+public record StaffCreateOrUpdateRequest(
         @NotBlank String cpf,
         @NotBlank @Size(max = 150) String name,
         @NotBlank @Email @Size(max = 254) String email,

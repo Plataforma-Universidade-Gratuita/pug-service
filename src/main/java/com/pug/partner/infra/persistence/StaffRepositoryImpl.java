@@ -7,15 +7,18 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the StaffRepository using Panache. */
+/**
+ * Implementation of the StaffRepository using Panache.
+ */
 @ApplicationScoped
 public class StaffRepositoryImpl
-    implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
+        implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
   @Transactional
   @Override
@@ -53,7 +56,7 @@ public class StaffRepositoryImpl
     List<StaffEntity> loaded = find("accountId in ?1", accountIds).list();
 
     return (loaded.size() == batch.size() ? loaded : batch)
-        .stream().map(StaffMapper::toDomain).toList();
+            .stream().map(StaffMapper::toDomain).toList();
   }
 
   @Transactional

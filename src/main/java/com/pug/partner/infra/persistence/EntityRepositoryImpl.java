@@ -74,6 +74,14 @@ public class EntityRepositoryImpl
   }
 
   @Override
+  public boolean existsAnyByIdIn(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return false;
+    }
+    return find("id in ?1", ids).firstResultOptional().isPresent();
+  }
+
+  @Override
   public boolean existsByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
       return false;

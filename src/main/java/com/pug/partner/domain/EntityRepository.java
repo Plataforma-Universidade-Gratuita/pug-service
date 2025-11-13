@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository port for partner entities. Works with domain models. */
+/**
+ * Repository port for partner entities. Works with domain models.
+ */
 public interface EntityRepository {
 
   /**
@@ -26,7 +28,7 @@ public interface EntityRepository {
    * Deletes Entity objects by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Entity objects to
-   *     delete.
+   *            delete.
    * @return the number of entities deleted.
    */
   long deleteByIds(Iterable<UUID> ids);
@@ -45,6 +47,14 @@ public interface EntityRepository {
    * @return a list of all Entity objects.
    */
   List<Entity> listAllEntities();
+
+  /**
+   * Checks if any Entity exists with an ID in the provided list.
+   *
+   * @param ids the list of IDs to check.
+   * @return true if any Entity exists with an ID in the list, false otherwise.
+   */
+  boolean existsAnyByIdIn(Iterable<UUID> ids);
 
   /**
    * Checks if an Entity exists by its CNPJ.

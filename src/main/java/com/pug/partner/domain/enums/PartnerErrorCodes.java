@@ -21,7 +21,9 @@ public enum PartnerErrorCodes implements GenericErrorCodes {
   INVALID_NAME_BLANK("partner.error.name.blank"),
   INVALID_NAME_LENGTH("partner.error.name.toolong"),
   INVALID_STAFF_ACCOUNT_BLANK("partner.error.staff.account.blank"),
-  INVALID_STAFF_ENTITY_BLANK("partner.error.staff.entity.blank");
+  INVALID_STAFF_ENTITY_BLANK("partner.error.staff.entity.blank"),
+  STAFF_ALREADY_EXISTS("partner.error.staff.exists"),
+  STAFF_NOT_FOUND("partner.error.staff.notfound");
 
   private final String bundleKey;
 

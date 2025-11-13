@@ -4,13 +4,16 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Entity entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Entity entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -24,9 +27,9 @@ public class Entity {
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity.
-   * @param cityId the ID of the city where the entity is located
+   * @param cnpj    the CNPJ of the entity
+   * @param name    the name of the entity.
+   * @param cityId  the ID of the city where the entity is located
    * @param address the address where the entity is located
    * @return the created entity
    */

@@ -5,7 +5,7 @@ import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
-import com.pug.partner.service.dtos.CreateOrUpdateEntityCommand;
+import com.pug.partner.service.dtos.EntityCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -13,17 +13,22 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Service for managing partner entities. */
+/**
+ * Service for managing partner entities.
+ */
 @ApplicationScoped
 public class EntityService {
 
-  @Inject EntityRepository repo;
-  @Inject StaffService staffService;
+  @Inject
+  EntityRepository repo;
+  @Inject
+  StaffService staffService;
 
   /**
    * Saves a new Entity.
@@ -33,10 +38,10 @@ public class EntityService {
    * @throws DuplicateResourceException if an entity with the same CNPJ already exists
    */
   @Transactional
-  public Entity save(CreateOrUpdateEntityCommand cmd) {
+  public Entity save(EntityCreateOrUpdateCommand cmd) {
     if (existsByCnpj(cmd.cnpj())) {
       throw new DuplicateResourceException(
-          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
+              PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
     }
     var e = Entity.createNew(cmd.cnpj(), cmd.name(), cmd.cityId(), cmd.address());
     return repo.persist(e);
@@ -45,20 +50,20 @@ public class EntityService {
   /**
    * Updates an existing Entity.
    *
-   * @param id the UUID of the Entity to update
+   * @param id  the UUID of the Entity to update
    * @param cmd the command containing the updated data for the Entity
-   * @throws ResourceNotFoundException if the Entity is not found
+   * @throws ResourceNotFoundException  if the Entity is not found
    * @throws DuplicateResourceException if an entity with the same CNPJ already exists
    */
   @Transactional
-  public Entity update(UUID id, CreateOrUpdateEntityCommand cmd) {
+  public Entity update(UUID id, EntityCreateOrUpdateCommand cmd) {
     var current = getById(id);
 
     Cnpj cnpj;
     if (cmd.cnpj() != null) {
       if (!cmd.cnpj().equals(current.getCnpj()) && existsByCnpj(cmd.cnpj())) {
         throw new DuplicateResourceException(
-            PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
+                PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
       }
       cnpj = cmd.cnpj();
     } else {
@@ -69,7 +74,7 @@ public class EntityService {
     var address = cmd.address() != null ? cmd.address() : current.getAddress();
 
     Entity updated =
-        current.changeName(name).changeCnpj(cnpj).changeAddress(address).moveToCity(cityId);
+            current.changeName(name).changeCnpj(cnpj).changeAddress(address).moveToCity(cityId);
     repo.update(updated);
     return getById(id);
   }
@@ -83,24 +88,24 @@ public class EntityService {
    * @return a map containing the count of deleted entities, staff and accounts
    */
   @Transactional
-  public Map<DeleteKeys, Long> deleteByIds(Iterable<UUID> ids) {
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of();
     }
     List<UUID> staffIds =
-        CollectionUtils.toStream(ids)
-            .filter(Objects::nonNull)
-            .map(id -> staffService.listByEntity(id))
-            .flatMap(List::stream)
-            .map(Staff::getAccountId)
-            .toList();
-    var staff = staffService.deleteByUserIds(staffIds);
+            CollectionUtils.toStream(ids)
+                    .filter(Objects::nonNull)
+                    .map(id -> staffService.listByEntity(id))
+                    .flatMap(List::stream)
+                    .map(Staff::getAccountId)
+                    .toList();
+    var staff = staffService.deleteAll(staffIds);
     var entities = repo.deleteByIds(ids);
     return Map.of(
-        DeleteKeys.ENTITY, entities,
-        DeleteKeys.STAFF, staff.getOrDefault(DeleteKeys.STAFF, 0L),
-        DeleteKeys.ACCOUNTS, staff.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, staff.getOrDefault(DeleteKeys.USERS, 0L));
+            DeleteKeys.ENTITY, entities,
+            DeleteKeys.STAFF, staff.getOrDefault(DeleteKeys.STAFF, 0L),
+            DeleteKeys.ACCOUNTS, staff.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+            DeleteKeys.USERS, staff.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -112,10 +117,10 @@ public class EntityService {
    */
   public Entity getById(UUID id) {
     return repo.findOptionalById(id)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
@@ -125,6 +130,19 @@ public class EntityService {
    */
   public List<Entity> listAll() {
     return repo.listAllEntities();
+  }
+
+  /**
+   * Checks if any Entity exists with an ID in the provided list.
+   *
+   * @param ids the list of IDs to check
+   * @return true if any Entity exists with an ID in the list, false otherwise
+   */
+  public boolean existsAnyByIdIn(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return false;
+    }
+    return repo.existsAnyByIdIn(ids);
   }
 
   /**

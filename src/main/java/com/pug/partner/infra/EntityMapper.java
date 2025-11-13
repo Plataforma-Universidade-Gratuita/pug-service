@@ -4,10 +4,15 @@ import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.persistence.EntityEntity;
 
-/** Maps between Entity domain and EntityEntity persistence. */
+/**
+ * Maps between Entity domain and EntityEntity persistence.
+ */
 public final class EntityMapper {
-  /** Private constructor to prevent instantiation. */
-  private EntityMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private EntityMapper() {
+  }
 
   /**
    * Persistence -> Domain.
@@ -20,12 +25,12 @@ public final class EntityMapper {
       return null;
     }
     return Entity.builder()
-        .id(e.getId())
-        .cnpj(new Cnpj(e.getCnpj()))
-        .name(e.getName())
-        .cityId(e.getCityId())
-        .address(e.getAddress())
-        .build();
+            .id(e.getId())
+            .cnpj(new Cnpj(e.getCnpj()))
+            .name(e.getName())
+            .cityId(e.getCityId())
+            .address(e.getAddress())
+            .build();
   }
 
   /**

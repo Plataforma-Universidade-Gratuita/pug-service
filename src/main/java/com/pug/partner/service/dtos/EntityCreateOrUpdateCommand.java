@@ -11,4 +11,4 @@ import java.util.UUID;
  * @param address the address of the entity
  * @param cityId the UUID of the city where the entity is located
  */
-public record CreateOrUpdateEntityCommand(String name, Cnpj cnpj, String address, UUID cityId) {}
+public record EntityCreateOrUpdateCommand(String name, Cnpj cnpj, String address, UUID cityId) {}

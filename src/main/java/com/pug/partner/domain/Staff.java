@@ -2,13 +2,16 @@ package com.pug.partner.domain;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Staff entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Staff entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -20,7 +23,7 @@ public class Staff {
    * Factory method to create a new Staff instance with validation.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the entity
+   * @param entityId  the unique identifier of the entity
    * @return a validated Staff instance
    */
   public static Staff createNew(UUID accountId, UUID entityId) {

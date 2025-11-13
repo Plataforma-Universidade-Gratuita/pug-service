@@ -4,10 +4,15 @@ import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityResponse;
 
-/** Maps read-side EntityView to presenter EntityResponse. */
+/**
+ * Maps read-side EntityView to presenter EntityResponse.
+ */
 public final class EntityPresenter {
-  /** Private constructor to prevent instantiation. */
-  private EntityPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private EntityPresenter() {
+  }
 
   /**
    * Maps EntityView to EntityResponse.
@@ -20,12 +25,12 @@ public final class EntityPresenter {
       return null;
     }
     return new EntityResponse(
-        v.id(),
-        v.cnpj(),
-        formatted(v.cnpj()),
-        v.name(),
-        v.address(),
-        CityPresenter.toResponse(v.city()));
+            v.id(),
+            v.cnpj(),
+            formatted(v.cnpj()),
+            v.name(),
+            v.address(),
+            CityPresenter.toResponse(v.city()));
   }
 
   /**
@@ -35,13 +40,13 @@ public final class EntityPresenter {
    */
   private static String formatted(String value) {
     return value.substring(0, 2)
-        + "."
-        + value.substring(2, 5)
-        + "."
-        + value.substring(5, 8)
-        + "/"
-        + value.substring(8, 12)
-        + "-"
-        + value.substring(12, 14);
+            + "."
+            + value.substring(2, 5)
+            + "."
+            + value.substring(5, 8)
+            + "/"
+            + value.substring(8, 12)
+            + "-"
+            + value.substring(12, 14);
   }
 }
