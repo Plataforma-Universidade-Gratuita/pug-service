@@ -3,13 +3,16 @@ package com.pug.academic.domain;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** Course entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Course entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,7 +26,7 @@ public class Course {
    *
    * <p>Behavior: create a new course and validate its attributes
    *
-   * @param name the name of the course
+   * @param name     the name of the course
    * @param schoolId the ID of the school
    * @return the created course
    */
@@ -66,14 +69,14 @@ public class Course {
    * @throws AppValidationException if any attribute is invalid
    */
   private void validate() {
-    if (name == null || name.isBlank()) {
+    if (StringUtils.isEmpty(name)) {
       throw new AppValidationException(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK);
     }
     if (name.length() > 120) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_COURSE_NAME_TOOLONG);
+      throw new AppValidationException(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH);
     }
     if (schoolId == null) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL);
+      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_BLANK);
     }
   }
 

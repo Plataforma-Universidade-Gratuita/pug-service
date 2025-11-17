@@ -4,17 +4,22 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.UUID;
 
-/** Read-only application service for Schools. */
+/**
+ * Read-only application service for Schools.
+ */
 @ApplicationScoped
 public class SchoolReadService {
 
-  @Inject SchoolQueries queries;
+  @Inject
+  SchoolQueries queries;
 
   /**
    * Retrieves a SchoolView by its unique identifier.
@@ -23,22 +28,10 @@ public class SchoolReadService {
    * @return the SchoolView corresponding to the given id
    * @throws ResourceNotFoundException if no school is found with the given id
    */
-  public SchoolView getById(UUID id) {
-    Objects.requireNonNull(id, "id");
+  public SchoolView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
-  }
-
-  /**
-   * Retrieves multiple SchoolView objects by their unique identifiers.
-   *
-   * @param ids an iterable of UUIDs representing the school ids
-   * @return a list of SchoolView objects corresponding to the given ids
-   */
-  public List<SchoolView> getAllByIds(Iterable<UUID> ids) {
-    Objects.requireNonNull(ids, "ids");
-    return queries.listAllByIds(ids);
+            .findOptionalById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
   }
 
   /**

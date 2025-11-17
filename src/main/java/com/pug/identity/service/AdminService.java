@@ -4,8 +4,8 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.identity.service.dtos.CreateAdminCommand;
-import com.pug.identity.service.dtos.UpdateAdminCommand;
+import com.pug.identity.service.dtos.AdminCreateCommand;
+import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
@@ -34,7 +34,7 @@ public class AdminService {
    * @return the saved Admin.
    */
   @Transactional
-  public Admin save(CreateAdminCommand cmd) {
+  public Admin save(AdminCreateCommand cmd) {
     var account = accountService.save(cmd.accountCommand());
     var admin = Admin.createNew(account.getId(), time);
     return adminsRepo.persist(admin);
@@ -49,13 +49,13 @@ public class AdminService {
    * @return the list of saved Admins.
    */
   @Transactional
-  public List<Admin> saveAll(Iterable<CreateAdminCommand> cmds) {
+  public List<Admin> saveAll(Iterable<AdminCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
 
     var accountCmds =
-        CollectionUtils.toStream(cmds).map(CreateAdminCommand::accountCommand).toList();
+        CollectionUtils.toStream(cmds).map(AdminCreateCommand::accountCommand).toList();
     var accounts = accountService.saveAll(accountCmds);
 
     var admins = accounts.stream().map(a -> Admin.createNew(a.getId(), time)).toList();
@@ -74,7 +74,7 @@ public class AdminService {
    * @throws ResourceNotFoundException if the Admin with the given ID does not exist.
    */
   @Transactional
-  public Admin update(UUID id, UpdateAdminCommand cmd) {
+  public Admin update(UUID id, AdminUpdateCommand cmd) {
     Account updated = accountService.update(id, cmd.accountCommand());
     return getById(updated.getId());
   }

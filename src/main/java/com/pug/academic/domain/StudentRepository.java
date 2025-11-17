@@ -4,54 +4,48 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Student entities. */
+/**
+ * Repository interface for managing Student entities.
+ */
 public interface StudentRepository {
   /**
    * Persists a Student entity.
    *
-   * @param student the Student to persist
+   * @param entity the Student to persist
    * @return the persisted Student
    */
-  Student persist(Student student);
+  Student persist(Student entity);
 
   /**
    * Persists multiple Student entities.
    *
-   * @param students the Students to persist
+   * @param entities the Students to persist
    * @return the list of persisted Students
    */
-  List<Student> persistAll(Iterable<Student> students);
-
-  /**
-   * Deletes Students by their IDs.
-   *
-   * @param userIds the IDs of the Students to delete
-   * @return the number of Students deleted
-   */
-  long deleteByIds(Iterable<UUID> userIds);
+  List<Student> persistAll(Iterable<Student> entities);
 
   /**
    * Updates a Student entity.
    *
-   * @param student the Student to update
+   * @param entity the Student to update
    */
-  void update(Student student);
+  void update(Student entity);
+
+  /**
+   * Deletes Students by their IDs.
+   *
+   * @param ids the IDs of the Students to delete
+   * @return the number of Students deleted
+   */
+  long deleteByIds(Iterable<UUID> ids);
 
   /**
    * Finds a Student by their ID.
    *
-   * @param userId the ID of the Student to find
+   * @param id the ID of the Student to find
    * @return an Optional containing the Student if found, or empty if not found
    */
-  Optional<Student> findOptionalById(UUID userId);
-
-  /**
-   * Lists all Students by their IDs.
-   *
-   * @param userIds the IDs of the Students to list
-   * @return a list of Students with the specified IDs
-   */
-  List<Student> listAllByIds(Iterable<UUID> userIds);
+  Optional<Student> findOptionalById(UUID id);
 
   /**
    * Lists all Students.

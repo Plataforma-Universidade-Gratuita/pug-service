@@ -5,23 +5,32 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for Schools. */
+/**
+ * Repository interface for Schools.
+ */
 public interface SchoolRepository {
   /**
    * Persist a school entity.
    *
-   * @param school the school entity to persist
+   * @param entity the school entity to persist
    * @return the persisted school entity
    */
-  School persist(School school);
+  School persist(School entity);
 
   /**
    * Persist multiple school entities.
    *
-   * @param schools the iterable of school entities to persist
+   * @param entities the iterable of school entities to persist
    * @return the list of persisted school entities
    */
-  List<School> persistAll(Iterable<School> schools);
+  List<School> persistAll(Iterable<School> entities);
+
+  /**
+   * Update a school entity.
+   *
+   * @param entity the school entity with updated information
+   */
+  void update(School entity);
 
   /**
    * Delete schools by their IDs.
@@ -40,12 +49,12 @@ public interface SchoolRepository {
   Optional<School> findOptionalById(UUID id);
 
   /**
-   * List all schools by their IDs.
+   * Find a school by its name.
    *
-   * @param ids the iterable of UUIDs of the schools to list
-   * @return a list of schools corresponding to the given IDs
+   * @param name the name of the school to find
+   * @return an Optional containing the found school or empty if not found
    */
-  List<School> listAllByIds(Iterable<UUID> ids);
+  Optional<School> findOptionalByName(String name);
 
   /**
    * List all schools.
@@ -65,15 +74,8 @@ public interface SchoolRepository {
   /**
    * Check if any schools exist by their names.
    *
-   * @param names the collection of school names to check
+   * @param names the iterable of school names to check
    * @return true if any schools with the given names exist, false otherwise
    */
-  boolean existsAnyByNameIn(Collection<String> names);
-
-  /**
-   * Update a school entity.
-   *
-   * @param updated the school entity with updated information
-   */
-  void update(School updated);
+  boolean existsAnyByNameIn(Iterable<String> names);
 }

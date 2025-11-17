@@ -3,10 +3,15 @@ package com.pug.academic.infra;
 import com.pug.academic.domain.School;
 import com.pug.academic.infra.persistence.SchoolEntity;
 
-/** Mapper for School and SchoolEntity. */
+/**
+ * Mapper for School and SchoolEntity.
+ */
 public final class SchoolMapper {
-  /** Private constructor to prevent instantiation. */
-  private SchoolMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private SchoolMapper() {
+  }
 
   /**
    * Convert SchoolEntity to School domain object.

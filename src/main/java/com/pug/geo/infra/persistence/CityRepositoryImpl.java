@@ -8,12 +8,15 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the CitiesRepository using Panache and Hibernate Search. */
+/**
+ * Implementation of the CitiesRepository using Panache and Hibernate Search.
+ */
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
@@ -75,6 +78,11 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
   @Override
   public Optional<City> findOptionalById(UUID id) {
     return findByIdOptional(id).map(CityMapper::toDomain);
+  }
+
+  @Override
+  public Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits) {
+    return find("ibgeCode", ibgeCodeDigits).firstResultOptional().map(CityMapper::toDomain);
   }
 
   @Override

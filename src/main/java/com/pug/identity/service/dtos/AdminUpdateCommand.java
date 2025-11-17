@@ -5,4 +5,4 @@ package com.pug.identity.service.dtos;
  *
  * @param accountCommand the command containing the data to update the underlying account.
  */
-public record UpdateAdminCommand(UpdateAccountCommand accountCommand) {}
+public record AdminUpdateCommand(AccountUpdateCommand accountCommand) {}

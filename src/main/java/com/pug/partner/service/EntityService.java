@@ -1,5 +1,6 @@
 package com.pug.partner.service;
 
+import com.pug.geo.service.CityService;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.Staff;
@@ -28,6 +29,8 @@ public class EntityService {
   @Inject
   EntityRepository repo;
   @Inject
+  CityService cityService;
+  @Inject
   StaffService staffService;
 
   /**
@@ -43,7 +46,8 @@ public class EntityService {
       throw new DuplicateResourceException(
               PartnerErrorCodes.ENTITY_ALREADY_EXISTS, Map.of("cnpj", cmd.cnpj()));
     }
-    var e = Entity.createNew(cmd.cnpj(), cmd.name(), cmd.cityId(), cmd.address());
+    var city = cityService.getByIbge(cmd.cityIbge());
+    var e = Entity.createNew(cmd.cnpj(), cmd.name(), city.getId(), cmd.address());
     return repo.persist(e);
   }
 
@@ -69,7 +73,7 @@ public class EntityService {
     } else {
       cnpj = current.getCnpj();
     }
-    var cityId = cmd.cityId() != null ? cmd.cityId() : current.getCityId();
+    var cityId = cmd.cityIbge() != null ? cityService.getByIbge(cmd.cityIbge()).getId() : current.getCityId();
     var name = cmd.name() != null ? cmd.name() : current.getName();
     var address = cmd.address() != null ? cmd.address() : current.getAddress();
 
@@ -102,7 +106,7 @@ public class EntityService {
     var staff = staffService.deleteAll(staffIds);
     var entities = repo.deleteByIds(ids);
     return Map.of(
-            DeleteKeys.ENTITY, entities,
+            DeleteKeys.ENTITIES, entities,
             DeleteKeys.STAFF, staff.getOrDefault(DeleteKeys.STAFF, 0L),
             DeleteKeys.ACCOUNTS, staff.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
             DeleteKeys.USERS, staff.getOrDefault(DeleteKeys.USERS, 0L));
@@ -124,25 +128,27 @@ public class EntityService {
   }
 
   /**
+   * Gets an Entity by its CNPJ.
+   *
+   * @param cnpj the CNPJ of the Entity
+   * @return the Entity with the specified CNPJ
+   * @throws ResourceNotFoundException if the Entity is not found
+   */
+  public Entity getByCnpj(Cnpj cnpj) {
+    return repo.findOptionalByCnpj(cnpj.toString())
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj)));
+  }
+
+  /**
    * Lists all Entities.
    *
    * @return a list of all Entities
    */
   public List<Entity> listAll() {
     return repo.listAllEntities();
-  }
-
-  /**
-   * Checks if any Entity exists with an ID in the provided list.
-   *
-   * @param ids the list of IDs to check
-   * @return true if any Entity exists with an ID in the list, false otherwise
-   */
-  public boolean existsAnyByIdIn(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return false;
-    }
-    return repo.existsAnyByIdIn(ids);
   }
 
   /**

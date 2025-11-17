@@ -42,19 +42,19 @@ public interface EntityRepository {
   Optional<Entity> findOptionalById(UUID id);
 
   /**
+   * Finds an Entity by its CNPJ.
+   *
+   * @param cnpj the CNPJ of the Entity to find.
+   * @return an Optional containing the found Entity, or empty if not found.
+   */
+  Optional<Entity> findOptionalByCnpj(String cnpj);
+
+  /**
    * Lists all Entity objects.
    *
    * @return a list of all Entity objects.
    */
   List<Entity> listAllEntities();
-
-  /**
-   * Checks if any Entity exists with an ID in the provided list.
-   *
-   * @param ids the list of IDs to check.
-   * @return true if any Entity exists with an ID in the list, false otherwise.
-   */
-  boolean existsAnyByIdIn(Iterable<UUID> ids);
 
   /**
    * Checks if an Entity exists by its CNPJ.

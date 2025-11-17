@@ -1,31 +1,38 @@
 package com.pug.academic.service;
 
+import com.pug.academic.domain.Course;
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-/** Service class for managing School entities. */
+/**
+ * Service class for managing School entities.
+ */
 @ApplicationScoped
 public class SchoolService {
 
-  @Inject SchoolRepository repo;
+  @Inject
+  SchoolRepository repo;
+  @Inject
+  CourseService courseService;
 
   /**
-   * Creates and saves a new School with the given name.
+   * Saves a new School entity.
    *
    * @param name the name of the school
    * @return the saved School entity
@@ -33,85 +40,97 @@ public class SchoolService {
    */
   @Transactional
   public School save(String name) {
-    Objects.requireNonNull(name, "name");
     String n = StringUtils.trim(name);
-    if (repo.existsByName(n)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
+    if (existsByName(n)) {
+      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", n));
     }
     return repo.persist(School.createNew(n));
   }
 
   /**
-   * Saves multiple School entities.
+   * Saves multiple new School entities.
    *
-   * @param schools an iterable of School entities to be saved
+   * @param names an iterable of school names
    * @return a list of saved School entities
-   * @throws DuplicateResourceException if any school name is duplicated in the input or already
-   *     exists
+   * @throws DuplicateResourceException if any school with the same name already exists
    */
   @Transactional
-  public List<School> saveAll(Iterable<School> schools) {
-    List<School> list = toStream(schools).filter(Objects::nonNull).toList();
-    if (list.isEmpty()) {
+  public List<School> saveAll(Iterable<String> names) {
+    if (CollectionUtils.isEmpty(names)) {
       return List.of();
     }
+    Set<String> trimmedNames = new HashSet<>();
+    CollectionUtils.toStream(names).forEach(trimmedNames::add);
 
-    Set<String> seen = new HashSet<>();
-    for (School s : list) {
-      String n = s.getName();
-      if (!seen.add(n)) {
+    var seen = new HashSet<String>();
+    for (var s : trimmedNames) {
+      if (!seen.add(s)) {
         throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
       }
     }
 
-    List<String> names = list.stream().map(School::getName).toList();
-    if (repo.existsAnyByNameIn(names)) {
+    if (existsAnyByNameIn(trimmedNames)) {
       throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
     }
 
-    return repo.persistAll(list);
+    return repo.persistAll(
+            trimmedNames.stream().map(School::createNew).toList());
   }
 
   /**
-   * Updates an existing School entity with new data.
+   * Updates an existing School entity.
    *
-   * @param id the UUID of the school to be updated
-   * @param data the new School data
+   * @param id   the UUID of the school to update
+   * @param name the new name of the school
    * @return the updated School entity
-   * @throws ResourceNotFoundException if the school with the given ID does not exist
-   * @throws DuplicateResourceException if a school with the new name already exists
+   * @throws ResourceNotFoundException  if the school with the given ID does not exist
+   * @throws DuplicateResourceException if a school with the same name already exists
    */
   @Transactional
-  public School update(UUID id, School data) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(data, "data");
+  public School update(UUID id, String name) {
+    School current = getById(id);
 
-    School current =
-        repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
-
-    String newName = data.getName();
-    String curName = current.getName();
-    if (!newName.equals(curName) && repo.existsByName(newName)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
+    String newName;
+    if (name != null) {
+      if (!name.equals(current.getName()) && existsByName(name)) {
+        throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", name));
+      }
+      newName = name;
+    } else {
+      newName = current.getName();
     }
 
-    School updated = current.changeName(newName);
-    repo.update(updated);
-
-    return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
+    repo.update(current.changeName(newName));
+    return getById(id);
   }
 
   /**
-   * Deletes schools by their IDs.
+   * Deletes School entities by their IDs.
    *
-   * @param ids an iterable of UUIDs representing the IDs of the schools to be deleted
-   * @return a map containing the count of deleted schools
+   * @param ids an iterable of UUIDs of the schools to delete
+   * @return a map containing the number of deleted schools
    */
   @Transactional
-  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
-    return Map.of("schools", repo.deleteByIds(ids));
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Map.of(DeleteKeys.SCHOOLS, 0L);
+    }
+
+    List<UUID> coursesIds =
+            CollectionUtils.toStream(ids)
+                    .filter(Objects::nonNull)
+                    .map(id -> courseService.listAllBySchoolId(id))
+                    .flatMap(List::stream)
+                    .map(Course::getId)
+                    .toList();
+    var courses = courseService.deleteAll(coursesIds);
+
+    return Map.of(
+            DeleteKeys.SCHOOLS, repo.deleteByIds(ids),
+            DeleteKeys.COURSES, courses.getOrDefault(DeleteKeys.COURSES, 0L),
+            DeleteKeys.STUDENTS, courses.getOrDefault(DeleteKeys.STUDENTS, 0L),
+            DeleteKeys.ACCOUNTS, courses.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+            DeleteKeys.USERS, courses.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -132,28 +151,41 @@ public class SchoolService {
    */
   public School getById(UUID id) {
     return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
   }
 
   /**
-   * Retrieves multiple School entities by their IDs.
+   * Retrieves a School entity by its name.
    *
-   * @param ids an iterable of UUIDs representing the school IDs
-   * @return a list of School entities corresponding to the given IDs
+   * @param name the name of the school
+   * @return the School entity
+   * @throws ResourceNotFoundException if the school with the given name does not exist
    */
-  public List<School> getAllByIds(Iterable<UUID> ids) {
-    Objects.requireNonNull(ids, "ids");
-    return repo.listAllByIds(ids);
+  public School getByName(String name) {
+    return repo.findOptionalByName(name)
+            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
   }
 
   /**
-   * Converts an Iterable to a Stream.
+   * Checks if a School entity exists by its name.
    *
-   * @param it the iterable to convert.
-   * @param <T> the type of elements in the iterable.
-   * @return a stream of the iterable's elements.
+   * @param name the name of the school
+   * @return true if a school with the given name exists, false otherwise
    */
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  public boolean existsByName(String name) {
+    return repo.existsByName(name);
+  }
+
+  /**
+   * Checks if any School entities exist by their names.
+   *
+   * @param names an iterable of school names
+   * @return true if any school with the given names exists, false otherwise
+   */
+  public boolean existsAnyByNameIn(Iterable<String> names) {
+    if (CollectionUtils.isEmpty(names)) {
+      return false;
+    }
+    return repo.existsAnyByNameIn(names);
   }
 }

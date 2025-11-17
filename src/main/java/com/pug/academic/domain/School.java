@@ -3,13 +3,16 @@ package com.pug.academic.domain;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** School entity aggregate. */
+import java.util.UUID;
+
+/**
+ * School entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -51,11 +54,11 @@ public class School {
    * @throws AppValidationException if validation fails.
    */
   private void validate() {
-    if (name == null || name.isBlank()) {
+    if (StringUtils.isEmpty(name)) {
       throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK);
     }
     if (name.length() > 100) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_NAME_TOOLONG);
+      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH);
     }
   }
 

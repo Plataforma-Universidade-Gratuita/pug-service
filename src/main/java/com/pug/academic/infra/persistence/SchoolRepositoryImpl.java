@@ -3,13 +3,14 @@ package com.pug.academic.infra.persistence;
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.infra.SchoolMapper;
+import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,9 +21,10 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class SchoolRepositoryImpl
-    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager entityManager;
 
   @Transactional
   @Override
@@ -38,7 +40,7 @@ public class SchoolRepositoryImpl
   @Transactional
   @Override
   public List<School> persistAll(Iterable<School> schools) {
-    if (schools == null || !schools.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(schools)) {
       return List.of();
     }
     var entities = new ArrayList<SchoolEntity>();
@@ -58,7 +60,7 @@ public class SchoolRepositoryImpl
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long deleted = delete("id in ?1", ids);
@@ -73,16 +75,13 @@ public class SchoolRepositoryImpl
   }
 
   @Override
-  public List<School> listAllByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
-      return List.of();
-    }
-    return list("id in ?1", ids).stream().map(SchoolMapper::toDomain).toList();
+  public List<School> listAllSchools() {
+    return listAll().stream().map(SchoolMapper::toDomain).toList();
   }
 
   @Override
-  public List<School> listAllSchools() {
-    return listAll().stream().map(SchoolMapper::toDomain).toList();
+  public Optional<School> findOptionalByName(String name) {
+    return find("name", name).firstResultOptional().map(SchoolMapper::toDomain);
   }
 
   @Override
@@ -91,8 +90,8 @@ public class SchoolRepositoryImpl
   }
 
   @Override
-  public boolean existsAnyByNameIn(Collection<String> names) {
-    if (names == null || names.isEmpty()) {
+  public boolean existsAnyByNameIn(Iterable<String> names) {
+    if (CollectionUtils.isEmpty(names)) {
       return false;
     }
     return find("name in ?1", names).firstResultOptional().isPresent();

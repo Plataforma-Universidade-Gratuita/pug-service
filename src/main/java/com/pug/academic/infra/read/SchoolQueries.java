@@ -17,14 +17,6 @@ public interface SchoolQueries {
   Optional<SchoolView> findOptionalById(UUID id);
 
   /**
-   * Lists all schools by their IDs.
-   *
-   * @param ids an iterable of UUIDs representing the school IDs
-   * @return a list of SchoolView corresponding to the given IDs
-   */
-  List<SchoolView> listAllByIds(Iterable<UUID> ids);
-
-  /**
    * Lists all schools.
    *
    * @return a list of all SchoolView

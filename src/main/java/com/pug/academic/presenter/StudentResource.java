@@ -1,4 +1,4 @@
-package com.pug.academic.presenter.rest;
+package com.pug.academic.presenter;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.Campi;
@@ -204,7 +204,7 @@ public class StudentResource {
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = writeService.delete(req.ids());
+    Map<String, Long> deleted = writeService.deleteAll(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 

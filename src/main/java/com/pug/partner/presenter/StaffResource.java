@@ -2,13 +2,16 @@ package com.pug.partner.presenter;
 
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.dtos.CreateAccountCommand;
-import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
-import com.pug.identity.service.dtos.UpdateAccountCommand;
+import com.pug.identity.service.PasswordService;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.presenter.dtos.StaffCreateBulkRequest;
-import com.pug.partner.presenter.dtos.StaffCreateOrUpdateRequest;
+import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
+import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
@@ -63,6 +66,8 @@ public class StaffResource {
   StaffService writeService;
   @Inject
   StaffReadService readService;
+  @Inject
+  PasswordService passwordService;
   @Inject
   I18n i18n;
 
@@ -182,23 +187,23 @@ public class StaffResource {
   /**
    * Creates a new staff member.
    *
-   * @param req      the request containing staff member details
-   * @param entityId the id of the entity the staff member represents
+   * @param req        the request containing staff member details
+   * @param entityCnpj the CNPJ of the associated entity
    * @return a Response containing the created staff member details
    */
   @POST
-  public Response create(@Valid StaffCreateOrUpdateRequest req, @Valid @NotNull @UuidV7 UUID entityId) {
+  public Response create(@Valid StaffCreateRequest req, @Valid @NotNull String entityCnpj) {
     var cmd =
             new StaffCreateCommand(
-                    new CreateAccountCommand(
-                            new CreateOrUpdateUserCommand(
+                    new AccountCreateCommand(
+                            new UserCreateOrUpdateCommand(
                                     new Cpf(req.cpf()),
                                     req.name()),
                             new Email(req.email()),
                             AccountType.PARTNER,
-                            req.password()
+                            passwordService.hash(req.password())
                     ),
-                    entityId);
+                    new Cnpj(entityCnpj));
 
     var staff = writeService.save(cmd);
     StaffView v = readService.getViewById(staff.getAccountId());
@@ -221,17 +226,17 @@ public class StaffResource {
   public Response createBulk(@Valid List<StaffCreateBulkRequest> reqs) {
     var cmds = reqs.stream().map(r ->
             new StaffCreateBulkCommand(
-                    r.staffCreateOrUpdateRequests().stream().map(acmd ->
-                            new CreateAccountCommand(
-                                    new CreateOrUpdateUserCommand(
+                    r.staffCreateRequests().stream().map(acmd ->
+                            new AccountCreateCommand(
+                                    new UserCreateOrUpdateCommand(
                                             new Cpf(acmd.cpf()),
                                             acmd.name()),
                                     new Email(acmd.email()),
                                     AccountType.PARTNER,
-                                    acmd.password()
+                                    passwordService.hash(acmd.password())
                             )
                     ).toList(),
-                    r.entityId()
+                    new Cnpj(r.entityCnpj())
             )
     ).toList();
 
@@ -250,14 +255,14 @@ public class StaffResource {
   @PUT
   @Path("{id}")
   public Response update(
-          @PathParam("id") @UuidV7 UUID id, @Valid StaffCreateOrUpdateRequest req) {
+          @PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
 
     var cmd =
             new StaffUpdateCommand(
-                    new UpdateAccountCommand(
+                    new AccountUpdateCommand(
                             new Email(req.email()),
                             req.password(),
-                            new CreateOrUpdateUserCommand(
+                            new UserCreateOrUpdateCommand(
                                     new Cpf(req.cpf()),
                                     req.name())
                     ));

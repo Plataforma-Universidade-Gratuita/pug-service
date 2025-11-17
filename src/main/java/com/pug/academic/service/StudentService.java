@@ -5,13 +5,12 @@ import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
+import com.pug.academic.service.dtos.StudentCreateBulkCommand;
+import com.pug.academic.service.dtos.StudentCreateCommand;
+import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.service.AccountService;
-import com.pug.identity.service.PasswordService;
-import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
@@ -22,166 +21,122 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 /** Service class for managing Student entities. */
 @ApplicationScoped
 public class StudentService {
 
   @Inject StudentRepository repo;
-  @Inject AccountService users;
-  @Inject PasswordService passwords;
+  @Inject AccountService accountService;
+  @Inject CourseService courseService;
 
   /**
-   * Save a new Student.
+   * Creates and saves a new Student entity.
    *
-   * @param cpf the CPF
-   * @param name the name
-   * @param email the email
-   * @param rawPassword the raw password
-   * @param reg the academic registration
-   * @param campus the campus
-   * @param courseId the course ID
-   * @param hours the counterpart hours
-   * @param period the period
-   * @return the saved Student
-   * @throws DuplicateResourceException if a Student with the same registration already exists
+   * @param cmd the command containing student creation details
+   * @param courseName the name of the course to associate with the student
+   * @return the saved Student entity
+   * @throws DuplicateResourceException if a student with the same registration already exists
    */
   @Transactional
-  public Student save(
-      Cpf cpf,
-      String name,
-      Email email,
-      String rawPassword,
-      AcademicRegistration reg,
-      Campi campus,
-      UUID courseId,
-      CounterpartHours hours,
-      Period period) {
-
-    Objects.requireNonNull(cpf, "cpf");
-    Objects.requireNonNull(name, "name");
-    Objects.requireNonNull(email, "email");
-    Objects.requireNonNull(rawPassword, "rawPassword");
-    Objects.requireNonNull(reg, "reg");
-    Objects.requireNonNull(campus, "campus");
-    Objects.requireNonNull(courseId, "courseId");
-    Objects.requireNonNull(hours, "hours");
-    Objects.requireNonNull(period, "period");
-
-    if (repo.existsByRegistration(reg.toString())) {
-      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
+  public Student save(StudentCreateCommand cmd, String courseName) {
+    if (existsByRegistration(cmd.reg())) {
+      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS, Map.of("registration", cmd.reg()));
     }
-
-    String hash = passwords.hash(rawPassword);
-    var user = users.save(cpf, name, email, AccountType.STUDENT, hash);
-    var student = Student.createNew(user.getId(), reg, campus, courseId, hours, period);
+    var account = accountService.save(cmd.accountCreateCommand());
+    var course = courseService.getByName(courseName);
+    var student = Student.createNew(account.getId(), cmd.reg(), cmd.campus(), course.getId(), cmd.hours(), cmd.period());
     return repo.persist(student);
   }
 
+  @Transactional
+  public List<Student> saveAll(Iterable<StudentCreateBulkCommand> cmds) {
+
+  }
+
   /**
-   * Update an existing Student.
+   * Updates an existing Student entity.
    *
-   * @param userId the user ID
-   * @param campus the new campus
-   * @param courseId the new course ID
-   * @param period the new period
-   * @return the updated Student
-   * @throws ResourceNotFoundException if the Student is not found
+   * @param id the UUID of the student to update
+   * @param cmd the command containing student update details
+   * @return the updated Student entity
+   * @throws ResourceNotFoundException if the student with the given ID does not exist
    */
   @Transactional
-  public Student update(UUID userId, Campi campus, UUID courseId, Period period) {
-    Objects.requireNonNull(userId, "userId");
-    Objects.requireNonNull(campus, "campus");
-    Objects.requireNonNull(courseId, "courseId");
-    Objects.requireNonNull(period, "period");
+  public Student update(UUID id, StudentUpdateCommand cmd) {
+    Student current = getById(id);
+    accountService.update(id, cmd.accountCommand());
 
-    Student current =
-        repo.findOptionalById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+    Campi campus = cmd.campus() != null ? cmd.campus() : current.getCampus();
+    AcademicRegistration registration = cmd.academicRegistration() != null ? cmd.academicRegistration() : current.getAcademicRegistration();
 
-    Student updated = current;
-    if (current.getCampus() != campus) {
-      updated = updated.changeCampus(campus);
-    }
-    if (!current.getCourseId().equals(courseId)) {
-      updated = updated.moveToCourse(courseId);
-    }
-    if (!current.getPeriod().equals(period)) {
-      updated = updated.changePeriod(period);
-    }
-
+    Student updated = current
+            .changeCampus(campus)
+            .changeAcademicRegistration(registration);
     repo.update(updated);
 
+    return getById(updated.getAccountId());
+  }
+
+  /**
+   * Retrieves a Student entity by its UUID.
+   *
+   * @param userId the UUID of the student to retrieve
+   * @return the Student entity
+   * @throws ResourceNotFoundException if the student with the given ID does not exist
+   */
+  public Student getById(UUID userId) {
     return repo.findOptionalById(userId)
         .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
   }
 
   /**
-   * Get a Student by user ID.
+   * Lists all Student entities by Course ID.
    *
-   * @param userId the user ID
-   * @return the Student
-   * @throws ResourceNotFoundException if the Student is not found
+   * @param courseId the UUID of the course
+   * @return a list of Student entities enrolled in the specified course
    */
-  public Student get(UUID userId) {
-    Objects.requireNonNull(userId, "userId");
-    return repo.findOptionalById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+  public List<Student> listAllByCourseId(UUID courseId) {
+    return repo.listAllByCourseId(courseId);
   }
 
   /**
-   * Get all Students by a list of user IDs.
+   * Lists all Student entities.
    *
-   * @param userIds the list of user IDs
-   * @return the list of Students
-   */
-  public List<Student> getAllByIds(Iterable<UUID> userIds) {
-    Objects.requireNonNull(userIds, "userIds");
-    return repo.listAllByIds(userIds);
-  }
-
-  /**
-   * List all Students.
-   *
-   * @return the list of all Students
+   * @return a list of all Student entities
    */
   public List<Student> listAll() {
     return repo.listAllStudents();
   }
 
   /**
-   * Delete Students by a list of user IDs.
+   * Deletes Student entities by their UUIDs.
    *
-   * @param userIds the list of user IDs
-   * @return a map with the count of deleted students and users
-   * @throws ResourceNotFoundException if any Student is not found
+   * @param ids the iterable of student UUIDs to delete
+   * @return a map containing the count of deleted entities for each DeleteKey
    */
   @Transactional
-  public Map<String, Long> delete(Iterable<UUID> userIds) {
-    Objects.requireNonNull(userIds, "userIds");
-
-    var ids = toStream(userIds).filter(Objects::nonNull).toList();
-    if (ids.isEmpty()) {
-      return Map.of("students", 0L, "users", 0L);
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Map.of(
+            DeleteKeys.STUDENTS, 0L,
+            DeleteKeys.ACCOUNTS, 0L,
+            DeleteKeys.USERS, 0L);
     }
 
-    int found = repo.listAllByIds(ids).size();
-    if (found != ids.size()) {
-      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
-    }
-
-    long students = repo.deleteByIds(ids);
-    long usersDeleted = users.deleteAll(ids);
-    return Map.of("students", students, "users", usersDeleted);
+    long deletedStudents = repo.deleteByIds(ids);
+    var deletedAccounts = accountService.deleteAll(ids);
+    return Map.of(
+        DeleteKeys.STUDENTS, deletedStudents,
+        DeleteKeys.ACCOUNTS, deletedAccounts.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedAccounts.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
-   * Check if any Student exists by a list of user IDs.
+   * Checks if any Student entities exist for the given account IDs.
    *
-   * @param accountIds the list of user IDs
-   * @return true if any Student exists, false otherwise
+   * @param accountIds the iterable of account UUIDs to check
+   * @return true if any Student entities exist for the given account IDs, false otherwise
    */
   public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
@@ -191,13 +146,12 @@ public class StudentService {
   }
 
   /**
-   * Convert Iterable to Stream.
+   * Checks if a Student entity exists with the given academic registration.
    *
-   * @param it the iterable
-   * @param <T> the type
-   * @return the stream
+   * @param registration the academic registration to check
+   * @return true if a Student entity exists with the given registration, false otherwise
    */
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  public boolean existsByRegistration(AcademicRegistration registration) {
+    return repo.existsByRegistration(registration.toString());
   }
 }

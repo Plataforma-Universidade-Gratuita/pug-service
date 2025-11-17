@@ -23,7 +23,7 @@ public class CityReadService {
    * @return the CityView corresponding to the given id
    * @throws ResourceNotFoundException if no city is found with the given id
    */
-  public CityView getView(UUID id) {
+  public CityView getViewById(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(

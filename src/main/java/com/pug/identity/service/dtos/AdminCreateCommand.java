@@ -5,4 +5,4 @@ package com.pug.identity.service.dtos;
  *
  * @param accountCommand the command containing the data to create the underlying account.
  */
-public record CreateAdminCommand(CreateAccountCommand accountCommand) {}
+public record AdminCreateCommand(AccountCreateCommand accountCommand) {}

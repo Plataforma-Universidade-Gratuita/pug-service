@@ -7,9 +7,9 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.dtos.CreateAccountCommand;
-import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
-import com.pug.identity.service.dtos.UpdateAccountCommand;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -50,7 +50,7 @@ public class AccountService {
    * @throws DuplicateResourceException if an account with the given email already exists.
    */
   @Transactional
-  public Account save(CreateAccountCommand cmd) {
+  public Account save(AccountCreateCommand cmd) {
     if (existsByEmail(cmd.email())) {
       throw new DuplicateResourceException(
           IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("email", cmd.email()));
@@ -62,7 +62,7 @@ public class AccountService {
       userId =
           userService
               .save(
-                  new CreateOrUpdateUserCommand(cmd.userCommand().cpf(), cmd.userCommand().name()))
+                  new UserCreateOrUpdateCommand(cmd.userCommand().cpf(), cmd.userCommand().name()))
               .getId();
     }
     Account account = Account.createNew(userId, cmd.email(), cmd.type(), cmd.passwordHash(), time);
@@ -80,7 +80,7 @@ public class AccountService {
    *     there are duplicate emails in the input commands.
    */
   @Transactional
-  public List<Account> saveAll(Iterable<CreateAccountCommand> cmds) {
+  public List<Account> saveAll(Iterable<AccountCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
@@ -111,9 +111,9 @@ public class AccountService {
       namesByCpf.putIfAbsent(c.userCommand().cpf(), c.userCommand().name());
     }
     var missingCpfs = cpfs.stream().filter(c -> !existing.containsKey(c)).toList();
-    List<CreateOrUpdateUserCommand> toCreate =
+    List<UserCreateOrUpdateCommand> toCreate =
         missingCpfs.stream()
-            .map(cpf -> new CreateOrUpdateUserCommand(cpf, namesByCpf.get(cpf)))
+            .map(cpf -> new UserCreateOrUpdateCommand(cpf, namesByCpf.get(cpf)))
             .toList();
     List<User> createdUsers = userService.saveAll(toCreate);
     Map<Cpf, UUID> userIdsByCpf = new HashMap<>(existing);
@@ -142,7 +142,7 @@ public class AccountService {
    * @throws DuplicateResourceException if an account with the updated email already exists
    */
   @Transactional
-  public Account update(UUID id, UpdateAccountCommand cmd) {
+  public Account update(UUID id, AccountUpdateCommand cmd) {
     Account current = getById(id);
 
     Email newEmail = cmd.email() != null ? cmd.email() : null;

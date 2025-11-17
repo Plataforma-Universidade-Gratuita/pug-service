@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing CitiesEntity objects. */
+/**
+ * Repository interface for managing CitiesEntity objects.
+ */
 public interface CityRepository {
   /**
    * Persists a city entity.
@@ -44,6 +46,14 @@ public interface CityRepository {
    * @return an Optional containing the city entity if found, otherwise empty.
    */
   Optional<City> findOptionalById(UUID id);
+
+  /**
+   * Finds a city entity by its IBGE code.
+   *
+   * @param ibgeCodeDigits the IBGE code digits of the city.
+   * @return an Optional containing the city entity if found, otherwise empty.
+   */
+  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
 
   /**
    * Checks if a city exists by its IBGE code.

@@ -4,7 +4,7 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.geo.service.dtos.CreateOrUpdateCityCommand;
+import com.pug.geo.service.dtos.CityCreateOrUpdateCommand;
 import com.pug.partner.service.EntityService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -35,7 +35,7 @@ public class CityService {
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
    */
   @Transactional
-  public City save(CreateOrUpdateCityCommand cmd) {
+  public City save(CityCreateOrUpdateCommand cmd) {
     if (existsByIbge(cmd.ibgeCode())) {
       throw new DuplicateResourceException(
           GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", cmd.ibgeCode()));
@@ -51,13 +51,13 @@ public class CityService {
    * @throws DuplicateResourceException if any city with the same IBGE code already exists.
    */
   @Transactional
-  public List<City> saveAll(Iterable<CreateOrUpdateCityCommand> cmds) {
+  public List<City> saveAll(Iterable<CityCreateOrUpdateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
 
     Set<String> seen = new HashSet<>();
-    for (CreateOrUpdateCityCommand c : cmds) {
+    for (CityCreateOrUpdateCommand c : cmds) {
       String code = c.ibgeCode().toString();
       if (!seen.add(code)) {
         throw new DuplicateResourceException(
@@ -85,7 +85,7 @@ public class CityService {
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
    */
   @Transactional
-  public City update(UUID id, CreateOrUpdateCityCommand cmd) {
+  public City update(UUID id, CityCreateOrUpdateCommand cmd) {
     City current = getById(id);
     IbgeCode code;
 
@@ -113,7 +113,7 @@ public class CityService {
    * @return a map with the number of deleted cities.
    */
   @Transactional
-  public Map<DeleteKeys, Long> deleteByIds(Iterable<UUID> ids) {
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(DeleteKeys.CITIES, 0L);
     }
@@ -134,6 +134,19 @@ public class CityService {
     return repo.findOptionalById(id)
         .orElseThrow(
             () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+  }
+
+  /**
+   * Get a city by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code.
+   * @return the found city.
+   * @throws ResourceNotFoundException if the city does not exist.
+   */
+  public City getByIbge(IbgeCode ibgeCode) {
+    return repo.findOptionalByIbgeCode(ibgeCode.toString())
+        .orElseThrow(
+            () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCode)));
   }
 
   /**

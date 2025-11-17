@@ -8,4 +8,5 @@ import jakarta.validation.constraints.Size;
  *
  * @param name the name of the school
  */
-public record SchoolCreateOrUpdateRequest(@NotBlank @Size(max = 100) String name) {}
+public record SchoolCreateOrUpdateRequest(@NotBlank @Size(max = 100) String name) {
+}

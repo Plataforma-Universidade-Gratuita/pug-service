@@ -3,42 +3,42 @@ package com.pug.academic.infra.persistence;
 import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
 import com.pug.academic.infra.CourseMapper;
+import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository implementation for Course aggregate. */
+/**
+ * Repository implementation for Course aggregate.
+ */
 @ApplicationScoped
 public class CourseRepositoryImpl
-    implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
-
-  @Inject EntityManager entityManager;
+        implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   @Transactional
   @Override
-  public Course persist(Course course) {
-    if (course == null) {
+  public Course persist(Course entity) {
+    if (entity == null) {
       return null;
     }
-    var e = CourseMapper.toEntity(course);
+    var e = CourseMapper.toEntity(entity);
     persistAndFlush(e);
     return CourseMapper.toDomain(e);
   }
 
   @Transactional
   @Override
-  public List<Course> persistAll(Iterable<Course> courses) {
-    if (courses == null || !courses.iterator().hasNext()) {
+  public List<Course> persistAll(Iterable<Course> entities) {
+    if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
     var batch = new ArrayList<CourseEntity>();
-    for (var d : courses) {
+    for (var d : entities) {
       if (d != null) {
         batch.add(CourseMapper.toEntity(d));
       }
@@ -54,7 +54,7 @@ public class CourseRepositoryImpl
   @Transactional
   @Override
   public long deleteByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
+    if (CollectionUtils.isEmpty(ids)) {
       return 0L;
     }
     long n = delete("id in ?1", ids);
@@ -69,11 +69,8 @@ public class CourseRepositoryImpl
   }
 
   @Override
-  public List<Course> listAllByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
-      return List.of();
-    }
-    return find("id in ?1", ids).list().stream().map(CourseMapper::toDomain).toList();
+  public Optional<Course> findOptionalByName(String name) {
+    return find("name", name).firstResultOptional().map(CourseMapper::toDomain);
   }
 
   @Override
@@ -89,6 +86,14 @@ public class CourseRepositoryImpl
   @Override
   public boolean existsByName(String name) {
     return find("name", name).firstResultOptional().isPresent();
+  }
+
+  @Override
+  public boolean existsAnyByNameIn(Iterable<String> names) {
+    if (CollectionUtils.isEmpty(names)) {
+      return false;
+    }
+    return find("name in ?1", names).firstResultOptional().isPresent();
   }
 
   @Override

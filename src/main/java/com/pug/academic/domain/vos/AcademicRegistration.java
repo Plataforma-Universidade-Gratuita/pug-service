@@ -2,6 +2,7 @@ package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,15 +18,12 @@ public record AcademicRegistration(String registration) {
    * @throws AppValidationException if the registration is null, blank, or too long
    */
   public AcademicRegistration {
-    if (registration == null) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION);
+    if (StringUtils.isEmpty(registration)) {
+      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION_BLANK);
     }
     String r = registration.trim();
-    if (r.isBlank()) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION);
-    }
     if (r.length() > 15) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION_TOOLONG);
+      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH);
     }
     registration = r;
   }

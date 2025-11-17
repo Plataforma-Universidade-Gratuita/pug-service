@@ -4,23 +4,32 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository for Course aggregate. */
+/**
+ * Repository for Course aggregate.
+ */
 public interface CourseRepository {
   /**
    * Persist a course.
    *
-   * @param course the course to persist.
+   * @param entity the course to persist.
    * @return the persisted course.
    */
-  Course persist(Course course);
+  Course persist(Course entity);
 
   /**
    * Persist multiple courses.
    *
-   * @param courses the courses to persist.
+   * @param entities the courses to persist.
    * @return the persisted courses.
    */
-  List<Course> persistAll(Iterable<Course> courses);
+  List<Course> persistAll(Iterable<Course> entities);
+
+  /**
+   * Update a course.
+   *
+   * @param entity the course with updated data.
+   */
+  void update(Course entity);
 
   /**
    * Delete courses by their IDs.
@@ -39,6 +48,14 @@ public interface CourseRepository {
   Optional<Course> findOptionalById(UUID id);
 
   /**
+   * Find a course by its name.
+   *
+   * @param name the name of the course.
+   * @return the found course.
+   */
+  Optional<Course> findOptionalByName(String name);
+
+  /**
    * List all courses.
    *
    * @return the list of all courses.
@@ -54,14 +71,6 @@ public interface CourseRepository {
   List<Course> listAllBySchoolId(UUID schoolId);
 
   /**
-   * List all courses by their IDs.
-   *
-   * @param ids the IDs of the courses.
-   * @return the list of courses with the given IDs.
-   */
-  List<Course> listAllByIds(Iterable<UUID> ids);
-
-  /**
    * Check if a course exists by name.
    *
    * @param name the name of the course.
@@ -70,9 +79,10 @@ public interface CourseRepository {
   boolean existsByName(String name);
 
   /**
-   * Update a course.
+   * Check if any courses exist by their names.
    *
-   * @param updated the course with updated data.
+   * @param names the names of the courses.
+   * @return true if any course with the given names exists, false otherwise.
    */
-  void update(Course updated);
+  boolean existsAnyByNameIn(Iterable<String> names);
 }

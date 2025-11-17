@@ -8,4 +8,4 @@ import com.pug.geo.domain.vos.IbgeCode;
  * @param name the name of the city
  * @param ibgeCode the IBGE code of the city
  */
-public record CreateOrUpdateCityCommand(String name, IbgeCode ibgeCode) {}
+public record CityCreateOrUpdateCommand(String name, IbgeCode ibgeCode) {}

@@ -10,11 +10,11 @@ import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.CreateAccountCommand;
-import com.pug.identity.service.dtos.CreateAdminCommand;
-import com.pug.identity.service.dtos.CreateOrUpdateUserCommand;
-import com.pug.identity.service.dtos.UpdateAccountCommand;
-import com.pug.identity.service.dtos.UpdateAdminCommand;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AdminCreateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -167,9 +167,9 @@ public class AdminResource {
   public Response create(@Valid AdminCreateOrUpdateRequest req, @Context UriInfo uriInfo) {
     String hashedPassword = passwordService.hash(req.password());
     var cmd =
-        new CreateAdminCommand(
-            new CreateAccountCommand(
-                new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name()),
+        new AdminCreateCommand(
+            new AccountCreateCommand(
+                new UserCreateOrUpdateCommand(new Cpf(req.cpf()), req.name()),
                 new Email(req.email()),
                 AccountType.ADMIN,
                 hashedPassword));
@@ -195,9 +195,9 @@ public class AdminResource {
             .map(
                 req -> {
                   String hashedPassword = passwordService.hash(req.password());
-                  return new CreateAdminCommand(
-                      new CreateAccountCommand(
-                          new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name()),
+                  return new AdminCreateCommand(
+                      new AccountCreateCommand(
+                          new UserCreateOrUpdateCommand(new Cpf(req.cpf()), req.name()),
                           new Email(req.email()),
                           AccountType.ADMIN,
                           hashedPassword));
@@ -227,11 +227,11 @@ public class AdminResource {
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminCreateOrUpdateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
     var cmd =
-        new UpdateAdminCommand(
-            new UpdateAccountCommand(
+        new AdminUpdateCommand(
+            new AccountUpdateCommand(
                 new Email(req.email()),
                 hashedPassword,
-                new CreateOrUpdateUserCommand(new Cpf(req.cpf()), req.name())));
+                new UserCreateOrUpdateCommand(new Cpf(req.cpf()), req.name())));
     var updated = writeService.update(id, cmd);
 
     AdminResponse body =

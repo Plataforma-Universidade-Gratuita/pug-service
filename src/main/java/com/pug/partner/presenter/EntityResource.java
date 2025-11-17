@@ -1,9 +1,11 @@
 package com.pug.partner.presenter;
 
+import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.partner.presenter.dtos.EntityCreateOrUpdateRequest;
+import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
+import com.pug.partner.presenter.dtos.EntityUpdateRequest;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
@@ -30,22 +32,28 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** REST resource for managing partner entities. */
+/**
+ * REST resource for managing partner entities.
+ */
 @ApplicationScoped
 @Path("/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
 
-  @Inject EntityService writeService;
-  @Inject EntityReadService readService;
+  @Inject
+  EntityService writeService;
+  @Inject
+  EntityReadService readService;
 
-  @Context UriInfo uri;
+  @Context
+  UriInfo uri;
 
   /**
    * Create a new entity.
@@ -54,10 +62,10 @@ public class EntityResource {
    * @return the response containing the created entity view
    */
   @POST
-  public Response create(@Valid EntityCreateOrUpdateRequest req) {
+  public Response create(@Valid EntityCreateRequest req) {
     var cmd =
-        new EntityCreateOrUpdateCommand(
-            req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
+            new EntityCreateOrUpdateCommand(
+                    req.name(), new Cnpj(req.cnpj()), req.address(), new IbgeCode(req.cityIbge()));
     var created = writeService.save(cmd);
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
@@ -67,16 +75,16 @@ public class EntityResource {
   /**
    * Update an existing entity.
    *
-   * @param id the entity ID
+   * @param id  the entity ID
    * @param req the entity update request
    * @return the response containing the updated entity view
    */
   @PUT
   @Path("/{id}")
-  public Response update(@PathParam("id") UUID id, @Valid EntityCreateOrUpdateRequest req) {
+  public Response update(@PathParam("id") UUID id, @Valid EntityUpdateRequest req) {
     var cmd =
-        new EntityCreateOrUpdateCommand(
-            req.name(), new Cnpj(req.cnpj()), req.address(), req.cityId());
+            new EntityCreateOrUpdateCommand(
+                    req.name(), new Cnpj(req.cnpj()), req.address(), new IbgeCode(req.cityIbge()));
     var updated = writeService.update(id, cmd);
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(updated.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -124,7 +132,7 @@ public class EntityResource {
   /**
    * List or search entities.
    *
-   * @param q optional search query
+   * @param q      optional search query
    * @param cityId optional city ID to filter by
    * @return the response containing the list of entity views
    */

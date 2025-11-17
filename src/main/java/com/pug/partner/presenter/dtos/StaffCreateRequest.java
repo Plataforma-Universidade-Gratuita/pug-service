@@ -12,7 +12,7 @@ import jakarta.validation.constraints.Size;
  * @param email    the email of the staff member
  * @param password the password for the staff member's account
  */
-public record StaffCreateOrUpdateRequest(
+public record StaffCreateRequest(
         @NotBlank String cpf,
         @NotBlank @Size(max = 150) String name,
         @NotBlank @Email @Size(max = 254) String email,

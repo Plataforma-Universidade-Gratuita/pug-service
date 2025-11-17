@@ -17,7 +17,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +44,7 @@ public class StaffService {
    */
   @Transactional
   public Staff save(StaffCreateCommand cmd) {
-    entityService.getById(cmd.entityId());
+    var entity = entityService.getByCnpj(cmd.entityCnpj());
     var account =
             accountService.save(cmd.accountCommand());
 
@@ -53,7 +52,7 @@ public class StaffService {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
     }
 
-    return repo.persist(Staff.createNew(account.getId(), cmd.entityId()));
+    return repo.persist(Staff.createNew(account.getId(), entity.getId()));
   }
 
   /**
@@ -66,16 +65,9 @@ public class StaffService {
    */
   @Transactional
   public List<Staff> saveAll(Iterable<StaffCreateBulkCommand> cmds) {
-    var entityIds = new LinkedHashSet<UUID>();
-    for (StaffCreateBulkCommand cmd : cmds) {
-      entityIds.add(cmd.entityId());
-    }
-    if (!entityService.existsAnyByIdIn(entityIds)) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
-    }
-
     List<Staff> staffList = new ArrayList<>();
     for (StaffCreateBulkCommand cmd : cmds) {
+      var entityId = entityService.getByCnpj(cmd.entityCnpj()).getId();
       var accountsIds =
               accountService.saveAll(cmd.accountCommands()).stream().map(Account::getId).toList();
 
@@ -84,7 +76,7 @@ public class StaffService {
       }
 
       for (UUID accountId : accountsIds) {
-        staffList.add(Staff.createNew(accountId, cmd.entityId()));
+        staffList.add(Staff.createNew(accountId, entityId));
       }
     }
     return repo.persistAll(staffList);

@@ -7,30 +7,30 @@ import lombok.Getter;
  * Enum representing error codes specific to the academic domain.
  *
  * <p>Each error code is associated with a specific validation failure scenario and has a {@code
- * bundleKey} that results into a located error message
+ * bundleKey} that results into a located error message.
  */
 @Getter
 public enum AcademicErrorCodes implements GenericErrorCodes {
-  INVALID_SCHOOL_NAME_BLANK("academic.error.invalid_school_name_blank"),
-  INVALID_SCHOOL_NAME_TOOLONG("academic.error.invalid_school_name_toolong"),
-  SCHOOL_NOT_FOUND("error.domain.academic.school.notfound"),
-  SCHOOL_ALREADY_EXISTS("error.domain.academic.school.alreadyexists"),
-  INVALID_COURSE_NAME_BLANK("error.domain.academic.course-name.blank"),
-  INVALID_COURSE_NAME_TOOLONG("error.domain.academic.course-name.toolong"),
-  INVALID_SCHOOL("error.domain.academic.school.invalid"),
-  COURSE_NOT_FOUND("error.domain.academic.course.notfound"),
-  COURSE_ALREADY_EXISTS("error.domain.academic.course.alreadyexists"),
-  INVALID_STUDENT_USER("error.domain.academic.student.user"),
-  INVALID_REGISTRATION("error.domain.academic.registration"),
-  INVALID_REGISTRATION_TOOLONG("error.domain.academic.registration.toolong"),
-  INVALID_CAMPUS("error.domain.academic.campus"),
-  INVALID_COURSE("error.domain.academic.course"),
-  INVALID_HOURS("error.domain.academic.hours"),
-  INVALID_HOURS_COMPLETED_GT_REQUIRED("error.domain.academic.hours.completed.gt.required"),
-  INVALID_PERIOD("error.domain.academic.period"),
-  INVALID_PERIOD_RANGE("error.domain.academic.period.range"),
-  STUDENT_ALREADY_EXISTS("error.domain.academic.student.alreadyexists"),
-  STUDENT_NOT_FOUND("error.domain.academic.student.notfound");
+  COURSE_ALREADY_EXISTS("academic.error.course.already.exists"),
+  COURSE_NOT_FOUND("academic.error.course.not.found"),
+  INVALID_CAMPUS_BLANK("academic.error.campus.blank"),
+  INVALID_COURSE_NAME_BLANK("academic.error.course.name.blank"),
+  INVALID_COURSE_NAME_LENGTH("academic.error.course.name.length"),
+  INVALID_COURSE_BLANK("academic.error.course.blank"),
+  INVALID_HOURS_BLANK("academic.error.hours.blank"),
+  INVALID_HOURS_COMPLETED_GT_REQUIRED("academic.error.hours.completed.gt.required"),
+  INVALID_PERIOD_BLANK("academic.error.period.blank"),
+  INVALID_PERIOD_RANGE("academic.error.period.range"),
+  INVALID_REGISTRATION_BLANK("academic.error.registration.blank"),
+  INVALID_REGISTRATION_LENGTH("academic.error.registration.length"),
+  INVALID_SCHOOL_NAME_BLANK("academic.error.school.name.blank"),
+  INVALID_SCHOOL_NAME_LENGTH("academic.error.school.name.length"),
+  INVALID_SCHOOL_BLANK("academic.error.school.blank"),
+  INVALID_STUDENT_ACCOUNT_BLANK("academic.error.student.account.blank"),
+  SCHOOL_ALREADY_EXISTS("academic.error.school.already.exists"),
+  SCHOOL_NOT_FOUND("academic.error.school.not.found"),
+  STUDENT_ALREADY_EXISTS("academic.error.student.already.exists"),
+  STUDENT_NOT_FOUND("academic.error.student.not.found");
 
   private final String bundleKey;
 

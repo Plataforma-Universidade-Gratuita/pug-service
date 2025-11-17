@@ -2,169 +2,219 @@ package com.pug.academic.service;
 
 import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
+import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.academic.service.dtos.CourseCreateBulkCommand;
+import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.HashSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
-/** Service class for managing Course entities. */
+/**
+ * Service class for managing Course entities.
+ */
 @ApplicationScoped
 public class CourseService {
 
-  @Inject CourseRepository repo;
+  @Inject
+  CourseRepository repo;
+  @Inject
+  SchoolService schoolService;
+    @Inject
+    StudentService studentService;
 
   /**
-   * Saves a new Course with the given name and schoolId.
+   * Saves a new Course entity.
    *
-   * @param name the name of the course
-   * @param schoolId the ID of the associated school
+   * @param name       the name of the course
+   * @param schoolName the name of the school
    * @return the saved Course entity
    * @throws DuplicateResourceException if a course with the same name already exists
    */
   @Transactional
-  public Course save(String name, UUID schoolId) {
-    Objects.requireNonNull(name, "name");
-    Objects.requireNonNull(schoolId, "schoolId");
+  public Course save(String name, String schoolName) {
     String n = StringUtils.trim(name);
-    if (repo.existsByName(n)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
+    if (existsByName(n)) {
+      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", n));
     }
+    var schoolId = schoolService.getByName(schoolName).getId();
     return repo.persist(Course.createNew(n, schoolId));
   }
 
   /**
-   * Saves all given Course entities.
+   * Saves multiple new Course entities.
    *
-   * @param courses the Course entities to save
-   * @return the list of saved Course entities
+   * @param cmds an iterable of CourseCreateBulkCommand
+   * @return a list of saved Course entities
    * @throws DuplicateResourceException if any course with the same name already exists
    */
   @Transactional
-  public List<Course> saveAll(Iterable<Course> courses) {
-    List<Course> list = toStream(courses).filter(Objects::nonNull).toList();
-    if (list.isEmpty()) {
+  public List<Course> saveAll(Iterable<CourseCreateBulkCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
 
-    Set<String> seen = new HashSet<>();
-    for (Course c : list) {
-      if (!seen.add(c.getName())) {
-        throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
-      }
-    }
-    List<String> names = list.stream().map(Course::getName).toList();
-    if (names.stream().anyMatch(repo::existsByName)) {
+    Set<String> names = CollectionUtils.toStream(cmds)
+            .filter(Objects::nonNull)
+            .map(CourseCreateBulkCommand::names)
+            .flatMap(List::stream)
+            .map(StringUtils::trim)
+            .collect(Collectors.toSet());
+
+    if (existsAnyByNameIn(names)) {
       throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
     }
-    return repo.persistAll(list);
+
+    Set<Course> toPersist = CollectionUtils.toStream(cmds).map(cmd -> {
+      var schoolId = schoolService.getByName(cmd.schoolName()).getId();
+      return cmd.names().stream()
+              .map(StringUtils::trim)
+              .map(name -> Course.createNew(name, schoolId))
+              .collect(Collectors.toSet());
+    }).flatMap(Set::stream).collect(Collectors.toSet());
+    return repo.persistAll(toPersist);
+  }
+
+  /**
+   * Updates an existing Course entity.
+   *
+   * @param id         the UUID of the course to update
+   * @param name       the new name of the course
+   * @param schoolName the new name of the school
+   * @return the updated Course entity
+   * @throws ResourceNotFoundException  if the course with the given ID does not exist
+   * @throws DuplicateResourceException if a course with the new name already exists
+   */
+  @Transactional
+  public Course update(UUID id, String name, String schoolName) {
+    Course current = getById(id);
+
+    String newName;
+    if (StringUtils.isEmpty(name)) {
+      newName = current.getName();
+    } else {
+      if (!name.equals(current.getName()) && existsByName(name)) {
+        throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", name));
+      }
+      newName = StringUtils.trim(name);
+    }
+    var schoolId = StringUtils.isEmpty(schoolName) ? current.getSchoolId() : schoolService.getByName(StringUtils.trim(schoolName)).getId();
+
+    Course updated = current.changeName(newName).moveToSchool(schoolId);
+    repo.update(updated);
+
+    return getById(updated.getId());
   }
 
   /**
    * Deletes Course entities by their IDs.
    *
-   * @param ids the IDs of the Course entities to delete
-   * @return a map containing the count of deleted courses
+   * @param ids an iterable of UUIDs representing the course IDs to delete
+   * @return a map containing the count of deleted entities for each DeleteKeys
    */
   @Transactional
-  public Map<String, Long> deleteByIds(Iterable<UUID> ids) {
-    return Map.of("courses", repo.deleteByIds(ids));
+  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return Map.of(
+              DeleteKeys.COURSES, 0L,
+              DeleteKeys.STUDENTS, 0L,
+              DeleteKeys.ACCOUNTS, 0L,
+              DeleteKeys.USERS, 0L);
+    }
+    var studentIds = CollectionUtils.toStream(ids)
+            .map(studentService::listAllByCourseId)
+            .flatMap(List::stream)
+            .map(Student::getAccountId)
+            .collect(Collectors.toSet());
+    var deletedStudents = studentService.deleteAll(studentIds);
+    return Map.of(
+            DeleteKeys.COURSES, repo.deleteByIds(ids),
+            DeleteKeys.STUDENTS, deletedStudents.getOrDefault(DeleteKeys.STUDENTS, 0L),
+            DeleteKeys.ACCOUNTS, deletedStudents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+            DeleteKeys.USERS, deletedStudents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
    * Lists all Course entities.
    *
-   * @return the list of all Course entities
+   * @return a list of all Course entities
    */
   public List<Course> listAll() {
     return repo.listAllCourses();
   }
 
   /**
-   * Lists all Course entities by the given school ID.
+   * Lists all Course entities associated with a specific school ID.
    *
-   * @param schoolId the ID of the associated school
-   * @return the list of Course entities for the specified school
+   * @param schoolId the UUID of the school
+   * @return a list of Course entities associated with the given school ID
    */
   public List<Course> listAllBySchoolId(UUID schoolId) {
-    Objects.requireNonNull(schoolId, "schoolId");
+    if (schoolId == null) {
+      return List.of();
+    }
     return repo.listAllBySchoolId(schoolId);
   }
 
   /**
    * Retrieves a Course entity by its ID.
    *
-   * @param id the ID of the Course entity
+   * @param id the UUID of the course
    * @return the Course entity
-   * @throws ResourceNotFoundException if the Course entity is not found
+   * @throws ResourceNotFoundException if the course with the given ID does not exist
    */
   public Course getById(UUID id) {
     return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND));
+            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
-   * Lists all Course entities by their IDs.
+   * Retrieves a Course entity by its name.
    *
-   * @param ids the IDs of the Course entities
-   * @return the list of Course entities
+   * @param name the name of the course
+   * @return the Course entity
+   * @throws ResourceNotFoundException if the course with the given name does not exist
    */
-  public List<Course> listAllByIds(Iterable<UUID> ids) {
-    if (ids == null || !ids.iterator().hasNext()) {
-      return List.of();
+  public Course getByName(String name) {
+    String n = StringUtils.trim(name);
+    return repo.findOptionalByName(n)
+            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+  }
+
+  /**
+   * Checks if a Course entity exists with the given name.
+   *
+   * @param name the name of the course to check
+   * @return true if a Course entity exists with the given name, false otherwise
+   */
+  public boolean existsByName(String name) {
+    if (StringUtils.isEmpty(name)) {
+      return false;
     }
-    return repo.listAllByIds(ids);
+    return repo.existsByName(name);
   }
 
   /**
-   * Updates an existing Course entity.
+   * Checks if any Course entities exist with names in the provided iterable.
    *
-   * @param id the ID of the Course entity to update
-   * @param data the Course entity containing updated data
-   * @return the updated Course entity
-   * @throws ResourceNotFoundException if the Course entity is not found
-   * @throws DuplicateResourceException if a course with the same name already exists
+   * @param names an iterable of course names to check
+   * @return true if any Course entities exist with the given names, false otherwise
    */
-  @Transactional
-  public Course update(UUID id, Course data) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(data, "data");
-
-    Course current =
-        repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND));
-
-    String newName = data.getName();
-    String curName = current.getName();
-    if (!newName.equals(curName) && repo.existsByName(newName)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
+  public boolean existsAnyByNameIn(Iterable<String> names) {
+    if (CollectionUtils.isEmpty(names)) {
+      return false;
     }
-
-    Course updated = current.changeName(data.getName()).moveToSchool(data.getSchoolId());
-    repo.update(updated);
-
-    return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND));
-  }
-
-  /**
-   * Converts an Iterable to a Stream.
-   *
-   * @param it the Iterable to convert.
-   * @param <T> the type of elements in the Iterable.
-   * @return the resulting Stream.
-   */
-  private static <T> Stream<T> toStream(Iterable<T> it) {
-    return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+    return repo.existsAnyByNameIn(names);
   }
 }

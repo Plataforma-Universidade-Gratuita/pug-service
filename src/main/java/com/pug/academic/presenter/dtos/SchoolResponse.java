@@ -5,7 +5,8 @@ import java.util.UUID;
 /**
  * Response DTO for School.
  *
- * @param id the school ID
+ * @param id   the school ID
  * @param name the school name
  */
-public record SchoolResponse(UUID id, String name) {}
+public record SchoolResponse(UUID id, String name) {
+}

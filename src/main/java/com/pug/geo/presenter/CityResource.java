@@ -8,7 +8,7 @@ import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.geo.service.CityReadService;
 import com.pug.geo.service.CityService;
-import com.pug.geo.service.dtos.CreateOrUpdateCityCommand;
+import com.pug.geo.service.dtos.CityCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.presenter.dtos.BulkCreateRequest;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
@@ -58,8 +58,8 @@ public class CityResource {
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
     City created =
-        writeService.save(new CreateOrUpdateCityCommand(req.name(), new IbgeCode(req.ibgeCode())));
-    CityResponse body = CityPresenter.toResponse(readService.getView(created.getId()));
+        writeService.save(new CityCreateOrUpdateCommand(req.name(), new IbgeCode(req.ibgeCode())));
+    CityResponse body = CityPresenter.toResponse(readService.getViewById(created.getId()));
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -73,9 +73,9 @@ public class CityResource {
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<CityCreateOrUpdateRequest> req) {
-    List<CreateOrUpdateCityCommand> toSave =
+    List<CityCreateOrUpdateCommand> toSave =
         req.entities().stream()
-            .map(r -> new CreateOrUpdateCityCommand(r.name(), new IbgeCode(r.ibgeCode())))
+            .map(r -> new CityCreateOrUpdateCommand(r.name(), new IbgeCode(r.ibgeCode())))
             .toList();
     List<City> created = writeService.saveAll(toSave);
     return Response.status(Response.Status.CREATED)
@@ -95,8 +95,8 @@ public class CityResource {
   public Response update(@PathParam("id") UUID id, @Valid CityCreateOrUpdateRequest req) {
     City updated =
         writeService.update(
-            id, new CreateOrUpdateCityCommand(req.name(), new IbgeCode(req.ibgeCode())));
-    CityResponse body = CityPresenter.toResponse(readService.getView(updated.getId()));
+            id, new CityCreateOrUpdateCommand(req.name(), new IbgeCode(req.ibgeCode())));
+    CityResponse body = CityPresenter.toResponse(readService.getViewById(updated.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -108,7 +108,7 @@ public class CityResource {
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteByIds(req.ids());
+    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
   }
 
@@ -121,7 +121,7 @@ public class CityResource {
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") UUID id) {
-    CityResponse body = CityPresenter.toResponse(readService.getView(id));
+    CityResponse body = CityPresenter.toResponse(readService.getViewById(id));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

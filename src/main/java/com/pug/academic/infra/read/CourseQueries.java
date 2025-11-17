@@ -16,14 +16,6 @@ public interface CourseQueries {
   Optional<CourseView> findOptionalById(UUID id);
 
   /**
-   * List all courses by their IDs.
-   *
-   * @param ids the IDs of the courses.
-   * @return the list of found courses.
-   */
-  List<CourseView> listAllByIds(Iterable<UUID> ids);
-
-  /**
    * List all courses.
    *
    * @return the list of all courses.
