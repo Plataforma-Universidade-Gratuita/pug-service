@@ -6,15 +6,10 @@ import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.academic.infra.persistence.StudentEntity;
 
-/**
- * Mapper for Student domain object and StudentEntity persistence object.
- */
+/** Mapper for Student domain object and StudentEntity persistence object. */
 public final class StudentMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private StudentMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private StudentMapper() {}
 
   /**
    * Maps a StudentEntity to a Student domain object.
@@ -27,13 +22,13 @@ public final class StudentMapper {
       return null;
     }
     return Student.builder()
-            .accountId(e.getAccountId())
-            .academicRegistration(new AcademicRegistration(e.getAcademicRegistration()))
-            .campus(e.getCampus())
-            .courseId(e.getCourseId())
-            .counterpartHours(new CounterpartHours(e.getRequiredHours(), e.getCompletedHours()))
-            .period(new Period(e.getStartDate(), e.getDueDate()))
-            .build();
+        .accountId(e.getAccountId())
+        .academicRegistration(new AcademicRegistration(e.getAcademicRegistration()))
+        .campus(e.getCampus())
+        .courseId(e.getCourseId())
+        .counterpartHours(new CounterpartHours(e.getRequiredHours(), e.getCompletedHours()))
+        .period(new Period(e.getStartDate(), e.getDueDate()))
+        .build();
   }
 
   /**

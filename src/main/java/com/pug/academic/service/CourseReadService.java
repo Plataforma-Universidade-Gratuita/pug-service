@@ -4,22 +4,17 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.CourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service for reading course information.
- */
+/** Service for reading course information. */
 @ApplicationScoped
 public class CourseReadService {
 
-  @Inject
-  CourseQueries queries;
+  @Inject CourseQueries queries;
 
   /**
    * Retrieves a CourseView by its ID.
@@ -30,8 +25,11 @@ public class CourseReadService {
    */
   public CourseView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
   }
 
   /**

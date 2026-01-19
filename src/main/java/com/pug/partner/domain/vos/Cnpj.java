@@ -19,7 +19,7 @@ public record Cnpj(String value) {
    *
    * @param value the CNPJ value as a string
    * @throws AppValidationException if the CNPJ is null, has an invalid length, contains non-digit
-   *                                characters, or fails the checksum validation
+   *     characters, or fails the checksum validation
    */
   public Cnpj {
     String digits = sanitize(value);
@@ -59,15 +59,15 @@ public record Cnpj(String value) {
       return false;
     }
 
-    int d1 = checksum(cnpj, new int[]{5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
-    int d2 = checksum(cnpj, new int[]{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
+    int d1 = checksum(cnpj, new int[] {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
+    int d2 = checksum(cnpj, new int[] {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
     return (cnpj.charAt(12) - '0') == d1 && (cnpj.charAt(13) - '0') == d2;
   }
 
   /**
    * Calculates the checksum digit for the CNPJ.
    *
-   * @param cnpj    the CNPJ string containing only digits
+   * @param cnpj the CNPJ string containing only digits
    * @param weights the weights used in the checksum calculation
    * @return the calculated checksum digit
    */

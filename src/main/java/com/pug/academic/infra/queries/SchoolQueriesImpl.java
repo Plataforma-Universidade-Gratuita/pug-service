@@ -8,21 +8,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of SchoolQueries using JPA and Hibernate Search.
- */
+/** Implementation of SchoolQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class SchoolQueriesImpl implements SchoolQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
   private static SchoolView toView(SchoolEntity s) {
     if (s == null) {
@@ -37,11 +33,11 @@ public class SchoolQueriesImpl implements SchoolQueries {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.SchoolView("
-                            + "s.id, s.name) "
-                            + "from SchoolEntity s where s.id = :id",
-                    SchoolView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name) "
+                + "from SchoolEntity s where s.id = :id",
+            SchoolView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
@@ -49,17 +45,18 @@ public class SchoolQueriesImpl implements SchoolQueries {
   @Override
   public List<SchoolView> listAllSchools() {
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.SchoolView("
-                            + "s.id, s.name) "
-                            + "from SchoolEntity s order by s.name asc",
-                    SchoolView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name) "
+                + "from SchoolEntity s order by s.name asc",
+            SchoolView.class);
     return q.getResultList();
   }
 
   @Override
   public List<SchoolView> searchByName(String key) {
-    List<SchoolEntity> hits = HibernateSearchUtils.searchByName(entityManager, SchoolEntity.class, key);
+    List<SchoolEntity> hits =
+        HibernateSearchUtils.searchByName(entityManager, SchoolEntity.class, key);
 
     if (hits.isEmpty()) {
       return List.of();

@@ -13,7 +13,6 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -21,23 +20,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Service class for managing Course entities.
- */
+/** Service class for managing Course entities. */
 @ApplicationScoped
 public class CourseService {
 
-  @Inject
-  CourseRepository repo;
-  @Inject
-  SchoolService schoolService;
-    @Inject
-    StudentService studentService;
+  @Inject CourseRepository repo;
+  @Inject SchoolService schoolService;
+  @Inject StudentService studentService;
 
   /**
    * Saves a new Course entity.
    *
-   * @param name       the name of the course
+   * @param name the name of the course
    * @param schoolName the name of the school
    * @return the saved Course entity
    * @throws DuplicateResourceException if a course with the same name already exists
@@ -46,7 +40,8 @@ public class CourseService {
   public Course save(String name, String schoolName) {
     String n = StringUtils.trim(name);
     if (existsByName(n)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", n));
+      throw new DuplicateResourceException(
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", n));
     }
     var schoolId = schoolService.getByName(schoolName).getId();
     return repo.persist(Course.createNew(n, schoolId));
@@ -65,7 +60,8 @@ public class CourseService {
       return List.of();
     }
 
-    Set<String> names = CollectionUtils.toStream(cmds)
+    Set<String> names =
+        CollectionUtils.toStream(cmds)
             .filter(Objects::nonNull)
             .map(CourseCreateBulkCommand::names)
             .flatMap(List::stream)
@@ -76,24 +72,29 @@ public class CourseService {
       throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
     }
 
-    Set<Course> toPersist = CollectionUtils.toStream(cmds).map(cmd -> {
-      var schoolId = schoolService.getByName(cmd.schoolName()).getId();
-      return cmd.names().stream()
-              .map(StringUtils::trim)
-              .map(name -> Course.createNew(name, schoolId))
-              .collect(Collectors.toSet());
-    }).flatMap(Set::stream).collect(Collectors.toSet());
+    Set<Course> toPersist =
+        CollectionUtils.toStream(cmds)
+            .map(
+                cmd -> {
+                  var schoolId = schoolService.getByName(cmd.schoolName()).getId();
+                  return cmd.names().stream()
+                      .map(StringUtils::trim)
+                      .map(name -> Course.createNew(name, schoolId))
+                      .collect(Collectors.toSet());
+                })
+            .flatMap(Set::stream)
+            .collect(Collectors.toSet());
     return repo.persistAll(toPersist);
   }
 
   /**
    * Updates an existing Course entity.
    *
-   * @param id         the UUID of the course to update
-   * @param name       the new name of the course
+   * @param id the UUID of the course to update
+   * @param name the new name of the course
    * @param schoolName the new name of the school
    * @return the updated Course entity
-   * @throws ResourceNotFoundException  if the course with the given ID does not exist
+   * @throws ResourceNotFoundException if the course with the given ID does not exist
    * @throws DuplicateResourceException if a course with the new name already exists
    */
   @Transactional
@@ -105,11 +106,15 @@ public class CourseService {
       newName = current.getName();
     } else {
       if (!name.equals(current.getName()) && existsByName(name)) {
-        throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", name));
+        throw new DuplicateResourceException(
+            AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", name));
       }
       newName = StringUtils.trim(name);
     }
-    var schoolId = StringUtils.isEmpty(schoolName) ? current.getSchoolId() : schoolService.getByName(StringUtils.trim(schoolName)).getId();
+    var schoolId =
+        StringUtils.isEmpty(schoolName)
+            ? current.getSchoolId()
+            : schoolService.getByName(StringUtils.trim(schoolName)).getId();
 
     Course updated = current.changeName(newName).moveToSchool(schoolId);
     repo.update(updated);
@@ -127,22 +132,23 @@ public class CourseService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-              DeleteKeys.COURSES, 0L,
-              DeleteKeys.STUDENTS, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.COURSES, 0L,
+          DeleteKeys.STUDENTS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
-    var studentIds = CollectionUtils.toStream(ids)
+    var studentIds =
+        CollectionUtils.toStream(ids)
             .map(studentService::listAllByCourseId)
             .flatMap(List::stream)
             .map(Student::getAccountId)
             .collect(Collectors.toSet());
     var deletedStudents = studentService.deleteAll(studentIds);
     return Map.of(
-            DeleteKeys.COURSES, repo.deleteByIds(ids),
-            DeleteKeys.STUDENTS, deletedStudents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-            DeleteKeys.ACCOUNTS, deletedStudents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedStudents.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.COURSES, repo.deleteByIds(ids),
+        DeleteKeys.STUDENTS, deletedStudents.getOrDefault(DeleteKeys.STUDENTS, 0L),
+        DeleteKeys.ACCOUNTS, deletedStudents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedStudents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -176,7 +182,10 @@ public class CourseService {
    */
   public Course getById(UUID id) {
     return repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
@@ -189,7 +198,10 @@ public class CourseService {
   public Course getByName(String name) {
     String n = StringUtils.trim(name);
     return repo.findOptionalByName(n)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
   }
 
   /**

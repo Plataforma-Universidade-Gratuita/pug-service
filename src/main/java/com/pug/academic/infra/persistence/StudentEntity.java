@@ -10,6 +10,9 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -18,13 +21,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
-
-/**
- * StudentEntity represents the student data stored in the database.
- */
+/** StudentEntity represents the student data stored in the database. */
 @Getter
 @Setter
 @Builder
@@ -34,13 +31,13 @@ import java.util.UUID;
 @ToString(of = {"accountId", "academicRegistration"})
 @Entity
 @Table(
-        name = "students",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_students_registration",
-                        columnNames = {"academic_registration"})
-        },
-        indexes = {@Index(name = "idx_students_course", columnList = "course_id")})
+    name = "students",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_students_registration",
+          columnNames = {"academic_registration"})
+    },
+    indexes = {@Index(name = "idx_students_course", columnList = "course_id")})
 public class StudentEntity {
 
   @Id

@@ -7,7 +7,4 @@ import com.pug.identity.service.dtos.AccountUpdateCommand;
  *
  * @param accountCommand the command containing the data to update the underlying account.
  */
-public record StaffUpdateCommand(
-        AccountUpdateCommand accountCommand
-) {
-}
+public record StaffUpdateCommand(AccountUpdateCommand accountCommand) {}

@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository port for partner entities. Works with domain models.
- */
+/** Repository port for partner entities. Works with domain models. */
 public interface EntityRepository {
 
   /**
@@ -28,7 +26,7 @@ public interface EntityRepository {
    * Deletes Entity objects by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Entity objects to
-   *            delete.
+   *     delete.
    * @return the number of entities deleted.
    */
   long deleteByIds(Iterable<UUID> ids);

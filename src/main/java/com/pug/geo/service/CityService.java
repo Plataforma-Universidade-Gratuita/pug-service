@@ -146,7 +146,9 @@ public class CityService {
   public City getByIbge(IbgeCode ibgeCode) {
     return repo.findOptionalByIbgeCode(ibgeCode.toString())
         .orElseThrow(
-            () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCode)));
+            () ->
+                new ResourceNotFoundException(
+                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCode)));
   }
 
   /**

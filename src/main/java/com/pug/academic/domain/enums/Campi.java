@@ -2,9 +2,7 @@ package com.pug.academic.domain.enums;
 
 import lombok.Getter;
 
-/**
- * Enum representing the different campus locations.
- */
+/** Enum representing the different campus locations. */
 @Getter
 public enum Campi {
   JARAGUA("JARAGUÁ DO SUL"),

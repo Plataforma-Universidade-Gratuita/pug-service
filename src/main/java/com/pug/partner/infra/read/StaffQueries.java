@@ -1,14 +1,11 @@
 package com.pug.partner.infra.read;
 
 import com.pug.partner.infra.read.dtos.StaffView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Queries related to Staff.
- */
+/** Queries related to Staff. */
 public interface StaffQueries {
 
   /**

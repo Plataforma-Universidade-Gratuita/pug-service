@@ -4,22 +4,17 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Read-only application service for Schools.
- */
+/** Read-only application service for Schools. */
 @ApplicationScoped
 public class SchoolReadService {
 
-  @Inject
-  SchoolQueries queries;
+  @Inject SchoolQueries queries;
 
   /**
    * Retrieves a SchoolView by its unique identifier.
@@ -30,8 +25,11 @@ public class SchoolReadService {
    */
   public SchoolView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
   }
 
   /**

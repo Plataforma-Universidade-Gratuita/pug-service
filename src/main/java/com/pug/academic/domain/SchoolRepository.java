@@ -1,13 +1,10 @@
 package com.pug.academic.domain;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for Schools.
- */
+/** Repository interface for Schools. */
 public interface SchoolRepository {
   /**
    * Persist a school entity.

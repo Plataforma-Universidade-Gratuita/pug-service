@@ -3,15 +3,10 @@ package com.pug.partner.infra;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.persistence.StaffEntity;
 
-/**
- * Maps between Staff domain and StaffEntity persistence.
- */
+/** Maps between Staff domain and StaffEntity persistence. */
 public final class StaffMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private StaffMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private StaffMapper() {}
 
   /**
    * Persistence -> Domain.

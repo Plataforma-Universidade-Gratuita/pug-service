@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -18,11 +19,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-import java.util.UUID;
-
-/**
- * Course persistence entity.
- */
+/** Course persistence entity. */
 @Getter
 @Setter
 @Builder
@@ -30,12 +27,12 @@ import java.util.UUID;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name", "schoolId"})
+    callSuper = true,
+    of = {"name", "schoolId"})
 @Entity
 @Table(
-        name = "courses",
-        indexes = {@Index(name = "idx_courses_school", columnList = "school_id")})
+    name = "courses",
+    indexes = {@Index(name = "idx_courses_school", columnList = "school_id")})
 @Indexed
 public class CourseEntity extends BaseUuidV7Entity {
 

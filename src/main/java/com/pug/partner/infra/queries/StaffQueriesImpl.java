@@ -17,7 +17,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,18 +24,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of StaffQueries using JPA EntityManager.
- */
+/** Implementation of StaffQueries using JPA EntityManager. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class StaffQueriesImpl implements StaffQueries {
 
-  @Inject
-  EntityManager em;
+  @Inject EntityManager em;
 
   private static final String SELECT_BASE =
-          """
+      """
                   select new com.pug.partner.infra.read.dtos.StaffView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
@@ -65,8 +61,8 @@ public class StaffQueriesImpl implements StaffQueries {
       return Optional.empty();
     }
     var q =
-            em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
-                    .setParameter("id", accountId);
+        em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
+            .setParameter("id", accountId);
     return q.getResultStream().findFirst();
   }
 
@@ -76,8 +72,8 @@ public class StaffQueriesImpl implements StaffQueries {
       return Optional.empty();
     }
     var q =
-            em.createQuery(SELECT_BASE + " where acc.email = :email", StaffView.class)
-                    .setParameter("email", email);
+        em.createQuery(SELECT_BASE + " where acc.email = :email", StaffView.class)
+            .setParameter("email", email);
     return q.getResultStream().findFirst();
   }
 
@@ -87,9 +83,9 @@ public class StaffQueriesImpl implements StaffQueries {
       return List.of();
     }
     var q =
-            em.createQuery(
-                            SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
-                    .setParameter("cpf", cpf);
+        em.createQuery(
+                SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
+            .setParameter("cpf", cpf);
     return q.getResultList();
   }
 
@@ -104,9 +100,9 @@ public class StaffQueriesImpl implements StaffQueries {
       return List.of();
     }
     var q =
-            em.createQuery(
-                            SELECT_BASE + " where e.id = :eid" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
-                    .setParameter("eid", entityId);
+        em.createQuery(
+                SELECT_BASE + " where e.id = :eid" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
+            .setParameter("eid", entityId);
     return q.getResultList();
   }
 
@@ -120,8 +116,8 @@ public class StaffQueriesImpl implements StaffQueries {
     List<UUID> userIds = personHits.stream().map(UserEntity::getId).toList();
 
     var rows =
-            em.createQuery(
-                            """
+        em.createQuery(
+                """
                                     select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
                                     from StaffEntity s
                                       join AccountEntity acc on acc.id = s.accountId
@@ -129,9 +125,9 @@ public class StaffQueriesImpl implements StaffQueries {
                                       join CityEntity c on c.id = e.cityId
                                     where acc.userId in :ids
                                     """,
-                            StaffAcc.class)
-                    .setParameter("ids", userIds)
-                    .getResultList();
+                StaffAcc.class)
+            .setParameter("ids", userIds)
+            .getResultList();
 
     Map<UUID, List<StaffAcc>> byUser = new HashMap<>();
     for (StaffAcc row : rows) {
@@ -153,17 +149,17 @@ public class StaffQueriesImpl implements StaffQueries {
 
   private static StaffView toView(AccountEntity acc, EntityEntity e, CityEntity c, UserEntity u) {
     return new StaffView(
-            new AccountView(
-                    acc.getId(),
-                    new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()),
-                    acc.getEmail(),
-                    acc.getAccountType(),
-                    acc.getCreatedAt()),
-            new EntityView(
-                    e.getId(),
-                    e.getCnpj(),
-                    e.getName(),
-                    e.getAddress(),
-                    new CityView(c.getId(), c.getName(), c.getIbgeCode())));
+        new AccountView(
+            acc.getId(),
+            new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()),
+            acc.getEmail(),
+            acc.getAccountType(),
+            acc.getCreatedAt()),
+        new EntityView(
+            e.getId(),
+            e.getCnpj(),
+            e.getName(),
+            e.getAddress(),
+            new CityView(c.getId(), c.getName(), c.getIbgeCode())));
   }
 }

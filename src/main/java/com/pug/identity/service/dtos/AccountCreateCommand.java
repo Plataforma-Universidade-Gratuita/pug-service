@@ -12,4 +12,4 @@ import com.pug.shared.domain.enums.AccountType;
  * @param passwordHash the hashed password for the account
  */
 public record AccountCreateCommand(
-        UserCreateOrUpdateCommand userCommand, Email email, AccountType type, String passwordHash) {}
+    UserCreateOrUpdateCommand userCommand, Email email, AccountType type, String passwordHash) {}

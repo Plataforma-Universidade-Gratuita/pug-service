@@ -11,10 +11,10 @@ import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -113,9 +113,6 @@ public class AdminResource {
         readService.listViewsByCpf(cpf).stream()
             .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
             .toList();
-    if (list.isEmpty()) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
-    }
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 

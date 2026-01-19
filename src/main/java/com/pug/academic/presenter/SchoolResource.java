@@ -30,27 +30,21 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * REST resource for managing schools.
- */
+/** REST resource for managing schools. */
 @ApplicationScoped
 @Path("/academic/schools")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class SchoolResource {
 
-  @Inject
-  SchoolService writeService;
-  @Inject
-  SchoolReadService readService;
-  @Context
-  UriInfo uri;
+  @Inject SchoolService writeService;
+  @Inject SchoolReadService readService;
+  @Context UriInfo uri;
 
   /**
    * Creates a new school.
@@ -64,8 +58,8 @@ public class SchoolResource {
     var view = readService.getViewById(created.getId());
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location)
-            .entity(ApiEnvelope.created(SchoolPresenter.toResponse(view)))
-            .build();
+        .entity(ApiEnvelope.created(SchoolPresenter.toResponse(view)))
+        .build();
   }
 
   /**
@@ -77,16 +71,18 @@ public class SchoolResource {
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid Iterable<SchoolCreateOrUpdateRequest> req) {
-    var saved = writeService.saveAll(CollectionUtils.toStream(req).map(SchoolCreateOrUpdateRequest::name).toList());
+    var saved =
+        writeService.saveAll(
+            CollectionUtils.toStream(req).map(SchoolCreateOrUpdateRequest::name).toList());
     return Response.status(Response.Status.CREATED)
-            .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-            .build();
+        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
+        .build();
   }
 
   /**
    * Updates an existing school.
    *
-   * @param id  the ID of the school to update
+   * @param id the ID of the school to update
    * @param req the school update request
    * @return the response containing the updated school
    */

@@ -33,29 +33,23 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing courses.
- */
+/** REST resource for managing courses. */
 @ApplicationScoped
 @Path("/academic/courses")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject
-  CourseService writeService;
-  @Inject
-  CourseReadService readService;
+  @Inject CourseService writeService;
+  @Inject CourseReadService readService;
 
-  @Context
-  UriInfo uri;
+  @Context UriInfo uri;
 
   /**
    * Get course by id.
@@ -74,7 +68,7 @@ public class CourseResource {
   /**
    * List or search courses.
    *
-   * @param q        the search query
+   * @param q the search query
    * @param schoolId the school id to filter by
    * @return the response
    */
@@ -95,7 +89,7 @@ public class CourseResource {
   /**
    * Create a new course.
    *
-   * @param name       the course name
+   * @param name the course name
    * @param schoolName the school name
    * @return the response
    */
@@ -116,19 +110,21 @@ public class CourseResource {
   @POST
   @Path("/bulk")
   public Response createBulk(@Valid Iterable<CourseCreateBulkRequest> req) {
-    var cmds = CollectionUtils.toStream(req).map(r ->
-            new CourseCreateBulkCommand(r.name(), r.schoolName())).collect(Collectors.toSet());
+    var cmds =
+        CollectionUtils.toStream(req)
+            .map(r -> new CourseCreateBulkCommand(r.name(), r.schoolName()))
+            .collect(Collectors.toSet());
     var saved = writeService.saveAll(cmds);
     return Response.status(Response.Status.CREATED)
-            .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-            .build();
+        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
+        .build();
   }
 
   /**
    * Update an existing course.
    *
-   * @param id         the course id to update
-   * @param name       the new name
+   * @param id the course id to update
+   * @param name the new name
    * @param schoolName the new school name
    * @return the response
    */

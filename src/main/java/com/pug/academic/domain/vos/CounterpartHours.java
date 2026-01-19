@@ -2,7 +2,6 @@ package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.math.BigDecimal;
 
 /**
@@ -10,17 +9,17 @@ import java.math.BigDecimal;
  *
  * <p>Also provides a method to calculate missing hours.
  *
- * @param requiredHours  the required hours
+ * @param requiredHours the required hours
  * @param completedHours the completed hours
  */
 public record CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours) {
   /**
    * Constructs CounterpartHours after validating the input hours.
    *
-   * @param requiredHours  the required hours
+   * @param requiredHours the required hours
    * @param completedHours the completed hours
    * @throws AppValidationException if the hours are null, negative, or if completed hours exceed
-   *                                required hours
+   *     required hours
    */
   public CounterpartHours {
     if (requiredHours == null || completedHours == null) {

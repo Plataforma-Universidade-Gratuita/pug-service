@@ -8,8 +8,8 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -103,7 +103,8 @@ public class AccountService {
       throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
     }
 
-    var cpfs = CollectionUtils.toStream(cmds).map(cmd -> cmd.userCommand().cpf()).distinct().toList();
+    var cpfs =
+        CollectionUtils.toStream(cmds).map(cmd -> cmd.userCommand().cpf()).distinct().toList();
     Map<Cpf, UUID> existing =
         userService.getAllByCpf(cpfs).stream().collect(Collectors.toMap(User::getCpf, User::getId));
     var namesByCpf = new LinkedHashMap<Cpf, String>();

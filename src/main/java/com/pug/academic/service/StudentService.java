@@ -5,7 +5,6 @@ import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.Period;
 import com.pug.academic.service.dtos.StudentCreateBulkCommand;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
@@ -19,7 +18,6 @@ import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 /** Service class for managing Student entities. */
@@ -41,18 +39,19 @@ public class StudentService {
   @Transactional
   public Student save(StudentCreateCommand cmd, String courseName) {
     if (existsByRegistration(cmd.reg())) {
-      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS, Map.of("registration", cmd.reg()));
+      throw new DuplicateResourceException(
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS, Map.of("registration", cmd.reg()));
     }
     var account = accountService.save(cmd.accountCreateCommand());
     var course = courseService.getByName(courseName);
-    var student = Student.createNew(account.getId(), cmd.reg(), cmd.campus(), course.getId(), cmd.hours(), cmd.period());
+    var student =
+        Student.createNew(
+            account.getId(), cmd.reg(), cmd.campus(), course.getId(), cmd.hours(), cmd.period());
     return repo.persist(student);
   }
 
   @Transactional
-  public List<Student> saveAll(Iterable<StudentCreateBulkCommand> cmds) {
-
-  }
+  public List<Student> saveAll(Iterable<StudentCreateBulkCommand> cmds) {}
 
   /**
    * Updates an existing Student entity.
@@ -68,11 +67,12 @@ public class StudentService {
     accountService.update(id, cmd.accountCommand());
 
     Campi campus = cmd.campus() != null ? cmd.campus() : current.getCampus();
-    AcademicRegistration registration = cmd.academicRegistration() != null ? cmd.academicRegistration() : current.getAcademicRegistration();
+    AcademicRegistration registration =
+        cmd.academicRegistration() != null
+            ? cmd.academicRegistration()
+            : current.getAcademicRegistration();
 
-    Student updated = current
-            .changeCampus(campus)
-            .changeAcademicRegistration(registration);
+    Student updated = current.changeCampus(campus).changeAcademicRegistration(registration);
     repo.update(updated);
 
     return getById(updated.getAccountId());
@@ -119,9 +119,9 @@ public class StudentService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-            DeleteKeys.STUDENTS, 0L,
-            DeleteKeys.ACCOUNTS, 0L,
-            DeleteKeys.USERS, 0L);
+          DeleteKeys.STUDENTS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     long deletedStudents = repo.deleteByIds(ids);

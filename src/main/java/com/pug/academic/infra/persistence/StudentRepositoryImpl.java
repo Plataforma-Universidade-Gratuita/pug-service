@@ -65,7 +65,7 @@ public class StudentRepositoryImpl
     if (student == null) {
       return;
     }
-    StudentEntity entity = findById(student.getUserId());
+    StudentEntity entity = findById(student.getAccountId());
     if (entity == null) {
       return;
     }

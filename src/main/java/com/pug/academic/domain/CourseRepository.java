@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository for Course aggregate.
- */
+/** Repository for Course aggregate. */
 public interface CourseRepository {
   /**
    * Persist a course.

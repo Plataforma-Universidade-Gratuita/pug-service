@@ -15,24 +15,18 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service for managing staff assignments to partner entities.
- */
+/** Service for managing staff assignments to partner entities. */
 @ApplicationScoped
 public class StaffService {
 
-  @Inject
-  StaffRepository repo;
-  @Inject
-  AccountService accountService;
-  @Inject
-  EntityService entityService;
+  @Inject StaffRepository repo;
+  @Inject AccountService accountService;
+  @Inject EntityService entityService;
 
   /**
    * Save a new staff member by creating an account and linking them to an entity.
@@ -40,13 +34,12 @@ public class StaffService {
    * @param cmd the command containing staff creation details.
    * @return the created Staff object.
    * @throws DuplicateResourceException if a staff member with the same user ID already exists.
-   * @throws ResourceNotFoundException  if the specified entity does not exist.
+   * @throws ResourceNotFoundException if the specified entity does not exist.
    */
   @Transactional
   public Staff save(StaffCreateCommand cmd) {
     var entity = entityService.getByCnpj(cmd.entityCnpj());
-    var account =
-            accountService.save(cmd.accountCommand());
+    var account = accountService.save(cmd.accountCommand());
 
     if (existsByAccountId(account.getId())) {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
@@ -61,7 +54,7 @@ public class StaffService {
    * @param cmds an iterable of commands containing staff creation details.
    * @return a list of created Staff objects.
    * @throws DuplicateResourceException if any staff member with the same user ID already exists.
-   * @throws ResourceNotFoundException  if any specified entity does not exist.
+   * @throws ResourceNotFoundException if any specified entity does not exist.
    */
   @Transactional
   public List<Staff> saveAll(Iterable<StaffCreateBulkCommand> cmds) {
@@ -69,7 +62,7 @@ public class StaffService {
     for (StaffCreateBulkCommand cmd : cmds) {
       var entityId = entityService.getByCnpj(cmd.entityCnpj()).getId();
       var accountsIds =
-              accountService.saveAll(cmd.accountCommands()).stream().map(Account::getId).toList();
+          accountService.saveAll(cmd.accountCommands()).stream().map(Account::getId).toList();
 
       if (existsAnyByAccountIdIn(accountsIds)) {
         throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
@@ -85,7 +78,7 @@ public class StaffService {
   /**
    * Updates an existing staff member's account details.
    *
-   * @param id  the ID of the staff user to update.
+   * @param id the ID of the staff user to update.
    * @param cmd the command containing updated staff details.
    * @return the updated Staff object.
    * @throws ResourceNotFoundException if the specified staff member does not exist.
@@ -106,19 +99,17 @@ public class StaffService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-              DeleteKeys.STAFF, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L
-      );
+          DeleteKeys.STAFF, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     var deletedStaff = repo.deleteByIds(ids);
     var deletedAccounts = accountService.deleteAll(ids);
     return Map.of(
-            DeleteKeys.STAFF, deletedStaff,
-            DeleteKeys.ACCOUNTS, deletedAccounts.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedAccounts.getOrDefault(DeleteKeys.USERS, 0L)
-    );
+        DeleteKeys.STAFF, deletedStaff,
+        DeleteKeys.ACCOUNTS, deletedAccounts.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedAccounts.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -130,7 +121,7 @@ public class StaffService {
    */
   public Staff getById(UUID id) {
     return repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND));
   }
 
   /**

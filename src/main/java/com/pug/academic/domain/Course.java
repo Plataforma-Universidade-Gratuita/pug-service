@@ -3,16 +3,13 @@ package com.pug.academic.domain;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.UUID;
-
-/**
- * Course entity aggregate.
- */
+/** Course entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -26,7 +23,7 @@ public class Course {
    *
    * <p>Behavior: create a new course and validate its attributes
    *
-   * @param name     the name of the course
+   * @param name the name of the course
    * @param schoolId the ID of the school
    * @return the created course
    */

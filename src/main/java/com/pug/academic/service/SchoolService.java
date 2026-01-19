@@ -12,7 +12,6 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -20,16 +19,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * Service class for managing School entities.
- */
+/** Service class for managing School entities. */
 @ApplicationScoped
 public class SchoolService {
 
-  @Inject
-  SchoolRepository repo;
-  @Inject
-  CourseService courseService;
+  @Inject SchoolRepository repo;
+  @Inject CourseService courseService;
 
   /**
    * Saves a new School entity.
@@ -42,7 +37,8 @@ public class SchoolService {
   public School save(String name) {
     String n = StringUtils.trim(name);
     if (existsByName(n)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", n));
+      throw new DuplicateResourceException(
+          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", n));
     }
     return repo.persist(School.createNew(n));
   }
@@ -73,17 +69,16 @@ public class SchoolService {
       throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
     }
 
-    return repo.persistAll(
-            trimmedNames.stream().map(School::createNew).toList());
+    return repo.persistAll(trimmedNames.stream().map(School::createNew).toList());
   }
 
   /**
    * Updates an existing School entity.
    *
-   * @param id   the UUID of the school to update
+   * @param id the UUID of the school to update
    * @param name the new name of the school
    * @return the updated School entity
-   * @throws ResourceNotFoundException  if the school with the given ID does not exist
+   * @throws ResourceNotFoundException if the school with the given ID does not exist
    * @throws DuplicateResourceException if a school with the same name already exists
    */
   @Transactional
@@ -93,7 +88,8 @@ public class SchoolService {
     String newName;
     if (name != null) {
       if (!name.equals(current.getName()) && existsByName(name)) {
-        throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", name));
+        throw new DuplicateResourceException(
+            AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", name));
       }
       newName = name;
     } else {
@@ -117,20 +113,20 @@ public class SchoolService {
     }
 
     List<UUID> coursesIds =
-            CollectionUtils.toStream(ids)
-                    .filter(Objects::nonNull)
-                    .map(id -> courseService.listAllBySchoolId(id))
-                    .flatMap(List::stream)
-                    .map(Course::getId)
-                    .toList();
+        CollectionUtils.toStream(ids)
+            .filter(Objects::nonNull)
+            .map(id -> courseService.listAllBySchoolId(id))
+            .flatMap(List::stream)
+            .map(Course::getId)
+            .toList();
     var courses = courseService.deleteAll(coursesIds);
 
     return Map.of(
-            DeleteKeys.SCHOOLS, repo.deleteByIds(ids),
-            DeleteKeys.COURSES, courses.getOrDefault(DeleteKeys.COURSES, 0L),
-            DeleteKeys.STUDENTS, courses.getOrDefault(DeleteKeys.STUDENTS, 0L),
-            DeleteKeys.ACCOUNTS, courses.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, courses.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.SCHOOLS, repo.deleteByIds(ids),
+        DeleteKeys.COURSES, courses.getOrDefault(DeleteKeys.COURSES, 0L),
+        DeleteKeys.STUDENTS, courses.getOrDefault(DeleteKeys.STUDENTS, 0L),
+        DeleteKeys.ACCOUNTS, courses.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, courses.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
@@ -151,7 +147,7 @@ public class SchoolService {
    */
   public School getById(UUID id) {
     return repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
   }
 
   /**
@@ -163,7 +159,7 @@ public class SchoolService {
    */
   public School getByName(String name) {
     return repo.findOptionalByName(name)
-            .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
+        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND));
   }
 
   /**

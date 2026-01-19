@@ -7,10 +7,7 @@ import com.pug.partner.domain.vos.Cnpj;
  * Command to create bulk staff members for a specific entity.
  *
  * @param accountCommands the commands containing the data to create the underlying accounts.
- * @param entityCnpj      the CNPJ of the entity to which the staff members will be linked.
+ * @param entityCnpj the CNPJ of the entity to which the staff members will be linked.
  */
 public record StaffCreateBulkCommand(
-        Iterable<AccountCreateCommand> accountCommands,
-        Cnpj entityCnpj
-) {
-}
+    Iterable<AccountCreateCommand> accountCommands, Cnpj entityCnpj) {}
