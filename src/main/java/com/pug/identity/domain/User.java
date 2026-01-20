@@ -1,21 +1,24 @@
 package com.pug.identity.domain;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** User entity aggregate. */
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * User entity aggregate.
+ */
 @Getter
-@Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class User {
   private final UUID id;
   private final Cpf cpf;
@@ -23,18 +26,46 @@ public class User {
   private final OffsetDateTime createdAt;
 
   /**
+   * Private constructor for User.
+   *
+   * @param id        the unique identifier of the User
+   * @param cpf       person's CPF
+   * @param name      person's name
+   * @param createdAt timestamp when the User was created
+   */
+  @Builder(toBuilder = true)
+  private User(UUID id, Cpf cpf, String name, OffsetDateTime createdAt) {
+    this.id = id;
+    this.cpf = cpf;
+    this.name = name;
+    this.createdAt = createdAt;
+  }
+
+  /**
    * Factory for new users.
    *
-   * @param cpf person's CPF
+   * @param cpf  person's CPF
    * @param name person's name
    * @param time time provider
    * @return new User instance
+   * @throws AppValidationException if initial validation fails.
    */
   public static User createNew(Cpf cpf, String name, TimeProvider time) {
     var created = OffsetDateTime.now(time.clock());
-    var p = new User(null, cpf, StringUtils.trim(name), created);
-    p.validateAt(time.clock());
-    return p;
+
+    User user =
+            User.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .cpf(cpf)
+                    .name(StringUtils.trim(name))
+                    .createdAt(created)
+                    .build();
+
+    List<AppValidationException.Problem> problems = user.collectValidationProblems(time.clock());
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+    return user;
   }
 
   /**
@@ -42,11 +73,15 @@ public class User {
    *
    * @param newName new name of the person
    * @return new User instance with changed name
+   * @throws AppValidationException if validation fails.
    */
   public User changeName(String newName) {
-    User p = this.toBuilder().name(StringUtils.trim(newName)).build();
-    p.validate();
-    return p;
+    User updatedUser = this.toBuilder().name(StringUtils.trim(newName)).build();
+    List<AppValidationException.Problem> problems = updatedUser.collectValidationProblems(Clock.systemUTC());
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+    return updatedUser;
   }
 
   /**
@@ -54,60 +89,55 @@ public class User {
    *
    * @param newCpf new CPF for the person
    * @return new User instance with changed CPF
+   * @throws AppValidationException if validation fails.
    */
   public User changeCpf(Cpf newCpf) {
-    User p = this.toBuilder().cpf(newCpf).build();
-    p.validate();
-    return p;
+    User updatedUser = this.toBuilder().cpf(newCpf).build();
+    List<AppValidationException.Problem> problems = updatedUser.collectValidationProblems(Clock.systemUTC());
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+    return updatedUser;
   }
 
   /**
-   * Validates the User instance to ensure all required fields are properly set.
+   * Collects all validation problems for the User instance.
    *
-   * <p>Checks that cpf, and name are not null, name is not blank and within length limits and
-   * createdAt is not in the future.
+   * <p>Checks that id, cpf, and name are not null, name is not blank and within length limits,
+   * and createdAt is not in the future.
    *
-   * @throws AppValidationException if any validation fails
+   * @param clock The clock to use for time-based validations.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
    */
-  private void validateAt(Clock clock) {
+  private List<AppValidationException.Problem> collectValidationProblems(Clock clock) {
+    List<AppValidationException.Problem> problems = new ArrayList<>();
+
+    if (id == null) {
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK, "id"));
+    }
     if (cpf == null) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CPF_BLANK);
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK, "cpf"));
     }
     if (StringUtils.isEmpty(name)) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_NAME_BLANK);
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_NAME_BLANK, "name"));
+    } else if (name.length() > 150) {
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_NAME_LENGTH, "name"));
     }
-    if (name.length() > 150) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_NAME_LENGTH);
+    if (createdAt == null) {
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_BLANK, "createdAt"));
+    } else if (createdAt.isAfter(OffsetDateTime.now(clock))) {
+      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE, "createdAt"));
     }
-    if (createdAt != null && createdAt.isAfter(OffsetDateTime.now(clock))) {
-      throw new AppValidationException(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE);
-    }
+
+    return problems;
   }
 
   /**
-   * Validates the User instance using the system UTC clock.
+   * Convenience method to collect validation problems using the system UTC clock.
    *
-   * @throws AppValidationException if validation fails
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
    */
-  private void validate() {
-    validateAt(Clock.systemUTC());
-  }
-
-  /**
-   * Builder class for User.
-   *
-   * <p>Overrides the build method to include validation.
-   */
-  public static class UserBuilder {
-    /**
-     * Builds the User instance and validates it.
-     *
-     * @return the constructed and validated User instance
-     */
-    public User build() {
-      User p = new User(id, cpf, StringUtils.trim(name), createdAt);
-      p.validate();
-      return p;
-    }
+  private List<AppValidationException.Problem> collectValidationProblems() {
+    return collectValidationProblems(Clock.systemUTC());
   }
 }

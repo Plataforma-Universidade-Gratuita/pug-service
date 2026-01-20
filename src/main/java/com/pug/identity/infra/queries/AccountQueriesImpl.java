@@ -11,44 +11,56 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+/**
+ * Implementation of AccountQueries using JPA and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AccountQueriesImpl implements AccountQueries {
 
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager entityManager;
 
   private static final String SELECT_BASE =
-      """
+          """
                   select new com.pug.identity.infra.read.dtos.AccountView(
-                    u.id,
-                    new com.pug.identity.infra.read.dtos.UserView(p.id, p.cpf, p.name, p.createdAt),
-                    u.email,
-                    u.accountType,
-                    u.createdAt
+                    a.id,
+                    new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
+                    a.email,
+                    a.accountType,
+                    a.createdAt
                   )
-                  from AccountEntity u, UserEntity p
-                  where p.id = u.userId
+                  from AccountEntity a, UserEntity u
+                  where u.id = a.userId
                   """;
 
-  private static final String ORDER_BY_NAME_ASC = " order by p.name asc";
+  private static final String ORDER_BY_NAME_ASC = " order by u.name asc";
 
-  private static AccountView toView(AccountEntity u, UserEntity p) {
-    if (u == null || p == null) {
+  /**
+   * Converts an AccountEntity and its associated UserEntity to an AccountView.
+   *
+   * @param accountEntity the AccountEntity.
+   * @param userEntity    the associated UserEntity.
+   * @return the AccountView.
+   */
+  private static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
+    if (accountEntity == null || userEntity == null) {
       return null;
     }
     return new AccountView(
-        u.getId(),
-        new UserView(p.getId(), p.getCpf(), p.getName(), p.getCreatedAt()),
-        u.getEmail(),
-        u.getAccountType(),
-        u.getCreatedAt());
+            accountEntity.getId(),
+            new UserView(userEntity.getId(), userEntity.getCpf(), userEntity.getName(), userEntity.getCreatedAt()),
+            accountEntity.getEmail(),
+            accountEntity.getAccountType(),
+            accountEntity.getCreatedAt());
   }
 
   @Override
@@ -56,7 +68,7 @@ public class AccountQueriesImpl implements AccountQueries {
     if (id == null) {
       return Optional.empty();
     }
-    var q = entityManager.createQuery(SELECT_BASE + " and u.id = :id", AccountView.class);
+    var q = entityManager.createQuery(SELECT_BASE + " and a.id = :id", AccountView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
@@ -66,7 +78,7 @@ public class AccountQueriesImpl implements AccountQueries {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
-    var q = entityManager.createQuery(SELECT_BASE + " and u.email = :email", AccountView.class);
+    var q = entityManager.createQuery(SELECT_BASE + " and a.email = :email", AccountView.class);
     q.setParameter("email", email);
     return q.getResultStream().findFirst();
   }
@@ -74,8 +86,8 @@ public class AccountQueriesImpl implements AccountQueries {
   @Override
   public List<AccountView> listAllAccounts() {
     return entityManager
-        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
-        .getResultList();
+            .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
+            .getResultList();
   }
 
   @Override
@@ -83,41 +95,36 @@ public class AccountQueriesImpl implements AccountQueries {
     if (StringUtils.isEmpty(cpf)) {
       return List.of();
     }
-    var q = entityManager.createQuery(SELECT_BASE + " and p.cpf = :cpf", AccountView.class);
+    var q = entityManager.createQuery(SELECT_BASE + " and u.cpf = :cpf", AccountView.class);
     q.setParameter("cpf", cpf);
     return q.getResultList();
   }
 
   @Override
   public List<AccountView> searchByName(String key) {
-    List<UserEntity> personHits =
-        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
+    List<UserEntity> userHits =
+            HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
 
-    if (personHits.isEmpty()) {
+    if (userHits.isEmpty()) {
       return List.of();
     }
 
-    List<UUID> userIds = personHits.stream().map(UserEntity::getId).toList();
+    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    List<AccountEntity> users =
-        entityManager
-            .createQuery("from AccountEntity u where u.userId in :ids", AccountEntity.class)
-            .setParameter("ids", userIds)
-            .getResultList();
+    List<AccountEntity> accountEntities =
+            entityManager
+                    .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
+                    .setParameter("userIds", userIds)
+                    .getResultList();
 
-    Map<UUID, List<AccountEntity>> byPerson = new HashMap<>();
-    for (AccountEntity u : users) {
-      byPerson.computeIfAbsent(u.getUserId(), k -> new ArrayList<>()).add(u);
-    }
+    Map<UUID, UserEntity> userEntityMap = userHits.stream()
+            .collect(Collectors.toMap(UserEntity::getId, user -> user));
 
     List<AccountView> out = new ArrayList<>();
-    for (UserEntity p : personHits) {
-      List<AccountEntity> us = byPerson.get(p.getId());
-      if (us == null) {
-        continue;
-      }
-      for (AccountEntity u : us) {
-        out.add(toView(u, p));
+    for (AccountEntity accountEntity : accountEntities) {
+      UserEntity userEntity = userEntityMap.get(accountEntity.getUserId());
+      if (userEntity != null) {
+        out.add(toView(accountEntity, userEntity));
       }
     }
     return out;

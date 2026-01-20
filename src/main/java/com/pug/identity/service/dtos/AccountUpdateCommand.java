@@ -1,13 +1,14 @@
 package com.pug.identity.service.dtos;
 
-import com.pug.identity.domain.vos.Email;
-
 /**
- * Command to update an existing account's email and password.
+ * Command DTO for updating an existing Account.
  *
- * @param email the new email address for the account
- * @param passwordHash the new hashed password for the account
- * @param userCommand the command containing user update details
+ * @param emailString  the new email address as a string (optional).
+ * @param passwordHash the new hashed password (optional).
+ * @param userCommand  the command for updating the associated user (optional).
  */
 public record AccountUpdateCommand(
-    Email email, String passwordHash, UserCreateOrUpdateCommand userCommand) {}
+        String emailString,
+        String passwordHash,
+        UserCreateOrUpdateCommand userCommand) {
+}

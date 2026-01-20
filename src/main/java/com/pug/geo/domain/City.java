@@ -88,6 +88,9 @@ public class City {
   private List<AppValidationException.Problem> collectValidationProblems() {
     List<AppValidationException.Problem> problems = new ArrayList<>();
 
+    if (id == null) {
+      problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK, "id"));
+    }
     if (StringUtils.isEmpty(name)) {
       problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK, "name"));
     }

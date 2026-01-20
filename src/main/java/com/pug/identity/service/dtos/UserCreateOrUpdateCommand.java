@@ -1,11 +1,12 @@
 package com.pug.identity.service.dtos;
 
-import com.pug.identity.domain.vos.Cpf;
-
 /**
- * Command object for creating a new user.
+ * Command DTO for creating or updating a User.
  *
- * @param cpf the CPF of the user
- * @param name the name of the user
+ * @param cpfString the CPF of the user as a string.
+ * @param name      the name of the user.
  */
-public record UserCreateOrUpdateCommand(Cpf cpf, String name) {}
+public record UserCreateOrUpdateCommand(
+        String cpfString,
+        String name) {
+}

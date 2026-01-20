@@ -3,10 +3,12 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
 import com.pug.identity.infra.AccountMapper;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -14,15 +16,15 @@ import java.util.UUID;
 
 /**
  * Implementation of the AccountRepository using PanacheRepositoryBase for CRUD operations on
- * UsersEntity.
+ * AccountEntity.
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
-  public Account persist(Account entity) {
+  public Account persist(Account entity) throws AppValidationException {
     if (entity == null) {
       return null;
     }
@@ -33,7 +35,7 @@ public class AccountRepositoryImpl
 
   @Transactional
   @Override
-  public List<Account> persistAll(Iterable<Account> entities) {
+  public List<Account> persistAll(Iterable<Account> entities) throws AppValidationException {
     if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
@@ -77,12 +79,12 @@ public class AccountRepositoryImpl
   }
 
   @Override
-  public Optional<Account> findOptionalById(UUID id) {
+  public Optional<Account> findOptionalById(UUID id) throws AppValidationException {
     return findByIdOptional(id).map(AccountMapper::toDomain);
   }
 
   @Override
-  public List<Account> listAllAccounts() {
+  public List<Account> listAllAccounts() throws AppValidationException {
     return listAll().stream().map(AccountMapper::toDomain).toList();
   }
 
@@ -96,7 +98,7 @@ public class AccountRepositoryImpl
 
   @Override
   public List<UUID> findUserIdsWithAccountsExcluding(
-      Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
+          Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
     if (CollectionUtils.isEmpty(userIds)) {
       return List.of();
     }
@@ -104,9 +106,9 @@ public class AccountRepositoryImpl
     if (!CollectionUtils.isEmpty(excludeAccountIds)) {
       query += " and id not in ?2";
       return find(query, userIds, excludeAccountIds).stream()
-          .map(AccountEntity::getUserId)
-          .distinct()
-          .toList();
+              .map(AccountEntity::getUserId)
+              .distinct()
+              .toList();
     } else {
       return find(query, userIds).stream().map(AccountEntity::getUserId).distinct().toList();
     }

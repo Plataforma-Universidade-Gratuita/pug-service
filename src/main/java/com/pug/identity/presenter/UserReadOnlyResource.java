@@ -4,6 +4,8 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
 import com.pug.identity.service.UserReadService;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
@@ -21,19 +23,25 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * REST resource for reading user information.
+ */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject UserReadService readService;
+  @Inject
+  UserReadService readService;
 
-  @Context HttpHeaders headers;
+  @Context
+  HttpHeaders headers;
 
   /**
    * Picks the best locale from the request headers.
@@ -49,6 +57,7 @@ public class UserReadOnlyResource {
    *
    * @param id the UUID of the user
    * @return the response containing the user data
+   * @throws ResourceNotFoundException if no user with the given ID is found.
    */
   @GET
   @Path("{id}")
@@ -65,21 +74,24 @@ public class UserReadOnlyResource {
   @GET
   public Response list() {
     List<UserResponse> list =
-        readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+            readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
   /**
-   * Retrieves users by their CPF.
+   * Retrieves a user by their CPF.
    *
-   * @param cpfRaw the CPF of the users
-   * @return the response containing the list of users with the specified CPF
+   * @param cpfRaw the raw CPF string of the user
+   * @return the response containing the user data
+   * @throws AppValidationException    if the provided CPF is malformed.
+   * @throws ResourceNotFoundException if no user with the given CPF is found.
    */
   @GET
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
-    String cpf = new Cpf(cpfRaw).toString();
-    UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpf), locale());
+    Cpf cpfVO;
+    cpfVO = new Cpf(cpfRaw);
+    UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfVO.toString()), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -97,7 +109,7 @@ public class UserReadOnlyResource {
       return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
     }
     List<UserResponse> list =
-        readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+            readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 }

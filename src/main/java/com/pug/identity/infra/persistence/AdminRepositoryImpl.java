@@ -3,23 +3,27 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.infra.AdminMapper;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Panache implementation for Admins persistence. */
+/**
+ * Panache implementation for Admins persistence.
+ */
 @ApplicationScoped
 public class AdminRepositoryImpl
-    implements AdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
+        implements AdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
 
   @Transactional
   @Override
-  public Admin persist(Admin entity) {
+  public Admin persist(Admin entity) throws AppValidationException {
     if (entity == null || entity.getAccountId() == null) {
       return null;
     }
@@ -30,7 +34,7 @@ public class AdminRepositoryImpl
 
   @Transactional
   @Override
-  public List<Admin> persistAll(Iterable<Admin> entities) {
+  public List<Admin> persistAll(Iterable<Admin> entities) throws AppValidationException {
     if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
@@ -62,12 +66,12 @@ public class AdminRepositoryImpl
   }
 
   @Override
-  public Optional<Admin> findOptionalById(UUID accountId) {
+  public Optional<Admin> findOptionalById(UUID accountId) throws AppValidationException {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 
   @Override
-  public List<Admin> listAllAdmins() {
+  public List<Admin> listAllAdmins() throws AppValidationException {
     return findAll().list().stream().map(AdminMapper::toDomain).toList();
   }
 

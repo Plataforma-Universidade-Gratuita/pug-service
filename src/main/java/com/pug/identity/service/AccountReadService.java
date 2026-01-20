@@ -3,72 +3,79 @@ package com.pug.identity.service;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.AccountQueries;
 import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
-/** Service for reading user data. */
+/**
+ * Read-only service for account views.
+ */
 @ApplicationScoped
 public class AccountReadService {
 
-  @Inject AccountQueries queries;
+  @Inject
+  AccountQueries queries;
 
   /**
-   * Gets the user view by ID.
+   * Retrieves an AccountView by its unique identifier.
    *
-   * @param id the user ID.
-   * @return the user view.
-   * @throws ResourceNotFoundException if the user is not found.
+   * @param id the UUID of the account
+   * @return the AccountView
+   * @throws ResourceNotFoundException if no account with the given ID is found
    */
   public AccountView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+            .findOptionalById(id)
+            .orElseThrow(
+                    () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
   }
 
   /**
-   * Gets the user view by email.
+   * Retrieves an AccountView by its email.
    *
-   * @param email the user email.
-   * @return the user view.
-   * @throws ResourceNotFoundException if the user is not found.
+   * @param email the email of the account
+   * @return the AccountView
+   * @throws ResourceNotFoundException if no account with the given email is found
    */
   public AccountView getViewByEmail(String email) {
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND));
+            .findOptionalByEmail(email)
+            .orElseThrow(
+                    () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email)));
   }
 
   /**
-   * Lists all user views.
+   * Lists all AccountViews.
    *
-   * @return the list of user views.
+   * @return a list of all AccountViews
    */
   public List<AccountView> listViews() {
     return queries.listAllAccounts();
   }
 
   /**
-   * Lists user views by CPF.
+   * Lists AccountViews by CPF.
    *
-   * @param cpf the user CPF.
-   * @return the list of user views with the given CPF.
+   * @param cpf the CPF to filter accounts
+   * @return the list of AccountViews matching the given CPF
    */
   public List<AccountView> listViewsByCpf(String cpf) {
     return queries.listByCpf(cpf);
   }
 
   /**
-   * Searches for users by name.
+   * Searches for AccountViews by name (of the associated user).
    *
-   * @param query the search query.
-   * @return the list of user views matching the query.
+   * @param query the search query
+   * @return a list of AccountViews matching the search query
    */
   public List<AccountView> search(String query) {
-    String key = StringUtils.fold(query).toLowerCase(Locale.ROOT);
+    String key = StringUtils.fold(query);
     return queries.searchByName(key);
   }
 }

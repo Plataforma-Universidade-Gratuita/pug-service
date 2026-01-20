@@ -1,6 +1,6 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import com.pug.geo.domain.enums.GeoErrorCodes;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -30,8 +30,8 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    */
   @Override
   public Response toResponse(AppValidationException exception) {
-    String mainErrorCodeName = GeoErrorCodes.VALIDATION_FAILED.name();
-    String generalValidationMessage = i18n.translation(GeoErrorCodes.VALIDATION_FAILED.getBundleKey());
+    String mainErrorCodeName = SharedErrorCodes.VALIDATION_ERROR.name();
+    String generalValidationMessage = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
 
     List<ApiError.FieldError> fieldErrors = exception.getProblems().stream()
             .map(problem -> new ApiError.FieldError(

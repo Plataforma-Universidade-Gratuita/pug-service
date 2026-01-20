@@ -4,7 +4,9 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-/** Service for hashing and verifying passwords using bcrypt with an added pepper. */
+/**
+ * Service for hashing and verifying passwords using bcrypt with an added pepper.
+ */
 @ApplicationScoped
 public class PasswordService {
   @ConfigProperty(name = "security.password.pepper", defaultValue = "")
@@ -24,7 +26,7 @@ public class PasswordService {
    * Verifies a raw password against a stored bcrypt hash, considering the pepper.
    *
    * @param storedHash the stored bcrypt hash
-   * @param raw the raw password to verify
+   * @param raw        the raw password to verify
    * @return true if the password matches the hash, false otherwise
    */
   public boolean verify(String storedHash, String raw) {

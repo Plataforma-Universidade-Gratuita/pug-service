@@ -8,15 +8,13 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.Size;
-import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.search.engine.backend.types.Sortable;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
@@ -24,38 +22,40 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** PersonEntity represents a person in the identity system. */
+import java.time.OffsetDateTime;
+
+/**
+ * UserEntity represents a user in the identity system.
+ */
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-    callSuper = true,
-    of = {"name"})
+        callSuper = true,
+        of = {"name"})
 @Entity
 @Table(
-    name = "users",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uq_users_cpf",
-          columnNames = {"cpf"}),
-    },
-    indexes = {
-      @Index(name = "idx_users_name", columnList = "name"),
-      @Index(name = "idx_users_cpf", columnList = "cpf")
-    })
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_users_cpf",
+                        columnNames = {"cpf"}),
+        },
+        indexes = {
+                @Index(name = "idx_users_name", columnList = "name"),
+                @Index(name = "idx_users_cpf", columnList = "cpf")
+        })
 @EntityListeners(TimestampColumnsListener.class)
 @Indexed
+@SuperBuilder
 public class UserEntity extends BaseUuidV7Entity {
 
-  @Size(min = 11, max = 11)
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cpf", nullable = false, length = 11)
   private String cpf;
 
-  @Size(max = 150)
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
   @KeywordField(name = "name_exact", normalizer = "folding_lowercase")

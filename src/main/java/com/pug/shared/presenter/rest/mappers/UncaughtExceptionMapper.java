@@ -1,6 +1,6 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import com.pug.shared.domain.enums.ErrorCodes;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
@@ -35,10 +35,10 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
   public Response toResponse(Throwable ex) {
     LOG.error("An uncaught exception occurred:", ex);
 
-    String msg = i18n.translation(ErrorCodes.INTERNAL_ERROR.getBundleKey());
+    String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
 
     ApiError apiError = ApiError.of(
-            ErrorCodes.INTERNAL_ERROR.name(),
+            SharedErrorCodes.INTERNAL_ERROR.name(),
             msg,
             Map.of("exceptionType", ex.getClass().getSimpleName())
     );

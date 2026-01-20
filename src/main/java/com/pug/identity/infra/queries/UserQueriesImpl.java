@@ -9,18 +9,28 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of PersonQueries using JPA. */
+/**
+ * Implementation of UserQueries using JPA and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class UserQueriesImpl implements UserQueries {
 
-  @Inject EntityManager em;
+  @Inject
+  EntityManager em;
 
+  /**
+   * Converts a UserEntity to a UserView.
+   *
+   * @param e the UserEntity
+   * @return the UserView
+   */
   private static UserView toView(UserEntity e) {
     if (e == null) {
       return null;
@@ -34,11 +44,11 @@ public class UserQueriesImpl implements UserQueries {
       return Optional.empty();
     }
     var q =
-        em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
-                + "p.id, p.cpf, p.name, p.createdAt) "
-                + "from UserEntity p where p.id = :id",
-            UserView.class);
+            em.createQuery(
+                    "select new com.pug.identity.infra.read.dtos.UserView("
+                            + "p.id, p.cpf, p.name, p.createdAt) "
+                            + "from UserEntity p where p.id = :id",
+                    UserView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
@@ -49,11 +59,11 @@ public class UserQueriesImpl implements UserQueries {
       return Optional.empty();
     }
     var q =
-        em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
-                + "p.id, p.cpf, p.name, p.createdAt) "
-                + "from UserEntity p where p.cpf = :cpf",
-            UserView.class);
+            em.createQuery(
+                    "select new com.pug.identity.infra.read.dtos.UserView("
+                            + "p.id, p.cpf, p.name, p.createdAt) "
+                            + "from UserEntity p where p.cpf = :cpf",
+                    UserView.class);
     q.setParameter("cpf", cpf);
     return q.getResultStream().findFirst();
   }
@@ -61,11 +71,11 @@ public class UserQueriesImpl implements UserQueries {
   @Override
   public List<UserView> listAllUsers() {
     var q =
-        em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
-                + "p.id, p.cpf, p.name, p.createdAt) "
-                + "from UserEntity p order by p.name asc",
-            UserView.class);
+            em.createQuery(
+                    "select new com.pug.identity.infra.read.dtos.UserView("
+                            + "p.id, p.cpf, p.name, p.createdAt) "
+                            + "from UserEntity p order by p.name asc",
+                    UserView.class);
     return q.getResultList();
   }
 

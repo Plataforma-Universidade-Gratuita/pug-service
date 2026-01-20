@@ -1,41 +1,64 @@
 package com.pug.identity.domain.enums;
 
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
 /**
  * Enum representing error codes specific to the identity domain.
  *
  * <p>Each error code is associated with a specific validation failure scenario and has a {@code
- * bundleKey} that results into a located error message
+ * bundleKey} that results into a located error message. It also includes a {@code fieldName}
+ * property to identify the specific field related to the error, if applicable.
  */
 @Getter
 public enum IdentityErrorCodes implements GenericErrorCodes {
-  ACCOUNT_ALREADY_EXISTS("identity.error.account.already.exists"),
-  ACCOUNT_NOT_FOUND("identity.error.account.not.found"),
-  ACCOUNT_STILL_REFERENCED_BY_ADMIN("identity.error.account.still.referenced.by.admin"),
-  ACCOUNT_STILL_REFERENCED_BY_STAFF("identity.error.account.still.referenced.by.staff"),
-  ACCOUNT_STILL_REFERENCED_BY_STUDENT("identity.error.account.still.referenced.by.student"),
-  ADMIN_NOT_FOUND("identity.error.admin.not.found"),
-  INVALID_ACCOUNT_BLANK("identity.error.account.blank"),
-  INVALID_ACCOUNT_TYPE_BLANK("identity.error.account.type.blank"),
-  INVALID_CPF_BLANK("identity.error.cpf.blank"),
-  INVALID_CPF_FORMAT("identity.error.cpf.format"),
-  INVALID_CPF_LENGTH("identity.error.cpf.length"),
-  INVALID_CREATED_AT_FUTURE("identity.error.created.at.future"),
-  INVALID_EMAIL_BLANK("identity.error.email.blank"),
-  INVALID_EMAIL_FORMAT("identity.error.email.format"),
-  INVALID_EMAIL_LENGTH("identity.error.email.length"),
-  INVALID_NAME_BLANK("identity.error.name.blank"),
-  INVALID_NAME_LENGTH("identity.error.name.length"),
-  INVALID_PASSWORD_HASH_LENGTH("identity.error.password.length"),
-  INVALID_USER_BLANK("identity.error.user.blank"),
-  USER_ALREADY_EXISTS("identity.error.user.already.exists"),
-  USER_NOT_FOUND("identity.error.user.not.found"),
-  USER_STILL_REFERENCED("identity.error.user.still.referenced");
+  INVALID_ID_BLANK("error.domain.identity.id.blank", "id"),
+  INVALID_USER_ID_BLANK("error.domain.identity.user.id.blank", "userId"),
+  INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
+  INVALID_CPF_FORMAT("error.domain.identity.cpf.format", "cpf"),
+  INVALID_CPF_LENGTH("error.domain.identity.cpf.length", "cpf"),
+  INVALID_NAME_BLANK("error.domain.identity.account.name.blank", "name"),
+  INVALID_NAME_LENGTH("error.domain.identity.account.name.toolong", "name"),
+  INVALID_EMAIL_BLANK("error.domain.identity.email.blank", "email"),
+  INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
+  INVALID_EMAIL_LENGTH("error.domain.identity.email.toolong", "email"),
+  INVALID_ACCOUNT_TYPE_BLANK("error.domain.identity.account.type.blank", "accountType"),
+  INVALID_PASSWORD_HASH_BLANK("error.domain.identity.password.hash.blank", "passwordHash"),
+  INVALID_PASSWORD_HASH_LENGTH("error.domain.identity.password.hash.toolong", "passwordHash"),
+  INVALID_ACTIVE_BLANK("error.domain.identity.active.null", "active"),
+  INVALID_CREATED_AT_BLANK("error.domain.identity.created.at.blank", "createdAt"),
+  INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future", "createdAt"),
+  INVALID_ACCOUNT_BLANK("error.domain.identity.account.blank", "accountId"),
+  INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
+  INVALID_GRANTED_AT_FUTURE("error.domain.identity.granted.at.future", "grantedAt"),
+
+
+  ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
+  ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
+  ADMIN_ALREADY_EXISTS("error.domain.identity.admin.already.exists", null),
+  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found", null),
+  INVALID_ADMIN_ACCOUNT_INVALID("error.domain.identity.admin.account.invalid", null),
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
+  USER_NOT_FOUND("error.domain.identity.user.not.found", null),
+  INVALID_USER_BLANK("error.domain.identity.user.blank", null),
+
+  ACCOUNT_STILL_REFERENCED_BY_ADMIN("error.domain.identity.account.still.referenced.by.admin", null),
+  ACCOUNT_STILL_REFERENCED_BY_STAFF("error.domain.identity.account.still.referenced.by.staff", null),
+  ACCOUNT_STILL_REFERENCED_BY_STUDENT("error.domain.identity.account.still.referenced.by.student", null),
+  USER_STILL_REFERENCED("error.domain.identity.user.still.referenced", null);
+
 
   private final String bundleKey;
+  private final String fieldName;
 
-  IdentityErrorCodes(String bundleKey) {
+  /**
+   * Constructor for the IdentityErrorCodes enum.
+   *
+   * @param bundleKey The internationalization resource key associated with the error.
+   * @param fieldName The name of the field associated with the error, or null if not field-specific.
+   */
+  IdentityErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
+    this.fieldName = fieldName;
   }
 }

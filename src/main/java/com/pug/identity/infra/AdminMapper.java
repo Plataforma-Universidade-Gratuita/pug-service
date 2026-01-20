@@ -2,19 +2,27 @@ package com.pug.identity.infra;
 
 import com.pug.identity.domain.Admin;
 import com.pug.identity.infra.persistence.AdminEntity;
+import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between Admin domain and AdminsEntity persistence. */
+/**
+ * Maps between Admin domain and AdminEntity persistence.
+ */
 public final class AdminMapper {
-  /** Private constructor to prevent instantiation. */
-  private AdminMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private AdminMapper() {
+  }
 
   /**
-   * Converts an AdminsEntity to an Admin domain object.
+   * Maps an AdminEntity to an Admin domain object.
    *
-   * @param e the AdminsEntity to convert.
-   * @return the corresponding Admin domain object.
+   * @param e the AdminEntity to convert.
+   * @return the corresponding Admin domain object, or null if entity is null.
+   * @throws AppValidationException if the data in the entity (e.g., grantedAt) is invalid
+   *                                according to domain rules, indicating corrupted data in persistence.
    */
-  public static Admin toDomain(AdminEntity e) {
+  public static Admin toDomain(AdminEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
@@ -22,10 +30,10 @@ public final class AdminMapper {
   }
 
   /**
-   * Converts an Admin domain object to an AdminsEntity.
+   * Maps an Admin domain object to an AdminEntity.
    *
    * @param d the Admin domain object to convert.
-   * @return the corresponding AdminsEntity.
+   * @return the corresponding AdminEntity.
    */
   public static AdminEntity toEntity(Admin d) {
     if (d == null) {

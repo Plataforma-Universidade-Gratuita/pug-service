@@ -1,40 +1,42 @@
 package com.pug.identity.presenter.mappers;
 
+import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+
 import java.util.Locale;
 
-/** Mapper class for converting PersonView to PersonResponse. */
+/**
+ * Mapper class for converting UserView to UserResponse.
+ */
 public final class UserPresenter {
-  /** Private constructor to prevent instantiation. */
-  private UserPresenter() {}
-
   /**
-   * Converts a PersonView to a PersonResponse.
-   *
-   * @param v the PersonView to convert
-   * @param locale the locale for localization
-   * @return the converted PersonResponse
+   * Private constructor to prevent instantiation.
    */
-  public static UserResponse toResponse(UserView v, Locale locale) {
-    String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
-    return new UserResponse(
-        v.id(), v.cpf(), formatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted);
+  private UserPresenter() {
   }
 
   /**
-   * Returns the formatted representation of the CPF (xxx.xxx.xxx-xx).
+   * Converts a UserView to a UserResponse.
    *
-   * @return the formatted CPF as a String
+   * @param v      the UserView to convert
+   * @param locale the locale for localization
+   * @return the converted UserResponse
+   * @throws AppValidationException if the CPF in the UserView is not valid when formatting.
+   *                                This might indicate corrupted data in the read model.
    */
-  private static String formatted(String v) {
-    return v.substring(0, 3)
-        + "."
-        + v.substring(3, 6)
-        + "."
-        + v.substring(6, 9)
-        + "-"
-        + v.substring(9);
+  public static UserResponse toResponse(UserView v, Locale locale) {
+    if (v == null) {
+      return null;
+    }
+    String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
+
+    String formattedCpf;
+    formattedCpf = new Cpf(v.cpf()).toFormattedString();
+
+    return new UserResponse(
+            v.id(), v.cpf(), formattedCpf, v.name(), v.createdAt(), createdAtFormatted);
   }
 }

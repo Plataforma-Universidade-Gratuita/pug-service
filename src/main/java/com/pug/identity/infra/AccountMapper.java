@@ -3,56 +3,65 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between Account domain and AccountsEntity persistence. */
+/**
+ * Maps between Account domain and AccountEntity persistence.
+ */
 public final class AccountMapper {
-  /** Private constructor to prevent instantiation. */
-  private AccountMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private AccountMapper() {
+  }
 
   /**
-   * Entity -> Domain (uses domain builder).
+   * Maps an AccountEntity to an Account domain object.
    *
-   * @param e entity.
-   * @return domain object or null if entity is null
+   * @param e the AccountEntity.
+   * @return the Account domain object, or null if entity is null.
+   * @throws AppValidationException if the data in the entity (e.g., email) is invalid
+   *                                according to domain rules, indicating corrupted data in persistence.
    */
-  public static Account toDomain(AccountEntity e) {
+  public static Account toDomain(AccountEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
     return Account.builder()
-        .id(e.getId())
-        .userId(e.getUserId())
-        .email(new Email(e.getEmail()))
-        .accountType(e.getAccountType())
-        .passwordHash(e.getPasswordHash())
-        .createdAt(e.getCreatedAt())
-        .build();
+            .id(e.getId())
+            .userId(e.getUserId())
+            .email(new Email(e.getEmail()))
+            .accountType(e.getAccountType())
+            .passwordHash(e.getPasswordHash())
+            .createdAt(e.getCreatedAt())
+            .build();
   }
 
   /**
-   * Domain -> Entity (for persist).
+   * Maps an Account domain object to an AccountEntity for persistence.
    *
-   * @param d domain object.
-   * @return entity or null if domain is null.
+   * @param d the Account domain object.
+   * @return the AccountEntity, or null if domain is null.
    */
   public static AccountEntity toEntity(Account d) {
     if (d == null) {
       return null;
     }
     return AccountEntity.builder()
-        .userId(d.getUserId())
-        .email(d.getEmail().toString())
-        .accountType(d.getAccountType())
-        .passwordHash(d.getPasswordHash())
-        .createdAt(d.getCreatedAt())
-        .build();
+            .id(d.getId())
+            .userId(d.getUserId())
+            .email(d.getEmail().toString())
+            .accountType(d.getAccountType())
+            .passwordHash(d.getPasswordHash())
+            .createdAt(d.getCreatedAt())
+            .build();
   }
 
   /**
-   * Copy domain fields into an existing entity (for update).
+   * Copies domain fields into an existing AccountEntity (for update).
    *
-   * @param d domain object.
-   * @param e entity to copy into.
+   * @param d the Account domain object.
+   * @param e the AccountEntity to copy into.
    */
   public static void copy(Account d, AccountEntity e) {
     if (d == null || e == null) {

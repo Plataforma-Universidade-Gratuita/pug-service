@@ -4,9 +4,11 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.AdminEntity;
 
 /**
- * Admin with Account for queries.
+ * Record representing a combination of AdminEntity and AccountEntity,
+ * typically used in JPA projections to simplify data retrieval.
  *
- * @param admin the admin entity
- * @param account the account entity
+ * @param admin   the AdminEntity.
+ * @param account the AccountEntity.
  */
-public record AdminAcc(AdminEntity admin, AccountEntity account) {}
+public record AdminAcc(AdminEntity admin, AccountEntity account) {
+}

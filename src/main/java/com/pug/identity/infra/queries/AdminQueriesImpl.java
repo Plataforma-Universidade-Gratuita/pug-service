@@ -14,6 +14,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,15 +22,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of AdminQueries using JPA EntityManager. */
+/**
+ * Implementation of AdminQueries using JPA EntityManager and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AdminQueriesImpl implements AdminQueries {
 
-  @Inject EntityManager em;
+  @Inject
+  EntityManager em;
 
   private static final String SELECT_BASE =
-      """
+          """
                   select new com.pug.identity.infra.read.dtos.AdminView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
@@ -78,31 +82,31 @@ public class AdminQueriesImpl implements AdminQueries {
       return List.of();
     }
     var q =
-        em.createQuery(
-            SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
+            em.createQuery(
+                    SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
     q.setParameter("cpf", cpf);
     return q.getResultList();
   }
 
   @Override
   public List<AdminView> searchByName(String key) {
-    List<UserEntity> personHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
-    if (personHits.isEmpty()) {
+    List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
+    if (userHits.isEmpty()) {
       return List.of();
     }
 
-    List<UUID> userIds = personHits.stream().map(UserEntity::getId).toList();
+    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     var rows =
-        em.createQuery(
-                """
-                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                        from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                        where acc.userId in :ids
-                        """,
-                AdminAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
+            em.createQuery(
+                            """
+                                    select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                                    from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                                    where acc.userId in :ids
+                                    """,
+                            AdminAcc.class)
+                    .setParameter("ids", userIds)
+                    .getResultList();
 
     Map<UUID, List<AdminAcc>> byUser = new HashMap<>();
     for (AdminAcc row : rows) {
@@ -110,7 +114,7 @@ public class AdminQueriesImpl implements AdminQueries {
     }
 
     List<AdminView> out = new ArrayList<>();
-    for (UserEntity u : personHits) {
+    for (UserEntity u : userHits) {
       List<AdminAcc> pairs = byUser.get(u.getId());
       if (pairs == null) {
         continue;
@@ -122,14 +126,22 @@ public class AdminQueriesImpl implements AdminQueries {
     return out;
   }
 
-  private static AdminView toView(AdminEntity a, AccountEntity acc, UserEntity u) {
+  /**
+   * Converts an AdminEntity, AccountEntity, and UserEntity into an AdminView.
+   *
+   * @param adminEntity   the AdminEntity.
+   * @param accountEntity the associated AccountEntity.
+   * @param userEntity    the associated UserEntity.
+   * @return the AdminView.
+   */
+  private static AdminView toView(AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
     return new AdminView(
-        new AccountView(
-            acc.getId(),
-            new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()),
-            acc.getEmail(),
-            acc.getAccountType(),
-            acc.getCreatedAt()),
-        a.getGrantedAt());
+            new AccountView(
+                    accountEntity.getId(),
+                    new UserView(userEntity.getId(), userEntity.getCpf(), userEntity.getName(), userEntity.getCreatedAt()),
+                    accountEntity.getEmail(),
+                    accountEntity.getAccountType(),
+                    accountEntity.getCreatedAt()),
+            adminEntity.getGrantedAt());
   }
 }

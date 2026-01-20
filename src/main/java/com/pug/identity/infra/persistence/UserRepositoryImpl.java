@@ -3,23 +3,27 @@ package com.pug.identity.infra.persistence;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
 import com.pug.identity.infra.UserMapper;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository implementation for Person aggregate. */
+/**
+ * Repository implementation for User aggregate.
+ */
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 
   @Transactional
   @Override
-  public User persist(User entity) {
+  public User persist(User entity) throws AppValidationException {
     if (entity == null) {
       return null;
     }
@@ -30,7 +34,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
 
   @Transactional
   @Override
-  public List<User> persistAll(Iterable<User> entities) {
+  public List<User> persistAll(Iterable<User> entities) throws AppValidationException {
     if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
@@ -74,12 +78,12 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
-  public Optional<User> findOptionalById(UUID id) {
+  public Optional<User> findOptionalById(UUID id) throws AppValidationException {
     return findByIdOptional(id).map(UserMapper::toDomain);
   }
 
   @Override
-  public Optional<User> findOptionalByCpf(String cpf) {
+  public Optional<User> findOptionalByCpf(String cpf) throws AppValidationException {
     if (StringUtils.isEmpty(cpf)) {
       return Optional.empty();
     }
@@ -87,12 +91,12 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
-  public List<User> listAllUsers() {
+  public List<User> listAllUsers() throws AppValidationException {
     return listAll().stream().map(UserMapper::toDomain).toList();
   }
 
   @Override
-  public List<User> listByCpfs(Iterable<String> cpfs) {
+  public List<User> listByCpfs(Iterable<String> cpfs) throws AppValidationException {
     if (CollectionUtils.isEmpty(cpfs)) {
       return List.of();
     }

@@ -1,13 +1,14 @@
 package com.pug.identity.infra.persistence;
 
+// REMOVIDO: import com.pug.shared.infra.persistence.BaseUuidV7Entity; // <<-- NÃO ESTENDE
+
 import com.pug.shared.infra.persistence.TimestampColumnsListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.OffsetDateTime;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -16,17 +17,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Admins entity representing admin users in the system. */
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * Admin entity representing admin users in the system.
+ */
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "accountId")
-@ToString(of = {"accountId"})
+@ToString(of = {"accountId", "grantedAt"})
 @Entity
 @Table(name = "admins")
 @EntityListeners(TimestampColumnsListener.class)
+@Builder(toBuilder = true)
 public class AdminEntity {
 
   @Id

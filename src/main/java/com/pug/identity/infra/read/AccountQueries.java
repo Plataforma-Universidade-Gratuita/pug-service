@@ -1,14 +1,17 @@
 package com.pug.identity.infra.read;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Accounts. */
+/**
+ * Queries related to Accounts.
+ */
 public interface AccountQueries {
   /**
-   * Finds a AccountView by its ID.
+   * Finds an AccountView by its ID.
    *
    * @param id the UUID of the AccountView to find.
    * @return an Optional containing the found AccountView, or empty if not found.
@@ -16,7 +19,7 @@ public interface AccountQueries {
   Optional<AccountView> findOptionalById(UUID id);
 
   /**
-   * Finds a AccountView by its email.
+   * Finds an AccountView by its email.
    *
    * @param email the email of the AccountView to find.
    * @return an Optional containing the found AccountView, or empty if not found.
@@ -39,7 +42,7 @@ public interface AccountQueries {
   List<AccountView> listByCpf(String cpf);
 
   /**
-   * Searches for AccountView objects by name.
+   * Searches for AccountView objects by name (of the associated user).
    *
    * @param key the name key to search for.
    * @return a list of AccountView objects matching the search key.

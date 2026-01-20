@@ -1,6 +1,6 @@
 package com.pug.shared.presenter.rest.mappers;
 
-import com.pug.shared.domain.enums.ErrorCodes;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
@@ -40,8 +40,8 @@ public class ConstraintViolationExceptionMapper
     details.put("count", violations.size());
     details.put("violations", violations);
 
-    String msg = i18n.translation(ErrorCodes.VALIDATION_ERROR.getBundleKey());
-    ApiError error = new ApiError(ErrorCodes.VALIDATION_ERROR.toString(), msg, details);
+    String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
+    ApiError error = new ApiError(SharedErrorCodes.VALIDATION_ERROR.toString(), msg, details);
 
     return Response.status(422)
             .type(MediaType.APPLICATION_JSON_TYPE)
