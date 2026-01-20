@@ -1,6 +1,5 @@
 package com.pug.identity.presenter;
 
-import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.read.dtos.AdminView;
@@ -17,7 +16,6 @@ import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;

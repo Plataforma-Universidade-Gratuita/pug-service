@@ -1,7 +1,6 @@
 package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

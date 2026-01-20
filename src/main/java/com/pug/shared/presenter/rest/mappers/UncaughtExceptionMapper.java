@@ -3,33 +3,49 @@ package com.pug.shared.presenter.rest.mappers;
 import com.pug.shared.domain.enums.ErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
-import jakarta.enterprise.context.ApplicationScoped;
+import com.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
 
-/** Mapper para capturar exceções não tratadas e retornar uma resposta de erro genérica. */
+/**
+ * Mapper to catch uncaught exceptions and return a generic error response.
+ */
 @Provider
-@ApplicationScoped
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
-  @Inject I18n i18n;
+  private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
+
+  @Inject
+  I18n i18n;
 
   /**
-   * Mapeia exceções não tratadas para uma resposta HTTP 500 com uma mensagem de erro genérica.
+   * Maps uncaught exceptions to an HTTP 500 response with a generic error message.
    *
-   * @param ex A exceção capturada.
-   * @return Uma resposta HTTP 500 com detalhes do erro.
+   * @param ex The caught exception.
+   * @return An HTTP 500 response with error details.
    */
   @Override
   public Response toResponse(Throwable ex) {
+    LOG.error("An uncaught exception occurred:", ex);
+
     String msg = i18n.translation(ErrorCodes.INTERNAL_ERROR.getBundleKey());
+
+    ApiError apiError = ApiError.of(
+            ErrorCodes.INTERNAL_ERROR.name(),
+            msg,
+            Map.of("exceptionType", ex.getClass().getSimpleName())
+    );
+
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(ErrorCodes.INTERNAL_ERROR.toString(), msg, Map.of()))
-        .build();
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(apiError))
+            .build();
   }
 }

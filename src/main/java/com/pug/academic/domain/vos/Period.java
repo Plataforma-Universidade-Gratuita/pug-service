@@ -1,7 +1,7 @@
 package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.shared.exceptions.AppValidationException;
+
 import java.time.LocalDate;
 
 /**

@@ -8,13 +8,25 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/** Utility class for text normalization. */
+/**
+ * Utility class for string manipulation, including normalization and formatting.
+ */
 public final class StringUtils {
   private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
-  private StringUtils() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private StringUtils() {
+  }
 
-  /** Lowercase + remove accents + trim. Null-safe. */
+  /**
+   * Converts a string to lowercase, removes accents (diacritics), and trims leading/trailing whitespace.
+   * Null-safe: returns an empty string if the input is null.
+   *
+   * @param s the string to fold.
+   * @return the folded string.
+   */
   public static String fold(String s) {
     if (s == null) {
       return "";
@@ -24,32 +36,32 @@ public final class StringUtils {
   }
 
   /**
-   * Check if string is null or blank.
+   * Checks if a string is null or blank (empty or contains only whitespace characters).
    *
-   * @param s string to check.
-   * @return true if null or blank.
+   * @param s the string to check.
+   * @return true if the string is null or blank, false otherwise.
    */
   public static boolean isEmpty(String s) {
     return s == null || s.isBlank();
   }
 
   /**
-   * Trim string. Null-safe.
+   * Trims leading and trailing whitespace from a string. Null-safe.
    *
-   * @param s string to trim.
-   * @return trimmed string or null if input was null.
+   * @param s the string to trim.
+   * @return the trimmed string, or null if the input was null.
    */
   public static String trim(String s) {
     return s == null ? null : s.trim();
   }
 
   /**
-   * Format an OffsetDateTime into a human-readable string using the given locale. Null-safe:
-   * returns "" if dateTime is null.
+   * Formats an {@code OffsetDateTime} into a human-readable string using the specified locale.
+   * Null-safe: returns an empty string if {@code dateTime} is null.
    *
-   * @param dateTime the date-time to format
-   * @param locale the target locale; if null, system default is used
-   * @return localized date-time string, or "" if dateTime is null
+   * @param dateTime the date-time to format.
+   * @param locale   the target locale; if null, the system default is used.
+   * @return a localized date-time string, or an empty string if {@code dateTime} is null.
    */
   public static String toStringFormatted(OffsetDateTime dateTime, Locale locale) {
     if (dateTime == null) {
@@ -61,12 +73,12 @@ public final class StringUtils {
   }
 
   /**
-   * Format a LocalDate into a human-readable string using the given locale. Null-safe: returns ""
-   * if date is null.
+   * Formats a {@code LocalDate} into a human-readable string using the specified locale.
+   * Null-safe: returns an empty string if {@code date} is null.
    *
-   * @param date the date to format
-   * @param locale the target locale; if null, system default is used
-   * @return localized date string, or "" if date is null
+   * @param date   the date to format.
+   * @param locale the target locale; if null, the system default is used.
+   * @return a localized date string, or an empty string if {@code date} is null.
    */
   public static String toStringFormatted(LocalDate date, Locale locale) {
     if (date == null) {

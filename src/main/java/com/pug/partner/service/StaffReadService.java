@@ -3,7 +3,6 @@ package com.pug.partner.service;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.infra.read.StaffQueries;
 import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

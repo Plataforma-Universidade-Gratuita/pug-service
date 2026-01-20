@@ -5,7 +5,7 @@ import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
-import com.pug.shared.exceptions.AppValidationException;
+
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

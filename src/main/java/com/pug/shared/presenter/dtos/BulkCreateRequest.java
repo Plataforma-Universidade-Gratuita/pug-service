@@ -2,6 +2,7 @@ package com.pug.shared.presenter.dtos;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -9,11 +10,11 @@ import java.util.Objects;
  * Bulk create request DTO.
  *
  * @param entities the list of entities to create
- * @param <T> the type of the entities
+ * @param <T>      the type of the entities
  */
 public record BulkCreateRequest<T>(@NotEmpty List<@Valid T> entities) {
   /**
-   * Constructor to ensure immutability of the entities list.
+   * Compact constructor to ensure immutability of the entities list.
    *
    * @param entities the list of entities to create.
    */
@@ -22,9 +23,9 @@ public record BulkCreateRequest<T>(@NotEmpty List<@Valid T> entities) {
   }
 
   /**
-   * Gets the list of entities to create.
+   * Gets a defensive copy of the list of entities to create.
    *
-   * @return the list of entities.
+   * @return a new List containing the entities.
    */
   @Override
   public List<T> entities() {

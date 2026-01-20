@@ -3,7 +3,6 @@ package com.pug.partner.service;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;

@@ -1,11 +1,10 @@
 package com.pug.geo.service.dtos;
 
-import com.pug.geo.domain.vos.IbgeCode;
-
 /**
- * Command to create a new city.
+ * Command for creating or updating a city.
  *
- * @param name the name of the city
- * @param ibgeCode the IBGE code of the city
+ * @param name           the name of the city.
+ * @param ibgeCodeString the IBGE code of the city as a string.
  */
-public record CityCreateOrUpdateCommand(String name, IbgeCode ibgeCode) {}
+public record CityCreateOrUpdateCommand(String name, String ibgeCodeString) {
+}

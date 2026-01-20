@@ -5,8 +5,6 @@ import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;

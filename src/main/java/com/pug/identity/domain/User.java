@@ -2,7 +2,6 @@ package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
 import java.time.Clock;

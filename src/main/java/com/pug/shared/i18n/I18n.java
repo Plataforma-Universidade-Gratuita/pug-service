@@ -1,12 +1,15 @@
 package com.pug.shared.i18n;
 
 import jakarta.enterprise.context.ApplicationScoped;
+
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
-/** A simple internationalization (i18n) utility class for retrieving localized messages. */
+/**
+ * A simple internationalization (i18n) utility class for retrieving localized messages.
+ */
 @ApplicationScoped
 public class I18n {
   private static final String BUNDLE = "messages";
@@ -14,7 +17,7 @@ public class I18n {
   /**
    * Retrieve the translation for the given key and format it with the provided arguments.
    *
-   * @param key the key to look up in the resource bundle.
+   * @param key  the key to look up in the resource bundle.
    * @param args optional arguments to format the message.
    * @return the translated and formatted message.
    */

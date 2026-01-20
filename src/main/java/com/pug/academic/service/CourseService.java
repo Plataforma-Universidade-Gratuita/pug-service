@@ -6,8 +6,6 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.dtos.CourseCreateBulkCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;

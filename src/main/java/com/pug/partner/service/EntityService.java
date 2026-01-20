@@ -8,8 +8,6 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.EntityCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

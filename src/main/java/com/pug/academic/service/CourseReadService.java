@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.CourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;

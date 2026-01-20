@@ -7,7 +7,6 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;

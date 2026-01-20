@@ -10,8 +10,6 @@ import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

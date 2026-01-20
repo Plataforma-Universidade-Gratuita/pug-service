@@ -9,8 +9,6 @@ import com.pug.partner.service.dtos.StaffCreateBulkCommand;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

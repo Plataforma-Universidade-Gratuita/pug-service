@@ -1,11 +1,14 @@
 package com.pug.geo.infra.read;
 
 import com.pug.geo.infra.read.dtos.CityView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to City. */
+/**
+ * Queries related to City.
+ */
 public interface CityQueries {
   /**
    * Finds a CityView by its ID.

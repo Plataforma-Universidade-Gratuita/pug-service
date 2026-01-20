@@ -1,16 +1,15 @@
 package com.pug.shared.presenter.rest;
 
 import java.time.Instant;
-import java.util.Map;
 
 /**
  * API response envelope.
  *
- * @param success indicates if the request was successful
- * @param data the response data when success is true
- * @param error the error details when success is false
+ * @param success   indicates if the request was successful
+ * @param data      the response data when success is true
+ * @param error     the error details when success is false
  * @param timestamp the time the response was created
- * @param <T> the type of the response data
+ * @param <T>       the type of the response data
  */
 public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp) {
 
@@ -18,7 +17,7 @@ public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant ti
    * Success response (200).
    *
    * @param data Data.
-   * @param <T> Type of data.
+   * @param <T>  Type of data.
    * @return ApiEnvelope.
    */
   public static <T> ApiEnvelope<T> ok(T data) {
@@ -29,7 +28,7 @@ public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant ti
    * Created response (201).
    *
    * @param data Data.
-   * @param <T> Type of data.
+   * @param <T>  Type of data.
    * @return ApiEnvelope.
    */
   public static <T> ApiEnvelope<T> created(T data) {
@@ -44,28 +43,5 @@ public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant ti
    */
   public static ApiEnvelope<Void> error(ApiError err) {
     return new ApiEnvelope<>(false, null, err, Instant.now());
-  }
-
-  /**
-   * Error response.
-   *
-   * @param code Error code.
-   * @param message Error message.
-   * @return ApiEnvelope.
-   */
-  public static ApiEnvelope<Void> error(String code, String message) {
-    return error(ApiError.of(code, message, Map.of()));
-  }
-
-  /**
-   * Error response.
-   *
-   * @param code Error code.
-   * @param message Error message.
-   * @param details Error details.
-   * @return ApiEnvelope.
-   */
-  public static ApiEnvelope<Void> error(String code, String message, Map<String, Object> details) {
-    return error(ApiError.of(code, message, details));
   }
 }

@@ -1,6 +1,5 @@
 package com.pug.partner.domain.enums;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
 /**

@@ -2,7 +2,6 @@ package com.pug.partner.domain;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;

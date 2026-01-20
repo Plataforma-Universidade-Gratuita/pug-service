@@ -1,7 +1,6 @@
 package com.pug.academic.domain;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.AccessLevel;

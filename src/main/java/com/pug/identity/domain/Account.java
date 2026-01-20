@@ -3,7 +3,6 @@ package com.pug.identity.domain;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import java.time.Clock;
 import java.time.OffsetDateTime;
