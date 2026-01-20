@@ -1,32 +1,45 @@
 package com.pug.partner.domain.enums;
 
+import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
 /**
  * Enum representing error codes specific to the partner domain.
  *
  * <p>Each error code is associated with a specific validation failure scenario and has a {@code
- * bundleKey} that results into a localized error message.
+ * bundleKey} that results into a localized error message. It also includes a {@code fieldName}
+ * property to identify the specific field related to the error, if applicable.
  */
 @Getter
 public enum PartnerErrorCodes implements GenericErrorCodes {
-  ENTITY_ALREADY_EXISTS("partner.error.entity.exists"),
-  ENTITY_NOT_FOUND("partner.error.entity.notfound"),
-  INVALID_ADDRESS_LENGTH("partner.error.address.toolong"),
-  INVALID_CITY_BLANK("partner.error.city.blank"),
-  INVALID_CNPJ_BLANK("partner.error.cnpj.blank"),
-  INVALID_CNPJ_LENGTH("partner.error.cnpj.length"),
-  INVALID_CNPJ_FORMAT("partner.error.cnpj.format"),
-  INVALID_NAME_BLANK("partner.error.name.blank"),
-  INVALID_NAME_LENGTH("partner.error.name.toolong"),
-  INVALID_STAFF_ACCOUNT_BLANK("partner.error.staff.account.blank"),
-  INVALID_STAFF_ENTITY_BLANK("partner.error.staff.entity.blank"),
-  STAFF_ALREADY_EXISTS("partner.error.staff.exists"),
-  STAFF_NOT_FOUND("partner.error.staff.notfound");
+  INVALID_ID_BLANK("error.domain.partner.id.blank", "id"),
+  INVALID_CNPJ_BLANK("error.domain.partner.cnpj.blank", "cnpj"),
+  INVALID_CNPJ_LENGTH("error.domain.partner.cnpj.length", "cnpj"),
+  INVALID_CNPJ_FORMAT("error.domain.partner.cnpj.format", "cnpj"),
+  INVALID_NAME_BLANK("error.domain.partner.name.blank", "name"),
+  INVALID_NAME_LENGTH("error.domain.partner.name.toolong", "name"),
+  INVALID_CITY_BLANK("error.domain.partner.city.blank", "cityId"),
+  INVALID_ADDRESS_LENGTH("error.domain.partner.address.toolong", "address"),
+  INVALID_STAFF_ACCOUNT_BLANK("error.domain.partner.staff.account.blank", "accountId"),
+  INVALID_STAFF_ENTITY_BLANK("error.domain.partner.staff.entity.blank", "entityId"),
+
+  ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists", null),
+  ENTITY_NOT_FOUND("error.domain.partner.entity.notfound", null),
+  STAFF_ALREADY_EXISTS("error.domain.partner.staff.exists", null),
+  STAFF_NOT_FOUND("error.domain.partner.staff.notfound", null),
+  ENTITY_STILL_REFERENCED("error.domain.partner.entity.still.referenced", null);
 
   private final String bundleKey;
+  private final String fieldName;
 
-  PartnerErrorCodes(String bundleKey) {
+  /**
+   * Constructor for the PartnerErrorCodes enum.
+   *
+   * @param bundleKey The internationalization resource key associated with the error.
+   * @param fieldName The name of the field associated with the error, or null if not field-specific.
+   */
+  PartnerErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
+    this.fieldName = fieldName;
   }
 }

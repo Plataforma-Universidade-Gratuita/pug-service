@@ -1,11 +1,14 @@
 package com.pug.partner.infra.read;
 
 import com.pug.partner.infra.read.dtos.EntityView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Entities. */
+/**
+ * Queries related to Entities.
+ */
 public interface EntityQueries {
   /**
    * Finds an EntityView by its ID.

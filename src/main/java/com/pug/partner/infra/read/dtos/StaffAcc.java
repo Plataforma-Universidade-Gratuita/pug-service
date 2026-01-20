@@ -6,12 +6,14 @@ import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.persistence.StaffEntity;
 
 /**
- * Staff with Account, Entity and City for queries.
+ * Record representing a combination of StaffEntity, AccountEntity, EntityEntity, and CityEntity,
+ * typically used in JPA projections to simplify data retrieval for StaffView.
  *
- * @param staff the staff entity
- * @param account the account entity
- * @param entity the entity entity
- * @param city the city entity
+ * @param staff   the StaffEntity.
+ * @param account the AccountEntity.
+ * @param entity  the EntityEntity.
+ * @param city    the CityEntity.
  */
 public record StaffAcc(
-    StaffEntity staff, AccountEntity account, EntityEntity entity, CityEntity city) {}
+        StaffEntity staff, AccountEntity account, EntityEntity entity, CityEntity city) {
+}

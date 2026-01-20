@@ -1,19 +1,21 @@
 package com.pug.partner.presenter.dtos;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 /**
  * Request to create a new staff member.
  *
- * @param cpf the CPF of the staff member
- * @param name the name of the staff member
- * @param email the email of the staff member
- * @param password the password for the staff member's account
+ * @param cpfString        the CPF of the staff member as a string.
+ * @param name             the name of the staff member.
+ * @param emailString      the email of the staff member as a string.
+ * @param password         the password for the staff member's account.
+ * @param entityCnpjString the CNPJ of the entity the staff is part of, as a string.
  */
 public record StaffCreateRequest(
-    @NotBlank String cpf,
-    @NotBlank @Size(max = 150) String name,
-    @NotBlank @Email @Size(max = 254) String email,
-    @NotBlank @Size(min = 8, max = 255) String password) {}
+        @NotBlank String cpfString,
+        @NotBlank @Size(max = 150) String name,
+        @NotBlank String emailString,
+        @NotBlank @Size(min = 8, max = 255) String password,
+        @NotBlank String entityCnpjString) {
+}

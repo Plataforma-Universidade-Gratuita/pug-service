@@ -1,15 +1,16 @@
 package com.pug.partner.service.dtos;
 
-import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.partner.domain.vos.Cnpj;
-
 /**
- * Command object for creating or updating an Entity.
+ * Command DTO for creating or updating an Entity.
  *
- * @param name the name of the entity
- * @param cnpj the CNPJ of the entity
- * @param address the address of the entity
- * @param cityIbge the IBGE code of the city where the entity is located
+ * @param cnpjString     the CNPJ of the entity as a string.
+ * @param name           the name of the entity.
+ * @param cityIbgeString the IBGE code of the city where the entity is located, as a string.
+ * @param address        the address where the entity is located.
  */
 public record EntityCreateOrUpdateCommand(
-    String name, Cnpj cnpj, String address, IbgeCode cityIbge) {}
+        String cnpjString,
+        String name,
+        String cityIbgeString,
+        String address) {
+}

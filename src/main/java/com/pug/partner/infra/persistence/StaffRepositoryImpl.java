@@ -3,23 +3,27 @@ package com.pug.partner.infra.persistence;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.infra.StaffMapper;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the StaffRepository using Panache. */
+/**
+ * Implementation of the StaffRepository using Panache.
+ */
 @ApplicationScoped
 public class StaffRepositoryImpl
-    implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
+        implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
   @Transactional
   @Override
-  public Staff persist(Staff entity) {
+  public Staff persist(Staff entity) throws AppValidationException {
     if (entity == null) {
       return null;
     }
@@ -31,7 +35,7 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public List<Staff> persistAll(Iterable<Staff> entities) {
+  public List<Staff> persistAll(Iterable<Staff> entities) throws AppValidationException {
     if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
@@ -53,7 +57,20 @@ public class StaffRepositoryImpl
     List<StaffEntity> loaded = find("accountId in ?1", accountIds).list();
 
     return (loaded.size() == batch.size() ? loaded : batch)
-        .stream().map(StaffMapper::toDomain).toList();
+            .stream().map(StaffMapper::toDomain).toList();
+  }
+
+  @Transactional
+  @Override
+  public void update(Staff entity) {
+    if (entity == null) {
+      return;
+    }
+    StaffEntity managed = getEntityManager().find(StaffEntity.class, entity.getAccountId());
+    if (managed == null) {
+      return;
+    }
+    StaffMapper.copy(entity, managed);
   }
 
   @Transactional
@@ -69,17 +86,17 @@ public class StaffRepositoryImpl
   }
 
   @Override
-  public Optional<Staff> findOptionalById(UUID accountId) {
+  public Optional<Staff> findOptionalById(UUID accountId) throws AppValidationException {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
   @Override
-  public List<Staff> listAllStaff() {
+  public List<Staff> listAllStaff() throws AppValidationException {
     return listAll().stream().map(StaffMapper::toDomain).toList();
   }
 
   @Override
-  public List<Staff> listAllByEntityId(UUID entityId) {
+  public List<Staff> listAllByEntityId(UUID entityId) throws AppValidationException {
     return find("entityId = ?1", entityId).list().stream().map(StaffMapper::toDomain).toList();
   }
 

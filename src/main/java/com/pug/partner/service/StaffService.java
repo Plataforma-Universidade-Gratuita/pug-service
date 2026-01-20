@@ -2,48 +2,117 @@ package com.pug.partner.service;
 
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
+import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.StaffCreateBulkCommand;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-/** Service for managing staff assignments to partner entities. */
+/**
+ * Service for managing staff assignments to partner entities.
+ */
 @ApplicationScoped
 public class StaffService {
 
-  @Inject StaffRepository repo;
-  @Inject AccountService accountService;
-  @Inject EntityService entityService;
+  private static final Logger LOG = Logger.getLogger(StaffService.class);
+
+  @Inject
+  StaffRepository repo;
+  @Inject
+  AccountService accountService;
+  @Inject
+  EntityService entityService;
+
+  /**
+   * Helper method to process input and build Staff domain object,
+   * collecting all validation problems.
+   *
+   * @param accountId        The ID of the associated account.
+   * @param entityCnpjString The CNPJ string of the associated entity.
+   * @param problems         List to collect AppValidationException.Problem instances.
+   * @return The constructed Staff domain object if no problems, or null if problems occurred.
+   */
+  private Staff processStaffInput(UUID accountId, String entityCnpjString, List<AppValidationException.Problem> problems) {
+    UUID entityId = null;
+    Cnpj entityCnpjVO = null;
+
+    try {
+      if (entityCnpjString != null && !entityCnpjString.isBlank()) {
+        entityCnpjVO = new Cnpj(entityCnpjString);
+        Entity entity = entityService.getByCnpj(entityCnpjVO);
+        entityId = entity.getId();
+      }
+    } catch (AppValidationException e) {
+      problems.addAll(e.getProblems());
+    } catch (ResourceNotFoundException e) {
+      problems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
+    }
+
+    Staff staff = null;
+    try {
+      staff = Staff.createNew(accountId, entityId);
+    } catch (AppValidationException e) {
+      problems.addAll(e.getProblems());
+    }
+    return staff;
+  }
 
   /**
    * Save a new staff member by creating an account and linking them to an entity.
    *
    * @param cmd the command containing staff creation details.
    * @return the created Staff object.
-   * @throws DuplicateResourceException if a staff member with the same user ID already exists.
-   * @throws ResourceNotFoundException if the specified entity does not exist.
+   * @throws DuplicateResourceException if a staff member with the same account ID already exists.
+   * @throws ResourceNotFoundException  if the specified entity does not exist (or data corrupted in DB).
+   * @throws AppValidationException     if input validation fails for account or staff data.
    */
   @Transactional
   public Staff save(StaffCreateCommand cmd) {
-    var entity = entityService.getByCnpj(cmd.entityCnpj());
-    var account = accountService.save(cmd.accountCommand());
+    List<AppValidationException.Problem> problems = new ArrayList<>();
+    Account account = null;
 
-    if (existsByAccountId(account.getId())) {
-      throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
+    try {
+      account = accountService.save(cmd.accountCommand());
+    } catch (AppValidationException e) {
+      problems.addAll(e.getProblems());
     }
 
-    return repo.persist(Staff.createNew(account.getId(), entity.getId()));
+    Staff staffToPersist = null;
+    if (problems.isEmpty() && account != null) {
+      staffToPersist = processStaffInput(account.getId(), cmd.entityCnpjString(), problems);
+    } else {
+      staffToPersist = processStaffInput(null, cmd.entityCnpjString(), problems);
+    }
+
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+
+    if (existsByAccountId(staffToPersist.getAccountId())) {
+      throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS, Map.of("accountId", staffToPersist.getAccountId()));
+    }
+
+    return repo.persist(staffToPersist);
   }
 
   /**
@@ -51,40 +120,138 @@ public class StaffService {
    *
    * @param cmds an iterable of commands containing staff creation details.
    * @return a list of created Staff objects.
-   * @throws DuplicateResourceException if any staff member with the same user ID already exists.
-   * @throws ResourceNotFoundException if any specified entity does not exist.
+   * @throws DuplicateResourceException if any staff member with the same account ID already exists or
+   *                                    if there are duplicate account IDs in the input commands.
+   * @throws ResourceNotFoundException  if any specified entity does not exist (or data corrupted in DB).
+   * @throws AppValidationException     if input validation fails for any account or staff in the bulk.
    */
   @Transactional
   public List<Staff> saveAll(Iterable<StaffCreateBulkCommand> cmds) {
-    List<Staff> staffList = new ArrayList<>();
-    for (StaffCreateBulkCommand cmd : cmds) {
-      var entityId = entityService.getByCnpj(cmd.entityCnpj()).getId();
-      var accountsIds =
-          accountService.saveAll(cmd.accountCommands()).stream().map(Account::getId).toList();
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
 
-      if (existsAnyByAccountIdIn(accountsIds)) {
-        throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
+    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Staff> staffToPersist = new ArrayList<>();
+    Set<UUID> processedAccountIds = new HashSet<>();
+
+    for (StaffCreateBulkCommand cmd : cmds) {
+      Cnpj entityCnpjVO = null;
+      UUID entityId = null;
+      try {
+        if (cmd.entityCnpjString() != null && !cmd.entityCnpjString().isBlank()) {
+          entityCnpjVO = new Cnpj(cmd.entityCnpjString());
+          Entity entity = entityService.getByCnpj(entityCnpjVO);
+          entityId = entity.getId();
+        }
+      } catch (AppValidationException e) {
+        allCollectedProblems.addAll(e.getProblems());
+      } catch (ResourceNotFoundException e) {
+        allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
       }
 
-      for (UUID accountId : accountsIds) {
-        staffList.add(Staff.createNew(accountId, entityId));
+      List<Account> createdAccounts = new ArrayList<>();
+      try {
+        if (entityId != null) {
+          createdAccounts = accountService.saveAll(cmd.accountCommands());
+        }
+      } catch (AppValidationException e) {
+        allCollectedProblems.addAll(e.getProblems());
+      }
+
+      for (Account account : createdAccounts) {
+        List<AppValidationException.Problem> currentStaffProblems = new ArrayList<>();
+        Staff staff = processStaffInput(account.getId(), cmd.entityCnpjString(), currentStaffProblems);
+
+        if (!currentStaffProblems.isEmpty()) {
+          allCollectedProblems.addAll(currentStaffProblems);
+        } else if (staff != null) {
+          if (!processedAccountIds.add(staff.getAccountId())) {
+            allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.STAFF_ALREADY_EXISTS, "accountId"));
+          }
+          staffToPersist.add(staff);
+        }
       }
     }
-    return repo.persistAll(staffList);
+
+    if (!allCollectedProblems.isEmpty()) {
+      throw new AppValidationException(allCollectedProblems);
+    }
+
+    List<UUID> accountIdsToPersist = staffToPersist.stream()
+            .map(Staff::getAccountId)
+            .toList();
+
+    if (repo.existsAnyByAccountIdIn(accountIdsToPersist)) {
+      throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
+    }
+
+    return repo.persistAll(staffToPersist);
   }
 
   /**
    * Updates an existing staff member's account details.
    *
-   * @param id the ID of the staff user to update.
+   * @param id  the ID of the staff user to update.
    * @param cmd the command containing updated staff details.
    * @return the updated Staff object.
-   * @throws ResourceNotFoundException if the specified staff member does not exist.
+   * @throws ResourceNotFoundException if the specified staff member does not exist (or data corrupted in DB).
+   * @throws AppValidationException    if input validation fails for account or staff data.
    */
   @Transactional
   public Staff update(UUID id, StaffUpdateCommand cmd) {
-    Account updated = accountService.update(id, cmd.accountCommand());
-    return getById(updated.getId());
+    Staff current = getById(id);
+
+    List<AppValidationException.Problem> problems = new ArrayList<>();
+    Account updatedAccount = null;
+
+    if (cmd.accountCommand() != null) {
+      try {
+        updatedAccount = accountService.update(id, cmd.accountCommand());
+      } catch (AppValidationException e) {
+        problems.addAll(e.getProblems());
+      }
+    }
+
+    UUID effectiveEntityId = null;
+    if (cmd.entityCnpjString() != null) {
+      Cnpj newEntityCnpjVO = null;
+      try {
+        if (!cmd.entityCnpjString().isBlank()) {
+          newEntityCnpjVO = new Cnpj(cmd.entityCnpjString());
+          Entity entity = entityService.getByCnpj(newEntityCnpjVO);
+          effectiveEntityId = entity.getId();
+        }
+      } catch (AppValidationException e) {
+        problems.addAll(e.getProblems());
+      } catch (ResourceNotFoundException e) {
+        problems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
+      }
+    }
+    if (effectiveEntityId == null) {
+      effectiveEntityId = current.getEntityId();
+    }
+
+    Staff staffToUpdate = null;
+    try {
+      staffToUpdate = current.toBuilder()
+              .entityId(effectiveEntityId)
+              .accountId(current.getAccountId())
+              .build();
+      List<AppValidationException.Problem> staffProblems = staffToUpdate.collectValidationProblems();
+      if (!staffProblems.isEmpty()) {
+        problems.addAll(staffProblems);
+      }
+    } catch (AppValidationException e) {
+      problems.addAll(e.getProblems());
+    }
+
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+
+    repo.update(staffToUpdate);
+    return getById(id);
   }
 
   /**
@@ -92,43 +259,59 @@ public class StaffService {
    *
    * @param ids an iterable of staff user IDs to delete.
    * @return a map containing the count of deleted staff, accounts, and users.
+   * @throws com.pug.shared.exceptions.ReferencedEntityException if any associated account is still referenced by other modules.
    */
   @Transactional
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-          DeleteKeys.STAFF, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+              DeleteKeys.STAFF, 0L,
+              DeleteKeys.ACCOUNTS, 0L,
+              DeleteKeys.USERS, 0L);
     }
 
-    var deletedStaff = repo.deleteByIds(ids);
-    var deletedAccounts = accountService.deleteAll(ids);
+    long deletedStaff = repo.deleteByIds(ids);
+
+    Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(ids);
+
     return Map.of(
-        DeleteKeys.STAFF, deletedStaff,
-        DeleteKeys.ACCOUNTS, deletedAccounts.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedAccounts.getOrDefault(DeleteKeys.USERS, 0L));
+            DeleteKeys.STAFF, deletedStaff,
+            DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+            DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   /**
-   * Retrieves a staff member by their user ID.
+   * Retrieves a staff member by their account ID.
    *
-   * @param id the ID of the staff user.
+   * @param id the ID of the staff account.
    * @return the Staff object.
-   * @throws ResourceNotFoundException if the specified staff member does not exist.
+   * @throws ResourceNotFoundException if the specified staff member does not exist (or data is corrupted in DB).
    */
   public Staff getById(UUID id) {
-    return repo.findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND));
+    try {
+      return repo.findOptionalById(id)
+              .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id)));
+    } catch (AppValidationException e) {
+      LOG.errorf(e, "Data integrity error: Staff with Account ID %s in DB violates domain rules. Problems: %s",
+              id, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id));
+    }
   }
 
   /**
    * Lists all staff members.
    *
    * @return a list of all Staff objects.
+   * @throws AppValidationException if any Staff entity found is corrupted in the database.
    */
   public List<Staff> listAll() {
-    return repo.listAllStaff();
+    try {
+      return repo.listAllStaff();
+    } catch (AppValidationException e) {
+      LOG.errorf(e, "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
+              e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+    }
   }
 
   /**
@@ -136,12 +319,19 @@ public class StaffService {
    *
    * @param entityId the ID of the entity.
    * @return a list of Staff objects linked to the specified entity.
+   * @throws AppValidationException if any Staff entity found is corrupted in the database.
    */
   public List<Staff> listByEntity(UUID entityId) {
     if (entityId == null) {
       return List.of();
     }
-    return repo.listAllByEntityId(entityId);
+    try {
+      return repo.listAllByEntityId(entityId);
+    } catch (AppValidationException e) {
+      LOG.errorf(e, "Data integrity error: Corrupted Staff entity found in DB while listing by entity ID %s. Problems: %s",
+              entityId, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+    }
   }
 
   /**

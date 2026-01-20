@@ -1,12 +1,13 @@
 package com.pug.partner.service.dtos;
 
 import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.partner.domain.vos.Cnpj;
 
 /**
- * Command to create a new staff member.
+ * Command DTO for creating a new Staff member.
  *
- * @param accountCommand the command containing the data to create the underlying account.
- * @param entityCnpj the CNPJ of the entity to which the staff member will be linked.
+ * @param entityCnpjString the CNPJ of the entity as a string.
+ * @param accountCommand the command for creating the associated account.
  */
-public record StaffCreateCommand(AccountCreateCommand accountCommand, Cnpj entityCnpj) {}
+public record StaffCreateCommand(
+        String entityCnpjString,
+        AccountCreateCommand accountCommand) {}
