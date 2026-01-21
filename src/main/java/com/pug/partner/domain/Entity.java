@@ -5,16 +5,13 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
-/**
- * Entity entity aggregate.
- */
+/** Entity entity aggregate. */
 @Getter
 public class Entity {
   private final UUID id;
@@ -35,22 +32,22 @@ public class Entity {
   /**
    * Factory for new entities.
    *
-   * @param cnpj    the CNPJ of the entity
-   * @param name    the name of the entity.
-   * @param cityId  the ID of the city where the entity is located
+   * @param cnpj the CNPJ of the entity
+   * @param name the name of the entity.
+   * @param cityId the ID of the city where the entity is located
    * @param address the address where the entity is located
    * @return the created entity
    * @throws AppValidationException if initial validation fails.
    */
   public static Entity createNew(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
-            Entity.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cnpj(cnpj)
-                    .name(StringUtils.trim(name))
-                    .cityId(cityId)
-                    .address(StringUtils.trim(address))
-                    .build();
+        Entity.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cnpj(cnpj)
+            .name(StringUtils.trim(name))
+            .cityId(cityId)
+            .address(StringUtils.trim(address))
+            .build();
 
     List<AppValidationException.Problem> problems = entity.collectValidationProblems();
     if (!problems.isEmpty()) {
@@ -126,10 +123,11 @@ public class Entity {
   /**
    * Collects all validation problems for the entity's attributes.
    *
-   * <p>Checks that ID, CNPJ is not null, name is not null or blank and does not exceed 150 characters,
-   * cityId is not null, and address does not exceed 254 characters if provided.
+   * <p>Checks that ID, CNPJ is not null, name is not null or blank and does not exceed 150
+   * characters, cityId is not null, and address does not exceed 254 characters if provided.
    *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
+   *     otherwise.
    */
   private List<AppValidationException.Problem> collectValidationProblems() {
     List<AppValidationException.Problem> problems = new ArrayList<>();
@@ -138,18 +136,23 @@ public class Entity {
       problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK, "id"));
     }
     if (cnpj == null) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK, "cnpj"));
+      problems.add(
+          new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK, "cnpj"));
     }
     if (StringUtils.isEmpty(name)) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK, "name"));
+      problems.add(
+          new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK, "name"));
     } else if (name.length() > 150) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH, "name"));
+      problems.add(
+          new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH, "name"));
     }
     if (cityId == null) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK, "cityId"));
+      problems.add(
+          new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK, "cityId"));
     }
     if (address != null && address.length() > 254) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH, "address"));
+      problems.add(
+          new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH, "address"));
     }
     return problems;
   }

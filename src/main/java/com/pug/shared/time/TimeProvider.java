@@ -3,9 +3,7 @@ package com.pug.shared.time;
 import java.time.Clock;
 import java.time.Instant;
 
-/**
- * Provides the current time and clock instance.
- */
+/** Provides the current time and clock instance. */
 public interface TimeProvider {
   /**
    * Gets the current instant.

@@ -3,17 +3,14 @@ package com.pug.shared.infra.persistence;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
-/**
- * Base entity class with a UUIDv7 identifier.
- */
+/** Base entity class with a UUIDv7 identifier. */
 @Getter
 @Setter
 @SuperBuilder

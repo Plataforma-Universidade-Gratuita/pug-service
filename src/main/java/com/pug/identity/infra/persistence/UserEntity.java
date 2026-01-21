@@ -8,6 +8,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,31 +23,27 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-import java.time.OffsetDateTime;
-
-/**
- * UserEntity represents a user in the identity system.
- */
+/** UserEntity represents a user in the identity system. */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name"})
+    callSuper = true,
+    of = {"name"})
 @Entity
 @Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_users_cpf",
-                        columnNames = {"cpf"}),
-        },
-        indexes = {
-                @Index(name = "idx_users_name", columnList = "name"),
-                @Index(name = "idx_users_cpf", columnList = "cpf")
-        })
+    name = "users",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_users_cpf",
+          columnNames = {"cpf"}),
+    },
+    indexes = {
+      @Index(name = "idx_users_name", columnList = "name"),
+      @Index(name = "idx_users_cpf", columnList = "cpf")
+    })
 @EntityListeners(TimestampColumnsListener.class)
 @Indexed
 @SuperBuilder

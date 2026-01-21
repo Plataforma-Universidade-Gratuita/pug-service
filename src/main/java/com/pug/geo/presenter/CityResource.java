@@ -31,29 +31,23 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing cities.
- */
+/** REST resource for managing cities. */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject
-  ICityService writeService;
-  @Inject
-  ICityReadService readService;
+  @Inject ICityService writeService;
+  @Inject ICityReadService readService;
 
-  @Context
-  UriInfo uri;
+  @Context UriInfo uri;
 
   /**
    * Creates a new city.
@@ -64,7 +58,7 @@ public class CityResource {
   @POST
   public Response create(@Valid CityCreateOrUpdateRequest req) {
     City createdCityDomain =
-            writeService.save(new CityCreateOrUpdateCommand(req.name(), req.ibgeCodeString()));
+        writeService.save(new CityCreateOrUpdateCommand(req.name(), req.ibgeCodeString()));
 
     CityView cityView = readService.getViewById(createdCityDomain.getId());
     CityResponse responseBody = CityPresenter.toResponse(cityView);
@@ -83,21 +77,21 @@ public class CityResource {
   @Path("/bulk")
   public Response createBulk(@Valid BulkCreateRequest<CityCreateOrUpdateRequest> req) {
     List<CityCreateOrUpdateCommand> toSave =
-            req.entities().stream()
-                    .map(r -> new CityCreateOrUpdateCommand(r.name(), r.ibgeCodeString()))
-                    .collect(Collectors.toList());
+        req.entities().stream()
+            .map(r -> new CityCreateOrUpdateCommand(r.name(), r.ibgeCodeString()))
+            .collect(Collectors.toList());
 
     List<City> createdCitiesDomain = writeService.saveAll(toSave);
 
     return Response.status(Response.Status.CREATED)
-            .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(createdCitiesDomain.size())))
-            .build();
+        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(createdCitiesDomain.size())))
+        .build();
   }
 
   /**
    * Updates an existing city.
    *
-   * @param id  the ID of the city to update.
+   * @param id the ID of the city to update.
    * @param req the city update request.
    * @return a Response containing the updated city.
    */
@@ -105,8 +99,7 @@ public class CityResource {
   @Path("/{id}")
   public Response update(@PathParam("id") UUID id, @Valid CityCreateOrUpdateRequest req) {
     City updatedCityDomain =
-            writeService.update(
-                    id, new CityCreateOrUpdateCommand(req.name(), req.ibgeCodeString()));
+        writeService.update(id, new CityCreateOrUpdateCommand(req.name(), req.ibgeCodeString()));
 
     CityView cityView = readService.getViewById(updatedCityDomain.getId());
     CityResponse responseBody = CityPresenter.toResponse(cityView);
@@ -163,8 +156,9 @@ public class CityResource {
   @GET
   public Response listOrSearch(@QueryParam("q") String q) {
     List<CityView> views =
-            (StringUtils.isEmpty(q)) ? readService.listViews() : readService.search(q);
-    List<CityResponse> responseBody = views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+        (StringUtils.isEmpty(q)) ? readService.listViews() : readService.search(q);
+    List<CityResponse> responseBody =
+        views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(responseBody))).build();
   }

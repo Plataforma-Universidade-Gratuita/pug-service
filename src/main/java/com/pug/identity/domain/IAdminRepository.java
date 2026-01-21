@@ -1,14 +1,11 @@
 package com.pug.identity.domain;
 
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Admin domain objects.
- */
+/** Repository interface for managing Admin domain objects. */
 public interface IAdminRepository {
   /**
    * Persists the given Admin domain object.
@@ -16,7 +13,7 @@ public interface IAdminRepository {
    * @param entity the Admin to persist.
    * @return the persisted Admin.
    * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   Admin persist(Admin entity) throws AppValidationException;
 
@@ -26,7 +23,7 @@ public interface IAdminRepository {
    * @param entities the iterable of Admin instances to persist.
    * @return a list of persisted Admin instances.
    * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   List<Admin> persistAll(Iterable<Admin> entities) throws AppValidationException;
 
@@ -44,7 +41,7 @@ public interface IAdminRepository {
    * @param accountId the account ID of the Admin to find.
    * @return an Optional containing the found Admin, or empty if not found.
    * @throws AppValidationException if an AdminEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of a valid domain object.
+   *     domain rules, preventing the creation of a valid domain object.
    */
   Optional<Admin> findOptionalById(UUID accountId) throws AppValidationException;
 
@@ -53,7 +50,7 @@ public interface IAdminRepository {
    *
    * @return a list of all Admin instances.
    * @throws AppValidationException if any AdminEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of valid domain objects.
+   *     domain rules, preventing the creation of valid domain objects.
    */
   List<Admin> listAllAdmins() throws AppValidationException;
 

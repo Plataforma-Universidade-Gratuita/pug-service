@@ -4,18 +4,15 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * School entity aggregate.
- */
+/** School entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -32,7 +29,8 @@ public class School {
    */
   public static School createNew(String name) {
     String trimmedName = StringUtils.trim(name);
-    School school = School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
+    School school =
+        School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
 
     List<AppValidationException.Problem> problems = school.collectValidationProblems();
     if (!problems.isEmpty()) {
@@ -72,11 +70,11 @@ public class School {
     }
     if (StringUtils.isEmpty(name)) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK, "name"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK, "name"));
     } else if (name.length() > 100) {
       problems.add(
-              new AppValidationException.Problem(
-                      AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH, "name"));
+          new AppValidationException.Problem(
+              AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH, "name"));
     }
     return problems;
   }

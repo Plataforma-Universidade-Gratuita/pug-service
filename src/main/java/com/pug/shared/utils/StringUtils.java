@@ -8,21 +8,16 @@ import java.time.format.FormatStyle;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/**
- * Utility class for string manipulation, including normalization and formatting.
- */
+/** Utility class for string manipulation, including normalization and formatting. */
 public final class StringUtils {
   private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private StringUtils() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private StringUtils() {}
 
   /**
-   * Converts a string to lowercase, removes accents (diacritics), and trims leading/trailing whitespace.
-   * Null-safe: returns an empty string if the input is null.
+   * Converts a string to lowercase, removes accents (diacritics), and trims leading/trailing
+   * whitespace. Null-safe: returns an empty string if the input is null.
    *
    * @param s the string to fold.
    * @return the folded string.
@@ -60,7 +55,7 @@ public final class StringUtils {
    * Null-safe: returns an empty string if {@code dateTime} is null.
    *
    * @param dateTime the date-time to format.
-   * @param locale   the target locale; if null, the system default is used.
+   * @param locale the target locale; if null, the system default is used.
    * @return a localized date-time string, or an empty string if {@code dateTime} is null.
    */
   public static String toStringFormatted(OffsetDateTime dateTime, Locale locale) {
@@ -73,10 +68,10 @@ public final class StringUtils {
   }
 
   /**
-   * Formats a {@code LocalDate} into a human-readable string using the specified locale.
-   * Null-safe: returns an empty string if {@code date} is null.
+   * Formats a {@code LocalDate} into a human-readable string using the specified locale. Null-safe:
+   * returns an empty string if {@code date} is null.
    *
-   * @param date   the date to format.
+   * @param date the date to format.
    * @param locale the target locale; if null, the system default is used.
    * @return a localized date string, or an empty string if {@code date} is null.
    */

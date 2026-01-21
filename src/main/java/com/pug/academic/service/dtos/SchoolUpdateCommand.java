@@ -5,7 +5,4 @@ package com.pug.academic.service.dtos;
  *
  * @param name the new name of the school (optional, if null, the name is not updated).
  */
-public record SchoolUpdateCommand(
-        String name
-) {
-}
+public record SchoolUpdateCommand(String name) {}

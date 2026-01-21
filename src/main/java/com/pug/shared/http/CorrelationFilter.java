@@ -11,10 +11,10 @@ import jakarta.ws.rs.ext.Provider;
 import org.jboss.logging.MDC;
 
 /**
- * A JAX-RS filter that manages correlation IDs for incoming requests and outgoing responses.
- * It extracts an existing correlation ID from the "X-Correlation-Id" header or generates a new one.
- * The ID is then stored in the request properties and the MDC (Mapped Diagnostic Context) for logging,
- * and finally added to the response header.
+ * A JAX-RS filter that manages correlation IDs for incoming requests and outgoing responses. It
+ * extracts an existing correlation ID from the "X-Correlation-Id" header or generates a new one.
+ * The ID is then stored in the request properties and the MDC (Mapped Diagnostic Context) for
+ * logging, and finally added to the response header.
  */
 @Provider
 @Priority(Priorities.HEADER_DECORATOR)
@@ -22,9 +22,9 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   private static final String HDR = "X-Correlation-Id";
 
   /**
-   * Handles the incoming request to extract or generate a correlation ID.
-   * If an "X-Correlation-Id" header is present, it is reused. Otherwise, a new UUID is generated.
-   * The ID is stored in request properties and MDC for logging purposes.
+   * Handles the incoming request to extract or generate a correlation ID. If an "X-Correlation-Id"
+   * header is present, it is reused. Otherwise, a new UUID is generated. The ID is stored in
+   * request properties and MDC for logging purposes.
    *
    * @param req The container request context.
    */
@@ -39,9 +39,9 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   }
 
   /**
-   * Handles the outgoing response to include the correlation ID in the headers.
-   * The correlation ID is retrieved from the request properties and added to the response header.
-   * The ID is then removed from the MDC.
+   * Handles the outgoing response to include the correlation ID in the headers. The correlation ID
+   * is retrieved from the request properties and added to the response header. The ID is then
+   * removed from the MDC.
    *
    * @param req The container request context.
    * @param res The container response context.

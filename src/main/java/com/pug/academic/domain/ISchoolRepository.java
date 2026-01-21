@@ -1,14 +1,11 @@
 package com.pug.academic.domain;
 
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for Schools.
- */
+/** Repository interface for Schools. */
 public interface ISchoolRepository {
   /**
    * Persist a school entity.

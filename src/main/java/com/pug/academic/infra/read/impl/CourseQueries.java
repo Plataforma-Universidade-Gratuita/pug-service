@@ -1,5 +1,7 @@
 package com.pug.academic.infra.read.impl;
 
+import static java.util.stream.Collectors.toMap;
+
 import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.academic.infra.read.ICourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
@@ -10,7 +12,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,23 +21,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static java.util.stream.Collectors.toMap;
-
-/**
- * Implementation of CourseQueries using JPA and Hibernate Search.
- */
+/** Implementation of CourseQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CourseQueries implements ICourseQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
   /**
    * Helper to convert CourseEntity and its associated SchoolView to CourseView.
    *
    * @param courseEntity The CourseEntity.
-   * @param schoolView   The associated SchoolView.
+   * @param schoolView The associated SchoolView.
    * @return The CourseView.
    */
   private CourseView toView(CourseEntity courseEntity, SchoolView schoolView) {
@@ -52,13 +48,13 @@ public class CourseQueries implements ICourseQueries {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.CourseView("
-                            + "c.id, c.name, "
-                            + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
-                            + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
-                            + "where c.id = :id",
-                    CourseView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.CourseView("
+                + "c.id, c.name, "
+                + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
+                + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
+                + "where c.id = :id",
+            CourseView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
@@ -69,13 +65,13 @@ public class CourseQueries implements ICourseQueries {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.CourseView("
-                            + "c.id, c.name, "
-                            + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
-                            + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
-                            + "where c.name = :name",
-                    CourseView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.CourseView("
+                + "c.id, c.name, "
+                + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
+                + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
+                + "where c.name = :name",
+            CourseView.class);
     q.setParameter("name", name);
     return q.getResultStream().findFirst();
   }
@@ -83,13 +79,13 @@ public class CourseQueries implements ICourseQueries {
   @Override
   public List<CourseView> listAllCourses() {
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.CourseView("
-                            + "c.id, c.name, "
-                            + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
-                            + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
-                            + "order by c.name asc",
-                    CourseView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.CourseView("
+                + "c.id, c.name, "
+                + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
+                + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
+                + "order by c.name asc",
+            CourseView.class);
     return q.getResultList();
   }
 
@@ -99,14 +95,14 @@ public class CourseQueries implements ICourseQueries {
       return List.of();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.CourseView("
-                            + "c.id, c.name, "
-                            + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
-                            + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
-                            + "where s.id = :sid "
-                            + "order by c.name asc",
-                    CourseView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.CourseView("
+                + "c.id, c.name, "
+                + "new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)) "
+                + "from CourseEntity c join SchoolEntity s ON c.schoolId = s.id "
+                + "where s.id = :sid "
+                + "order by c.name asc",
+            CourseView.class);
     q.setParameter("sid", schoolId);
     return q.getResultList();
   }
@@ -114,7 +110,7 @@ public class CourseQueries implements ICourseQueries {
   @Override
   public List<CourseView> searchByName(String query) {
     List<CourseEntity> hits =
-            HibernateSearchUtils.searchByName(entityManager, CourseEntity.class, query);
+        HibernateSearchUtils.searchByName(entityManager, CourseEntity.class, query);
 
     if (hits.isEmpty()) {
       return List.of();
@@ -129,11 +125,12 @@ public class CourseQueries implements ICourseQueries {
 
     Map<UUID, SchoolView> schoolsById = new HashMap<>();
     if (!schoolIds.isEmpty()) {
-      schoolsById = entityManager
+      schoolsById =
+          entityManager
               .createQuery(
-                      "select new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name) "
-                              + "from SchoolEntity s where s.id in :ids",
-                      SchoolView.class)
+                  "select new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name) "
+                      + "from SchoolEntity s where s.id in :ids",
+                  SchoolView.class)
               .setParameter("ids", schoolIds)
               .getResultList()
               .stream()

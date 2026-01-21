@@ -1,13 +1,10 @@
 package com.pug.academic.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import com.pug.shared.infra.persistence.TimestampColumnsListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,9 +17,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-/**
- * Schools table.
- */
+/** Schools table. */
 @Getter
 @Setter
 @SuperBuilder
@@ -30,16 +25,16 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name"})
+    callSuper = true,
+    of = {"name"})
 @Entity
 @Table(
-        name = "schools",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_schools_name",
-                        columnNames = {"name"})
-        })
+    name = "schools",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_schools_name",
+          columnNames = {"name"})
+    })
 @Indexed
 public class SchoolEntity extends BaseUuidV7Entity {
 

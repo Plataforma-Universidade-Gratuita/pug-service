@@ -21,8 +21,6 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -32,49 +30,46 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Student entities.
- */
+/** Service class for managing Student entities. */
 @ApplicationScoped
 public class StudentService implements IStudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentService.class);
 
-  @Inject
-  IStudentRepository repo;
-  @Inject
-  AccountService accountService;
-  @Inject
-  ICourseService courseService;
+  @Inject IStudentRepository repo;
+  @Inject AccountService accountService;
+  @Inject ICourseService courseService;
 
   /**
    * Helper method to process DTO input and build Student domain object (or update existing),
    * collecting all validation problems.
    *
-   * @param accountId                  The account ID associated with the student.
+   * @param accountId The account ID associated with the student.
    * @param academicRegistrationString The academic registration string from DTO.
-   * @param campus                     The campus from DTO.
-   * @param courseId                   The course ID from DTO.
-   * @param requiredHours              The required hours from DTO.
-   * @param completedHours             The completed hours from DTO.
-   * @param startDate                  The start date from DTO.
-   * @param dueDate                    The due date from DTO.
-   * @param existingStudent            Optional existing student for updates (null for creation).
-   * @param problems                   List to collect AppValidationException.Problem instances.
-   * @return The constructed or updated Student domain object if no problems, or null if problems occurred.
+   * @param campus The campus from DTO.
+   * @param courseId The course ID from DTO.
+   * @param requiredHours The required hours from DTO.
+   * @param completedHours The completed hours from DTO.
+   * @param startDate The start date from DTO.
+   * @param dueDate The due date from DTO.
+   * @param existingStudent Optional existing student for updates (null for creation).
+   * @param problems List to collect AppValidationException.Problem instances.
+   * @return The constructed or updated Student domain object if no problems, or null if problems
+   *     occurred.
    */
   private Student processStudentInput(
-          UUID accountId,
-          String academicRegistrationString,
-          Campi campus,
-          UUID courseId,
-          BigDecimal requiredHours,
-          BigDecimal completedHours,
-          LocalDate startDate,
-          LocalDate dueDate,
-          Student existingStudent,
-          List<AppValidationException.Problem> problems) {
+      UUID accountId,
+      String academicRegistrationString,
+      Campi campus,
+      UUID courseId,
+      BigDecimal requiredHours,
+      BigDecimal completedHours,
+      LocalDate startDate,
+      LocalDate dueDate,
+      Student existingStudent,
+      List<AppValidationException.Problem> problems) {
 
     AcademicRegistration academicRegistrationVO = null;
     CounterpartHours counterpartHoursVO = null;
@@ -108,20 +103,25 @@ public class StudentService implements IStudentService {
     try {
       if (existingStudent == null) {
         resultStudent =
-                Student.createNew(
-                        accountId, academicRegistrationVO, campus, courseId, counterpartHoursVO, periodVO);
+            Student.createNew(
+                accountId, academicRegistrationVO, campus, courseId, counterpartHoursVO, periodVO);
       } else {
         AcademicRegistration effectiveAcademicRegistration =
-                (academicRegistrationVO != null) ? academicRegistrationVO : existingStudent.getAcademicRegistration();
+            (academicRegistrationVO != null)
+                ? academicRegistrationVO
+                : existingStudent.getAcademicRegistration();
         Campi effectiveCampus = (campus != null) ? campus : existingStudent.getCampus();
         UUID effectiveCourseId = (courseId != null) ? courseId : existingStudent.getCourseId();
         CounterpartHours effectiveCounterpartHours =
-                (counterpartHoursVO != null) ? counterpartHoursVO : existingStudent.getCounterpartHours();
+            (counterpartHoursVO != null)
+                ? counterpartHoursVO
+                : existingStudent.getCounterpartHours();
         Period effectivePeriod = (periodVO != null) ? periodVO : existingStudent.getPeriod();
 
         Student tempStudent = existingStudent;
 
-        if (academicRegistrationVO != null && !effectiveAcademicRegistration.equals(tempStudent.getAcademicRegistration())) {
+        if (academicRegistrationVO != null
+            && !effectiveAcademicRegistration.equals(tempStudent.getAcademicRegistration())) {
           tempStudent = tempStudent.changeAcademicRegistration(effectiveAcademicRegistration);
         }
         if (campus != null && !effectiveCampus.equals(tempStudent.getCampus())) {
@@ -130,7 +130,8 @@ public class StudentService implements IStudentService {
         if (courseId != null && !effectiveCourseId.equals(tempStudent.getCourseId())) {
           tempStudent = tempStudent.changeCourse(effectiveCourseId);
         }
-        if (counterpartHoursVO != null && !effectiveCounterpartHours.equals(tempStudent.getCounterpartHours())) {
+        if (counterpartHoursVO != null
+            && !effectiveCounterpartHours.equals(tempStudent.getCounterpartHours())) {
           tempStudent = tempStudent.changeCounterpartHours(effectiveCounterpartHours);
         }
         if (periodVO != null && !effectivePeriod.equals(tempStudent.getPeriod())) {
@@ -157,38 +158,38 @@ public class StudentService implements IStudentService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (DuplicateResourceException e) {
-      problems.add(new AppValidationException.Problem(e.getErrorCode(), "accountCreateCommand.emailString"));
+      problems.add(
+          new AppValidationException.Problem(e.getErrorCode(), "accountCreateCommand.emailString"));
     }
 
     Student studentToPersist = null;
     if (problems.isEmpty() && account != null) {
       studentToPersist =
-              processStudentInput(
-                      account.getId(),
-                      cmd.academicRegistration(),
-                      cmd.campus(),
-                      cmd.courseId(),
-                      cmd.requiredHours(),
-                      cmd.completedHours(),
-                      cmd.startDate(),
-                      cmd.dueDate(),
-                      null,
-                      problems);
+          processStudentInput(
+              account.getId(),
+              cmd.academicRegistration(),
+              cmd.campus(),
+              cmd.courseId(),
+              cmd.requiredHours(),
+              cmd.completedHours(),
+              cmd.startDate(),
+              cmd.dueDate(),
+              null,
+              problems);
     } else {
       studentToPersist =
-              processStudentInput(
-                      null,
-                      cmd.academicRegistration(),
-                      cmd.campus(),
-                      cmd.courseId(),
-                      cmd.requiredHours(),
-                      cmd.completedHours(),
-                      cmd.startDate(),
-                      cmd.dueDate(),
-                      null,
-                      problems);
+          processStudentInput(
+              null,
+              cmd.academicRegistration(),
+              cmd.campus(),
+              cmd.courseId(),
+              cmd.requiredHours(),
+              cmd.completedHours(),
+              cmd.startDate(),
+              cmd.dueDate(),
+              null,
+              problems);
     }
-
 
     if (!problems.isEmpty()) {
       throw new AppValidationException(problems);
@@ -196,8 +197,8 @@ public class StudentService implements IStudentService {
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
       throw new DuplicateResourceException(
-              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-              Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+          Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
     }
     return repo.persist(studentToPersist);
   }
@@ -220,7 +221,9 @@ public class StudentService implements IStudentService {
       try {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK, "courseId"));
+        allCollectedProblems.add(
+            new AppValidationException.Problem(
+                AcademicErrorCodes.INVALID_COURSE_BLANK, "courseId"));
       }
     }
 
@@ -229,11 +232,11 @@ public class StudentService implements IStudentService {
     }
 
     List<Account> createdAccounts = new ArrayList<>();
-    Map<StudentCreateCommand, AppValidationException.Problem> accountCreationProblemsMap = new java.util.HashMap<>();
+    Map<StudentCreateCommand, AppValidationException.Problem> accountCreationProblemsMap =
+        new java.util.HashMap<>();
     try {
-      var accountCreateCommands = CollectionUtils.toStream(cmds)
-              .map(StudentCreateCommand::accountCreateCommand)
-              .toList();
+      var accountCreateCommands =
+          CollectionUtils.toStream(cmds).map(StudentCreateCommand::accountCreateCommand).toList();
       createdAccounts = accountService.saveAll(accountCreateCommands);
     } catch (AppValidationException e) {
       for (AppValidationException.Problem problem : e.getProblems()) {
@@ -247,7 +250,6 @@ public class StudentService implements IStudentService {
       accountByIndex.put(i, createdAccounts.get(i));
     }
 
-
     int cmdIndex = 0;
     for (StudentCreateCommand cmd : cmds) {
       List<AppValidationException.Problem> currentStudentProblems = new ArrayList<>();
@@ -258,21 +260,23 @@ public class StudentService implements IStudentService {
       } else if (accountCreationProblemsMap.containsKey(cmd)) {
         allCollectedProblems.add(accountCreationProblemsMap.get(cmd));
       } else {
-        allCollectedProblems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK, "accountCreateCommand"));
+        allCollectedProblems.add(
+            new AppValidationException.Problem(
+                AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK, "accountCreateCommand"));
       }
 
       Student student =
-              processStudentInput(
-                      studentAccountId,
-                      cmd.academicRegistration(),
-                      cmd.campus(),
-                      cmd.courseId(),
-                      cmd.requiredHours(),
-                      cmd.completedHours(),
-                      cmd.startDate(),
-                      cmd.dueDate(),
-                      null,
-                      currentStudentProblems);
+          processStudentInput(
+              studentAccountId,
+              cmd.academicRegistration(),
+              cmd.campus(),
+              cmd.courseId(),
+              cmd.requiredHours(),
+              cmd.completedHours(),
+              cmd.startDate(),
+              cmd.dueDate(),
+              null,
+              currentStudentProblems);
 
       if (!currentStudentProblems.isEmpty()) {
         allCollectedProblems.addAll(currentStudentProblems);
@@ -280,8 +284,8 @@ public class StudentService implements IStudentService {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
           allCollectedProblems.add(
-                  new AppValidationException.Problem(
-                          AcademicErrorCodes.STUDENT_ALREADY_EXISTS, "academicRegistration"));
+              new AppValidationException.Problem(
+                  AcademicErrorCodes.STUDENT_ALREADY_EXISTS, "academicRegistration"));
         }
         studentsToPersist.add(student);
       }
@@ -292,9 +296,8 @@ public class StudentService implements IStudentService {
       throw new AppValidationException(allCollectedProblems);
     }
 
-    List<String> registrationsToPersist = studentsToPersist.stream()
-            .map(s -> s.getAcademicRegistration().toString())
-            .toList();
+    List<String> registrationsToPersist =
+        studentsToPersist.stream().map(s -> s.getAcademicRegistration().toString()).toList();
 
     if (repo.existsAnyByRegistrationIn(registrationsToPersist)) {
       throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
@@ -316,7 +319,9 @@ public class StudentService implements IStudentService {
       } catch (AppValidationException e) {
         problems.addAll(e.getProblems());
       } catch (DuplicateResourceException e) {
-        problems.add(new AppValidationException.Problem(e.getErrorCode(), "accountUpdateCommand.emailString"));
+        problems.add(
+            new AppValidationException.Problem(
+                e.getErrorCode(), "accountUpdateCommand.emailString"));
       }
     }
 
@@ -325,28 +330,28 @@ public class StudentService implements IStudentService {
     }
 
     Student studentToUpdate =
-            processStudentInput(
-                    current.getAccountId(),
-                    cmd.academicRegistration(),
-                    cmd.campus(),
-                    cmd.courseId(),
-                    cmd.requiredHours(),
-                    cmd.completedHours(),
-                    cmd.startDate(),
-                    cmd.dueDate(),
-                    current,
-                    problems);
+        processStudentInput(
+            current.getAccountId(),
+            cmd.academicRegistration(),
+            cmd.campus(),
+            cmd.courseId(),
+            cmd.requiredHours(),
+            cmd.completedHours(),
+            cmd.startDate(),
+            cmd.dueDate(),
+            current,
+            problems);
 
     if (!problems.isEmpty()) {
       throw new AppValidationException(problems);
     }
 
     if (cmd.academicRegistration() != null
-            && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
       if (existsByRegistration(cmd.academicRegistration())) {
         throw new DuplicateResourceException(
-                AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-                Map.of("academicRegistration", cmd.academicRegistration()));
+            AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+            Map.of("academicRegistration", cmd.academicRegistration()));
       }
     }
 
@@ -359,9 +364,9 @@ public class StudentService implements IStudentService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
       return Map.of(
-              DeleteKeys.STUDENTS, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.STUDENTS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     long studentsDeleted = repo.deleteByIds(accountIds);
@@ -369,9 +374,9 @@ public class StudentService implements IStudentService {
     Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(accountIds);
 
     return Map.of(
-            DeleteKeys.STUDENTS, studentsDeleted,
-            DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.STUDENTS, studentsDeleted,
+        DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
@@ -379,8 +384,15 @@ public class StudentService implements IStudentService {
     try {
       return repo.listAllStudents();
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Corrupted Student entity found in DB. Problems: %s",
-              e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      LOG.errorf(
+          e,
+          "Data integrity error: Corrupted Student entity found in DB. Problems: %s",
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
       throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
     }
   }
@@ -393,9 +405,18 @@ public class StudentService implements IStudentService {
     try {
       return repo.listAllByCourseId(courseId);
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Corrupted Student entity found in DB while listing by course ID %s. Problems: %s",
-              courseId, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND); // Treat as not found if corrupted
+      LOG.errorf(
+          e,
+          "Data integrity error: Corrupted Student entity found in DB while listing by course ID %s. Problems: %s",
+          courseId,
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(
+          AcademicErrorCodes.STUDENT_NOT_FOUND); // Treat as not found if corrupted
     }
   }
 
@@ -403,14 +424,23 @@ public class StudentService implements IStudentService {
   public Student getById(UUID accountId) {
     try {
       return repo.findOptionalById(accountId)
-              .orElseThrow(
-                      () ->
-                              new ResourceNotFoundException(
-                                      AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+          .orElseThrow(
+              () ->
+                  new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Student with Account ID %s in DB violates domain rules. Problems: %s",
-              accountId, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
+      LOG.errorf(
+          e,
+          "Data integrity error: Student with Account ID %s in DB violates domain rules. Problems: %s",
+          accountId,
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(
+          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
     }
   }
 

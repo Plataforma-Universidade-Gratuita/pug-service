@@ -1,14 +1,11 @@
 package com.pug.identity.infra.read;
 
 import com.pug.identity.infra.read.dtos.AccountView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Queries related to Accounts.
- */
+/** Queries related to Accounts. */
 public interface IAccountQueries {
   /**
    * Finds an AccountView by its ID.

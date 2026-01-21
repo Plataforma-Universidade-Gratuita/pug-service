@@ -1,14 +1,11 @@
 package com.pug.identity.domain;
 
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Account objects.
- */
+/** Repository interface for managing Account objects. */
 public interface IAccountRepository {
 
   /**
@@ -17,7 +14,7 @@ public interface IAccountRepository {
    * @param entity the Account to persist.
    * @return the persisted Account.
    * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   Account persist(Account entity) throws AppValidationException;
 
@@ -27,7 +24,7 @@ public interface IAccountRepository {
    * @param entities the iterable collection of Account objects to persist.
    * @return a list of the persisted Account objects.
    * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   List<Account> persistAll(Iterable<Account> entities) throws AppValidationException;
 
@@ -42,7 +39,7 @@ public interface IAccountRepository {
    * Deletes Accounts objects by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Accounts objects to
-   *            delete.
+   *     delete.
    * @return the number of entities deleted.
    */
   long deleteByIds(Iterable<UUID> ids);
@@ -53,7 +50,7 @@ public interface IAccountRepository {
    * @param id the UUID of the Accounts to find.
    * @return an Optional containing the found Accounts, or empty if not found.
    * @throws AppValidationException if an AccountEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of a valid domain object.
+   *     domain rules, preventing the creation of a valid domain object.
    */
   Optional<Account> findOptionalById(UUID id) throws AppValidationException;
 
@@ -62,7 +59,7 @@ public interface IAccountRepository {
    *
    * @return a list of all Accounts objects.
    * @throws AppValidationException if any AccountEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of valid domain objects.
+   *     domain rules, preventing the creation of valid domain objects.
    */
   List<Account> listAllAccounts() throws AppValidationException;
 
@@ -78,14 +75,14 @@ public interface IAccountRepository {
    * Finds user IDs that have Accounts, excluding those associated with the given Account IDs.
    *
    * @param excludedAccountIds the iterable collection of UUIDs representing the Account IDs to
-   *                           exclude.
-   * @param candidateUserIds   the iterable collection of UUIDs representing the candidate user IDs to
-   *                           check.
+   *     exclude.
+   * @param candidateUserIds the iterable collection of UUIDs representing the candidate user IDs to
+   *     check.
    * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
-   * associated with the excluded Account IDs.
+   *     associated with the excluded Account IDs.
    */
   List<UUID> findUserIdsWithAccountsExcluding(
-          Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+      Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
 
   /**
    * Checks if an Accounts exists by email.

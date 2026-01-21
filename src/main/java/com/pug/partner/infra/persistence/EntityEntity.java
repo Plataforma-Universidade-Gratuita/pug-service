@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,27 +20,23 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-import java.util.UUID;
-
-/**
- * Persistence entity representing an Entity in the partner domain.
- */
+/** Persistence entity representing an Entity in the partner domain. */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name", "cnpj"})
+    callSuper = true,
+    of = {"name", "cnpj"})
 @Entity
 @Indexed
 @Table(
-        name = "entities",
-        indexes = {
-                @Index(name = "idx_entities_name", columnList = "name"),
-                @Index(name = "idx_entities_city", columnList = "city_id")
-        })
+    name = "entities",
+    indexes = {
+      @Index(name = "idx_entities_name", columnList = "name"),
+      @Index(name = "idx_entities_city", columnList = "city_id")
+    })
 @SuperBuilder
 public class EntityEntity extends BaseUuidV7Entity {
 

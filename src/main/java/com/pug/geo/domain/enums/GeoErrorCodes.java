@@ -3,9 +3,7 @@ package com.pug.geo.domain.enums;
 import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
-/**
- * Enumeration of error codes related to geographical operations.
- */
+/** Enumeration of error codes related to geographical operations. */
 @Getter
 public enum GeoErrorCodes implements GenericErrorCodes {
   INVALID_CITY_ID_BLANK("error.domain.geo.city-id.blank", "id"),

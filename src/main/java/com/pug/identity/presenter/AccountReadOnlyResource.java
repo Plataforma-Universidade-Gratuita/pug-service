@@ -25,28 +25,22 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for read-only operations on accounts.
- */
+/** REST resource for read-only operations on accounts. */
 @Path("/identity/accounts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountReadOnlyResource {
 
-  @Inject
-  IAccountReadService readService;
-  @Inject
-  I18n i18n;
+  @Inject IAccountReadService readService;
+  @Inject I18n i18n;
 
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   /**
    * Picks the best locale from the Accept-Language header.
@@ -62,7 +56,8 @@ public class AccountReadOnlyResource {
    *
    * @param id the UUIDv7 of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws ResourceNotFoundException if no account with the given ID is found (or its associated user is missing).
+   * @throws ResourceNotFoundException if no account with the given ID is found (or its associated
+   *     user is missing).
    */
   @GET
   @Path("{id}")
@@ -79,9 +74,9 @@ public class AccountReadOnlyResource {
   @GET
   public Response list() {
     List<AccountResponse> list =
-            readService.listViews().stream()
-                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.listViews().stream()
+            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -90,15 +85,17 @@ public class AccountReadOnlyResource {
    *
    * @param emailRaw the raw email string of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws AppValidationException    if the provided email is malformed.
-   * @throws ResourceNotFoundException if no account with the given email is found (or its associated user is missing).
+   * @throws AppValidationException if the provided email is malformed.
+   * @throws ResourceNotFoundException if no account with the given email is found (or its
+   *     associated user is missing).
    */
   @GET
   @Path("by-email/{email}")
   public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     Email emailVO;
     emailVO = new Email(emailRaw);
-    var body = AccountPresenter.toResponse(readService.getViewByEmail(emailVO.toString()), locale(), i18n);
+    var body =
+        AccountPresenter.toResponse(readService.getViewByEmail(emailVO.toString()), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -107,7 +104,7 @@ public class AccountReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the accounts.
    * @return a list of account responses wrapped in an ApiEnvelope.
-   * @throws AppValidationException    if the provided CPF is malformed.
+   * @throws AppValidationException if the provided CPF is malformed.
    * @throws ResourceNotFoundException if associated user data is missing for any found account.
    */
   @GET
@@ -116,9 +113,9 @@ public class AccountReadOnlyResource {
     Cpf cpfVO;
     cpfVO = new Cpf(cpfRaw);
     List<AccountResponse> list =
-            readService.listViewsByCpf(cpfVO.toString()).stream()
-                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.listViewsByCpf(cpfVO.toString()).stream()
+            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -137,9 +134,9 @@ public class AccountReadOnlyResource {
     }
 
     List<AccountResponse> list =
-            readService.search(query).stream()
-                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.search(query).stream()
+            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 }

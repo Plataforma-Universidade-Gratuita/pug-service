@@ -3,12 +3,11 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import org.apache.commons.validator.routines.EmailValidator;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Value object representing an email address.
@@ -24,22 +23,25 @@ public record Email(String value) {
    *
    * @param value the email address as a String
    * @throws AppValidationException if the email is null, empty, too long, or has an invalid format.
-   *                                This exception may contain multiple validation problems.
+   *     This exception may contain multiple validation problems.
    */
   public Email {
     List<AppValidationException.Problem> problems = new ArrayList<>();
 
     if (StringUtils.isEmpty(value)) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK, "email"));
+      problems.add(
+          new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK, "email"));
     } else {
       String trimmedValue = value.trim();
 
       if (trimmedValue.length() > 254) {
-        problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_LENGTH, "email"));
+        problems.add(
+            new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_LENGTH, "email"));
       }
 
       if (!EMAIL_VALIDATOR.isValid(trimmedValue)) {
-        problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT, "email"));
+        problems.add(
+            new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT, "email"));
       }
 
       if (problems.isEmpty()) {

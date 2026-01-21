@@ -5,7 +5,4 @@ package com.pug.academic.service.dtos;
  *
  * @param name the name of the school.
  */
-public record SchoolCreateCommand(
-        String name
-) {
-}
+public record SchoolCreateCommand(String name) {}

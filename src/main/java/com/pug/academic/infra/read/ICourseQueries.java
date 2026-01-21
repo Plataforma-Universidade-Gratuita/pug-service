@@ -1,14 +1,11 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.CourseView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Queries related to courses.
- */
+/** Queries related to courses. */
 public interface ICourseQueries {
   /**
    * Find a course by its ID.

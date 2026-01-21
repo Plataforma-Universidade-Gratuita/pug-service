@@ -11,7 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,18 +18,15 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Implementation of AccountQueries using JPA and Hibernate Search.
- */
+/** Implementation of AccountQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AccountQueries implements IAccountQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
   private static final String SELECT_BASE =
-          """
+      """
                   select new com.pug.identity.infra.read.dtos.AccountView(
                     a.id,
                     new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
@@ -48,7 +44,7 @@ public class AccountQueries implements IAccountQueries {
    * Converts an AccountEntity and its associated UserEntity to an AccountView.
    *
    * @param accountEntity the AccountEntity.
-   * @param userEntity    the associated UserEntity.
+   * @param userEntity the associated UserEntity.
    * @return the AccountView.
    */
   private static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
@@ -56,11 +52,15 @@ public class AccountQueries implements IAccountQueries {
       return null;
     }
     return new AccountView(
-            accountEntity.getId(),
-            new UserView(userEntity.getId(), userEntity.getCpf(), userEntity.getName(), userEntity.getCreatedAt()),
-            accountEntity.getEmail(),
-            accountEntity.getAccountType(),
-            accountEntity.getCreatedAt());
+        accountEntity.getId(),
+        new UserView(
+            userEntity.getId(),
+            userEntity.getCpf(),
+            userEntity.getName(),
+            userEntity.getCreatedAt()),
+        accountEntity.getEmail(),
+        accountEntity.getAccountType(),
+        accountEntity.getCreatedAt());
   }
 
   @Override
@@ -86,8 +86,8 @@ public class AccountQueries implements IAccountQueries {
   @Override
   public List<AccountView> listAllAccounts() {
     return entityManager
-            .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
-            .getResultList();
+        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
+        .getResultList();
   }
 
   @Override
@@ -103,7 +103,7 @@ public class AccountQueries implements IAccountQueries {
   @Override
   public List<AccountView> searchByName(String key) {
     List<UserEntity> userHits =
-            HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
+        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
 
     if (userHits.isEmpty()) {
       return List.of();
@@ -112,13 +112,13 @@ public class AccountQueries implements IAccountQueries {
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     List<AccountEntity> accountEntities =
-            entityManager
-                    .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
-                    .setParameter("userIds", userIds)
-                    .getResultList();
+        entityManager
+            .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
+            .setParameter("userIds", userIds)
+            .getResultList();
 
-    Map<UUID, UserEntity> userEntityMap = userHits.stream()
-            .collect(Collectors.toMap(UserEntity::getId, user -> user));
+    Map<UUID, UserEntity> userEntityMap =
+        userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
 
     List<AccountView> out = new ArrayList<>();
     for (AccountEntity accountEntity : accountEntities) {

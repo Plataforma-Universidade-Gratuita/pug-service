@@ -7,16 +7,15 @@ import java.util.Objects;
  * Bulk create result DTO.
  *
  * @param requested number of requested entities.
- * @param entities  list of created entities.
- * @param <T>       type of entity.
+ * @param entities list of created entities.
+ * @param <T> type of entity.
  */
 public record BulkCreateResult<T>(int requested, List<T> entities) {
   /**
-   * Compact constructor for BulkCreateResult.
-   * Ensures immutability of the entities list.
+   * Compact constructor for BulkCreateResult. Ensures immutability of the entities list.
    *
    * @param requested the number of requested entities.
-   * @param entities  the list of created entities.
+   * @param entities the list of created entities.
    */
   public BulkCreateResult {
     entities = List.copyOf(Objects.requireNonNull(entities));
@@ -33,11 +32,11 @@ public record BulkCreateResult<T>(int requested, List<T> entities) {
   }
 
   /**
-   * Creates a BulkCreateResult from a list of entities.
-   * The 'requested' count is derived from the size of the provided list.
+   * Creates a BulkCreateResult from a list of entities. The 'requested' count is derived from the
+   * size of the provided list.
    *
    * @param entities the list of created entities.
-   * @param <T>      type of entity.
+   * @param <T> type of entity.
    * @return the BulkCreateResult.
    */
   public static <T> BulkCreateResult<T> of(List<T> entities) {
@@ -45,11 +44,11 @@ public record BulkCreateResult<T>(int requested, List<T> entities) {
   }
 
   /**
-   * Creates a BulkCreateResult with only the size of requested entities.
-   * The list of entities will be empty.
+   * Creates a BulkCreateResult with only the size of requested entities. The list of entities will
+   * be empty.
    *
    * @param size the number of requested entities.
-   * @param <T>  type of entity.
+   * @param <T> type of entity.
    * @return the BulkCreateResult.
    */
   public static <T> BulkCreateResult<T> sizeOnly(int size) {

@@ -3,9 +3,9 @@ package com.pug.shared.domain.enums;
 import lombok.Getter;
 
 /**
- * Enum representing common, shared error codes for the entire application.
- * These codes are typically used for general validation failures, internal server errors,
- * or generic constraint violations that are not specific to a particular domain.
+ * Enum representing common, shared error codes for the entire application. These codes are
+ * typically used for general validation failures, internal server errors, or generic constraint
+ * violations that are not specific to a particular domain.
  */
 @Getter
 public enum SharedErrorCodes implements GenericErrorCodes {
@@ -19,7 +19,8 @@ public enum SharedErrorCodes implements GenericErrorCodes {
    * Constructor for the SharedErrorCodes enum.
    *
    * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not field-specific.
+   * @param fieldName The name of the field associated with the error, or null if not
+   *     field-specific.
    */
   SharedErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

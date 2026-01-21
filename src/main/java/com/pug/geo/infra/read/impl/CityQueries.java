@@ -9,21 +9,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of CityQueries using JPA and Hibernate Search.
- */
+/** Implementation of CityQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CityQueries implements ICityQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
   /**
    * Converts a CityEntity to a CityView.
@@ -44,11 +40,11 @@ public class CityQueries implements ICityQueries {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.geo.infra.read.dtos.CityView("
-                            + "c.id, c.name, c.ibgeCode) "
-                            + "from CityEntity c where c.id = :id",
-                    CityView.class);
+        entityManager.createQuery(
+            "select new com.pug.geo.infra.read.dtos.CityView("
+                + "c.id, c.name, c.ibgeCode) "
+                + "from CityEntity c where c.id = :id",
+            CityView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
@@ -59,11 +55,11 @@ public class CityQueries implements ICityQueries {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.geo.infra.read.dtos.CityView("
-                            + "c.id, c.name, c.ibgeCode) "
-                            + "from CityEntity c where c.ibgeCode = :ibge",
-                    CityView.class);
+        entityManager.createQuery(
+            "select new com.pug.geo.infra.read.dtos.CityView("
+                + "c.id, c.name, c.ibgeCode) "
+                + "from CityEntity c where c.ibgeCode = :ibge",
+            CityView.class);
     q.setParameter("ibge", ibgeCode);
     return q.getResultStream().findFirst();
   }
@@ -71,11 +67,11 @@ public class CityQueries implements ICityQueries {
   @Override
   public List<CityView> listAllCities() {
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.geo.infra.read.dtos.CityView("
-                            + "c.id, c.name, c.ibgeCode) "
-                            + "from CityEntity c order by c.name asc",
-                    CityView.class);
+        entityManager.createQuery(
+            "select new com.pug.geo.infra.read.dtos.CityView("
+                + "c.id, c.name, c.ibgeCode) "
+                + "from CityEntity c order by c.name asc",
+            CityView.class);
     return q.getResultList();
   }
 

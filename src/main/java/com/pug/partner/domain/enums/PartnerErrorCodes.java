@@ -36,7 +36,8 @@ public enum PartnerErrorCodes implements GenericErrorCodes {
    * Constructor for the PartnerErrorCodes enum.
    *
    * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not field-specific.
+   * @param fieldName The name of the field associated with the error, or null if not
+   *     field-specific.
    */
   PartnerErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

@@ -8,39 +8,36 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service for reading city information.
- */
+/** Service for reading city information. */
 @ApplicationScoped
 public class CityReadService implements ICityReadService {
 
-  @Inject
-  ICityQueries queries;
+  @Inject ICityQueries queries;
 
   @Override
   public CityView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
   }
 
   @Override
   public CityView getViewByIbgeCode(String ibgeCode) {
     if (StringUtils.isEmpty(ibgeCode)) {
-      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode));
+      throw new ResourceNotFoundException(
+          GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode));
     }
     return queries
-            .findOptionalByIbgeCode(ibgeCode)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode)));
+        .findOptionalByIbgeCode(ibgeCode)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode)));
   }
 
   @Override

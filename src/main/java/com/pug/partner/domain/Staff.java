@@ -2,16 +2,13 @@ package com.pug.partner.domain;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
-/**
- * Staff entity aggregate.
- */
+/** Staff entity aggregate. */
 @Getter
 public class Staff {
   private final UUID accountId;
@@ -27,7 +24,7 @@ public class Staff {
    * Factory method to create a new Staff instance.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId  the unique identifier of the entity
+   * @param entityId the unique identifier of the entity
    * @return a validated Staff instance
    * @throws AppValidationException if initial validation fails.
    */
@@ -46,16 +43,21 @@ public class Staff {
    *
    * <p>Checks that accountId and entityId are not null.
    *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
+   *     otherwise.
    */
   public List<AppValidationException.Problem> collectValidationProblems() {
     List<AppValidationException.Problem> problems = new ArrayList<>();
 
     if (accountId == null) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK, "accountId"));
+      problems.add(
+          new AppValidationException.Problem(
+              PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK, "accountId"));
     }
     if (entityId == null) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK, "entityId"));
+      problems.add(
+          new AppValidationException.Problem(
+              PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK, "entityId"));
     }
 
     return problems;

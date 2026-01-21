@@ -1,14 +1,11 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.SchoolView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Queries related to schools.
- */
+/** Queries related to schools. */
 public interface ISchoolQueries {
 
   /**

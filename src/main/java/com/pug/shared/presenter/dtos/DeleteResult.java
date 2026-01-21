@@ -1,7 +1,6 @@
 package com.pug.shared.presenter.dtos;
 
 import com.pug.shared.domain.enums.DeleteKeys;
-
 import java.util.Map;
 import java.util.Objects;
 
@@ -12,8 +11,7 @@ import java.util.Objects;
  */
 public record DeleteResult(Map<DeleteKeys, Long> deleted) {
   /**
-   * Compact constructor for DeleteResult.
-   * Ensures immutability of the deleted map.
+   * Compact constructor for DeleteResult. Ensures immutability of the deleted map.
    *
    * @param deleted Map of entity names to number of deleted records.
    */

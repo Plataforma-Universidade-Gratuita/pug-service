@@ -1,14 +1,11 @@
 package com.pug.identity.infra.read;
 
 import com.pug.identity.infra.read.dtos.AdminView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Queries related to Admins.
- */
+/** Queries related to Admins. */
 public interface IAdminQueries {
   /**
    * Finds an AdminView by its account ID.

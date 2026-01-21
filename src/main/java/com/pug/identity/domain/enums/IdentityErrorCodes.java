@@ -32,7 +32,6 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
   INVALID_GRANTED_AT_FUTURE("error.domain.identity.granted.at.future", "grantedAt"),
 
-
   ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
   ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
   ADMIN_ALREADY_EXISTS("error.domain.identity.admin.already.exists", null),
@@ -42,11 +41,13 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   USER_NOT_FOUND("error.domain.identity.user.not.found", null),
   INVALID_USER_BLANK("error.domain.identity.user.blank", null),
 
-  ACCOUNT_STILL_REFERENCED_BY_ADMIN("error.domain.identity.account.still.referenced.by.admin", null),
-  ACCOUNT_STILL_REFERENCED_BY_STAFF("error.domain.identity.account.still.referenced.by.staff", null),
-  ACCOUNT_STILL_REFERENCED_BY_STUDENT("error.domain.identity.account.still.referenced.by.student", null),
+  ACCOUNT_STILL_REFERENCED_BY_ADMIN(
+      "error.domain.identity.account.still.referenced.by.admin", null),
+  ACCOUNT_STILL_REFERENCED_BY_STAFF(
+      "error.domain.identity.account.still.referenced.by.staff", null),
+  ACCOUNT_STILL_REFERENCED_BY_STUDENT(
+      "error.domain.identity.account.still.referenced.by.student", null),
   USER_STILL_REFERENCED("error.domain.identity.user.still.referenced", null);
-
 
   private final String bundleKey;
   private final String fieldName;
@@ -55,7 +56,8 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
    * Constructor for the IdentityErrorCodes enum.
    *
    * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not field-specific.
+   * @param fieldName The name of the field associated with the error, or null if not
+   *     field-specific.
    */
   IdentityErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

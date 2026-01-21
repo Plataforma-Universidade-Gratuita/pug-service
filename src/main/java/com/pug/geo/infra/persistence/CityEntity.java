@@ -19,9 +19,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/**
- * Cities Entity representing a city with its name and IBGE code.
- */
+/** Cities Entity representing a city with its name and IBGE code. */
 @Getter
 @Setter
 @SuperBuilder
@@ -29,16 +27,16 @@ import org.hibernate.type.SqlTypes;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name", "ibgeCode"})
+    callSuper = true,
+    of = {"name", "ibgeCode"})
 @Entity
 @Table(
-        name = "cities",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_cities_ibge_code",
-                        columnNames = {"ibge_code"})
-        })
+    name = "cities",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_cities_ibge_code",
+          columnNames = {"ibge_code"})
+    })
 @Indexed
 public class CityEntity extends BaseUuidV7Entity {
 

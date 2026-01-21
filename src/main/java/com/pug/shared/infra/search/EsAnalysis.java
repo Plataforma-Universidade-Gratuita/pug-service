@@ -4,9 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurationContext;
 import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurer;
 
-/**
- * Configures custom analyzers and normalizers for Elasticsearch indexing and searching.
- */
+/** Configures custom analyzers and normalizers for Elasticsearch indexing and searching. */
 @ApplicationScoped
 public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
   /**
@@ -19,18 +17,18 @@ public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
     ctx.normalizer("folding_lowercase").custom().tokenFilters("lowercase", "asciifolding");
 
     ctx.tokenFilter("edge_ngram_custom")
-            .type("edge_ngram")
-            .param("min_gram", 2)
-            .param("max_gram", 20);
+        .type("edge_ngram")
+        .param("min_gram", 2)
+        .param("max_gram", 20);
 
     ctx.analyzer("pt_folded")
-            .custom()
-            .tokenizer("standard")
-            .tokenFilters("lowercase", "asciifolding");
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding");
 
     ctx.analyzer("auto_ngram")
-            .custom()
-            .tokenizer("standard")
-            .tokenFilters("lowercase", "asciifolding", "edge_ngram_custom");
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding", "edge_ngram_custom");
   }
 }

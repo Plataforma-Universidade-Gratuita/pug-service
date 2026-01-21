@@ -3,7 +3,6 @@ package com.pug.shared.presenter.dtos;
 import com.pug.shared.validation.UuidV7;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -15,8 +14,7 @@ import java.util.UUID;
  */
 public record UuidsRequest(@NotEmpty List<@NotNull @UuidV7 UUID> ids) {
   /**
-   * Compact constructor for UuidsRequest.
-   * Ensures immutability of the IDs list.
+   * Compact constructor for UuidsRequest. Ensures immutability of the IDs list.
    *
    * @param ids the list of UUIDs.
    */

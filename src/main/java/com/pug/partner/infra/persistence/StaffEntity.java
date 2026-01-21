@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,11 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.UUID;
-
-/**
- * Persistence entity representing a Staff member associated with an Entity.
- */
+/** Persistence entity representing a Staff member associated with an Entity. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -27,8 +24,8 @@ import java.util.UUID;
 @ToString(of = {"accountId", "entityId"})
 @Entity
 @Table(
-        name = "staff",
-        indexes = {@Index(name = "idx_staff_entity", columnList = "entity_id")})
+    name = "staff",
+    indexes = {@Index(name = "idx_staff_entity", columnList = "entity_id")})
 @Builder(toBuilder = true)
 public class StaffEntity {
 

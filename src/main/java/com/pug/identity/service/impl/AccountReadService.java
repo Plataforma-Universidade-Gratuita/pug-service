@@ -8,37 +8,38 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Read-only service for account views.
- */
+/** Read-only service for account views. */
 @ApplicationScoped
 public class AccountReadService implements IAccountReadService {
 
-  @Inject
-  IAccountQueries queries;
+  @Inject IAccountQueries queries;
 
   @Override
   public AccountView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
   }
 
   @Override
   public AccountView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email));
+      throw new ResourceNotFoundException(
+          IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email));
     }
     return queries
-            .findOptionalByEmail(email)
-            .orElseThrow(
-                    () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email)));
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email)));
   }
 
   @Override

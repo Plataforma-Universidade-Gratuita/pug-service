@@ -4,15 +4,10 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.shared.exceptions.AppValidationException;
 
-/**
- * Mapper for Course and CourseEntity.
- */
+/** Mapper for Course and CourseEntity. */
 public final class CourseMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CourseMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CourseMapper() {}
 
   /**
    * Maps CourseEntity to Course domain object.

@@ -6,16 +6,15 @@ import jakarta.validation.constraints.Size;
 /**
  * Request to create a new staff member.
  *
- * @param cpfString        the CPF of the staff member as a string.
- * @param name             the name of the staff member.
- * @param emailString      the email of the staff member as a string.
- * @param password         the password for the staff member's account.
+ * @param cpfString the CPF of the staff member as a string.
+ * @param name the name of the staff member.
+ * @param emailString the email of the staff member as a string.
+ * @param password the password for the staff member's account.
  * @param entityCnpjString the CNPJ of the entity the staff is part of, as a string.
  */
 public record StaffCreateRequest(
-        @NotBlank String cpfString,
-        @NotBlank @Size(max = 150) String name,
-        @NotBlank String emailString,
-        @NotBlank @Size(min = 8, max = 255) String password,
-        @NotBlank String entityCnpjString) {
-}
+    @NotBlank String cpfString,
+    @NotBlank @Size(max = 150) String name,
+    @NotBlank String emailString,
+    @NotBlank @Size(min = 8, max = 255) String password,
+    @NotBlank String entityCnpjString) {}

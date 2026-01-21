@@ -3,15 +3,10 @@ package com.pug.academic.presenter.mappers;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.presenter.dtos.CourseResponse;
 
-/**
- * Mapper class for converting CourseView to CourseResponse.
- */
+/** Mapper class for converting CourseView to CourseResponse. */
 public final class CoursePresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CoursePresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CoursePresenter() {}
 
   /**
    * Converts a CourseView object to a CourseResponse object.

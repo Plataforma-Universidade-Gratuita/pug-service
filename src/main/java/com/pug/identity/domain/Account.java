@@ -6,18 +6,15 @@ import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 public class Account {
   private final UUID id;
@@ -30,21 +27,21 @@ public class Account {
   /**
    * Private constructor for Account.
    *
-   * @param id           the unique identifier of the Account
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param accountType  the account type for the Account
+   * @param id the unique identifier of the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param accountType the account type for the Account
    * @param passwordHash the password of the Account hashed
-   * @param createdAt    timestamp when the Account was created
+   * @param createdAt timestamp when the Account was created
    */
   @Builder(toBuilder = true)
   private Account(
-          UUID id,
-          UUID userId,
-          Email email,
-          AccountType accountType,
-          String passwordHash,
-          OffsetDateTime createdAt) {
+      UUID id,
+      UUID userId,
+      Email email,
+      AccountType accountType,
+      String passwordHash,
+      OffsetDateTime createdAt) {
     this.id = id;
     this.userId = userId;
     this.email = email;
@@ -56,27 +53,27 @@ public class Account {
   /**
    * Factory for new Account.
    *
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param type         the account type for the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
-   * @param time         time provider
+   * @param time time provider
    * @return new Account instance
    * @throws AppValidationException if initial validation fails.
    */
   public static Account createNew(
-          UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
+      UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
     var created = OffsetDateTime.now(time.clock());
 
     Account account =
-            Account.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .userId(userId)
-                    .email(email)
-                    .accountType(type)
-                    .passwordHash(passwordHash)
-                    .createdAt(created)
-                    .build();
+        Account.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .userId(userId)
+            .email(email)
+            .accountType(type)
+            .passwordHash(passwordHash)
+            .createdAt(created)
+            .build();
 
     List<AppValidationException.Problem> problems = account.collectValidationProblems(time.clock());
     if (!problems.isEmpty()) {
@@ -94,7 +91,8 @@ public class Account {
    */
   public Account changeEmail(Email newEmail) {
     Account updatedAccount = this.toBuilder().email(newEmail).build();
-    List<AppValidationException.Problem> problems = updatedAccount.collectValidationProblems(Clock.systemUTC());
+    List<AppValidationException.Problem> problems =
+        updatedAccount.collectValidationProblems(Clock.systemUTC());
     if (!problems.isEmpty()) {
       throw new AppValidationException(problems);
     }
@@ -110,7 +108,8 @@ public class Account {
    */
   public Account setPasswordHash(String newHash) {
     Account updatedAccount = this.toBuilder().passwordHash(newHash).build();
-    List<AppValidationException.Problem> problems = updatedAccount.collectValidationProblems(Clock.systemUTC());
+    List<AppValidationException.Problem> problems =
+        updatedAccount.collectValidationProblems(Clock.systemUTC());
     if (!problems.isEmpty()) {
       throw new AppValidationException(problems);
     }
@@ -124,7 +123,8 @@ public class Account {
    * limits if provided, and createdAt is not in the future.
    *
    * @param clock The clock to use for time-based validations.
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
+   *     otherwise.
    */
   private List<AppValidationException.Problem> collectValidationProblems(Clock clock) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
@@ -133,23 +133,35 @@ public class Account {
       problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK, "id"));
     }
     if (userId == null) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_USER_ID_BLANK, "userId"));
+      problems.add(
+          new AppValidationException.Problem(IdentityErrorCodes.INVALID_USER_ID_BLANK, "userId"));
     }
     if (email == null) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK, "email"));
+      problems.add(
+          new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK, "email"));
     }
     if (accountType == null) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK, "accountType"));
+      problems.add(
+          new AppValidationException.Problem(
+              IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK, "accountType"));
     }
     if (passwordHash == null || passwordHash.isBlank()) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_PASSWORD_HASH_BLANK, "passwordHash"));
+      problems.add(
+          new AppValidationException.Problem(
+              IdentityErrorCodes.INVALID_PASSWORD_HASH_BLANK, "passwordHash"));
     } else if (passwordHash.length() > 255) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_PASSWORD_HASH_LENGTH, "passwordHash"));
+      problems.add(
+          new AppValidationException.Problem(
+              IdentityErrorCodes.INVALID_PASSWORD_HASH_LENGTH, "passwordHash"));
     }
     if (createdAt == null) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_BLANK, "createdAt"));
+      problems.add(
+          new AppValidationException.Problem(
+              IdentityErrorCodes.INVALID_CREATED_AT_BLANK, "createdAt"));
     } else if (createdAt.isAfter(OffsetDateTime.now(clock))) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE, "createdAt"));
+      problems.add(
+          new AppValidationException.Problem(
+              IdentityErrorCodes.INVALID_CREATED_AT_FUTURE, "createdAt"));
     }
 
     return problems;
@@ -158,7 +170,8 @@ public class Account {
   /**
    * Convenience method to collect validation problems using the system UTC clock.
    *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
+   *     otherwise.
    */
   private List<AppValidationException.Problem> collectValidationProblems() {
     return collectValidationProblems(Clock.systemUTC());

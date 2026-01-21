@@ -5,16 +5,13 @@ import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import lombok.Builder;
-import lombok.Getter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
 
-/**
- * City entity aggregate.
- */
+/** City entity aggregate. */
 @Getter
 public class City {
 
@@ -32,12 +29,13 @@ public class City {
   /**
    * Factory for new cities.
    *
-   * @param name     the name of the city
+   * @param name the name of the city
    * @param ibgeCode the IBGE code of the city
    * @return the created City instance
    */
   public static City createNew(String name, IbgeCode ibgeCode) {
-    City c = City.builder()
+    City c =
+        City.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .name(StringUtils.trim(name))
             .ibgeCode(ibgeCode)
@@ -83,7 +81,8 @@ public class City {
   /**
    * Validates the City instance and collects all validation problems.
    *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list otherwise.
+   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
+   *     otherwise.
    */
   private List<AppValidationException.Problem> collectValidationProblems() {
     List<AppValidationException.Problem> problems = new ArrayList<>();
@@ -92,13 +91,16 @@ public class City {
       problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK, "id"));
     }
     if (StringUtils.isEmpty(name)) {
-      problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK, "name"));
+      problems.add(
+          new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK, "name"));
     }
     if (name.length() > 100) {
-      problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH, "name"));
+      problems.add(
+          new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH, "name"));
     }
     if (ibgeCode == null) {
-      problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK, "ibgeCode"));
+      problems.add(
+          new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK, "ibgeCode"));
     }
 
     return problems;

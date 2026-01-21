@@ -1,7 +1,7 @@
 package com.pug.identity.infra.persistence.impl;
 
-import com.pug.identity.domain.User;
 import com.pug.identity.domain.IUserRepository;
+import com.pug.identity.domain.User;
 import com.pug.identity.infra.UserMapper;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.exceptions.AppValidationException;
@@ -10,15 +10,12 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository implementation for User aggregate.
- */
+/** Repository implementation for User aggregate. */
 @ApplicationScoped
 public class UserRepository implements IUserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 

@@ -1,14 +1,11 @@
 package com.pug.academic.domain;
 
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Student entities.
- */
+/** Repository interface for managing Student entities. */
 public interface IStudentRepository {
   /**
    * Persists a Student entity.

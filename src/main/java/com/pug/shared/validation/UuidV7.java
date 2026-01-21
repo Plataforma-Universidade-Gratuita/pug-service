@@ -1,19 +1,16 @@
 package com.pug.shared.validation;
 
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-/**
- * UUIDv7 validation annotation.
- */
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/** UUIDv7 validation annotation. */
 @Target({FIELD, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
 @Constraint(validatedBy = {UuidV7ForUuid.class, UuidV7ForString.class})

@@ -6,18 +6,15 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.exceptions.AppValidationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Student entity aggregate.
- */
+/** Student entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,30 +30,30 @@ public class Student {
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg       the academic registration for the student
-   * @param campus    the campus at which the student is enrolled
-   * @param courseId  the course identifier the student is enrolled in
-   * @param hours     the counterpart hours details
-   * @param period    the academic period details
+   * @param reg the academic registration for the student
+   * @param campus the campus at which the student is enrolled
+   * @param courseId the course identifier the student is enrolled in
+   * @param hours the counterpart hours details
+   * @param period the academic period details
    * @return the created student
    * @throws AppValidationException if validation fails
    */
   public static Student createNew(
-          UUID accountId,
-          AcademicRegistration reg,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours hours,
-          Period period) {
+      UUID accountId,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
     Student student =
-            Student.builder()
-                    .accountId(accountId)
-                    .academicRegistration(reg)
-                    .campus(campus)
-                    .courseId(courseId)
-                    .counterpartHours(hours)
-                    .period(period)
-                    .build();
+        Student.builder()
+            .accountId(accountId)
+            .academicRegistration(reg)
+            .campus(campus)
+            .courseId(courseId)
+            .counterpartHours(hours)
+            .period(period)
+            .build();
 
     List<AppValidationException.Problem> problems = student.collectValidationProblems();
     if (!problems.isEmpty()) {
@@ -155,29 +152,30 @@ public class Student {
 
     if (accountId == null) {
       problems.add(
-              new AppValidationException.Problem(
-                      AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK, "accountId"));
+          new AppValidationException.Problem(
+              AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK, "accountId"));
     }
     if (academicRegistration == null) {
       problems.add(
-              new AppValidationException.Problem(
-                      AcademicErrorCodes.INVALID_REGISTRATION_BLANK, "academicRegistration"));
+          new AppValidationException.Problem(
+              AcademicErrorCodes.INVALID_REGISTRATION_BLANK, "academicRegistration"));
     }
     if (campus == null) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK, "campus"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK, "campus"));
     }
     if (courseId == null) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK, "courseId"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK, "courseId"));
     }
     if (counterpartHours == null) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK, "counterpartHours"));
+          new AppValidationException.Problem(
+              AcademicErrorCodes.INVALID_HOURS_BLANK, "counterpartHours"));
     }
     if (period == null) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK, "period"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK, "period"));
     }
     return problems;
   }

@@ -5,15 +5,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/**
- * Utility class for collection operations.
- */
+/** Utility class for collection operations. */
 public final class CollectionUtils {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CollectionUtils() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CollectionUtils() {}
 
   /**
    * Checks if an {@code Iterable} is null or empty.
@@ -48,9 +43,10 @@ public final class CollectionUtils {
   /**
    * Converts an {@code Iterable} to a {@code Stream}.
    *
-   * @param it  the iterable.
+   * @param it the iterable.
    * @param <T> the type of elements in the iterable.
-   * @return a stream containing the elements of the iterable, or an empty stream if the iterable is null.
+   * @return a stream containing the elements of the iterable, or an empty stream if the iterable is
+   *     null.
    */
   public static <T> Stream<T> toStream(Iterable<T> it) {
     return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);

@@ -16,35 +16,29 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing admins.
- */
+/** Service for managing admins. */
 @ApplicationScoped
 public class AdminService implements IAdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminService.class);
 
-  @Inject
-  IAdminRepository adminsRepo;
-  @Inject
-  IAccountService accountService;
-  @Inject
-  TimeProvider time;
+  @Inject IAdminRepository adminsRepo;
+  @Inject IAccountService accountService;
+  @Inject TimeProvider time;
 
   /**
-   * Helper method to create an Admin domain object from an account ID,
-   * collecting all validation problems.
+   * Helper method to create an Admin domain object from an account ID, collecting all validation
+   * problems.
    *
    * @param accountId The ID of the associated account.
-   * @param problems  List to collect AppValidationException.Problem instances.
+   * @param problems List to collect AppValidationException.Problem instances.
    * @return The constructed Admin domain object if no problems, or null if problems occurred.
    */
   private Admin processAdminInput(UUID accountId, List<AppValidationException.Problem> problems) {
@@ -95,7 +89,8 @@ public class AdminService implements IAdminService {
 
     List<Account> accounts = new ArrayList<>();
     try {
-      var accountCmds = CollectionUtils.toStream(cmds).map(AdminCreateCommand::accountCommand).toList();
+      var accountCmds =
+          CollectionUtils.toStream(cmds).map(AdminCreateCommand::accountCommand).toList();
       accounts = accountService.saveAll(accountCmds);
     } catch (AppValidationException e) {
       allCollectedProblems.addAll(e.getProblems());
@@ -130,9 +125,9 @@ public class AdminService implements IAdminService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-              DeleteKeys.ADMINS, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.ADMINS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     long adminsDeleted = adminsRepo.deleteByIds(ids);
@@ -140,21 +135,33 @@ public class AdminService implements IAdminService {
     Map<DeleteKeys, Long> accountsDeleted = accountService.deleteAll(ids);
 
     return Map.of(
-            DeleteKeys.ADMINS, adminsDeleted,
-            DeleteKeys.ACCOUNTS, accountsDeleted.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, accountsDeleted.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.ADMINS, adminsDeleted,
+        DeleteKeys.ACCOUNTS, accountsDeleted.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, accountsDeleted.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
   public Admin getById(UUID accountId) {
     try {
       return adminsRepo
-              .findOptionalById(accountId)
-              .orElseThrow(() -> new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+          .findOptionalById(accountId)
+          .orElseThrow(
+              () ->
+                  new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Admin with Account ID %s in DB violates domain rules. Problems: %s",
-              accountId, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
+      LOG.errorf(
+          e,
+          "Data integrity error: Admin with Account ID %s in DB violates domain rules. Problems: %s",
+          accountId,
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(
+          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
     }
   }
 
@@ -163,8 +170,15 @@ public class AdminService implements IAdminService {
     try {
       return adminsRepo.listAllAdmins();
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
-              e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      LOG.errorf(
+          e,
+          "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
       throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
     }
   }

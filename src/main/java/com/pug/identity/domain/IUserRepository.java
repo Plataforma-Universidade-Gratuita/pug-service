@@ -1,14 +1,11 @@
 package com.pug.identity.domain;
 
 import com.pug.shared.exceptions.AppValidationException;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing User domain objects.
- */
+/** Repository interface for managing User domain objects. */
 public interface IUserRepository {
 
   /**
@@ -17,7 +14,7 @@ public interface IUserRepository {
    * @param entity the User to persist.
    * @return the persisted User.
    * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   User persist(User entity) throws AppValidationException;
 
@@ -27,7 +24,7 @@ public interface IUserRepository {
    * @param entities the User objects to persist.
    * @return a list of persisted User objects.
    * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *                                domain object (indicating a data integrity issue).
+   *     domain object (indicating a data integrity issue).
    */
   List<User> persistAll(Iterable<User> entities) throws AppValidationException;
 
@@ -52,7 +49,7 @@ public interface IUserRepository {
    * @param id the ID of the User to find.
    * @return an Optional containing the User if found, or empty if not found.
    * @throws AppValidationException if a UserEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of a valid domain object.
+   *     domain rules, preventing the creation of a valid domain object.
    */
   Optional<User> findOptionalById(UUID id) throws AppValidationException;
 
@@ -62,7 +59,7 @@ public interface IUserRepository {
    * @param cpf the CPF of the User to find.
    * @return an Optional containing the User if found, or empty if not found.
    * @throws AppValidationException if a UserEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of a valid domain object.
+   *     domain rules, preventing the creation of a valid domain object.
    */
   Optional<User> findOptionalByCpf(String cpf) throws AppValidationException;
 
@@ -71,7 +68,7 @@ public interface IUserRepository {
    *
    * @return a list of all User objects.
    * @throws AppValidationException if any UserEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of valid domain objects.
+   *     domain rules, preventing the creation of valid domain objects.
    */
   List<User> listAllUsers() throws AppValidationException;
 
@@ -81,7 +78,7 @@ public interface IUserRepository {
    * @param cpfs an iterable of CPFs.
    * @return a list of User objects with the given CPFs.
    * @throws AppValidationException if any UserEntity is found but its data is inconsistent with
-   *                                domain rules, preventing the creation of valid domain objects.
+   *     domain rules, preventing the creation of valid domain objects.
    */
   List<User> listByCpfs(Iterable<String> cpfs) throws AppValidationException;
 

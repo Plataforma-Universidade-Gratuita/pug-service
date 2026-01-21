@@ -9,7 +9,6 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepository
-        implements IAccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+    implements IAccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
@@ -99,7 +98,7 @@ public class AccountRepository
 
   @Override
   public List<UUID> findUserIdsWithAccountsExcluding(
-          Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
+      Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
     if (CollectionUtils.isEmpty(userIds)) {
       return List.of();
     }
@@ -107,9 +106,9 @@ public class AccountRepository
     if (!CollectionUtils.isEmpty(excludeAccountIds)) {
       query += " and id not in ?2";
       return find(query, userIds, excludeAccountIds).stream()
-              .map(AccountEntity::getUserId)
-              .distinct()
-              .toList();
+          .map(AccountEntity::getUserId)
+          .distinct()
+          .toList();
     } else {
       return find(query, userIds).stream().map(AccountEntity::getUserId).distinct().toList();
     }

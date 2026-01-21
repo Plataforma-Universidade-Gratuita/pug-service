@@ -5,36 +5,31 @@ import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.shared.exceptions.AppValidationException;
 
-/**
- * Maps between Account domain and AccountEntity persistence.
- */
+/** Maps between Account domain and AccountEntity persistence. */
 public final class AccountMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountMapper() {}
 
   /**
    * Maps an AccountEntity to an Account domain object.
    *
    * @param e the AccountEntity.
    * @return the Account domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., email) is invalid
-   *                                according to domain rules, indicating corrupted data in persistence.
+   * @throws AppValidationException if the data in the entity (e.g., email) is invalid according to
+   *     domain rules, indicating corrupted data in persistence.
    */
   public static Account toDomain(AccountEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
     return Account.builder()
-            .id(e.getId())
-            .userId(e.getUserId())
-            .email(new Email(e.getEmail()))
-            .accountType(e.getAccountType())
-            .passwordHash(e.getPasswordHash())
-            .createdAt(e.getCreatedAt())
-            .build();
+        .id(e.getId())
+        .userId(e.getUserId())
+        .email(new Email(e.getEmail()))
+        .accountType(e.getAccountType())
+        .passwordHash(e.getPasswordHash())
+        .createdAt(e.getCreatedAt())
+        .build();
   }
 
   /**
@@ -48,13 +43,13 @@ public final class AccountMapper {
       return null;
     }
     return AccountEntity.builder()
-            .id(d.getId())
-            .userId(d.getUserId())
-            .email(d.getEmail().toString())
-            .accountType(d.getAccountType())
-            .passwordHash(d.getPasswordHash())
-            .createdAt(d.getCreatedAt())
-            .build();
+        .id(d.getId())
+        .userId(d.getUserId())
+        .email(d.getEmail().toString())
+        .accountType(d.getAccountType())
+        .passwordHash(d.getPasswordHash())
+        .createdAt(d.getCreatedAt())
+        .build();
   }
 
   /**

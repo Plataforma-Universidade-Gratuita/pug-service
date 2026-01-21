@@ -20,8 +20,6 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,32 +29,29 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing staff assignments to partner entities.
- */
+/** Service for managing staff assignments to partner entities. */
 @ApplicationScoped
 public class StaffService implements IStaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffService.class);
 
-  @Inject
-  IStaffRepository repo;
-  @Inject
-  AccountService accountService;
-  @Inject
-  IEntityService entityService;
+  @Inject IStaffRepository repo;
+  @Inject AccountService accountService;
+  @Inject IEntityService entityService;
 
   /**
-   * Helper method to process input and build Staff domain object,
-   * collecting all validation problems.
+   * Helper method to process input and build Staff domain object, collecting all validation
+   * problems.
    *
-   * @param accountId        The ID of the associated account.
+   * @param accountId The ID of the associated account.
    * @param entityCnpjString The CNPJ string of the associated entity.
-   * @param problems         List to collect AppValidationException.Problem instances.
+   * @param problems List to collect AppValidationException.Problem instances.
    * @return The constructed Staff domain object if no problems, or null if problems occurred.
    */
-  private Staff processStaffInput(UUID accountId, String entityCnpjString, List<AppValidationException.Problem> problems) {
+  private Staff processStaffInput(
+      UUID accountId, String entityCnpjString, List<AppValidationException.Problem> problems) {
     UUID entityId = null;
     Cnpj entityCnpjVO = null;
 
@@ -69,7 +64,9 @@ public class StaffService implements IStaffService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (ResourceNotFoundException e) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
+      problems.add(
+          new AppValidationException.Problem(
+              PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
     }
 
     Staff staff = null;
@@ -92,9 +89,9 @@ public class StaffService implements IStaffService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (DuplicateResourceException e) {
-      problems.add(new AppValidationException.Problem(e.getErrorCode(), "accountCommand.emailString"));
+      problems.add(
+          new AppValidationException.Problem(e.getErrorCode(), "accountCommand.emailString"));
     }
-
 
     Staff staffToPersist = null;
     if (problems.isEmpty() && account != null) {
@@ -108,7 +105,9 @@ public class StaffService implements IStaffService {
     }
 
     if (existsByAccountId(staffToPersist.getAccountId())) {
-      throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS, Map.of("accountId", staffToPersist.getAccountId()));
+      throw new DuplicateResourceException(
+          PartnerErrorCodes.STAFF_ALREADY_EXISTS,
+          Map.of("accountId", staffToPersist.getAccountId()));
     }
 
     return repo.persist(staffToPersist);
@@ -139,10 +138,14 @@ public class StaffService implements IStaffService {
         } catch (AppValidationException e) {
           allCollectedProblems.addAll(e.getProblems());
         } catch (ResourceNotFoundException e) {
-          allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
+          allCollectedProblems.add(
+              new AppValidationException.Problem(
+                  PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
         }
       } else {
-        allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK, "entityCnpjString"));
+        allCollectedProblems.add(
+            new AppValidationException.Problem(
+                PartnerErrorCodes.INVALID_CNPJ_BLANK, "entityCnpjString"));
       }
     }
 
@@ -151,20 +154,26 @@ public class StaffService implements IStaffService {
     }
 
     List<StaffCreateCommand> staffCreateCommands = new ArrayList<>();
-    CollectionUtils.toStream(cmds).forEach(bulkCmd -> {
-      bulkCmd.accountCommands().forEach(accCmd -> {
-        UUID entityIdForStaff = entityIdsByCnpj.get(bulkCmd.entityCnpjString());
-        staffCreateCommands.add(new StaffCreateCommand(bulkCmd.entityCnpjString(), accCmd));
-      });
-    });
+    CollectionUtils.toStream(cmds)
+        .forEach(
+            bulkCmd -> {
+              bulkCmd
+                  .accountCommands()
+                  .forEach(
+                      accCmd -> {
+                        UUID entityIdForStaff = entityIdsByCnpj.get(bulkCmd.entityCnpjString());
+                        staffCreateCommands.add(
+                            new StaffCreateCommand(bulkCmd.entityCnpjString(), accCmd));
+                      });
+            });
 
     List<Account> createdAccounts = new ArrayList<>();
-    Map<StaffCreateCommand, AppValidationException.Problem> accountCreationProblemsMap = new HashMap<>();
+    Map<StaffCreateCommand, AppValidationException.Problem> accountCreationProblemsMap =
+        new HashMap<>();
 
     try {
-      List<com.pug.identity.service.dtos.AccountCreateCommand> allAccountCreateCommands = staffCreateCommands.stream()
-              .map(StaffCreateCommand::accountCommand)
-              .toList();
+      List<com.pug.identity.service.dtos.AccountCreateCommand> allAccountCreateCommands =
+          staffCreateCommands.stream().map(StaffCreateCommand::accountCommand).toList();
       createdAccounts = accountService.saveAll(allAccountCreateCommands);
     } catch (AppValidationException e) {
       allCollectedProblems.addAll(e.getProblems());
@@ -183,16 +192,21 @@ public class StaffService implements IStaffService {
       if (accountByIndex.containsKey(staffCmdIndex)) {
         staffAccountId = accountByIndex.get(staffCmdIndex).getId();
       } else {
-        allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK, "accountCommand"));
+        allCollectedProblems.add(
+            new AppValidationException.Problem(
+                PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK, "accountCommand"));
       }
 
-      Staff staff = processStaffInput(staffAccountId, staffCmd.entityCnpjString(), currentStaffProblems);
+      Staff staff =
+          processStaffInput(staffAccountId, staffCmd.entityCnpjString(), currentStaffProblems);
 
       if (!currentStaffProblems.isEmpty()) {
         allCollectedProblems.addAll(currentStaffProblems);
       } else if (staff != null) {
         if (!processedAccountIds.add(staff.getAccountId())) {
-          allCollectedProblems.add(new AppValidationException.Problem(PartnerErrorCodes.STAFF_ALREADY_EXISTS, "accountId"));
+          allCollectedProblems.add(
+              new AppValidationException.Problem(
+                  PartnerErrorCodes.STAFF_ALREADY_EXISTS, "accountId"));
         }
         staffToPersist.add(staff);
       }
@@ -203,9 +217,7 @@ public class StaffService implements IStaffService {
       throw new AppValidationException(allCollectedProblems);
     }
 
-    List<UUID> accountIdsToPersist = staffToPersist.stream()
-            .map(Staff::getAccountId)
-            .toList();
+    List<UUID> accountIdsToPersist = staffToPersist.stream().map(Staff::getAccountId).toList();
 
     if (repo.existsAnyByAccountIdIn(accountIdsToPersist)) {
       throw new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
@@ -227,7 +239,8 @@ public class StaffService implements IStaffService {
       } catch (AppValidationException e) {
         problems.addAll(e.getProblems());
       } catch (DuplicateResourceException e) {
-        problems.add(new AppValidationException.Problem(e.getErrorCode(), "accountCommand.emailString"));
+        problems.add(
+            new AppValidationException.Problem(e.getErrorCode(), "accountCommand.emailString"));
       }
     }
 
@@ -243,7 +256,9 @@ public class StaffService implements IStaffService {
       } catch (AppValidationException e) {
         problems.addAll(e.getProblems());
       } catch (ResourceNotFoundException e) {
-        problems.add(new AppValidationException.Problem(PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
+        problems.add(
+            new AppValidationException.Problem(
+                PartnerErrorCodes.ENTITY_NOT_FOUND, "entityCnpjString"));
       }
     }
     if (effectiveEntityId == null) {
@@ -252,10 +267,9 @@ public class StaffService implements IStaffService {
 
     Staff staffToUpdate = null;
     try {
-      Staff currentWithUpdates = current.toBuilder()
-              .entityId(effectiveEntityId)
-              .build();
-      List<AppValidationException.Problem> domainProblems = currentWithUpdates.collectValidationProblems();
+      Staff currentWithUpdates = current.toBuilder().entityId(effectiveEntityId).build();
+      List<AppValidationException.Problem> domainProblems =
+          currentWithUpdates.collectValidationProblems();
       if (!domainProblems.isEmpty()) problems.addAll(domainProblems);
 
       staffToUpdate = currentWithUpdates;
@@ -276,9 +290,9 @@ public class StaffService implements IStaffService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-              DeleteKeys.STAFF, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.STAFF, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     long deletedStaff = repo.deleteByIds(ids);
@@ -286,20 +300,32 @@ public class StaffService implements IStaffService {
     Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(ids);
 
     return Map.of(
-            DeleteKeys.STAFF, deletedStaff,
-            DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.STAFF, deletedStaff,
+        DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
   public Staff getById(UUID id) {
     try {
       return repo.findOptionalById(id)
-              .orElseThrow(() -> new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id)));
+          .orElseThrow(
+              () ->
+                  new ResourceNotFoundException(
+                      PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id)));
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Staff with Account ID %s in DB violates domain rules. Problems: %s",
-              id, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id));
+      LOG.errorf(
+          e,
+          "Data integrity error: Staff with Account ID %s in DB violates domain rules. Problems: %s",
+          id,
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
+      throw new ResourceNotFoundException(
+          PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", id));
     }
   }
 
@@ -308,8 +334,15 @@ public class StaffService implements IStaffService {
     try {
       return repo.listAllStaff();
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
-              e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      LOG.errorf(
+          e,
+          "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
       throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
     }
   }
@@ -322,8 +355,16 @@ public class StaffService implements IStaffService {
     try {
       return repo.listAllByEntityId(entityId);
     } catch (AppValidationException e) {
-      LOG.errorf(e, "Data integrity error: Corrupted Staff entity found in DB while listing by entity ID %s. Problems: %s",
-              entityId, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
+      LOG.errorf(
+          e,
+          "Data integrity error: Corrupted Staff entity found in DB while listing by entity ID %s. Problems: %s",
+          entityId,
+          e.getProblems().stream()
+              .map(
+                  p ->
+                      p.code().getBundleKey()
+                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
+              .collect(Collectors.joining(", ")));
       throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
     }
   }

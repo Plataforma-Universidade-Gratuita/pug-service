@@ -5,34 +5,29 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.exceptions.AppValidationException;
 
-/**
- * Maps between User domain and UserEntity persistence.
- */
+/** Maps between User domain and UserEntity persistence. */
 public final class UserMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserMapper() {}
 
   /**
    * Maps a UserEntity to a User domain object.
    *
    * @param e the UserEntity.
    * @return the User domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., cpf) is invalid
-   *                                according to domain rules, indicating corrupted data in persistence.
+   * @throws AppValidationException if the data in the entity (e.g., cpf) is invalid according to
+   *     domain rules, indicating corrupted data in persistence.
    */
   public static User toDomain(UserEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
     return User.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .cpf(new Cpf(e.getCpf()))
-            .createdAt(e.getCreatedAt())
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .cpf(new Cpf(e.getCpf()))
+        .createdAt(e.getCreatedAt())
+        .build();
   }
 
   /**
@@ -46,11 +41,11 @@ public final class UserMapper {
       return null;
     }
     return UserEntity.builder()
-            .id(d.getId())
-            .cpf(d.getCpf().toString())
-            .name(d.getName())
-            .createdAt(d.getCreatedAt())
-            .build();
+        .id(d.getId())
+        .cpf(d.getCpf().toString())
+        .name(d.getName())
+        .createdAt(d.getCreatedAt())
+        .build();
   }
 
   /**

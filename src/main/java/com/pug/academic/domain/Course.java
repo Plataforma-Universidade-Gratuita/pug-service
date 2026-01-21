@@ -4,18 +4,15 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Course entity aggregate.
- */
+/** Course entity aggregate. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -27,7 +24,7 @@ public class Course {
   /**
    * Factory for new courses.
    *
-   * @param name     the name of the course
+   * @param name the name of the course
    * @param schoolId the ID of the school
    * @return the created course
    * @throws AppValidationException if validation fails
@@ -35,11 +32,11 @@ public class Course {
   public static Course createNew(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-            Course.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .name(trimmedName)
-                    .schoolId(schoolId)
-                    .build();
+        Course.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(trimmedName)
+            .schoolId(schoolId)
+            .build();
 
     List<AppValidationException.Problem> problems = course.collectValidationProblems();
     if (!problems.isEmpty()) {
@@ -96,15 +93,15 @@ public class Course {
     }
     if (StringUtils.isEmpty(name)) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK, "name"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK, "name"));
     } else if (name.length() > 120) {
       problems.add(
-              new AppValidationException.Problem(
-                      AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH, "name"));
+          new AppValidationException.Problem(
+              AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH, "name"));
     }
     if (schoolId == null) {
       problems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK, "schoolId"));
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK, "schoolId"));
     }
 
     return problems;
