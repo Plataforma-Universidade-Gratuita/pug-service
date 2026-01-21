@@ -1,15 +1,15 @@
 package com.pug.identity.presenter;
 
 import com.pug.identity.domain.Admin;
+import com.pug.identity.domain.IAdminRepository;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AdminCreateOrUpdateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.identity.presenter.mappers.AdminPresenter;
-import com.pug.identity.service.impl.AdminReadService;
-import com.pug.identity.service.impl.AdminService;
-import com.pug.identity.service.impl.PasswordService;
+import com.pug.identity.service.IAdminService;
+import com.pug.identity.service.IPasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.AdminCreateCommand;
@@ -60,11 +60,11 @@ import java.util.stream.Collectors;
 public class AdminResource {
 
   @Inject
-  PasswordService passwordService;
+  IPasswordService passwordService;
   @Inject
-  AdminReadService readService;
+  IAdminRepository readService;
   @Inject
-  AdminService writeService;
+  IAdminService writeService;
   @Inject
   I18n i18n;
 

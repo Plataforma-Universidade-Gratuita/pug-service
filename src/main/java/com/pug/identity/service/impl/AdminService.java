@@ -4,11 +4,12 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.IAdminRepository;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.identity.service.IAccountService;
+import com.pug.identity.service.IAdminService;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.CollectionUtils;
@@ -27,14 +28,14 @@ import java.util.stream.Collectors;
  * Service for managing admins.
  */
 @ApplicationScoped
-public class AdminService {
+public class AdminService implements IAdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminService.class);
 
   @Inject
   IAdminRepository adminsRepo;
   @Inject
-  AccountService accountService;
+  IAccountService accountService;
   @Inject
   TimeProvider time;
 
@@ -56,16 +57,8 @@ public class AdminService {
     return admin;
   }
 
-  /**
-   * Creates and saves a new Admin.
-   *
-   * <p>This method also creates and saves the associated Account.
-   *
-   * @param cmd the command containing the data to create the new Admin.
-   * @return the saved Admin.
-   * @throws AppValidationException if input validation fails for account or admin data.
-   */
   @Transactional
+  @Override
   public Admin save(AdminCreateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
     Account account = null;
@@ -90,16 +83,8 @@ public class AdminService {
     return adminsRepo.persist(adminToPersist);
   }
 
-  /**
-   * Creates and saves multiple new Admins.
-   *
-   * <p>This method also creates and saves the associated Accounts.
-   *
-   * @param cmds the commands containing the data to create the new Admins.
-   * @return the list of saved Admins.
-   * @throws AppValidationException if input validation fails for any admin or account in the bulk.
-   */
   @Transactional
+  @Override
   public List<Admin> saveAll(Iterable<AdminCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -132,36 +117,16 @@ public class AdminService {
     return adminsRepo.persistAll(adminsToPersist);
   }
 
-  /**
-   * Updates an existing Admin.
-   *
-   * <p>This method also updates the associated Account.
-   *
-   * @param id  the ID of the Admin to update.
-   * @param cmd the command containing the data to update the Admin.
-   * @return the updated Admin.
-   * @throws ResourceNotFoundException if the Admin with the given ID does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if input validation fails for account data.
-   */
   @Transactional
+  @Override
   public Admin update(UUID id, AdminUpdateCommand cmd) {
-    Account updatedAccount = null;
-    updatedAccount = accountService.update(id, cmd.accountCommand());
+    accountService.update(id, cmd.accountCommand());
 
-    return getById(updatedAccount.getId());
+    return getById(id);
   }
 
-  /**
-   * Deletes all Admins with the given IDs.
-   *
-   * <p>This method also deletes the associated Accounts.
-   *
-   * @param ids the IDs of the Admins to delete.
-   * @return a map containing the count of deleted Admins and Accounts.
-   * @throws ReferencedEntityException if any account is still referenced by Admin, Staff, or
-   *                                   Student entities (this check is done by AccountService).
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
@@ -180,13 +145,7 @@ public class AdminService {
             DeleteKeys.USERS, accountsDeleted.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
-  /**
-   * Retrieves an Admin by account ID.
-   *
-   * @param accountId the UUID of the account.
-   * @return the Admin entity.
-   * @throws ResourceNotFoundException if the Admin with the given account ID does not exist (or data is corrupted in DB).
-   */
+  @Override
   public Admin getById(UUID accountId) {
     try {
       return adminsRepo
@@ -199,12 +158,7 @@ public class AdminService {
     }
   }
 
-  /**
-   * Lists all Admin entities.
-   *
-   * @return a list of all Admin entities.
-   * @throws AppValidationException if any Admin entity found is corrupted in the database.
-   */
+  @Override
   public List<Admin> listAll() {
     try {
       return adminsRepo.listAllAdmins();
@@ -215,12 +169,7 @@ public class AdminService {
     }
   }
 
-  /**
-   * Checks if any Admin exists with account IDs in the provided iterable.
-   *
-   * @param ids the iterable of account IDs to check.
-   * @return true if any Admin exists with the given account IDs, false otherwise.
-   */
+  @Override
   public boolean existsAnyByAccountIdIn(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return false;

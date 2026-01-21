@@ -1,8 +1,9 @@
-package com.pug.identity.service.impl;
+package com.pug.identity.service.impl; // Pacote alterado
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.IUserQueries;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.identity.service.IUserReadService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,18 +17,12 @@ import java.util.UUID;
  * Read-only service for user views.
  */
 @ApplicationScoped
-public class UserReadService {
+public class UserReadService implements IUserReadService { // Implementa IUserReadService
 
   @Inject
-  IUserQueries queries;
+  IUserQueries queries; // Injeta a interface IUserQueries
 
-  /**
-   * Retrieves a UserView by its unique identifier.
-   *
-   * @param id the UUID of the user
-   * @return the UserView
-   * @throws ResourceNotFoundException if no user with the given ID is found
-   */
+  @Override // Adicione @Override para todos os métodos da interface
   public UserView getViewById(UUID id) {
     return queries
             .findOptionalById(id)
@@ -36,14 +31,12 @@ public class UserReadService {
                             new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
   }
 
-  /**
-   * Retrieves a UserView by its CPF.
-   *
-   * @param cpf the CPF of the user
-   * @return the UserView
-   * @throws ResourceNotFoundException if no user with the given CPF is found
-   */
+  @Override
   public UserView getViewByCpf(String cpf) {
+    // Adicionado validação de StringUtils.isEmpty
+    if (StringUtils.isEmpty(cpf)) {
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf));
+    }
     return queries
             .findOptionalByCpf(cpf)
             .orElseThrow(
@@ -52,22 +45,14 @@ public class UserReadService {
                                     IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf)));
   }
 
-  /**
-   * Lists all UserViews.
-   *
-   * @return a list of all UserViews
-   */
+  @Override
   public List<UserView> listViews() {
     return queries.listAllUsers();
   }
 
-  /**
-   * Searches for UserViews by name.
-   *
-   * @param query the search query
-   * @return a list of UserViews matching the search query
-   */
+  @Override
   public List<UserView> search(String query) {
+    // Aplica StringUtils.fold para consistência na pesquisa
     String key = StringUtils.fold(query);
     return queries.searchByName(key);
   }

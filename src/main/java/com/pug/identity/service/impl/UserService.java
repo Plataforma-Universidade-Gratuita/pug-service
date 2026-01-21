@@ -1,9 +1,11 @@
-package com.pug.identity.service.impl;
+package com.pug.identity.service.impl; // Pacote alterado
 
-import com.pug.identity.domain.User;
 import com.pug.identity.domain.IUserRepository;
+import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.service.IAccountService;
+import com.pug.identity.service.IUserService;
 import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
@@ -30,16 +32,16 @@ import java.util.stream.Collectors;
  * Service for managing users table.
  */
 @ApplicationScoped
-public class UserService {
+public class UserService implements IUserService { // Implementa IUserService
 
   private static final Logger LOG = Logger.getLogger(UserService.class);
 
   @Inject
-  IUserRepository repo;
+  IUserRepository repo; // Injeta a interface do repositório
   @Inject
   TimeProvider time;
   @Inject
-  AccountService accountService;
+  IAccountService accountService; // Injeta a interface do AccountService
 
   /**
    * Helper method to process DTO input and build User domain object (or update existing),
@@ -74,7 +76,14 @@ public class UserService {
         String effectiveName = (name != null) ? name : existingUser.getName();
         Cpf effectiveCpf = (cpfVO != null) ? cpfVO : existingUser.getCpf();
 
-        resultUser = existingUser.changeName(effectiveName).changeCpf(effectiveCpf);
+        User tempUser = existingUser;
+        if (cpfVO != null && !effectiveCpf.equals(tempUser.getCpf())) {
+          tempUser = tempUser.changeCpf(effectiveCpf);
+        }
+        if (name != null && !effectiveName.equals(tempUser.getName())) {
+          tempUser = tempUser.changeName(effectiveName);
+        }
+        resultUser = tempUser;
       }
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
@@ -82,15 +91,8 @@ public class UserService {
     return resultUser;
   }
 
-  /**
-   * Creates and saves a new User with the given CPF and name.
-   *
-   * @param cmd the command containing the data to create the new User
-   * @return the saved User entity
-   * @throws DuplicateResourceException if a user with the same CPF already exists
-   * @throws AppValidationException     if input validation fails (e.g., blank name, invalid CPF).
-   */
   @Transactional
+  @Override
   public User save(UserCreateOrUpdateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
     User userToPersist = processUserInput(cmd.cpfString(), cmd.name(), null, problems);
@@ -106,15 +108,8 @@ public class UserService {
     return repo.persist(userToPersist);
   }
 
-  /**
-   * Saves multiple User entities.
-   *
-   * @param cmds the iterable of CreateNewUserCommand containing data to create new Users
-   * @return a list of saved User entities
-   * @throws DuplicateResourceException if any user CPF is duplicated in the input or already exists
-   * @throws AppValidationException     if input validation fails for any user in the bulk.
-   */
   @Transactional
+  @Override
   public List<User> saveAll(Iterable<UserCreateOrUpdateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -154,17 +149,8 @@ public class UserService {
     return repo.persistAll(usersToPersist);
   }
 
-  /**
-   * Updates an existing User with the given ID using the provided data.
-   *
-   * @param id  the UUID of the user to update
-   * @param cmd the command containing the data to update the User
-   * @return the updated User entity
-   * @throws ResourceNotFoundException  if the user with the given ID does not exist (or data is corrupted in DB).
-   * @throws DuplicateResourceException if a user with the updated CPF already exists.
-   * @throws AppValidationException     if input validation fails for user data.
-   */
   @Transactional
+  @Override
   public User update(UUID id, UserCreateOrUpdateCommand cmd) {
     User current = getById(id);
 
@@ -194,14 +180,8 @@ public class UserService {
     return getById(id);
   }
 
-  /**
-   * Deletes users by their IDs.
-   *
-   * @param ids the IDs of the users to delete
-   * @return a map containing the count of deleted users
-   * @throws ReferencedEntityException if any user is still referenced by an account
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(DeleteKeys.USERS, 0L);
@@ -214,12 +194,7 @@ public class UserService {
     return Map.of(DeleteKeys.USERS, users);
   }
 
-  /**
-   * Lists all users.
-   *
-   * @return a list of all User entities
-   * @throws AppValidationException if any User entity found is corrupted in the database.
-   */
+  @Override
   public List<User> listAll() {
     try {
       return repo.listAllUsers();
@@ -230,13 +205,7 @@ public class UserService {
     }
   }
 
-  /**
-   * Retrieves a User by its ID.
-   *
-   * @param id the UUID of the user
-   * @return the User entity
-   * @throws ResourceNotFoundException if the user with the given ID does not exist (or data is corrupted in DB).
-   */
+  @Override
   public User getById(UUID id) {
     try {
       return repo.findOptionalById(id)
@@ -250,13 +219,7 @@ public class UserService {
     }
   }
 
-  /**
-   * Retrieves a User by its CPF.
-   *
-   * @param cpf the CPF of the user (already a validated Value Object).
-   * @return the User entity
-   * @throws ResourceNotFoundException if the user with the given CPF does not exist (or data is corrupted in DB).
-   */
+  @Override
   public User getByCpf(Cpf cpf) {
     try {
       return repo.findOptionalByCpf(cpf.toString())
@@ -271,13 +234,7 @@ public class UserService {
     }
   }
 
-  /**
-   * Retrieves all Users by their CPFs.
-   *
-   * @param cpfs an iterable of CPFs (already validated Value Objects).
-   * @return a list of User entities
-   * @throws AppValidationException if any User entity found is corrupted in the database.
-   */
+  @Override
   public List<User> getAllByCpf(Iterable<Cpf> cpfs) {
     try {
       return repo.listByCpfs(CollectionUtils.toStream(cpfs).map(Cpf::toString).toList());
@@ -288,12 +245,7 @@ public class UserService {
     }
   }
 
-  /**
-   * Checks if a user exists by CPF.
-   *
-   * @param cpf the CPF to check (already a validated Value Object).
-   * @return true if a user with the given CPF exists, false otherwise.
-   */
+  @Override
   public boolean existsByCpf(Cpf cpf) {
     if (cpf == null) {
       return false;
@@ -301,24 +253,12 @@ public class UserService {
     return repo.existsByCpf(cpf.toString());
   }
 
-  /**
-   * Checks if any user exists with the given CPFs.
-   *
-   * @param cpfs the list of CPFs (as strings) to check.
-   * @return true if any user with the given CPFs exists, false otherwise.
-   */
+  @Override
   public boolean existsAnyByCpfIn(List<String> cpfs) {
     return repo.existsAnyByCpfIn(cpfs);
   }
 
-  /**
-   * Helper method for AccountService to process users in bulk (find or create)
-   * and collect validation problems.
-   *
-   * @param rawCpfStrings List of raw CPF strings from commands.
-   * @param problems      List to collect AppValidationException.Problem instances.
-   * @return Map of Cpf VO to User UUID for successfully processed users.
-   */
+  @Override
   public Map<Cpf, UUID> processUsersForAccounts(List<String> rawCpfStrings, List<AppValidationException.Problem> problems) {
     Map<Cpf, UUID> userIdsByCpfVO = new HashMap<>();
     List<Cpf> validCpfVOs = new ArrayList<>();

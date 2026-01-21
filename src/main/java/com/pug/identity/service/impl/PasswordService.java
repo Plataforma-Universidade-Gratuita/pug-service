@@ -1,5 +1,6 @@
-package com.pug.identity.service.impl;
+package com.pug.identity.service.impl; // Pacote alterado
 
+import com.pug.identity.service.IPasswordService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -8,7 +9,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
  * Service for hashing and verifying passwords using bcrypt with an added pepper.
  */
 @ApplicationScoped
-public class PasswordService {
+public class PasswordService implements IPasswordService { // Implementa IPasswordService
   @ConfigProperty(name = "security.password.pepper", defaultValue = "")
   String pepper;
 
@@ -18,6 +19,7 @@ public class PasswordService {
    * @param raw the raw password
    * @return the bcrypt hash of the password with pepper
    */
+  @Override // Adicione @Override para todos os métodos da interface
   public String hash(String raw) {
     return BcryptUtil.bcryptHash(raw + pepper);
   }
@@ -29,6 +31,7 @@ public class PasswordService {
    * @param raw        the raw password to verify
    * @return true if the password matches the hash, false otherwise
    */
+  @Override // Adicione @Override para todos os métodos da interface
   public boolean verify(String storedHash, String raw) {
     return BcryptUtil.matches(raw + pepper, storedHash);
   }

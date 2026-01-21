@@ -1,22 +1,25 @@
 package com.pug.identity.service.impl;
 
-import com.pug.academic.service.impl.StudentService;
+import com.pug.academic.service.IStudentService;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.IAccountRepository;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.partner.service.impl.StaffService;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.IAccountService;
+import com.pug.identity.service.IAdminService;
+import com.pug.identity.service.IUserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.partner.service.IStaffService;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,7 +29,6 @@ import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,7 +40,7 @@ import java.util.stream.Collectors;
  * Service for managing accounts.
  */
 @ApplicationScoped
-public class AccountService {
+public class AccountService implements IAccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountService.class);
 
@@ -47,13 +49,13 @@ public class AccountService {
   @Inject
   TimeProvider time;
   @Inject
-  UserService userService;
+  IUserService userService;
   @Inject
-  AdminService adminService;
+  IAdminService adminService;
   @Inject
-  StaffService staffService;
+  IStaffService staffService;
   @Inject
-  StudentService studentService;
+  IStudentService studentService;
 
   /**
    * Helper method to process DTO input and build Account domain object (or update existing),
@@ -93,7 +95,14 @@ public class AccountService {
         Email effectiveEmail = (emailVO != null) ? emailVO : existingAccount.getEmail();
         String effectivePasswordHash = (passwordHash != null) ? passwordHash : existingAccount.getPasswordHash();
 
-        resultAccount = existingAccount.changeEmail(effectiveEmail).setPasswordHash(effectivePasswordHash);
+        Account tempAccount = existingAccount;
+        if (emailVO != null && !effectiveEmail.equals(tempAccount.getEmail())) {
+          tempAccount = tempAccount.changeEmail(effectiveEmail);
+        }
+        if (passwordHash != null && !effectivePasswordHash.equals(tempAccount.getPasswordHash())) {
+          tempAccount = tempAccount.setPasswordHash(effectivePasswordHash);
+        }
+        resultAccount = tempAccount;
       }
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
@@ -101,17 +110,8 @@ public class AccountService {
     return resultAccount;
   }
 
-  /**
-   * Creates and saves a new Account.
-   *
-   * <p>If the associated {@link User} does not exist, it will be created.
-   *
-   * @param cmd the command containing the data to create the new Account.
-   * @return the saved Account.
-   * @throws DuplicateResourceException if an account with the given email already exists.
-   * @throws AppValidationException     if input validation fails (e.g., blank email, invalid CPF).
-   */
   @Transactional
+  @Override
   public Account save(AccountCreateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
     UUID userId = null;
@@ -155,18 +155,8 @@ public class AccountService {
     return repo.persist(accountToPersist);
   }
 
-  /**
-   * Creates and saves multiple new Accounts.
-   *
-   * <p>If the associated {@link User} entities do not exist, they will be created.
-   *
-   * @param cmds the commands containing the data to create the new Accounts.
-   * @return the list of saved Accounts.
-   * @throws DuplicateResourceException if any account with the given emails already exists or if
-   *                                    there are duplicate emails in the input commands.
-   * @throws AppValidationException     if input validation fails for any account or user in the bulk.
-   */
   @Transactional
+  @Override
   public List<Account> saveAll(Iterable<AccountCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -175,7 +165,6 @@ public class AccountService {
     List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
     List<Account> accountsToPersist = new ArrayList<>();
     Set<String> processedEmails = new HashSet<>();
-    Map<String, UserCreateOrUpdateCommand> userCommandsByCpfString = new LinkedHashMap<>();
 
     List<String> rawCpfStringsFromCmds = CollectionUtils.toStream(cmds)
             .map(c -> c.userCommand().cpfString())
@@ -243,17 +232,8 @@ public class AccountService {
     return repo.persistAll(accountsToPersist);
   }
 
-  /**
-   * Updates an existing Account with the given ID using the provided data.
-   *
-   * @param id  the UUID of the Account to be updated.
-   * @param cmd the command containing the data to update the Account.
-   * @return the updated Account entity
-   * @throws ResourceNotFoundException  if the account with the given ID does not exist (or data is corrupted in DB).
-   * @throws DuplicateResourceException if an account with the updated email already exists.
-   * @throws AppValidationException     if input validation fails for account or user data.
-   */
   @Transactional
+  @Override
   public Account update(UUID id, AccountUpdateCommand cmd) {
     Account current = getById(id);
 
@@ -292,17 +272,8 @@ public class AccountService {
     return getById(id);
   }
 
-  /**
-   * Deletes multiple Account entities by their IDs.
-   *
-   * <p>Also deletes associated User entities if they are not referenced elsewhere.
-   *
-   * @param ids the iterable of UUIDs representing the IDs of the Account entities to be deleted.
-   * @return a map containing the count of deleted Accounts and Users.
-   * @throws ReferencedEntityException if any account is still referenced by Admin, Staff, or
-   *                                   Student entities.
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
@@ -334,12 +305,7 @@ public class AccountService {
             DeleteKeys.USERS, users);
   }
 
-  /**
-   * Lists all Account entities.
-   *
-   * @return a list of all Account entities.
-   * @throws AppValidationException if any Account entity found is corrupted in the database.
-   */
+  @Override
   public List<Account> listAll() {
     try {
       return repo.listAllAccounts();
@@ -350,14 +316,7 @@ public class AccountService {
     }
   }
 
-  /**
-   * Retrieves an Account by its ID.
-   *
-   * @param id the UUID of the Account.
-   * @return the Account entity.
-   * @throws ResourceNotFoundException if the account with the given ID does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the account is found but its data is corrupted in the database.
-   */
+  @Override
   public Account getById(UUID id) {
     try {
       return repo.findOptionalById(id)
@@ -369,22 +328,12 @@ public class AccountService {
     }
   }
 
-  /**
-   * Checks if any account exists with a user ID in the provided list.
-   *
-   * @param userIds the list of user IDs to check
-   * @return true if any account exists with a user ID in the list, false otherwise
-   */
+  @Override
   public boolean existsByUserIdIn(Iterable<UUID> userIds) {
     return repo.existsAnyByUserIdIn(userIds);
   }
 
-  /**
-   * Checks if any account exists with an email with the provided.
-   *
-   * @param e the emails to check
-   * @return true if any account exists with the email, false otherwise
-   */
+  @Override
   public boolean existsByEmail(Email e) {
     if (e == null) {
       return false;
@@ -392,12 +341,7 @@ public class AccountService {
     return repo.existsByEmail(e.toString());
   }
 
-  /**
-   * Checks if any account exists with an email in the provided list.
-   *
-   * @param emails the list of emails to check
-   * @return true if any account exists with an email in the list, false otherwise
-   */
+  @Override
   public boolean existsAnyByEmailIn(Iterable<String> emails) {
     return repo.existsAnyByEmailIn(emails);
   }

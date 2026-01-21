@@ -1,8 +1,9 @@
-package com.pug.identity.service.impl;
+package com.pug.identity.service.impl; // Pacote alterado
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.IAccountQueries;
 import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.identity.service.IAccountReadService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -16,18 +17,12 @@ import java.util.UUID;
  * Read-only service for account views.
  */
 @ApplicationScoped
-public class AccountReadService {
+public class AccountReadService implements IAccountReadService {
 
   @Inject
   IAccountQueries queries;
 
-  /**
-   * Retrieves an AccountView by its unique identifier.
-   *
-   * @param id the UUID of the account
-   * @return the AccountView
-   * @throws ResourceNotFoundException if no account with the given ID is found
-   */
+  @Override
   public AccountView getViewById(UUID id) {
     return queries
             .findOptionalById(id)
@@ -35,45 +30,31 @@ public class AccountReadService {
                     () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
   }
 
-  /**
-   * Retrieves an AccountView by its email.
-   *
-   * @param email the email of the account
-   * @return the AccountView
-   * @throws ResourceNotFoundException if no account with the given email is found
-   */
+  @Override
   public AccountView getViewByEmail(String email) {
+    if (StringUtils.isEmpty(email)) {
+      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email));
+    }
     return queries
             .findOptionalByEmail(email)
             .orElseThrow(
                     () -> new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email)));
   }
 
-  /**
-   * Lists all AccountViews.
-   *
-   * @return a list of all AccountViews
-   */
+  @Override
   public List<AccountView> listViews() {
     return queries.listAllAccounts();
   }
 
-  /**
-   * Lists AccountViews by CPF.
-   *
-   * @param cpf the CPF to filter accounts
-   * @return the list of AccountViews matching the given CPF
-   */
+  @Override
   public List<AccountView> listViewsByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return List.of();
+    }
     return queries.listByCpf(cpf);
   }
 
-  /**
-   * Searches for AccountViews by name (of the associated user).
-   *
-   * @param query the search query
-   * @return a list of AccountViews matching the search query
-   */
+  @Override
   public List<AccountView> search(String query) {
     String key = StringUtils.fold(query);
     return queries.searchByName(key);
