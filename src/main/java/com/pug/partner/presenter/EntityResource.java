@@ -6,8 +6,8 @@ import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.partner.presenter.dtos.EntityUpdateRequest;
 import com.pug.partner.presenter.mappers.EntityPresenter;
-import com.pug.partner.service.EntityReadService;
-import com.pug.partner.service.EntityService;
+import com.pug.partner.service.IEntityReadService;
+import com.pug.partner.service.IEntityService;
 import com.pug.partner.service.dtos.EntityCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
@@ -49,9 +49,9 @@ import java.util.stream.Collectors;
 public class EntityResource {
 
   @Inject
-  EntityService writeService;
+  IEntityService writeService;
   @Inject
-  EntityReadService readService;
+  IEntityReadService readService;
 
   @Context
   UriInfo uri;

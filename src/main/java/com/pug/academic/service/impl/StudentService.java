@@ -12,7 +12,7 @@ import com.pug.academic.service.IStudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.domain.Account;
-import com.pug.identity.service.AccountService;
+import com.pug.identity.service.impl.AccountService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;

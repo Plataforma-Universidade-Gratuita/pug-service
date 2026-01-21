@@ -3,7 +3,7 @@ package com.pug.identity.presenter;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
-import com.pug.identity.service.UserReadService;
+import com.pug.identity.service.impl.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.presenter.dtos.BulkCreateResult;

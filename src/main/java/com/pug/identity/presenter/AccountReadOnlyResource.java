@@ -4,7 +4,7 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.identity.service.AccountReadService;
+import com.pug.identity.service.impl.AccountReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;

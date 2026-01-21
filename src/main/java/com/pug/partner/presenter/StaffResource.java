@@ -2,7 +2,7 @@ package com.pug.partner.presenter;
 
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.PasswordService;
+import com.pug.identity.service.impl.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
@@ -13,8 +13,8 @@ import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
-import com.pug.partner.service.StaffReadService;
-import com.pug.partner.service.StaffService;
+import com.pug.partner.service.IStaffReadService;
+import com.pug.partner.service.IStaffService;
 import com.pug.partner.service.dtos.StaffCreateBulkCommand;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
@@ -64,9 +64,9 @@ import java.util.stream.Collectors;
 public class StaffResource {
 
   @Inject
-  StaffService writeService;
+  IStaffService writeService;
   @Inject
-  StaffReadService readService;
+  IStaffReadService readService;
   @Inject
   PasswordService passwordService;
   @Inject
