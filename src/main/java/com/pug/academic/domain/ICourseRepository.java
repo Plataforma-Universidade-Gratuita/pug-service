@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Repository for Course aggregate.
  */
-public interface CourseRepository {
+public interface ICourseRepository {
   /**
    * Persist a course.
    *

@@ -1,15 +1,16 @@
-package com.pug.academic.service;
+package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Course;
+import com.pug.academic.domain.ISchoolRepository;
 import com.pug.academic.domain.School;
-import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.academic.service.ICourseService;
+import com.pug.academic.service.ISchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
@@ -30,14 +31,14 @@ import java.util.stream.Collectors;
  * Service class for managing School entities.
  */
 @ApplicationScoped
-public class SchoolService {
+public class SchoolService implements ISchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolService.class);
 
   @Inject
-  SchoolRepository repo;
+  ISchoolRepository repo;
   @Inject
-  CourseService courseService;
+  ICourseService courseService;
 
   /**
    * Helper method to process DTO input and build School domain object (or update existing),
@@ -67,15 +68,8 @@ public class SchoolService {
     return resultSchool;
   }
 
-  /**
-   * Saves a new School entity.
-   *
-   * @param cmd the command containing the data to create the new School.
-   * @return the saved School entity.
-   * @throws DuplicateResourceException if a school with the same name already exists.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public School save(SchoolCreateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
 
@@ -92,16 +86,8 @@ public class SchoolService {
     return repo.persist(schoolToPersist);
   }
 
-  /**
-   * Saves multiple new School entities.
-   *
-   * @param cmds an iterable of commands for school creation.
-   * @return a list of saved School entities.
-   * @throws DuplicateResourceException if any school with the same name already exists,
-   *                                    or if there are duplicate names in the input commands.
-   * @throws AppValidationException     if input validation fails for any school in the bulk.
-   */
   @Transactional
+  @Override
   public List<School> saveAll(Iterable<SchoolCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -141,17 +127,8 @@ public class SchoolService {
     return repo.persistAll(schoolsToPersist);
   }
 
-  /**
-   * Updates an existing School entity.
-   *
-   * @param id  the UUID of the school to update.
-   * @param cmd the command containing the new data for the school.
-   * @return the updated School entity.
-   * @throws ResourceNotFoundException  if the school with the given ID does not exist.
-   * @throws DuplicateResourceException if a school with the same name already exists.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public School update(UUID id, SchoolUpdateCommand cmd) {
     School current = getById(id);
 
@@ -175,14 +152,8 @@ public class SchoolService {
     return getById(id);
   }
 
-  /**
-   * Deletes School entities by their IDs.
-   *
-   * @param ids an iterable of UUIDs of the schools to delete.
-   * @return a map containing the number of deleted schools and related entities.
-   * @throws ReferencedEntityException if any school is still referenced by other modules directly (e.g., if there were a project_school dependency check here, or if the courseservice failed to delete for referenced students etc.).
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
@@ -213,13 +184,7 @@ public class SchoolService {
             DeleteKeys.USERS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
-  /**
-   * Lists all School entities.
-   *
-   * @return a list of all School entities.
-   * @throws ResourceNotFoundException if no school is found (or data is corrupted in DB).
-   * @throws AppValidationException    if any School entity found is corrupted in the database.
-   */
+  @Override
   public List<School> listAll() {
     try {
       return repo.listAllSchools();
@@ -230,14 +195,7 @@ public class SchoolService {
     }
   }
 
-  /**
-   * Retrieves a School entity by its ID.
-   *
-   * @param id the UUID of the school.
-   * @return the School entity.
-   * @throws ResourceNotFoundException if the school with the given ID does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the school is found but its data is corrupted in the database.
-   */
+  @Override
   public School getById(UUID id) {
     try {
       return repo.findOptionalById(id)
@@ -249,31 +207,20 @@ public class SchoolService {
     }
   }
 
-  /**
-   * Retrieves a School entity by its name.
-   *
-   * @param name the name of the school.
-   * @return the School entity.
-   * @throws ResourceNotFoundException if the school with the given name does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the school is found but its data is corrupted in the database.
-   */
+  @Override
   public School getByName(String name) {
+    String n = StringUtils.trim(name);
     try {
-      return repo.findOptionalByName(name)
-              .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name)));
+      return repo.findOptionalByName(n)
+              .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n)));
     } catch (AppValidationException e) {
       LOG.errorf(e, "Data integrity error: School with name %s in DB violates domain rules. Problems: %s",
               name, e.getProblems().stream().map(p -> p.code().getBundleKey() + (p.fieldName() != null ? "(" + p.fieldName() + ")" : "")).collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name));
+      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n));
     }
   }
 
-  /**
-   * Checks if a School entity exists by its name.
-   *
-   * @param name the name of the school.
-   * @return true if a school with the given name exists, false otherwise.
-   */
+  @Override
   public boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
@@ -281,12 +228,7 @@ public class SchoolService {
     return repo.existsByName(name);
   }
 
-  /**
-   * Checks if any School entities exist by their names.
-   *
-   * @param names an iterable of school names.
-   * @return true if any school with the given names exists, false otherwise.
-   */
+  @Override
   public boolean existsAnyByNameIn(Iterable<String> names) {
     return repo.existsAnyByNameIn(names);
   }

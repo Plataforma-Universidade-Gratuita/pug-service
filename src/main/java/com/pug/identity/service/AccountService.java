@@ -1,6 +1,6 @@
 package com.pug.identity.service;
 
-import com.pug.academic.service.StudentService;
+import com.pug.academic.service.impl.StudentService;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
 import com.pug.identity.domain.User;

@@ -1,9 +1,12 @@
-package com.pug.academic.service;
+package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Course;
-import com.pug.academic.domain.CourseRepository;
+import com.pug.academic.domain.ICourseRepository;
 import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.academic.service.ICourseService;
+import com.pug.academic.service.ISchoolService;
+import com.pug.academic.service.IStudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
@@ -30,16 +33,16 @@ import java.util.stream.Collectors;
  * Service class for managing Course entities.
  */
 @ApplicationScoped
-public class CourseService {
+public class CourseService implements ICourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseService.class);
 
   @Inject
-  CourseRepository repo;
+  ICourseRepository repo;
   @Inject
-  SchoolService schoolService;
+  ISchoolService schoolService;
   @Inject
-  StudentService studentService;
+  IStudentService studentService;
 
   /**
    * Helper method to process DTO input and build Course domain object (or update existing),
@@ -80,16 +83,8 @@ public class CourseService {
     return resultCourse;
   }
 
-  /**
-   * Saves a new Course entity.
-   *
-   * @param cmd the command containing the data to create the new Course.
-   * @return the saved Course entity.
-   * @throws DuplicateResourceException if a course with the same name already exists.
-   * @throws ResourceNotFoundException  if the associated school does not exist.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public Course save(CourseCreateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
 
@@ -108,17 +103,8 @@ public class CourseService {
     return repo.persist(courseToPersist);
   }
 
-  /**
-   * Saves multiple new Course entities.
-   *
-   * @param cmds an iterable of commands for course creation.
-   * @return a list of saved Course entities.
-   * @throws DuplicateResourceException if any course with the same name already exists,
-   *                                    or if there are duplicate names in the input commands.
-   * @throws ResourceNotFoundException  if any associated school does not exist.
-   * @throws AppValidationException     if input validation fails for any course in the bulk.
-   */
   @Transactional
+  @Override
   public List<Course> saveAll(Iterable<CourseCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -173,18 +159,8 @@ public class CourseService {
     return repo.persistAll(coursesToPersist);
   }
 
-  /**
-   * Updates an existing Course entity.
-   *
-   * @param id  the UUID of the course to update.
-   * @param cmd the command containing the new data for the course.
-   * @return the updated Course entity.
-   * @throws ResourceNotFoundException  if the course with the given ID does not exist,
-   *                                    or if the new school does not exist.
-   * @throws DuplicateResourceException if a course with the new name already exists.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public Course update(UUID id, CourseUpdateCommand cmd) {
     Course current = getById(id);
 
@@ -216,15 +192,8 @@ public class CourseService {
     return getById(id);
   }
 
-  /**
-   * Deletes Course entities by their IDs.
-   *
-   * @param ids an iterable of UUIDs representing the course IDs to delete.
-   * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws ReferencedEntityException if any course is still referenced by students.
-   * @throws ResourceNotFoundException if a student's account is not found during cascata deletion.
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
@@ -257,13 +226,7 @@ public class CourseService {
             DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
-  /**
-   * Lists all Course entities.
-   *
-   * @return a list of all Course entities.
-   * @throws ResourceNotFoundException if no course is found (or data is corrupted in DB).
-   * @throws AppValidationException    if any Course entity found is corrupted in the database.
-   */
+  @Override
   public List<Course> listAll() {
     try {
       return repo.listAllCourses();
@@ -274,13 +237,7 @@ public class CourseService {
     }
   }
 
-  /**
-   * Lists all Course entities associated with a specific school ID.
-   *
-   * @param schoolId the UUID of the school.
-   * @return a list of Course entities associated with the given school ID.
-   * @throws AppValidationException if any Course entity found is corrupted in the database.
-   */
+  @Override
   public List<Course> listAllBySchoolId(UUID schoolId) {
     if (schoolId == null) {
       return List.of();
@@ -294,14 +251,7 @@ public class CourseService {
     }
   }
 
-  /**
-   * Retrieves a Course entity by its ID.
-   *
-   * @param id the UUID of the course.
-   * @return the Course entity.
-   * @throws ResourceNotFoundException if the course with the given ID does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the course is found but its data is corrupted in the database.
-   */
+  @Override
   public Course getById(UUID id) {
     try {
       return repo.findOptionalById(id)
@@ -316,14 +266,7 @@ public class CourseService {
     }
   }
 
-  /**
-   * Retrieves a Course entity by its name.
-   *
-   * @param name the name of the course.
-   * @return the Course entity.
-   * @throws ResourceNotFoundException if the course with the given name does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the course is found but its data is corrupted in the database.
-   */
+  @Override
   public Course getByName(String name) {
     String n = StringUtils.trim(name);
     try {
@@ -339,12 +282,7 @@ public class CourseService {
     }
   }
 
-  /**
-   * Checks if a Course entity exists with the given name.
-   *
-   * @param name the name of the course to check.
-   * @return true if a Course entity exists with the given name, false otherwise.
-   */
+  @Override
   public boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
@@ -352,12 +290,7 @@ public class CourseService {
     return repo.existsByName(name);
   }
 
-  /**
-   * Checks if any Course entities exist with names in the provided iterable.
-   *
-   * @param names an iterable of course names to check.
-   * @return true if any Course entities exist with the given names, false otherwise.
-   */
+  @Override
   public boolean existsAnyByNameIn(Iterable<String> names) {
     if (CollectionUtils.isEmpty(names)) {
       return false;

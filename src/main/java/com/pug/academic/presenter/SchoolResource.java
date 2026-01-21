@@ -5,8 +5,8 @@ import com.pug.academic.presenter.dtos.SchoolCreateRequest;
 import com.pug.academic.presenter.dtos.SchoolResponse;
 import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
 import com.pug.academic.presenter.mappers.SchoolPresenter;
-import com.pug.academic.service.SchoolReadService;
-import com.pug.academic.service.SchoolService;
+import com.pug.academic.service.ISchoolReadService;
+import com.pug.academic.service.ISchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
@@ -49,9 +49,9 @@ import java.util.stream.Collectors;
 public class SchoolResource {
 
   @Inject
-  SchoolService writeService;
+  ISchoolService writeService;
   @Inject
-  SchoolReadService readService;
+  ISchoolReadService readService;
   @Context
   UriInfo uri;
 

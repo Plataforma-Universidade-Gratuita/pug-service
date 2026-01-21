@@ -1,12 +1,14 @@
-package com.pug.academic.service;
+package com.pug.academic.service.impl;
 
+import com.pug.academic.domain.IStudentRepository;
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
+import com.pug.academic.service.ICourseService;
+import com.pug.academic.service.IStudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.domain.Account;
@@ -14,7 +16,6 @@ import com.pug.identity.service.AccountService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,16 +37,16 @@ import java.util.stream.Collectors;
  * Service class for managing Student entities.
  */
 @ApplicationScoped
-public class StudentService {
+public class StudentService implements IStudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentService.class);
 
   @Inject
-  StudentRepository repo;
+  IStudentRepository repo;
   @Inject
   AccountService accountService;
   @Inject
-  CourseService courseService;
+  ICourseService courseService;
 
   /**
    * Helper method to process DTO input and build Student domain object (or update existing),
@@ -143,19 +144,8 @@ public class StudentService {
     return resultStudent;
   }
 
-  /**
-   * Saves a new Student entity.
-   *
-   * <p>This method also creates and saves the associated Account.
-   *
-   * @param cmd the command containing the data to create the new Student.
-   * @return the saved Student entity.
-   * @throws DuplicateResourceException if a student with the same academic registration already exists,
-   *                                    or if an account with the given email already exists.
-   * @throws ResourceNotFoundException  if the associated course does not exist.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public Student save(StudentCreateCommand cmd) {
     List<AppValidationException.Problem> problems = new ArrayList<>();
     Account account = null;
@@ -212,19 +202,8 @@ public class StudentService {
     return repo.persist(studentToPersist);
   }
 
-  /**
-   * Saves multiple new Student entities.
-   *
-   * <p>This method also creates and saves the associated Accounts for each student.
-   *
-   * @param cmds an iterable of commands for student creation.
-   * @return a list of saved Student entities.
-   * @throws DuplicateResourceException if any student with the same academic registration already exists,
-   *                                    or if there are duplicate registrations or emails in the input commands.
-   * @throws ResourceNotFoundException  if any associated course does not exist.
-   * @throws AppValidationException     if input validation fails for any student in the bulk.
-   */
   @Transactional
+  @Override
   public List<Student> saveAll(Iterable<StudentCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -324,21 +303,8 @@ public class StudentService {
     return repo.persistAll(studentsToPersist);
   }
 
-  /**
-   * Updates an existing Student entity.
-   *
-   * <p>This method also updates the associated Account.
-   *
-   * @param accountId the UUID of the student's account to update.
-   * @param cmd       the command containing the new data for the student.
-   * @return the updated Student entity.
-   * @throws ResourceNotFoundException  if the student with the given account ID does not exist,
-   *                                    or if the new course does not exist.
-   * @throws DuplicateResourceException if a student with the new academic registration already exists,
-   *                                    or if an account with the new email already exists.
-   * @throws AppValidationException     if input validation fails.
-   */
   @Transactional
+  @Override
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
     Student current = getById(accountId);
 
@@ -388,15 +354,8 @@ public class StudentService {
     return getById(accountId);
   }
 
-  /**
-   * Deletes Student entities by their account IDs.
-   *
-   * @param accountIds an iterable of UUIDs representing the student's account IDs to delete.
-   * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws ReferencedEntityException if any student is still referenced by other modules (e.g. Enrollments).
-   * @throws ResourceNotFoundException if a student's account is not found during cascata deletion.
-   */
   @Transactional
+  @Override
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
       return Map.of(
@@ -415,13 +374,7 @@ public class StudentService {
             DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
-  /**
-   * Lists all Student entities.
-   *
-   * @return a list of all Student entities.
-   * @throws ResourceNotFoundException if no student is found (or data is corrupted in DB).
-   * @throws AppValidationException    if any Student entity found is corrupted in the database.
-   */
+  @Override
   public List<Student> listAll() {
     try {
       return repo.listAllStudents();
@@ -432,13 +385,7 @@ public class StudentService {
     }
   }
 
-  /**
-   * Lists all Student entities associated with a specific course ID.
-   *
-   * @param courseId the UUID of the course.
-   * @return a list of Student entities associated with the given course ID.
-   * @throws AppValidationException if any Student entity found is corrupted in the database.
-   */
+  @Override
   public List<Student> listAllByCourseId(UUID courseId) {
     if (courseId == null) {
       return List.of();
@@ -452,14 +399,7 @@ public class StudentService {
     }
   }
 
-  /**
-   * Retrieves a Student entity by its account ID.
-   *
-   * @param accountId the UUID of the student's account.
-   * @return the Student entity.
-   * @throws ResourceNotFoundException if the student with the given account ID does not exist (or data is corrupted in DB).
-   * @throws AppValidationException    if the student is found but its data is corrupted in the database.
-   */
+  @Override
   public Student getById(UUID accountId) {
     try {
       return repo.findOptionalById(accountId)
@@ -474,43 +414,22 @@ public class StudentService {
     }
   }
 
-  /**
-   * Checks if any Student entities exist with account IDs in the provided iterable.
-   *
-   * @param accountIds an iterable of account IDs to check.
-   * @return true if any Student entities exist with the given account IDs, false otherwise.
-   */
+  @Override
   public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
     return repo.existsAnyByAccountIdIn(accountIds);
   }
 
-  /**
-   * Checks if any Student entities exist with academic registrations in the provided iterable.
-   *
-   * @param registrations an iterable of academic registrations to check.
-   * @return true if any Student entities exist with the given registrations, false otherwise.
-   */
+  @Override
   public boolean existsAnyByRegistrationIn(Iterable<String> registrations) {
     return repo.existsAnyByRegistrationIn(registrations);
   }
 
-  /**
-   * Checks if any Student entity exists with the given academic registration.
-   *
-   * @param registration the academic registration to check.
-   * @return true if any Student entity exists with the given registration, false otherwise.
-   */
+  @Override
   public boolean existsByRegistration(String registration) {
     return repo.existsAnyByRegistrationIn(List.of(registration));
   }
 
-  /**
-   * Checks if any Student entities exist for the given course IDs.
-   * This is used by CourseService.deleteAll to prevent deleting referenced courses.
-   *
-   * @param courseIds an iterable of course IDs to check.
-   * @return true if any student is associated with any of the given course IDs, false otherwise.
-   */
+  @Override
   public boolean existsAnyByCourseIdIn(Iterable<UUID> courseIds) {
     return repo.existsAnyByCourseIdIn(courseIds);
   }

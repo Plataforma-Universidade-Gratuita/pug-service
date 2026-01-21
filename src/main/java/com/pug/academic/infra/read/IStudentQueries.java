@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Interface for querying Student data.
  */
-public interface StudentQueries {
+public interface IStudentQueries {
   /**
    * Finds a Student by their Account ID.
    *

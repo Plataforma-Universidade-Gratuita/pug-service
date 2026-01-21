@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Repository interface for Schools.
  */
-public interface SchoolRepository {
+public interface ISchoolRepository {
   /**
    * Persist a school entity.
    *

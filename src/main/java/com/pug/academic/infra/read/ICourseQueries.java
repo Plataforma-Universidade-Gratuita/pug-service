@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Queries related to courses.
  */
-public interface CourseQueries {
+public interface ICourseQueries {
   /**
    * Find a course by its ID.
    *

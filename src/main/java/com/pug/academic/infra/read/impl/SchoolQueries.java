@@ -1,7 +1,7 @@
-package com.pug.academic.infra.queries;
+package com.pug.academic.infra.read.impl;
 
 import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.SchoolQueries;
+import com.pug.academic.infra.read.ISchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import com.pug.shared.utils.StringUtils;
@@ -20,7 +20,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
-public class SchoolQueriesImpl implements SchoolQueries {
+public class SchoolQueries implements ISchoolQueries {
 
   @Inject
   EntityManager entityManager;

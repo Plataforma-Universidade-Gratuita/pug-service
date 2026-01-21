@@ -1,7 +1,7 @@
-package com.pug.academic.infra.queries;
+package com.pug.academic.infra.read.impl;
 
 import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.read.CourseQueries;
+import com.pug.academic.infra.read.ICourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
@@ -27,7 +27,7 @@ import static java.util.stream.Collectors.toMap;
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
-public class CourseQueriesImpl implements CourseQueries {
+public class CourseQueries implements ICourseQueries {
 
   @Inject
   EntityManager entityManager;

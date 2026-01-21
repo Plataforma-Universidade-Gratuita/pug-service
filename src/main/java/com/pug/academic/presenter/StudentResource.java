@@ -7,8 +7,8 @@ import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;
 import com.pug.academic.presenter.dtos.StudentUpdateRequest;
 import com.pug.academic.presenter.mappers.StudentPresenter;
-import com.pug.academic.service.StudentReadService;
-import com.pug.academic.service.StudentService;
+import com.pug.academic.service.IStudentReadService;
+import com.pug.academic.service.IStudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.service.dtos.AccountCreateCommand;
@@ -62,9 +62,9 @@ import java.util.stream.Collectors;
 public class StudentResource {
 
   @Inject
-  StudentService writeService;
+  IStudentService writeService;
   @Inject
-  StudentReadService readService;
+  IStudentReadService readService;
   @Inject
   I18n i18n;
 

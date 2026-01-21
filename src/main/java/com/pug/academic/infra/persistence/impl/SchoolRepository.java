@@ -1,8 +1,9 @@
-package com.pug.academic.infra.persistence;
+package com.pug.academic.infra.persistence.impl;
 
 import com.pug.academic.domain.School;
-import com.pug.academic.domain.SchoolRepository;
+import com.pug.academic.domain.ISchoolRepository;
 import com.pug.academic.infra.SchoolMapper;
+import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -18,8 +19,8 @@ import java.util.UUID;
  * Implementation of the SchoolRepository interface using PanacheRepositoryBase.
  */
 @ApplicationScoped
-public class SchoolRepositoryImpl
-        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+public class SchoolRepository
+        implements ISchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
   @Transactional
   @Override

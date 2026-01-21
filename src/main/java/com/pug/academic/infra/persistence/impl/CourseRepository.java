@@ -1,8 +1,9 @@
-package com.pug.academic.infra.persistence;
+package com.pug.academic.infra.persistence.impl;
 
 import com.pug.academic.domain.Course;
-import com.pug.academic.domain.CourseRepository;
+import com.pug.academic.domain.ICourseRepository;
 import com.pug.academic.infra.CourseMapper;
+import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -18,8 +19,8 @@ import java.util.UUID;
  * Repository implementation for Course aggregate.
  */
 @ApplicationScoped
-public class CourseRepositoryImpl
-        implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
+public class CourseRepository
+        implements ICourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   @Transactional
   @Override

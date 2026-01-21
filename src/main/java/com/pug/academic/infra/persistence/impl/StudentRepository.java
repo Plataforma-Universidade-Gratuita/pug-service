@@ -1,8 +1,9 @@
-package com.pug.academic.infra.persistence;
+package com.pug.academic.infra.persistence.impl;
 
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.StudentRepository;
+import com.pug.academic.domain.IStudentRepository;
 import com.pug.academic.infra.StudentMapper;
+import com.pug.academic.infra.persistence.StudentEntity;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -18,8 +19,8 @@ import java.util.UUID;
  * Implementation of StudentRepository using Panache for persistence operations.
  */
 @ApplicationScoped
-public class StudentRepositoryImpl
-        implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+public class StudentRepository
+        implements IStudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
   @Transactional
   @Override

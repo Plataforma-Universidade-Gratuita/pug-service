@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Queries related to schools.
  */
-public interface SchoolQueries {
+public interface ISchoolQueries {
 
   /**
    * Finds a school by its ID.

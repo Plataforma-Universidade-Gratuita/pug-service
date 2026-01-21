@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Repository interface for managing Student entities.
  */
-public interface StudentRepository {
+public interface IStudentRepository {
   /**
    * Persists a Student entity.
    *

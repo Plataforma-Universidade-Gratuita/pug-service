@@ -1,8 +1,9 @@
-package com.pug.academic.service;
+package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.academic.infra.read.StudentQueries;
+import com.pug.academic.infra.read.IStudentQueries;
 import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.academic.service.IStudentReadService;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -17,18 +18,12 @@ import java.util.UUID;
  * Service class for reading Student views.
  */
 @ApplicationScoped
-public class StudentReadService {
+public class StudentReadService implements IStudentReadService {
 
   @Inject
-  StudentQueries queries;
+  IStudentQueries queries;
 
-  /**
-   * Retrieves a StudentView by its unique identifier (Account ID).
-   *
-   * @param accountId the UUID of the Student's account
-   * @return the StudentView
-   * @throws ResourceNotFoundException if no Student with the given ID is found
-   */
+  @Override
   public StudentView getView(UUID accountId) {
     Objects.requireNonNull(accountId, "accountId");
     return queries
@@ -39,13 +34,7 @@ public class StudentReadService {
                                     AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
   }
 
-  /**
-   * Retrieves a StudentView by its academic registration.
-   *
-   * @param academicRegistration the academic registration of the Student
-   * @return the StudentView
-   * @throws ResourceNotFoundException if no Student with the given academic registration is found
-   */
+  @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
     if (StringUtils.isEmpty(academicRegistration)) {
       throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("academicRegistration", academicRegistration));
@@ -58,11 +47,7 @@ public class StudentReadService {
                                     AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("academicRegistration", academicRegistration)));
   }
 
-  /**
-   * Lists all StudentViews.
-   *
-   * @return a list of all StudentViews
-   */
+  @Override
   public List<StudentView> listViews() {
     try {
       return queries.listAllStudents();
@@ -71,12 +56,7 @@ public class StudentReadService {
     }
   }
 
-  /**
-   * Lists all StudentViews by course ID.
-   *
-   * @param courseId the UUID of the course
-   * @return a list of StudentViews enrolled in the specified course
-   */
+  @Override
   public List<StudentView> listViewsByCourseId(UUID courseId) {
     Objects.requireNonNull(courseId, "courseId");
     try {
@@ -86,12 +66,7 @@ public class StudentReadService {
     }
   }
 
-  /**
-   * Lists all StudentViews by a collection of account IDs.
-   *
-   * @param accountIds an iterable of UUIDs representing account IDs
-   * @return a list of StudentViews corresponding to the provided account IDs
-   */
+  @Override
   public List<StudentView> listViewsByIds(Iterable<UUID> accountIds) {
     Objects.requireNonNull(accountIds, "accountIds");
     try {
@@ -101,12 +76,7 @@ public class StudentReadService {
     }
   }
 
-  /**
-   * Searches for StudentView objects by name (of the associated user).
-   *
-   * @param query the search query.
-   * @return a list of StudentView objects matching the search key.
-   */
+  @Override
   public List<StudentView> searchByName(String query) {
     if (StringUtils.isEmpty(query)) {
       return List.of();

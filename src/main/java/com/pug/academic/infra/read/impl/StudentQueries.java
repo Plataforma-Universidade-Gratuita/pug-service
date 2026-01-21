@@ -1,7 +1,7 @@
-package com.pug.academic.infra.queries;
+package com.pug.academic.infra.read.impl;
 
 import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.academic.infra.read.StudentQueries;
+import com.pug.academic.infra.read.IStudentQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.AccountEntity;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
-public class StudentQueriesImpl implements StudentQueries {
+public class StudentQueries implements IStudentQueries {
 
   @Inject
   EntityManager entityManager;
