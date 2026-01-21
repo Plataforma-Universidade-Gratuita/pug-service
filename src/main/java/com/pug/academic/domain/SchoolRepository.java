@@ -1,26 +1,32 @@
 package com.pug.academic.domain;
 
+import com.pug.shared.exceptions.AppValidationException;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for Schools. */
+/**
+ * Repository interface for Schools.
+ */
 public interface SchoolRepository {
   /**
    * Persist a school entity.
    *
    * @param entity the school entity to persist
    * @return the persisted school entity
+   * @throws AppValidationException if the persisted entity cannot be converted back.
    */
-  School persist(School entity);
+  School persist(School entity) throws AppValidationException;
 
   /**
    * Persist multiple school entities.
    *
    * @param entities the iterable of school entities to persist
    * @return the list of persisted school entities
+   * @throws AppValidationException if any persisted entity cannot be converted back.
    */
-  List<School> persistAll(Iterable<School> entities);
+  List<School> persistAll(Iterable<School> entities) throws AppValidationException;
 
   /**
    * Update a school entity.
@@ -42,23 +48,26 @@ public interface SchoolRepository {
    *
    * @param id the UUID of the school to find
    * @return an Optional containing the found school or empty if not found
+   * @throws AppValidationException if the found entity cannot be converted.
    */
-  Optional<School> findOptionalById(UUID id);
+  Optional<School> findOptionalById(UUID id) throws AppValidationException;
 
   /**
    * Find a school by its name.
    *
    * @param name the name of the school to find
    * @return an Optional containing the found school or empty if not found
+   * @throws AppValidationException if the found entity cannot be converted.
    */
-  Optional<School> findOptionalByName(String name);
+  Optional<School> findOptionalByName(String name) throws AppValidationException;
 
   /**
    * List all schools.
    *
    * @return a list of all schools
+   * @throws AppValidationException if any found entity cannot be converted.
    */
-  List<School> listAllSchools();
+  List<School> listAllSchools() throws AppValidationException;
 
   /**
    * Check if a school exists by its name.

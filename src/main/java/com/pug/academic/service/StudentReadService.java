@@ -3,30 +3,40 @@ package com.pug.academic.service;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.StudentQueries;
 import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Service class for reading Student views. */
+/**
+ * Service class for reading Student views.
+ */
 @ApplicationScoped
 public class StudentReadService {
 
-  @Inject StudentQueries queries;
+  @Inject
+  StudentQueries queries;
 
   /**
-   * Retrieves a StudentView by its unique identifier.
+   * Retrieves a StudentView by its unique identifier (Account ID).
    *
-   * @param id the UUID of the Student
+   * @param accountId the UUID of the Student's account
    * @return the StudentView
    * @throws ResourceNotFoundException if no Student with the given ID is found
    */
-  public StudentView getView(UUID id) {
-    Objects.requireNonNull(id, "id");
+  public StudentView getView(UUID accountId) {
+    Objects.requireNonNull(accountId, "accountId");
     return queries
-        .findOptionalById(id)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+            .findOptionalById(accountId)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
   }
 
   /**
@@ -37,10 +47,15 @@ public class StudentReadService {
    * @throws ResourceNotFoundException if no Student with the given academic registration is found
    */
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
-    Objects.requireNonNull(academicRegistration, "academicRegistration");
+    if (StringUtils.isEmpty(academicRegistration)) {
+      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("academicRegistration", academicRegistration));
+    }
     return queries
-        .findOptionalByAcademicRegistration(academicRegistration)
-        .orElseThrow(() -> new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND));
+            .findOptionalByAcademicRegistration(academicRegistration)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("academicRegistration", academicRegistration)));
   }
 
   /**
@@ -49,7 +64,11 @@ public class StudentReadService {
    * @return a list of all StudentViews
    */
   public List<StudentView> listViews() {
-    return queries.listAllStudents();
+    try {
+      return queries.listAllStudents();
+    } catch (Exception e) {
+      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing all students."));
+    }
   }
 
   /**
@@ -60,17 +79,39 @@ public class StudentReadService {
    */
   public List<StudentView> listViewsByCourseId(UUID courseId) {
     Objects.requireNonNull(courseId, "courseId");
-    return queries.listAllByCourseId(courseId);
+    try {
+      return queries.listAllByCourseId(courseId);
+    } catch (Exception e) {
+      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("courseId", courseId, "detail", "Error listing students by course."));
+    }
   }
 
   /**
-   * Lists all StudentViews by a collection of user IDs.
+   * Lists all StudentViews by a collection of account IDs.
    *
-   * @param userIds an iterable of UUIDs representing user IDs
-   * @return a list of StudentViews corresponding to the provided user IDs
+   * @param accountIds an iterable of UUIDs representing account IDs
+   * @return a list of StudentViews corresponding to the provided account IDs
    */
-  public List<StudentView> listViewsByIds(Iterable<UUID> userIds) {
-    Objects.requireNonNull(userIds, "userIds");
-    return queries.listAllByIds(userIds);
+  public List<StudentView> listViewsByIds(Iterable<UUID> accountIds) {
+    Objects.requireNonNull(accountIds, "accountIds");
+    try {
+      return queries.listAllByIds(accountIds);
+    } catch (Exception e) {
+      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing students by IDs."));
+    }
+  }
+
+  /**
+   * Searches for StudentView objects by name (of the associated user).
+   *
+   * @param query the search query.
+   * @return a list of StudentView objects matching the search key.
+   */
+  public List<StudentView> searchByName(String query) {
+    if (StringUtils.isEmpty(query)) {
+      return List.of();
+    }
+    String key = StringUtils.fold(query);
+    return queries.searchByName(key);
   }
 }

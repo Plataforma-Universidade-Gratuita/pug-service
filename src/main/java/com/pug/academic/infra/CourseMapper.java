@@ -2,19 +2,26 @@ package com.pug.academic.infra;
 
 import com.pug.academic.domain.Course;
 import com.pug.academic.infra.persistence.CourseEntity;
+import com.pug.shared.exceptions.AppValidationException;
 
-/** Mapper for Course and CourseEntity. */
+/**
+ * Mapper for Course and CourseEntity.
+ */
 public final class CourseMapper {
-  /** Private constructor to prevent instantiation. */
-  private CourseMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private CourseMapper() {
+  }
 
   /**
    * Maps CourseEntity to Course domain object.
    *
    * @param e the CourseEntity.
    * @return the Course domain object.
+   * @throws AppValidationException if the data in the entity is invalid.
    */
-  public static Course toDomain(CourseEntity e) {
+  public static Course toDomain(CourseEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
@@ -31,10 +38,7 @@ public final class CourseMapper {
     if (d == null) {
       return null;
     }
-    var e = new CourseEntity();
-    e.setId(d.getId());
-    copy(d, e);
-    return e;
+    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).build();
   }
 
   /**

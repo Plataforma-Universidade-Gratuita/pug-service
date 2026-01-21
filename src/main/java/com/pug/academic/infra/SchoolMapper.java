@@ -2,19 +2,26 @@ package com.pug.academic.infra;
 
 import com.pug.academic.domain.School;
 import com.pug.academic.infra.persistence.SchoolEntity;
+import com.pug.shared.exceptions.AppValidationException;
 
-/** Mapper for School and SchoolEntity. */
+/**
+ * Mapper for School and SchoolEntity.
+ */
 public final class SchoolMapper {
-  /** Private constructor to prevent instantiation. */
-  private SchoolMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private SchoolMapper() {
+  }
 
   /**
    * Convert SchoolEntity to School domain object.
    *
    * @param e the SchoolEntity
    * @return the School domain object
+   * @throws AppValidationException if the data in the entity is invalid.
    */
-  public static School toDomain(SchoolEntity e) {
+  public static School toDomain(SchoolEntity e) throws AppValidationException {
     if (e == null) {
       return null;
     }
@@ -31,7 +38,7 @@ public final class SchoolMapper {
     if (d == null) {
       return null;
     }
-    return SchoolEntity.builder().name(d.getName()).build();
+    return SchoolEntity.builder().id(d.getId()).name(d.getName()).build();
   }
 
   /**

@@ -1,11 +1,14 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.CourseView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to courses. */
+/**
+ * Queries related to courses.
+ */
 public interface CourseQueries {
   /**
    * Find a course by its ID.
@@ -14,6 +17,14 @@ public interface CourseQueries {
    * @return the found course.
    */
   Optional<CourseView> findOptionalById(UUID id);
+
+  /**
+   * Find a course by its name.
+   *
+   * @param name the name of the course.
+   * @return an Optional containing the found CourseView, or empty if not found.
+   */
+  Optional<CourseView> findOptionalByName(String name);
 
   /**
    * List all courses.

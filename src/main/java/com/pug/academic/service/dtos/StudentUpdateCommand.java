@@ -1,15 +1,32 @@
 package com.pug.academic.service.dtos;
 
 import com.pug.academic.domain.enums.Campi;
-import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+
 /**
- * Command to update an existing student.
+ * Command DTO for updating an existing Student.
  *
- * @param accountCommand the command containing the data to update the underlying account.
- * @param academicRegistration the new registration for the student.
- * @param campus the campus associated with the student.
+ * @param accountUpdateCommand The command to update the associated account (optional).
+ * @param academicRegistration The new academic registration number (optional).
+ * @param campus               The new campus where the student is enrolled (optional).
+ * @param courseId             The new course ID the student is enrolled in (optional).
+ * @param requiredHours        The new total required counterpart hours (optional).
+ * @param completedHours       The new total completed counterpart hours (optional).
+ * @param startDate            The new start date of the academic period (optional).
+ * @param dueDate              The new due date of the academic period (optional).
  */
 public record StudentUpdateCommand(
-    AccountUpdateCommand accountCommand, AcademicRegistration academicRegistration, Campi campus) {}
+        AccountUpdateCommand accountUpdateCommand, // Optional for updates
+        String academicRegistration,
+        Campi campus,
+        UUID courseId,
+        BigDecimal requiredHours,
+        BigDecimal completedHours,
+        LocalDate startDate,
+        LocalDate dueDate
+) {
+}

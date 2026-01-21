@@ -35,7 +35,7 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
       cid = java.util.UUID.randomUUID().toString();
     }
     req.setProperty(HDR, cid);
-    MDC.put(HDR, cid); // Using org.jboss.logging.MDC
+    MDC.put(HDR, cid);
   }
 
   /**
@@ -52,6 +52,6 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
     if (cid != null) {
       res.getHeaders().putSingle(HDR, cid);
     }
-    MDC.remove(HDR); // Using org.jboss.logging.MDC
+    MDC.remove(HDR);
   }
 }

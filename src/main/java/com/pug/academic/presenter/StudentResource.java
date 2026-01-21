@@ -2,25 +2,28 @@ package com.pug.academic.presenter;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.Campi;
-import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.CounterpartHours;
-import com.pug.academic.domain.vos.Period;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;
+import com.pug.academic.presenter.dtos.StudentUpdateRequest;
 import com.pug.academic.presenter.mappers.StudentPresenter;
 import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.AccountService;
+import com.pug.academic.service.dtos.StudentCreateCommand;
+import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.BulkCreateRequest;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
+import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -39,27 +42,45 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
+import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-/** REST resource for managing students in the academic system. */
+/**
+ * REST resource for managing students in the academic system.
+ */
 @ApplicationScoped
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject StudentService writeService;
-  @Inject StudentReadService readService;
-  @Inject AccountService users;
-  @Inject I18n i18n;
+  @Inject
+  StudentService writeService;
+  @Inject
+  StudentReadService readService;
+  @Inject
+  I18n i18n;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
+
+  /**
+   * Picks the best locale from the Accept-Language header.
+   *
+   * @return the selected Locale.
+   */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
+  }
 
   /**
    * Creates a new student in the academic system.
@@ -69,72 +90,97 @@ public class StudentResource {
    */
   @POST
   public Response create(@Valid StudentCreateRequest req) {
-    Objects.requireNonNull(req, "req");
-    Student created =
-        writeService.save(
-            new Cpf(req.cpf()),
-            req.name(),
-            new Email(req.email()),
-            req.password(),
-            new AcademicRegistration(req.academicRegistration()),
-            Campi.valueOf(req.campus().trim().toUpperCase()),
-            req.courseId(),
-            new CounterpartHours(req.requiredHours(), java.math.BigDecimal.ZERO),
-            new Period(req.startDate(), req.dueDate()));
+    UserCreateOrUpdateCommand userCmd = new UserCreateOrUpdateCommand(req.cpf(), req.name());
+    AccountCreateCommand accountCmd = new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
+    Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
 
-    StudentView view = readService.getView(created.getUserId());
+    StudentCreateCommand studentCmd = new StudentCreateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            campusEnum,
+            req.courseId(),
+            req.requiredHours(),
+            BigDecimal.ZERO,
+            req.startDate(),
+            req.dueDate()
+    );
+
+    Student created = writeService.save(studentCmd);
+
+    StudentView view = readService.getView(created.getAccountId());
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    URI location = uri.getAbsolutePathBuilder().path(created.getUserId().toString()).build();
+    URI location = uri.getAbsolutePathBuilder().path(created.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
    * Creates multiple students in bulk.
    *
-   * @param req the bulk create request containing student details
+   * @param reqs the list of StudentCreateRequest DTOs for bulk creation
    * @return a Response with the count of created students
    */
   @POST
   @Path("/bulk")
-  public Response createBulk(@Valid BulkCreateRequest<StudentCreateRequest> req) {
-    Objects.requireNonNull(req, "req");
-    int createdCount = 0;
-    for (StudentCreateRequest r : req.entities()) {
-      writeService.save(
-          new Cpf(r.cpf()),
-          r.name(),
-          new Email(r.email()),
-          r.password(),
-          new AcademicRegistration(r.academicRegistration()),
-          Campi.valueOf(r.campus().trim().toUpperCase()),
-          r.courseId(),
-          new CounterpartHours(r.requiredHours(), java.math.BigDecimal.ZERO),
-          new Period(r.startDate(), r.dueDate()));
-      createdCount++;
-    }
+  public Response createBulk(@Valid List<StudentCreateRequest> reqs) {
+    List<StudentCreateCommand> studentCommands = reqs.stream().map(req -> {
+      UserCreateOrUpdateCommand userCmd = new UserCreateOrUpdateCommand(req.cpf(), req.name());
+      AccountCreateCommand accountCmd = new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
+      Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
+      return new StudentCreateCommand(
+              accountCmd,
+              req.academicRegistration(),
+              campusEnum,
+              req.courseId(),
+              req.requiredHours(),
+              BigDecimal.ZERO,
+              req.startDate(),
+              req.dueDate()
+      );
+    }).collect(Collectors.toList());
+
+    List<Student> saved = writeService.saveAll(studentCommands);
     return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(createdCount)))
-        .build();
+            .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
+            .build();
   }
 
   /**
    * Updates an existing student's details.
    *
-   * @param id the UUID of the student to update
+   * @param id  the UUID of the student's account to update
    * @param req the request containing updated student details
    * @return a Response with the updated student details
    */
   @PUT
   @Path("/{id}")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentCreateRequest req) {
-    Objects.requireNonNull(id, "id");
-    Objects.requireNonNull(req, "req");
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
+    UserCreateOrUpdateCommand userCmd = null;
+    if (req.name() != null) {
+      userCmd = new UserCreateOrUpdateCommand(null, req.name());
+    }
 
-    writeService.update(
-        id,
-        Campi.valueOf(req.campus().trim().toUpperCase()),
-        req.courseId(),
-        new Period(req.startDate(), req.dueDate()));
+    AccountUpdateCommand accountCmd = null;
+    if (req.email() != null || req.password() != null || userCmd != null) {
+      accountCmd = new AccountUpdateCommand(req.email(), req.password(), userCmd);
+    }
+
+    Campi campusEnum = null;
+    if (req.campus() != null) {
+      campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
+    }
+
+    StudentUpdateCommand studentCmd = new StudentUpdateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            campusEnum,
+            req.courseId(),
+            req.requiredHours(),
+            req.completedHours(),
+            req.startDate(),
+            req.dueDate()
+    );
+
+    writeService.update(id, studentCmd);
 
     var view = readService.getView(id);
     var body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -144,31 +190,37 @@ public class StudentResource {
   /**
    * Lists all students or searches for students based on a query.
    *
-   * @param q the search query (optional)
+   * @param q                    the search query (optional)
+   * @param academicRegistration the academic registration to filter by (optional, busca exata)
    * @return a Response with the list of students
    */
   @GET
-  public Response listOrSearch(@QueryParam("q") String q) {
+  public Response listOrSearch(
+          @QueryParam("q") String q,
+          @QueryParam("academicRegistration") String academicRegistration) {
+
     List<StudentView> views;
-    if (q == null || q.isBlank()) {
-      views = readService.listViews();
+    if (!StringUtils.isEmpty(academicRegistration)) {
+      try {
+        StudentView studentView = readService.getViewByAcademicRegistration(academicRegistration);
+        views = List.of(studentView);
+      } catch (ResourceNotFoundException e) {
+        views = List.of();
+      }
+    } else if (!StringUtils.isEmpty(q)) {
+      views = readService.searchByName(q);
     } else {
-      var ids =
-          users.search(q).stream()
-              .filter(u -> u.getAccountType() == AccountType.STUDENT)
-              .map(u -> u.getId())
-              .toList();
-      views = readService.listViewsByIds(ids);
+      views = readService.listViews();
     }
     List<StudentResponse> body =
-        views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
+            views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Retrieves a specific student's details by ID.
+   * Retrieves a specific student's details by ID (Account ID).
    *
-   * @param id the UUID of the student
+   * @param id the UUID of the student's account
    * @return a Response with the student's details
    */
   @GET
@@ -180,9 +232,23 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves multiple students' details by their IDs.
+   * Retrieves a specific student's details by Academic Registration.
    *
-   * @param req the request containing student IDs
+   * @param academicRegistration the academic registration of the student
+   * @return a Response with the student's details
+   */
+  @GET
+  @Path("/by-registration/{academicRegistration}")
+  public Response getByAcademicRegistration(@PathParam("academicRegistration") String academicRegistration) {
+    Objects.requireNonNull(academicRegistration, "academicRegistration");
+    var view = readService.getViewByAcademicRegistration(academicRegistration);
+    return Response.ok(ApiEnvelope.ok(StudentPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Retrieves multiple students' details by their Account IDs.
+   *
+   * @param req the request containing student account IDs
    * @return a Response with the list of students' details
    */
   @GET
@@ -191,30 +257,20 @@ public class StudentResource {
     Objects.requireNonNull(req, "ids");
     var views = readService.listViewsByIds(req.ids());
     List<StudentResponse> body =
-        views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
+            views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Deletes multiple students by their IDs.
+   * Deletes multiple students by their Account IDs.
    *
-   * @param req the request containing student IDs to delete
+   * @param req the request containing student account IDs to delete
    * @return a Response with the result of the deletion
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
     Objects.requireNonNull(req, "req");
-    Map<String, Long> deleted = writeService.deleteAll(req.ids());
+    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
     return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
-  }
-
-  /**
-   * Determines the locale from the HTTP headers.
-   *
-   * @return the determined Locale
-   */
-  private Locale locale() {
-    var langs = headers.getAcceptableLanguages();
-    return (langs == null || langs.isEmpty()) ? Locale.getDefault() : langs.getFirst();
   }
 }

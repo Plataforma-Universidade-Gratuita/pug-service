@@ -1,8 +1,12 @@
 package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Value Object representing an Academic Registration.
@@ -14,17 +18,28 @@ public record AcademicRegistration(String registration) {
    * Constructs an AcademicRegistration after validating the input.
    *
    * @param registration the registration string
-   * @throws AppValidationException if the registration is null, blank, or too long
+   * @throws AppValidationException if the registration is null, blank, or too long.
+   *                                This exception may contain multiple validation problems.
    */
   public AcademicRegistration {
+    List<AppValidationException.Problem> problems = new ArrayList<>();
+    String trimmedRegistration = null;
+
     if (StringUtils.isEmpty(registration)) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION_BLANK);
+      problems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK, "registration"));
+    } else {
+      trimmedRegistration = registration.trim();
+
+      if (trimmedRegistration.length() > 15) {
+        problems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH, "registration"));
+      }
     }
-    String r = registration.trim();
-    if (r.length() > 15) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH);
+
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
     }
-    registration = r;
+
+    registration = trimmedRegistration;
   }
 
   /**

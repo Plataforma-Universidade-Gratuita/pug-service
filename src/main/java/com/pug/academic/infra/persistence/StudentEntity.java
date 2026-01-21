@@ -9,10 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -21,36 +18,40 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** StudentEntity represents the student data stored in the database. */
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+
+/**
+ * StudentEntity represents the student data stored in the database.
+ */
 @Getter
 @Setter
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(of = "accountId")
 @ToString(of = {"accountId", "academicRegistration"})
 @Entity
 @Table(
-    name = "students",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uq_students_registration",
-          columnNames = {"academic_registration"})
-    },
-    indexes = {@Index(name = "idx_students_course", columnList = "course_id")})
+        name = "students",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_students_registration",
+                        columnNames = {"academic_registration"})
+        },
+        indexes = {@Index(name = "idx_students_course", columnList = "course_id")})
 public class StudentEntity {
 
   @Id
   @Column(name = "account_id", nullable = false, updatable = false)
   private UUID accountId;
 
-  @Size(max = 15)
-  @Column(name = "academic_registration", nullable = false, length = 15, unique = true)
+  @Column(name = "academic_registration", nullable = false, length = 15)
   private String academicRegistration;
 
   @Enumerated(EnumType.STRING)
-  @Size(max = 150)
-  @Column(name = "campus", nullable = false, length = 150)
+  @Column(name = "campus", nullable = false, length = 16)
   private Campi campus;
 
   @Column(name = "course_id", nullable = false)

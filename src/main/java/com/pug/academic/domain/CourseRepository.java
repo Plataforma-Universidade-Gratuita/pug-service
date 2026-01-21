@@ -1,26 +1,32 @@
 package com.pug.academic.domain;
 
+import com.pug.shared.exceptions.AppValidationException;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository for Course aggregate. */
+/**
+ * Repository for Course aggregate.
+ */
 public interface CourseRepository {
   /**
    * Persist a course.
    *
    * @param entity the course to persist.
    * @return the persisted course.
+   * @throws AppValidationException if the persisted entity cannot be converted back.
    */
-  Course persist(Course entity);
+  Course persist(Course entity) throws AppValidationException;
 
   /**
    * Persist multiple courses.
    *
    * @param entities the courses to persist.
    * @return the persisted courses.
+   * @throws AppValidationException if any persisted entity cannot be converted back.
    */
-  List<Course> persistAll(Iterable<Course> entities);
+  List<Course> persistAll(Iterable<Course> entities) throws AppValidationException;
 
   /**
    * Update a course.
@@ -42,31 +48,35 @@ public interface CourseRepository {
    *
    * @param id the ID of the course.
    * @return the found course.
+   * @throws AppValidationException if the found entity cannot be converted.
    */
-  Optional<Course> findOptionalById(UUID id);
+  Optional<Course> findOptionalById(UUID id) throws AppValidationException;
 
   /**
    * Find a course by its name.
    *
    * @param name the name of the course.
    * @return the found course.
+   * @throws AppValidationException if the found entity cannot be converted.
    */
-  Optional<Course> findOptionalByName(String name);
+  Optional<Course> findOptionalByName(String name) throws AppValidationException;
 
   /**
    * List all courses.
    *
    * @return the list of all courses.
+   * @throws AppValidationException if any found entity cannot be converted.
    */
-  List<Course> listAllCourses();
+  List<Course> listAllCourses() throws AppValidationException;
 
   /**
    * List all courses by school ID.
    *
    * @param schoolId the school ID.
    * @return the list of courses for the given school ID.
+   * @throws AppValidationException if any found entity cannot be converted.
    */
-  List<Course> listAllBySchoolId(UUID schoolId);
+  List<Course> listAllBySchoolId(UUID schoolId) throws AppValidationException;
 
   /**
    * Check if a course exists by name.

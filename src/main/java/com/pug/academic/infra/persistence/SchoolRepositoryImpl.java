@@ -3,30 +3,27 @@ package com.pug.academic.infra.persistence;
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.infra.SchoolMapper;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the SchoolRepository interface using PanacheRepositoryBase for CRUD operations
- * on SchoolEntity.
+ * Implementation of the SchoolRepository interface using PanacheRepositoryBase.
  */
 @ApplicationScoped
 public class SchoolRepositoryImpl
-    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
-
-  @Inject EntityManager entityManager;
+        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
   @Transactional
   @Override
-  public School persist(School school) {
+  public School persist(School school) throws AppValidationException {
     if (school == null) {
       return null;
     }
@@ -37,7 +34,7 @@ public class SchoolRepositoryImpl
 
   @Transactional
   @Override
-  public List<School> persistAll(Iterable<School> schools) {
+  public List<School> persistAll(Iterable<School> schools) throws AppValidationException {
     if (CollectionUtils.isEmpty(schools)) {
       return List.of();
     }
@@ -47,12 +44,27 @@ public class SchoolRepositoryImpl
         entities.add(SchoolMapper.toEntity(s));
       }
     }
-    if (entities.isEmpty()) {
-      return List.of();
-    }
+
     persist(entities);
     flush();
-    return entities.stream().map(SchoolMapper::toDomain).toList();
+
+    var domainObjects = new ArrayList<School>();
+    for (SchoolEntity e : entities) {
+      domainObjects.add(SchoolMapper.toDomain(e));
+    }
+    return domainObjects;
+  }
+
+  @Transactional
+  @Override
+  public void update(School school) {
+    if (school == null || school.getId() == null) {
+      return;
+    }
+    SchoolEntity managed = findById(school.getId());
+    if (managed != null) {
+      SchoolMapper.copy(school, managed);
+    }
   }
 
   @Transactional
@@ -68,23 +80,29 @@ public class SchoolRepositoryImpl
   }
 
   @Override
-  public Optional<School> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(SchoolMapper::toDomain);
+  public Optional<School> findOptionalById(UUID id) throws AppValidationException {
+    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(SchoolMapper::toDomain);
   }
 
   @Override
-  public List<School> listAllSchools() {
-    return listAll().stream().map(SchoolMapper::toDomain).toList();
+  public Optional<School> findOptionalByName(String name) throws AppValidationException {
+    Optional<SchoolEntity> entityOpt = find("name", name).firstResultOptional();
+    return entityOpt.map(SchoolMapper::toDomain);
   }
 
   @Override
-  public Optional<School> findOptionalByName(String name) {
-    return find("name", name).firstResultOptional().map(SchoolMapper::toDomain);
+  public List<School> listAllSchools() throws AppValidationException {
+    var domainList = new ArrayList<School>();
+    for (SchoolEntity entity : listAll()) {
+      domainList.add(SchoolMapper.toDomain(entity));
+    }
+    return domainList;
   }
 
   @Override
   public boolean existsByName(String name) {
-    return find("name", name).firstResultOptional().isPresent();
+    return count("name = ?1", name) > 0;
   }
 
   @Override
@@ -92,18 +110,6 @@ public class SchoolRepositoryImpl
     if (CollectionUtils.isEmpty(names)) {
       return false;
     }
-    return find("name in ?1", names).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public void update(School school) {
-    if (school == null || school.getId() == null) {
-      return;
-    }
-    SchoolEntity managed = findById(school.getId());
-    if (managed == null) {
-      return;
-    }
-    SchoolMapper.copy(school, managed);
+    return count("name in ?1", names) > 0;
   }
 }

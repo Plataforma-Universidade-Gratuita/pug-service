@@ -5,8 +5,9 @@ import java.util.UUID;
 /**
  * Course view DTO.
  *
- * @param id the course id
- * @param name the course name
+ * @param id     the course id
+ * @param name   the course name
  * @param school the associated school
  */
-public record CourseView(UUID id, String name, SchoolView school) {}
+public record CourseView(UUID id, String name, SchoolView school) {
+}

@@ -13,7 +13,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
   INTERNAL_ERROR("error.internal", null);
 
   private final String bundleKey;
-  private final String fieldName; // Always null for these general errors
+  private final String fieldName;
 
   /**
    * Constructor for the SharedErrorCodes enum.

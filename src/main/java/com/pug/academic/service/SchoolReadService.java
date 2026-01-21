@@ -3,17 +3,23 @@ package com.pug.academic.service;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Read-only application service for Schools. */
+/**
+ * Read-only application service for Schools.
+ */
 @ApplicationScoped
 public class SchoolReadService {
 
-  @Inject SchoolQueries queries;
+  @Inject
+  SchoolQueries queries;
 
   /**
    * Retrieves a SchoolView by its unique identifier.
@@ -24,11 +30,30 @@ public class SchoolReadService {
    */
   public SchoolView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+            .findOptionalById(id)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+  }
+
+  /**
+   * Retrieves a SchoolView by its name.
+   *
+   * @param name the name of the school.
+   * @return the SchoolView corresponding to the given name.
+   * @throws ResourceNotFoundException if no school is found with the given name.
+   */
+  public SchoolView getByName(String name) {
+    if (StringUtils.isEmpty(name)) {
+      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name));
+    }
+    return queries
+            .findOptionalByName(name)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name)));
   }
 
   /**
@@ -47,6 +72,6 @@ public class SchoolReadService {
    * @return a list of SchoolView objects matching the search key
    */
   public List<SchoolView> searchByName(String key) {
-    return queries.searchByName(key);
+    return queries.searchByName(StringUtils.fold(key));
   }
 }

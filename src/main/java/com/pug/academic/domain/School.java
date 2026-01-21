@@ -1,14 +1,21 @@
 package com.pug.academic.domain;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-/** School entity aggregate. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * School entity aggregate.
+ */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -19,15 +26,19 @@ public class School {
   /**
    * Factory for new schools.
    *
-   * <p>Behavior: create new School and validate its attributes
-   *
    * @param name the name of the school
    * @return the created school
+   * @throws AppValidationException if validation fails
    */
   public static School createNew(String name) {
-    School s = new School(null, StringUtils.trim(name));
-    s.validate();
-    return s;
+    String trimmedName = StringUtils.trim(name);
+    School school = School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
+
+    List<AppValidationException.Problem> problems = school.collectValidationProblems();
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+    return school;
   }
 
   /**
@@ -35,44 +46,38 @@ public class School {
    *
    * @param newName new name for the school
    * @return new school with updated name
+   * @throws AppValidationException if validation fails
    */
   public School changeName(String newName) {
-    School s = this.toBuilder().name(StringUtils.trim(newName)).build();
-    s.validate();
-    return s;
+    String trimmedName = StringUtils.trim(newName);
+    School updatedSchool = this.toBuilder().name(trimmedName).build();
+
+    List<AppValidationException.Problem> problems = updatedSchool.collectValidationProblems();
+    if (!problems.isEmpty()) {
+      throw new AppValidationException(problems);
+    }
+    return updatedSchool;
   }
 
   /**
-   * Validates the School aggregate.
+   * Collects all validation problems for the School instance.
    *
-   * <p>Checks that the name is not blank and does not exceed length limits.
-   *
-   * @throws AppValidationException if validation fails.
+   * @return A list of {@code AppValidationException.Problem}; an empty list otherwise.
    */
-  private void validate() {
+  private List<AppValidationException.Problem> collectValidationProblems() {
+    List<AppValidationException.Problem> problems = new ArrayList<>();
+
+    if (id == null) {
+      problems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK, "id"));
+    }
     if (StringUtils.isEmpty(name)) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK);
+      problems.add(
+              new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK, "name"));
+    } else if (name.length() > 100) {
+      problems.add(
+              new AppValidationException.Problem(
+                      AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH, "name"));
     }
-    if (name.length() > 100) {
-      throw new AppValidationException(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH);
-    }
-  }
-
-  /**
-   * Builder class for School.
-   *
-   * <p>Overrides the build method to include validation.
-   */
-  public static class SchoolBuilder {
-    /**
-     * Builds the School instance after trimming and validating.
-     *
-     * @return the built School instance
-     */
-    public School build() {
-      School s = new School(id, StringUtils.trim(name));
-      s.validate();
-      return s;
-    }
+    return problems;
   }
 }

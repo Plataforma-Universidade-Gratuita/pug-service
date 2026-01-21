@@ -1,11 +1,14 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.SchoolView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to schools. */
+/**
+ * Queries related to schools.
+ */
 public interface SchoolQueries {
 
   /**
@@ -15,6 +18,14 @@ public interface SchoolQueries {
    * @return an Optional containing the found SchoolView or empty if not found
    */
   Optional<SchoolView> findOptionalById(UUID id);
+
+  /**
+   * Finds a school by its name.
+   *
+   * @param name the name of the school to find.
+   * @return an Optional containing the found SchoolView, or empty if not found.
+   */
+  Optional<SchoolView> findOptionalByName(String name);
 
   /**
    * Lists all schools.
