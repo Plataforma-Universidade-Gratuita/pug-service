@@ -22,11 +22,11 @@
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Course.java
-│   │   │           │   │   ├── CourseRepository.java
+│   │   │           │   │   ├── ICourseRepository.java
+│   │   │           │   │   ├── ISchoolRepository.java
+│   │   │           │   │   ├── IStudentRepository.java
 │   │   │           │   │   ├── School.java
-│   │   │           │   │   ├── SchoolRepository.java
 │   │   │           │   │   ├── Student.java
-│   │   │           │   │   ├── StudentRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AcademicErrorCodes.java
 │   │   │           │   │   │   └── Campi.java
@@ -40,50 +40,67 @@
 │   │   │           │   │   ├── StudentMapper.java
 │   │   │           │   │   ├── persistence/
 │   │   │           │   │   │   ├── CourseEntity.java
-│   │   │           │   │   │   ├── CourseRepositoryImpl.java
 │   │   │           │   │   │   ├── SchoolEntity.java
-│   │   │           │   │   │   ├── SchoolRepositoryImpl.java
 │   │   │           │   │   │   ├── StudentEntity.java
-│   │   │           │   │   │   └── StudentRepositoryImpl.java
-│   │   │           │   │   ├── queries/
-│   │   │           │   │   │   ├── CourseQueriesImpl.java
-│   │   │           │   │   │   ├── SchoolQueriesImpl.java
-│   │   │           │   │   │   └── StudentQueriesImpl.java
+│   │   │           │   │   │   └── impl/
+│   │   │           │   │   │       ├── CourseRepository.java
+│   │   │           │   │   │       ├── SchoolRepository.java
+│   │   │           │   │   │       └── StudentRepository.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── CourseQueries.java
-│   │   │           │   │       ├── SchoolQueries.java
-│   │   │           │   │       ├── StudentQueries.java
-│   │   │           │   │       └── dtos/
-│   │   │           │   │           ├── CourseView.java
-│   │   │           │   │           ├── SchoolView.java
-│   │   │           │   │           └── StudentView.java
+│   │   │           │   │       ├── ICourseQueries.java
+│   │   │           │   │       ├── ISchoolQueries.java
+│   │   │           │   │       ├── IStudentQueries.java
+│   │   │           │   │       ├── dtos/
+│   │   │           │   │       │   ├── CourseView.java
+│   │   │           │   │       │   ├── SchoolView.java
+│   │   │           │   │       │   └── StudentView.java
+│   │   │           │   │       └── impl/
+│   │   │           │   │           ├── CourseQueries.java
+│   │   │           │   │           ├── SchoolQueries.java
+│   │   │           │   │           └── StudentQueries.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── CourseResource.java
+│   │   │           │   │   ├── SchoolResource.java
+│   │   │           │   │   ├── StudentResource.java
 │   │   │           │   │   ├── dtos/
-│   │   │           │   │   │   ├── CourseCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── CourseCreateRequest.java
 │   │   │           │   │   │   ├── CourseResponse.java
-│   │   │           │   │   │   ├── SchoolCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── CourseUpdateRequest.java
+│   │   │           │   │   │   ├── SchoolCreateRequest.java
 │   │   │           │   │   │   ├── SchoolResponse.java
+│   │   │           │   │   │   ├── SchoolUpdateRequest.java
 │   │   │           │   │   │   ├── StudentCreateRequest.java
-│   │   │           │   │   │   └── StudentResponse.java
-│   │   │           │   │   ├── mappers/
-│   │   │           │   │   │   ├── CoursePresenter.java
-│   │   │           │   │   │   ├── SchoolPresenter.java
-│   │   │           │   │   │   └── StudentPresenter.java
-│   │   │           │   │   └── rest/
-│   │   │           │   │       ├── CourseResource.java
-│   │   │           │   │       ├── SchoolResource.java
-│   │   │           │   │       └── StudentResource.java
+│   │   │           │   │   │   ├── StudentResponse.java
+│   │   │           │   │   │   └── StudentUpdateRequest.java
+│   │   │           │   │   └── mappers/
+│   │   │           │   │       ├── CoursePresenter.java
+│   │   │           │   │       ├── SchoolPresenter.java
+│   │   │           │   │       └── StudentPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CourseReadService.java
-│   │   │           │       ├── CourseService.java
-│   │   │           │       ├── SchoolReadService.java
-│   │   │           │       ├── SchoolService.java
-│   │   │           │       ├── StudentReadService.java
-│   │   │           │       └── StudentService.java
+│   │   │           │       ├── ICourseReadService.java
+│   │   │           │       ├── ICourseService.java
+│   │   │           │       ├── ISchoolReadService.java
+│   │   │           │       ├── ISchoolService.java
+│   │   │           │       ├── IStudentReadService.java
+│   │   │           │       ├── IStudentService.java
+│   │   │           │       ├── dtos/
+│   │   │           │       │   ├── CourseCreateCommand.java
+│   │   │           │       │   ├── CourseUpdateCommand.java
+│   │   │           │       │   ├── SchoolCreateCommand.java
+│   │   │           │       │   ├── SchoolUpdateCommand.java
+│   │   │           │       │   ├── StudentCreateCommand.java
+│   │   │           │       │   └── StudentUpdateCommand.java
+│   │   │           │       └── impl/
+│   │   │           │           ├── CourseReadService.java
+│   │   │           │           ├── CourseService.java
+│   │   │           │           ├── SchoolReadService.java
+│   │   │           │           ├── SchoolService.java
+│   │   │           │           ├── StudentReadService.java
+│   │   │           │           └── StudentService.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
-│   │   │           │   │   ├── CityRepository.java
+│   │   │           │   │   ├── ICityRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -92,13 +109,14 @@
 │   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   ├── persistence/
 │   │   │           │   │   │   ├── CityEntity.java
-│   │   │           │   │   │   └── CityRepositoryImpl.java
-│   │   │           │   │   ├── queries/
-│   │   │           │   │   │   └── CityQueriesImpl.java
+│   │   │           │   │   │   └── impl/
+│   │   │           │   │   │       └── CityRepositoryImpl.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── CityQueries.java
-│   │   │           │   │       └── dtos/
-│   │   │           │   │           └── CityView.java
+│   │   │           │   │       ├── ICityQueries.java
+│   │   │           │   │       ├── dtos/
+│   │   │           │   │       │   └── CityView.java
+│   │   │           │   │       └── impl/
+│   │   │           │   │           └── CityQueries.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── CityResource.java
 │   │   │           │   │   ├── dtos/
@@ -107,18 +125,21 @@
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CityReadService.java
-│   │   │           │       ├── CityService.java
-│   │   │           │       └── dtos/
-│   │   │           │           └── CreateOrUpdateCityCommand.java
+│   │   │           │       ├── ICityReadService.java
+│   │   │           │       ├── ICityService.java
+│   │   │           │       ├── dtos/
+│   │   │           │       │   └── CityCreateOrUpdateCommand.java
+│   │   │           │       └── impl/
+│   │   │           │           ├── CityReadService.java
+│   │   │           │           └── CityService.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Account.java
-│   │   │           │   │   ├── AccountRepository.java
 │   │   │           │   │   ├── Admin.java
-│   │   │           │   │   ├── AdminRepository.java
+│   │   │           │   │   ├── IAccountRepository.java
+│   │   │           │   │   ├── IAdminRepository.java
+│   │   │           │   │   ├── IUserRepository.java
 │   │   │           │   │   ├── User.java
-│   │   │           │   │   ├── UserRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── IdentityErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -130,31 +151,32 @@
 │   │   │           │   │   ├── UserMapper.java
 │   │   │           │   │   ├── persistence/
 │   │   │           │   │   │   ├── AccountEntity.java
-│   │   │           │   │   │   ├── AccountRepositoryImpl.java
 │   │   │           │   │   │   ├── AdminEntity.java
-│   │   │           │   │   │   ├── AdminRepositoryImpl.java
 │   │   │           │   │   │   ├── UserEntity.java
-│   │   │           │   │   │   └── UserRepositoryImpl.java
-│   │   │           │   │   ├── queries/
-│   │   │           │   │   │   ├── AccountQueriesImpl.java
-│   │   │           │   │   │   ├── AdminQueriesImpl.java
-│   │   │           │   │   │   └── UserQueriesImpl.java
+│   │   │           │   │   │   └── impl/
+│   │   │           │   │   │       ├── AccountRepository.java
+│   │   │           │   │   │       ├── AdminRepository.java
+│   │   │           │   │   │       └── UserRepository.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── AccountQueries.java
-│   │   │           │   │       ├── AdminQueries.java
-│   │   │           │   │       ├── UserQueries.java
-│   │   │           │   │       └── dtos/
-│   │   │           │   │           ├── AccountView.java
-│   │   │           │   │           ├── AdminAcc.java
-│   │   │           │   │           ├── AdminView.java
-│   │   │           │   │           └── UserView.java
+│   │   │           │   │       ├── IAccountQueries.java
+│   │   │           │   │       ├── IAdminQueries.java
+│   │   │           │   │       ├── IUserQueries.java
+│   │   │           │   │       ├── dtos/
+│   │   │           │   │       │   ├── AccountView.java
+│   │   │           │   │       │   ├── AdminAcc.java
+│   │   │           │   │       │   ├── AdminView.java
+│   │   │           │   │       │   └── UserView.java
+│   │   │           │   │       └── impl/
+│   │   │           │   │           ├── AccountQueries.java
+│   │   │           │   │           ├── AdminQueries.java
+│   │   │           │   │           └── UserQueries.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── AccountReadOnlyResource.java
 │   │   │           │   │   ├── AdminResource.java
 │   │   │           │   │   ├── UserReadOnlyResource.java
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── AccountResponse.java
-│   │   │           │   │   │   ├── AdminCreateRequest.java
+│   │   │           │   │   │   ├── AdminCreateOrUpdateRequest.java
 │   │   │           │   │   │   ├── AdminResponse.java
 │   │   │           │   │   │   └── UserResponse.java
 │   │   │           │   │   └── mappers/
@@ -162,24 +184,33 @@
 │   │   │           │   │       ├── AdminPresenter.java
 │   │   │           │   │       └── UserPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── AccountReadService.java
-│   │   │           │       ├── AccountService.java
-│   │   │           │       ├── AdminReadService.java
-│   │   │           │       ├── AdminService.java
-│   │   │           │       ├── PasswordService.java
-│   │   │           │       ├── UserReadService.java
-│   │   │           │       ├── UserService.java
-│   │   │           │       └── dtos/
-│   │   │           │           ├── CreateAccountCommand.java
-│   │   │           │           ├── CreateAdminCommand.java
-│   │   │           │           ├── CreateOrUpdateUserCommand.java
-│   │   │           │           └── UpdateAccountCommand.java
+│   │   │           │       ├── IAccountReadService.java
+│   │   │           │       ├── IAccountService.java
+│   │   │           │       ├── IAdminReadService.java
+│   │   │           │       ├── IAdminService.java
+│   │   │           │       ├── IPasswordService.java
+│   │   │           │       ├── IUserReadService.java
+│   │   │           │       ├── IUserService.java
+│   │   │           │       ├── dtos/
+│   │   │           │       │   ├── AccountCreateCommand.java
+│   │   │           │       │   ├── AccountUpdateCommand.java
+│   │   │           │       │   ├── AdminCreateCommand.java
+│   │   │           │       │   ├── AdminUpdateCommand.java
+│   │   │           │       │   └── UserCreateOrUpdateCommand.java
+│   │   │           │       └── impl/
+│   │   │           │           ├── AccountReadService.java
+│   │   │           │           ├── AccountService.java
+│   │   │           │           ├── AdminReadService.java
+│   │   │           │           ├── AdminService.java
+│   │   │           │           ├── PasswordService.java
+│   │   │           │           ├── UserReadService.java
+│   │   │           │           └── UserService.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Entity.java
-│   │   │           │   │   ├── EntityRepository.java
+│   │   │           │   │   ├── IEntityRepository.java
+│   │   │           │   │   ├── IStaffRepository.java
 │   │   │           │   │   ├── Staff.java
-│   │   │           │   │   ├── StaffRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── PartnerErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -189,35 +220,49 @@
 │   │   │           │   │   ├── StaffMapper.java
 │   │   │           │   │   ├── persistence/
 │   │   │           │   │   │   ├── EntityEntity.java
-│   │   │           │   │   │   ├── EntityRepositoryImpl.java
 │   │   │           │   │   │   ├── StaffEntity.java
-│   │   │           │   │   │   └── StaffRepositoryImpl.java
-│   │   │           │   │   ├── queries/
-│   │   │           │   │   │   ├── EntityQueriesImpl.java
-│   │   │           │   │   │   └── StaffQueriesImpl.java
+│   │   │           │   │   │   └── impl/
+│   │   │           │   │   │       ├── EntityRepository.java
+│   │   │           │   │   │       └── StaffRepository.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── EntityQueries.java
-│   │   │           │   │       ├── StaffQueries.java
-│   │   │           │   │       └── dtos/
-│   │   │           │   │           ├── EntityView.java
-│   │   │           │   │           └── StaffView.java
+│   │   │           │   │       ├── IEntityQueries.java
+│   │   │           │   │       ├── IStaffQueries.java
+│   │   │           │   │       ├── dtos/
+│   │   │           │   │       │   ├── EntityView.java
+│   │   │           │   │       │   ├── StaffAcc.java
+│   │   │           │   │       │   └── StaffView.java
+│   │   │           │   │       └── impl/
+│   │   │           │   │           ├── EntityQueries.java
+│   │   │           │   │           └── StaffQueries.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── EntityResource.java
+│   │   │           │   │   ├── StaffResource.java
 │   │   │           │   │   ├── dtos/
-│   │   │           │   │   │   ├── EntityCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── EntityCreateRequest.java
 │   │   │           │   │   │   ├── EntityResponse.java
+│   │   │           │   │   │   ├── EntityUpdateRequest.java
+│   │   │           │   │   │   ├── StaffCreateBulkRequest.java
 │   │   │           │   │   │   ├── StaffCreateRequest.java
-│   │   │           │   │   │   └── StaffResponse.java
-│   │   │           │   │   ├── mappers/
-│   │   │           │   │   │   ├── EntityPresenter.java
-│   │   │           │   │   │   └── StaffPresenter.java
-│   │   │           │   │   └── rest/
-│   │   │           │   │       ├── EntityResource.java
-│   │   │           │   │       └── StaffResource.java
+│   │   │           │   │   │   ├── StaffResponse.java
+│   │   │           │   │   │   └── StaffUpdateRequest.java
+│   │   │           │   │   └── mappers/
+│   │   │           │   │       ├── EntityPresenter.java
+│   │   │           │   │       └── StaffPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── EntityReadService.java
-│   │   │           │       ├── EntityService.java
-│   │   │           │       ├── StaffReadService.java
-│   │   │           │       └── StaffService.java
+│   │   │           │       ├── IEntityReadService.java
+│   │   │           │       ├── IEntityService.java
+│   │   │           │       ├── IStaffReadService.java
+│   │   │           │       ├── IStaffService.java
+│   │   │           │       ├── dtos/
+│   │   │           │       │   ├── EntityCreateOrUpdateCommand.java
+│   │   │           │       │   ├── StaffCreateBulkCommand.java
+│   │   │           │       │   ├── StaffCreateCommand.java
+│   │   │           │       │   └── StaffUpdateCommand.java
+│   │   │           │       └── impl/
+│   │   │           │           ├── EntityReadService.java
+│   │   │           │           ├── EntityService.java
+│   │   │           │           ├── StaffReadService.java
+│   │   │           │           └── StaffService.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Attendance.java
@@ -260,11 +305,11 @@
 │   │   │               │   └── enums/
 │   │   │               │       ├── AccountType.java
 │   │   │               │       ├── DeleteKeys.java
-│   │   │               │       ├── ErrorCodes.java
-│   │   │               │       └── GenericErrorCodes.java
+│   │   │               │       ├── GenericErrorCodes.java
+│   │   │               │       └── SharedErrorCodes.java
 │   │   │               ├── exceptions/
 │   │   │               │   ├── AppValidationException.java
-│   │   │               │   ├── DomainException.java
+│   │   │               │   ├── ApplicationException.java
 │   │   │               │   ├── DuplicateResourceException.java
 │   │   │               │   ├── ReferencedEntityException.java
 │   │   │               │   └── ResourceNotFoundException.java
@@ -275,8 +320,7 @@
 │   │   │               ├── infra/
 │   │   │               │   ├── persistence/
 │   │   │               │   │   ├── BaseUuidV7Entity.java
-│   │   │               │   │   ├── TimestampColumnsListener.java
-│   │   │               │   │   └── UuidV7Hibernate.java
+│   │   │               │   │   └── TimestampColumnsListener.java
 │   │   │               │   └── search/
 │   │   │               │       ├── EsAnalysis.java
 │   │   │               │       └── HibernateSearchUtils.java
@@ -290,8 +334,8 @@
 │   │   │               │       ├── ApiEnvelope.java
 │   │   │               │       ├── ApiError.java
 │   │   │               │       └── mappers/
+│   │   │               │           ├── AppValidationExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
-│   │   │               │           ├── DomainExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── time/
 │   │   │               │   ├── SystemTimeProvider.java
@@ -380,41 +424,6 @@
 │       │           │   │   └── rest/
 │       │           │   └── service/
 │       │           └── shared/
-│       │               ├── domain/
-│       │               │   └── enums/
-│       │               │       └── AccountTypeTest.java
-│       │               ├── errors/
-│       │               │   └── ErrorCodesTest.java
-│       │               ├── exceptions/
-│       │               │   ├── AppValidationExceptionTest.java
-│       │               │   ├── DomainExceptionTest.java
-│       │               │   ├── DuplicateResourceExceptionTest.java
-│       │               │   └── ResourceNotFoundExceptionTest.java
-│       │               ├── http/
-│       │               │   └── CorrelationFilterTest.java
-│       │               ├── i18n/
-│       │               │   └── I18nTest.java
-│       │               ├── infra/
-│       │               │   └── persistence/
-│       │               │       └── UuidV7HibernateTest.java
-│       │               ├── presenter/
-│       │               │   ├── PresenterUtilsTest.java
-│       │               │   ├── dtos/
-│       │               │   │   ├── BulkCreateRequestTest.java
-│       │               │   │   ├── BulkCreateResultTest.java
-│       │               │   │   ├── DeleteResultTest.java
-│       │               │   │   └── UuidsRequestTest.java
-│       │               │   └── rest/
-│       │               │       ├── ApiEnvelopeTest.java
-│       │               │       ├── ApiErrorTest.java
-│       │               │       └── mappers/
-│       │               │           ├── ConstraintViolationExceptionMapperTest.java
-│       │               │           ├── DomainExceptionMapperTest.java
-│       │               │           └── UncaughtExceptionMapperTest.java
-│       │               ├── text/
-│       │               │   └── StringUtilsTest.java
-│       │               └── time/
-│       │                   └── SystemTimeProviderTest.java
 │       └── resources/
 │           ├── application.properties
 │           ├── messages_en_US.properties
