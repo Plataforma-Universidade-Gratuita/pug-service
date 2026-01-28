@@ -3,21 +3,27 @@ package com.pug.geo.domain;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 
-/** City entity aggregate. */
+import java.util.UUID;
+
+/**
+ * City entity aggregate.
+ */
 @Getter
-public class City {
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class City extends DomainError {
 
-  private final UUID id;
-  private final String name;
-  private final IbgeCode ibgeCode;
+  UUID id;
+  String name;
+  IbgeCode ibgeCode;
 
   @Builder(toBuilder = true)
   private City(UUID id, String name, IbgeCode ibgeCode) {
@@ -29,22 +35,19 @@ public class City {
   /**
    * Factory for new cities.
    *
-   * @param name the name of the city
+   * @param name     the name of the city
    * @param ibgeCode the IBGE code of the city
    * @return the created City instance
    */
-  public static City createNew(String name, IbgeCode ibgeCode) {
+  public static City factory(String name, IbgeCode ibgeCode) {
     City c =
-        City.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(StringUtils.trim(name))
-            .ibgeCode(ibgeCode)
-            .build();
+            City.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(StringUtils.trim(name))
+                    .ibgeCode(ibgeCode)
+                    .build();
 
-    List<AppValidationException.Problem> problems = c.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+    c.collectValidationProblems();
     return c;
   }
 
@@ -55,11 +58,13 @@ public class City {
    * @return the updated City instance
    */
   public City changeName(String newName) {
-    City c = this.toBuilder().name(StringUtils.trim(newName)).build();
-    List<AppValidationException.Problem> problems = c.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    var trimmedName = StringUtils.trim(newName);
+    if (this.name.equals(trimmedName)) {
+      return this;
     }
+
+    City c = this.toBuilder().name(StringUtils.trim(newName)).build();
+    c.collectValidationProblems();
     return c;
   }
 
@@ -70,39 +75,33 @@ public class City {
    * @return the updated City instance
    */
   public City changeIbgeCode(IbgeCode newCode) {
-    City c = this.toBuilder().ibgeCode(newCode).build();
-    List<AppValidationException.Problem> problems = c.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (this.ibgeCode.equals(newCode)) {
+      return this;
     }
+
+    City c = this.toBuilder().ibgeCode(newCode).build();
+    c.collectValidationProblems();
     return c;
   }
 
   /**
    * Validates the City instance and collects all validation problems.
-   *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
-   *     otherwise.
    */
-  private List<AppValidationException.Problem> collectValidationProblems() {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+  private void collectValidationProblems() {
     if (id == null) {
-      problems.add(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK, "id"));
-    }
-    if (StringUtils.isEmpty(name)) {
-      problems.add(
-          new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK, "name"));
-    }
-    if (name.length() > 100) {
-      problems.add(
-          new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH, "name"));
-    }
-    if (ibgeCode == null) {
-      problems.add(
-          new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK, "ibgeCode"));
+      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK));
     }
 
-    return problems;
+    if (StringUtils.isEmpty(name)) {
+      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK));
+    } else if (name.length() > 100) {
+      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH));
+    }
+
+    if (ibgeCode == null) {
+      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
+    } else if (ibgeCode.hasErrors()) {
+      addErrors(ibgeCode.getProblems());
+    }
   }
 }

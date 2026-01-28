@@ -120,15 +120,18 @@
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── CityResource.java
 │   │   │           │   │   ├── dtos/
-│   │   │           │   │   │   ├── CityCreateOrUpdateRequest.java
-│   │   │           │   │   │   └── CityResponse.java
+│   │   │           │   │   │   ├── CityCreateRequest.java
+│   │   │           │   │   │   ├── CityResponse.java
+│   │   │           │   │   │   └── CityUpdateRequest.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
 │   │   │           │   └── service/
+│   │   │           │       ├── CityProcessor.java
 │   │   │           │       ├── ICityReadService.java
 │   │   │           │       ├── ICityService.java
 │   │   │           │       ├── dtos/
-│   │   │           │       │   └── CityCreateOrUpdateCommand.java
+│   │   │           │       │   ├── CityCreateCommand.java
+│   │   │           │       │   └── CityUpdateCommand.java
 │   │   │           │       └── impl/
 │   │   │           │           ├── CityReadService.java
 │   │   │           │           └── CityService.java
@@ -302,6 +305,7 @@
 │   │   │           │       └── ProjectsService.java
 │   │   │           └── shared/
 │   │   │               ├── domain/
+│   │   │               │   ├── DomainError.java
 │   │   │               │   └── enums/
 │   │   │               │       ├── AccountType.java
 │   │   │               │       ├── DeleteKeys.java
@@ -336,6 +340,9 @@
 │   │   │               │       └── mappers/
 │   │   │               │           ├── AppValidationExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
+│   │   │               │           ├── DuplicateResourceExceptionMapper.java
+│   │   │               │           ├── ReferencedEntityExceptionMapper.java
+│   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── time/
 │   │   │               │   ├── SystemTimeProvider.java

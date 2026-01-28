@@ -13,9 +13,8 @@ public class AppValidationException extends RuntimeException {
    * Represents an individual validation problem.
    *
    * @param code The error code (implements GenericErrorCodes).
-   * @param fieldName The name of the field associated with the error (can be null).
    */
-  public record Problem(GenericErrorCodes code, String fieldName) {}
+  public record Problem(GenericErrorCodes code) {}
 
   private final List<Problem> problems;
 
@@ -37,9 +36,8 @@ public class AppValidationException extends RuntimeException {
    * Convenience constructor for a single validation problem.
    *
    * @param code The error code (implements GenericErrorCodes).
-   * @param fieldName The name of the field associated with the error (can be null).
    */
-  public AppValidationException(GenericErrorCodes code, String fieldName) {
-    this(List.of(new Problem(code, fieldName)));
+  public AppValidationException(GenericErrorCodes code) {
+    this(List.of(new Problem(code)));
   }
 }

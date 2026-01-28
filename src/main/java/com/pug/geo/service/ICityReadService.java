@@ -1,6 +1,7 @@
 package com.pug.geo.service;
 
 import com.pug.geo.infra.read.dtos.CityView;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,8 +13,7 @@ public interface ICityReadService {
    *
    * @param id the UUID of the city
    * @return the CityView corresponding to the given id
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no city is found with the given
-   *     id
+   * @throws ResourceNotFoundException if no city is found with the given id
    */
   CityView getViewById(UUID id);
 
@@ -22,8 +22,7 @@ public interface ICityReadService {
    *
    * @param ibgeCode the IBGE code of the city
    * @return the CityView corresponding to the given IBGE code
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no city is found with the given
-   *     IBGE code
+   * @throws ResourceNotFoundException if no city is found with the given IBGE code
    */
   CityView getViewByIbgeCode(String ibgeCode);
 

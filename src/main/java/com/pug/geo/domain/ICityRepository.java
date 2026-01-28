@@ -1,31 +1,29 @@
 package com.pug.geo.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing City domain objects. */
+/**
+ * Repository interface for managing City domain objects.
+ */
 public interface ICityRepository {
+
   /**
    * Persists a city entity.
    *
    * @param city the city entity to persist.
    * @return the persisted city entity.
-   * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *     domain object (indicating data integrity issue).
    */
-  City persist(City city) throws AppValidationException;
+  City persist(City city);
 
   /**
    * Persists multiple city entities.
    *
    * @param cities the iterable of city entities to persist.
    * @return the list of persisted city entities.
-   * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *     domain object (indicating data integrity issue).
    */
-  List<City> persistAll(Iterable<City> cities) throws AppValidationException;
+  List<City> persistAll(Iterable<City> cities);
 
   /**
    * Updates an existing city entity.
@@ -46,21 +44,21 @@ public interface ICityRepository {
    * Finds a city entity by its unique identifier.
    *
    * @param id the unique identifier of the city.
-   * @return an Optional containing the city entity if found and valid, otherwise empty.
-   * @throws AppValidationException if a CityEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * @return an Optional containing the city entity if found.
+   * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<City> findOptionalById(UUID id) throws AppValidationException;
+  Optional<City> findOptionalById(UUID id);
 
   /**
    * Finds a city entity by its IBGE code.
    *
    * @param ibgeCodeDigits the IBGE code digits of the city.
-   * @return an Optional containing the city entity if found and valid, otherwise empty.
-   * @throws AppValidationException if a CityEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * @return an Optional containing the city entity if found.
+   * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits) throws AppValidationException;
+  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
 
   /**
    * Checks if a city exists by its IBGE code.

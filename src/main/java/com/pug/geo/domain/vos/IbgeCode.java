@@ -1,51 +1,53 @@
 package com.pug.geo.domain.vos;
 
 import com.pug.geo.domain.enums.GeoErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
 
 /**
  * Value object representing a city's IBGE code.
- *
- * @param code The IBGE code, which must be a 7-digit string.
+ * Converted to class to extend DomainError.
  */
-public record IbgeCode(String code) {
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class IbgeCode extends DomainError {
 
-  /**
-   * Compact constructor that validates the IBGE code.
-   *
-   * @param code The IBGE code to be validated.
-   * @throws AppValidationException if the code is invalid, potentially containing multiple
-   *     problems.
-   */
-  public IbgeCode {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+  String code;
 
-    if (StringUtils.isEmpty(code)) {
-      problems.add(
-          new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK, "ibgeCode"));
-    } else {
-      if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-        problems.add(
-            new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT, "ibgeCode"));
-      }
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+  @Builder(toBuilder = true)
+  private IbgeCode(String code) {
+    this.code = code;
   }
 
   /**
-   * Returns the string representation of the IBGE code.
+   * Factory method to create a new IbgeCode.
+   * It does not throw exceptions immediately but collects them in the problems list.
    *
-   * @return the IBGE code as a string.
+   * @param code The IBGE code string
+   * @return The IbgeCode instance (which may contain errors)
    */
-  @Override
-  public @NotNull String toString() {
-    return code;
+  public static IbgeCode factory(String code) {
+    IbgeCode vo = IbgeCode.builder().code(code).build();
+    vo.validate();
+    return vo;
+  }
+
+  /**
+   * Validates the IBGE code format and populates the problems list if invalid.
+   */
+  private void validate() {
+    if (StringUtils.isEmpty(code)) {
+      getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
+    } else {
+      if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
+        getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
+      }
+    }
   }
 }

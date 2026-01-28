@@ -4,25 +4,27 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.ICityRepository;
 import com.pug.geo.infra.CityMapper;
 import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the CityRepository using Panache and Hibernate Search. */
+/**
+ * Implementation of the CityRepository using Panache and Hibernate Search.
+ */
 @ApplicationScoped
 public class CityRepositoryImpl
-    implements ICityRepository, PanacheRepositoryBase<CityEntity, UUID> {
+        implements ICityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
   @Transactional
   @Override
-  public City persist(City city) throws AppValidationException {
+  public City persist(City city) {
     if (city == null) {
       return null;
     }
@@ -33,7 +35,7 @@ public class CityRepositoryImpl
 
   @Transactional
   @Override
-  public List<City> persistAll(Iterable<City> cities) throws AppValidationException {
+  public List<City> persistAll(Iterable<City> cities) {
     if (CollectionUtils.isEmpty(cities)) {
       return List.of();
     }
@@ -76,13 +78,12 @@ public class CityRepositoryImpl
   }
 
   @Override
-  public Optional<City> findOptionalById(UUID id) throws AppValidationException {
+  public Optional<City> findOptionalById(UUID id) {
     return findByIdOptional(id).map(CityMapper::toDomain);
   }
 
   @Override
-  public Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits)
-      throws AppValidationException {
+  public Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits) {
     return find("ibgeCode", ibgeCodeDigits).firstResultOptional().map(CityMapper::toDomain);
   }
 

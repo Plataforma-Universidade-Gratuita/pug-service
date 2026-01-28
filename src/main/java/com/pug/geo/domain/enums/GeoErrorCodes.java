@@ -6,15 +6,14 @@ import lombok.Getter;
 /** Enumeration of error codes related to geographical operations. */
 @Getter
 public enum GeoErrorCodes implements GenericErrorCodes {
+  CITY_ALREADY_EXISTS("error.domain.geo.city.alreadyexists", null),
+  CITY_NOT_FOUND("error.domain.geo.city.notfound", null),
+  CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null),
   INVALID_CITY_ID_BLANK("error.domain.geo.city-id.blank", "id"),
   INVALID_CITY_NAME_BLANK("error.domain.geo.city-name.blank", "name"),
   INVALID_CITY_NAME_LENGTH("error.domain.geo.city-name.toolong", "name"),
   INVALID_IBGE_CODE_BLANK("error.domain.geo.ibge-code.blank", "ibgeCode"),
-  INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge-code.invalid", "ibgeCode"),
-
-  CITY_NOT_FOUND("error.domain.geo.city.notfound", null),
-  CITY_ALREADY_EXISTS("error.domain.geo.city.alreadyexists", null),
-  CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null);
+  INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge-code.invalid", "ibgeCode");
 
   private final String bundleKey;
   private final String fieldName;

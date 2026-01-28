@@ -1,5 +1,6 @@
 package com.pug.geo.infra.read.impl;
 
+import com.pug.geo.infra.CityMapper;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.geo.infra.read.ICityQueries;
 import com.pug.geo.infra.read.dtos.CityView;
@@ -21,32 +22,14 @@ public class CityQueries implements ICityQueries {
 
   @Inject EntityManager entityManager;
 
-  /**
-   * Converts a CityEntity to a CityView.
-   *
-   * @param c the CityEntity
-   * @return the CityView
-   */
-  private static CityView toView(CityEntity c) {
-    if (c == null) {
-      return null;
-    }
-    return new CityView(c.getId(), c.getName(), c.getIbgeCode());
-  }
-
   @Override
   public Optional<CityView> findOptionalById(UUID id) {
     if (id == null) {
       return Optional.empty();
     }
-    var q =
-        entityManager.createQuery(
-            "select new com.pug.geo.infra.read.dtos.CityView("
-                + "c.id, c.name, c.ibgeCode) "
-                + "from CityEntity c where c.id = :id",
-            CityView.class);
+    var q = entityManager.createQuery("from CityEntity c where c.id = :id", CityEntity.class);
     q.setParameter("id", id);
-    return q.getResultStream().findFirst();
+    return q.getResultStream().findFirst().map(CityMapper::toView);
   }
 
   @Override
@@ -55,24 +38,15 @@ public class CityQueries implements ICityQueries {
       return Optional.empty();
     }
     var q =
-        entityManager.createQuery(
-            "select new com.pug.geo.infra.read.dtos.CityView("
-                + "c.id, c.name, c.ibgeCode) "
-                + "from CityEntity c where c.ibgeCode = :ibge",
-            CityView.class);
+        entityManager.createQuery("from CityEntity c where c.ibgeCode = :ibge", CityEntity.class);
     q.setParameter("ibge", ibgeCode);
-    return q.getResultStream().findFirst();
+    return q.getResultStream().findFirst().map(CityMapper::toView);
   }
 
   @Override
   public List<CityView> listAllCities() {
-    var q =
-        entityManager.createQuery(
-            "select new com.pug.geo.infra.read.dtos.CityView("
-                + "c.id, c.name, c.ibgeCode) "
-                + "from CityEntity c order by c.name asc",
-            CityView.class);
-    return q.getResultList();
+    var q = entityManager.createQuery("from CityEntity c order by c.name asc", CityEntity.class);
+    return q.getResultList().stream().map(CityMapper::toView).toList();
   }
 
   @Override
@@ -85,7 +59,7 @@ public class CityQueries implements ICityQueries {
 
     List<CityView> out = new ArrayList<>(hits.size());
     for (CityEntity c : hits) {
-      out.add(toView(c));
+      out.add(CityMapper.toView(c));
     }
     return out;
   }

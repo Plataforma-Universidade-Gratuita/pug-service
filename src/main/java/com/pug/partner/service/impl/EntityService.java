@@ -72,8 +72,7 @@ public class EntityService implements IEntityService {
     IbgeCode cityIbgeVO = null;
     try {
       if (cityIbgeString != null && !cityIbgeString.isBlank()) {
-        cityIbgeVO = new IbgeCode(cityIbgeString);
-        City city = cityService.getByIbge(cityIbgeVO);
+        City city = cityService.getByIbge(cityIbgeString);
         cityId = city.getId();
       }
     } catch (AppValidationException e) {

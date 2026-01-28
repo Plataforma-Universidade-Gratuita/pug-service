@@ -3,7 +3,7 @@ package com.pug.geo.infra;
 import com.pug.geo.domain.City;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.geo.infra.read.dtos.CityView;
 
 /** Maps between City domain and CityEntity persistence. */
 public final class CityMapper {
@@ -15,8 +15,6 @@ public final class CityMapper {
    *
    * @param e entity.
    * @return domain object or null if entity is null.
-   * @throws AppValidationException If the data in the entity (e.g., ibgeCode) is invalid according
-   *     to domain rules. This indicates corrupted data in persistence.
    */
   public static City toDomain(CityEntity e) {
     if (e == null) {
@@ -25,7 +23,7 @@ public final class CityMapper {
     return City.builder()
         .id(e.getId())
         .name(e.getName())
-        .ibgeCode(new IbgeCode(e.getIbgeCode()))
+        .ibgeCode(IbgeCode.factory(e.getIbgeCode()))
         .build();
   }
 
@@ -58,5 +56,18 @@ public final class CityMapper {
     }
     e.setName(d.getName());
     e.setIbgeCode(d.getIbgeCode().toString());
+  }
+
+  /**
+   * Converts a CityEntity to a CityView.
+   *
+   * @param c the CityEntity
+   * @return the CityView
+   */
+  public static CityView toView(CityEntity c) {
+    if (c == null) {
+      return null;
+    }
+    return new CityView(c.getId(), c.getName(), c.getIbgeCode());
   }
 }

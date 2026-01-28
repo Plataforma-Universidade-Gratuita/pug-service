@@ -35,7 +35,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
             .map(
                 problem ->
                     new ApiError.FieldError(
-                        problem.fieldName(),
+                        problem.code().getFieldName(),
                         ((Enum<?>) problem.code()).name(),
                         i18n.translation(problem.code().getBundleKey())))
             .toList();
