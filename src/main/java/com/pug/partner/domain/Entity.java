@@ -3,22 +3,28 @@ package com.pug.partner.domain;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 
-/** Entity entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Entity entity aggregate.
+ */
 @Getter
-public class Entity {
-  private final UUID id;
-  private final Cnpj cnpj;
-  private final String name;
-  private final UUID cityId;
-  private final String address;
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Entity extends DomainError {
+  UUID id;
+  Cnpj cnpj;
+  String name;
+  UUID cityId;
+  String address;
 
   @Builder(toBuilder = true)
   private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address) {
@@ -32,27 +38,23 @@ public class Entity {
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity.
-   * @param cityId the ID of the city where the entity is located
+   * @param cnpj    the CNPJ of the entity
+   * @param name    the name of the entity.
+   * @param cityId  the ID of the city where the entity is located
    * @param address the address where the entity is located
-   * @return the created entity
-   * @throws AppValidationException if initial validation fails.
+   * @return the created entity (may contain errors)
    */
-  public static Entity createNew(Cnpj cnpj, String name, UUID cityId, String address) {
+  public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
-        Entity.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .cnpj(cnpj)
-            .name(StringUtils.trim(name))
-            .cityId(cityId)
-            .address(StringUtils.trim(address))
-            .build();
+            Entity.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .cnpj(cnpj)
+                    .name(StringUtils.trim(name))
+                    .cityId(cityId)
+                    .address(StringUtils.trim(address))
+                    .build();
 
-    List<AppValidationException.Problem> problems = entity.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+    entity.collectValidationProblems();
     return entity;
   }
 
@@ -61,15 +63,15 @@ public class Entity {
    *
    * @param newName the new name of the entity
    * @return the updated entity with the new name
-   * @throws AppValidationException if validation fails.
    */
   public Entity changeName(String newName) {
-    Entity updatedEntity = this.toBuilder().name(StringUtils.trim(newName)).build();
-    List<AppValidationException.Problem> problems = updatedEntity.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    String trimmed = StringUtils.trim(newName);
+    if (this.name.equals(trimmed)) {
+      return this;
     }
-    return updatedEntity;
+    Entity updated = this.toBuilder().name(trimmed).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -77,15 +79,15 @@ public class Entity {
    *
    * @param newAddress the new address of the entity
    * @return the updated entity with the new address
-   * @throws AppValidationException if validation fails.
    */
   public Entity changeAddress(String newAddress) {
-    Entity updatedEntity = this.toBuilder().address(StringUtils.trim(newAddress)).build();
-    List<AppValidationException.Problem> problems = updatedEntity.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    String trimmed = StringUtils.trim(newAddress);
+    if (this.address != null && this.address.equals(trimmed)) {
+      return this;
     }
-    return updatedEntity;
+    Entity updated = this.toBuilder().address(trimmed).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -93,15 +95,14 @@ public class Entity {
    *
    * @param newCnpj the new CNPJ for the entity
    * @return the updated entity with the new CNPJ
-   * @throws AppValidationException if validation fails.
    */
   public Entity changeCnpj(Cnpj newCnpj) {
-    Entity updatedEntity = this.toBuilder().cnpj(newCnpj).build();
-    List<AppValidationException.Problem> problems = updatedEntity.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (this.cnpj.equals(newCnpj)) {
+      return this;
     }
-    return updatedEntity;
+    Entity updated = this.toBuilder().cnpj(newCnpj).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -109,51 +110,42 @@ public class Entity {
    *
    * @param newCityId the new city ID where the entity will be located
    * @return the updated entity with the new city ID
-   * @throws AppValidationException if validation fails.
    */
   public Entity moveToCity(UUID newCityId) {
-    Entity updatedEntity = this.toBuilder().cityId(newCityId).build();
-    List<AppValidationException.Problem> problems = updatedEntity.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (this.cityId.equals(newCityId)) {
+      return this;
     }
-    return updatedEntity;
+    Entity updated = this.toBuilder().cityId(newCityId).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
    * Collects all validation problems for the entity's attributes.
-   *
-   * <p>Checks that ID, CNPJ is not null, name is not null or blank and does not exceed 150
-   * characters, cityId is not null, and address does not exceed 254 characters if provided.
-   *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
-   *     otherwise.
    */
-  private List<AppValidationException.Problem> collectValidationProblems() {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+  private void collectValidationProblems() {
     if (id == null) {
-      problems.add(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK, "id"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK));
     }
+
     if (cnpj == null) {
-      problems.add(
-          new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK, "cnpj"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+    } else if (cnpj.hasErrors()) {
+      addErrors(cnpj.getProblems());
     }
+
     if (StringUtils.isEmpty(name)) {
-      problems.add(
-          new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK, "name"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
     } else if (name.length() > 150) {
-      problems.add(
-          new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH, "name"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
     }
+
     if (cityId == null) {
-      problems.add(
-          new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK, "cityId"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
     }
+
     if (address != null && address.length() > 254) {
-      problems.add(
-          new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH, "address"));
+      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
     }
-    return problems;
   }
 }

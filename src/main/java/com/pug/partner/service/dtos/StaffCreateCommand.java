@@ -2,10 +2,13 @@ package com.pug.partner.service.dtos;
 
 import com.pug.identity.service.dtos.AccountCreateCommand;
 
+import java.util.UUID;
+
 /**
  * Command DTO for creating a new Staff member.
  *
- * @param entityCnpjString the CNPJ of the entity as a string.
+ * @param entityId       the ID of the entity the staff belongs to.
  * @param accountCommand the command for creating the associated account.
  */
-public record StaffCreateCommand(String entityCnpjString, AccountCreateCommand accountCommand) {}
+public record StaffCreateCommand(UUID entityId, AccountCreateCommand accountCommand) {
+}

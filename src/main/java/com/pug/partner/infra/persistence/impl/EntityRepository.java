@@ -4,33 +4,35 @@ import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.IEntityRepository;
 import com.pug.partner.infra.EntityMapper;
 import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the EntityRepository using Panache. */
+/**
+ * Implementation of the EntityRepository using Panache.
+ */
 @ApplicationScoped
 public class EntityRepository
-    implements IEntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
+        implements IEntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
   @Transactional
   @Override
-  public Entity persist(Entity entity) throws AppValidationException { // Added throws
+  public Entity persist(Entity entity) {
     if (entity == null) {
       return null;
     }
     EntityEntity e = EntityMapper.toEntity(entity);
     persistAndFlush(e);
     EntityEntity loaded =
-        find("select e from EntityEntity e where e.id = ?1", e.getId())
-            .firstResultOptional()
-            .orElse(e);
+            find("select e from EntityEntity e where e.id = ?1", e.getId())
+                    .firstResultOptional()
+                    .orElse(e);
     return EntityMapper.toDomain(loaded);
   }
 
@@ -60,21 +62,21 @@ public class EntityRepository
   }
 
   @Override
-  public Optional<Entity> findOptionalById(UUID id) throws AppValidationException {
+  public Optional<Entity> findOptionalById(UUID id) {
     return find("select e from EntityEntity e where e.id = ?1", id)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
+            .firstResultOptional()
+            .map(EntityMapper::toDomain);
   }
 
   @Override
-  public Optional<Entity> findOptionalByCnpj(String cnpj) throws AppValidationException {
+  public Optional<Entity> findOptionalByCnpj(String cnpj) {
     return find("select e from EntityEntity e where e.cnpj = ?1", cnpj)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
+            .firstResultOptional()
+            .map(EntityMapper::toDomain);
   }
 
   @Override
-  public List<Entity> listAllEntities() throws AppValidationException {
+  public List<Entity> listAllEntities() {
     return listAll().stream().map(EntityMapper::toDomain).toList();
   }
 

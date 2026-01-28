@@ -3,32 +3,34 @@ package com.pug.partner.infra;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between Entity domain and EntityEntity persistence. */
+/**
+ * Maps between Entity domain and EntityEntity persistence.
+ */
 public final class EntityMapper {
-  /** Private constructor to prevent instantiation. */
-  private EntityMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private EntityMapper() {
+  }
 
   /**
    * Maps an EntityEntity to an Entity domain object.
    *
    * @param e the persistence entity.
    * @return the domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., cnpj) is invalid according to
-   *     domain rules, indicating corrupted data in persistence.
    */
-  public static Entity toDomain(EntityEntity e) throws AppValidationException {
+  public static Entity toDomain(EntityEntity e) {
     if (e == null) {
       return null;
     }
     return Entity.builder()
-        .id(e.getId())
-        .cnpj(new Cnpj(e.getCnpj()))
-        .name(e.getName())
-        .cityId(e.getCityId())
-        .address(e.getAddress())
-        .build();
+            .id(e.getId())
+            .cnpj(Cnpj.factory(e.getCnpj()))
+            .name(e.getName())
+            .cityId(e.getCityId())
+            .address(e.getAddress())
+            .build();
   }
 
   /**
@@ -42,12 +44,12 @@ public final class EntityMapper {
       return null;
     }
     return EntityEntity.builder()
-        .id(d.getId())
-        .cnpj(d.getCnpj().toString())
-        .name(d.getName())
-        .cityId(d.getCityId())
-        .address(d.getAddress())
-        .build();
+            .id(d.getId())
+            .cnpj(d.getCnpj().toString())
+            .name(d.getName())
+            .cityId(d.getCityId())
+            .address(d.getAddress())
+            .build();
   }
 
   /**

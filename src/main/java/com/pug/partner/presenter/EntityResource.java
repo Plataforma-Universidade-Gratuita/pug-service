@@ -1,6 +1,5 @@
 package com.pug.partner.presenter;
 
-import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
@@ -8,7 +7,8 @@ import com.pug.partner.presenter.dtos.EntityUpdateRequest;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.IEntityReadService;
 import com.pug.partner.service.IEntityService;
-import com.pug.partner.service.dtos.EntityCreateOrUpdateCommand;
+import com.pug.partner.service.dtos.EntityCreateCommand;
+import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -32,23 +32,29 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing partner entities. */
+/**
+ * REST resource for managing partner entities.
+ */
 @ApplicationScoped
 @Path("/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
 
-  @Inject IEntityService writeService;
-  @Inject IEntityReadService readService;
+  @Inject
+  IEntityService writeService;
+  @Inject
+  IEntityReadService readService;
 
-  @Context UriInfo uri;
+  @Context
+  UriInfo uri;
 
   /**
    * Create a new entity.
@@ -56,46 +62,46 @@ public class EntityResource {
    * @param req the entity creation request
    * @return the response containing the created entity view
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
-   *     already exists.
-   * @throws AppValidationException if input validation fails (e.g., blank name, invalid CNPJ).
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified city does not
-   *     exist.
+   *                                                              already exists.
+   * @throws AppValidationException                               if input validation fails (e.g., blank name, invalid CNPJ).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the specified city does not
+   *                                                              exist.
    */
   @POST
   public Response create(@Valid EntityCreateRequest req) {
     var cmd =
-        new EntityCreateOrUpdateCommand(
-            req.cnpjString(), req.name(), req.cityIbgeString(), req.address());
+            new EntityCreateCommand(
+                    req.cnpjString(), req.name(), req.cityId(), req.address());
     var createdEntityDomain = writeService.save(cmd);
     EntityResponse body =
-        EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()));
+            EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()));
     URI location =
-        uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
+            uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
    * Update an existing entity.
    *
-   * @param id the entity ID
+   * @param id  the entity ID
    * @param req the entity update request
    * @return the response containing the updated entity view
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the Entity is not found.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
-   *     already exists.
-   * @throws AppValidationException if input validation fails.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified city does not
-   *     exist.
+   *                                                              already exists.
+   * @throws AppValidationException                               if input validation fails.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the specified city does not
+   *                                                              exist.
    */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     var cmd =
-        new EntityCreateOrUpdateCommand(
-            req.cnpjString(), req.name(), req.cityIbgeString(), req.address());
+            new EntityUpdateCommand(
+                    req.cnpjString(), req.name(), req.cityId(), req.address());
     var updatedEntityDomain = writeService.update(id, cmd);
     EntityResponse body =
-        EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()));
+            EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -131,30 +137,28 @@ public class EntityResource {
    *
    * @param cnpjRaw the raw CNPJ string
    * @return the response containing the entity view
-   * @throws AppValidationException if the provided CNPJ is malformed.
+   * @throws AppValidationException                              if the provided CNPJ is malformed.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found.
    */
   @GET
   @Path("/by-cnpj/{cnpj}")
   public Response getByCnpj(@PathParam("cnpj") String cnpjRaw) {
-    Cnpj cnpjVO;
-    cnpjVO = new Cnpj(cnpjRaw);
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjVO.toString()));
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw));
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
    * List or search entities.
    *
-   * @param q optional search query
+   * @param q      optional search query
    * @param cityId optional city ID to filter by
    * @return the response containing the list of entity views
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated city or other
-   *     data is missing.
+   *                                                             data is missing.
    */
   @GET
   public Response listOrSearch(
-      @QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) { // Adicionado @UuidV7
+          @QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
     List<EntityView> views;
     if (cityId != null) {
       views = readService.listViewsByCityId(cityId);
@@ -165,7 +169,7 @@ public class EntityResource {
     }
 
     List<EntityResponse> body =
-        views.stream().map(EntityPresenter::toResponse).collect(Collectors.toList());
+            views.stream().map(EntityPresenter::toResponse).collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 }

@@ -1,11 +1,12 @@
 package com.pug.partner.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Staff entities. */
+/**
+ * Repository interface for managing Staff entities.
+ */
 public interface IStaffRepository {
 
   /**
@@ -13,20 +14,16 @@ public interface IStaffRepository {
    *
    * @param staff the Staff entity to persist.
    * @return the persisted Staff entity.
-   * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *     domain object (indicating a data integrity issue).
    */
-  Staff persist(Staff staff) throws AppValidationException;
+  Staff persist(Staff staff);
 
   /**
    * Persists multiple Staff entities.
    *
    * @param staff an iterable of Staff entities to persist.
    * @return a list of the persisted Staff entities.
-   * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *     domain object (indicating a data integrity issue).
    */
-  List<Staff> persistAll(Iterable<Staff> staff) throws AppValidationException;
+  List<Staff> persistAll(Iterable<Staff> staff);
 
   /**
    * Updates an existing Staff entity.
@@ -48,29 +45,29 @@ public interface IStaffRepository {
    *
    * @param id the account ID to search for.
    * @return an Optional containing the found Staff entity, or empty if not found.
-   * @throws AppValidationException if a StaffEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Staff> findOptionalById(UUID id) throws AppValidationException;
+  Optional<Staff> findOptionalById(UUID id);
 
   /**
    * Lists all Staff entities.
    *
    * @return a list of all Staff entities.
-   * @throws AppValidationException if any StaffEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of valid domain objects.
+   * <p>Note: The returned Staff objects may contain validation errors (check {@code staff.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Staff> listAllStaff() throws AppValidationException;
+  List<Staff> listAllStaff();
 
   /**
    * Lists all Staff entities associated with a specific entity ID.
    *
    * @param entityId the entity ID to filter by.
    * @return a list of Staff entities associated with the given entity ID.
-   * @throws AppValidationException if any StaffEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of valid domain objects.
+   * <p>Note: The returned Staff objects may contain validation errors (check {@code staff.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Staff> listAllByEntityId(UUID entityId) throws AppValidationException;
+  List<Staff> listAllByEntityId(UUID entityId);
 
   /**
    * Checks if a Staff entity exists for a given account ID.

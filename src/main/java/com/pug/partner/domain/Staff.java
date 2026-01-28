@@ -1,18 +1,24 @@
 package com.pug.partner.domain;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 
-/** Staff entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Staff entity aggregate.
+ */
 @Getter
-public class Staff {
-  private final UUID accountId;
-  private final UUID entityId;
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Staff extends DomainError {
+  UUID accountId;
+  UUID entityId;
 
   @Builder(toBuilder = true)
   private Staff(UUID accountId, UUID entityId) {
@@ -24,42 +30,27 @@ public class Staff {
    * Factory method to create a new Staff instance.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the entity
-   * @return a validated Staff instance
-   * @throws AppValidationException if initial validation fails.
+   * @param entityId  the unique identifier of the entity
+   * @return a Staff instance (may contain errors)
    */
-  public static Staff createNew(UUID accountId, UUID entityId) {
+  public static Staff factory(UUID accountId, UUID entityId) {
     Staff staff = Staff.builder().accountId(accountId).entityId(entityId).build();
 
-    List<AppValidationException.Problem> problems = staff.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+    staff.collectValidationProblems();
     return staff;
   }
 
   /**
    * Collects all validation problems for the Staff instance.
-   *
-   * <p>Checks that accountId and entityId are not null.
-   *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
-   *     otherwise.
    */
-  public List<AppValidationException.Problem> collectValidationProblems() {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+  private void collectValidationProblems() {
     if (accountId == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK, "accountId"));
+      addError(new AppValidationException.Problem(
+              PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK));
     }
     if (entityId == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK, "entityId"));
+      addError(new AppValidationException.Problem(
+              PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK));
     }
-
-    return problems;
   }
 }

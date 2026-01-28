@@ -249,7 +249,6 @@
 │   │   │           │   │   │   ├── EntityCreateRequest.java
 │   │   │           │   │   │   ├── EntityResponse.java
 │   │   │           │   │   │   ├── EntityUpdateRequest.java
-│   │   │           │   │   │   ├── StaffCreateBulkRequest.java
 │   │   │           │   │   │   ├── StaffCreateRequest.java
 │   │   │           │   │   │   ├── StaffResponse.java
 │   │   │           │   │   │   └── StaffUpdateRequest.java
@@ -257,13 +256,15 @@
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
 │   │   │           │   └── service/
+│   │   │           │       ├── EntityProcessor.java
 │   │   │           │       ├── IEntityReadService.java
 │   │   │           │       ├── IEntityService.java
 │   │   │           │       ├── IStaffReadService.java
 │   │   │           │       ├── IStaffService.java
+│   │   │           │       ├── StaffProcessor.java
 │   │   │           │       ├── dtos/
-│   │   │           │       │   ├── EntityCreateOrUpdateCommand.java
-│   │   │           │       │   ├── StaffCreateBulkCommand.java
+│   │   │           │       │   ├── EntityCreateCommand.java
+│   │   │           │       │   ├── EntityUpdateCommand.java
 │   │   │           │       │   ├── StaffCreateCommand.java
 │   │   │           │       │   └── StaffUpdateCommand.java
 │   │   │           │       └── impl/

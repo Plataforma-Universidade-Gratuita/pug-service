@@ -1,21 +1,18 @@
 package com.pug.partner.presenter;
 
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.identity.service.impl.PasswordService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.partner.presenter.dtos.StaffCreateBulkRequest;
 import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.IStaffReadService;
 import com.pug.partner.service.IStaffService;
-import com.pug.partner.service.dtos.StaffCreateBulkCommand;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
@@ -46,6 +43,7 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -53,20 +51,28 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing partner staff. */
+/**
+ * REST resource for managing partner staff.
+ */
 @ApplicationScoped
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StaffResource {
 
-  @Inject IStaffService writeService;
-  @Inject IStaffReadService readService;
-  @Inject PasswordService passwordService;
-  @Inject I18n i18n;
+  @Inject
+  IStaffService writeService;
+  @Inject
+  IStaffReadService readService;
+  @Inject
+  PasswordService passwordService;
+  @Inject
+  I18n i18n;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
    * Picks the best matching locale from the request headers.
@@ -99,9 +105,9 @@ public class StaffResource {
   @GET
   public Response list() {
     List<StaffResponse> list =
-        readService.listViews().stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
+            readService.listViews().stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -110,18 +116,16 @@ public class StaffResource {
    *
    * @param cpfRaw the CPF of the staff members
    * @return a Response containing the staff members details
-   * @throws AppValidationException if the provided CPF is malformed.
+   * @throws AppValidationException                              if the provided CPF is malformed.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff member is found.
    */
   @GET
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") String cpfRaw) {
-    Cpf cpfVO;
-    cpfVO = new Cpf(cpfRaw);
     List<StaffResponse> list =
-        readService.listViewsByCpf(cpfVO.toString()).stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
+            readService.listViewsByCpf(cpfRaw).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -130,7 +134,7 @@ public class StaffResource {
    *
    * @param rawEmail the email address of the staff member
    * @return a Response containing the staff member details
-   * @throws AppValidationException if the provided email is malformed.
+   * @throws AppValidationException                              if the provided email is malformed.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff member is found.
    */
   @GET
@@ -139,9 +143,7 @@ public class StaffResource {
     if (StringUtils.isEmpty(rawEmail)) {
       return list();
     }
-    Email emailVO;
-    emailVO = new Email(rawEmail);
-    StaffView v = readService.getViewByEmail(emailVO.toString());
+    StaffView v = readService.getViewByEmail(rawEmail);
     StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(out)).build();
   }
@@ -160,9 +162,9 @@ public class StaffResource {
     }
 
     List<StaffResponse> list =
-        readService.search(query).stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
+            readService.search(query).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
@@ -173,15 +175,15 @@ public class StaffResource {
    * @param entityId the UUID of the entity
    * @return a Response containing a list of staff members for the entity
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity is not found
-   *     (propagated from service).
+   *                                                             (propagated from service).
    */
   @GET
   @Path("by-entity/{entityId}")
   public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
     List<StaffResponse> list =
-        readService.listViewsByEntityId(entityId).stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
+            readService.listViewsByEntityId(entityId).stream()
+                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
@@ -192,11 +194,11 @@ public class StaffResource {
    * @param req the request containing staff member details.
    * @return a Response containing the created staff member details.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a staff member with the same
-   *     account ID already exists.
-   * @throws AppValidationException if input validation fails (e.g., blank/invalid CPF, email,
-   *     etc.).
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated entity is not
-   *     found.
+   *                                                              account ID already exists.
+   * @throws AppValidationException                               if input validation fails (e.g., blank/invalid CPF, email,
+   *                                                              etc.).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the associated entity is not
+   *                                                              found.
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {
@@ -204,8 +206,8 @@ public class StaffResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
-    StaffCreateCommand staffCmd = new StaffCreateCommand(req.entityCnpjString(), accountCmd);
+            new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
+    StaffCreateCommand staffCmd = new StaffCreateCommand(req.entityId(), accountCmd);
 
     Staff staff = writeService.save(staffCmd);
 
@@ -223,34 +225,33 @@ public class StaffResource {
    * @param reqs the list of requests containing staff member details.
    * @return a Response containing the result of the bulk creation.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if any staff member with the same
-   *     account ID already exists.
-   * @throws AppValidationException if input validation fails for any staff in the bulk.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated entity is not
-   *     found.
+   *                                                              account ID already exists.
+   * @throws AppValidationException                               if input validation fails for any staff in the bulk.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if any associated entity is not
+   *                                                              found.
    */
   @POST
   @Path("bulk")
-  public Response createBulk(@Valid List<StaffCreateBulkRequest> reqs) {
-    List<StaffCreateBulkCommand> cmds =
-        reqs.stream()
-            .map(
-                bulkReq ->
-                    new StaffCreateBulkCommand(
-                        bulkReq.entityCnpjString(),
-                        bulkReq.staffCreateRequests().stream()
-                            .map(
-                                acmd -> {
-                                  String hashedPassword = passwordService.hash(acmd.password());
-                                  UserCreateCommand userCmd =
-                                      new UserCreateCommand(acmd.cpfString(), acmd.name());
-                                  return new AccountCreateCommand(
-                                      acmd.emailString(),
-                                      AccountType.PARTNER,
-                                      hashedPassword,
-                                      userCmd);
-                                })
-                            .collect(Collectors.toList())))
-            .collect(Collectors.toList());
+  public Response createBulk(@Valid List<StaffCreateRequest> reqs) {
+    List<StaffCreateCommand> cmds =
+            reqs.stream()
+                    .map(
+                            req -> {
+                              String hashedPassword = passwordService.hash(req.password());
+
+                              UserCreateCommand userCmd =
+                                      new UserCreateCommand(req.cpfString(), req.name());
+
+                              AccountCreateCommand accountCmd =
+                                      new AccountCreateCommand(
+                                              req.emailString(),
+                                              AccountType.PARTNER,
+                                              hashedPassword,
+                                              userCmd);
+
+                              return new StaffCreateCommand(req.entityId(), accountCmd);
+                            })
+                    .toList();
 
     List<Staff> staffList = writeService.saveAll(cmds);
 
@@ -260,23 +261,23 @@ public class StaffResource {
   /**
    * Updates an existing staff member.
    *
-   * @param id the UUID of the staff member's account to update.
+   * @param id  the UUID of the staff member's account to update.
    * @param req the request containing updated staff member details.
    * @return a Response containing the updated staff member details.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the staff member does not exist.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the staff member does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an admin with the updated
-   *     email/CPF already exists.
-   * @throws AppValidationException if input validation fails.
+   *                                                              email/CPF already exists.
+   * @throws AppValidationException                               if input validation fails.
    */
   @PUT
   @Path("{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
 
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
+    var userCmd = new UserUpdateCommand(req.cpfString(), req.name());
     AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    StaffUpdateCommand staffCmd = new StaffUpdateCommand(req.entityCnpjString(), accountCmd);
+            new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+    StaffUpdateCommand staffCmd = new StaffUpdateCommand(req.entityId(), accountCmd);
 
     Staff updatedStaff = writeService.update(id, staffCmd);
 
@@ -292,7 +293,7 @@ public class StaffResource {
    * @param req the request containing the list of staff member IDs to delete.
    * @return a Response containing the result of the deletion.
    * @throws com.pug.shared.exceptions.ReferencedEntityException if any associated account is still
-   *     referenced.
+   *                                                             referenced.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {

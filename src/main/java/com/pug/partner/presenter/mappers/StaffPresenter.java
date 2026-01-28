@@ -18,12 +18,6 @@ public final class StaffPresenter {
    * @param locale the locale for localization.
    * @param i18n the internationalization utility.
    * @return the StaffResponse.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if associated Account/User data is
-   *     missing during conversion to AccountResponse.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if associated Entity data is
-   *     missing during conversion to EntityResponse.
-   * @throws com.pug.shared.exceptions.AppValidationException if internal data (e.g.,
-   *     CNPJ/CPF/email) is invalid during conversion of nested objects.
    */
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {
     if (v == null) {

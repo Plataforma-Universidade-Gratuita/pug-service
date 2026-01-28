@@ -1,6 +1,5 @@
 package com.pug.partner.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -13,10 +12,8 @@ public interface IEntityRepository {
    *
    * @param entity the Entity to persist.
    * @return the persisted Entity.
-   * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *     domain object (indicating a data integrity issue).
    */
-  Entity persist(Entity entity) throws AppValidationException;
+  Entity persist(Entity entity);
 
   /**
    * Updates an existing Entity object.
@@ -39,29 +36,29 @@ public interface IEntityRepository {
    *
    * @param id the UUID of the Entity to find.
    * @return an Optional containing the found Entity, or empty if not found.
-   * @throws AppValidationException if an EntityEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Entity> findOptionalById(UUID id) throws AppValidationException;
+  Optional<Entity> findOptionalById(UUID id);
 
   /**
    * Finds an Entity by its CNPJ.
    *
    * @param cnpj the CNPJ of the Entity to find.
    * @return an Optional containing the found Entity, or empty if not found.
-   * @throws AppValidationException if an EntityEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Entity> findOptionalByCnpj(String cnpj) throws AppValidationException;
+  Optional<Entity> findOptionalByCnpj(String cnpj);
 
   /**
    * Lists all Entity objects.
    *
    * @return a list of all Entity objects.
-   * @throws AppValidationException if any EntityEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of valid domain objects.
+   * <p>Note: The returned Entities may contain validation errors (check {@code entity.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Entity> listAllEntities() throws AppValidationException;
+  List<Entity> listAllEntities();
 
   /**
    * Checks if an Entity exists by its CNPJ.

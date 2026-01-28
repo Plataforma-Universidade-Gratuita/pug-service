@@ -8,37 +8,41 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** Read-only service for staff views. */
+/**
+ * Read-only service for staff views.
+ */
 @ApplicationScoped
 public class StaffReadService implements IStaffReadService {
 
-  @Inject IStaffQueries queries;
+  @Inject
+  IStaffQueries queries;
 
   @Override
   public StaffView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("id", id)));
+            .findOptionalById(id)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("id", id)));
   }
 
   @Override
   public StaffView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw new ResourceNotFoundException(
-          PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email));
+              PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email));
     }
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email)));
+            .findOptionalByEmail(email)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email)));
   }
 
   @Override

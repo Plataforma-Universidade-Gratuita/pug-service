@@ -17,10 +17,6 @@ public final class EntityPresenter {
    *
    * @param v the EntityView
    * @return the EntityResponse
-   * @throws AppValidationException if the CNPJ in the EntityView is not valid when formatting. This
-   *     might indicate corrupted data in the read model.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if city data within EntityView is
-   *     null, preventing CityResponse creation.
    */
   public static EntityResponse toResponse(EntityView v) {
     if (v == null) {
@@ -28,7 +24,7 @@ public final class EntityPresenter {
     }
 
     String formattedCnpj;
-    formattedCnpj = new Cnpj(v.cnpj()).toFormattedString();
+    formattedCnpj = Cnpj.factory(v.cnpj()).toFormattedString();
 
     CityResponse cityResponse = CityPresenter.toResponse(v.city());
 
