@@ -3,31 +3,35 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between User domain and UserEntity persistence. */
+/**
+ * Maps between User domain and UserEntity persistence.
+ */
 public final class UserMapper {
-  /** Private constructor to prevent instantiation. */
-  private UserMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private UserMapper() {
+  }
 
   /**
    * Maps a UserEntity to a User domain object.
    *
    * @param e the UserEntity.
    * @return the User domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., cpf) is invalid according to
-   *     domain rules, indicating corrupted data in persistence.
    */
-  public static User toDomain(UserEntity e) throws AppValidationException {
+  public static User toDomain(UserEntity e) {
     if (e == null) {
       return null;
     }
     return User.builder()
-        .id(e.getId())
-        .name(e.getName())
-        .cpf(new Cpf(e.getCpf()))
-        .createdAt(e.getCreatedAt())
-        .build();
+            .id(e.getId())
+            .name(e.getName())
+            .cpf(Cpf.factory(e.getCpf()))
+            .createdAt(e.getCreatedAt())
+            .build();
   }
 
   /**
@@ -41,11 +45,11 @@ public final class UserMapper {
       return null;
     }
     return UserEntity.builder()
-        .id(d.getId())
-        .cpf(d.getCpf().toString())
-        .name(d.getName())
-        .createdAt(d.getCreatedAt())
-        .build();
+            .id(d.getId())
+            .cpf(d.getCpf().toString())
+            .name(d.getName())
+            .createdAt(d.getCreatedAt())
+            .build();
   }
 
   /**
@@ -60,5 +64,18 @@ public final class UserMapper {
     }
     e.setName(d.getName());
     e.setCpf(d.getCpf().toString());
+  }
+
+  /**
+   * Converts a UserEntity to a UserView.
+   *
+   * @param e the UserEntity
+   * @return the UserView
+   */
+  public static UserView toView(UserEntity e) {
+    if (e == null) {
+      return null;
+    }
+    return new UserView(e.getId(), e.getCpf(), e.getName(), e.getCreatedAt());
   }
 }

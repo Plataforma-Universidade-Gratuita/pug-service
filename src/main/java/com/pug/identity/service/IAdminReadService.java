@@ -1,10 +1,13 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.AdminView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading admin data. */
+/**
+ * Interface for reading admin data.
+ */
 public interface IAdminReadService {
 
   /**
@@ -13,7 +16,7 @@ public interface IAdminReadService {
    * @param accountId the account ID of the admin.
    * @return the AdminView.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given account
-   *     ID is found.
+   *                                                             ID is found.
    */
   AdminView getViewById(UUID accountId);
 
@@ -23,7 +26,7 @@ public interface IAdminReadService {
    * @param email the email of the admin.
    * @return the AdminView.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given email is
-   *     found.
+   *                                                             found.
    */
   AdminView getViewByEmail(String email);
 

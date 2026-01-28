@@ -8,4 +8,4 @@ package com.pug.identity.service.dtos;
  * @param userCommand the command for updating the associated user (optional).
  */
 public record AccountUpdateCommand(
-    String emailString, String passwordHash, UserCreateOrUpdateCommand userCommand) {}
+    String emailString, String passwordHash, UserUpdateCommand userCommand) {}

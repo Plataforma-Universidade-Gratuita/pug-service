@@ -1,56 +1,66 @@
 package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
 import org.apache.commons.validator.routines.EmailValidator;
-import org.jetbrains.annotations.NotNull;
+
+import java.util.Locale;
 
 /**
  * Value object representing an email address.
- *
- * @param value the email address as a String.
+ * Converted to class to extend DomainError, allowing deferred validation.
  */
-public record Email(String value) {
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Email extends DomainError {
 
   private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
 
+  String value;
+
+  @Builder(toBuilder = true)
+  private Email(String value) {
+    this.value = value;
+  }
+
   /**
-   * Constructs an Email value object and validates the input.
+   * Factory method to create a new Email.
+   * It normalizes the input (trim and lowercase) and runs validation.
+   * It does not throw exceptions immediately but collects them in the problems list.
    *
-   * @param value the email address as a String
-   * @throws AppValidationException if the email is null, empty, too long, or has an invalid format.
-   *     This exception may contain multiple validation problems.
+   * @param rawValue The raw email string.
+   * @return The Email instance (which may contain errors).
    */
-  public Email {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+  public static Email factory(String rawValue) {
+    String normalized = rawValue == null ? null : rawValue.trim().toLowerCase(Locale.ROOT);
 
+    Email vo = Email.builder().value(normalized).build();
+    vo.validate();
+    return vo;
+  }
+
+  /**
+   * Validates the email format and length, populating the problems list if invalid.
+   */
+  private void validate() {
     if (StringUtils.isEmpty(value)) {
-      problems.add(
-          new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK, "email"));
-    } else {
-      String trimmedValue = value.trim();
-
-      if (trimmedValue.length() > 254) {
-        problems.add(
-            new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_LENGTH, "email"));
-      }
-
-      if (!EMAIL_VALIDATOR.isValid(trimmedValue)) {
-        problems.add(
-            new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT, "email"));
-      }
-
-      if (problems.isEmpty()) {
-        value = trimmedValue.toLowerCase(Locale.ROOT);
-      }
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
+      return;
     }
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (value.length() > 254) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_LENGTH));
+    }
+
+    if (!EMAIL_VALIDATOR.isValid(value)) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
     }
   }
 
@@ -60,7 +70,7 @@ public record Email(String value) {
    * @return the email address as a String.
    */
   @Override
-  public @NotNull String toString() {
+  public String toString() {
     return value;
   }
 }

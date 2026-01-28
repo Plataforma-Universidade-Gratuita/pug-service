@@ -1,31 +1,28 @@
 package com.pug.identity.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Admin domain objects. */
+/**
+ * Repository interface for managing Admin domain objects.
+ */
 public interface IAdminRepository {
   /**
    * Persists the given Admin domain object.
    *
    * @param entity the Admin to persist.
    * @return the persisted Admin.
-   * @throws AppValidationException if the persisted entity cannot be converted back to a valid
-   *     domain object (indicating a data integrity issue).
    */
-  Admin persist(Admin entity) throws AppValidationException;
+  Admin persist(Admin entity);
 
   /**
    * Persists all given Admin domain objects.
    *
    * @param entities the iterable of Admin instances to persist.
    * @return a list of persisted Admin instances.
-   * @throws AppValidationException if any persisted entity cannot be converted back to a valid
-   *     domain object (indicating a data integrity issue).
    */
-  List<Admin> persistAll(Iterable<Admin> entities) throws AppValidationException;
+  List<Admin> persistAll(Iterable<Admin> entities);
 
   /**
    * Deletes Admin instances by their account IDs.
@@ -40,19 +37,19 @@ public interface IAdminRepository {
    *
    * @param accountId the account ID of the Admin to find.
    * @return an Optional containing the found Admin, or empty if not found.
-   * @throws AppValidationException if an AdminEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of a valid domain object.
+   * <p>Note: The returned Admin may contain validation errors (check {@code admin.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Admin> findOptionalById(UUID accountId) throws AppValidationException;
+  Optional<Admin> findOptionalById(UUID accountId);
 
   /**
    * Lists all Admin instances.
    *
    * @return a list of all Admin instances.
-   * @throws AppValidationException if any AdminEntity is found but its data is inconsistent with
-   *     domain rules, preventing the creation of valid domain objects.
+   * <p>Note: The returned Admins may contain validation errors (check {@code admin.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Admin> listAllAdmins() throws AppValidationException;
+  List<Admin> listAllAdmins();
 
   /**
    * Checks if an Admin exists for the given iterable of account IDs.

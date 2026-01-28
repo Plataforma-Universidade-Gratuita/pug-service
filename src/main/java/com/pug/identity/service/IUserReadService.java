@@ -1,10 +1,13 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.UserView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading user views. */
+/**
+ * Interface for reading user views.
+ */
 public interface IUserReadService {
 
   /**
@@ -13,7 +16,7 @@ public interface IUserReadService {
    * @param id the UUID of the user
    * @return the UserView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user with the given ID is
-   *     found
+   *                                                             found
    */
   UserView getViewById(UUID id);
 
@@ -23,7 +26,7 @@ public interface IUserReadService {
    * @param cpf the CPF of the user
    * @return the UserView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user with the given CPF is
-   *     found
+   *                                                             found
    */
   UserView getViewByCpf(String cpf);
 

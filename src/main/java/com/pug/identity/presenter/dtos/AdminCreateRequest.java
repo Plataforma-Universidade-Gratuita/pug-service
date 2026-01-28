@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
  * @param emailString the email of the user as a string.
  * @param password the password of the user.
  */
-public record AdminCreateOrUpdateRequest(
+public record AdminCreateRequest(
     @NotBlank String cpfString,
     @NotBlank @Size(max = 150) String name,
     @NotBlank String emailString,

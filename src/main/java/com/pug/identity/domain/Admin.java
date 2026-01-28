@@ -1,28 +1,28 @@
 package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
 import java.time.Clock;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import lombok.Builder;
-import lombok.Getter;
 
-/** Admin entity aggregate. */
+/**
+ * Admin entity aggregate.
+ */
 @Getter
-public class Admin {
-  private final UUID accountId;
-  private final OffsetDateTime grantedAt;
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Admin extends DomainError {
+  UUID accountId;
+  OffsetDateTime grantedAt;
 
-  /**
-   * Private constructor for Admin.
-   *
-   * @param accountId the ID of the Account associated with the Admin
-   * @param grantedAt timestamp when admin rights were granted
-   */
   @Builder(toBuilder = true)
   private Admin(UUID accountId, OffsetDateTime grantedAt) {
     this.accountId = accountId;
@@ -33,58 +33,29 @@ public class Admin {
    * Factory for new Admin.
    *
    * @param accountId the ID of the Account associated with the Admin
-   * @param time time provider
-   * @return new Admin instance
-   * @throws AppValidationException if initial validation fails.
+   * @param time      time provider
+   * @return new Admin instance (may contain errors)
    */
-  public static Admin createNew(UUID accountId, TimeProvider time) {
+  public static Admin factory(UUID accountId, TimeProvider time) {
     var granted = OffsetDateTime.now(time.clock());
     Admin admin = Admin.builder().accountId(accountId).grantedAt(granted).build();
 
-    List<AppValidationException.Problem> problems = admin.collectValidationProblems(time.clock());
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+    admin.collectValidationProblems(time.clock());
     return admin;
   }
 
   /**
-   * Collects all validation problems for the Admin instance.
-   *
-   * <p>Checks that accountId is not null and grantedAt is not in the future.
-   *
-   * @param clock The clock to use for time-based validations.
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
-   *     otherwise.
+   * Validates the Admin instance.
    */
-  private List<AppValidationException.Problem> collectValidationProblems(Clock clock) {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+  private void collectValidationProblems(Clock clock) {
     if (accountId == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              IdentityErrorCodes.INVALID_ACCOUNT_BLANK, "accountId"));
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ACCOUNT_BLANK));
     }
+
     if (grantedAt == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              IdentityErrorCodes.INVALID_GRANTED_AT_BLANK, "grantedAt"));
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
     } else if (grantedAt.isAfter(OffsetDateTime.now(clock))) {
-      problems.add(
-          new AppValidationException.Problem(
-              IdentityErrorCodes.INVALID_GRANTED_AT_FUTURE, "grantedAt"));
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_GRANTED_AT_FUTURE));
     }
-
-    return problems;
-  }
-
-  /**
-   * Convenience method to collect validation problems using the system UTC clock.
-   *
-   * @return A list of {@code AppValidationException.Problem} if any validation fails; an empty list
-   *     otherwise.
-   */
-  private List<AppValidationException.Problem> collectValidationProblems() {
-    return collectValidationProblems(Clock.systemUTC());
   }
 }

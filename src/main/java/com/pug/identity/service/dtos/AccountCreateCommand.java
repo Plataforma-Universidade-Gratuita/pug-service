@@ -14,4 +14,4 @@ public record AccountCreateCommand(
     String emailString,
     AccountType type,
     String passwordHash,
-    UserCreateOrUpdateCommand userCommand) {}
+    UserCreateCommand userCommand) {}

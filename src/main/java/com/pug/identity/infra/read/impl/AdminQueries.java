@@ -1,19 +1,16 @@
 package com.pug.identity.infra.read.impl;
 
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.AdminEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.IAdminQueries;
-import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.AdminAcc;
 import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,15 +18,20 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of AdminQueries using JPA EntityManager and Hibernate Search. */
+import static com.pug.identity.infra.AdminMapper.toView;
+
+/**
+ * Implementation of AdminQueries using JPA EntityManager and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AdminQueries implements IAdminQueries {
 
-  @Inject EntityManager em;
+  @Inject
+  EntityManager em;
 
   private static final String SELECT_BASE =
-      """
+          """
                   select new com.pug.identity.infra.read.dtos.AdminView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
@@ -78,8 +80,8 @@ public class AdminQueries implements IAdminQueries {
       return List.of();
     }
     var q =
-        em.createQuery(
-            SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
+            em.createQuery(
+                    SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, AdminView.class);
     q.setParameter("cpf", cpf);
     return q.getResultList();
   }
@@ -94,15 +96,15 @@ public class AdminQueries implements IAdminQueries {
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     var rows =
-        em.createQuery(
-                """
+            em.createQuery(
+                            """
                                     select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
                                     from AdminEntity a join AccountEntity acc on acc.id = a.accountId
                                     where acc.userId in :ids
                                     """,
-                AdminAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
+                            AdminAcc.class)
+                    .setParameter("ids", userIds)
+                    .getResultList();
 
     Map<UUID, List<AdminAcc>> byUser = new HashMap<>();
     for (AdminAcc row : rows) {
@@ -120,29 +122,5 @@ public class AdminQueries implements IAdminQueries {
       }
     }
     return out;
-  }
-
-  /**
-   * Converts an AdminEntity, AccountEntity, and UserEntity into an AdminView.
-   *
-   * @param adminEntity the AdminEntity.
-   * @param accountEntity the associated AccountEntity.
-   * @param userEntity the associated UserEntity.
-   * @return the AdminView.
-   */
-  private static AdminView toView(
-      AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
-    return new AdminView(
-        new AccountView(
-            accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt()),
-            accountEntity.getEmail(),
-            accountEntity.getAccountType(),
-            accountEntity.getCreatedAt()),
-        adminEntity.getGrantedAt());
   }
 }

@@ -6,4 +6,4 @@ package com.pug.identity.service.dtos;
  * @param cpfString the CPF of the user as a string.
  * @param name the name of the user.
  */
-public record UserCreateOrUpdateCommand(String cpfString, String name) {}
+public record UserUpdateCommand(String cpfString, String name) {}

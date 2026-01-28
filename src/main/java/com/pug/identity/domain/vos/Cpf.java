@@ -1,62 +1,95 @@
 package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import org.jetbrains.annotations.NotNull;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
 
 /**
  * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas).
- *
- * <p>Also includes a method to return the formatted version of the CPF.
- *
- * @param value the CPF as a String (11 digits, unformatted)
+ * Converted to class to extend DomainError, allowing deferred validation.
  */
-public record Cpf(String value) {
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Cpf extends DomainError {
+
+  String value;
+
+  @Builder(toBuilder = true)
+  private Cpf(String value) {
+    this.value = value;
+  }
 
   /**
-   * Constructs a Cpf value object and validates the input.
+   * Factory method to create a new CPF.
+   * It cleans the input (removes non-digits) and runs validation.
+   * It does not throw exceptions immediately but collects them in the problems list.
    *
-   * @param value the CPF as a String
-   * @throws AppValidationException if the CPF is null, isn't exactly 11 digits long, has the same
-   *     digit repeated or has invalid check digits. This exception may contain multiple validation
-   *     problems.
+   * @param rawValue The raw CPF string (formatted or unformatted)
+   * @return The Cpf instance (which may contain errors)
    */
-  public Cpf {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-    String cleanedDigits = null;
+  public static Cpf factory(String rawValue) {
+    String cleaned = StringUtils.isEmpty(rawValue) ? null : rawValue.replaceAll("\\D", "");
 
-    // TODO: Consider replacing this manual CPF validation logic with a respected library
-    //  like Caelum Stella Core (br.com.caelum.stella:stella-core) in the future.
-    //  This will improve robustness and maintainability.
-
-    if (StringUtils.isEmpty(value)) {
-      problems.add(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK, "cpf"));
-    } else {
-      cleanedDigits = value.replaceAll("\\D", "");
-      if (cleanedDigits.length() != 11) {
-        problems.add(
-            new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_LENGTH, "cpf"));
-      } else {
-        if (allSameDigit(cleanedDigits)) {
-          problems.add(
-              new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_FORMAT, "cpf"));
-        }
-        if (!validCheckDigits(cleanedDigits)) {
-          problems.add(
-              new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_FORMAT, "cpf"));
-        }
-      }
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
-
-    value = cleanedDigits;
+    Cpf vo = Cpf.builder().value(cleaned).build();
+    vo.validate();
+    return vo;
   }
+
+  /**
+   * Validates the CPF format and digits, populating the problems list if invalid.
+   */
+  private void validate() {
+    if (StringUtils.isEmpty(value)) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
+      return;
+    }
+
+    if (value.length() != 11) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_LENGTH));
+      return;
+    }
+
+    if (allSameDigit(value) || !validCheckDigits(value)) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
+    }
+  }
+
+  /**
+   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00").
+   * Returns the raw value if the CPF does not have the correct length (e.g., invalid state).
+   *
+   * @return the formatted CPF as a String.
+   */
+  public String toFormattedString() {
+    if (value == null || value.length() != 11) {
+      return value;
+    }
+    return value.substring(0, 3)
+            + "."
+            + value.substring(3, 6)
+            + "."
+            + value.substring(6, 9)
+            + "-"
+            + value.substring(9, 11);
+  }
+
+  /**
+   * Returns the raw string representation of the CPF.
+   *
+   * @return the raw CPF as a String.
+   */
+  @Override
+  public String toString() {
+    return value;
+  }
+
+  // --- Internal Validation Logic ---
 
   /**
    * Checks if all characters in the string are the same digit.
@@ -65,6 +98,7 @@ public record Cpf(String value) {
    * @return true if all characters are the same, false otherwise
    */
   private static boolean allSameDigit(String s) {
+    if (s == null || s.isEmpty()) return false;
     char c = s.charAt(0);
     for (int i = 1; i < s.length(); i++) {
       if (s.charAt(i) != c) {
@@ -101,30 +135,5 @@ public record Cpf(String value) {
     }
     int mod = sum % 11;
     return (mod < 2) ? 0 : 11 - mod;
-  }
-
-  /**
-   * Returns the string representation of the CPF (11 digits, unformatted).
-   *
-   * @return the CPF as a String
-   */
-  @Override
-  public @NotNull String toString() {
-    return value;
-  }
-
-  /**
-   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00").
-   *
-   * @return the formatted CPF as a String.
-   */
-  public String toFormattedString() {
-    return value.substring(0, 3)
-        + "."
-        + value.substring(3, 6)
-        + "."
-        + value.substring(6, 9)
-        + "-"
-        + value.substring(9, 11);
   }
 }

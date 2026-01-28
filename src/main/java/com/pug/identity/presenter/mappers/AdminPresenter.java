@@ -5,24 +5,26 @@ import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.utils.StringUtils;
+
 import java.util.Locale;
 
-/** Mapper class for converting AdminView to AdminResponse. */
+/**
+ * Mapper class for converting AdminView to AdminResponse.
+ */
 public final class AdminPresenter {
-  /** Private constructor to prevent instantiation. */
-  private AdminPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private AdminPresenter() {
+  }
 
   /**
    * Converts an AdminView to an AdminResponse.
    *
-   * @param a the AdminView.
+   * @param a      the AdminView.
    * @param locale the locale for formatting.
-   * @param i18n the internationalization instance.
+   * @param i18n   the internationalization instance.
    * @return the corresponding AdminResponse.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if associated Account/User data is
-   *     missing during conversion to AccountResponse.
-   * @throws com.pug.shared.exceptions.AppValidationException if internal data (e.g., user's
-   *     CPF/email) is invalid during conversion to AccountResponse.
    */
   public static AdminResponse toResponse(AdminView a, Locale locale, I18n i18n) {
     if (a == null) {

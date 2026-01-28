@@ -6,15 +6,13 @@ import com.pug.identity.domain.IAccountRepository;
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.AccountProcessor;
 import com.pug.identity.service.IAccountService;
 import com.pug.identity.service.IAdminService;
 import com.pug.identity.service.IUserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
 import com.pug.partner.service.IStaffService;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -25,131 +23,66 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import org.jboss.logging.Logger;
 
-/** Service for managing accounts. */
 @ApplicationScoped
 public class AccountService implements IAccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountService.class);
 
-  @Inject IAccountRepository repo;
-  @Inject TimeProvider time;
-  @Inject IUserService userService;
-  @Inject IAdminService adminService;
-  @Inject IStaffService staffService;
-  @Inject IStudentService studentService;
-
-  /**
-   * Helper method to process DTO input and build Account domain object (or update existing),
-   * collecting all validation problems.
-   *
-   * @param emailString The email string from DTO.
-   * @param accountType The account type from DTO.
-   * @param passwordHash The password hash from DTO.
-   * @param userId The user ID associated with the account.
-   * @param existingAccount Optional existing account for updates (null for creation).
-   * @param problems List to collect AppValidationException.Problem instances.
-   * @return The constructed or updated Account domain object if no problems, or null if problems
-   *     occurred.
-   */
-  private Account processAccountInput(
-      String emailString,
-      AccountType accountType,
-      String passwordHash,
-      UUID userId,
-      Account existingAccount,
-      List<AppValidationException.Problem> problems) {
-
-    Email emailVO = null;
-    try {
-      if (emailString != null && !emailString.isBlank()) {
-        emailVO = new Email(emailString);
-      }
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
-    }
-
-    Account resultAccount = null;
-    try {
-      if (existingAccount == null) {
-        resultAccount = Account.createNew(userId, emailVO, accountType, passwordHash, time);
-      } else {
-        Email effectiveEmail = (emailVO != null) ? emailVO : existingAccount.getEmail();
-        String effectivePasswordHash =
-            (passwordHash != null) ? passwordHash : existingAccount.getPasswordHash();
-
-        Account tempAccount = existingAccount;
-        if (emailVO != null && !effectiveEmail.equals(tempAccount.getEmail())) {
-          tempAccount = tempAccount.changeEmail(effectiveEmail);
-        }
-        if (passwordHash != null && !effectivePasswordHash.equals(tempAccount.getPasswordHash())) {
-          tempAccount = tempAccount.setPasswordHash(effectivePasswordHash);
-        }
-        resultAccount = tempAccount;
-      }
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
-    }
-    return resultAccount;
-  }
+  @Inject
+  IAccountRepository repo;
+  @Inject
+  TimeProvider time;
+  @Inject
+  IUserService userService;
+  @Inject
+  IAdminService adminService;
+  @Inject
+  IStaffService staffService;
+  @Inject
+  IStudentService studentService;
 
   @Transactional
   @Override
   public Account save(AccountCreateCommand cmd) {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-    UUID userId = null;
-    User user = null;
-    Cpf cpfVO = null;
+    UUID userId;
 
-    try {
-      if (cmd.userCommand().cpfString() != null && !cmd.userCommand().cpfString().isBlank()) {
-        cpfVO = new Cpf(cmd.userCommand().cpfString());
-      }
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
+    Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
+
+    if (userService.existsByCpf(cpf)) {
+      userId = userService.getByCpf(cpf.toString()).getId();
+    } else {
+      User newUser = userService.save(cmd.userCommand());
+      userId = newUser.getId();
     }
 
-    if (problems.isEmpty()) {
-      if (cpfVO != null && userService.existsByCpf(cpfVO)) {
-        user = userService.getByCpf(cpfVO);
-        userId = user.getId();
-      } else {
-        try {
-          user =
-              userService.save(
-                  new UserCreateOrUpdateCommand(
-                      cmd.userCommand().cpfString(), cmd.userCommand().name()));
-          userId = user.getId();
-        } catch (AppValidationException e) {
-          problems.addAll(e.getProblems());
-        }
-      }
+    Account account = AccountProcessor.processCreateInput(
+            userId,
+            cmd.emailString(),
+            (cmd.type() != null ? cmd.type().name() : null),
+            cmd.passwordHash(),
+            time
+    );
+
+    if (account.hasErrors()) {
+      throw new AppValidationException(account.getProblems());
     }
 
-    Account accountToPersist =
-        processAccountInput(
-            cmd.emailString(), cmd.type(), cmd.passwordHash(), userId, null, problems);
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
-
-    if (existsByEmail(accountToPersist.getEmail())) {
+    if (existsByEmail(account.getEmail().toString())) {
       throw new DuplicateResourceException(
-          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-          Map.of("email", accountToPersist.getEmail().toString()));
+              IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
+              Map.of("email", account.getEmail().toString()));
     }
 
-    return repo.persist(accountToPersist);
+    return repo.persist(account);
   }
 
   @Transactional
@@ -159,81 +92,58 @@ public class AccountService implements IAccountService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<AppValidationException.Problem> allProblems = new ArrayList<>();
     List<Account> accountsToPersist = new ArrayList<>();
-    Set<String> processedEmails = new HashSet<>();
-
-    List<String> rawCpfStringsFromCmds =
-        CollectionUtils.toStream(cmds)
-            .map(c -> c.userCommand().cpfString())
-            .filter(Objects::nonNull)
-            .toList();
-
-    Map<Cpf, UUID> userIdsByCpfVO =
-        userService.processUsersForAccounts(rawCpfStringsFromCmds, allCollectedProblems);
+    Set<String> emailsInPayload = new HashSet<>();
 
     for (AccountCreateCommand cmd : cmds) {
-      List<AppValidationException.Problem> currentAccountProblems = new ArrayList<>();
-
-      Email emailVO = null;
+      UUID userId = null;
       try {
-        if (cmd.emailString() != null && !cmd.emailString().isBlank()) {
-          emailVO = new Email(cmd.emailString());
+        Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
+        if (userService.existsByCpf(cpf)) {
+          userId = userService.getByCpf(cpf.toString()).getId();
+        } else {
+          User newUser = userService.save(cmd.userCommand());
+          userId = newUser.getId();
         }
       } catch (AppValidationException e) {
-        currentAccountProblems.addAll(e.getProblems());
+        allProblems.addAll(e.getProblems());
+        continue;
+      } catch (DuplicateResourceException e) {
+        userId = userService.getByCpf(cmd.userCommand().cpfString()).getId();
       }
 
-      if (emailVO != null) {
-        if (!processedEmails.add(emailVO.toString())) {
-          currentAccountProblems.add(
-              new AppValidationException.Problem(
-                  IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email"));
-        }
-      }
+      if (userId == null) continue;
 
-      UUID userIdForAccount = null;
-      Cpf currentCpfVO = null;
-      try {
-        if (cmd.userCommand().cpfString() != null && !cmd.userCommand().cpfString().isBlank()) {
-          currentCpfVO = new Cpf(cmd.userCommand().cpfString());
-        }
-      } catch (AppValidationException e) {
-        // Problems already added during userService.processUsersForAccounts, ignore here.
-      }
-
-      if (currentCpfVO != null && userIdsByCpfVO.containsKey(currentCpfVO)) {
-        userIdForAccount = userIdsByCpfVO.get(currentCpfVO);
-      } else if (currentCpfVO != null) {
-        currentAccountProblems.add(
-            new AppValidationException.Problem(
-                IdentityErrorCodes.INVALID_USER_BLANK, "userCommand.cpfString"));
-      }
-
-      Account account =
-          processAccountInput(
+      Account account = AccountProcessor.processCreateInput(
+              userId,
               cmd.emailString(),
-              cmd.type(),
+              (cmd.type() != null ? cmd.type().name() : null),
               cmd.passwordHash(),
-              userIdForAccount,
-              null,
-              currentAccountProblems);
+              time
+      );
 
-      if (!currentAccountProblems.isEmpty()) {
-        allCollectedProblems.addAll(currentAccountProblems);
+      if (account.hasErrors()) {
+        allProblems.addAll(account.getProblems());
       } else {
-        accountsToPersist.add(account);
+        if (!emailsInPayload.add(account.getEmail().toString())) {
+          allProblems.add(new AppValidationException.Problem(
+                  IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
+        } else {
+          accountsToPersist.add(account);
+        }
       }
     }
 
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
+    if (!allProblems.isEmpty()) {
+      throw new AppValidationException(allProblems);
     }
 
-    List<String> emailsToPersist =
-        accountsToPersist.stream().map(a -> a.getEmail().toString()).toList();
+    List<String> emailsToCheck = accountsToPersist.stream()
+            .map(a -> a.getEmail().toString())
+            .toList();
 
-    if (repo.existsAnyByEmailIn(emailsToPersist)) {
+    if (repo.existsAnyByEmailIn(emailsToCheck)) {
       throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
     }
 
@@ -245,43 +155,27 @@ public class AccountService implements IAccountService {
   public Account update(UUID id, AccountUpdateCommand cmd) {
     Account current = getById(id);
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
     if (cmd.userCommand() != null) {
-      try {
-        userService.update(current.getUserId(), cmd.userCommand());
-      } catch (AppValidationException e) {
-        problems.addAll(e.getProblems());
-      }
+      userService.update(current.getUserId(), cmd.userCommand());
     }
 
-    Account accountToUpdate =
-        processAccountInput(
-            cmd.emailString(),
-            current.getAccountType(),
-            cmd.passwordHash(),
-            current.getUserId(),
+    Account updated = AccountProcessor.processUpdateInput(
             current,
-            problems);
+            cmd.emailString(),
+            cmd.passwordHash()
+    );
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (updated.hasErrors()) {
+      throw new AppValidationException(updated.getProblems());
     }
 
-    if (cmd.emailString() != null) {
-      try {
-        Email newEmailVO = new Email(cmd.emailString());
-        if (!newEmailVO.equals(current.getEmail()) && existsByEmail(newEmailVO)) {
-          throw new DuplicateResourceException(
-              IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, Map.of("email", newEmailVO.toString()));
-        }
-      } catch (AppValidationException e) {
-        problems.addAll(e.getProblems());
-        throw new AppValidationException(problems);
-      }
+    if (!updated.getEmail().equals(current.getEmail()) && existsByEmail(updated.getEmail().toString())) {
+      throw new DuplicateResourceException(
+              IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
+              Map.of("email", updated.getEmail().toString()));
     }
 
-    repo.update(accountToUpdate);
+    repo.update(updated);
     return getById(id);
   }
 
@@ -302,61 +196,49 @@ public class AccountService implements IAccountService {
       throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
     }
 
-    var toDeleteUserIds = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
-    var stillReferencedUsersIds =
-        new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, toDeleteUserIds));
-    toDeleteUserIds.removeAll(stillReferencedUsersIds);
+    Set<UUID> userIdsAssociated = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
+    Set<UUID> userIdsWithOtherAccounts = new HashSet<>(
+            repo.findUserIdsWithAccountsExcluding(ids, userIdsAssociated));
 
-    long accounts = repo.deleteByIds(ids);
-    long users = 0L;
-    if (!toDeleteUserIds.isEmpty()) {
-      users = userService.deleteAll(toDeleteUserIds).getOrDefault(DeleteKeys.USERS, 0L);
+    Set<UUID> userIdsToDelete = new HashSet<>(userIdsAssociated);
+    userIdsToDelete.removeAll(userIdsWithOtherAccounts);
+
+    long deletedAccounts = repo.deleteByIds(ids);
+    long deletedUsers = 0L;
+
+    if (!userIdsToDelete.isEmpty()) {
+      Map<DeleteKeys, Long> userRes = userService.deleteAll(userIdsToDelete);
+      deletedUsers = userRes.getOrDefault(DeleteKeys.USERS, 0L);
     }
 
-    return Map.of(
-        DeleteKeys.ACCOUNTS, accounts,
-        DeleteKeys.USERS, users);
+    return Map.of(DeleteKeys.ACCOUNTS, deletedAccounts, DeleteKeys.USERS, deletedUsers);
   }
 
   @Override
   public List<Account> listAll() {
-    try {
-      return repo.listAllAccounts();
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Corrupted Account entity found in DB. Problems: %s",
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
+    List<Account> accounts = repo.listAllAccounts();
+    for (Account account : accounts) {
+      if (account.hasErrors()) {
+        LOG.errorf("Corrupted Account found. ID: %s. Problems: %s",
+                account.getId(), account.getProblemsSummary());
+        throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
+      }
     }
+    return accounts;
   }
 
   @Override
   public Account getById(UUID id) {
-    try {
-      return repo.findOptionalById(id)
-          .orElseThrow(
-              () ->
-                  new ResourceNotFoundException(
-                      IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Account with ID %s in DB violates domain rules. Problems: %s",
-          id,
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
+    Account account = repo.findOptionalById(id)
+            .orElseThrow(() -> new ResourceNotFoundException(
+                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+
+    if (account.hasErrors()) {
+      LOG.errorf("Corrupted Account found. ID: %s. Problems: %s",
+              id, account.getProblemsSummary());
       throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id));
     }
+    return account;
   }
 
   @Override
@@ -365,15 +247,16 @@ public class AccountService implements IAccountService {
   }
 
   @Override
-  public boolean existsByEmail(Email e) {
-    if (e == null) {
-      return false;
-    }
-    return repo.existsByEmail(e.toString());
+  public boolean existsByEmail(String email) {
+    if (email == null) return false;
+    return repo.existsByEmail(email);
   }
 
   @Override
   public boolean existsAnyByEmailIn(Iterable<String> emails) {
+    if (CollectionUtils.isEmpty(emails)) {
+      return false;
+    }
     return repo.existsAnyByEmailIn(emails);
   }
 }

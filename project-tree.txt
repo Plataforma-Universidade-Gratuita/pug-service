@@ -179,14 +179,17 @@
 │   │   │           │   │   ├── UserReadOnlyResource.java
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── AccountResponse.java
-│   │   │           │   │   │   ├── AdminCreateOrUpdateRequest.java
+│   │   │           │   │   │   ├── AdminCreateRequest.java
 │   │   │           │   │   │   ├── AdminResponse.java
+│   │   │           │   │   │   ├── AdminUpdateRequest.java
 │   │   │           │   │   │   └── UserResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── AccountPresenter.java
 │   │   │           │   │       ├── AdminPresenter.java
 │   │   │           │   │       └── UserPresenter.java
 │   │   │           │   └── service/
+│   │   │           │       ├── AccountProcessor.java
+│   │   │           │       ├── AdminProcessor.java
 │   │   │           │       ├── IAccountReadService.java
 │   │   │           │       ├── IAccountService.java
 │   │   │           │       ├── IAdminReadService.java
@@ -194,12 +197,14 @@
 │   │   │           │       ├── IPasswordService.java
 │   │   │           │       ├── IUserReadService.java
 │   │   │           │       ├── IUserService.java
+│   │   │           │       ├── UserProcessor.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── AccountCreateCommand.java
 │   │   │           │       │   ├── AccountUpdateCommand.java
 │   │   │           │       │   ├── AdminCreateCommand.java
 │   │   │           │       │   ├── AdminUpdateCommand.java
-│   │   │           │       │   └── UserCreateOrUpdateCommand.java
+│   │   │           │       │   ├── UserCreateCommand.java
+│   │   │           │       │   └── UserUpdateCommand.java
 │   │   │           │       └── impl/
 │   │   │           │           ├── AccountReadService.java
 │   │   │           │           ├── AccountService.java

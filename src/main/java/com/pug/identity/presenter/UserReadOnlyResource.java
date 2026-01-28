@@ -1,6 +1,5 @@
 package com.pug.identity.presenter;
 
-import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
 import com.pug.identity.service.IUserReadService;
@@ -23,20 +22,25 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for reading user information. */
+/**
+ * REST resource for reading user information.
+ */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject IUserReadService readService;
+  @Inject
+  IUserReadService readService;
 
-  @Context HttpHeaders headers;
+  @Context
+  HttpHeaders headers;
 
   /**
    * Picks the best locale from the request headers.
@@ -69,7 +73,7 @@ public class UserReadOnlyResource {
   @GET
   public Response list() {
     List<UserResponse> list =
-        readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+            readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
@@ -78,16 +82,14 @@ public class UserReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the user
    * @return the response containing the user data
-   * @throws AppValidationException if the provided CPF is malformed.
+   * @throws AppValidationException    if the provided CPF is malformed.
    * @throws ResourceNotFoundException if no user with the given CPF is found.
    */
   @GET
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
-    Cpf cpfVO;
-    cpfVO = new Cpf(cpfRaw);
     UserResponse body =
-        UserPresenter.toResponse(readService.getViewByCpf(cpfVO.toString()), locale());
+            UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -105,7 +107,7 @@ public class UserReadOnlyResource {
       return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
     }
     List<UserResponse> list =
-        readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+            readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
     return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 }

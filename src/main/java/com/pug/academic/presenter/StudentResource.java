@@ -13,7 +13,7 @@ import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -82,7 +82,7 @@ public class StudentResource {
    */
   @POST
   public Response create(@Valid StudentCreateRequest req) {
-    UserCreateOrUpdateCommand userCmd = new UserCreateOrUpdateCommand(req.cpf(), req.name());
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
         new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
     Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
@@ -119,8 +119,8 @@ public class StudentResource {
         reqs.stream()
             .map(
                 req -> {
-                  UserCreateOrUpdateCommand userCmd =
-                      new UserCreateOrUpdateCommand(req.cpf(), req.name());
+                  UserCreateCommand userCmd =
+                      new UserCreateCommand(req.cpf(), req.name());
                   AccountCreateCommand accountCmd =
                       new AccountCreateCommand(
                           req.email(), AccountType.STUDENT, req.password(), userCmd);
@@ -153,9 +153,9 @@ public class StudentResource {
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
-    UserCreateOrUpdateCommand userCmd = null;
+    UserCreateCommand userCmd = null;
     if (req.name() != null) {
-      userCmd = new UserCreateOrUpdateCommand(null, req.name());
+      userCmd = new UserCreateCommand(null, req.name());
     }
 
     AccountUpdateCommand accountCmd = null;

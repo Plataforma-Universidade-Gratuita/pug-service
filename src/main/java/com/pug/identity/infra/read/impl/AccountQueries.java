@@ -4,13 +4,13 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.IAccountQueries;
 import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,15 +18,20 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Implementation of AccountQueries using JPA and Hibernate Search. */
+import static com.pug.identity.infra.AccountMapper.toView;
+
+/**
+ * Implementation of AccountQueries using JPA and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AccountQueries implements IAccountQueries {
 
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager entityManager;
 
   private static final String SELECT_BASE =
-      """
+          """
                   select new com.pug.identity.infra.read.dtos.AccountView(
                     a.id,
                     new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
@@ -39,29 +44,6 @@ public class AccountQueries implements IAccountQueries {
                   """;
 
   private static final String ORDER_BY_NAME_ASC = " order by u.name asc";
-
-  /**
-   * Converts an AccountEntity and its associated UserEntity to an AccountView.
-   *
-   * @param accountEntity the AccountEntity.
-   * @param userEntity the associated UserEntity.
-   * @return the AccountView.
-   */
-  private static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
-    if (accountEntity == null || userEntity == null) {
-      return null;
-    }
-    return new AccountView(
-        accountEntity.getId(),
-        new UserView(
-            userEntity.getId(),
-            userEntity.getCpf(),
-            userEntity.getName(),
-            userEntity.getCreatedAt()),
-        accountEntity.getEmail(),
-        accountEntity.getAccountType(),
-        accountEntity.getCreatedAt());
-  }
 
   @Override
   public Optional<AccountView> findOptionalById(UUID id) {
@@ -86,8 +68,8 @@ public class AccountQueries implements IAccountQueries {
   @Override
   public List<AccountView> listAllAccounts() {
     return entityManager
-        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
-        .getResultList();
+            .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
+            .getResultList();
   }
 
   @Override
@@ -103,7 +85,7 @@ public class AccountQueries implements IAccountQueries {
   @Override
   public List<AccountView> searchByName(String key) {
     List<UserEntity> userHits =
-        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
+            HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
 
     if (userHits.isEmpty()) {
       return List.of();
@@ -112,13 +94,13 @@ public class AccountQueries implements IAccountQueries {
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     List<AccountEntity> accountEntities =
-        entityManager
-            .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
-            .setParameter("userIds", userIds)
-            .getResultList();
+            entityManager
+                    .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
+                    .setParameter("userIds", userIds)
+                    .getResultList();
 
     Map<UUID, UserEntity> userEntityMap =
-        userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
+            userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
 
     List<AccountView> out = new ArrayList<>();
     for (AccountEntity accountEntity : accountEntities) {

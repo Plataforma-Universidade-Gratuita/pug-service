@@ -4,7 +4,7 @@ import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateOrUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.impl.PasswordService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
@@ -202,7 +202,7 @@ public class StaffResource {
   public Response create(@Valid StaffCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
 
-    UserCreateOrUpdateCommand userCmd = new UserCreateOrUpdateCommand(req.cpfString(), req.name());
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
         new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
     StaffCreateCommand staffCmd = new StaffCreateCommand(req.entityCnpjString(), accountCmd);
@@ -241,8 +241,8 @@ public class StaffResource {
                             .map(
                                 acmd -> {
                                   String hashedPassword = passwordService.hash(acmd.password());
-                                  UserCreateOrUpdateCommand userCmd =
-                                      new UserCreateOrUpdateCommand(acmd.cpfString(), acmd.name());
+                                  UserCreateCommand userCmd =
+                                      new UserCreateCommand(acmd.cpfString(), acmd.name());
                                   return new AccountCreateCommand(
                                       acmd.emailString(),
                                       AccountType.PARTNER,
@@ -273,7 +273,7 @@ public class StaffResource {
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
 
-    UserCreateOrUpdateCommand userCmd = new UserCreateOrUpdateCommand(req.cpfString(), req.name());
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountUpdateCommand accountCmd =
         new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
     StaffUpdateCommand staffCmd = new StaffUpdateCommand(req.entityCnpjString(), accountCmd);
