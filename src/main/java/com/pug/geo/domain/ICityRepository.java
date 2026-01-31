@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing City domain objects.
- */
+/** Repository interface for managing City domain objects. */
 public interface ICityRepository {
 
   /**
@@ -45,8 +43,8 @@ public interface ICityRepository {
    *
    * @param id the unique identifier of the city.
    * @return an Optional containing the city entity if found.
-   * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<City> findOptionalById(UUID id);
 
@@ -55,8 +53,8 @@ public interface ICityRepository {
    *
    * @param ibgeCodeDigits the IBGE code digits of the city.
    * @return an Optional containing the city entity if found.
-   * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
 

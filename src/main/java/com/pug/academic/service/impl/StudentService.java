@@ -18,8 +18,6 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,21 +25,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Student entities.
- */
+/** Service class for managing Student entities. */
 @ApplicationScoped
 public class StudentService implements IStudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentService.class);
 
-  @Inject
-  IStudentRepository repo;
-  @Inject
-  IAccountService accountService;
-  @Inject
-  ICourseService courseService;
+  @Inject IStudentRepository repo;
+  @Inject IAccountService accountService;
+  @Inject ICourseService courseService;
 
   @Transactional
   @Override
@@ -56,13 +50,13 @@ public class StudentService implements IStudentService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (DuplicateResourceException e) {
-      problems.add(
-              new AppValidationException.Problem(e.getErrorCode()));
+      problems.add(new AppValidationException.Problem(e.getErrorCode()));
     }
 
     UUID accountId = (account != null) ? account.getId() : null;
 
-    Student studentToPersist = StudentProcessor.processCreateInput(
+    Student studentToPersist =
+        StudentProcessor.processCreateInput(
             accountId,
             cmd.academicRegistration(),
             cmd.campus(),
@@ -70,8 +64,7 @@ public class StudentService implements IStudentService {
             cmd.requiredHours(),
             cmd.completedHours(),
             cmd.startDate(),
-            cmd.dueDate()
-    );
+            cmd.dueDate());
 
     if (studentToPersist.hasErrors()) {
       problems.addAll(studentToPersist.getProblems());
@@ -83,8 +76,8 @@ public class StudentService implements IStudentService {
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
       throw new DuplicateResourceException(
-              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-              Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+          Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
     }
     return repo.persist(studentToPersist);
   }
@@ -108,7 +101,7 @@ public class StudentService implements IStudentService {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-                new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+            new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
       }
     }
 
@@ -119,7 +112,7 @@ public class StudentService implements IStudentService {
     List<Account> createdAccounts = new ArrayList<>();
     try {
       var accountCreateCommands =
-              CollectionUtils.toStream(cmds).map(StudentCreateCommand::accountCreateCommand).toList();
+          CollectionUtils.toStream(cmds).map(StudentCreateCommand::accountCreateCommand).toList();
       createdAccounts = accountService.saveAll(accountCreateCommands);
     } catch (AppValidationException e) {
       allCollectedProblems.addAll(e.getProblems());
@@ -141,7 +134,8 @@ public class StudentService implements IStudentService {
         studentAccountId = accountByIndex.get(cmdIndex).getId();
       }
 
-      Student student = StudentProcessor.processCreateInput(
+      Student student =
+          StudentProcessor.processCreateInput(
               studentAccountId,
               cmd.academicRegistration(),
               cmd.campus(),
@@ -149,8 +143,7 @@ public class StudentService implements IStudentService {
               cmd.requiredHours(),
               cmd.completedHours(),
               cmd.startDate(),
-              cmd.dueDate()
-      );
+              cmd.dueDate());
 
       if (student.hasErrors()) {
         allCollectedProblems.addAll(student.getProblems());
@@ -158,7 +151,7 @@ public class StudentService implements IStudentService {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
           allCollectedProblems.add(
-                  new AppValidationException.Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
+              new AppValidationException.Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
         } else {
           studentsToPersist.add(student);
         }
@@ -171,7 +164,7 @@ public class StudentService implements IStudentService {
     }
 
     List<String> registrationsToPersist =
-            studentsToPersist.stream().map(s -> s.getAcademicRegistration().toString()).toList();
+        studentsToPersist.stream().map(s -> s.getAcademicRegistration().toString()).toList();
 
     if (repo.existsAnyByRegistrationIn(registrationsToPersist)) {
       throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
@@ -201,7 +194,8 @@ public class StudentService implements IStudentService {
       courseService.getById(cmd.courseId());
     }
 
-    Student studentToUpdate = StudentProcessor.processUpdateInput(
+    Student studentToUpdate =
+        StudentProcessor.processUpdateInput(
             current,
             cmd.academicRegistration(),
             cmd.campus(),
@@ -209,8 +203,7 @@ public class StudentService implements IStudentService {
             cmd.requiredHours(),
             cmd.completedHours(),
             cmd.startDate(),
-            cmd.dueDate()
-    );
+            cmd.dueDate());
 
     if (studentToUpdate.hasErrors()) {
       problems.addAll(studentToUpdate.getProblems());
@@ -221,11 +214,11 @@ public class StudentService implements IStudentService {
     }
 
     if (cmd.academicRegistration() != null
-            && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
       if (existsByRegistration(cmd.academicRegistration())) {
         throw new DuplicateResourceException(
-                AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-                Map.of("academicRegistration", cmd.academicRegistration()));
+            AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+            Map.of("academicRegistration", cmd.academicRegistration()));
       }
     }
 
@@ -238,9 +231,9 @@ public class StudentService implements IStudentService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
       return Map.of(
-              DeleteKeys.STUDENTS, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.STUDENTS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     long studentsDeleted = repo.deleteByIds(accountIds);
@@ -248,9 +241,9 @@ public class StudentService implements IStudentService {
     Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(accountIds);
 
     return Map.of(
-            DeleteKeys.STUDENTS, studentsDeleted,
-            DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.STUDENTS, studentsDeleted,
+        DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
@@ -258,8 +251,9 @@ public class StudentService implements IStudentService {
     List<Student> students = repo.listAllStudents();
     for (Student s : students) {
       if (s.hasErrors()) {
-        LOG.errorf("Data integrity error: Corrupted Student entity found in DB. Problems: %s",
-                s.getProblemsSummary());
+        LOG.errorf(
+            "Data integrity error: Corrupted Student entity found in DB. Problems: %s",
+            s.getProblemsSummary());
         throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
       }
     }
@@ -274,8 +268,9 @@ public class StudentService implements IStudentService {
     List<Student> students = repo.listAllByCourseId(courseId);
     for (Student s : students) {
       if (s.hasErrors()) {
-        LOG.errorf("Data integrity error: Corrupted Student entity found in DB for Course %s. Problems: %s",
-                courseId, s.getProblemsSummary());
+        LOG.errorf(
+            "Data integrity error: Corrupted Student entity found in DB for Course %s. Problems: %s",
+            courseId, s.getProblemsSummary());
         throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
       }
     }
@@ -284,16 +279,19 @@ public class StudentService implements IStudentService {
 
   @Override
   public Student getById(UUID accountId) {
-    Student student = repo.findOptionalById(accountId)
+    Student student =
+        repo.findOptionalById(accountId)
             .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+                () ->
+                    new ResourceNotFoundException(
+                        AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
 
     if (student.hasErrors()) {
-      LOG.errorf("Data integrity error: Student with Account ID %s in DB violates domain rules. Problems: %s",
-              accountId, student.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
+      LOG.errorf(
+          "Data integrity error: Student with Account ID %s in DB violates domain rules. Problems: %s",
+          accountId, student.getProblemsSummary());
+      throw new ResourceNotFoundException(
+          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
     }
     return student;
   }

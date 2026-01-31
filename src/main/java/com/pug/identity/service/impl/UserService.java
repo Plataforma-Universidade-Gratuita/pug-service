@@ -19,40 +19,28 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing users.
- */
+/** Service for managing users. */
 @ApplicationScoped
 public class UserService implements IUserService {
 
   private static final Logger LOG = Logger.getLogger(UserService.class);
 
-  @Inject
-  IUserRepository repo;
-  @Inject
-  TimeProvider time;
-  @Inject
-  IAccountService accountService;
+  @Inject IUserRepository repo;
+  @Inject TimeProvider time;
+  @Inject IAccountService accountService;
 
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
-    User userToPersist = UserProcessor.processCreateInput(
-            cmd.cpfString(),
-            cmd.name(),
-            time
-    );
+    User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name(), time);
 
     if (userToPersist.hasErrors()) {
       throw new AppValidationException(userToPersist.getProblems());
@@ -60,8 +48,7 @@ public class UserService implements IUserService {
 
     if (existsByCpf(userToPersist.getCpf())) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.USER_ALREADY_EXISTS,
-              Map.of("cpf", userToPersist.getCpf().toString()));
+          IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("cpf", userToPersist.getCpf().toString()));
     }
 
     return repo.persist(userToPersist);
@@ -79,11 +66,7 @@ public class UserService implements IUserService {
     Set<String> cpfsInPayload = new HashSet<>();
 
     for (UserCreateCommand cmd : cmds) {
-      User user = UserProcessor.processCreateInput(
-              cmd.cpfString(),
-              cmd.name(),
-              time
-      );
+      User user = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name(), time);
 
       if (user.hasErrors()) {
         allCollectedProblems.addAll(user.getProblems());
@@ -92,7 +75,7 @@ public class UserService implements IUserService {
 
         if (!cpfsInPayload.add(cpfStr)) {
           allCollectedProblems.add(
-                  new AppValidationException.Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
+              new AppValidationException.Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
         }
         usersToPersist.add(user);
       }
@@ -102,9 +85,7 @@ public class UserService implements IUserService {
       throw new AppValidationException(allCollectedProblems);
     }
 
-    List<String> cpfsToPersist = usersToPersist.stream()
-            .map(u -> u.getCpf().toString())
-            .toList();
+    List<String> cpfsToPersist = usersToPersist.stream().map(u -> u.getCpf().toString()).toList();
 
     if (repo.existsAnyByCpfIn(cpfsToPersist)) {
       throw new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
@@ -118,11 +99,7 @@ public class UserService implements IUserService {
   public User update(UUID id, UserUpdateCommand cmd) {
     User current = getById(id);
 
-    User updated = UserProcessor.processUpdateInput(
-            current,
-            cmd.cpfString(),
-            cmd.name()
-    );
+    User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
@@ -130,8 +107,7 @@ public class UserService implements IUserService {
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.USER_ALREADY_EXISTS,
-              Map.of("cpf", updated.getCpf().toString()));
+          IdentityErrorCodes.USER_ALREADY_EXISTS, Map.of("cpf", updated.getCpf().toString()));
     }
 
     repo.update(updated);
@@ -160,9 +136,8 @@ public class UserService implements IUserService {
     for (User user : users) {
       if (user.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted User entity found in DB during list. ID: %s. Problems: %s",
-                user.getId(),
-                user.getProblemsSummary());
+            "Data integrity error: Corrupted User entity found in DB during list. ID: %s. Problems: %s",
+            user.getId(), user.getProblemsSummary());
         throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND);
       }
     }
@@ -171,15 +146,17 @@ public class UserService implements IUserService {
 
   @Override
   public User getById(UUID id) {
-    User user = repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
+    User user =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
 
     if (user.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
-              id,
-              user.getProblemsSummary());
+          "Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
+          id, user.getProblemsSummary());
       throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id));
     }
 
@@ -188,17 +165,19 @@ public class UserService implements IUserService {
 
   @Override
   public User getByCpf(String cpfString) {
-    User user = repo.findOptionalByCpf(cpfString)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpfString)));
+    User user =
+        repo.findOptionalByCpf(cpfString)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpfString)));
 
     if (user.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: User with CPF %s in DB violates domain rules. Problems: %s",
-              cpfString,
-              user.getProblemsSummary());
+          "Data integrity error: User with CPF %s in DB violates domain rules. Problems: %s",
+          cpfString, user.getProblemsSummary());
       throw new ResourceNotFoundException(
-              IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpfString));
+          IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpfString));
     }
 
     return user;
@@ -206,18 +185,15 @@ public class UserService implements IUserService {
 
   @Override
   public List<User> getAllByCpf(Iterable<Cpf> cpfs) {
-    List<String> cpfStrings = CollectionUtils.toStream(cpfs)
-            .map(Cpf::toString)
-            .toList();
+    List<String> cpfStrings = CollectionUtils.toStream(cpfs).map(Cpf::toString).toList();
 
     List<User> users = repo.listByCpfs(cpfStrings);
 
     for (User user : users) {
       if (user.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted User entity found in DB while listing by CPFs. ID: %s. Problems: %s",
-                user.getId(),
-                user.getProblemsSummary());
+            "Data integrity error: Corrupted User entity found in DB while listing by CPFs. ID: %s. Problems: %s",
+            user.getId(), user.getProblemsSummary());
         throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND);
       }
     }

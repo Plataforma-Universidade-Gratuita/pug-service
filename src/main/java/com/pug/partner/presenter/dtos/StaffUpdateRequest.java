@@ -12,8 +12,4 @@ import java.util.UUID;
  * @param password the password for the staff member's account (optional).
  */
 public record StaffUpdateRequest(
-    String cpfString,
-    String name,
-    String emailString,
-    UUID entityId,
-    String password) {}
+    String cpfString, String name, String emailString, UUID entityId, String password) {}

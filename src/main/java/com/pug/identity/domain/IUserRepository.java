@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing User domain objects.
- */
+/** Repository interface for managing User domain objects. */
 public interface IUserRepository {
 
   /**
@@ -45,8 +43,8 @@ public interface IUserRepository {
    *
    * @param id the ID of the User to find.
    * @return an Optional containing the User if found, or empty if not found.
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<User> findOptionalById(UUID id);
 
@@ -55,8 +53,8 @@ public interface IUserRepository {
    *
    * @param cpf the CPF of the User to find.
    * @return an Optional containing the User if found, or empty if not found.
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<User> findOptionalByCpf(String cpf);
 
@@ -64,8 +62,8 @@ public interface IUserRepository {
    * Lists all User objects.
    *
    * @return a list of all User objects.
-   * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   List<User> listAllUsers();
 
@@ -74,8 +72,8 @@ public interface IUserRepository {
    *
    * @param cpfs an iterable of CPFs.
    * @return a list of User objects with the given CPFs.
-   * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   List<User> listByCpfs(Iterable<String> cpfs);
 

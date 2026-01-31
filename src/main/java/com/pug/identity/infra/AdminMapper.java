@@ -8,15 +8,10 @@ import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.infra.read.dtos.UserView;
 
-/**
- * Maps between Admin domain and AdminEntity persistence.
- */
+/** Maps between Admin domain and AdminEntity persistence. */
 public final class AdminMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AdminMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AdminMapper() {}
 
   /**
    * Maps an AdminEntity to an Admin domain object.
@@ -47,24 +42,24 @@ public final class AdminMapper {
   /**
    * Converts an AdminEntity, AccountEntity, and UserEntity into an AdminView.
    *
-   * @param adminEntity   the AdminEntity.
+   * @param adminEntity the AdminEntity.
    * @param accountEntity the associated AccountEntity.
-   * @param userEntity    the associated UserEntity.
+   * @param userEntity the associated UserEntity.
    * @return the AdminView.
    */
   public static AdminView toView(
-          AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
+      AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
     return new AdminView(
-            new AccountView(
-                    accountEntity.getId(),
-                    new UserView(
-                            userEntity.getId(),
-                            userEntity.getCpf(),
-                            userEntity.getName(),
-                            userEntity.getCreatedAt()),
-                    accountEntity.getEmail(),
-                    accountEntity.getAccountType(),
-                    accountEntity.getCreatedAt()),
-            adminEntity.getGrantedAt());
+        new AccountView(
+            accountEntity.getId(),
+            new UserView(
+                userEntity.getId(),
+                userEntity.getCpf(),
+                userEntity.getName(),
+                userEntity.getCreatedAt()),
+            accountEntity.getEmail(),
+            accountEntity.getAccountType(),
+            accountEntity.getCreatedAt()),
+        adminEntity.getGrantedAt());
   }
 }

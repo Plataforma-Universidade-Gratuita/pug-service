@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas).
- * Converted to class to extend DomainError, allowing deferred validation.
+ * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas). Converted to class to
+ * extend DomainError, allowing deferred validation.
  */
 @Getter
 @Value
@@ -26,9 +26,8 @@ public class Cpf extends DomainError {
   }
 
   /**
-   * Factory method to create a new CPF.
-   * It cleans the input (removes non-digits) and runs validation.
-   * It does not throw exceptions immediately but collects them in the problems list.
+   * Factory method to create a new CPF. It cleans the input (removes non-digits) and runs
+   * validation. It does not throw exceptions immediately but collects them in the problems list.
    *
    * @param rawValue The raw CPF string (formatted or unformatted)
    * @return The Cpf instance (which may contain errors)
@@ -41,9 +40,7 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the CPF format and digits, populating the problems list if invalid.
-   */
+  /** Validates the CPF format and digits, populating the problems list if invalid. */
   private void validate() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
@@ -61,8 +58,8 @@ public class Cpf extends DomainError {
   }
 
   /**
-   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00").
-   * Returns the raw value if the CPF does not have the correct length (e.g., invalid state).
+   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00"). Returns the
+   * raw value if the CPF does not have the correct length (e.g., invalid state).
    *
    * @return the formatted CPF as a String.
    */
@@ -71,12 +68,12 @@ public class Cpf extends DomainError {
       return value;
     }
     return value.substring(0, 3)
-            + "."
-            + value.substring(3, 6)
-            + "."
-            + value.substring(6, 9)
-            + "-"
-            + value.substring(9, 11);
+        + "."
+        + value.substring(3, 6)
+        + "."
+        + value.substring(6, 9)
+        + "-"
+        + value.substring(9, 11);
   }
 
   /**

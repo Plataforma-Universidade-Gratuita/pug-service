@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Value Object representing an Academic Registration.
- * Extends DomainError to allow deferred validation.
+ * Value Object representing an Academic Registration. Extends DomainError to allow deferred
+ * validation.
  */
 @Getter
 @Value
@@ -38,9 +38,7 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the registration format and length.
-   */
+  /** Validates the registration format and length. */
   private void validate() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));

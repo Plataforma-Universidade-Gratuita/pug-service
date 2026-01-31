@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Admin domain objects.
- */
+/** Repository interface for managing Admin domain objects. */
 public interface IAdminRepository {
   /**
    * Persists the given Admin domain object.
@@ -37,8 +35,8 @@ public interface IAdminRepository {
    *
    * @param accountId the account ID of the Admin to find.
    * @return an Optional containing the found Admin, or empty if not found.
-   * <p>Note: The returned Admin may contain validation errors (check {@code admin.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Admin may contain validation errors (check {@code admin.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<Admin> findOptionalById(UUID accountId);
 
@@ -46,8 +44,8 @@ public interface IAdminRepository {
    * Lists all Admin instances.
    *
    * @return a list of all Admin instances.
-   * <p>Note: The returned Admins may contain validation errors (check {@code admin.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Admins may contain validation errors (check {@code
+   *     admin.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Admin> listAllAdmins();
 

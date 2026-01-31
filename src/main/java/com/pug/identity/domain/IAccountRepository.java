@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Account objects.
- */
+/** Repository interface for managing Account objects. */
 public interface IAccountRepository {
 
   /**
@@ -36,7 +34,7 @@ public interface IAccountRepository {
    * Deletes Accounts objects by their IDs.
    *
    * @param ids the iterable collection of UUIDs representing the IDs of the Accounts objects to
-   *            delete.
+   *     delete.
    * @return the number of entities deleted.
    */
   long deleteByIds(Iterable<UUID> ids);
@@ -46,8 +44,8 @@ public interface IAccountRepository {
    *
    * @param id the UUID of the Accounts to find.
    * @return an Optional containing the found Account, or empty if not found.
-   * <p>Note: The returned Account may contain validation errors (check {@code account.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Account may contain validation errors (check {@code
+   *     account.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Account> findOptionalById(UUID id);
 
@@ -55,8 +53,8 @@ public interface IAccountRepository {
    * Lists all Accounts objects.
    *
    * @return a list of all Accounts objects.
-   * <p>Note: The returned Accounts may contain validation errors (check {@code account.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Accounts may contain validation errors (check {@code
+   *     account.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Account> listAllAccounts();
 
@@ -72,14 +70,14 @@ public interface IAccountRepository {
    * Finds user IDs that have Accounts, excluding those associated with the given Account IDs.
    *
    * @param excludedAccountIds the iterable collection of UUIDs representing the Account IDs to
-   *                           exclude.
-   * @param candidateUserIds   the iterable collection of UUIDs representing the candidate user IDs to
-   *                           check.
+   *     exclude.
+   * @param candidateUserIds the iterable collection of UUIDs representing the candidate user IDs to
+   *     check.
    * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
-   * associated with the excluded Account IDs.
+   *     associated with the excluded Account IDs.
    */
   List<UUID> findUserIdsWithAccountsExcluding(
-          Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+      Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
 
   /**
    * Checks if an Accounts exists by email.

@@ -43,7 +43,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
@@ -53,26 +52,19 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing students in the academic system.
- */
+/** REST resource for managing students in the academic system. */
 @ApplicationScoped
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject
-  IStudentService writeService;
-  @Inject
-  IStudentReadService readService;
-  @Inject
-  I18n i18n;
+  @Inject IStudentService writeService;
+  @Inject IStudentReadService readService;
+  @Inject I18n i18n;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Picks the best locale from the Accept-Language header.
@@ -93,19 +85,19 @@ public class StudentResource {
   public Response create(@Valid StudentCreateRequest req) {
     UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
-            new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
-    Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
+    Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase(Locale.ROOT));
 
     StudentCreateCommand studentCmd =
-            new StudentCreateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    campusEnum,
-                    req.courseId(),
-                    req.requiredHours(),
-                    BigDecimal.ZERO,
-                    req.startDate(),
-                    req.dueDate());
+        new StudentCreateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            campusEnum,
+            req.courseId(),
+            req.requiredHours(),
+            BigDecimal.ZERO,
+            req.startDate(),
+            req.dueDate());
 
     Student created = writeService.save(studentCmd);
 
@@ -125,37 +117,36 @@ public class StudentResource {
   @Path("/bulk")
   public Response createBulk(@Valid List<StudentCreateRequest> reqs) {
     List<StudentCreateCommand> studentCommands =
-            reqs.stream()
-                    .map(
-                            req -> {
-                              UserCreateCommand userCmd =
-                                      new UserCreateCommand(req.cpf(), req.name());
-                              AccountCreateCommand accountCmd =
-                                      new AccountCreateCommand(
-                                              req.email(), AccountType.STUDENT, req.password(), userCmd);
-                              Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
-                              return new StudentCreateCommand(
-                                      accountCmd,
-                                      req.academicRegistration(),
-                                      campusEnum,
-                                      req.courseId(),
-                                      req.requiredHours(),
-                                      BigDecimal.ZERO,
-                                      req.startDate(),
-                                      req.dueDate());
-                            })
-                    .collect(Collectors.toList());
+        reqs.stream()
+            .map(
+                req -> {
+                  UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+                  AccountCreateCommand accountCmd =
+                      new AccountCreateCommand(
+                          req.email(), AccountType.STUDENT, req.password(), userCmd);
+                  Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase(Locale.ROOT));
+                  return new StudentCreateCommand(
+                      accountCmd,
+                      req.academicRegistration(),
+                      campusEnum,
+                      req.courseId(),
+                      req.requiredHours(),
+                      BigDecimal.ZERO,
+                      req.startDate(),
+                      req.dueDate());
+                })
+            .collect(Collectors.toList());
 
     List<Student> saved = writeService.saveAll(studentCommands);
     return Response.status(Response.Status.CREATED)
-            .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-            .build();
+        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
+        .build();
   }
 
   /**
    * Updates an existing student's details.
    *
-   * @param id  the UUID of the student's account to update
+   * @param id the UUID of the student's account to update
    * @param req the request containing updated student details
    * @return a Response with the updated student details
    */
@@ -174,19 +165,19 @@ public class StudentResource {
 
     Campi campusEnum = null;
     if (req.campus() != null) {
-      campusEnum = Campi.valueOf(req.campus().trim().toUpperCase());
+      campusEnum = Campi.valueOf(req.campus().trim().toUpperCase(Locale.ROOT));
     }
 
     StudentUpdateCommand studentCmd =
-            new StudentUpdateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    campusEnum,
-                    req.courseId(),
-                    req.requiredHours(),
-                    req.completedHours(),
-                    req.startDate(),
-                    req.dueDate());
+        new StudentUpdateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            campusEnum,
+            req.courseId(),
+            req.requiredHours(),
+            req.completedHours(),
+            req.startDate(),
+            req.dueDate());
 
     writeService.update(id, studentCmd);
 
@@ -198,13 +189,13 @@ public class StudentResource {
   /**
    * Lists all students or searches for students based on a query.
    *
-   * @param q                    the search query (optional)
+   * @param q the search query (optional)
    * @param academicRegistration the academic registration to filter by (optional, busca exata)
    * @return a Response with the list of students
    */
   @GET
   public Response listOrSearch(
-          @QueryParam("q") String q, @QueryParam("academicRegistration") String academicRegistration) {
+      @QueryParam("q") String q, @QueryParam("academicRegistration") String academicRegistration) {
 
     List<StudentView> views;
     if (!StringUtils.isEmpty(academicRegistration)) {
@@ -220,7 +211,7 @@ public class StudentResource {
       views = readService.listViews();
     }
     List<StudentResponse> body =
-            views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
+        views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -247,7 +238,7 @@ public class StudentResource {
   @GET
   @Path("/by-registration/{academicRegistration}")
   public Response getByAcademicRegistration(
-          @PathParam("academicRegistration") String academicRegistration) {
+      @PathParam("academicRegistration") String academicRegistration) {
     Objects.requireNonNull(academicRegistration, "academicRegistration");
     var view = readService.getViewByAcademicRegistration(academicRegistration);
     return Response.ok(ApiEnvelope.ok(StudentPresenter.toResponse(view, locale(), i18n))).build();
@@ -265,7 +256,7 @@ public class StudentResource {
     Objects.requireNonNull(req, "ids");
     var views = readService.listViewsByIds(req.ids());
     List<StudentResponse> body =
-            views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
+        views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

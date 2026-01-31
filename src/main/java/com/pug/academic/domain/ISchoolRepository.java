@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for Schools.
- */
+/** Repository interface for Schools. */
 public interface ISchoolRepository {
   /**
    * Persist a school entity.
@@ -44,8 +42,8 @@ public interface ISchoolRepository {
    *
    * @param id the UUID of the school to find
    * @return an Optional containing the found school or empty if not found
-   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned School may contain validation errors (check {@code
+   *     school.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<School> findOptionalById(UUID id);
 
@@ -54,8 +52,8 @@ public interface ISchoolRepository {
    *
    * @param name the name of the school to find
    * @return an Optional containing the found school or empty if not found
-   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned School may contain validation errors (check {@code
+   *     school.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<School> findOptionalByName(String name);
 
@@ -63,8 +61,8 @@ public interface ISchoolRepository {
    * List all schools.
    *
    * @return a list of all schools
-   * <p>Note: The returned Schools may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Schools may contain validation errors (check {@code
+   *     school.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<School> listAllSchools();
 

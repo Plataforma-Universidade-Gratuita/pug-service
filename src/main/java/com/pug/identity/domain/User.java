@@ -7,21 +7,20 @@ import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * User entity aggregate.
- */
+/** User entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class User extends DomainError {
   UUID id;
   Cpf cpf;
@@ -39,7 +38,7 @@ public class User extends DomainError {
   /**
    * Factory for new users.
    *
-   * @param cpf  person's CPF
+   * @param cpf person's CPF
    * @param name person's name
    * @param time time provider
    * @return new User instance (may contain errors)
@@ -48,12 +47,12 @@ public class User extends DomainError {
     var created = OffsetDateTime.now(time.clock());
 
     User user =
-            User.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cpf(cpf)
-                    .name(StringUtils.trim(name))
-                    .createdAt(created)
-                    .build();
+        User.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cpf(cpf)
+            .name(StringUtils.trim(name))
+            .createdAt(created)
+            .build();
 
     user.collectValidationProblems(time.clock());
     return user;
@@ -90,9 +89,7 @@ public class User extends DomainError {
     return updated;
   }
 
-  /**
-   * Validates the User instance.
-   */
+  /** Validates the User instance. */
   private void collectValidationProblems(Clock clock) {
     if (id == null) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK));

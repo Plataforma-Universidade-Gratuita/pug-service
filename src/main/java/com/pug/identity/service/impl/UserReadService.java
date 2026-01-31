@@ -8,27 +8,23 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Read-only service for user views.
- */
+/** Read-only service for user views. */
 @ApplicationScoped
 public class UserReadService implements IUserReadService {
 
-  @Inject
-  IUserQueries queries;
+  @Inject IUserQueries queries;
 
   @Override
   public UserView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
   }
 
   @Override
@@ -37,11 +33,11 @@ public class UserReadService implements IUserReadService {
       throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf));
     }
     return queries
-            .findOptionalByCpf(cpf)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf)));
+        .findOptionalByCpf(cpf)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf)));
   }
 
   @Override

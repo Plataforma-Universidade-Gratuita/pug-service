@@ -4,21 +4,20 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Admin entity aggregate.
- */
+/** Admin entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Admin extends DomainError {
   UUID accountId;
   OffsetDateTime grantedAt;
@@ -33,7 +32,7 @@ public class Admin extends DomainError {
    * Factory for new Admin.
    *
    * @param accountId the ID of the Account associated with the Admin
-   * @param time      time provider
+   * @param time time provider
    * @return new Admin instance (may contain errors)
    */
   public static Admin factory(UUID accountId, TimeProvider time) {
@@ -44,9 +43,7 @@ public class Admin extends DomainError {
     return admin;
   }
 
-  /**
-   * Validates the Admin instance.
-   */
+  /** Validates the Admin instance. */
   private void collectValidationProblems(Clock clock) {
     if (accountId == null) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ACCOUNT_BLANK));

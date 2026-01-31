@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Staff entities.
- */
+/** Repository interface for managing Staff entities. */
 public interface IStaffRepository {
 
   /**
@@ -45,8 +43,8 @@ public interface IStaffRepository {
    *
    * @param id the account ID to search for.
    * @return an Optional containing the found Staff entity, or empty if not found.
-   * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()})
+   *     if the stored data is inconsistent with current domain rules.
    */
   Optional<Staff> findOptionalById(UUID id);
 
@@ -54,8 +52,8 @@ public interface IStaffRepository {
    * Lists all Staff entities.
    *
    * @return a list of all Staff entities.
-   * <p>Note: The returned Staff objects may contain validation errors (check {@code staff.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Staff objects may contain validation errors (check {@code
+   *     staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Staff> listAllStaff();
 
@@ -64,8 +62,8 @@ public interface IStaffRepository {
    *
    * @param entityId the entity ID to filter by.
    * @return a list of Staff entities associated with the given entity ID.
-   * <p>Note: The returned Staff objects may contain validation errors (check {@code staff.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Staff objects may contain validation errors (check {@code
+   *     staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Staff> listAllByEntityId(UUID entityId);
 

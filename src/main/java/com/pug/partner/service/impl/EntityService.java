@@ -18,23 +18,19 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class EntityService implements IEntityService {
 
   private static final Logger LOG = Logger.getLogger(EntityService.class);
 
-  @Inject
-  IEntityRepository repo;
-  @Inject
-  ICityService cityService;
-  @Inject
-  IStaffService staffService;
+  @Inject IEntityRepository repo;
+  @Inject ICityService cityService;
+  @Inject IStaffService staffService;
 
   @Transactional
   @Override
@@ -43,12 +39,9 @@ public class EntityService implements IEntityService {
       cityService.getById(cmd.cityId());
     }
 
-    Entity entityToPersist = EntityProcessor.processCreateInput(
-            cmd.cnpjString(),
-            cmd.name(),
-            cmd.cityId(),
-            cmd.address()
-    );
+    Entity entityToPersist =
+        EntityProcessor.processCreateInput(
+            cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (entityToPersist.hasErrors()) {
       throw new AppValidationException(entityToPersist.getProblems());
@@ -56,8 +49,8 @@ public class EntityService implements IEntityService {
 
     if (existsByCnpj(entityToPersist.getCnpj())) {
       throw new DuplicateResourceException(
-              PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
-              Map.of("cnpj", entityToPersist.getCnpj().toString()));
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
+          Map.of("cnpj", entityToPersist.getCnpj().toString()));
     }
 
     return repo.persist(entityToPersist);
@@ -72,22 +65,19 @@ public class EntityService implements IEntityService {
       cityService.getById(cmd.cityId());
     }
 
-    Entity updatedEntity = EntityProcessor.processUpdateInput(
-            current,
-            cmd.cnpjString(),
-            cmd.name(),
-            cmd.cityId(),
-            cmd.address()
-    );
+    Entity updatedEntity =
+        EntityProcessor.processUpdateInput(
+            current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (updatedEntity.hasErrors()) {
       throw new AppValidationException(updatedEntity.getProblems());
     }
 
-    if (!updatedEntity.getCnpj().equals(current.getCnpj()) && existsByCnpj(updatedEntity.getCnpj())) {
+    if (!updatedEntity.getCnpj().equals(current.getCnpj())
+        && existsByCnpj(updatedEntity.getCnpj())) {
       throw new DuplicateResourceException(
-              PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
-              Map.of("cnpj", updatedEntity.getCnpj().toString()));
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
+          Map.of("cnpj", updatedEntity.getCnpj().toString()));
     }
 
     repo.update(updatedEntity);
@@ -104,30 +94,32 @@ public class EntityService implements IEntityService {
     for (UUID entityId : ids) {
       if (!staffService.listByEntity(entityId).isEmpty()) {
         throw new ReferencedEntityException(
-                PartnerErrorCodes.ENTITY_STILL_REFERENCED, Map.of("entityId", entityId));
+            PartnerErrorCodes.ENTITY_STILL_REFERENCED, Map.of("entityId", entityId));
       }
     }
 
     long entitiesDeleted = repo.deleteByIds(ids);
 
     return Map.of(
-            DeleteKeys.ENTITIES, entitiesDeleted,
-            DeleteKeys.STAFF, 0L,
-            DeleteKeys.ACCOUNTS, 0L,
-            DeleteKeys.USERS, 0L);
+        DeleteKeys.ENTITIES, entitiesDeleted,
+        DeleteKeys.STAFF, 0L,
+        DeleteKeys.ACCOUNTS, 0L,
+        DeleteKeys.USERS, 0L);
   }
 
   @Override
   public Entity getById(UUID id) {
-    Entity entity = repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
+    Entity entity =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
 
     if (entity.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: Entity with ID %s in DB violates domain rules. Problems: %s",
-              id,
-              entity.getProblemsSummary());
+          "Data integrity error: Entity with ID %s in DB violates domain rules. Problems: %s",
+          id, entity.getProblemsSummary());
       throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id));
     }
 
@@ -136,17 +128,19 @@ public class EntityService implements IEntityService {
 
   @Override
   public Entity getByCnpj(String cnpjString) {
-    Entity entity = repo.findOptionalByCnpj(cnpjString)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpjString)));
+    Entity entity =
+        repo.findOptionalByCnpj(cnpjString)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpjString)));
 
     if (entity.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: Entity with CNPJ %s in DB violates domain rules. Problems: %s",
-              cnpjString,
-              entity.getProblemsSummary());
+          "Data integrity error: Entity with CNPJ %s in DB violates domain rules. Problems: %s",
+          cnpjString, entity.getProblemsSummary());
       throw new ResourceNotFoundException(
-              PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpjString));
+          PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpjString));
     }
 
     return entity;
@@ -158,9 +152,8 @@ public class EntityService implements IEntityService {
     for (Entity entity : entities) {
       if (entity.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted Entity entity found in DB. ID: %s. Problems: %s",
-                entity.getId(),
-                entity.getProblemsSummary());
+            "Data integrity error: Corrupted Entity entity found in DB. ID: %s. Problems: %s",
+            entity.getId(), entity.getProblemsSummary());
         throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
       }
     }

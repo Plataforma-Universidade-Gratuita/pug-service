@@ -5,8 +5,7 @@ import java.util.UUID;
 /**
  * School view DTO.
  *
- * @param id   the unique identifier of the school
+ * @param id the unique identifier of the school
  * @param name the name of the school
  */
-public record SchoolView(UUID id, String name) {
-}
+public record SchoolView(UUID id, String name) {}

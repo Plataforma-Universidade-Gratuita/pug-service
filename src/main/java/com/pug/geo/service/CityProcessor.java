@@ -8,10 +8,10 @@ public class CityProcessor {
 
   /**
    * Helper method to process DTO input and build a new City domain object.
-   * <p>
-   * The returned City object may contain validation errors. Check {@code city.hasErrors()}.
    *
-   * @param name           The city name from DTO.
+   * <p>The returned City object may contain validation errors. Check {@code city.hasErrors()}.
+   *
+   * @param name The city name from DTO.
    * @param ibgeCodeString The IBGE code string from DTO.
    * @return The constructed City domain object.
    */
@@ -22,19 +22,16 @@ public class CityProcessor {
 
   /**
    * Helper method to process DTO input and update an existing City domain object.
-   * <p>
-   * Only fields provided (not null/empty) will be updated.
-   * The returned City object may contain validation errors if the new values are invalid.
    *
-   * @param existingCity   The existing city to be updated.
-   * @param name           The city name from DTO (can be null for no change).
+   * <p>Only fields provided (not null/empty) will be updated. The returned City object may contain
+   * validation errors if the new values are invalid.
+   *
+   * @param existingCity The existing city to be updated.
+   * @param name The city name from DTO (can be null for no change).
    * @param ibgeCodeString The IBGE code string from DTO (can be null for no change).
    * @return The updated City domain object.
    */
-  public static City processUpdateInput(
-          City existingCity,
-          String name,
-          String ibgeCodeString) {
+  public static City processUpdateInput(City existingCity, String name, String ibgeCodeString) {
 
     City updatedCity = existingCity;
 

@@ -36,8 +36,8 @@ public interface IEntityRepository {
    *
    * @param id the UUID of the Entity to find.
    * @return an Optional containing the found Entity, or empty if not found.
-   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Entity may contain validation errors (check {@code
+   *     entity.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Entity> findOptionalById(UUID id);
 
@@ -46,8 +46,8 @@ public interface IEntityRepository {
    *
    * @param cnpj the CNPJ of the Entity to find.
    * @return an Optional containing the found Entity, or empty if not found.
-   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Entity may contain validation errors (check {@code
+   *     entity.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Entity> findOptionalByCnpj(String cnpj);
 
@@ -55,8 +55,8 @@ public interface IEntityRepository {
    * Lists all Entity objects.
    *
    * @return a list of all Entity objects.
-   * <p>Note: The returned Entities may contain validation errors (check {@code entity.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Entities may contain validation errors (check {@code
+   *     entity.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Entity> listAllEntities();
 

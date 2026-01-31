@@ -8,28 +8,24 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Read-only service for entity views.
- */
+/** Read-only service for entity views. */
 @ApplicationScoped
 public class EntityReadService implements IEntityReadService {
 
-  @Inject
-  IEntityQueries queries;
+  @Inject IEntityQueries queries;
 
   @Override
   public EntityView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
+        .findOptionalById(id)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("id", id)));
   }
 
   @Override
@@ -38,11 +34,11 @@ public class EntityReadService implements IEntityReadService {
       throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj));
     }
     return queries
-            .findOptionalByCnpj(cnpj)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj)));
+        .findOptionalByCnpj(cnpj)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    PartnerErrorCodes.ENTITY_NOT_FOUND, Map.of("cnpj", cnpj)));
   }
 
   @Override

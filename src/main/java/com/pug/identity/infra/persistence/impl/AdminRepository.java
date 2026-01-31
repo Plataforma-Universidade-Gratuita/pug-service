@@ -8,15 +8,12 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Panache implementation for Admins persistence.
- */
+/** Panache implementation for Admins persistence. */
 @ApplicationScoped
 public class AdminRepository implements IAdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
 

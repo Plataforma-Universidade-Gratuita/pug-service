@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository for Course aggregate.
- */
+/** Repository for Course aggregate. */
 public interface ICourseRepository {
   /**
    * Persist a course.
@@ -44,8 +42,8 @@ public interface ICourseRepository {
    *
    * @param id the ID of the course.
    * @return the found course.
-   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Course may contain validation errors (check {@code
+   *     course.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Course> findOptionalById(UUID id);
 
@@ -54,8 +52,8 @@ public interface ICourseRepository {
    *
    * @param name the name of the course.
    * @return the found course.
-   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Course may contain validation errors (check {@code
+   *     course.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Course> findOptionalByName(String name);
 
@@ -63,8 +61,8 @@ public interface ICourseRepository {
    * List all courses.
    *
    * @return the list of all courses.
-   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Courses may contain validation errors (check {@code
+   *     course.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Course> listAllCourses();
 
@@ -73,8 +71,8 @@ public interface ICourseRepository {
    *
    * @param schoolId the school ID.
    * @return the list of courses for the given school ID.
-   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Courses may contain validation errors (check {@code
+   *     course.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Course> listAllBySchoolId(UUID schoolId);
 

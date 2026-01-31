@@ -1,5 +1,7 @@
 package com.pug.partner.infra.read.impl;
 
+import static com.pug.partner.infra.StaffMapper.toView;
+
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.partner.infra.read.IStaffQueries;
 import com.pug.partner.infra.read.dtos.StaffAcc;
@@ -10,7 +12,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,20 +19,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.pug.partner.infra.StaffMapper.toView;
-
-/**
- * Implementation of StaffQueries using JPA EntityManager and Hibernate Search.
- */
+/** Implementation of StaffQueries using JPA EntityManager and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class StaffQueries implements IStaffQueries {
 
-  @Inject
-  EntityManager em;
+  @Inject EntityManager em;
 
   private static final String SELECT_BASE =
-          """
+      """
                   select new com.pug.partner.infra.read.dtos.StaffView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
@@ -60,8 +56,8 @@ public class StaffQueries implements IStaffQueries {
       return Optional.empty();
     }
     var q =
-            em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
-                    .setParameter("id", accountId);
+        em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
+            .setParameter("id", accountId);
     return q.getResultStream().findFirst();
   }
 
@@ -71,8 +67,8 @@ public class StaffQueries implements IStaffQueries {
       return Optional.empty();
     }
     var q =
-            em.createQuery(SELECT_BASE + " where acc.email = :email", StaffView.class)
-                    .setParameter("email", email);
+        em.createQuery(SELECT_BASE + " where acc.email = :email", StaffView.class)
+            .setParameter("email", email);
     return q.getResultStream().findFirst();
   }
 
@@ -82,9 +78,9 @@ public class StaffQueries implements IStaffQueries {
       return List.of();
     }
     var q =
-            em.createQuery(
-                            SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
-                    .setParameter("cpf", cpf);
+        em.createQuery(
+                SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
+            .setParameter("cpf", cpf);
     return q.getResultList();
   }
 
@@ -99,9 +95,9 @@ public class StaffQueries implements IStaffQueries {
       return List.of();
     }
     var q =
-            em.createQuery(
-                            SELECT_BASE + " where e.id = :eid" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
-                    .setParameter("eid", entityId);
+        em.createQuery(
+                SELECT_BASE + " where e.id = :eid" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
+            .setParameter("eid", entityId);
     return q.getResultList();
   }
 
@@ -115,8 +111,8 @@ public class StaffQueries implements IStaffQueries {
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     var rows =
-            em.createQuery(
-                            """
+        em.createQuery(
+                """
                                     select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
                                     from StaffEntity s
                                       join AccountEntity acc on acc.id = s.accountId
@@ -124,9 +120,9 @@ public class StaffQueries implements IStaffQueries {
                                       join CityEntity c on c.id = e.cityId
                                     where acc.userId in :ids
                                     """,
-                            StaffAcc.class)
-                    .setParameter("ids", userIds)
-                    .getResultList();
+                StaffAcc.class)
+            .setParameter("ids", userIds)
+            .getResultList();
 
     Map<UUID, List<StaffAcc>> byUser = new HashMap<>();
     for (StaffAcc row : rows) {
@@ -143,9 +139,9 @@ public class StaffQueries implements IStaffQueries {
       }
       for (StaffAcc row : pairs) {
         if (row.staff() != null
-                && row.account() != null
-                && row.entity() != null
-                && row.city() != null) {
+            && row.account() != null
+            && row.entity() != null
+            && row.city() != null) {
           out.add(toView(row.account(), row.entity(), row.city(), u));
         }
       }

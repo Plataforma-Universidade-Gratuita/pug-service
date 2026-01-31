@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Student entities.
- */
+/** Repository interface for managing Student entities. */
 public interface IStudentRepository {
   /**
    * Persists a Student entity.
@@ -44,8 +42,8 @@ public interface IStudentRepository {
    *
    * @param id the account ID of the Student to find
    * @return an Optional containing the Student if found, or empty if not found
-   * <p>Note: The returned Student may contain validation errors (check {@code student.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Student may contain validation errors (check {@code
+   *     student.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   Optional<Student> findOptionalById(UUID id);
 
@@ -53,8 +51,8 @@ public interface IStudentRepository {
    * Lists all Students.
    *
    * @return a list of all Students
-   * <p>Note: The returned Students may contain validation errors (check {@code student.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Students may contain validation errors (check {@code
+   *     student.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Student> listAllStudents();
 
@@ -63,8 +61,8 @@ public interface IStudentRepository {
    *
    * @param courseId the Course ID to filter Students
    * @return a list of Students enrolled in the specified Course
-   * <p>Note: The returned Students may contain validation errors (check {@code student.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   *     <p>Note: The returned Students may contain validation errors (check {@code
+   *     student.hasErrors()}) if the stored data is inconsistent with current domain rules.
    */
   List<Student> listAllByCourseId(UUID courseId);
 

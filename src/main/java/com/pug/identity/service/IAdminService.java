@@ -4,14 +4,11 @@ import com.pug.identity.domain.Admin;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Interface for managing admins.
- */
+/** Interface for managing admins. */
 public interface IAdminService {
 
   /**
@@ -21,9 +18,10 @@ public interface IAdminService {
    *
    * @param cmd the command containing the data to create the new Admin.
    * @return the saved Admin.
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails for account
-   *                                                              or admin data.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already exists.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
+   *     or admin data.
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
+   *     exists.
    */
   Admin save(AdminCreateCommand cmd);
 
@@ -34,20 +32,22 @@ public interface IAdminService {
    *
    * @param cmds the commands containing the data to create the new Admins.
    * @return the list of saved Admins.
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails for any
-   *                                                              admin or account in the bulk.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any account email already exists.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
+   *     admin or account in the bulk.
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any account email already
+   *     exists.
    */
   List<Admin> saveAll(Iterable<AdminCreateCommand> cmds);
 
   /**
    * Updates an existing Admin's underlying Account.
    *
-   * @param id  the ID of the Admin (which corresponds to the Account ID).
+   * @param id the ID of the Admin (which corresponds to the Account ID).
    * @param cmd the command containing the data to update the Account.
    * @return the updated Admin.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not exist.
-   * @throws com.pug.shared.exceptions.AppValidationException    if input validation fails.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not
+   *     exist.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
   Admin update(UUID id, AdminUpdateCommand cmd);
 
@@ -67,7 +67,7 @@ public interface IAdminService {
    * @param accountId the UUID of the account.
    * @return the Admin entity.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
-   *                                                             ID does not exist (or data is corrupted in DB).
+   *     ID does not exist (or data is corrupted in DB).
    */
   Admin getById(UUID accountId);
 
@@ -75,8 +75,8 @@ public interface IAdminService {
    * Lists all Admin entities.
    *
    * @return a list of all Admin entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any Admin entity found is corrupted
-   *                                                             in the database.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any Admin entity found is
+   *     corrupted in the database.
    */
   List<Admin> listAll();
 

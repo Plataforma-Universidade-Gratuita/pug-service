@@ -5,16 +5,13 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * School entity aggregate.
- */
+/** School entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -36,10 +33,8 @@ public class School extends DomainError {
    */
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
-    School school = School.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(trimmedName)
-            .build();
+    School school =
+        School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
 
     school.collectValidationProblems();
     return school;
@@ -61,9 +56,7 @@ public class School extends DomainError {
     return updatedSchool;
   }
 
-  /**
-   * Collects all validation problems for the School instance.
-   */
+  /** Collects all validation problems for the School instance. */
   private void collectValidationProblems() {
     if (id == null) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK));

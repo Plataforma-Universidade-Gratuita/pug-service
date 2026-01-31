@@ -17,9 +17,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-/**
- * Schools table.
- */
+/** Schools table. */
 @Getter
 @Setter
 @SuperBuilder
@@ -27,16 +25,16 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"name"})
+    callSuper = true,
+    of = {"name"})
 @Entity
 @Table(
-        name = "schools",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_schools_name",
-                        columnNames = {"name"})
-        })
+    name = "schools",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_schools_name",
+          columnNames = {"name"})
+    })
 @Indexed
 public class SchoolEntity extends BaseUuidV7Entity {
 

@@ -8,42 +8,38 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Service for reading admin data.
- */
+/** Service for reading admin data. */
 @ApplicationScoped
 public class AdminReadService implements IAdminReadService {
 
-  @Inject
-  IAdminQueries queries;
+  @Inject IAdminQueries queries;
 
   @Override
   public AdminView getViewById(UUID accountId) {
     return queries
-            .findOptionalById(accountId)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+        .findOptionalById(accountId)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
   }
 
   @Override
   public AdminView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw new ResourceNotFoundException(
-              IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email));
+          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email));
     }
     return queries
-            .findOptionalByEmail(email)
-            .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email)));
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () ->
+                new ResourceNotFoundException(
+                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email)));
   }
 
   @Override

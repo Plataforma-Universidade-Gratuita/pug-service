@@ -15,15 +15,10 @@ import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
 
-/**
- * Mapper for Student and StudentEntity.
- */
+/** Mapper for Student and StudentEntity. */
 public final class StudentMapper {
-  /**
-   * Private constructor.
-   */
-  private StudentMapper() {
-  }
+  /** Private constructor. */
+  private StudentMapper() {}
 
   /**
    * Convert StudentEntity to Student domain object.
@@ -36,13 +31,13 @@ public final class StudentMapper {
       return null;
     }
     return Student.builder()
-            .accountId(e.getAccountId())
-            .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
-            .campus(e.getCampus())
-            .courseId(e.getCourseId())
-            .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours()))
-            .period(Period.factory(e.getStartDate(), e.getDueDate()))
-            .build();
+        .accountId(e.getAccountId())
+        .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
+        .campus(e.getCampus())
+        .courseId(e.getCourseId())
+        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours()))
+        .period(Period.factory(e.getStartDate(), e.getDueDate()))
+        .build();
   }
 
   /**
@@ -56,15 +51,15 @@ public final class StudentMapper {
       return null;
     }
     return StudentEntity.builder()
-            .accountId(d.getAccountId())
-            .academicRegistration(d.getAcademicRegistration().toString())
-            .campus(d.getCampus())
-            .courseId(d.getCourseId())
-            .requiredHours(d.getCounterpartHours().getRequiredHours())
-            .completedHours(d.getCounterpartHours().getCompletedHours())
-            .startDate(d.getPeriod().getStartDate())
-            .dueDate(d.getPeriod().getDueDate())
-            .build();
+        .accountId(d.getAccountId())
+        .academicRegistration(d.getAcademicRegistration().toString())
+        .campus(d.getCampus())
+        .courseId(d.getCourseId())
+        .requiredHours(d.getCounterpartHours().getRequiredHours())
+        .completedHours(d.getCounterpartHours().getCompletedHours())
+        .startDate(d.getPeriod().getStartDate())
+        .dueDate(d.getPeriod().getDueDate())
+        .build();
   }
 
   /**
@@ -86,34 +81,32 @@ public final class StudentMapper {
     e.setDueDate(d.getPeriod().getDueDate());
   }
 
-  /**
-   * Convert entities to StudentView.
-   */
+  /** Convert entities to StudentView. */
   public static StudentView toView(
-          StudentEntity s,
-          AccountEntity acc,
-          UserEntity u,
-          CourseEntity c,
-          SchoolEntity sch) {
+      StudentEntity s, AccountEntity acc, UserEntity u, CourseEntity c, SchoolEntity sch) {
     if (s == null) {
       return null;
     }
 
-    UserView userView = (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()) : null;
-    AccountView accountView = (acc != null) ? new AccountView(acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt()) : null;
+    UserView userView =
+        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()) : null;
+    AccountView accountView =
+        (acc != null)
+            ? new AccountView(
+                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt())
+            : null;
 
     SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName()) : null;
     CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView) : null;
 
     return new StudentView(
-            accountView,
-            s.getAcademicRegistration(),
-            s.getCampus().toString(),
-            courseView,
-            s.getRequiredHours(),
-            s.getCompletedHours(),
-            s.getStartDate(),
-            s.getDueDate()
-    );
+        accountView,
+        s.getAcademicRegistration(),
+        s.getCampus().toString(),
+        courseView,
+        s.getRequiredHours(),
+        s.getCompletedHours(),
+        s.getStartDate(),
+        s.getDueDate());
   }
 }

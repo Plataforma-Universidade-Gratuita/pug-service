@@ -18,33 +18,27 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing cities.
- */
+/** Service for managing cities. */
 @ApplicationScoped
 public class CityService implements ICityService {
 
   private static final Logger LOG = Logger.getLogger(CityService.class);
 
-  @Inject
-  ICityRepository repo;
-  @Inject
-  IEntityService entityService;
+  @Inject ICityRepository repo;
+  @Inject IEntityService entityService;
 
   @Transactional
   @Override
   public City save(CityCreateCommand cmd) {
-    City cityToPersist =
-            CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
+    City cityToPersist = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
 
     if (cityToPersist.hasErrors()) {
       throw new AppValidationException(cityToPersist.getProblems());
@@ -52,8 +46,8 @@ public class CityService implements ICityService {
 
     if (existsByIbge(cityToPersist.getIbgeCode())) {
       throw new DuplicateResourceException(
-              GeoErrorCodes.CITY_ALREADY_EXISTS,
-              Map.of("code", cityToPersist.getIbgeCode().toString()));
+          GeoErrorCodes.CITY_ALREADY_EXISTS,
+          Map.of("code", cityToPersist.getIbgeCode().toString()));
     }
 
     return repo.persist(cityToPersist);
@@ -71,8 +65,7 @@ public class CityService implements ICityService {
     Set<String> ibgeCodesInPayload = new HashSet<>();
 
     for (CityCreateCommand cmd : cmds) {
-      City city =
-              CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
+      City city = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
 
       if (city.hasErrors()) {
         allCollectedProblems.addAll(city.getProblems());
@@ -81,7 +74,7 @@ public class CityService implements ICityService {
 
         if (!ibgeCodesInPayload.add(ibgeCodeStr)) {
           allCollectedProblems.add(
-                  new AppValidationException.Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
+              new AppValidationException.Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
         }
         citiesToPersist.add(city);
       }
@@ -92,7 +85,7 @@ public class CityService implements ICityService {
     }
 
     List<String> ibgeCodesToPersist =
-            citiesToPersist.stream().map(c -> c.getIbgeCode().toString()).toList();
+        citiesToPersist.stream().map(c -> c.getIbgeCode().toString()).toList();
 
     if (repo.existsAnyByIbgeCodeIn(ibgeCodesToPersist)) {
       throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
@@ -106,17 +99,16 @@ public class CityService implements ICityService {
   public City update(UUID id, CityUpdateCommand cmd) {
     City current = getById(id);
 
-    City updated =
-            CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
+    City updated = CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
     if (!updated.getIbgeCode().equals(current.getIbgeCode())
-            && existsByIbge(updated.getIbgeCode())) {
+        && existsByIbge(updated.getIbgeCode())) {
       throw new DuplicateResourceException(
-              GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", updated.getIbgeCode().toString()));
+          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", updated.getIbgeCode().toString()));
     }
 
     repo.update(updated);
@@ -139,14 +131,16 @@ public class CityService implements ICityService {
 
   @Override
   public City getById(UUID id) {
-    City city = repo.findOptionalById(id)
+    City city =
+        repo.findOptionalById(id)
             .orElseThrow(
-                    () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+                () ->
+                    new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
 
     if (city.hasErrors()) {
-      LOG.errorf("Data integrity error: City with ID %s in DB violates domain rules. Problems: %s",
-              id,
-              city.getProblemsSummary());
+      LOG.errorf(
+          "Data integrity error: City with ID %s in DB violates domain rules. Problems: %s",
+          id, city.getProblemsSummary());
       throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id));
     }
 
@@ -155,18 +149,19 @@ public class CityService implements ICityService {
 
   @Override
   public City getByIbge(String ibgeCodeString) {
-    City city = repo.findOptionalByIbgeCode(ibgeCodeString)
+    City city =
+        repo.findOptionalByIbgeCode(ibgeCodeString)
             .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString)));
+                () ->
+                    new ResourceNotFoundException(
+                        GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString)));
 
     if (city.hasErrors()) {
-      LOG.errorf("Data integrity error: City with IBGE code %s in DB violates domain rules. Problems: %s",
-              ibgeCodeString,
-              city.getProblemsSummary());
+      LOG.errorf(
+          "Data integrity error: City with IBGE code %s in DB violates domain rules. Problems: %s",
+          ibgeCodeString, city.getProblemsSummary());
       throw new ResourceNotFoundException(
-              GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString));
+          GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString));
     }
 
     return city;

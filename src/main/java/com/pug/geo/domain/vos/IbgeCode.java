@@ -9,10 +9,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/**
- * Value object representing a city's IBGE code.
- * Converted to class to extend DomainError.
- */
+/** Value object representing a city's IBGE code. Converted to class to extend DomainError. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -26,8 +23,8 @@ public class IbgeCode extends DomainError {
   }
 
   /**
-   * Factory method to create a new IbgeCode.
-   * It does not throw exceptions immediately but collects them in the problems list.
+   * Factory method to create a new IbgeCode. It does not throw exceptions immediately but collects
+   * them in the problems list.
    *
    * @param code The IBGE code string
    * @return The IbgeCode instance (which may contain errors)
@@ -38,15 +35,14 @@ public class IbgeCode extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the IBGE code format and populates the problems list if invalid.
-   */
+  /** Validates the IBGE code format and populates the problems list if invalid. */
   private void validate() {
     if (StringUtils.isEmpty(code)) {
       getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else {
       if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-        getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
+        getProblems()
+            .add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
       }
     }
   }

@@ -9,15 +9,12 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository implementation for User aggregate.
- */
+/** Repository implementation for User aggregate. */
 @ApplicationScoped
 public class UserRepository implements IUserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 

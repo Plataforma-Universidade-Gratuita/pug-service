@@ -6,19 +6,18 @@ import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Entity entity aggregate.
- */
+/** Entity entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Entity extends DomainError {
   UUID id;
   Cnpj cnpj;
@@ -38,21 +37,21 @@ public class Entity extends DomainError {
   /**
    * Factory for new entities.
    *
-   * @param cnpj    the CNPJ of the entity
-   * @param name    the name of the entity.
-   * @param cityId  the ID of the city where the entity is located
+   * @param cnpj the CNPJ of the entity
+   * @param name the name of the entity.
+   * @param cityId the ID of the city where the entity is located
    * @param address the address where the entity is located
    * @return the created entity (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
-            Entity.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cnpj(cnpj)
-                    .name(StringUtils.trim(name))
-                    .cityId(cityId)
-                    .address(StringUtils.trim(address))
-                    .build();
+        Entity.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cnpj(cnpj)
+            .name(StringUtils.trim(name))
+            .cityId(cityId)
+            .address(StringUtils.trim(address))
+            .build();
 
     entity.collectValidationProblems();
     return entity;
@@ -120,9 +119,7 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /**
-   * Collects all validation problems for the entity's attributes.
-   */
+  /** Collects all validation problems for the entity's attributes. */
   private void collectValidationProblems() {
     if (id == null) {
       addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK));

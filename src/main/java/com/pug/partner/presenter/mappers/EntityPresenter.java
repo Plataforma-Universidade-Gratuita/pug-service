@@ -5,7 +5,6 @@ import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityResponse;
-import com.pug.shared.exceptions.AppValidationException;
 
 /** Maps read-side EntityView to presenter EntityResponse. */
 public final class EntityPresenter {

@@ -10,8 +10,4 @@ import java.util.UUID;
  * @param cityId the ID of the city associated with the entity, as a UUID.
  * @param address the address of the entity.
  */
-public record EntityUpdateRequest(
-    String cnpjString,
-    String name,
-    UUID cityId,
-    String address) {}
+public record EntityUpdateRequest(String cnpjString, String name, UUID cityId, String address) {}

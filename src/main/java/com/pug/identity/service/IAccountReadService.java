@@ -1,13 +1,10 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.AccountView;
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Interface for reading account views.
- */
+/** Interface for reading account views. */
 public interface IAccountReadService {
 
   /**
@@ -16,7 +13,7 @@ public interface IAccountReadService {
    * @param id the UUID of the account
    * @return the AccountView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given ID is
-   *                                                             found
+   *     found
    */
   AccountView getViewById(UUID id);
 
@@ -26,7 +23,7 @@ public interface IAccountReadService {
    * @param email the email of the account
    * @return the AccountView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given email
-   *                                                             is found
+   *     is found
    */
   AccountView getViewByEmail(String email);
 

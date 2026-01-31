@@ -283,6 +283,7 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
                     <effort>max</effort>
                     <threshold>Low</threshold>
                     <failOnError>true</failOnError>

@@ -20,8 +20,6 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,21 +27,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Course entities.
- */
+/** Service class for managing Course entities. */
 @ApplicationScoped
 public class CourseService implements ICourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseService.class);
 
-  @Inject
-  ICourseRepository repo;
-  @Inject
-  ISchoolService schoolService;
-  @Inject
-  IStudentService studentService;
+  @Inject ICourseRepository repo;
+  @Inject ISchoolService schoolService;
+  @Inject IStudentService studentService;
 
   @Transactional
   @Override
@@ -59,7 +53,7 @@ public class CourseService implements ICourseService {
 
     if (existsByName(courseToPersist.getName())) {
       throw new DuplicateResourceException(
-              AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
     }
     return repo.persist(courseToPersist);
   }
@@ -83,8 +77,10 @@ public class CourseService implements ICourseService {
         schoolService.getById(schoolId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-                new AppValidationException.Problem(
-                        AcademicErrorCodes.INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly mappable here easily without context
+            new AppValidationException.Problem(
+                AcademicErrorCodes
+                    .INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly
+        // mappable here easily without context
       }
     }
 
@@ -101,7 +97,7 @@ public class CourseService implements ICourseService {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
           allCollectedProblems.add(
-                  new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+              new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
         } else {
           coursesToPersist.add(course);
         }
@@ -136,9 +132,10 @@ public class CourseService implements ICourseService {
       throw new AppValidationException(updatedCourse.getProblems());
     }
 
-    if (!updatedCourse.getName().equals(current.getName()) && existsByName(updatedCourse.getName())) {
+    if (!updatedCourse.getName().equals(current.getName())
+        && existsByName(updatedCourse.getName())) {
       throw new DuplicateResourceException(
-              AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", updatedCourse.getName()));
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", updatedCourse.getName()));
     }
 
     repo.update(updatedCourse);
@@ -150,10 +147,10 @@ public class CourseService implements ICourseService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-              DeleteKeys.COURSES, 0L,
-              DeleteKeys.STUDENTS, 0L,
-              DeleteKeys.ACCOUNTS, 0L,
-              DeleteKeys.USERS, 0L);
+          DeleteKeys.COURSES, 0L,
+          DeleteKeys.STUDENTS, 0L,
+          DeleteKeys.ACCOUNTS, 0L,
+          DeleteKeys.USERS, 0L);
     }
 
     if (studentService.existsAnyByCourseIdIn(ids)) {
@@ -163,21 +160,21 @@ public class CourseService implements ICourseService {
     Set<UUID> studentAccountIdsToDelete = new HashSet<>();
     for (UUID courseId : ids) {
       studentAccountIdsToDelete.addAll(
-              studentService.listAllByCourseId(courseId).stream()
-                      .map(Student::getAccountId)
-                      .collect(Collectors.toSet()));
+          studentService.listAllByCourseId(courseId).stream()
+              .map(Student::getAccountId)
+              .collect(Collectors.toSet()));
     }
 
     Map<DeleteKeys, Long> deletedStudentsAndDependents =
-            studentService.deleteAll(studentAccountIdsToDelete);
+        studentService.deleteAll(studentAccountIdsToDelete);
 
     long coursesDeleted = repo.deleteByIds(ids);
 
     return Map.of(
-            DeleteKeys.COURSES, coursesDeleted,
-            DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-            DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
+        DeleteKeys.COURSES, coursesDeleted,
+        DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
+        DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
@@ -185,8 +182,9 @@ public class CourseService implements ICourseService {
     List<Course> courses = repo.listAllCourses();
     for (Course c : courses) {
       if (c.hasErrors()) {
-        LOG.errorf("Data integrity error: Corrupted Course entity found in DB. Problems: %s",
-                c.getProblemsSummary());
+        LOG.errorf(
+            "Data integrity error: Corrupted Course entity found in DB. Problems: %s",
+            c.getProblemsSummary());
         throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
       }
     }
@@ -201,8 +199,9 @@ public class CourseService implements ICourseService {
     List<Course> courses = repo.listAllBySchoolId(schoolId);
     for (Course c : courses) {
       if (c.hasErrors()) {
-        LOG.errorf("Data integrity error: Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
-                schoolId, c.getProblemsSummary());
+        LOG.errorf(
+            "Data integrity error: Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
+            schoolId, c.getProblemsSummary());
         throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
       }
     }
@@ -211,15 +210,17 @@ public class CourseService implements ICourseService {
 
   @Override
   public Course getById(UUID id) {
-    Course course = repo.findOptionalById(id)
+    Course course =
+        repo.findOptionalById(id)
             .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+                () ->
+                    new ResourceNotFoundException(
+                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
 
     if (course.hasErrors()) {
-      LOG.errorf("Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-              id, course.getProblemsSummary());
+      LOG.errorf(
+          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+          id, course.getProblemsSummary());
       throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id));
     }
     return course;
@@ -228,15 +229,17 @@ public class CourseService implements ICourseService {
   @Override
   public Course getByName(String name) {
     String n = StringUtils.trim(name);
-    Course course = repo.findOptionalByName(n)
+    Course course =
+        repo.findOptionalByName(n)
             .orElseThrow(
-                    () ->
-                            new ResourceNotFoundException(
-                                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+                () ->
+                    new ResourceNotFoundException(
+                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
 
     if (course.hasErrors()) {
-      LOG.errorf("Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
-              n, course.getProblemsSummary());
+      LOG.errorf(
+          "Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
+          n, course.getProblemsSummary());
       throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n));
     }
     return course;

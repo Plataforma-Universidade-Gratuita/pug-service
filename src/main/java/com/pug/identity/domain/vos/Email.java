@@ -4,17 +4,16 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import org.apache.commons.validator.routines.EmailValidator;
 
-import java.util.Locale;
-
 /**
- * Value object representing an email address.
- * Converted to class to extend DomainError, allowing deferred validation.
+ * Value object representing an email address. Converted to class to extend DomainError, allowing
+ * deferred validation.
  */
 @Getter
 @Value
@@ -31,9 +30,8 @@ public class Email extends DomainError {
   }
 
   /**
-   * Factory method to create a new Email.
-   * It normalizes the input (trim and lowercase) and runs validation.
-   * It does not throw exceptions immediately but collects them in the problems list.
+   * Factory method to create a new Email. It normalizes the input (trim and lowercase) and runs
+   * validation. It does not throw exceptions immediately but collects them in the problems list.
    *
    * @param rawValue The raw email string.
    * @return The Email instance (which may contain errors).
@@ -46,9 +44,7 @@ public class Email extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the email format and length, populating the problems list if invalid.
-   */
+  /** Validates the email format and length, populating the problems list if invalid. */
   private void validate() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));

@@ -7,19 +7,18 @@ import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Student entity aggregate.
- */
+/** Student entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Student extends DomainError {
   UUID accountId;
   AcademicRegistration academicRegistration;
@@ -30,12 +29,12 @@ public class Student extends DomainError {
 
   @Builder(toBuilder = true)
   private Student(
-          UUID accountId,
-          AcademicRegistration academicRegistration,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours counterpartHours,
-          Period period) {
+      UUID accountId,
+      AcademicRegistration academicRegistration,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours counterpartHours,
+      Period period) {
     this.accountId = accountId;
     this.academicRegistration = academicRegistration;
     this.campus = campus;
@@ -48,21 +47,22 @@ public class Student extends DomainError {
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg       the academic registration for the student
-   * @param campus    the campus at which the student is enrolled
-   * @param courseId  the course identifier the student is enrolled in
-   * @param hours     the counterpart hours details
-   * @param period    the academic period details
+   * @param reg the academic registration for the student
+   * @param campus the campus at which the student is enrolled
+   * @param courseId the course identifier the student is enrolled in
+   * @param hours the counterpart hours details
+   * @param period the academic period details
    * @return the created student (may contain errors)
    */
   public static Student factory(
-          UUID accountId,
-          AcademicRegistration reg,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours hours,
-          Period period) {
-    Student student = Student.builder()
+      UUID accountId,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
+    Student student =
+        Student.builder()
             .accountId(accountId)
             .academicRegistration(reg)
             .campus(campus)
@@ -150,12 +150,11 @@ public class Student extends DomainError {
     return updatedStudent;
   }
 
-  /**
-   * Collects all validation problems for the Student instance.
-   */
+  /** Collects all validation problems for the Student instance. */
   private void collectValidationProblems() {
     if (accountId == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+      addError(
+          new AppValidationException.Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
     }
 
     if (academicRegistration == null) {

@@ -17,28 +17,22 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing staff assignments to partner entities.
- */
+/** Service for managing staff assignments to partner entities. */
 @ApplicationScoped
 public class StaffService implements IStaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffService.class);
 
-  @Inject
-  IStaffRepository repo;
-  @Inject
-  IAccountService accountService;
-  @Inject
-  IEntityService entityService;
+  @Inject IStaffRepository repo;
+  @Inject IAccountService accountService;
+  @Inject IEntityService entityService;
 
   @Transactional
   @Override
@@ -73,17 +67,16 @@ public class StaffService implements IStaffService {
       }
     }
 
-    List<Account> accounts = accountService.saveAll(
-            cmdList.stream()
-                    .map(StaffCreateCommand::accountCommand)
-                    .collect(Collectors.toList())
-    );
+    List<Account> accounts =
+        accountService.saveAll(
+            cmdList.stream().map(StaffCreateCommand::accountCommand).collect(Collectors.toList()));
 
     List<AppValidationException.Problem> problems = new ArrayList<>();
     List<Staff> staffToPersist = new ArrayList<>();
 
     if (accounts.size() != cmdList.size()) {
-      throw new RuntimeException("Mismatch between requested staff creations and created accounts.");
+      throw new RuntimeException(
+          "Mismatch between requested staff creations and created accounts.");
     }
 
     for (int i = 0; i < accounts.size(); i++) {
@@ -141,25 +134,26 @@ public class StaffService implements IStaffService {
     Map<DeleteKeys, Long> accountDeleteResult = accountService.deleteAll(ids);
 
     return Map.of(
-            DeleteKeys.STAFF, deletedStaff,
-            DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L)
-    );
+        DeleteKeys.STAFF, deletedStaff,
+        DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
   public Staff getById(UUID accountId) {
-    Staff staff = repo.findOptionalById(accountId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", accountId)));
+    Staff staff =
+        repo.findOptionalById(accountId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", accountId)));
 
     if (staff.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: Staff with Account ID %s in DB violates domain rules. Problems: %s",
-              accountId,
-              staff.getProblemsSummary());
+          "Data integrity error: Staff with Account ID %s in DB violates domain rules. Problems: %s",
+          accountId, staff.getProblemsSummary());
       throw new ResourceNotFoundException(
-              PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", accountId));
+          PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("accountId", accountId));
     }
 
     return staff;
@@ -172,8 +166,8 @@ public class StaffService implements IStaffService {
     for (Staff staff : allStaff) {
       if (staff.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
-                staff.getProblemsSummary());
+            "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
+            staff.getProblemsSummary());
         throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
       }
     }
@@ -192,8 +186,8 @@ public class StaffService implements IStaffService {
     for (Staff staff : staffList) {
       if (staff.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
-                staff.getProblemsSummary());
+            "Data integrity error: Corrupted Staff entity found in DB. Problems: %s",
+            staff.getProblemsSummary());
         throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
       }
     }

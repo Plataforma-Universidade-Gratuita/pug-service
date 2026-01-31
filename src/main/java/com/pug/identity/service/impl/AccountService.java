@@ -23,32 +23,25 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class AccountService implements IAccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountService.class);
 
-  @Inject
-  IAccountRepository repo;
-  @Inject
-  TimeProvider time;
-  @Inject
-  IUserService userService;
-  @Inject
-  IAdminService adminService;
-  @Inject
-  IStaffService staffService;
-  @Inject
-  IStudentService studentService;
+  @Inject IAccountRepository repo;
+  @Inject TimeProvider time;
+  @Inject IUserService userService;
+  @Inject IAdminService adminService;
+  @Inject IStaffService staffService;
+  @Inject IStudentService studentService;
 
   @Transactional
   @Override
@@ -64,13 +57,13 @@ public class AccountService implements IAccountService {
       userId = newUser.getId();
     }
 
-    Account account = AccountProcessor.processCreateInput(
+    Account account =
+        AccountProcessor.processCreateInput(
             userId,
             cmd.emailString(),
             (cmd.type() != null ? cmd.type().name() : null),
             cmd.passwordHash(),
-            time
-    );
+            time);
 
     if (account.hasErrors()) {
       throw new AppValidationException(account.getProblems());
@@ -78,8 +71,8 @@ public class AccountService implements IAccountService {
 
     if (existsByEmail(account.getEmail().toString())) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-              Map.of("email", account.getEmail().toString()));
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
+          Map.of("email", account.getEmail().toString()));
     }
 
     return repo.persist(account);
@@ -115,20 +108,20 @@ public class AccountService implements IAccountService {
 
       if (userId == null) continue;
 
-      Account account = AccountProcessor.processCreateInput(
+      Account account =
+          AccountProcessor.processCreateInput(
               userId,
               cmd.emailString(),
               (cmd.type() != null ? cmd.type().name() : null),
               cmd.passwordHash(),
-              time
-      );
+              time);
 
       if (account.hasErrors()) {
         allProblems.addAll(account.getProblems());
       } else {
         if (!emailsInPayload.add(account.getEmail().toString())) {
-          allProblems.add(new AppValidationException.Problem(
-                  IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
+          allProblems.add(
+              new AppValidationException.Problem(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
         } else {
           accountsToPersist.add(account);
         }
@@ -139,9 +132,8 @@ public class AccountService implements IAccountService {
       throw new AppValidationException(allProblems);
     }
 
-    List<String> emailsToCheck = accountsToPersist.stream()
-            .map(a -> a.getEmail().toString())
-            .toList();
+    List<String> emailsToCheck =
+        accountsToPersist.stream().map(a -> a.getEmail().toString()).toList();
 
     if (repo.existsAnyByEmailIn(emailsToCheck)) {
       throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
@@ -159,20 +151,18 @@ public class AccountService implements IAccountService {
       userService.update(current.getUserId(), cmd.userCommand());
     }
 
-    Account updated = AccountProcessor.processUpdateInput(
-            current,
-            cmd.emailString(),
-            cmd.passwordHash()
-    );
+    Account updated =
+        AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getEmail().equals(current.getEmail()) && existsByEmail(updated.getEmail().toString())) {
+    if (!updated.getEmail().equals(current.getEmail())
+        && existsByEmail(updated.getEmail().toString())) {
       throw new DuplicateResourceException(
-              IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-              Map.of("email", updated.getEmail().toString()));
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
+          Map.of("email", updated.getEmail().toString()));
     }
 
     repo.update(updated);
@@ -197,8 +187,8 @@ public class AccountService implements IAccountService {
     }
 
     Set<UUID> userIdsAssociated = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
-    Set<UUID> userIdsWithOtherAccounts = new HashSet<>(
-            repo.findUserIdsWithAccountsExcluding(ids, userIdsAssociated));
+    Set<UUID> userIdsWithOtherAccounts =
+        new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, userIdsAssociated));
 
     Set<UUID> userIdsToDelete = new HashSet<>(userIdsAssociated);
     userIdsToDelete.removeAll(userIdsWithOtherAccounts);
@@ -219,8 +209,9 @@ public class AccountService implements IAccountService {
     List<Account> accounts = repo.listAllAccounts();
     for (Account account : accounts) {
       if (account.hasErrors()) {
-        LOG.errorf("Corrupted Account found. ID: %s. Problems: %s",
-                account.getId(), account.getProblemsSummary());
+        LOG.errorf(
+            "Corrupted Account found. ID: %s. Problems: %s",
+            account.getId(), account.getProblemsSummary());
         throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
       }
     }
@@ -229,13 +220,15 @@ public class AccountService implements IAccountService {
 
   @Override
   public Account getById(UUID id) {
-    Account account = repo.findOptionalById(id)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+    Account account =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
 
     if (account.hasErrors()) {
-      LOG.errorf("Corrupted Account found. ID: %s. Problems: %s",
-              id, account.getProblemsSummary());
+      LOG.errorf("Corrupted Account found. ID: %s. Problems: %s", id, account.getProblemsSummary());
       throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id));
     }
     return account;

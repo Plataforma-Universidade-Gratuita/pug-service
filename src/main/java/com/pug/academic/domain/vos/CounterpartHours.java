@@ -3,16 +3,14 @@ package com.pug.academic.domain.vos;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.math.BigDecimal;
-
 /**
- * Value Object representing Counterpart Hours.
- * Extends DomainError to allow deferred validation.
+ * Value Object representing Counterpart Hours. Extends DomainError to allow deferred validation.
  */
 @Getter
 @Value
@@ -31,12 +29,13 @@ public class CounterpartHours extends DomainError {
   /**
    * Factory method to create a new CounterpartHours.
    *
-   * @param requiredHours  the required hours
+   * @param requiredHours the required hours
    * @param completedHours the completed hours
    * @return The CounterpartHours instance (which may contain errors)
    */
   public static CounterpartHours factory(BigDecimal requiredHours, BigDecimal completedHours) {
-    CounterpartHours vo = CounterpartHours.builder()
+    CounterpartHours vo =
+        CounterpartHours.builder()
             .requiredHours(requiredHours)
             .completedHours(completedHours)
             .build();
@@ -44,9 +43,7 @@ public class CounterpartHours extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the hours.
-   */
+  /** Validates the hours. */
   private void validate() {
     if (requiredHours == null) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
@@ -63,7 +60,9 @@ public class CounterpartHours extends DomainError {
         addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.compareTo(requiredHours) > 0) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
+        addError(
+            new AppValidationException.Problem(
+                AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
       }
     }
   }

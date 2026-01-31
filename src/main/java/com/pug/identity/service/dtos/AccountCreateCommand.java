@@ -11,7 +11,4 @@ import com.pug.shared.domain.enums.AccountType;
  * @param userCommand the command for the associated user.
  */
 public record AccountCreateCommand(
-    String emailString,
-    AccountType type,
-    String passwordHash,
-    UserCreateCommand userCommand) {}
+    String emailString, AccountType type, String passwordHash, UserCreateCommand userCommand) {}

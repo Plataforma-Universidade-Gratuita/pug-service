@@ -5,5 +5,4 @@ package com.pug.academic.presenter.dtos;
  *
  * @param name the new name of the school (optional).
  */
-public record SchoolUpdateRequest(String name) {
-}
+public record SchoolUpdateRequest(String name) {}

@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Value object representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica).
- * Extends DomainError to support deferred validation.
+ * Value object representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica). Extends
+ * DomainError to support deferred validation.
  */
 @Getter
 @Value
@@ -26,8 +26,8 @@ public class Cnpj extends DomainError {
   }
 
   /**
-   * Factory method to create a new Cnpj.
-   * It cleans the input (removes non-digits) and runs validation.
+   * Factory method to create a new Cnpj. It cleans the input (removes non-digits) and runs
+   * validation.
    *
    * @param rawValue the CNPJ value as a string
    * @return The Cnpj instance (which may contain errors)
@@ -40,9 +40,7 @@ public class Cnpj extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the CNPJ, populating the problems list if invalid.
-   */
+  /** Validates the CNPJ, populating the problems list if invalid. */
   private void validate() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
@@ -65,8 +63,8 @@ public class Cnpj extends DomainError {
   }
 
   /**
-   * Returns the formatted string representation of the CNPJ (e.g., "XX.XXX.XXX/XXXX-XX").
-   * Returns raw value if length is invalid.
+   * Returns the formatted string representation of the CNPJ (e.g., "XX.XXX.XXX/XXXX-XX"). Returns
+   * raw value if length is invalid.
    *
    * @return the formatted CNPJ as a String.
    */
@@ -75,14 +73,14 @@ public class Cnpj extends DomainError {
       return value;
     }
     return value.substring(0, 2)
-            + "."
-            + value.substring(2, 5)
-            + "."
-            + value.substring(5, 8)
-            + "/"
-            + value.substring(8, 12)
-            + "-"
-            + value.substring(12, 14);
+        + "."
+        + value.substring(2, 5)
+        + "."
+        + value.substring(5, 8)
+        + "/"
+        + value.substring(8, 12)
+        + "-"
+        + value.substring(12, 14);
   }
 
   @Override
@@ -93,8 +91,8 @@ public class Cnpj extends DomainError {
   // --- Internal Validation Logic ---
 
   private static boolean isValidChecksum(String cnpj) {
-    int d1 = calculateChecksumDigit(cnpj, new int[]{5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
-    int d2 = calculateChecksumDigit(cnpj, new int[]{6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
+    int d1 = calculateChecksumDigit(cnpj, new int[] {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
+    int d2 = calculateChecksumDigit(cnpj, new int[] {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
     return (cnpj.charAt(12) - '0') == d1 && (cnpj.charAt(13) - '0') == d2;
   }
 

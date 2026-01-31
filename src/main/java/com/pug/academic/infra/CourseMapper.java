@@ -6,15 +6,10 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.SchoolView;
 
-/**
- * Mapper for Course and CourseEntity.
- */
+/** Mapper for Course and CourseEntity. */
 public final class CourseMapper {
-  /**
-   * Private constructor.
-   */
-  private CourseMapper() {
-  }
+  /** Private constructor. */
+  private CourseMapper() {}
 
   /**
    * Convert CourseEntity to Course domain object.
@@ -26,11 +21,7 @@ public final class CourseMapper {
     if (e == null) {
       return null;
     }
-    return Course.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .schoolId(e.getSchoolId())
-            .build();
+    return Course.builder().id(e.getId()).name(e.getName()).schoolId(e.getSchoolId()).build();
   }
 
   /**
@@ -43,11 +34,7 @@ public final class CourseMapper {
     if (d == null) {
       return null;
     }
-    return CourseEntity.builder()
-            .id(d.getId())
-            .name(d.getName())
-            .schoolId(d.getSchoolId())
-            .build();
+    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).build();
   }
 
   /**

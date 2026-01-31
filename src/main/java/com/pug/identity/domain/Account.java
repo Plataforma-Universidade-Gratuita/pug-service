@@ -8,21 +8,20 @@ import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Account extends DomainError {
   UUID id;
   UUID userId;
@@ -33,12 +32,12 @@ public class Account extends DomainError {
 
   @Builder(toBuilder = true)
   private Account(
-          UUID id,
-          UUID userId,
-          Email email,
-          AccountType accountType,
-          String passwordHash,
-          OffsetDateTime createdAt) {
+      UUID id,
+      UUID userId,
+      Email email,
+      AccountType accountType,
+      String passwordHash,
+      OffsetDateTime createdAt) {
     this.id = id;
     this.userId = userId;
     this.email = email;
@@ -50,26 +49,26 @@ public class Account extends DomainError {
   /**
    * Factory for new Account.
    *
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param type         the account type for the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
-   * @param time         time provider
+   * @param time time provider
    * @return new Account instance (may contain errors)
    */
   public static Account factory(
-          UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
+      UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
     var created = OffsetDateTime.now(time.clock());
 
     Account account =
-            Account.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .userId(userId)
-                    .email(email)
-                    .accountType(type)
-                    .passwordHash(passwordHash)
-                    .createdAt(created)
-                    .build();
+        Account.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .userId(userId)
+            .email(email)
+            .accountType(type)
+            .passwordHash(passwordHash)
+            .createdAt(created)
+            .build();
 
     account.collectValidationProblems(time.clock());
     return account;
@@ -108,10 +107,7 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Behavior: Activate/Deactivate logic could go here if needed.
-   * For now, just validation.
-   */
+  /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
   private void collectValidationProblems(Clock clock) {
     if (id == null) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK));

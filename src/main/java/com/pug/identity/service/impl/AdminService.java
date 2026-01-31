@@ -17,28 +17,22 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing admins.
- */
+/** Service for managing admins. */
 @ApplicationScoped
 public class AdminService implements IAdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminService.class);
 
-  @Inject
-  IAdminRepository adminsRepo;
-  @Inject
-  IAccountService accountService;
-  @Inject
-  TimeProvider time;
+  @Inject IAdminRepository adminsRepo;
+  @Inject IAccountService accountService;
+  @Inject TimeProvider time;
 
   @Transactional
   @Override
@@ -61,11 +55,11 @@ public class AdminService implements IAdminService {
       return List.of();
     }
 
-    List<Account> accounts = accountService.saveAll(
+    List<Account> accounts =
+        accountService.saveAll(
             CollectionUtils.toStream(cmds)
-                    .map(AdminCreateCommand::accountCommand)
-                    .collect(Collectors.toList())
-    );
+                .map(AdminCreateCommand::accountCommand)
+                .collect(Collectors.toList()));
 
     List<AppValidationException.Problem> problems = new ArrayList<>();
     List<Admin> adminsToPersist = new ArrayList<>();
@@ -106,25 +100,27 @@ public class AdminService implements IAdminService {
     Map<DeleteKeys, Long> accountDeleteResult = accountService.deleteAll(ids);
 
     return Map.of(
-            DeleteKeys.ADMINS, adminsDeleted,
-            DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-            DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L)
-    );
+        DeleteKeys.ADMINS, adminsDeleted,
+        DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+        DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
   public Admin getById(UUID accountId) {
-    Admin admin = adminsRepo.findOptionalById(accountId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+    Admin admin =
+        adminsRepo
+            .findOptionalById(accountId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
 
     if (admin.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: Admin with Account ID %s in DB violates domain rules. Problems: %s",
-              accountId,
-              admin.getProblemsSummary());
+          "Data integrity error: Admin with Account ID %s in DB violates domain rules. Problems: %s",
+          accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-              IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
+          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
     }
 
     return admin;
@@ -137,8 +133,8 @@ public class AdminService implements IAdminService {
     for (Admin admin : admins) {
       if (admin.hasErrors()) {
         LOG.errorf(
-                "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
-                admin.getProblemsSummary());
+            "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
+            admin.getProblemsSummary());
         throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
       }
     }

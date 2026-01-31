@@ -3,15 +3,10 @@ package com.pug.geo.presenter.mappers;
 import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.geo.presenter.dtos.CityResponse;
 
-/**
- * Maps read-side CityView to presenter CityResponse.
- */
+/** Maps read-side CityView to presenter CityResponse. */
 public final class CityPresenter {
-  /**
-   * Private constructor for utility class.
-   */
-  private CityPresenter() {
-  }
+  /** Private constructor for utility class. */
+  private CityPresenter() {}
 
   /**
    * Maps CityView to CityResponse.
