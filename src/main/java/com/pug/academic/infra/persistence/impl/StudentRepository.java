@@ -4,24 +4,26 @@ import com.pug.academic.domain.IStudentRepository;
 import com.pug.academic.domain.Student;
 import com.pug.academic.infra.StudentMapper;
 import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of StudentRepository using Panache for persistence operations. */
+/**
+ * Implementation of StudentRepository using Panache for persistence operations.
+ */
 @ApplicationScoped
 public class StudentRepository
-    implements IStudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+        implements IStudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
   @Transactional
   @Override
-  public Student persist(Student student) throws AppValidationException {
+  public Student persist(Student student) {
     if (student == null) {
       return null;
     }
@@ -32,7 +34,7 @@ public class StudentRepository
 
   @Transactional
   @Override
-  public List<Student> persistAll(Iterable<Student> students) throws AppValidationException {
+  public List<Student> persistAll(Iterable<Student> students) {
     if (CollectionUtils.isEmpty(students)) {
       return List.of();
     }
@@ -41,6 +43,10 @@ public class StudentRepository
       if (s != null) {
         batch.add(StudentMapper.toEntity(s));
       }
+    }
+
+    if (batch.isEmpty()) {
+      return List.of();
     }
 
     persist(batch);
@@ -78,13 +84,13 @@ public class StudentRepository
   }
 
   @Override
-  public Optional<Student> findOptionalById(UUID id) throws AppValidationException {
+  public Optional<Student> findOptionalById(UUID id) {
     Optional<StudentEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(StudentMapper::toDomain);
   }
 
   @Override
-  public List<Student> listAllStudents() throws AppValidationException {
+  public List<Student> listAllStudents() {
     var domainList = new ArrayList<Student>();
     for (StudentEntity entity : listAll()) {
       domainList.add(StudentMapper.toDomain(entity));
@@ -93,7 +99,7 @@ public class StudentRepository
   }
 
   @Override
-  public List<Student> listAllByCourseId(UUID courseId) throws AppValidationException {
+  public List<Student> listAllByCourseId(UUID courseId) {
     var domainList = new ArrayList<Student>();
     for (StudentEntity entity : list("courseId", courseId)) {
       domainList.add(StudentMapper.toDomain(entity));

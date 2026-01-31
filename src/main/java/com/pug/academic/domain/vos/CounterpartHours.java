@@ -1,61 +1,70 @@
 package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Value Object representing Counterpart Hours with validation.
- *
- * <p>Also provides a method to calculate missing hours.
- *
- * @param requiredHours the required hours
- * @param completedHours the completed hours
+ * Value Object representing Counterpart Hours.
+ * Extends DomainError to allow deferred validation.
  */
-public record CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours) {
-  /**
-   * Constructs CounterpartHours after validating the input hours.
-   *
-   * @param requiredHours the required hours
-   * @param completedHours the completed hours
-   * @throws AppValidationException if the hours are null, negative, or if completed hours exceed
-   *     required hours. This exception may contain multiple validation problems.
-   */
-  public CounterpartHours {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class CounterpartHours extends DomainError {
 
+  BigDecimal requiredHours;
+  BigDecimal completedHours;
+
+  @Builder(toBuilder = true)
+  private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours) {
+    this.requiredHours = requiredHours;
+    this.completedHours = completedHours;
+  }
+
+  /**
+   * Factory method to create a new CounterpartHours.
+   *
+   * @param requiredHours  the required hours
+   * @param completedHours the completed hours
+   * @return The CounterpartHours instance (which may contain errors)
+   */
+  public static CounterpartHours factory(BigDecimal requiredHours, BigDecimal completedHours) {
+    CounterpartHours vo = CounterpartHours.builder()
+            .requiredHours(requiredHours)
+            .completedHours(completedHours)
+            .build();
+    vo.validate();
+    return vo;
+  }
+
+  /**
+   * Validates the hours.
+   */
+  private void validate() {
     if (requiredHours == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              AcademicErrorCodes.INVALID_HOURS_BLANK, "requiredHours"));
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
     if (completedHours == null) {
-      problems.add(
-          new AppValidationException.Problem(
-              AcademicErrorCodes.INVALID_HOURS_BLANK, "completedHours"));
-    }
-    if (requiredHours != null && completedHours != null) {
-      if (requiredHours.signum() < 0) {
-        problems.add(
-            new AppValidationException.Problem(
-                AcademicErrorCodes.INVALID_HOURS_BLANK, "requiredHours"));
-      }
-      if (completedHours.signum() < 0) {
-        problems.add(
-            new AppValidationException.Problem(
-                AcademicErrorCodes.INVALID_HOURS_BLANK, "completedHours"));
-      }
-      if (completedHours.compareTo(requiredHours) > 0) {
-        problems.add(
-            new AppValidationException.Problem(
-                AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED, "completedHours"));
-      }
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (requiredHours != null && completedHours != null) {
+      if (requiredHours.signum() < 0) {
+        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+      }
+      if (completedHours.signum() < 0) {
+        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+      }
+      if (completedHours.compareTo(requiredHours) > 0) {
+        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
+      }
     }
   }
 
@@ -65,6 +74,9 @@ public record CounterpartHours(BigDecimal requiredHours, BigDecimal completedHou
    * @return the number of hours still needed.
    */
   public BigDecimal getRemainingHours() {
-    return requiredHours.subtract(completedHours);
+    if (requiredHours != null && completedHours != null) {
+      return requiredHours.subtract(completedHours);
+    }
+    return BigDecimal.ZERO;
   }
 }

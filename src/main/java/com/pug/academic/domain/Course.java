@@ -2,46 +2,50 @@ package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.Value;
 
-/** Course entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Course entity aggregate.
+ */
 @Getter
-@Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class Course {
-  private final UUID id;
-  private final String name;
-  private final UUID schoolId;
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class Course extends DomainError {
+  UUID id;
+  String name;
+  UUID schoolId;
+
+  @Builder(toBuilder = true)
+  private Course(UUID id, String name, UUID schoolId) {
+    this.id = id;
+    this.name = name;
+    this.schoolId = schoolId;
+  }
 
   /**
    * Factory for new courses.
    *
-   * @param name the name of the course
+   * @param name     the name of the course
    * @param schoolId the ID of the school
-   * @return the created course
-   * @throws AppValidationException if validation fails
+   * @return the created course (may contain errors)
    */
-  public static Course createNew(String name, UUID schoolId) {
+  public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
-    Course course =
-        Course.builder()
+    Course course = Course.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .name(trimmedName)
             .schoolId(schoolId)
             .build();
 
-    List<AppValidationException.Problem> problems = course.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
+    course.collectValidationProblems();
     return course;
   }
 
@@ -50,16 +54,14 @@ public class Course {
    *
    * @param newName the new name for the course
    * @return the updated course with the new name
-   * @throws AppValidationException if validation fails
    */
   public Course changeName(String newName) {
     String trimmedName = StringUtils.trim(newName);
-    Course updatedCourse = this.toBuilder().name(trimmedName).build();
-
-    List<AppValidationException.Problem> problems = updatedCourse.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (this.name.equals(trimmedName)) {
+      return this;
     }
+    Course updatedCourse = this.toBuilder().name(trimmedName).build();
+    updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
 
@@ -68,42 +70,32 @@ public class Course {
    *
    * @param newSchoolId the ID of the new school
    * @return the updated course with the new school ID
-   * @throws AppValidationException if validation fails
    */
   public Course moveToSchool(UUID newSchoolId) {
-    Course updatedCourse = this.toBuilder().schoolId(newSchoolId).build();
-
-    List<AppValidationException.Problem> problems = updatedCourse.collectValidationProblems();
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (this.schoolId.equals(newSchoolId)) {
+      return this;
     }
+    Course updatedCourse = this.toBuilder().schoolId(newSchoolId).build();
+    updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
 
   /**
    * Collects all validation problems for the Course instance.
-   *
-   * @return A list of {@code AppValidationException.Problem}; an empty list otherwise.
    */
-  private List<AppValidationException.Problem> collectValidationProblems() {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+  private void collectValidationProblems() {
     if (id == null) {
-      problems.add(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK, "id"));
-    }
-    if (StringUtils.isEmpty(name)) {
-      problems.add(
-          new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK, "name"));
-    } else if (name.length() > 120) {
-      problems.add(
-          new AppValidationException.Problem(
-              AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH, "name"));
-    }
-    if (schoolId == null) {
-      problems.add(
-          new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK, "schoolId"));
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK));
     }
 
-    return problems;
+    if (StringUtils.isEmpty(name)) {
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK));
+    } else if (name.length() > 120) {
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH));
+    }
+
+    if (schoolId == null) {
+      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK));
+    }
   }
 }

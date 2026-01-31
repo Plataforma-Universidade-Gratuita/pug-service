@@ -19,7 +19,7 @@ import java.util.UUID;
  * @param dueDate The new due date of the academic period (optional).
  */
 public record StudentUpdateCommand(
-    AccountUpdateCommand accountUpdateCommand, // Optional for updates
+    AccountUpdateCommand accountUpdateCommand,
     String academicRegistration,
     Campi campus,
     UUID courseId,

@@ -1,29 +1,28 @@
 package com.pug.academic.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Student entities. */
+/**
+ * Repository interface for managing Student entities.
+ */
 public interface IStudentRepository {
   /**
    * Persists a Student entity.
    *
    * @param entity the Student to persist
    * @return the persisted Student
-   * @throws AppValidationException if the persisted entity cannot be converted back.
    */
-  Student persist(Student entity) throws AppValidationException;
+  Student persist(Student entity);
 
   /**
    * Persists multiple Student entities.
    *
    * @param entities the Students to persist
    * @return the list of persisted Students
-   * @throws AppValidationException if any persisted entity cannot be converted back.
    */
-  List<Student> persistAll(Iterable<Student> entities) throws AppValidationException;
+  List<Student> persistAll(Iterable<Student> entities);
 
   /**
    * Updates a Student entity.
@@ -45,26 +44,29 @@ public interface IStudentRepository {
    *
    * @param id the account ID of the Student to find
    * @return an Optional containing the Student if found, or empty if not found
-   * @throws AppValidationException if the found entity cannot be converted.
+   * <p>Note: The returned Student may contain validation errors (check {@code student.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Student> findOptionalById(UUID id) throws AppValidationException;
+  Optional<Student> findOptionalById(UUID id);
 
   /**
    * Lists all Students.
    *
    * @return a list of all Students
-   * @throws AppValidationException if any found entity cannot be converted.
+   * <p>Note: The returned Students may contain validation errors (check {@code student.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Student> listAllStudents() throws AppValidationException;
+  List<Student> listAllStudents();
 
   /**
    * Lists all Students by Course ID.
    *
    * @param courseId the Course ID to filter Students
    * @return a list of Students enrolled in the specified Course
-   * @throws AppValidationException if any found entity cannot be converted.
+   * <p>Note: The returned Students may contain validation errors (check {@code student.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Student> listAllByCourseId(UUID courseId) throws AppValidationException;
+  List<Student> listAllByCourseId(UUID courseId);
 
   /**
    * Checks if any Student exists for a collection of registrations.

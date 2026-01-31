@@ -1,13 +1,9 @@
 package com.pug.academic.infra.read.impl;
 
-import com.pug.academic.infra.persistence.StudentEntity;
 import com.pug.academic.infra.read.IStudentQueries;
-import com.pug.academic.infra.read.dtos.CourseView;
+import com.pug.academic.infra.read.dtos.StudentAcc;
 import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
@@ -15,77 +11,58 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-/** JPA implementation for StudentQueries. */
+import static com.pug.academic.infra.StudentMapper.toView;
+
+/**
+ * Implementation of StudentQueries using JPA and Hibernate Search.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class StudentQueries implements IStudentQueries {
 
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager em;
 
-  private static final String SELECT_VIEW =
-      "select new com.pug.academic.infra.read.dtos.StudentView("
-          + "  new com.pug.identity.infra.read.dtos.AccountView("
-          + "    acc.id,"
-          + "    new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),"
-          + "    acc.email,"
-          + "    acc.accountType,"
-          + "    acc.createdAt"
-          + "  ),"
-          + "  s.academicRegistration,"
-          + "  s.campus.toString(),"
-          + "  new com.pug.academic.infra.read.dtos.CourseView("
-          + "    c.id, c.name,"
-          + "    new com.pug.academic.infra.read.dtos.SchoolView(sc.id, sc.name)"
-          + "  ),"
-          + "  s.requiredHours,"
-          + "  s.completedHours,"
-          + "  s.startDate,"
-          + "  s.dueDate"
-          + ") "
-          + "from com.pug.academic.infra.persistence.StudentEntity s "
-          + "join com.pug.identity.infra.persistence.AccountEntity acc on acc.id = s.accountId "
-          + "join com.pug.identity.infra.persistence.UserEntity u on u.id = acc.userId "
-          + "join com.pug.academic.infra.persistence.CourseEntity c on c.id = s.courseId "
-          + "join com.pug.academic.infra.persistence.SchoolEntity sc on sc.id = c.schoolId ";
+  private static final String SELECT_BASE =
+          """
+                  select new com.pug.academic.infra.read.dtos.StudentView(
+                    new com.pug.identity.infra.read.dtos.AccountView(
+                      acc.id,
+                      new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
+                      acc.email, acc.accountType, acc.createdAt
+                    ),
+                    s.academicRegistration,
+                    s.campus,
+                    new com.pug.academic.infra.read.dtos.CourseView(
+                      c.id, c.name,
+                      new com.pug.academic.infra.read.dtos.SchoolView(sch.id, sch.name)
+                    ),
+                    s.requiredHours, s.completedHours,
+                    s.startDate, s.dueDate
+                  )
+                  from StudentEntity s
+                  join AccountEntity acc on acc.id = s.accountId
+                  join UserEntity u on u.id = acc.userId
+                  join CourseEntity c on c.id = s.courseId
+                  left join SchoolEntity sch on sch.id = c.schoolId
+                  """;
 
-  /**
-   * Helper to convert entities to StudentView. Used in searchByName.
-   *
-   * @param studentEntity The StudentEntity.
-   * @param accountView The AccountView.
-   * @param courseView The CourseView.
-   * @return The StudentView.
-   */
-  private static StudentView toView(
-      StudentEntity studentEntity, AccountView accountView, CourseView courseView) {
-    if (studentEntity == null) {
-      return null;
-    }
-    return new StudentView(
-        accountView,
-        studentEntity.getAcademicRegistration(),
-        studentEntity.getCampus().toString(),
-        courseView,
-        studentEntity.getRequiredHours(),
-        studentEntity.getCompletedHours(),
-        studentEntity.getStartDate(),
-        studentEntity.getDueDate());
-  }
+  private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
   @Override
   public Optional<StudentView> findOptionalById(UUID accountId) {
     if (accountId == null) {
       return Optional.empty();
     }
-    var q = entityManager.createQuery(SELECT_VIEW + "where s.accountId = :id", StudentView.class);
+    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
     q.setParameter("id", accountId);
     return q.getResultStream().findFirst();
   }
@@ -95,10 +72,8 @@ public class StudentQueries implements IStudentQueries {
     if (StringUtils.isEmpty(academicRegistration)) {
       return Optional.empty();
     }
-    var q =
-        entityManager.createQuery(
-            SELECT_VIEW + "where s.academicRegistration = :ar", StudentView.class);
-    q.setParameter("ar", academicRegistration);
+    var q = em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class);
+    q.setParameter("reg", academicRegistration);
     return q.getResultStream().findFirst();
   }
 
@@ -107,17 +82,14 @@ public class StudentQueries implements IStudentQueries {
     if (CollectionUtils.isEmpty(accountIds)) {
       return List.of();
     }
-    var q =
-        entityManager.createQuery(
-            SELECT_VIEW + "where s.accountId in :ids order by u.name asc", StudentView.class);
+    var q = em.createQuery(SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
     q.setParameter("ids", accountIds);
     return q.getResultList();
   }
 
   @Override
   public List<StudentView> listAllStudents() {
-    var q = entityManager.createQuery(SELECT_VIEW + "order by u.name asc", StudentView.class);
-    return q.getResultList();
+    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class).getResultList();
   }
 
   @Override
@@ -125,92 +97,51 @@ public class StudentQueries implements IStudentQueries {
     if (courseId == null) {
       return List.of();
     }
-    var q =
-        entityManager.createQuery(
-            SELECT_VIEW + "where s.courseId = :cid order by u.name asc", StudentView.class);
+    var q = em.createQuery(SELECT_BASE + " where s.courseId = :cid" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
     q.setParameter("cid", courseId);
     return q.getResultList();
   }
 
   @Override
   public List<StudentView> searchByName(String key) {
-    List<UserEntity> userHits =
-        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
-
+    List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
     if (userHits.isEmpty()) {
       return List.of();
     }
 
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    List<AccountEntity> accountEntities =
-        entityManager
-            .createQuery("from AccountEntity acc where acc.userId in :userIds", AccountEntity.class)
-            .setParameter("userIds", userIds)
-            .getResultList();
+    var rows =
+            em.createQuery(
+                            """
+                                    select new com.pug.academic.infra.read.dtos.StudentAcc(s, acc, c, sch)
+                                    from StudentEntity s
+                                    join AccountEntity acc on acc.id = s.accountId
+                                    join CourseEntity c on c.id = s.courseId
+                                    left join SchoolEntity sch on sch.id = c.schoolId
+                                    where acc.userId in :ids
+                                    """,
+                            StudentAcc.class)
+                    .setParameter("ids", userIds)
+                    .getResultList();
 
-    if (accountEntities.isEmpty()) {
-      return List.of();
-    }
-
-    Map<UUID, UserView> userViewMap =
-        userHits.stream()
-            .collect(
-                Collectors.toMap(
-                    UserEntity::getId,
-                    u -> new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt())));
-    Map<UUID, AccountView> accountViewMap =
-        accountEntities.stream()
-            .collect(
-                Collectors.toMap(
-                    AccountEntity::getId,
-                    acc ->
-                        new AccountView(
-                            acc.getId(),
-                            userViewMap.get(acc.getUserId()),
-                            acc.getEmail(),
-                            acc.getAccountType(),
-                            acc.getCreatedAt())));
-
-    List<UUID> accountIds = accountEntities.stream().map(AccountEntity::getId).toList();
-
-    List<StudentEntity> studentEntities =
-        entityManager
-            .createQuery(
-                "from StudentEntity s where s.accountId in :accountIds", StudentEntity.class)
-            .setParameter("accountIds", accountIds)
-            .getResultList();
-
-    if (studentEntities.isEmpty()) {
-      return List.of();
-    }
-
-    List<UUID> courseIds =
-        studentEntities.stream().map(StudentEntity::getCourseId).distinct().toList();
-
-    Map<UUID, CourseView> courseViewMap = new HashMap<>();
-    if (!courseIds.isEmpty()) {
-      List<CourseView> courseViews =
-          entityManager
-              .createQuery(
-                  "select new com.pug.academic.infra.read.dtos.CourseView("
-                      + "c.id, c.name,"
-                      + "new com.pug.academic.infra.read.dtos.SchoolView(sc.id, sc.name)) "
-                      + "from CourseEntity c join SchoolEntity sc on sc.id = c.schoolId "
-                      + "where c.id in :cids",
-                  CourseView.class)
-              .setParameter("cids", courseIds)
-              .getResultList();
-      courseViewMap = courseViews.stream().collect(Collectors.toMap(CourseView::id, cv -> cv));
+    Map<UUID, List<StudentAcc>> byUser = new HashMap<>();
+    for (StudentAcc row : rows) {
+      if (row.acc() != null && row.acc().getUserId() != null) {
+        byUser.computeIfAbsent(row.acc().getUserId(), k -> new ArrayList<>()).add(row);
+      }
     }
 
     List<StudentView> out = new ArrayList<>();
-    for (StudentEntity studentEntity : studentEntities) {
-      AccountView associatedAccountView = accountViewMap.get(studentEntity.getAccountId());
-      CourseView associatedCourseView = courseViewMap.get(studentEntity.getCourseId());
-
-      if (associatedAccountView != null && associatedCourseView != null) {
-        out.add(toView(studentEntity, associatedAccountView, associatedCourseView));
+    for (UserEntity u : userHits) {
+      List<StudentAcc> pairs = byUser.get(u.getId());
+      if (pairs == null) {
+        continue;
+      }
+      for (StudentAcc row : pairs) {
+        if (row.s() != null && row.acc() != null && row.c() != null) {
+          out.add(toView(row.s(), row.acc(), u, row.c(), row.sch()));
+        }
       }
     }
     return out;

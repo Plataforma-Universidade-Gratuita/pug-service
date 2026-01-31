@@ -4,24 +4,26 @@ import com.pug.academic.domain.ISchoolRepository;
 import com.pug.academic.domain.School;
 import com.pug.academic.infra.SchoolMapper;
 import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the SchoolRepository interface using PanacheRepositoryBase. */
+/**
+ * Implementation of the SchoolRepository interface using PanacheRepositoryBase.
+ */
 @ApplicationScoped
 public class SchoolRepository
-    implements ISchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+        implements ISchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
   @Transactional
   @Override
-  public School persist(School school) throws AppValidationException {
+  public School persist(School school) {
     if (school == null) {
       return null;
     }
@@ -32,7 +34,7 @@ public class SchoolRepository
 
   @Transactional
   @Override
-  public List<School> persistAll(Iterable<School> schools) throws AppValidationException {
+  public List<School> persistAll(Iterable<School> schools) {
     if (CollectionUtils.isEmpty(schools)) {
       return List.of();
     }
@@ -41,6 +43,10 @@ public class SchoolRepository
       if (s != null) {
         entities.add(SchoolMapper.toEntity(s));
       }
+    }
+
+    if (entities.isEmpty()) {
+      return List.of();
     }
 
     persist(entities);
@@ -78,19 +84,19 @@ public class SchoolRepository
   }
 
   @Override
-  public Optional<School> findOptionalById(UUID id) throws AppValidationException {
+  public Optional<School> findOptionalById(UUID id) {
     Optional<SchoolEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(SchoolMapper::toDomain);
   }
 
   @Override
-  public Optional<School> findOptionalByName(String name) throws AppValidationException {
+  public Optional<School> findOptionalByName(String name) {
     Optional<SchoolEntity> entityOpt = find("name", name).firstResultOptional();
     return entityOpt.map(SchoolMapper::toDomain);
   }
 
   @Override
-  public List<School> listAllSchools() throws AppValidationException {
+  public List<School> listAllSchools() {
     var domainList = new ArrayList<School>();
     for (SchoolEntity entity : listAll()) {
       domainList.add(SchoolMapper.toDomain(entity));

@@ -1,29 +1,28 @@
 package com.pug.academic.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for Schools. */
+/**
+ * Repository interface for Schools.
+ */
 public interface ISchoolRepository {
   /**
    * Persist a school entity.
    *
    * @param entity the school entity to persist
    * @return the persisted school entity
-   * @throws AppValidationException if the persisted entity cannot be converted back.
    */
-  School persist(School entity) throws AppValidationException;
+  School persist(School entity);
 
   /**
    * Persist multiple school entities.
    *
    * @param entities the iterable of school entities to persist
    * @return the list of persisted school entities
-   * @throws AppValidationException if any persisted entity cannot be converted back.
    */
-  List<School> persistAll(Iterable<School> entities) throws AppValidationException;
+  List<School> persistAll(Iterable<School> entities);
 
   /**
    * Update a school entity.
@@ -45,26 +44,29 @@ public interface ISchoolRepository {
    *
    * @param id the UUID of the school to find
    * @return an Optional containing the found school or empty if not found
-   * @throws AppValidationException if the found entity cannot be converted.
+   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<School> findOptionalById(UUID id) throws AppValidationException;
+  Optional<School> findOptionalById(UUID id);
 
   /**
    * Find a school by its name.
    *
    * @param name the name of the school to find
    * @return an Optional containing the found school or empty if not found
-   * @throws AppValidationException if the found entity cannot be converted.
+   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<School> findOptionalByName(String name) throws AppValidationException;
+  Optional<School> findOptionalByName(String name);
 
   /**
    * List all schools.
    *
    * @return a list of all schools
-   * @throws AppValidationException if any found entity cannot be converted.
+   * <p>Note: The returned Schools may contain validation errors (check {@code school.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<School> listAllSchools() throws AppValidationException;
+  List<School> listAllSchools();
 
   /**
    * Check if a school exists by its name.

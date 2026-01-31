@@ -4,62 +4,74 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
+import com.pug.academic.infra.persistence.CourseEntity;
+import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.academic.infra.read.dtos.CourseView;
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.identity.infra.read.dtos.UserView;
 
-/** Mapper for Student domain object and StudentEntity persistence object. */
+/**
+ * Mapper for Student and StudentEntity.
+ */
 public final class StudentMapper {
-  /** Private constructor to prevent instantiation. */
-  private StudentMapper() {}
+  /**
+   * Private constructor.
+   */
+  private StudentMapper() {
+  }
 
   /**
-   * Maps a StudentEntity to a Student domain object.
+   * Convert StudentEntity to Student domain object.
    *
-   * @param e the StudentEntity to map
-   * @return the mapped Student domain object
-   * @throws AppValidationException if data in the entity is invalid.
+   * @param e the StudentEntity
+   * @return the Student domain object
    */
-  public static Student toDomain(StudentEntity e) throws AppValidationException {
+  public static Student toDomain(StudentEntity e) {
     if (e == null) {
       return null;
     }
     return Student.builder()
-        .accountId(e.getAccountId())
-        .academicRegistration(new AcademicRegistration(e.getAcademicRegistration()))
-        .campus(e.getCampus())
-        .courseId(e.getCourseId())
-        .counterpartHours(new CounterpartHours(e.getRequiredHours(), e.getCompletedHours()))
-        .period(new Period(e.getStartDate(), e.getDueDate()))
-        .build();
+            .accountId(e.getAccountId())
+            .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
+            .campus(e.getCampus())
+            .courseId(e.getCourseId())
+            .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours()))
+            .period(Period.factory(e.getStartDate(), e.getDueDate()))
+            .build();
   }
 
   /**
-   * Maps a Student domain object to a StudentEntity.
+   * Convert Student domain object to StudentEntity.
    *
-   * @param d the Student domain object to map
-   * @return the mapped StudentEntity
+   * @param d the Student domain object
+   * @return the StudentEntity
    */
   public static StudentEntity toEntity(Student d) {
     if (d == null) {
       return null;
     }
     return StudentEntity.builder()
-        .accountId(d.getAccountId())
-        .academicRegistration(d.getAcademicRegistration().toString())
-        .campus(d.getCampus())
-        .courseId(d.getCourseId())
-        .requiredHours(d.getCounterpartHours().requiredHours())
-        .completedHours(d.getCounterpartHours().completedHours())
-        .startDate(d.getPeriod().startDate())
-        .dueDate(d.getPeriod().dueDate())
-        .build();
+            .accountId(d.getAccountId())
+            .academicRegistration(d.getAcademicRegistration().toString())
+            .campus(d.getCampus())
+            .courseId(d.getCourseId())
+            .requiredHours(d.getCounterpartHours().getRequiredHours())
+            .completedHours(d.getCounterpartHours().getCompletedHours())
+            .startDate(d.getPeriod().getStartDate())
+            .dueDate(d.getPeriod().getDueDate())
+            .build();
   }
 
   /**
-   * Copies properties from a Student domain object to a StudentEntity.
+   * Copy properties from Student domain object to StudentEntity.
    *
    * @param d the Student domain object
-   * @param e the StudentEntity to copy properties to
+   * @param e the StudentEntity
    */
   public static void copy(Student d, StudentEntity e) {
     if (d == null || e == null) {
@@ -68,9 +80,40 @@ public final class StudentMapper {
     e.setAcademicRegistration(d.getAcademicRegistration().toString());
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
-    e.setRequiredHours(d.getCounterpartHours().requiredHours());
-    e.setCompletedHours(d.getCounterpartHours().completedHours());
-    e.setStartDate(d.getPeriod().startDate());
-    e.setDueDate(d.getPeriod().dueDate());
+    e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
+    e.setCompletedHours(d.getCounterpartHours().getCompletedHours());
+    e.setStartDate(d.getPeriod().getStartDate());
+    e.setDueDate(d.getPeriod().getDueDate());
+  }
+
+  /**
+   * Convert entities to StudentView.
+   */
+  public static StudentView toView(
+          StudentEntity s,
+          AccountEntity acc,
+          UserEntity u,
+          CourseEntity c,
+          SchoolEntity sch) {
+    if (s == null) {
+      return null;
+    }
+
+    UserView userView = (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()) : null;
+    AccountView accountView = (acc != null) ? new AccountView(acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt()) : null;
+
+    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName()) : null;
+    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView) : null;
+
+    return new StudentView(
+            accountView,
+            s.getAcademicRegistration(),
+            s.getCampus().toString(),
+            courseView,
+            s.getRequiredHours(),
+            s.getCompletedHours(),
+            s.getStartDate(),
+            s.getDueDate()
+    );
   }
 }

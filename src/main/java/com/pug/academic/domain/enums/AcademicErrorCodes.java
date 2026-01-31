@@ -19,7 +19,8 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
   INVALID_CAMPUS_BLANK("error.domain.academic.campus.blank", "campus"),
   INVALID_HOURS_BLANK("error.domain.academic.hours.blank", "hours"),
   INVALID_HOURS_COMPLETED_GT_REQUIRED(
-      "error.domain.academic.hours.completed.gt.required", "completedHours"),
+          "error.domain.academic.hours.completed.gt.required", "completedHours"),
+  INVALID_HOURS_NEGATIVE("error.domain.academic.hours.negative", "hours"),
   INVALID_PERIOD_BLANK("error.domain.academic.period.blank", "period"),
   INVALID_PERIOD_RANGE("error.domain.academic.period.range", "period"),
   INVALID_REGISTRATION_BLANK("error.domain.academic.registration.blank", "registration"),
@@ -38,9 +39,7 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
 
   SCHOOL_STILL_REFERENCED("error.domain.academic.school.still.referenced", null),
   COURSE_STILL_REFERENCED("error.domain.academic.course.still.referenced", null),
-  STUDENT_STILL_REFERENCED(
-      "error.domain.academic.student.still.referenced",
-      null); // Example if Student is referenced by other modules
+  STUDENT_STILL_REFERENCED("error.domain.academic.student.still.referenced", null);
 
   private final String bundleKey;
   private final String fieldName;
@@ -50,7 +49,7 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   *                  field-specific.
    */
   AcademicErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

@@ -1,11 +1,14 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.StudentView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Interface for querying Student data. */
+/**
+ * Interface for querying Student data.
+ */
 public interface IStudentQueries {
   /**
    * Finds a Student by their Account ID.

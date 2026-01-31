@@ -1,29 +1,28 @@
 package com.pug.academic.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository for Course aggregate. */
+/**
+ * Repository for Course aggregate.
+ */
 public interface ICourseRepository {
   /**
    * Persist a course.
    *
    * @param entity the course to persist.
    * @return the persisted course.
-   * @throws AppValidationException if the persisted entity cannot be converted back.
    */
-  Course persist(Course entity) throws AppValidationException;
+  Course persist(Course entity);
 
   /**
    * Persist multiple courses.
    *
    * @param entities the courses to persist.
    * @return the persisted courses.
-   * @throws AppValidationException if any persisted entity cannot be converted back.
    */
-  List<Course> persistAll(Iterable<Course> entities) throws AppValidationException;
+  List<Course> persistAll(Iterable<Course> entities);
 
   /**
    * Update a course.
@@ -45,35 +44,39 @@ public interface ICourseRepository {
    *
    * @param id the ID of the course.
    * @return the found course.
-   * @throws AppValidationException if the found entity cannot be converted.
+   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Course> findOptionalById(UUID id) throws AppValidationException;
+  Optional<Course> findOptionalById(UUID id);
 
   /**
    * Find a course by its name.
    *
    * @param name the name of the course.
    * @return the found course.
-   * @throws AppValidationException if the found entity cannot be converted.
+   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  Optional<Course> findOptionalByName(String name) throws AppValidationException;
+  Optional<Course> findOptionalByName(String name);
 
   /**
    * List all courses.
    *
    * @return the list of all courses.
-   * @throws AppValidationException if any found entity cannot be converted.
+   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Course> listAllCourses() throws AppValidationException;
+  List<Course> listAllCourses();
 
   /**
    * List all courses by school ID.
    *
    * @param schoolId the school ID.
    * @return the list of courses for the given school ID.
-   * @throws AppValidationException if any found entity cannot be converted.
+   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    */
-  List<Course> listAllBySchoolId(UUID schoolId) throws AppValidationException;
+  List<Course> listAllBySchoolId(UUID schoolId);
 
   /**
    * Check if a course exists by name.

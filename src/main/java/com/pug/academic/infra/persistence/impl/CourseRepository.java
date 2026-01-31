@@ -4,24 +4,26 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.domain.ICourseRepository;
 import com.pug.academic.infra.CourseMapper;
 import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository implementation for Course aggregate. */
+/**
+ * Repository implementation for Course aggregate.
+ */
 @ApplicationScoped
 public class CourseRepository
-    implements ICourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
+        implements ICourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   @Transactional
   @Override
-  public Course persist(Course entity) throws AppValidationException {
+  public Course persist(Course entity) {
     if (entity == null) {
       return null;
     }
@@ -32,7 +34,7 @@ public class CourseRepository
 
   @Transactional
   @Override
-  public List<Course> persistAll(Iterable<Course> entities) throws AppValidationException {
+  public List<Course> persistAll(Iterable<Course> entities) {
     if (CollectionUtils.isEmpty(entities)) {
       return List.of();
     }
@@ -41,6 +43,10 @@ public class CourseRepository
       if (d != null) {
         batch.add(CourseMapper.toEntity(d));
       }
+    }
+
+    if (batch.isEmpty()) {
+      return List.of();
     }
 
     persist(batch);
@@ -78,19 +84,19 @@ public class CourseRepository
   }
 
   @Override
-  public Optional<Course> findOptionalById(UUID id) throws AppValidationException {
+  public Optional<Course> findOptionalById(UUID id) {
     Optional<CourseEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(CourseMapper::toDomain);
   }
 
   @Override
-  public Optional<Course> findOptionalByName(String name) throws AppValidationException {
+  public Optional<Course> findOptionalByName(String name) {
     Optional<CourseEntity> entityOpt = find("name", name).firstResultOptional();
     return entityOpt.map(CourseMapper::toDomain);
   }
 
   @Override
-  public List<Course> listAllCourses() throws AppValidationException {
+  public List<Course> listAllCourses() {
     var domainList = new ArrayList<Course>();
     for (CourseEntity entity : listAll()) {
       domainList.add(CourseMapper.toDomain(entity));
@@ -99,7 +105,7 @@ public class CourseRepository
   }
 
   @Override
-  public List<Course> listAllBySchoolId(UUID schoolId) throws AppValidationException {
+  public List<Course> listAllBySchoolId(UUID schoolId) {
     var domainList = new ArrayList<Course>();
     for (CourseEntity entity : find("schoolId", schoolId).list()) {
       domainList.add(CourseMapper.toDomain(entity));

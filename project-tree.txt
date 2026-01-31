@@ -53,6 +53,7 @@
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── CourseView.java
 │   │   │           │   │       │   ├── SchoolView.java
+│   │   │           │   │       │   ├── StudentAcc.java
 │   │   │           │   │       │   └── StudentView.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── CourseQueries.java
@@ -77,12 +78,15 @@
 │   │   │           │   │       ├── SchoolPresenter.java
 │   │   │           │   │       └── StudentPresenter.java
 │   │   │           │   └── service/
+│   │   │           │       ├── CourseProcessor.java
 │   │   │           │       ├── ICourseReadService.java
 │   │   │           │       ├── ICourseService.java
 │   │   │           │       ├── ISchoolReadService.java
 │   │   │           │       ├── ISchoolService.java
 │   │   │           │       ├── IStudentReadService.java
 │   │   │           │       ├── IStudentService.java
+│   │   │           │       ├── SchoolProcessor.java
+│   │   │           │       ├── StudentProcessor.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── CourseCreateCommand.java
 │   │   │           │       │   ├── CourseUpdateCommand.java

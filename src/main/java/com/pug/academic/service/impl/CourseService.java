@@ -4,6 +4,7 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.domain.ICourseRepository;
 import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.academic.service.CourseProcessor;
 import com.pug.academic.service.ICourseService;
 import com.pug.academic.service.ISchoolService;
 import com.pug.academic.service.IStudentService;
@@ -19,6 +20,8 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import org.jboss.logging.Logger;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -26,74 +29,37 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.jboss.logging.Logger;
 
-/** Service class for managing Course entities. */
+/**
+ * Service class for managing Course entities.
+ */
 @ApplicationScoped
 public class CourseService implements ICourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseService.class);
 
-  @Inject ICourseRepository repo;
-  @Inject ISchoolService schoolService;
-  @Inject IStudentService studentService;
-
-  /**
-   * Helper method to process DTO input and build Course domain object (or update existing),
-   * collecting all validation problems.
-   *
-   * @param name The name string from DTO.
-   * @param schoolId The school ID from DTO.
-   * @param existingCourse Optional existing course for updates (null for creation).
-   * @param problems List to collect AppValidationException.Problem instances.
-   * @return The constructed or updated Course domain object if no problems, or null if problems
-   *     occurred.
-   */
-  private Course processCourseInput(
-      String name,
-      UUID schoolId,
-      Course existingCourse,
-      List<AppValidationException.Problem> problems) {
-
-    Course resultCourse = null;
-    try {
-      if (existingCourse == null) {
-        resultCourse = Course.createNew(name, schoolId);
-      } else {
-        String effectiveName = (name != null) ? name : existingCourse.getName();
-        UUID effectiveSchoolId = (schoolId != null) ? schoolId : existingCourse.getSchoolId();
-
-        Course tempCourse = existingCourse;
-        if (name != null && !effectiveName.equals(tempCourse.getName())) {
-          tempCourse = tempCourse.changeName(effectiveName);
-        }
-        if (schoolId != null && !effectiveSchoolId.equals(tempCourse.getSchoolId())) {
-          tempCourse = tempCourse.moveToSchool(effectiveSchoolId);
-        }
-        resultCourse = tempCourse;
-      }
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
-    }
-    return resultCourse;
-  }
+  @Inject
+  ICourseRepository repo;
+  @Inject
+  ISchoolService schoolService;
+  @Inject
+  IStudentService studentService;
 
   @Transactional
   @Override
   public Course save(CourseCreateCommand cmd) {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
+    // Validate school existence first (fail-fast)
     schoolService.getById(cmd.schoolId());
 
-    Course courseToPersist = processCourseInput(cmd.name(), cmd.schoolId(), null, problems);
+    Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (courseToPersist.hasErrors()) {
+      throw new AppValidationException(courseToPersist.getProblems());
     }
 
     if (existsByName(courseToPersist.getName())) {
       throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
+              AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
     }
     return repo.persist(courseToPersist);
   }
@@ -117,8 +83,8 @@ public class CourseService implements ICourseService {
         schoolService.getById(schoolId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-            new AppValidationException.Problem(
-                AcademicErrorCodes.INVALID_SCHOOL_BLANK, "schoolId"));
+                new AppValidationException.Problem(
+                        AcademicErrorCodes.INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly mappable here easily without context
       }
     }
 
@@ -127,18 +93,18 @@ public class CourseService implements ICourseService {
     }
 
     for (CourseCreateCommand cmd : cmds) {
-      List<AppValidationException.Problem> currentCourseProblems = new ArrayList<>();
-      Course course = processCourseInput(cmd.name(), cmd.schoolId(), null, currentCourseProblems);
+      Course course = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
-      if (!currentCourseProblems.isEmpty()) {
-        allCollectedProblems.addAll(currentCourseProblems);
+      if (course.hasErrors()) {
+        allCollectedProblems.addAll(course.getProblems());
       } else {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name"));
+                  new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+        } else {
+          coursesToPersist.add(course);
         }
-        coursesToPersist.add(course);
       }
     }
 
@@ -160,26 +126,22 @@ public class CourseService implements ICourseService {
   public Course update(UUID id, CourseUpdateCommand cmd) {
     Course current = getById(id);
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
-
     if (cmd.schoolId() != null && !cmd.schoolId().equals(current.getSchoolId())) {
       schoolService.getById(cmd.schoolId());
     }
 
-    Course courseToUpdate = processCourseInput(cmd.name(), cmd.schoolId(), current, problems);
+    Course updatedCourse = CourseProcessor.processUpdateInput(current, cmd.name(), cmd.schoolId());
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+    if (updatedCourse.hasErrors()) {
+      throw new AppValidationException(updatedCourse.getProblems());
     }
 
-    if (cmd.name() != null && !cmd.name().equals(current.getName())) {
-      if (existsByName(cmd.name())) {
-        throw new DuplicateResourceException(
-            AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", cmd.name()));
-      }
+    if (!updatedCourse.getName().equals(current.getName()) && existsByName(updatedCourse.getName())) {
+      throw new DuplicateResourceException(
+              AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", updatedCourse.getName()));
     }
 
-    repo.update(courseToUpdate);
+    repo.update(updatedCourse);
     return getById(id);
   }
 
@@ -188,10 +150,10 @@ public class CourseService implements ICourseService {
   public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return Map.of(
-          DeleteKeys.COURSES, 0L,
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+              DeleteKeys.COURSES, 0L,
+              DeleteKeys.STUDENTS, 0L,
+              DeleteKeys.ACCOUNTS, 0L,
+              DeleteKeys.USERS, 0L);
     }
 
     if (studentService.existsAnyByCourseIdIn(ids)) {
@@ -201,39 +163,34 @@ public class CourseService implements ICourseService {
     Set<UUID> studentAccountIdsToDelete = new HashSet<>();
     for (UUID courseId : ids) {
       studentAccountIdsToDelete.addAll(
-          studentService.listAllByCourseId(courseId).stream()
-              .map(Student::getAccountId)
-              .collect(Collectors.toSet()));
+              studentService.listAllByCourseId(courseId).stream()
+                      .map(Student::getAccountId)
+                      .collect(Collectors.toSet()));
     }
 
     Map<DeleteKeys, Long> deletedStudentsAndDependents =
-        studentService.deleteAll(studentAccountIdsToDelete);
+            studentService.deleteAll(studentAccountIdsToDelete);
 
     long coursesDeleted = repo.deleteByIds(ids);
 
     return Map.of(
-        DeleteKeys.COURSES, coursesDeleted,
-        DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-        DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
+            DeleteKeys.COURSES, coursesDeleted,
+            DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
+            DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
+            DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
   }
 
   @Override
   public List<Course> listAll() {
-    try {
-      return repo.listAllCourses();
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Corrupted Course entity found in DB. Problems: %s",
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
+    List<Course> courses = repo.listAllCourses();
+    for (Course c : courses) {
+      if (c.hasErrors()) {
+        LOG.errorf("Data integrity error: Corrupted Course entity found in DB. Problems: %s",
+                c.getProblemsSummary());
+        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
+      }
     }
+    return courses;
   }
 
   @Override
@@ -241,68 +198,48 @@ public class CourseService implements ICourseService {
     if (schoolId == null) {
       return List.of();
     }
-    try {
-      return repo.listAllBySchoolId(schoolId);
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
-          schoolId,
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
+    List<Course> courses = repo.listAllBySchoolId(schoolId);
+    for (Course c : courses) {
+      if (c.hasErrors()) {
+        LOG.errorf("Data integrity error: Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
+                schoolId, c.getProblemsSummary());
+        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
+      }
     }
+    return courses;
   }
 
   @Override
   public Course getById(UUID id) {
-    try {
-      return repo.findOptionalById(id)
-          .orElseThrow(
-              () ->
-                  new ResourceNotFoundException(
-                      AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-          id,
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
+    Course course = repo.findOptionalById(id)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+
+    if (course.hasErrors()) {
+      LOG.errorf("Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+              id, course.getProblemsSummary());
       throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id));
     }
+    return course;
   }
 
   @Override
   public Course getByName(String name) {
     String n = StringUtils.trim(name);
-    try {
-      return repo.findOptionalByName(n)
-          .orElseThrow(
-              () ->
-                  new ResourceNotFoundException(
-                      AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
-    } catch (AppValidationException e) {
-      LOG.errorf(
-          e,
-          "Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
-          name,
-          e.getProblems().stream()
-              .map(
-                  p ->
-                      p.code().getBundleKey()
-                          + (p.fieldName() != null ? "(" + p.fieldName() + ")" : ""))
-              .collect(Collectors.joining(", ")));
+    Course course = repo.findOptionalByName(n)
+            .orElseThrow(
+                    () ->
+                            new ResourceNotFoundException(
+                                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+
+    if (course.hasErrors()) {
+      LOG.errorf("Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
+              n, course.getProblemsSummary());
       throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n));
     }
+    return course;
   }
 
   @Override
