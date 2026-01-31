@@ -95,7 +95,9 @@ public class Cpf extends DomainError {
    * @return true if all characters are the same, false otherwise
    */
   private static boolean allSameDigit(String s) {
-    if (s == null || s.isEmpty()) return false;
+    if (s == null || s.isEmpty()) {
+      return false;
+    }
     char c = s.charAt(0);
     for (int i = 1; i < s.length(); i++) {
       if (s.charAt(i) != c) {

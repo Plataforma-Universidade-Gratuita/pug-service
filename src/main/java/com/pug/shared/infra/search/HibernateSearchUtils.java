@@ -58,21 +58,21 @@ public final class HibernateSearchUtils {
 
     return s.search(type)
         .where(
-            f ->
-                f.bool(
-                    b -> {
-                      b.should(f.wildcard().field(nameExactField).matching(key + "*").boost(8f));
-                      b.should(
-                          f.wildcard().field(nameExactField).matching("*" + key + "*").boost(6f));
-                      for (String t : tokens) {
-                        if (t.length() >= minTokenLength) {
-                          b.should(
-                              f.wildcard().field(nameExactField).matching("*" + t + "*").boost(3f));
-                        }
-                      }
-                      b.should(f.match().field(nameField).matching(key).fuzzy(1).boost(4f));
-                      b.should(f.match().field(nameAutoField).matching(key).boost(2f));
-                    }))
+            f -> {
+              var bool = f.bool();
+              bool.should(f.wildcard().field(nameExactField).matching(key + "*").boost(8f));
+              bool.should(f.wildcard().field(nameExactField).matching("*" + key + "*").boost(6f));
+
+              for (String t : tokens) {
+                if (t.length() >= minTokenLength) {
+                  bool.should(f.wildcard().field(nameExactField).matching("*" + t + "*").boost(3f));
+                }
+              }
+
+              bool.should(f.match().field(nameField).matching(key).fuzzy(1).boost(4f));
+              bool.should(f.match().field(nameAutoField).matching(key).boost(2f));
+              return bool;
+            })
         .sort(
             f ->
                 (nameSortField == null || nameSortField.isBlank())

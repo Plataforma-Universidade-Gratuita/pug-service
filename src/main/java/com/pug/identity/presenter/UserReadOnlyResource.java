@@ -2,7 +2,7 @@ package com.pug.identity.presenter;
 
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
-import com.pug.identity.service.IUserReadService;
+import com.pug.identity.service.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
@@ -33,7 +33,7 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject IUserReadService readService;
+  @Inject UserReadService readService;
 
   @Context HttpHeaders headers;
 

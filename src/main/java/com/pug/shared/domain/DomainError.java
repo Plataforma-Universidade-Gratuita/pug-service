@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+/** Abstract base class for domain errors that can accumulate validation problems. */
 @Getter
 public abstract class DomainError {
 

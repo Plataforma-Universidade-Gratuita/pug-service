@@ -6,8 +6,8 @@ import com.pug.geo.presenter.dtos.CityCreateRequest;
 import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.dtos.CityUpdateRequest;
 import com.pug.geo.presenter.mappers.CityPresenter;
-import com.pug.geo.service.ICityReadService;
-import com.pug.geo.service.ICityService;
+import com.pug.geo.service.CityReadService;
+import com.pug.geo.service.CityService;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
@@ -46,8 +46,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject ICityService writeService;
-  @Inject ICityReadService readService;
+  @Inject CityService writeService;
+  @Inject CityReadService readService;
 
   @Context UriInfo uri;
 

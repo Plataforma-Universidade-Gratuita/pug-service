@@ -1,7 +1,7 @@
 package com.pug.geo.infra.persistence.impl;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.domain.ICityRepository;
+import com.pug.geo.domain.CityRepository;
 import com.pug.geo.infra.CityMapper;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.shared.utils.CollectionUtils;
@@ -16,8 +16,7 @@ import java.util.UUID;
 
 /** Implementation of the CityRepository using Panache and Hibernate Search. */
 @ApplicationScoped
-public class CityRepositoryImpl
-    implements ICityRepository, PanacheRepositoryBase<CityEntity, UUID> {
+public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
   @Transactional
   @Override

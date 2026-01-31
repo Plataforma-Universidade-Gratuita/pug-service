@@ -6,8 +6,8 @@ import com.pug.academic.presenter.dtos.CourseCreateRequest;
 import com.pug.academic.presenter.dtos.CourseResponse;
 import com.pug.academic.presenter.dtos.CourseUpdateRequest;
 import com.pug.academic.presenter.mappers.CoursePresenter;
-import com.pug.academic.service.ICourseReadService;
-import com.pug.academic.service.ICourseService;
+import com.pug.academic.service.CourseReadService;
+import com.pug.academic.service.CourseService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
@@ -46,8 +46,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject ICourseService writeService;
-  @Inject ICourseReadService readService;
+  @Inject CourseService writeService;
+  @Inject CourseReadService readService;
 
   @Context UriInfo uri;
 

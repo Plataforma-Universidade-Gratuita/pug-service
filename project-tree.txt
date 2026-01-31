@@ -14,6 +14,7 @@
 ├── mvnw.cmd
 ├── pom.xml
 ├── project-tree.txt
+├── spotbugs-exclude.xml
 ├── src/
 │   ├── main/
 │   │   ├── java/
@@ -22,11 +23,11 @@
 │   │   │           ├── academic/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Course.java
-│   │   │           │   │   ├── ICourseRepository.java
-│   │   │           │   │   ├── ISchoolRepository.java
-│   │   │           │   │   ├── IStudentRepository.java
+│   │   │           │   │   ├── CourseRepository.java
 │   │   │           │   │   ├── School.java
+│   │   │           │   │   ├── SchoolRepository.java
 │   │   │           │   │   ├── Student.java
+│   │   │           │   │   ├── StudentRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AcademicErrorCodes.java
 │   │   │           │   │   │   └── Campi.java
@@ -43,22 +44,22 @@
 │   │   │           │   │   │   ├── SchoolEntity.java
 │   │   │           │   │   │   ├── StudentEntity.java
 │   │   │           │   │   │   └── impl/
-│   │   │           │   │   │       ├── CourseRepository.java
-│   │   │           │   │   │       ├── SchoolRepository.java
-│   │   │           │   │   │       └── StudentRepository.java
+│   │   │           │   │   │       ├── CourseRepositoryImpl.java
+│   │   │           │   │   │       ├── SchoolRepositoryImpl.java
+│   │   │           │   │   │       └── StudentRepositoryImpl.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── ICourseQueries.java
-│   │   │           │   │       ├── ISchoolQueries.java
-│   │   │           │   │       ├── IStudentQueries.java
+│   │   │           │   │       ├── CourseQueries.java
+│   │   │           │   │       ├── SchoolQueries.java
+│   │   │           │   │       ├── StudentQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── CourseView.java
 │   │   │           │   │       │   ├── SchoolView.java
 │   │   │           │   │       │   ├── StudentAcc.java
 │   │   │           │   │       │   └── StudentView.java
 │   │   │           │   │       └── impl/
-│   │   │           │   │           ├── CourseQueries.java
-│   │   │           │   │           ├── SchoolQueries.java
-│   │   │           │   │           └── StudentQueries.java
+│   │   │           │   │           ├── CourseQueriesImpl.java
+│   │   │           │   │           ├── SchoolQueriesImpl.java
+│   │   │           │   │           └── StudentQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── CourseResource.java
 │   │   │           │   │   ├── SchoolResource.java
@@ -78,15 +79,12 @@
 │   │   │           │   │       ├── SchoolPresenter.java
 │   │   │           │   │       └── StudentPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CourseProcessor.java
-│   │   │           │       ├── ICourseReadService.java
-│   │   │           │       ├── ICourseService.java
-│   │   │           │       ├── ISchoolReadService.java
-│   │   │           │       ├── ISchoolService.java
-│   │   │           │       ├── IStudentReadService.java
-│   │   │           │       ├── IStudentService.java
-│   │   │           │       ├── SchoolProcessor.java
-│   │   │           │       ├── StudentProcessor.java
+│   │   │           │       ├── CourseReadService.java
+│   │   │           │       ├── CourseService.java
+│   │   │           │       ├── SchoolReadService.java
+│   │   │           │       ├── SchoolService.java
+│   │   │           │       ├── StudentReadService.java
+│   │   │           │       ├── StudentService.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── CourseCreateCommand.java
 │   │   │           │       │   ├── CourseUpdateCommand.java
@@ -94,17 +92,21 @@
 │   │   │           │       │   ├── SchoolUpdateCommand.java
 │   │   │           │       │   ├── StudentCreateCommand.java
 │   │   │           │       │   └── StudentUpdateCommand.java
-│   │   │           │       └── impl/
-│   │   │           │           ├── CourseReadService.java
-│   │   │           │           ├── CourseService.java
-│   │   │           │           ├── SchoolReadService.java
-│   │   │           │           ├── SchoolService.java
-│   │   │           │           ├── StudentReadService.java
-│   │   │           │           └── StudentService.java
+│   │   │           │       ├── impl/
+│   │   │           │       │   ├── CourseReadServiceImpl.java
+│   │   │           │       │   ├── CourseServiceImpl.java
+│   │   │           │       │   ├── SchoolReadServiceImpl.java
+│   │   │           │       │   ├── SchoolServiceImpl.java
+│   │   │           │       │   ├── StudentReadServiceImpl.java
+│   │   │           │       │   └── StudentServiceImpl.java
+│   │   │           │       └── utils/
+│   │   │           │           ├── CourseProcessor.java
+│   │   │           │           ├── SchoolProcessor.java
+│   │   │           │           └── StudentProcessor.java
 │   │   │           ├── geo/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
-│   │   │           │   │   ├── ICityRepository.java
+│   │   │           │   │   ├── CityRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -116,11 +118,11 @@
 │   │   │           │   │   │   └── impl/
 │   │   │           │   │   │       └── CityRepositoryImpl.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── ICityQueries.java
+│   │   │           │   │       ├── CityQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   └── CityView.java
 │   │   │           │   │       └── impl/
-│   │   │           │   │           └── CityQueries.java
+│   │   │           │   │           └── CityQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── CityResource.java
 │   │   │           │   │   ├── dtos/
@@ -130,23 +132,24 @@
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── CityProcessor.java
-│   │   │           │       ├── ICityReadService.java
-│   │   │           │       ├── ICityService.java
+│   │   │           │       ├── CityReadService.java
+│   │   │           │       ├── CityService.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── CityCreateCommand.java
 │   │   │           │       │   └── CityUpdateCommand.java
-│   │   │           │       └── impl/
-│   │   │           │           ├── CityReadService.java
-│   │   │           │           └── CityService.java
+│   │   │           │       ├── impl/
+│   │   │           │       │   ├── CityReadServiceImpl.java
+│   │   │           │       │   └── CityServiceImpl.java
+│   │   │           │       └── utils/
+│   │   │           │           └── CityProcessor.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Account.java
+│   │   │           │   │   ├── AccountRepository.java
 │   │   │           │   │   ├── Admin.java
-│   │   │           │   │   ├── IAccountRepository.java
-│   │   │           │   │   ├── IAdminRepository.java
-│   │   │           │   │   ├── IUserRepository.java
+│   │   │           │   │   ├── AdminRepository.java
 │   │   │           │   │   ├── User.java
+│   │   │           │   │   ├── UserRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── IdentityErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -161,22 +164,22 @@
 │   │   │           │   │   │   ├── AdminEntity.java
 │   │   │           │   │   │   ├── UserEntity.java
 │   │   │           │   │   │   └── impl/
-│   │   │           │   │   │       ├── AccountRepository.java
-│   │   │           │   │   │       ├── AdminRepository.java
-│   │   │           │   │   │       └── UserRepository.java
+│   │   │           │   │   │       ├── AccountRepositoryImpl.java
+│   │   │           │   │   │       ├── AdminRepositoryImpl.java
+│   │   │           │   │   │       └── UserRepositoryImpl.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── IAccountQueries.java
-│   │   │           │   │       ├── IAdminQueries.java
-│   │   │           │   │       ├── IUserQueries.java
+│   │   │           │   │       ├── AccountQueries.java
+│   │   │           │   │       ├── AdminQueries.java
+│   │   │           │   │       ├── UserQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── AccountView.java
 │   │   │           │   │       │   ├── AdminAcc.java
 │   │   │           │   │       │   ├── AdminView.java
 │   │   │           │   │       │   └── UserView.java
 │   │   │           │   │       └── impl/
-│   │   │           │   │           ├── AccountQueries.java
-│   │   │           │   │           ├── AdminQueries.java
-│   │   │           │   │           └── UserQueries.java
+│   │   │           │   │           ├── AccountQueriesImpl.java
+│   │   │           │   │           ├── AdminQueriesImpl.java
+│   │   │           │   │           └── UserQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── AccountReadOnlyResource.java
 │   │   │           │   │   ├── AdminResource.java
@@ -192,16 +195,13 @@
 │   │   │           │   │       ├── AdminPresenter.java
 │   │   │           │   │       └── UserPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── AccountProcessor.java
-│   │   │           │       ├── AdminProcessor.java
-│   │   │           │       ├── IAccountReadService.java
-│   │   │           │       ├── IAccountService.java
-│   │   │           │       ├── IAdminReadService.java
-│   │   │           │       ├── IAdminService.java
-│   │   │           │       ├── IPasswordService.java
-│   │   │           │       ├── IUserReadService.java
-│   │   │           │       ├── IUserService.java
-│   │   │           │       ├── UserProcessor.java
+│   │   │           │       ├── AccountReadService.java
+│   │   │           │       ├── AccountService.java
+│   │   │           │       ├── AdminReadService.java
+│   │   │           │       ├── AdminService.java
+│   │   │           │       ├── PasswordService.java
+│   │   │           │       ├── UserReadService.java
+│   │   │           │       ├── UserService.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── AccountCreateCommand.java
 │   │   │           │       │   ├── AccountUpdateCommand.java
@@ -209,20 +209,24 @@
 │   │   │           │       │   ├── AdminUpdateCommand.java
 │   │   │           │       │   ├── UserCreateCommand.java
 │   │   │           │       │   └── UserUpdateCommand.java
-│   │   │           │       └── impl/
-│   │   │           │           ├── AccountReadService.java
-│   │   │           │           ├── AccountService.java
-│   │   │           │           ├── AdminReadService.java
-│   │   │           │           ├── AdminService.java
-│   │   │           │           ├── PasswordService.java
-│   │   │           │           ├── UserReadService.java
-│   │   │           │           └── UserService.java
+│   │   │           │       ├── impl/
+│   │   │           │       │   ├── AccountReadServiceImpl.java
+│   │   │           │       │   ├── AccountServiceImpl.java
+│   │   │           │       │   ├── AdminReadServiceImpl.java
+│   │   │           │       │   ├── AdminServiceImpl.java
+│   │   │           │       │   ├── PasswordServiceImpl.java
+│   │   │           │       │   ├── UserReadServiceImpl.java
+│   │   │           │       │   └── UserServiceImpl.java
+│   │   │           │       └── utils/
+│   │   │           │           ├── AccountProcessor.java
+│   │   │           │           ├── AdminProcessor.java
+│   │   │           │           └── UserProcessor.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Entity.java
-│   │   │           │   │   ├── IEntityRepository.java
-│   │   │           │   │   ├── IStaffRepository.java
+│   │   │           │   │   ├── EntityRepository.java
 │   │   │           │   │   ├── Staff.java
+│   │   │           │   │   ├── StaffRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   └── PartnerErrorCodes.java
 │   │   │           │   │   └── vos/
@@ -234,18 +238,18 @@
 │   │   │           │   │   │   ├── EntityEntity.java
 │   │   │           │   │   │   ├── StaffEntity.java
 │   │   │           │   │   │   └── impl/
-│   │   │           │   │   │       ├── EntityRepository.java
-│   │   │           │   │   │       └── StaffRepository.java
+│   │   │           │   │   │       ├── EntityRepositoryImpl.java
+│   │   │           │   │   │       └── StaffRepositoryImpl.java
 │   │   │           │   │   └── read/
-│   │   │           │   │       ├── IEntityQueries.java
-│   │   │           │   │       ├── IStaffQueries.java
+│   │   │           │   │       ├── EntityQueries.java
+│   │   │           │   │       ├── StaffQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── EntityView.java
 │   │   │           │   │       │   ├── StaffAcc.java
 │   │   │           │   │       │   └── StaffView.java
 │   │   │           │   │       └── impl/
-│   │   │           │   │           ├── EntityQueries.java
-│   │   │           │   │           └── StaffQueries.java
+│   │   │           │   │           ├── EntityQueriesImpl.java
+│   │   │           │   │           └── StaffQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── EntityResource.java
 │   │   │           │   │   ├── StaffResource.java
@@ -260,22 +264,23 @@
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
 │   │   │           │   └── service/
-│   │   │           │       ├── EntityProcessor.java
-│   │   │           │       ├── IEntityReadService.java
-│   │   │           │       ├── IEntityService.java
-│   │   │           │       ├── IStaffReadService.java
-│   │   │           │       ├── IStaffService.java
-│   │   │           │       ├── StaffProcessor.java
+│   │   │           │       ├── EntityReadService.java
+│   │   │           │       ├── EntityService.java
+│   │   │           │       ├── StaffReadService.java
+│   │   │           │       ├── StaffService.java
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── EntityCreateCommand.java
 │   │   │           │       │   ├── EntityUpdateCommand.java
 │   │   │           │       │   ├── StaffCreateCommand.java
 │   │   │           │       │   └── StaffUpdateCommand.java
-│   │   │           │       └── impl/
-│   │   │           │           ├── EntityReadService.java
-│   │   │           │           ├── EntityService.java
-│   │   │           │           ├── StaffReadService.java
-│   │   │           │           └── StaffService.java
+│   │   │           │       ├── impl/
+│   │   │           │       │   ├── EntityReadServiceImpl.java
+│   │   │           │       │   ├── EntityServiceImpl.java
+│   │   │           │       │   ├── StaffReadServiceImpl.java
+│   │   │           │       │   └── StaffServiceImpl.java
+│   │   │           │       └── utils/
+│   │   │           │           ├── EntityProcessor.java
+│   │   │           │           └── StaffProcessor.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Attendance.java

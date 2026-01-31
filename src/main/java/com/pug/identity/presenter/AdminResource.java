@@ -6,9 +6,9 @@ import com.pug.identity.presenter.dtos.AdminCreateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.identity.presenter.dtos.AdminUpdateRequest;
 import com.pug.identity.presenter.mappers.AdminPresenter;
-import com.pug.identity.service.IAdminReadService;
-import com.pug.identity.service.IAdminService;
-import com.pug.identity.service.IPasswordService;
+import com.pug.identity.service.AdminReadService;
+import com.pug.identity.service.AdminService;
+import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.AdminCreateCommand;
@@ -56,9 +56,9 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource {
 
-  @Inject IPasswordService passwordService;
-  @Inject IAdminReadService readService;
-  @Inject IAdminService writeService;
+  @Inject PasswordService passwordService;
+  @Inject AdminReadService readService;
+  @Inject AdminService writeService;
   @Inject I18n i18n;
 
   @Context HttpHeaders headers;

@@ -1,18 +1,18 @@
 package com.pug.partner.presenter;
 
+import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.identity.service.impl.PasswordService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
-import com.pug.partner.service.IStaffReadService;
-import com.pug.partner.service.IStaffService;
+import com.pug.partner.service.StaffReadService;
+import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
@@ -57,8 +57,8 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class StaffResource {
 
-  @Inject IStaffService writeService;
-  @Inject IStaffReadService readService;
+  @Inject StaffService writeService;
+  @Inject StaffReadService readService;
   @Inject PasswordService passwordService;
   @Inject I18n i18n;
 

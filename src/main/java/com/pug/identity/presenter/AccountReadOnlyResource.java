@@ -2,7 +2,7 @@ package com.pug.identity.presenter;
 
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.identity.service.IAccountReadService;
+import com.pug.identity.service.AccountReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountReadOnlyResource {
 
-  @Inject IAccountReadService readService;
+  @Inject AccountReadService readService;
   @Inject I18n i18n;
 
   @Context HttpHeaders headers;
