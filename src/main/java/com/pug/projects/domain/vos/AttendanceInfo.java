@@ -51,7 +51,7 @@ public class AttendanceInfo extends DomainError {
                 .validatedAt(validatedAt)
                 .createdAt(createdAt)
                 .build();
-        vo.validate();
+        vo.collectValidationProblems();
         return vo;
     }
 
@@ -59,7 +59,7 @@ public class AttendanceInfo extends DomainError {
      * Validates the AttendanceInfo instance.
      * Adds validation errors to the domain error list if any validation rules are violated.
      */
-    private void validate() {
+    private void collectValidationProblems() {
         if (createdAt == null) {
             addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
         }

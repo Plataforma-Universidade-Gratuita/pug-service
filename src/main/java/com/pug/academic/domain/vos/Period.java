@@ -37,12 +37,12 @@ public class Period extends DomainError {
    */
   public static Period factory(LocalDate startDate, LocalDate dueDate) {
     Period vo = Period.builder().startDate(startDate).dueDate(dueDate).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the period dates. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (startDate == null) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     }

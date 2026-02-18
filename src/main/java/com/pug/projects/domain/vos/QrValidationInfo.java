@@ -53,12 +53,12 @@ public class QrValidationInfo extends DomainError {
                 .longitude(longitude)
                 .qrValidationHash(qrValidationHash)
                 .build();
-        vo.validate();
+        vo.collectValidationProblems();
         return vo;
     }
 
     /** Validates the QrValidationInfo fields and accumulates errors if any. */
-    private void validate() {
+    private void collectValidationProblems() {
         if (duration == null || duration.signum() <= 0) {
             addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
         }

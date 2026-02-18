@@ -45,7 +45,7 @@ public class Enrollment extends DomainError {
             .enrollmentInfo(EnrollmentInfo.factory(now, null, null))
             .build();
 
-    enrollment.validate();
+    enrollment.collectValidationProblems();
     return enrollment;
   }
 
@@ -77,7 +77,7 @@ public class Enrollment extends DomainError {
             .enrollmentInfo(EnrollmentInfo.factory(enrollmentInfo.getRequestAt(), accepted, closing))
             .build();
 
-    updated.validate();
+    updated.collectValidationProblems();
     return updated;
   }
 
@@ -89,7 +89,7 @@ public class Enrollment extends DomainError {
   }
 
   /** Validates the Enrollment entity and accumulates errors if any. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (student == null) {
       addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
     }

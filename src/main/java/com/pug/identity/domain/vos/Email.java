@@ -40,12 +40,12 @@ public class Email extends DomainError {
     String normalized = rawValue == null ? null : rawValue.trim().toLowerCase(Locale.ROOT);
 
     Email vo = Email.builder().value(normalized).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the email format and length, populating the problems list if invalid. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
       return;

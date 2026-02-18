@@ -60,14 +60,14 @@ public class ProjectInfo extends DomainError {
                 .closedAt(closedAt)
                 .maxParticipants(maxParticipants)
                 .build();
-        vo.validate();
+        vo.collectValidationProblems();
         return vo;
     }
 
     /**
      * Validates the ProjectInfo fields and adds errors if any validation fails.
      */
-    private void validate() {
+    private void collectValidationProblems() {
         if (createdBy == null) {
             addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
         }

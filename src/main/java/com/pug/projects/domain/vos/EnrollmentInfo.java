@@ -53,14 +53,14 @@ public class EnrollmentInfo extends DomainError {
                 .acceptedAt(acceptedAt)
                 .closingStatusAt(closingStatusAt)
                 .build();
-        vo.validate();
+        vo.collectValidationProblems();
         return vo;
     }
 
     /**
      * Validates the EnrollmentInfo instance.
      */
-    private void validate() {
+    private void collectValidationProblems() {
         if (requestAt == null) {
             addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
             return;

@@ -35,6 +35,7 @@
 │   │   │           │   │       ├── AcademicRegistration.java
 │   │   │           │   │       ├── CounterpartHours.java
 │   │   │           │   │       └── Period.java
+│   │   │           │   ├── generate-context.sh
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CourseMapper.java
 │   │   │           │   │   ├── SchoolMapper.java
@@ -111,6 +112,7 @@
 │   │   │           │   │   │   └── GeoErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       └── IbgeCode.java
+│   │   │           │   ├── generate-context.sh
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── CityMapper.java
 │   │   │           │   │   ├── persistence/
@@ -155,6 +157,7 @@
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── Cpf.java
 │   │   │           │   │       └── Email.java
+│   │   │           │   ├── generate-context.sh
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── AccountMapper.java
 │   │   │           │   │   ├── AdminMapper.java
@@ -231,6 +234,7 @@
 │   │   │           │   │   │   └── PartnerErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       └── Cnpj.java
+│   │   │           │   ├── generate-context.sh
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── EntityMapper.java
 │   │   │           │   │   ├── StaffMapper.java
@@ -300,6 +304,7 @@
 │   │   │           │   │       ├── ProjectHours.java
 │   │   │           │   │       ├── ProjectInfo.java
 │   │   │           │   │       └── QrValidationInfo.java
+│   │   │           │   ├── generate-context.sh
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── AttendanceMapper.java
 │   │   │           │   │   ├── EnrollmentMapper.java
@@ -332,6 +337,7 @@
 │   │   │               │   ├── DuplicateResourceException.java
 │   │   │               │   ├── ReferencedEntityException.java
 │   │   │               │   └── ResourceNotFoundException.java
+│   │   │               ├── generate-context.sh
 │   │   │               ├── http/
 │   │   │               │   └── CorrelationFilter.java
 │   │   │               ├── i18n/
@@ -394,6 +400,7 @@
 │   │       │       ├── V013__create_attendances_table.sql
 │   │       │       ├── V014__create_view_student_progress.sql
 │   │       │       └── V015__create_view_project_progress.sql
+│   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
@@ -416,10 +423,6 @@
 │       │           │   │   ├── dtos/
 │       │           │   │   └── rest/
 │       │           │   └── service/
-│       │           ├── helpers/
-│       │           │   ├── TestErrorCodes.java
-│       │           │   └── domainGenerators/
-│       │           │       └── vos/
 │       │           ├── identity/
 │       │           │   ├── domain/
 │       │           │   │   ├── enums/

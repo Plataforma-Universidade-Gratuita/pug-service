@@ -39,12 +39,12 @@ public class CounterpartHours extends DomainError {
             .requiredHours(requiredHours)
             .completedHours(completedHours)
             .build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the hours. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (requiredHours == null) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }

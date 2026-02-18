@@ -36,12 +36,12 @@ public class Cpf extends DomainError {
     String cleaned = StringUtils.isEmpty(rawValue) ? null : rawValue.replaceAll("\\D", "");
 
     Cpf vo = Cpf.builder().value(cleaned).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the CPF format and digits, populating the problems list if invalid. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
       return;

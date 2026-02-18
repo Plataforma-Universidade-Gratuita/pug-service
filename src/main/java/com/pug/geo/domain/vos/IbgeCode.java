@@ -31,12 +31,12 @@ public class IbgeCode extends DomainError {
    */
   public static IbgeCode factory(String code) {
     IbgeCode vo = IbgeCode.builder().code(code).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the IBGE code format and populates the problems list if invalid. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (StringUtils.isEmpty(code)) {
       getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else {

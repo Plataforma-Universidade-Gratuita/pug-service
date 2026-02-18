@@ -34,12 +34,12 @@ public class AcademicRegistration extends DomainError {
   public static AcademicRegistration factory(String registration) {
     String trimmed = StringUtils.trim(registration);
     AcademicRegistration vo = AcademicRegistration.builder().value(trimmed).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the registration format and length. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (value.length() > 15) {

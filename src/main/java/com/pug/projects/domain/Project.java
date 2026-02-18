@@ -80,7 +80,7 @@ public class Project extends DomainError {
             .schools(schools != null ? new ArrayList<>(schools) : new ArrayList<>())
             .build();
 
-    project.validate();
+    project.collectValidationProblems();
     return project;
   }
 
@@ -120,7 +120,7 @@ public class Project extends DomainError {
     }
 
     Project updated = builder.build();
-    updated.validate();
+    updated.collectValidationProblems();
     return updated;
   }
 
@@ -145,11 +145,11 @@ public class Project extends DomainError {
             .projectInfo(newInfo)
             .build();
 
-    updated.validate();
+    updated.collectValidationProblems();
     return updated;
   }
 
-  private void validate() {
+  private void collectValidationProblems() {
     if (id == null) {
       addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
     }

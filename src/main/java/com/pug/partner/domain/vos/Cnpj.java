@@ -36,12 +36,12 @@ public class Cnpj extends DomainError {
     String cleaned = StringUtils.isEmpty(rawValue) ? null : rawValue.replaceAll("\\D", "");
 
     Cnpj vo = Cnpj.builder().value(cleaned).build();
-    vo.validate();
+    vo.collectValidationProblems();
     return vo;
   }
 
   /** Validates the CNPJ, populating the problems list if invalid. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
       return;

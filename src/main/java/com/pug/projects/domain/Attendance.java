@@ -58,7 +58,7 @@ public class Attendance extends DomainError {
             .status(AttendanceStatus.WAITING)
             .build();
 
-    att.validate();
+    att.collectValidationProblems();
     return att;
   }
 
@@ -92,12 +92,12 @@ public class Attendance extends DomainError {
             .status(AttendanceStatus.PRESENT)
             .build();
 
-    updated.validate();
+    updated.collectValidationProblems();
     return updated;
   }
 
   /** Validates the Attendance entity's fields and state. */
-  private void validate() {
+  private void collectValidationProblems() {
     if (project == null) {
       addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }

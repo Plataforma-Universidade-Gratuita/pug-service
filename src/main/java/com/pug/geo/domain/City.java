@@ -58,11 +58,11 @@ public class City extends DomainError {
    */
   public City changeName(String newName) {
     var trimmedName = StringUtils.trim(newName);
-    if (this.name.equals(trimmedName)) {
+    if (name.equals(trimmedName)) {
       return this;
     }
 
-    City c = this.toBuilder().name(StringUtils.trim(newName)).build();
+    City c = toBuilder().name(StringUtils.trim(newName)).build();
     c.collectValidationProblems();
     return c;
   }
@@ -74,11 +74,11 @@ public class City extends DomainError {
    * @return the updated City instance
    */
   public City changeIbgeCode(IbgeCode newCode) {
-    if (this.ibgeCode.equals(newCode)) {
+    if (ibgeCode.equals(newCode)) {
       return this;
     }
 
-    City c = this.toBuilder().ibgeCode(newCode).build();
+    City c = toBuilder().ibgeCode(newCode).build();
     c.collectValidationProblems();
     return c;
   }

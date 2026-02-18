@@ -44,14 +44,14 @@ public class ProjectHours extends DomainError {
                 .offeredHours(offeredHours)
                 .completedHours(comp)
                 .build();
-        vo.validate();
+        vo.collectValidationProblems();
         return vo;
     }
 
     /**
      * Validates the ProjectHours value object.
      */
-    private void validate() {
+    private void collectValidationProblems() {
         if (offeredHours == null) {
             addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
             return;
