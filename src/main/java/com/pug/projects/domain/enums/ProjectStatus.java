@@ -2,6 +2,7 @@ package com.pug.projects.domain.enums;
 
 import lombok.Getter;
 
+/** Enumeration representing the status of a project. */
 @Getter
 public enum ProjectStatus {
   PLANNED("project.status.planned"),

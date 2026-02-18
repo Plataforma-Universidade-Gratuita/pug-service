@@ -2,6 +2,7 @@ package com.pug.projects.domain.enums;
 
 import lombok.Getter;
 
+/** Enumeration representing the status of an enrollment. */
 @Getter
 public enum EnrollmentStatus {
   PENDING("enrollment.status.pending"),

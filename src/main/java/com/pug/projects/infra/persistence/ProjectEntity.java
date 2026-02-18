@@ -49,7 +49,7 @@ import lombok.ToString;
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
 @EntityListeners(TimestampColumnsListener.class)
-public class ProjectsEntity extends BaseUuidV7Entity {
+public class ProjectEntity extends BaseUuidV7Entity {
 
   @NotBlank
   @Size(max = 150)

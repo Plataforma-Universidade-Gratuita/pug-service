@@ -1,4 +1,4 @@
 package com.pug.projects.service;
 
 /** Service class for managing enrollments. */
-public class EnrollmentsService {}
+public class EnrollmentService {}

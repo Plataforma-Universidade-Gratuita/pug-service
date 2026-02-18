@@ -40,7 +40,7 @@ import lombok.ToString;
       @Index(name = "idx_enrollments_project", columnList = "project_id")
     })
 @EntityListeners(TimestampColumnsListener.class)
-public class EnrollmentsEntity {
+public class EnrollmentEntity {
 
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
   @Embeddable

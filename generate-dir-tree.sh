@@ -2,39 +2,10 @@
 set -euo pipefail
 
 OUT="project-tree.txt"
-# names to ignore at top-level (exact match)
-IGNORE_TOP="(.git|.idea|target|node_modules|.mvn|build|.DS_Store|project-tree.txt)"
 
-# produce a tree-like listing using find + awk
-# - exclude common ignored dirs
-find . \
-  \( -path "./.git" -o -path "./.idea" -o -path "./target" -o -path "./node_modules" -o -path "./.mvn" -o -path "./build" -o -name ".DS_Store" -o -name "project-tree.txt" \) -prune -o -print \
-| sed 's#^\./##' \
-| awk -F'/' '
-  BEGIN{
-    OFS="/";
-    print "./"
-  }
-  {
-    n = NF;
-    # build prefix
-    prefix="";
-    for(i=1;i<n;i++){
-      parent = $i;
-      # store counts per level to determine pipe/space - use array counts[level]
-      counts[i]++;
-    }
-    # accumulate path to determine if entry is last among siblings
-    path = $0;
-    arr[path]=1;
-    list[n,path]=$0;
-    items[n, ++idx[n]] = $0;
-  }
-  END{
-    # simpler second pass: build tree by iterating sorted entries
-    PROCINFO["sorted_in"] = "@ind_str_asc";
-    # collect all entries again using getline from find output is complex in awk end; instead, re-run find
-  }'
+# 1. TREE GENERATION
+# ---------------------------------------------------------
+echo "Generating project tree..."
 
 # fallback simpler working approach using recursion in shell
 generate() {
@@ -70,10 +41,46 @@ generate() {
   done
 }
 
-# write header and run
+# write header and run tree generation
 {
   echo "./"
   generate "." ""
 } > "$OUT"
 
-echo "Wrote $OUT"
+echo "Wrote tree to $OUT"
+
+
+# 2. RUN GENERATE-CONTEXT SCRIPTS
+# ---------------------------------------------------------
+echo "Searching for context generation scripts under ./src..."
+
+# Check if src exists to prevent errors
+if [ -d "src" ]; then
+    # Find files named 'generate-context.sh' inside src
+    find src -type f -name "generate-context.sh" -print0 | while IFS= read -r -d $'\0' script_path; do
+
+        script_dir=$(dirname "$script_path")
+        script_name=$(basename "$script_path")
+
+        echo ""
+        echo "Found script: $script_path"
+        echo "--------------------------------------------------"
+
+        # Execute in a subshell
+        (
+            cd "$script_dir" || exit
+            echo "Running $script_name in $(pwd)..."
+
+            # Ensure it is executable (optional but good practice)
+            chmod +x "$script_name" 2>/dev/null || true
+
+            # Run using bash explicitly
+            bash "$script_name"
+        )
+        echo "--------------------------------------------------"
+    done
+else
+    echo "Directory './src' does not exist. Skipping script execution."
+fi
+
+echo "All operations completed."
