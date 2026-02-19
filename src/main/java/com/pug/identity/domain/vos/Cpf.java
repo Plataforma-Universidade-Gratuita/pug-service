@@ -40,50 +40,15 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /** Validates the CPF format and digits, populating the problems list if invalid. */
+  /**
+   * Validates the CPF format and digits, populating the problems list if invalid.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
-      return;
-    }
-
-    if (value.length() != 11) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_LENGTH));
-      return;
-    }
+    validateStringField(value, 11L, "cpf");
 
     if (allSameDigit(value) || !validCheckDigits(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
     }
-  }
-
-  /**
-   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00"). Returns the
-   * raw value if the CPF does not have the correct length (e.g., invalid state).
-   *
-   * @return the formatted CPF as a String.
-   */
-  public String toFormattedString() {
-    if (value == null || value.length() != 11) {
-      return value;
-    }
-    return value.substring(0, 3)
-        + "."
-        + value.substring(3, 6)
-        + "."
-        + value.substring(6, 9)
-        + "-"
-        + value.substring(9, 11);
-  }
-
-  /**
-   * Returns the raw string representation of the CPF.
-   *
-   * @return the raw CPF as a String.
-   */
-  @Override
-  public String toString() {
-    return value;
   }
 
   // --- Internal Validation Logic ---
@@ -122,7 +87,7 @@ public class Cpf extends DomainError {
   /**
    * Calculates a CPF check digit.
    *
-   * @param s the string with digits
+   * @param s   the string with digits
    * @param len number of digits to use for calculation (9 or 10)
    * @return the calculated check digit
    */

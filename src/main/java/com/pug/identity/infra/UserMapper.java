@@ -25,6 +25,7 @@ public final class UserMapper {
         .name(e.getName())
         .cpf(Cpf.factory(e.getCpf()))
         .createdAt(e.getCreatedAt())
+        .updatedAt(e.getUpdatedAt())
         .build();
   }
 
@@ -43,6 +44,7 @@ public final class UserMapper {
         .cpf(d.getCpf().toString())
         .name(d.getName())
         .createdAt(d.getCreatedAt())
+        .updatedAt(d.getUpdatedAt())
         .build();
   }
 
@@ -70,6 +72,6 @@ public final class UserMapper {
     if (e == null) {
       return null;
     }
-    return new UserView(e.getId(), e.getCpf(), e.getName(), e.getCreatedAt());
+    return new UserView(e.getId(), e.getCpf(), e.getName(), e.getCreatedAt(), e.getUpdatedAt());
   }
 }

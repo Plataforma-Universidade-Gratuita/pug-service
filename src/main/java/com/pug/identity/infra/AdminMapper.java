@@ -56,10 +56,12 @@ public final class AdminMapper {
                 userEntity.getId(),
                 userEntity.getCpf(),
                 userEntity.getName(),
-                userEntity.getCreatedAt()),
+                userEntity.getCreatedAt(),
+                userEntity.getUpdatedAt()),
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
-            accountEntity.getCreatedAt()),
+            accountEntity.getCreatedAt(),
+            accountEntity.getUpdatedAt()),
         adminEntity.getGrantedAt());
   }
 }

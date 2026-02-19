@@ -1,6 +1,5 @@
 package com.pug.projects.infra.persistence;
 
-import com.pug.shared.infra.persistence.TimestampColumnsListener;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -39,7 +38,7 @@ import lombok.ToString;
       @Index(name = "idx_enrollments_status", columnList = "status"),
       @Index(name = "idx_enrollments_project", columnList = "project_id")
     })
-@EntityListeners(TimestampColumnsListener.class)
+@EntityListeners(TimestampTechnicalColumns.class)
 public class EnrollmentEntity {
 
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")

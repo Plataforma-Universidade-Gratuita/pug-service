@@ -1,20 +1,20 @@
 CREATE TABLE attendances
 (
-    id                 uuid PRIMARY KEY,
+    id                 uuid,
     project_id         uuid          NOT NULL,
     student_id         uuid          NOT NULL,
     duration           DECIMAL(4, 2) NOT NULL,
     latitude           DECIMAL(9, 6),
     longitude          DECIMAL(9, 6),
     status             varchar(16)   NOT NULL,
-    qr_validation_hash varchar(512) UNIQUE,
-    validated_by       uuid REFERENCES staff (account_id),
+    qr_validation_hash varchar(512)  NOT NULL,
+    validated_by       uuid,
     validated_at       TIMESTAMP WITH TIME ZONE,
     created_at         TIMESTAMP WITH TIME ZONE,
-
-    CONSTRAINT fk_att_enroll FOREIGN KEY (project_id, student_id)
-        REFERENCES enrollments (project_id, student_id),
-
+    PRIMARY KEY (id),
+    FOREIGN KEY (project_id, student_id) REFERENCES enrollments (project_id, student_id),
+    FOREIGN KEY (validated_by) REFERENCES staff (account_id),
+    UNIQUE (qr_validation_hash),
     CONSTRAINT chk_attendance_duration_pos CHECK (duration > 0),
     CONSTRAINT chk_attendance_lat CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
     CONSTRAINT chk_attendance_lon CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))

@@ -1,0 +1,1423 @@
+PROJECT CONTEXT DUMP
+Project Name: projects
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/projects
+================================================================================
+
+
+================================================================================
+FILE: domain/Attendance.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.github.f4b6a3.uuid.UuidCreator;
+import com.pug.academic.domain.Student;
+import com.pug.projects.domain.enums.AttendanceStatus;
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.projects.domain.vos.AttendanceInfo;
+import com.pug.projects.domain.vos.QrValidationInfo;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.time.TimeProvider;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/** Domain entity representing an Attendance. */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Attendance extends DomainError {
+  private final UUID id;
+  private final Student student;
+  private final Project project;
+  private final QrValidationInfo qrValidationInfo;
+  private final AttendanceInfo attendanceInfo;
+  private final AttendanceStatus status;
+
+  /**
+   * Factory method to create a new Attendance instance.
+   *
+   * @param project the associated Project.
+   * @param student the associated Student.
+   * @param duration the duration of the attendance.
+   * @param time the TimeProvider for current time.
+   * @return a validated Attendance instance.
+   */
+  public static Attendance factory(
+      Project project, Student student, BigDecimal duration, TimeProvider time) {
+
+    Attendance att =
+        Attendance.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .project(project)
+            .student(student)
+            .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
+            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now(time.clock())))
+            .status(AttendanceStatus.WAITING)
+            .build();
+
+    att.collectValidationProblems();
+    return att;
+  }
+
+  /**
+   * Validates the attendance, updating its status and validation info.
+   *
+   * @param validatorId the ID of the validator.
+   * @param lat the latitude of the validation location.
+   * @param lon the longitude of the validation location.
+   * @param hash the hash of the QR code.
+   * @param time the TimeProvider for current time.
+   * @return a validated Attendance instance with updated information.
+   */
+  public Attendance validateAttendance(
+      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash, TimeProvider time) {
+    QrValidationInfo newQr =
+        QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
+
+    AttendanceInfo newInfo =
+        AttendanceInfo.factory(
+            validatorId, OffsetDateTime.now(time.clock()), this.attendanceInfo.getCreatedAt());
+
+    Attendance updated =
+        this.toBuilder()
+            .qrValidationInfo(newQr)
+            .attendanceInfo(newInfo)
+            .status(AttendanceStatus.PRESENT)
+            .build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /** Validates the Attendance entity's fields and state. */
+  private void collectValidationProblems() {
+    if (project == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+    }
+    if (student == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+    }
+    if (status == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+    }
+
+    if (qrValidationInfo != null) {
+      if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+      }
+      BigDecimal lat = qrValidationInfo.getLatitude();
+      BigDecimal lon = qrValidationInfo.getLongitude();
+
+      boolean invalidLat =
+          lat != null
+              && (lat.compareTo(BigDecimal.valueOf(90)) > 0
+                  || lat.compareTo(BigDecimal.valueOf(-90)) < 0);
+      boolean invalidLon =
+          lon != null
+              && (lon.compareTo(BigDecimal.valueOf(180)) > 0
+                  || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
+
+      if (invalidLat || invalidLon) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+      }
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/AttendanceRepository.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.pug.projects.infra.persistence.AttendanceEntity;
+
+public interface AttendanceRepository {
+  void persist(AttendanceEntity entity);
+}
+
+
+================================================================================
+FILE: domain/Enrollment.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.pug.academic.domain.Student;
+import com.pug.projects.domain.enums.EnrollmentStatus;
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.projects.domain.vos.EnrollmentInfo;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.time.TimeProvider;
+import java.time.OffsetDateTime;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/** Domain entity representing an Enrollment. */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Enrollment extends DomainError {
+  private final Student student;
+  private final Project project;
+  private final EnrollmentStatus status;
+  private final EnrollmentInfo enrollmentInfo;
+
+  /**
+   * Factory method to create a new Enrollment with PENDING status.
+   *
+   * @param student the student enrolling
+   * @param project the project to enroll in
+   * @param time the time provider for current time
+   * @return a new Enrollment instance
+   */
+  public static Enrollment factory(Student student, Project project, TimeProvider time) {
+    var now = OffsetDateTime.now(time.clock());
+    Enrollment enrollment =
+        Enrollment.builder()
+            .student(student)
+            .project(project)
+            .status(EnrollmentStatus.PENDING)
+            .enrollmentInfo(EnrollmentInfo.factory(now, null, null))
+            .build();
+
+    enrollment.collectValidationProblems();
+    return enrollment;
+  }
+
+  /**
+   * Change the status of the enrollment, updating relevant timestamps.
+   *
+   * @param newStatus the new status to set
+   * @param time the time provider for current time
+   * @return a new Enrollment instance with updated status
+   */
+  public Enrollment changeStatus(EnrollmentStatus newStatus, TimeProvider time) {
+    if (this.status == newStatus) {
+      return this;
+    }
+
+    var now = OffsetDateTime.now(time.clock());
+    OffsetDateTime accepted = this.enrollmentInfo.getAcceptedAt();
+    OffsetDateTime closing = this.enrollmentInfo.getClosingStatusAt();
+
+    if (newStatus == EnrollmentStatus.APPROVED) {
+      accepted = now;
+      closing = null;
+    } else if (isClosingStatus(newStatus)) {
+      closing = now;
+    }
+
+    Enrollment updated =
+        this.toBuilder()
+            .status(newStatus)
+            .enrollmentInfo(
+                EnrollmentInfo.factory(enrollmentInfo.getRequestAt(), accepted, closing))
+            .build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /** Helper method to determine if a status is a closing status. */
+  private boolean isClosingStatus(EnrollmentStatus s) {
+    return s == EnrollmentStatus.REJECTED
+        || s == EnrollmentStatus.EXITED
+        || s == EnrollmentStatus.REMOVED
+        || s == EnrollmentStatus.CANCELED
+        || s == EnrollmentStatus.COMPLETED;
+  }
+
+  /** Validates the Enrollment entity and accumulates errors if any. */
+  private void collectValidationProblems() {
+    if (student == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+    }
+    if (project == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+    }
+    if (status == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+    }
+    if (enrollmentInfo != null) {
+      if (enrollmentInfo.getRequestAt() == null) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+      }
+      if (enrollmentInfo.getAcceptedAt() != null
+          && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      }
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/EnrollmentRepository.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.pug.projects.infra.persistence.EnrollmentEntity;
+
+public interface EnrollmentRepository {
+  void persist(EnrollmentEntity entity);
+}
+
+
+================================================================================
+FILE: domain/enums/AttendanceStatus.java
+================================================================================
+package com.pug.projects.domain.enums;
+
+import lombok.Getter;
+
+/** Enumeration representing the status of attendance. */
+@Getter
+public enum AttendanceStatus {
+  WAITING("attendance.status.waiting"),
+  PRESENT("attendance.status.present"),
+  ABSENT("attendance.status.absent");
+
+  private final String bundleKey;
+
+  AttendanceStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/EnrollmentStatus.java
+================================================================================
+package com.pug.projects.domain.enums;
+
+import lombok.Getter;
+
+/** Enumeration representing the status of an enrollment. */
+@Getter
+public enum EnrollmentStatus {
+  PENDING("enrollment.status.pending"),
+  APPROVED("enrollment.status.approved"),
+  REJECTED("enrollment.status.rejected"),
+  EXITED("enrollment.status.exited"),
+  REMOVED("enrollment.status.removed"),
+  CANCELED("enrollment.status.canceled"),
+  COMPLETED("enrollment.status.completed");
+
+  private final String bundleKey;
+
+  EnrollmentStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectsErrorCodes.java
+================================================================================
+package com.pug.projects.domain.enums;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import lombok.Getter;
+
+/** Enumeration of error codes related to Projects domain. */
+@Getter
+public enum ProjectsErrorCodes implements GenericErrorCodes {
+  INVALID_PROJECT_ID_BLANK("error.domain.projects.id.blank", "id"),
+  INVALID_PROJECT_NAME_BLANK("error.domain.projects.name.blank", "name"),
+  INVALID_PROJECT_NAME_LENGTH("error.domain.projects.name.toolong", "name"),
+  INVALID_ENTITY_ID_BLANK("error.domain.projects.entity.blank", "entityId"),
+  INVALID_DESCRIPTION_BLANK("error.domain.projects.description.blank", "description"),
+  INVALID_DESCRIPTION_LENGTH("error.domain.projects.description.toolong", "description"),
+  INVALID_CREATED_BY_BLANK("error.domain.projects.createdby.blank", "createdBy"),
+  INVALID_CREATED_AT_BLANK("error.domain.projects.createdat.blank", "createdAt"),
+  INVALID_CREATED_AT_FUTURE("error.domain.projects.createdat.future", "createdAt"),
+  INVALID_OFFERED_HOURS_NEGATIVE("error.domain.projects.offeredhours.negative", "offeredHours"),
+  INVALID_COMPLETED_HOURS_NEGATIVE(
+      "error.domain.projects.completedhours.negative", "completedHours"),
+  INVALID_COMPLETED_HOURS_EXCEEDS("error.domain.projects.completedhours.exceeds", "completedHours"),
+  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
+  INVALID_MAX_PARTICIPANTS_NEGATIVE(
+      "error.domain.projects.maxparticipants.negative", "maxParticipants"),
+
+  INVALID_ENROLLMENT_STUDENT_BLANK("error.domain.projects.enrollment.student.blank", "studentId"),
+  INVALID_ENROLLMENT_PROJECT_BLANK("error.domain.projects.enrollment.project.blank", "projectId"),
+  INVALID_ENROLLMENT_STATUS_BLANK("error.domain.projects.enrollment.status.blank", "status"),
+  INVALID_ENROLLMENT_REQUEST_AT_BLANK(
+      "error.domain.projects.enrollment.requestat.blank", "requestAt"),
+  INVALID_ENROLLMENT_DATES_INVALID("error.domain.projects.enrollment.dates.invalid", "acceptedAt"),
+
+  INVALID_ATTENDANCE_PROJECT_BLANK("error.domain.projects.attendance.project.blank", "projectId"),
+  INVALID_ATTENDANCE_STUDENT_BLANK("error.domain.projects.attendance.student.blank", "studentId"),
+  INVALID_ATTENDANCE_DURATION_INVALID(
+      "error.domain.projects.attendance.duration.invalid", "duration"),
+  INVALID_ATTENDANCE_GEO_INVALID_MISSING(
+      "error.domain.projects.attendance.geo.invalid.missing", null),
+  INVALID_ATTENDANCE_GEO_INVALID_LAT(
+      "error.domain.projects.attendance.geo.invalid.lat", "latitude"),
+  INVALID_ATTENDANCE_GEO_INVALID_LONG(
+      "error.domain.projects.attendance.geo.invalid.long", "longitude"),
+  INVALID_ATTENDANCE_STATUS_BLANK("error.domain.projects.attendance.status.blank", "status"),
+
+  PROJECT_NOT_FOUND("error.domain.projects.notfound", null),
+  PROJECT_ALREADY_EXISTS("error.domain.projects.alreadyexists", null),
+  ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.notfound", null),
+  ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.alreadyexists", null),
+  ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.notfound", null);
+
+  private final String bundleKey;
+  private final String fieldName;
+
+  ProjectsErrorCodes(String bundleKey, String fieldName) {
+    this.bundleKey = bundleKey;
+    this.fieldName = fieldName;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectStatus.java
+================================================================================
+package com.pug.projects.domain.enums;
+
+import lombok.Getter;
+
+/** Enumeration representing the status of a project. */
+@Getter
+public enum ProjectStatus {
+  PLANNED("project.status.planned"),
+  IN_PROGRESS("project.status.in_progress"),
+  COMPLETED("project.status.completed"),
+  ON_HOLD("project.status.on_hold"),
+  CANCELLED("project.status.cancelled");
+
+  private final String bundleKey;
+
+  ProjectStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/Project.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.github.f4b6a3.uuid.UuidCreator;
+import com.pug.academic.domain.School;
+import com.pug.partner.domain.Entity;
+import com.pug.projects.domain.enums.ProjectStatus;
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.projects.domain.vos.ProjectHours;
+import com.pug.projects.domain.vos.ProjectInfo;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.time.TimeProvider;
+import com.pug.shared.utils.StringUtils;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/** Domain entity representing a Project. */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Project extends DomainError {
+  private final UUID id;
+  private final String name;
+  private final Entity entity;
+  private final String description;
+  private final ProjectHours projectHours;
+  private final ProjectInfo projectInfo;
+  private final ProjectStatus projectStatus;
+  private final List<School> schools;
+
+  /**
+   * Factory method to create a new Project instance.
+   *
+   * @param name the name of the project
+   * @param entity the associated entity
+   * @param description the project description
+   * @param createdBy the UUID of the user who created the project
+   * @param offeredHours the number of hours offered for the project
+   * @param maxParticipants the maximum number of participants allowed
+   * @param schools the list of associated schools
+   * @param time the TimeProvider for current time
+   * @return a validated Project instance
+   */
+  public static Project factory(
+      String name,
+      Entity entity,
+      String description,
+      UUID createdBy,
+      BigDecimal offeredHours,
+      Integer maxParticipants,
+      List<School> schools,
+      TimeProvider time) {
+
+    var now = time.now();
+    OffsetDateTime createdAt = OffsetDateTime.ofInstant(now, time.clock().getZone());
+
+    ProjectHours hoursVo = ProjectHours.factory(offeredHours, BigDecimal.ZERO);
+    ProjectInfo infoVo = ProjectInfo.factory(createdBy, createdAt, null, maxParticipants);
+
+    Project project =
+        Project.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(StringUtils.trim(name))
+            .entity(entity)
+            .description(StringUtils.trim(description))
+            .projectHours(hoursVo)
+            .projectInfo(infoVo)
+            .projectStatus(ProjectStatus.PLANNED)
+            .schools(schools != null ? new ArrayList<>(schools) : new ArrayList<>())
+            .build();
+
+    project.collectValidationProblems();
+    return project;
+  }
+
+  public Project updateDetails(
+      String name,
+      String description,
+      BigDecimal offeredHours,
+      Integer maxParticipants,
+      List<School> schools) {
+
+    Project.ProjectBuilder builder = this.toBuilder();
+
+    if (StringUtils.isNotEmpty(name)) {
+      builder.name(StringUtils.trim(name));
+    }
+
+    if (StringUtils.isNotEmpty(description)) {
+      builder.description(StringUtils.trim(description));
+    }
+
+    if (offeredHours != null) {
+      ProjectHours newHours =
+          ProjectHours.factory(offeredHours, this.projectHours.getCompletedHours());
+      builder.projectHours(newHours);
+    }
+
+    if (maxParticipants != null) {
+      ProjectInfo newInfo =
+          ProjectInfo.factory(
+              this.projectInfo.getCreatedBy(),
+              this.projectInfo.getCreateAt(),
+              this.projectInfo.getClosedAt(),
+              maxParticipants);
+      builder.projectInfo(newInfo);
+    }
+
+    if (schools != null) {
+      builder.schools(new ArrayList<>(schools));
+    }
+
+    Project updated = builder.build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  public Project changeStatus(ProjectStatus newStatus, TimeProvider time) {
+    if (this.projectStatus == newStatus) return this;
+
+    OffsetDateTime closedAt = this.projectInfo.getClosedAt();
+    if (newStatus == ProjectStatus.COMPLETED || newStatus == ProjectStatus.CANCELLED) {
+      closedAt = OffsetDateTime.now(time.clock());
+    } else if (newStatus == ProjectStatus.IN_PROGRESS || newStatus == ProjectStatus.PLANNED) {
+      closedAt = null;
+    }
+
+    ProjectInfo newInfo =
+        ProjectInfo.factory(
+            this.projectInfo.getCreatedBy(),
+            this.projectInfo.getCreateAt(),
+            closedAt,
+            this.projectInfo.getMaxParticipants());
+
+    Project updated = this.toBuilder().projectStatus(newStatus).projectInfo(newInfo).build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  private void collectValidationProblems() {
+    if (id == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
+    }
+
+    if (StringUtils.isEmpty(name)) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_BLANK));
+    } else if (name.length() > 150) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_LENGTH));
+    }
+
+    if (entity == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENTITY_ID_BLANK));
+    }
+
+    if (StringUtils.isEmpty(description)) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_BLANK));
+    } else if (description.length() > 4000) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_LENGTH));
+    }
+
+    if (projectInfo == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+    } else if (projectInfo.hasErrors()) {
+      addErrors(projectInfo.getProblems());
+    }
+
+    if (projectHours == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+    } else if (projectHours.hasErrors()) {
+      addErrors(projectHours.getProblems());
+    }
+
+    if (projectStatus == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/ProjectRepository.java
+================================================================================
+package com.pug.projects.domain;
+
+import com.pug.projects.infra.persistence.ProjectEntity;
+
+public interface ProjectRepository {
+  void persist(ProjectEntity entity);
+}
+
+
+================================================================================
+FILE: domain/vos/AttendanceInfo.java
+================================================================================
+package com.pug.projects.domain.vos;
+
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/** Value object representing attendance information. */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class AttendanceInfo extends DomainError {
+
+  UUID validatedBy;
+  OffsetDateTime validatedAt;
+  OffsetDateTime createdAt;
+
+  /**
+   * Private constructor for AttendanceInfo.
+   *
+   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedAt Date and time when the attendance was validated
+   * @param createdAt Date and time when the attendance record was created
+   */
+  @Builder(toBuilder = true)
+  private AttendanceInfo(UUID validatedBy, OffsetDateTime validatedAt, OffsetDateTime createdAt) {
+    this.validatedBy = validatedBy;
+    this.validatedAt = validatedAt;
+    this.createdAt = createdAt;
+  }
+
+  /**
+   * Factory method to create and validate an AttendanceInfo instance.
+   *
+   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedAt Date and time when the attendance was validated
+   * @param createdAt Date and time when the attendance record was created
+   * @return A validated AttendanceInfo instance
+   */
+  public static AttendanceInfo factory(
+      UUID validatedBy, OffsetDateTime validatedAt, OffsetDateTime createdAt) {
+    AttendanceInfo vo =
+        AttendanceInfo.builder()
+            .validatedBy(validatedBy)
+            .validatedAt(validatedAt)
+            .createdAt(createdAt)
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /**
+   * Validates the AttendanceInfo instance. Adds validation errors to the domain error list if any
+   * validation rules are violated.
+   */
+  private void collectValidationProblems() {
+    if (createdAt == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+    }
+
+    boolean hasValidator = validatedBy != null;
+    boolean hasDate = validatedAt != null;
+
+    if (hasValidator != hasDate) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+    }
+    if (hasDate && createdAt != null && validatedAt.isBefore(createdAt)) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EnrollmentInfo.java
+================================================================================
+package com.pug.projects.domain.vos;
+
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/** Value object representing enrollment information. */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class EnrollmentInfo extends DomainError {
+
+  OffsetDateTime requestAt;
+  OffsetDateTime acceptedAt;
+  OffsetDateTime closingStatusAt;
+
+  /** Private constructor to enforce the use of the factory method. */
+  @Builder(toBuilder = true)
+  private EnrollmentInfo(
+      OffsetDateTime requestAt, OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt) {
+    this.requestAt = requestAt;
+    this.acceptedAt = acceptedAt;
+    this.closingStatusAt = closingStatusAt;
+  }
+
+  /**
+   * Factory method to create and validate an EnrollmentInfo instance.
+   *
+   * @param requestAt The date and time when the enrollment request was made.
+   * @param acceptedAt The date and time when the enrollment was accepted.
+   * @param closingStatusAt The date and time when the enrollment status was closed.
+   * @return A validated EnrollmentInfo instance.
+   */
+  public static EnrollmentInfo factory(
+      OffsetDateTime requestAt, OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt) {
+
+    EnrollmentInfo vo =
+        EnrollmentInfo.builder()
+            .requestAt(requestAt)
+            .acceptedAt(acceptedAt)
+            .closingStatusAt(closingStatusAt)
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /** Validates the EnrollmentInfo instance. */
+  private void collectValidationProblems() {
+    if (requestAt == null) {
+      addError(
+          new AppValidationException.Problem(
+              ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+      return;
+    }
+
+    if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+    }
+
+    if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/ProjectHours.java
+================================================================================
+package com.pug.projects.domain.vos;
+
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import java.math.BigDecimal;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/** Value object representing project hours. */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class ProjectHours extends DomainError {
+
+  BigDecimal offeredHours;
+  BigDecimal completedHours;
+
+  /** Private constructor for ProjectHours value object. */
+  @Builder(toBuilder = true)
+  private ProjectHours(BigDecimal offeredHours, BigDecimal completedHours) {
+    this.offeredHours = offeredHours;
+    this.completedHours = completedHours;
+  }
+
+  /**
+   * Factory method to create a ProjectHours value object.
+   *
+   * @param offeredHours Hours offered for the project.
+   * @param completedHours Hours completed for the project.
+   * @return A validated ProjectHours value object.
+   */
+  public static ProjectHours factory(BigDecimal offeredHours, BigDecimal completedHours) {
+    BigDecimal comp = completedHours != null ? completedHours : BigDecimal.ZERO;
+
+    ProjectHours vo =
+        ProjectHours.builder().offeredHours(offeredHours).completedHours(comp).build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /** Validates the ProjectHours value object. */
+  private void collectValidationProblems() {
+    if (offeredHours == null) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      return;
+    }
+
+    if (offeredHours.signum() < 0) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+    }
+
+    if (completedHours.signum() < 0) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
+    }
+
+    if (completedHours.compareTo(offeredHours) > 0) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/ProjectInfo.java
+================================================================================
+package com.pug.projects.domain.vos;
+
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/** Value object representing project information. */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class ProjectInfo extends DomainError {
+
+  UUID createdBy;
+  OffsetDateTime createAt;
+  OffsetDateTime closedAt;
+  Integer maxParticipants;
+
+  /** Private constructor for ProjectInfo. */
+  @Builder(toBuilder = true)
+  private ProjectInfo(
+      UUID createdBy, OffsetDateTime createAt, OffsetDateTime closedAt, Integer maxParticipants) {
+    this.createdBy = createdBy;
+    this.createAt = createAt;
+    this.closedAt = closedAt;
+    this.maxParticipants = maxParticipants;
+  }
+
+  /**
+   * Factory method to create a ProjectInfo instance with validation.
+   *
+   * @param createdBy the UUID of the creator
+   * @param createAt the creation timestamp
+   * @param closedAt the closing timestamp
+   * @param maxParticipants the maximum number of participants
+   * @return a validated ProjectInfo instance
+   */
+  public static ProjectInfo factory(
+      UUID createdBy, OffsetDateTime createAt, OffsetDateTime closedAt, Integer maxParticipants) {
+
+    ProjectInfo vo =
+        ProjectInfo.builder()
+            .createdBy(createdBy)
+            .createAt(createAt)
+            .closedAt(closedAt)
+            .maxParticipants(maxParticipants)
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /** Validates the ProjectInfo fields and adds errors if any validation fails. */
+  private void collectValidationProblems() {
+    if (createdBy == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
+    }
+
+    if (createAt == null) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+    }
+
+    if (maxParticipants != null && maxParticipants < 0) {
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+    }
+
+    if (createAt != null && closedAt != null && closedAt.isBefore(createAt)) {
+      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/QrValidationInfo.java
+================================================================================
+package com.pug.projects.domain.vos;
+
+import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.AppValidationException;
+import java.math.BigDecimal;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/** Value object representing QR code validation information. */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class QrValidationInfo extends DomainError {
+
+  BigDecimal duration;
+  BigDecimal latitude;
+  BigDecimal longitude;
+  String qrValidationHash;
+
+  /** Private constructor to enforce the use of the factory method. */
+  @Builder(toBuilder = true)
+  private QrValidationInfo(
+      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+    this.duration = duration;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    this.qrValidationHash = qrValidationHash;
+  }
+
+  /**
+   * Factory method to create and validate a QrValidationInfo instance.
+   *
+   * @param duration The duration of the spent time on this attendance.
+   * @param latitude The latitude where the attendance was recorded.
+   * @param longitude The longitude where the attendance was recorded.
+   * @param qrValidationHash The hash of the QR code used for validation.
+   * @return A validated QrValidationInfo instance.
+   */
+  public static QrValidationInfo factory(
+      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+    QrValidationInfo vo =
+        QrValidationInfo.builder()
+            .duration(duration)
+            .latitude(latitude)
+            .longitude(longitude)
+            .qrValidationHash(qrValidationHash)
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /** Validates the QrValidationInfo fields and accumulates errors if any. */
+  private void collectValidationProblems() {
+    if (duration == null || duration.signum() <= 0) {
+      addError(
+          new AppValidationException.Problem(
+              ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+    }
+
+    boolean hasLat = latitude != null;
+    boolean hasLon = longitude != null;
+
+    if (hasLat != hasLon) {
+      addError(
+          new AppValidationException.Problem(
+              ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+    }
+
+    if (hasLat) {
+      if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
+          || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
+      }
+    }
+
+    if (hasLon) {
+      if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
+          || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
+      }
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/AttendanceMapper.java
+================================================================================
+package com.pug.projects.infra;
+
+public class AttendanceMapper {}
+
+
+================================================================================
+FILE: infra/EnrollmentMapper.java
+================================================================================
+package com.pug.projects.infra;
+
+public class EnrollmentMapper {}
+
+
+================================================================================
+FILE: infra/persistence/AttendanceEntity.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.shared.infra.persistence.BaseUuidV7Entity;
+import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"projectId", "studentId", "status"})
+@Entity
+@Table(
+    name = "attendances",
+    indexes = {
+      @Index(name = "idx_attendances_enrollment", columnList = "project_id, student_id"),
+      @Index(name = "idx_attendances_status", columnList = "status"),
+      @Index(name = "idx_attendances_validated_by", columnList = "validated_by"),
+      @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
+      @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
+    })
+@EntityListeners(TimestampColumnsListener.class)
+public class AttendanceEntity extends BaseUuidV7Entity {
+
+  @NotNull
+  @Column(name = "project_id", nullable = false)
+  private UUID projectId;
+
+  @NotNull
+  @Column(name = "student_id", nullable = false)
+  private UUID studentId;
+
+  @NotNull
+  @DecimalMin(value = "0.00", inclusive = false)
+  @Column(name = "duration", nullable = false, precision = 4, scale = 2)
+  private BigDecimal duration;
+
+  @DecimalMin(value = "-90.000000")
+  @DecimalMax(value = "90.000000")
+  @Column(name = "latitude", precision = 9, scale = 6)
+  private BigDecimal latitude;
+
+  @DecimalMin(value = "-180.000000")
+  @DecimalMax(value = "180.000000")
+  @Column(name = "longitude", precision = 9, scale = 6)
+  private BigDecimal longitude;
+
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  @Size(max = 512)
+  @Column(name = "qr_validation_hash", length = 512, unique = true)
+  private String qrValidationHash;
+
+  @Column(name = "validated_by")
+  private UUID validatedBy;
+
+  @Column(name = "validated_at")
+  private OffsetDateTime validatedAt;
+
+  @Column(name = "created_at")
+  private OffsetDateTime createdAt;
+}
+
+
+================================================================================
+FILE: infra/persistence/AttendanceRepositoryImpl.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.projects.domain.AttendanceRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.UUID;
+
+@ApplicationScoped
+public class AttendanceRepositoryImpl
+    implements AttendanceRepository, PanacheRepositoryBase<AttendanceEntity, UUID> {
+  @Override
+  public void persist(AttendanceEntity attendance) {
+    persistAndFlush(attendance);
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/EnrollmentEntity.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(of = {"id", "status"})
+@Entity
+@Table(
+    name = "enrollments",
+    indexes = {
+      @Index(name = "idx_enrollments_student", columnList = "student_id"),
+      @Index(name = "idx_enrollments_status", columnList = "status"),
+      @Index(name = "idx_enrollments_project", columnList = "project_id")
+    })
+@EntityListeners(TimestampColumnsListener.class)
+public class EnrollmentEntity {
+
+  @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+  @Embeddable
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @EqualsAndHashCode
+  public static final class EnrollmentsId implements Serializable {
+    @Column(name = "project_id", nullable = false)
+    private UUID projectId;
+
+    @Column(name = "student_id", nullable = false)
+    private UUID studentId;
+  }
+
+  @EmbeddedId private EnrollmentsId id;
+
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  @NotNull
+  @Column(name = "request_at", nullable = false)
+  private OffsetDateTime requestAt;
+
+  @Column(name = "accepted_at")
+  private OffsetDateTime acceptedAt;
+
+  @Column(name = "closing_status_at")
+  private OffsetDateTime closingStatusAt;
+}
+
+
+================================================================================
+FILE: infra/persistence/EnrollmentRepositoryImpl.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.projects.domain.EnrollmentRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.UUID;
+
+@ApplicationScoped
+public class EnrollmentRepositoryImpl
+    implements EnrollmentRepository, PanacheRepositoryBase<EnrollmentEntity, UUID> {
+  @Override
+  public void persist(EnrollmentEntity enrollment) {
+    persistAndFlush(enrollment);
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/ProjectEntity.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.shared.infra.persistence.BaseUuidV7Entity;
+import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"name", "status"})
+@Entity
+@Table(
+    name = "projects",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_projects_entity_name",
+          columnNames = {"entity_id", "name"})
+    },
+    indexes = {
+      @Index(name = "idx_projects_entity", columnList = "entity_id"),
+      @Index(name = "idx_projects_status", columnList = "status"),
+      @Index(name = "idx_projects_created_by", columnList = "created_by_user_id"),
+      @Index(name = "idx_projects_created_at", columnList = "created_at"),
+      @Index(name = "idx_projects_closed_at", columnList = "closed_at")
+    })
+@EntityListeners(TimestampColumnsListener.class)
+public class ProjectEntity extends BaseUuidV7Entity {
+
+  @NotBlank
+  @Size(max = 150)
+  @Column(name = "name", nullable = false, length = 150)
+  private String name;
+
+  @NotNull
+  @Column(name = "entity_id", nullable = false)
+  private UUID entityId;
+
+  @NotBlank
+  @Size(max = 4000)
+  @Column(name = "description", nullable = false, length = 4000)
+  private String description;
+
+  @NotNull
+  @Column(name = "created_by", nullable = false)
+  private UUID createdBy;
+
+  @NotNull
+  @Column(name = "created_at", nullable = false)
+  private OffsetDateTime createdAt;
+
+  @Column(name = "closed_at")
+  private OffsetDateTime closedAt;
+
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal offeredHours;
+
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  @Min(0)
+  @Column(name = "max_participants")
+  private Integer maxParticipants;
+}
+
+
+================================================================================
+FILE: infra/persistence/ProjectRepositoryImpl.java
+================================================================================
+package com.pug.projects.infra.persistence;
+
+import com.pug.projects.domain.ProjectRepository;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.UUID;
+
+@ApplicationScoped
+public class ProjectRepositoryImpl
+    implements ProjectRepository, PanacheRepositoryBase<ProjectEntity, UUID> {
+  @Override
+  public void persist(ProjectEntity project) {
+    persistAndFlush(project);
+  }
+}
+
+
+================================================================================
+FILE: infra/ProjectMapper.java
+================================================================================
+package com.pug.projects.infra;
+
+public class ProjectMapper {}
+
+
+================================================================================
+FILE: service/AttendanceService.java
+================================================================================
+package com.pug.projects.service;
+
+/** Service class for managing attendances. */
+public class AttendanceService {}
+
+
+================================================================================
+FILE: service/EnrollmentService.java
+================================================================================
+package com.pug.projects.service;
+
+/** Service class for managing enrollments. */
+public class EnrollmentService {}
+
+
+================================================================================
+FILE: service/ProjectService.java
+================================================================================
+package com.pug.projects.service;
+
+/** Service class for managing projects. */
+public class ProjectService {}
+

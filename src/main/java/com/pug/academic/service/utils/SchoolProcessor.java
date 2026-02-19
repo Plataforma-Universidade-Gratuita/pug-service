@@ -26,7 +26,7 @@ public class SchoolProcessor {
   public static School processUpdateInput(School existingSchool, String name) {
     School updatedSchool = existingSchool;
 
-    if (!StringUtils.isEmpty(name)) {
+    if (StringUtils.isNotEmpty(name)) {
       updatedSchool = updatedSchool.changeName(name);
     }
 

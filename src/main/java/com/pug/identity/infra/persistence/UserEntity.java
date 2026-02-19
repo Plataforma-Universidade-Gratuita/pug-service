@@ -1,10 +1,9 @@
 package com.pug.identity.infra.persistence;
 
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import com.pug.shared.infra.persistence.TimestampColumnsListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -44,10 +43,9 @@ import org.hibernate.type.SqlTypes;
       @Index(name = "idx_users_name", columnList = "name"),
       @Index(name = "idx_users_cpf", columnList = "cpf")
     })
-@EntityListeners(TimestampColumnsListener.class)
 @Indexed
 @SuperBuilder
-public class UserEntity extends BaseUuidV7Entity {
+public class UserEntity extends BaseAuditedEntity {
 
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cpf", nullable = false, length = 11)
@@ -59,7 +57,4 @@ public class UserEntity extends BaseUuidV7Entity {
   @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @Column(name = "name", nullable = false, length = 150)
   private String name;
-
-  @Column(name = "created_at", nullable = false)
-  private OffsetDateTime createdAt;
 }

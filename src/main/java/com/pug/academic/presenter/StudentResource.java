@@ -198,14 +198,14 @@ public class StudentResource {
       @QueryParam("q") String q, @QueryParam("academicRegistration") String academicRegistration) {
 
     List<StudentView> views;
-    if (!StringUtils.isEmpty(academicRegistration)) {
+    if (StringUtils.isNotEmpty(academicRegistration)) {
       try {
         StudentView studentView = readService.getViewByAcademicRegistration(academicRegistration);
         views = List.of(studentView);
       } catch (ResourceNotFoundException e) {
         views = List.of();
       }
-    } else if (!StringUtils.isEmpty(q)) {
+    } else if (StringUtils.isNotEmpty(q)) {
       views = readService.searchByName(q);
     } else {
       views = readService.listViews();

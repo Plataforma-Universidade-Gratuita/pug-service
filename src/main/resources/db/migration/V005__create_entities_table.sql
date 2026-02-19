@@ -1,10 +1,15 @@
 CREATE TABLE entities
 (
-    id      uuid PRIMARY KEY,
-    cnpj    char(14)     NOT NULL UNIQUE,
-    name    varchar(150) NOT NULL,
-    city_id uuid         NOT NULL REFERENCES cities (id),
-    address varchar(254)
+    id         uuid,
+    cnpj       char(14)                 NOT NULL,
+    name       varchar(150)             NOT NULL,
+    city_id    uuid                     NOT NULL,
+    address    varchar(254),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (city_id) REFERENCES cities (id),
+    UNIQUE (cnpj)
 );
 
 CREATE INDEX idx_entities_name ON entities (name);

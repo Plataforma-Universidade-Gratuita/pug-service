@@ -12,7 +12,6 @@ import lombok.Getter;
  */
 @Getter
 public enum IdentityErrorCodes implements GenericErrorCodes {
-  INVALID_ID_BLANK("error.domain.identity.id.blank", "id"),
   INVALID_USER_ID_BLANK("error.domain.identity.user.id.blank", "userId"),
   INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
   INVALID_CPF_FORMAT("error.domain.identity.cpf.format", "cpf"),
@@ -26,8 +25,6 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_PASSWORD_HASH_BLANK("error.domain.identity.password.hash.blank", "passwordHash"),
   INVALID_PASSWORD_HASH_LENGTH("error.domain.identity.password.hash.toolong", "passwordHash"),
   INVALID_ACTIVE_BLANK("error.domain.identity.active.null", "active"),
-  INVALID_CREATED_AT_BLANK("error.domain.identity.created.at.blank", "createdAt"),
-  INVALID_CREATED_AT_FUTURE("error.domain.identity.created.at.future", "createdAt"),
   INVALID_ACCOUNT_BLANK("error.domain.identity.account.blank", "accountId"),
   INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
   INVALID_GRANTED_AT_FUTURE("error.domain.identity.granted.at.future", "grantedAt"),

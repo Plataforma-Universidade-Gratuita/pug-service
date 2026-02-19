@@ -1,8 +1,13 @@
 CREATE TABLE courses
 (
-    id        uuid PRIMARY KEY,
-    name      varchar(120) NOT NULL UNIQUE,
-    school_id uuid         NOT NULL REFERENCES schools (id)
+    id         uuid,
+    name       varchar(120)             NOT NULL,
+    school_id  uuid,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (school_id) REFERENCES schools (id),
+    UNIQUE (name)
 );
 
 CREATE INDEX idx_courses_school ON courses (school_id);

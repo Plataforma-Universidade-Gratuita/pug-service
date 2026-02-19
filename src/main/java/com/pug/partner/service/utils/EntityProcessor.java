@@ -40,12 +40,12 @@ public class EntityProcessor {
 
     Entity updatedEntity = existingEntity;
 
-    if (!StringUtils.isEmpty(cnpjString)) {
+    if (StringUtils.isNotEmpty(cnpjString)) {
       Cnpj newCnpj = Cnpj.factory(cnpjString);
       updatedEntity = updatedEntity.changeCnpj(newCnpj);
     }
 
-    if (!StringUtils.isEmpty(name)) {
+    if (StringUtils.isNotEmpty(name)) {
       updatedEntity = updatedEntity.changeName(name);
     }
 
@@ -53,7 +53,7 @@ public class EntityProcessor {
       updatedEntity = updatedEntity.moveToCity(cityId);
     }
 
-    if (!StringUtils.isEmpty(address)) {
+    if (StringUtils.isNotEmpty(address)) {
       updatedEntity = updatedEntity.changeAddress(address);
     }
 

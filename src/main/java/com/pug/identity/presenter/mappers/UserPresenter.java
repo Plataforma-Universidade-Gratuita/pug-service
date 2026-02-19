@@ -1,20 +1,25 @@
 package com.pug.identity.presenter.mappers;
 
-import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.utils.StringUtils;
+
 import java.util.Locale;
 
-/** Mapper class for converting UserView to UserResponse. */
+/**
+ * Mapper class for converting UserView to UserResponse.
+ */
 public final class UserPresenter {
-  /** Private constructor to prevent instantiation. */
-  private UserPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private UserPresenter() {
+  }
 
   /**
    * Converts a UserView to a UserResponse.
    *
-   * @param v the UserView to convert
+   * @param v      the UserView to convert
    * @param locale the locale for localization
    * @return the converted UserResponse
    */
@@ -24,10 +29,26 @@ public final class UserPresenter {
     }
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
 
-    String formattedCpf;
-    formattedCpf = Cpf.factory(v.cpf()).toFormattedString();
-
     return new UserResponse(
-        v.id(), v.cpf(), formattedCpf, v.name(), v.createdAt(), createdAtFormatted);
+            v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted);
+  }
+
+  /**
+   * Returns the formatted string representation of the CPF (e.g., "123.456.789-00"). Returns the
+   * raw value if the CPF does not have the correct length (e.g., invalid state).
+   *
+   * @return the formatted CPF as a String.
+   */
+  private static String cpfFormatted(String cpf) {
+    if (cpf == null || cpf.length() != 11) {
+      return cpf;
+    }
+    return cpf.substring(0, 3)
+            + "."
+            + cpf.substring(3, 6)
+            + "."
+            + cpf.substring(6, 9)
+            + "-"
+            + cpf.substring(9, 11);
   }
 }

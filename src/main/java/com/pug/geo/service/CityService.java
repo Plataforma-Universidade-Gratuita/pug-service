@@ -68,16 +68,6 @@ public interface CityService {
   City getById(UUID id);
 
   /**
-   * Get a city by its IBGE code string.
-   *
-   * @param ibgeCodeString the IBGE code digits.
-   * @return the found city.
-   * @throws ResourceNotFoundException if the city does not exist OR if the city exists but violates
-   *     domain rules (data integrity error).
-   */
-  City getByIbge(String ibgeCodeString);
-
-  /**
    * Check if a city exists by its IBGE code.
    *
    * @param ibgeCode the IBGE code (already a validated Value Object).

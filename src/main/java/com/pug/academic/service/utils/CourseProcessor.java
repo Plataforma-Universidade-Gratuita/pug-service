@@ -29,7 +29,7 @@ public class CourseProcessor {
   public static Course processUpdateInput(Course existingCourse, String name, UUID schoolId) {
     Course updatedCourse = existingCourse;
 
-    if (!StringUtils.isEmpty(name)) {
+    if (StringUtils.isNotEmpty(name)) {
       updatedCourse = updatedCourse.changeName(name);
     }
 

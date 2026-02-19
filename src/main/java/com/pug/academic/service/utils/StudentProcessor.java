@@ -68,7 +68,7 @@ public class StudentProcessor {
 
     Student updated = existingStudent;
 
-    if (!StringUtils.isEmpty(regString)) {
+    if (StringUtils.isNotEmpty(regString)) {
       AcademicRegistration newReg = AcademicRegistration.factory(regString);
       updated = updated.changeAcademicRegistration(newReg);
     }

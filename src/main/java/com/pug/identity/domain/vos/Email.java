@@ -3,13 +3,13 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.utils.StringUtils;
-import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import org.apache.commons.validator.routines.EmailValidator;
+
+import java.util.Locale;
 
 /**
  * Value object representing an email address. Converted to class to extend DomainError, allowing
@@ -44,29 +44,14 @@ public class Email extends DomainError {
     return vo;
   }
 
-  /** Validates the email format and length, populating the problems list if invalid. */
+  /**
+   * Validates the email format and length, populating the problems list if invalid.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
-      return;
-    }
-
-    if (value.length() > 254) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_LENGTH));
-    }
+    validateStringField(value, 254L, "email");
 
     if (!EMAIL_VALIDATOR.isValid(value)) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
     }
-  }
-
-  /**
-   * Returns the string representation of the email.
-   *
-   * @return the email address as a String.
-   */
-  @Override
-  public String toString() {
-    return value;
   }
 }

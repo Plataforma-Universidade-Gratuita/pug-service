@@ -41,6 +41,16 @@ public final class StringUtils {
   }
 
   /**
+   * Checks if a string is not null and contains non-whitespace characters.
+   *
+   * @param s the string to check.
+   * @return true if the string is not null and not blank, false otherwise.
+   */
+  public static boolean isNotEmpty(String s) {
+    return !isEmpty(s);
+  }
+
+  /**
    * Trims leading and trailing whitespace from a string. Null-safe.
    *
    * @param s the string to trim.

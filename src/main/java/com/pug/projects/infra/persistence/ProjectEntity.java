@@ -1,7 +1,6 @@
 package com.pug.projects.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import com.pug.shared.infra.persistence.TimestampColumnsListener;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -48,7 +47,7 @@ import lombok.ToString;
       @Index(name = "idx_projects_created_at", columnList = "created_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
-@EntityListeners(TimestampColumnsListener.class)
+@EntityListeners(TimestampTechnicalColumns.class)
 public class ProjectEntity extends BaseUuidV7Entity {
 
   @NotBlank

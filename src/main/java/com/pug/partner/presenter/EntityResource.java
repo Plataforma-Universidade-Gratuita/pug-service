@@ -152,7 +152,7 @@ public class EntityResource {
     List<EntityView> views;
     if (cityId != null) {
       views = readService.listViewsByCityId(cityId);
-    } else if (!StringUtils.isEmpty(q)) {
+    } else if (StringUtils.isNotEmpty(q)) {
       views = readService.searchViews(q);
     } else {
       views = readService.listViews();

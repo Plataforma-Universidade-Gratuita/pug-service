@@ -79,6 +79,7 @@
 │   │   │           │   │       ├── CoursePresenter.java
 │   │   │           │   │       ├── SchoolPresenter.java
 │   │   │           │   │       └── StudentPresenter.java
+│   │   │           │   ├── project_context_academic.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── CourseReadService.java
 │   │   │           │       ├── CourseService.java
@@ -133,6 +134,7 @@
 │   │   │           │   │   │   └── CityUpdateRequest.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
+│   │   │           │   ├── project_context_geo.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── CityReadService.java
 │   │   │           │       ├── CityService.java
@@ -197,6 +199,7 @@
 │   │   │           │   │       ├── AccountPresenter.java
 │   │   │           │   │       ├── AdminPresenter.java
 │   │   │           │   │       └── UserPresenter.java
+│   │   │           │   ├── project_context_identity.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── AccountReadService.java
 │   │   │           │       ├── AccountService.java
@@ -267,6 +270,7 @@
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
+│   │   │           │   ├── project_context_partner.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── EntityReadService.java
 │   │   │           │       ├── EntityService.java
@@ -288,11 +292,11 @@
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Attendance.java
-│   │   │           │   │   ├── AttendancesRepository.java
+│   │   │           │   │   ├── AttendanceRepository.java
 │   │   │           │   │   ├── Enrollment.java
-│   │   │           │   │   ├── EnrollmentsRepository.java
+│   │   │           │   │   ├── EnrollmentRepository.java
 │   │   │           │   │   ├── Project.java
-│   │   │           │   │   ├── ProjectsRepository.java
+│   │   │           │   │   ├── ProjectRepository.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AttendanceStatus.java
 │   │   │           │   │   │   ├── EnrollmentStatus.java
@@ -310,19 +314,20 @@
 │   │   │           │   │   ├── EnrollmentMapper.java
 │   │   │           │   │   ├── ProjectMapper.java
 │   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── AttendancesEntity.java
-│   │   │           │   │       ├── AttendancesRepositoryImpl.java
-│   │   │           │   │       ├── EnrollmentsEntity.java
-│   │   │           │   │       ├── EnrollmentsRepositoryImpl.java
-│   │   │           │   │       ├── ProjectsEntity.java
-│   │   │           │   │       └── ProjectsRepositoryImpl.java
+│   │   │           │   │       ├── AttendanceEntity.java
+│   │   │           │   │       ├── AttendanceRepositoryImpl.java
+│   │   │           │   │       ├── EnrollmentEntity.java
+│   │   │           │   │       ├── EnrollmentRepositoryImpl.java
+│   │   │           │   │       ├── ProjectEntity.java
+│   │   │           │   │       └── ProjectRepositoryImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── rest/
+│   │   │           │   ├── project_context_projects.txt
 │   │   │           │   └── service/
-│   │   │           │       ├── AttendancesService.java
-│   │   │           │       ├── EnrollmentsService.java
-│   │   │           │       └── ProjectsService.java
+│   │   │           │       ├── AttendanceService.java
+│   │   │           │       ├── EnrollmentService.java
+│   │   │           │       └── ProjectService.java
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java
@@ -365,6 +370,7 @@
 │   │   │               │           ├── ReferencedEntityExceptionMapper.java
 │   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
+│   │   │               ├── project_context_shared.txt
 │   │   │               ├── time/
 │   │   │               │   ├── SystemTimeProvider.java
 │   │   │               │   └── TimeProvider.java
@@ -397,12 +403,11 @@
 │   │       │       ├── V010__create_projects_table.sql
 │   │       │       ├── V011__create_projects_by_schools_table.sql
 │   │       │       ├── V012__create_enrollments_table.sql
-│   │       │       ├── V013__create_attendances_table.sql
-│   │       │       ├── V014__create_view_student_progress.sql
-│   │       │       └── V015__create_view_project_progress.sql
+│   │       │       └── V013__create_attendances_table.sql
 │   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
-│   │       └── messages_pt_BR.properties
+│   │       ├── messages_pt_BR.properties
+│   │       └── project_context_resources.txt
 │   └── test/
 │       ├── java/
 │       │   └── com/

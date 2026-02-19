@@ -92,7 +92,7 @@ public class CourseResource {
     List<CourseView> views;
     if (schoolId != null) {
       views = readService.listViewsBySchoolId(schoolId);
-    } else if (!StringUtils.isEmpty(q)) {
+    } else if (StringUtils.isNotEmpty(q)) {
       views = readService.searchByName(q);
     } else {
       views = readService.listViews();

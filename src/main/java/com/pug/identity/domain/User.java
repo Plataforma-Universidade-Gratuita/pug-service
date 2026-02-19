@@ -5,18 +5,19 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.time.Clock;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** User entity aggregate. */
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * User entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -26,35 +27,37 @@ public class User extends DomainError {
   Cpf cpf;
   String name;
   OffsetDateTime createdAt;
+  OffsetDateTime updatedAt;
 
   @Builder(toBuilder = true)
-  private User(UUID id, Cpf cpf, String name, OffsetDateTime createdAt) {
+  private User(UUID id, Cpf cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
     this.id = id;
     this.cpf = cpf;
     this.name = name;
     this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   /**
    * Factory for new users.
    *
-   * @param cpf person's CPF
+   * @param cpf  person's CPF
    * @param name person's name
-   * @param time time provider
    * @return new User instance (may contain errors)
    */
-  public static User factory(Cpf cpf, String name, TimeProvider time) {
-    var created = OffsetDateTime.now(time.clock());
+  public static User factory(Cpf cpf, String name) {
+    var created = OffsetDateTime.now();
 
     User user =
-        User.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .cpf(cpf)
-            .name(StringUtils.trim(name))
-            .createdAt(created)
-            .build();
+            User.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .cpf(cpf)
+                    .name(StringUtils.trim(name))
+                    .createdAt(created)
+                    .updatedAt(created)
+                    .build();
 
-    user.collectValidationProblems(time.clock());
+    user.collectValidationProblems();
     return user;
   }
 
@@ -66,11 +69,11 @@ public class User extends DomainError {
    */
   public User changeName(String newName) {
     String trimmed = StringUtils.trim(newName);
-    if (this.name.equals(trimmed)) {
+    if (name.equals(trimmed)) {
       return this;
     }
-    User updated = this.toBuilder().name(trimmed).build();
-    updated.collectValidationProblems(Clock.systemUTC());
+    User updated = toBuilder().name(trimmed).updatedAt(OffsetDateTime.now()).build();
+    updated.collectValidationProblems();
     return updated;
   }
 
@@ -81,36 +84,26 @@ public class User extends DomainError {
    * @return new User instance with changed CPF
    */
   public User changeCpf(Cpf newCpf) {
-    if (this.cpf.equals(newCpf)) {
+    if (cpf.equals(newCpf)) {
       return this;
     }
-    User updated = this.toBuilder().cpf(newCpf).build();
-    updated.collectValidationProblems(Clock.systemUTC());
+    User updated = toBuilder().cpf(newCpf).updatedAt(OffsetDateTime.now()).build();
+    updated.collectValidationProblems();
     return updated;
   }
 
-  /** Validates the User instance. */
-  private void collectValidationProblems(Clock clock) {
-    if (id == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK));
-    }
+  /**
+   * Validates the User instance.
+   */
+  private void collectValidationProblems() {
+    validateIdField(id);
+    validateStringField(name, 150L, "name");
+    validateAuditedFields(createdAt, updatedAt);
 
     if (cpf == null) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
     } else if (cpf.hasErrors()) {
       addErrors(cpf.getProblems());
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_NAME_BLANK));
-    } else if (name.length() > 150) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_NAME_LENGTH));
-    }
-
-    if (createdAt == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_BLANK));
-    } else if (createdAt.isAfter(OffsetDateTime.now(clock))) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }

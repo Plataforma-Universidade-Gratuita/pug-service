@@ -36,11 +36,11 @@ public class CityProcessor {
 
     City updatedCity = existingCity;
 
-    if (!StringUtils.isEmpty(name)) {
+    if (StringUtils.isNotEmpty(name)) {
       updatedCity = updatedCity.changeName(name);
     }
 
-    if (!StringUtils.isEmpty(ibgeCodeString)) {
+    if (StringUtils.isNotEmpty(ibgeCodeString)) {
       IbgeCode newIbgeCode = IbgeCode.factory(ibgeCodeString);
       updatedCity = updatedCity.changeIbgeCode(newIbgeCode);
     }

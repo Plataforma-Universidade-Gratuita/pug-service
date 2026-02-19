@@ -1,0 +1,1849 @@
+PROJECT CONTEXT DUMP
+Project Name: shared
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/shared
+================================================================================
+
+
+================================================================================
+FILE: domain/DomainError.java
+================================================================================
+package com.pug.shared.domain;
+
+import com.pug.shared.exceptions.AppValidationException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+/** Abstract base class for domain errors that can accumulate validation problems. */
+@Getter
+public abstract class DomainError {
+
+  @ToString.Exclude @EqualsAndHashCode.Exclude
+  private final List<AppValidationException.Problem> problems = new ArrayList<>();
+
+  /**
+   * Returns a defensive copy of the validation problems.
+   *
+   * @return a list of problems
+   */
+  public List<AppValidationException.Problem> getProblems() {
+    return new ArrayList<>(problems);
+  }
+
+  /**
+   * Checks if there are any validation errors.
+   *
+   * @return true if there are errors, false otherwise
+   */
+  public boolean hasErrors() {
+    return !problems.isEmpty();
+  }
+
+  /**
+   * Adds a validation problem to the list of problems.
+   *
+   * @param problem the validation problem to add
+   */
+  protected void addError(AppValidationException.Problem problem) {
+    problems.add(problem);
+  }
+
+  /**
+   * Adds multiple validation problems to the list of problems.
+   *
+   * @param newProblems the list of validation problems to add
+   */
+  protected void addErrors(List<AppValidationException.Problem> newProblems) {
+    problems.addAll(newProblems);
+  }
+
+  /**
+   * Returns a readable string summary of all validation problems.
+   *
+   * <p>Useful for logging data integrity issues.
+   */
+  public String getProblemsSummary() {
+    if (problems.isEmpty()) {
+      return "No errors";
+    }
+    return problems.stream()
+        .map(
+            p -> {
+              String key = p.code().getBundleKey();
+              String field = p.code().getFieldName();
+              return field != null ? key + "(" + field + ")" : key;
+            })
+        .collect(Collectors.joining(", "));
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/AccountType.java
+================================================================================
+package com.pug.shared.domain.enums;
+
+import lombok.Getter;
+
+/** Enumeration representing different types of user accounts. */
+@Getter
+public enum AccountType {
+  ADMIN("shared.account.type.admin"),
+  PARTNER("shared.account.type.partner"),
+  STUDENT("shared.account.type.student");
+
+  private final String bundleKey;
+
+  /**
+   * Constructor for the AccountType enum.
+   *
+   * @param bundleKey The internationalization resource key associated with the account type.
+   */
+  AccountType(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/DeleteKeys.java
+================================================================================
+package com.pug.shared.domain.enums;
+
+/** Enumeration representing different keys for deletion operations. */
+public enum DeleteKeys {
+  ACCOUNTS,
+  ADMINS,
+  CITIES,
+  COURSES,
+  ENTITIES,
+  SCHOOLS,
+  STAFF,
+  STUDENTS,
+  USERS;
+}
+
+
+================================================================================
+FILE: domain/enums/GenericErrorCodes.java
+================================================================================
+package com.pug.shared.domain.enums;
+
+/** Interface for generic error codes with internationalization support. */
+public interface GenericErrorCodes {
+  String getBundleKey();
+
+  /**
+   * Retrieves the name of the field associated with the error code, if applicable.
+   *
+   * @return the field name or null if no field is associated.
+   */
+  String getFieldName();
+}
+
+
+================================================================================
+FILE: domain/enums/SharedErrorCodes.java
+================================================================================
+package com.pug.shared.domain.enums;
+
+import lombok.Getter;
+
+/**
+ * Enum representing common, shared error codes for the entire application. These codes are
+ * typically used for general validation failures, internal server errors, or generic constraint
+ * violations that are not specific to a particular domain.
+ */
+@Getter
+public enum SharedErrorCodes implements GenericErrorCodes {
+  VALIDATION_ERROR("error.validation", null),
+  INTERNAL_ERROR("error.internal", null);
+
+  private final String bundleKey;
+  private final String fieldName;
+
+  /**
+   * Constructor for the SharedErrorCodes enum.
+   *
+   * @param bundleKey The internationalization resource key associated with the error.
+   * @param fieldName The name of the field associated with the error, or null if not
+   *     field-specific.
+   */
+  SharedErrorCodes(String bundleKey, String fieldName) {
+    this.bundleKey = bundleKey;
+    this.fieldName = fieldName;
+  }
+}
+
+
+================================================================================
+FILE: exceptions/ApplicationException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import lombok.Getter;
+
+/**
+ * Base class for application-specific exceptions. These exceptions encapsulate an error code and
+ * optional details, allowing for consistent API error responses.
+ */
+public abstract class ApplicationException extends RuntimeException {
+  @Getter private final GenericErrorCodes errorCode;
+  private final Map<String, Object> details;
+
+  /**
+   * Constructs a new ApplicationException with the specified error code and details.
+   *
+   * @param errorCode the generic error code representing the type of error
+   * @param details additional details about the error (can be null)
+   */
+  protected ApplicationException(GenericErrorCodes errorCode, Map<String, Object> details) {
+    super(errorCode.getBundleKey());
+    this.errorCode = errorCode;
+    this.details = details != null ? new HashMap<>(details) : new HashMap<>();
+  }
+
+  /**
+   * Constructs a new ApplicationException with the specified error code and no details.
+   *
+   * @param errorCode the generic error code representing the type of error
+   */
+  protected ApplicationException(GenericErrorCodes errorCode) {
+    this(errorCode, null);
+  }
+
+  /**
+   * Returns an unmodifiable view of the details map.
+   *
+   * @return an unmodifiable map containing the error details
+   */
+  public Map<String, Object> getDetails() {
+    return Collections.unmodifiableMap(details);
+  }
+}
+
+
+================================================================================
+FILE: exceptions/AppValidationException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.Serial;
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import lombok.Getter;
+
+/** Exception for application validation errors, which can include multiple problems. */
+@Getter
+public final class AppValidationException extends RuntimeException {
+
+  @Serial private static final long serialVersionUID = 1L;
+
+  /**
+   * Represents an individual validation problem.
+   *
+   * @param code The error code (implements GenericErrorCodes).
+   */
+  public record Problem(GenericErrorCodes code) implements Serializable {}
+
+  @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
+  private final transient List<Problem> problems;
+
+  /**
+   * Constructor for multiple validation problems.
+   *
+   * @param problems The list of validation problems.
+   */
+  public AppValidationException(List<Problem> problems) {
+    super("Application validation failed.");
+    if (problems == null || problems.isEmpty()) {
+      throw new IllegalArgumentException(
+          "AppValidationException must contain at least one problem.");
+    }
+    this.problems = Collections.unmodifiableList(problems);
+  }
+
+  /**
+   * Convenience constructor for a single validation problem.
+   *
+   * @param code The error code (implements GenericErrorCodes).
+   */
+  public AppValidationException(GenericErrorCodes code) {
+    this(List.of(new Problem(code)));
+  }
+}
+
+
+================================================================================
+FILE: exceptions/DuplicateResourceException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import java.util.Map;
+
+/** Exception thrown when attempting to create or add a resource that already exists. */
+public class DuplicateResourceException extends ApplicationException {
+  /**
+   * Constructs a new DuplicateResourceException with the specified error code and details.
+   *
+   * @param errorCode the generic error code representing the duplication error
+   * @param details additional details about the error
+   */
+  public DuplicateResourceException(GenericErrorCodes errorCode, Map<String, Object> details) {
+    super(errorCode, details);
+  }
+
+  /**
+   * Constructs a new DuplicateResourceException with the specified error code.
+   *
+   * @param errorCode the generic error code representing the duplication error
+   */
+  public DuplicateResourceException(GenericErrorCodes errorCode) {
+    super(errorCode);
+  }
+}
+
+
+================================================================================
+FILE: exceptions/ReferencedEntityException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import java.util.Map;
+
+/**
+ * Exception thrown when an entity cannot be deleted or modified because it is referenced by other
+ * entities.
+ */
+public class ReferencedEntityException extends ApplicationException {
+  /**
+   * Constructor for ReferencedEntityException.
+   *
+   * @param errorCode The specific error code representing the referenced entity error.
+   */
+  public ReferencedEntityException(GenericErrorCodes errorCode) {
+    super(errorCode);
+  }
+
+  /**
+   * Constructor for ReferencedEntityException with additional details.
+   *
+   * @param errorCode The specific error code representing the referenced entity error.
+   * @param details A map containing additional details about the error.
+   */
+  public ReferencedEntityException(GenericErrorCodes errorCode, Map<String, Object> details) {
+    super(errorCode, details);
+  }
+}
+
+
+================================================================================
+FILE: exceptions/ResourceNotFoundException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import java.util.Map;
+
+/** Exception thrown when a requested resource is not found. */
+public class ResourceNotFoundException extends ApplicationException {
+  /**
+   * Constructs a new ResourceNotFoundException with the specified error code and details.
+   *
+   * @param errorCode the generic error code representing the resource not found error
+   * @param details additional details about the error
+   */
+  public ResourceNotFoundException(GenericErrorCodes errorCode, Map<String, Object> details) {
+    super(errorCode, details);
+  }
+
+  /**
+   * Constructs a new ResourceNotFoundException with the specified error code.
+   *
+   * @param errorCode the generic error code representing the resource not found error
+   */
+  public ResourceNotFoundException(GenericErrorCodes errorCode) {
+    super(errorCode);
+  }
+}
+
+
+================================================================================
+FILE: http/CorrelationFilter.java
+================================================================================
+package com.pug.shared.http;
+
+import com.pug.shared.utils.StringUtils;
+import jakarta.annotation.Priority;
+import jakarta.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.MDC;
+
+/**
+ * A JAX-RS filter that manages correlation IDs for incoming requests and outgoing responses. It
+ * extracts an existing correlation ID from the "X-Correlation-Id" header or generates a new one.
+ * The ID is then stored in the request properties and the MDC (Mapped Diagnostic Context) for
+ * logging, and finally added to the response header.
+ */
+@Provider
+@Priority(Priorities.HEADER_DECORATOR)
+public class CorrelationFilter implements ContainerRequestFilter, ContainerResponseFilter {
+  private static final String HDR = "X-Correlation-Id";
+
+  /**
+   * Handles the incoming request to extract or generate a correlation ID. If an "X-Correlation-Id"
+   * header is present, it is reused. Otherwise, a new UUID is generated. The ID is stored in
+   * request properties and MDC for logging purposes.
+   *
+   * @param req The container request context.
+   */
+  @Override
+  public void filter(ContainerRequestContext req) {
+    String cid = req.getHeaderString(HDR);
+    if (StringUtils.isEmpty(cid)) {
+      cid = java.util.UUID.randomUUID().toString();
+    }
+    req.setProperty(HDR, cid);
+    MDC.put(HDR, cid);
+  }
+
+  /**
+   * Handles the outgoing response to include the correlation ID in the headers. The correlation ID
+   * is retrieved from the request properties and added to the response header. The ID is then
+   * removed from the MDC.
+   *
+   * @param req The container request context.
+   * @param res The container response context.
+   */
+  @Override
+  public void filter(ContainerRequestContext req, ContainerResponseContext res) {
+    String cid = (String) req.getProperty(HDR);
+    if (cid != null) {
+      res.getHeaders().putSingle(HDR, cid);
+    }
+    MDC.remove(HDR);
+  }
+}
+
+
+================================================================================
+FILE: i18n/I18n.java
+================================================================================
+package com.pug.shared.i18n;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import java.text.MessageFormat;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+/** A simple internationalization (i18n) utility class for retrieving localized messages. */
+@ApplicationScoped
+public class I18n {
+  private static final String BUNDLE = "messages";
+
+  /**
+   * Retrieve the translation for the given key and format it with the provided arguments.
+   *
+   * @param key the key to look up in the resource bundle.
+   * @param args optional arguments to format the message.
+   * @return the translated and formatted message.
+   */
+  public String translation(String key, Object... args) {
+    try {
+      ResourceBundle rb = ResourceBundle.getBundle(BUNDLE, Locale.getDefault());
+      String pat = rb.containsKey(key) ? rb.getString(key) : key;
+      return args == null || args.length == 0 ? pat : MessageFormat.format(pat, args);
+    } catch (MissingResourceException e) {
+      return key;
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/BaseUuidV7Entity.java
+================================================================================
+package com.pug.shared.infra.persistence;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+/** Base entity class with a UUIDv7 identifier. */
+@Getter
+@Setter
+@SuperBuilder
+@MappedSuperclass
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class BaseUuidV7Entity {
+  @Id
+  @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
+  private UUID id;
+}
+
+
+================================================================================
+FILE: infra/persistence/TimestampColumnsListener.java
+================================================================================
+package com.pug.shared.infra.persistence;
+
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import java.lang.reflect.Field;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.Set;
+import lombok.Getter;
+import org.jboss.logging.Logger;
+
+/**
+ * JPA Entity Listener to automatically manage timestamp columns such as createdAt, updatedAt,
+ * closedAt, etc., based on entity lifecycle events and status changes.
+ */
+public class TimestampColumnsListener {
+  private static final Logger LOG = Logger.getLogger(TimestampColumnsListener.class);
+
+  @Getter
+  private enum FieldNames {
+    CREATED_AT("createdAt"),
+    UPDATED_AT("updatedAt"),
+    GRANTED_AT("grantedAt"),
+    REQUEST_AT("requestAt"),
+    CLOSED_AT("closedAt"),
+    ACCEPTED_AT("acceptedAt"),
+    CLOSING_STATUS_AT("closingStatusAt"),
+    VALIDATED_AT("validatedAt"),
+    STATUS("status");
+
+    private final String fieldName;
+
+    /**
+     * Constructor for FieldNames enum.
+     *
+     * @param fieldName The name of the field.
+     */
+    FieldNames(String fieldName) {
+      this.fieldName = fieldName;
+    }
+  }
+
+  private static final Set<String> ON_CREATE =
+      Set.of(
+          FieldNames.CREATED_AT.getFieldName(),
+          FieldNames.GRANTED_AT.getFieldName(),
+          FieldNames.REQUEST_AT.getFieldName());
+  private static final Set<String> ON_UPDATE = Set.of(FieldNames.UPDATED_AT.getFieldName());
+
+  private static final Set<String> PROJECT_CLOSED_STATUSES = Set.of("INTERRUPTED", "CONCLUDED");
+  private static final Set<String> ENROLLMENT_ACCEPTED = Set.of("ACCEPTED");
+  private static final Set<String> ENROLLMENT_CLOSING_STATUSES =
+      Set.of("DECLINED", "EXITED", "REMOVED", "INTERRUPTED", "CONCLUDED");
+  private static final Set<String> ATTENDANCE_VALIDATED = Set.of("VALIDATED");
+
+  /**
+   * Sets timestamp fields before persisting a new entity.
+   *
+   * @param entity the entity being persisted.
+   */
+  @PrePersist
+  public void prePersist(Object entity) {
+    OffsetDateTime now = OffsetDateTime.now();
+
+    for (String f : ON_CREATE) {
+      setIfNull(entity, f, now);
+    }
+
+    applyStatusDrivenTimestamps(entity, now);
+  }
+
+  /**
+   * Sets timestamp fields before updating an existing entity.
+   *
+   * @param entity the entity being updated.
+   */
+  @PreUpdate
+  public void preUpdate(Object entity) {
+    OffsetDateTime now = OffsetDateTime.now();
+
+    for (String f : ON_UPDATE) {
+      setIfPresent(entity, f, now);
+    }
+
+    applyStatusDrivenTimestamps(entity, now);
+  }
+
+  /**
+   * Applies timestamp updates based on the entity's status field.
+   *
+   * @param entity the entity being processed.
+   * @param now the current timestamp.
+   */
+  private void applyStatusDrivenTimestamps(Object entity, OffsetDateTime now) {
+    String status = readStatus(entity);
+    if (status == null) {
+      return;
+    }
+
+    if (PROJECT_CLOSED_STATUSES.contains(status)
+        && hasField(entity, FieldNames.CLOSED_AT.getFieldName())) {
+      set(entity, FieldNames.CLOSED_AT.getFieldName(), now);
+    }
+
+    if (ENROLLMENT_ACCEPTED.contains(status)
+        && hasField(entity, FieldNames.ACCEPTED_AT.getFieldName())) {
+      set(entity, FieldNames.ACCEPTED_AT.getFieldName(), now);
+    }
+
+    if (ENROLLMENT_CLOSING_STATUSES.contains(status)
+        && hasField(entity, FieldNames.CLOSING_STATUS_AT.getFieldName())) {
+      set(entity, FieldNames.CLOSING_STATUS_AT.getFieldName(), now);
+    }
+
+    if (ATTENDANCE_VALIDATED.contains(status)
+        && hasField(entity, FieldNames.VALIDATED_AT.getFieldName())) {
+      set(entity, FieldNames.VALIDATED_AT.getFieldName(), now);
+    }
+  }
+
+  /**
+   * Reads the status field from the entity using reflection.
+   *
+   * @param entity the entity from which to read the status.
+   * @return the status as a string, or null if not found or inaccessible.
+   */
+  private String readStatus(Object entity) {
+    Field f = find(entity.getClass(), FieldNames.STATUS.getFieldName());
+    if (f == null) {
+      return null;
+    }
+    try {
+      f.setAccessible(true);
+      Object v = f.get(entity);
+      if (v == null) {
+        return null;
+      }
+      if (v instanceof Enum<?> e) {
+        return e.name();
+      }
+      return v.toString().trim().toUpperCase(Locale.ROOT);
+    } catch (IllegalAccessException e) {
+      LOG.debugf(
+          "Unable to read field 'status' on %s: %s", entity.getClass().getName(), e.getMessage());
+      return null;
+    }
+  }
+
+  /**
+   * Sets the field to the given value if it is currently null.
+   *
+   * @param target the target object.
+   * @param fieldName the name of the field to set.
+   * @param value the value to set.
+   */
+  private static void setIfNull(Object target, String fieldName, OffsetDateTime value) {
+    Field f = find(target.getClass(), fieldName);
+    if (f == null) {
+      return;
+    }
+    try {
+      f.setAccessible(true);
+      if (f.get(target) == null) {
+        f.set(target, value);
+      }
+    } catch (IllegalAccessException e) {
+      LOG.debugf(
+          "Unable to setIfNull '%s' on %s: %s",
+          fieldName, target.getClass().getName(), e.getMessage());
+    }
+  }
+
+  /**
+   * Sets the field to the given value if the field is present.
+   *
+   * @param target the target object.
+   * @param fieldName the name of the field to set.
+   * @param value the value to set.
+   */
+  private static void setIfPresent(Object target, String fieldName, OffsetDateTime value) {
+    Field f = find(target.getClass(), fieldName);
+    if (f == null) {
+      return;
+    }
+    try {
+      f.setAccessible(true);
+      f.set(target, value);
+    } catch (IllegalAccessException e) {
+      LOG.debugf(
+          "Unable to setIfNull '%s' on %s: %s",
+          fieldName, target.getClass().getName(), e.getMessage());
+    }
+  }
+
+  /**
+   * Sets the field to the given value.
+   *
+   * @param target the target object.
+   * @param fieldName the name of the field to set.
+   * @param value the value to set.
+   */
+  private static void set(Object target, String fieldName, OffsetDateTime value) {
+    Field f = find(target.getClass(), fieldName);
+    if (f == null) {
+      return;
+    }
+    try {
+      f.setAccessible(true);
+      Object cur = f.get(target);
+      if (cur == null) {
+        f.set(target, value);
+      }
+    } catch (IllegalAccessException e) {
+      LOG.debugf(
+          "Unable to setIfNull '%s' on %s: %s",
+          fieldName, target.getClass().getName(), e.getMessage());
+    }
+  }
+
+  /**
+   * Checks if the target object has the specified field.
+   *
+   * @param target the target object.
+   * @param fieldName the name of the field to check.
+   * @return true if the field exists, false otherwise.
+   */
+  private static boolean hasField(Object target, String fieldName) {
+    return find(target.getClass(), fieldName) != null;
+  }
+
+  /**
+   * Finds a field in the given class or its superclasses.
+   *
+   * @param c the class to search.
+   * @param fieldName the name of the field to find.
+   * @return the Field object if found, null otherwise.
+   */
+  private static Field find(Class<?> c, String fieldName) {
+    Class<?> cur = c;
+    while (cur != null && cur != Object.class) {
+      try {
+        return cur.getDeclaredField(fieldName);
+      } catch (NoSuchFieldException e) {
+        cur = cur.getSuperclass();
+      }
+    }
+    return null;
+  }
+}
+
+
+================================================================================
+FILE: infra/search/EsAnalysis.java
+================================================================================
+package com.pug.shared.infra.search;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurationContext;
+import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurer;
+
+/** Configures custom analyzers and normalizers for Elasticsearch indexing and searching. */
+@ApplicationScoped
+public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
+  /**
+   * Configures custom analyzers and normalizers.
+   *
+   * @param ctx the Elasticsearch analysis configuration context.
+   */
+  @Override
+  public void configure(ElasticsearchAnalysisConfigurationContext ctx) {
+    ctx.normalizer("folding_lowercase").custom().tokenFilters("lowercase", "asciifolding");
+
+    ctx.tokenFilter("edge_ngram_custom")
+        .type("edge_ngram")
+        .param("min_gram", 2)
+        .param("max_gram", 20);
+
+    ctx.analyzer("pt_folded")
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding");
+
+    ctx.analyzer("auto_ngram")
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding", "edge_ngram_custom");
+  }
+}
+
+
+================================================================================
+FILE: infra/search/HibernateSearchUtils.java
+================================================================================
+package com.pug.shared.infra.search;
+
+import com.pug.shared.utils.StringUtils;
+import jakarta.persistence.EntityManager;
+import java.util.List;
+import org.hibernate.search.mapper.orm.Search;
+import org.hibernate.search.mapper.orm.session.SearchSession;
+
+/** Utility class for Hibernate Search operations. */
+public final class HibernateSearchUtils {
+  /** Private constructor to prevent instantiation. */
+  private HibernateSearchUtils() {}
+
+  /**
+   * Search entities by name using Hibernate Search with default field names and minimum token
+   * length.
+   *
+   * @param em the EntityManager
+   * @param type the entity class type
+   * @param key the search key
+   * @param <T> the entity type
+   * @return a list of matching entities
+   */
+  public static <T> List<T> searchByName(EntityManager em, Class<T> type, String key) {
+    return searchByName(em, type, key, "name", "name_exact", "name_auto", "name_sort", 3);
+  }
+
+  /**
+   * Search entities by name using Hibernate Search.
+   *
+   * @param em the EntityManager
+   * @param type the entity class type
+   * @param key the search key
+   * @param nameField the name field for fuzzy matching
+   * @param nameExactField the exact name field for wildcard matching
+   * @param nameAutoField the auto-complete name field
+   * @param nameSortField the field to sort results by
+   * @param minTokenLength the minimum token length for partial matches
+   * @param <T> the entity type
+   * @return a list of matching entities
+   */
+  public static <T> List<T> searchByName(
+      EntityManager em,
+      Class<T> type,
+      String key,
+      String nameField,
+      String nameExactField,
+      String nameAutoField,
+      String nameSortField,
+      int minTokenLength) {
+
+    if (StringUtils.isEmpty(key)) {
+      return List.of();
+    }
+
+    String[] tokens = key.split("\\s+");
+    SearchSession s = Search.session(em);
+
+    return s.search(type)
+        .where(
+            f -> {
+              var bool = f.bool();
+              bool.should(f.wildcard().field(nameExactField).matching(key + "*").boost(8f));
+              bool.should(f.wildcard().field(nameExactField).matching("*" + key + "*").boost(6f));
+
+              for (String t : tokens) {
+                if (t.length() >= minTokenLength) {
+                  bool.should(f.wildcard().field(nameExactField).matching("*" + t + "*").boost(3f));
+                }
+              }
+
+              bool.should(f.match().field(nameField).matching(key).fuzzy(1).boost(4f));
+              bool.should(f.match().field(nameAutoField).matching(key).boost(2f));
+              return bool;
+            })
+        .sort(
+            f ->
+                (nameSortField == null || nameSortField.isBlank())
+                    ? f.score()
+                    : f.score().then().field(nameSortField))
+        .fetchAllHits();
+  }
+}
+
+
+================================================================================
+FILE: presenter/dtos/BulkCreateRequest.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Bulk create request DTO.
+ *
+ * @param entities the list of entities to create
+ * @param <T> the type of the entities
+ */
+public record BulkCreateRequest<T>(@NotEmpty List<@Valid T> entities) {
+  /**
+   * Compact constructor to ensure immutability of the entities list.
+   *
+   * @param entities the list of entities to create.
+   */
+  public BulkCreateRequest {
+    entities = List.copyOf(Objects.requireNonNull(entities));
+  }
+
+  /**
+   * Gets a defensive copy of the list of entities to create.
+   *
+   * @return a new List containing the entities.
+   */
+  @Override
+  public List<T> entities() {
+    return List.copyOf(entities);
+  }
+}
+
+
+================================================================================
+FILE: presenter/dtos/BulkCreateResult.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Bulk create result DTO.
+ *
+ * @param requested number of requested entities.
+ * @param entities list of created entities.
+ * @param <T> type of entity.
+ */
+public record BulkCreateResult<T>(int requested, List<T> entities) {
+  /**
+   * Compact constructor for BulkCreateResult. Ensures immutability of the entities list.
+   *
+   * @param requested the number of requested entities.
+   * @param entities the list of created entities.
+   */
+  public BulkCreateResult {
+    entities = List.copyOf(Objects.requireNonNull(entities));
+  }
+
+  /**
+   * Gets a defensive copy of the list of created entities.
+   *
+   * @return a new List containing the created entities.
+   */
+  @Override
+  public List<T> entities() {
+    return List.copyOf(entities);
+  }
+
+  /**
+   * Creates a BulkCreateResult from a list of entities. The 'requested' count is derived from the
+   * size of the provided list.
+   *
+   * @param entities the list of created entities.
+   * @param <T> type of entity.
+   * @return the BulkCreateResult.
+   */
+  public static <T> BulkCreateResult<T> of(List<T> entities) {
+    return new BulkCreateResult<>(entities.size(), List.copyOf(entities));
+  }
+
+  /**
+   * Creates a BulkCreateResult with only the size of requested entities. The list of entities will
+   * be empty.
+   *
+   * @param size the number of requested entities.
+   * @param <T> type of entity.
+   * @return the BulkCreateResult.
+   */
+  public static <T> BulkCreateResult<T> sizeOnly(int size) {
+    return new BulkCreateResult<>(size, List.of());
+  }
+}
+
+
+================================================================================
+FILE: presenter/dtos/DeleteResult.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import com.pug.shared.domain.enums.DeleteKeys;
+import java.util.Map;
+import java.util.Objects;
+
+/**
+ * Delete result DTO.
+ *
+ * @param deleted Map of entity names (represented by DeleteKeys) to the number of deleted records.
+ */
+public record DeleteResult(Map<DeleteKeys, Long> deleted) {
+  /**
+   * Compact constructor for DeleteResult. Ensures immutability of the deleted map.
+   *
+   * @param deleted Map of entity names to number of deleted records.
+   */
+  public DeleteResult {
+    deleted = Map.copyOf(Objects.requireNonNull(deleted));
+  }
+
+  /**
+   * Gets a defensive copy of the map of deleted entities.
+   *
+   * @return a new Map containing the deleted entities.
+   */
+  @Override
+  public Map<DeleteKeys, Long> deleted() {
+    return Map.copyOf(deleted);
+  }
+}
+
+
+================================================================================
+FILE: presenter/dtos/UuidsRequest.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import com.pug.shared.validation.UuidV7;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
+/**
+ * UUIDs request DTO.
+ *
+ * @param ids the list of UUIDs.
+ */
+public record UuidsRequest(@NotEmpty List<@NotNull @UuidV7 UUID> ids) {
+  /**
+   * Compact constructor for UuidsRequest. Ensures immutability of the IDs list.
+   *
+   * @param ids the list of UUIDs.
+   */
+  public UuidsRequest {
+    ids = List.copyOf(Objects.requireNonNull(ids));
+  }
+
+  /**
+   * Gets a defensive copy of the list of UUIDs.
+   *
+   * @return a new List containing the UUIDs.
+   */
+  @Override
+  public List<UUID> ids() {
+    return List.copyOf(ids);
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/ApiEnvelope.java
+================================================================================
+package com.pug.shared.presenter.rest;
+
+import java.time.Instant;
+
+/**
+ * API response envelope.
+ *
+ * @param success indicates if the request was successful
+ * @param data the response data when success is true
+ * @param error the error details when success is false
+ * @param timestamp the time the response was created
+ * @param <T> the type of the response data
+ */
+public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp) {
+
+  /**
+   * Success response (200).
+   *
+   * @param data Data.
+   * @param <T> Type of data.
+   * @return ApiEnvelope.
+   */
+  public static <T> ApiEnvelope<T> ok(T data) {
+    return new ApiEnvelope<>(true, data, null, Instant.now());
+  }
+
+  /**
+   * Created response (201).
+   *
+   * @param data Data.
+   * @param <T> Type of data.
+   * @return ApiEnvelope.
+   */
+  public static <T> ApiEnvelope<T> created(T data) {
+    return ok(data);
+  }
+
+  /**
+   * Error response.
+   *
+   * @param err Error.
+   * @return ApiEnvelope.
+   */
+  public static ApiEnvelope<Void> error(ApiError err) {
+    return new ApiEnvelope<>(false, null, err, Instant.now());
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/ApiError.java
+================================================================================
+package com.pug.shared.presenter.rest;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Represents an error returned by the REST API.
+ *
+ * @param code The error code (untranslated, for machine/developer consumption).
+ * @param message The error message (already translated and formatted for the end user).
+ * @param details An optional map of additional details about the error.
+ */
+public record ApiError(String code, String message, Map<String, Object> details) {
+
+  /**
+   * Represents a specific field error in a validation context.
+   *
+   * @param field The name of the field that caused the error.
+   * @param code The error code related to the field.
+   * @param message The error message related to the field.
+   */
+  public record FieldError(String field, String code, String message) {}
+
+  /**
+   * Compact constructor for ApiError. Ensures that the 'details' map is never null and is a
+   * defensive copy.
+   */
+  public ApiError {
+    details = (details == null) ? Map.of() : new LinkedHashMap<>(details);
+  }
+
+  /**
+   * Returns a defensive copy of the details map.
+   *
+   * @return A new LinkedHashMap containing the error details.
+   */
+  @Override
+  public Map<String, Object> details() {
+    return new LinkedHashMap<>(details);
+  }
+
+  /**
+   * Factory method to create an ApiError instance.
+   *
+   * @param code The error code (untranslated, for machine/developer consumption).
+   * @param message The error message (already translated and formatted for the end user).
+   * @param details An optional map of additional details (can be null).
+   * @return An ApiError instance.
+   */
+  public static ApiError of(String code, String message, Map<String, Object> details) {
+    return new ApiError(code, message, details);
+  }
+
+  /**
+   * Overload for {@code of} without additional details.
+   *
+   * @param code The error code.
+   * @param message The error message.
+   * @return An ApiError instance.
+   */
+  public static ApiError of(String code, String message) {
+    return new ApiError(code, message, null);
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/AppValidationExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import java.util.List;
+import java.util.Map;
+
+/** Mapper to catch AppValidationException and return a detailed error response. */
+@Provider
+public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Maps AppValidationException to an HTTP 400 response with validation error details.
+   *
+   * @param exception The caught exception.
+   * @return An HTTP 400 response with validation error details.
+   */
+  @Override
+  public Response toResponse(AppValidationException exception) {
+    String mainErrorCodeName = SharedErrorCodes.VALIDATION_ERROR.name();
+    String generalValidationMessage =
+        i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
+
+    List<ApiError.FieldError> fieldErrors =
+        exception.getProblems().stream()
+            .map(
+                problem ->
+                    new ApiError.FieldError(
+                        problem.code().getFieldName(),
+                        ((Enum<?>) problem.code()).name(),
+                        i18n.translation(problem.code().getBundleKey())))
+            .toList();
+
+    Map<String, Object> detailsMap = Map.of("fieldErrors", fieldErrors);
+
+    ApiError apiError = ApiError.of(mainErrorCodeName, generalValidationMessage, detailsMap);
+
+    return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/ConstraintViolationExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** Mapper to catch ConstraintViolationException and return a detailed error response. */
+@Provider
+public class ConstraintViolationExceptionMapper
+    implements ExceptionMapper<ConstraintViolationException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Maps ConstraintViolationException to an HTTP 422 response with violation details.
+   *
+   * @param ex The caught exception.
+   * @return An HTTP 422 response with violation details.
+   */
+  @Override
+  public Response toResponse(ConstraintViolationException ex) {
+    var violations =
+        ex.getConstraintViolations().stream()
+            .map(
+                v ->
+                    Map.of(
+                        "field",
+                        v.getPropertyPath() == null ? "" : v.getPropertyPath().toString(),
+                        "message",
+                        v.getMessage()))
+            .toList();
+
+    Map<String, Object> details = new LinkedHashMap<>();
+    details.put("count", violations.size());
+    details.put("violations", violations);
+
+    String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
+    ApiError error = new ApiError(SharedErrorCodes.VALIDATION_ERROR.toString(), msg, details);
+
+    return Response.status(422)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/DuplicateResourceExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/** Maps DuplicateResourceException to an HTTP 409 (Conflict) response. */
+@Provider
+public class DuplicateResourceExceptionMapper
+    implements ExceptionMapper<DuplicateResourceException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Converts a DuplicateResourceException into an HTTP response.
+   *
+   * @param ex the DuplicateResourceException to convert.
+   * @return a Response with status 409 and error details.
+   */
+  @Override
+  public Response toResponse(DuplicateResourceException ex) {
+    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
+
+    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
+
+    return Response.status(Response.Status.CONFLICT)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/ReferencedEntityExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/**
+ * Maps ReferencedEntityException to an HTTP 409 (Conflict) response. Used when trying to delete an
+ * entity that is still being used by others.
+ */
+@Provider
+public class ReferencedEntityExceptionMapper implements ExceptionMapper<ReferencedEntityException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Converts a ReferencedEntityException into an HTTP 409 response with a localized error message.
+   *
+   * @param ex the ReferencedEntityException to be mapped.
+   * @return a Response with status 409 and error details in the body.
+   */
+  @Override
+  public Response toResponse(ReferencedEntityException ex) {
+    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
+
+    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
+
+    return Response.status(Response.Status.CONFLICT)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/ResourceNotFoundExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+/** Maps ResourceNotFoundException to an HTTP 404 response. */
+@Provider
+public class ResourceNotFoundExceptionMapper implements ExceptionMapper<ResourceNotFoundException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Maps ResourceNotFoundException to an HTTP 404 response with error details.
+   *
+   * @param ex The caught exception.
+   * @return An HTTP 404 response with error details.
+   */
+  @Override
+  public Response toResponse(ResourceNotFoundException ex) {
+    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
+
+    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
+
+    return Response.status(Response.Status.NOT_FOUND)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/UncaughtExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/** Mapper to catch uncaught exceptions and return a generic error response. */
+@Provider
+public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
+
+  @Inject I18n i18n;
+
+  /**
+   * Maps uncaught exceptions to an HTTP 500 response with a generic error message.
+   *
+   * @param ex The caught exception.
+   * @return An HTTP 500 response with error details.
+   */
+  @Override
+  public Response toResponse(Throwable ex) {
+    LOG.error("An uncaught exception occurred:", ex);
+
+    String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
+
+    ApiError apiError =
+        ApiError.of(
+            SharedErrorCodes.INTERNAL_ERROR.name(),
+            msg,
+            Map.of("exceptionType", ex.getClass().getSimpleName()));
+
+    return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(apiError))
+        .build();
+  }
+}
+
+
+================================================================================
+FILE: time/SystemTimeProvider.java
+================================================================================
+package com.pug.shared.time;
+
+import jakarta.enterprise.context.ApplicationScoped;
+import java.time.Clock;
+import java.time.Instant;
+
+/** A TimeProvider implementation that provides the current system time using UTC clock. */
+@ApplicationScoped
+public class SystemTimeProvider implements TimeProvider {
+  private final Clock clock = Clock.systemUTC();
+
+  /**
+   * Gets the current system time as an Instant.
+   *
+   * @return the current Instant.
+   */
+  @Override
+  public Instant now() {
+    return Instant.now(clock);
+  }
+
+  /**
+   * Gets the Clock instance used by this TimeProvider.
+   *
+   * @return the Clock instance.
+   */
+  @Override
+  public Clock clock() {
+    return clock;
+  }
+}
+
+
+================================================================================
+FILE: time/TimeProvider.java
+================================================================================
+package com.pug.shared.time;
+
+import java.time.Clock;
+import java.time.Instant;
+
+/** Provides the current time and clock instance. */
+public interface TimeProvider {
+  /**
+   * Gets the current instant.
+   *
+   * @return the current instant.
+   */
+  Instant now();
+
+  /**
+   * Gets the clock instance.
+   *
+   * @return the clock instance.
+   */
+  Clock clock();
+}
+
+
+================================================================================
+FILE: utils/CollectionUtils.java
+================================================================================
+package com.pug.shared.utils;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+/** Utility class for collection operations. */
+public final class CollectionUtils {
+  /** Private constructor to prevent instantiation. */
+  private CollectionUtils() {}
+
+  /**
+   * Checks if an {@code Iterable} is null or empty.
+   *
+   * @param it the iterable.
+   * @return true if the iterable is null or empty, false otherwise.
+   */
+  public static boolean isEmpty(Iterable<?> it) {
+    return it == null || !it.iterator().hasNext();
+  }
+
+  /**
+   * Checks if a {@code List} is null or empty.
+   *
+   * @param list the list.
+   * @return true if the list is null or empty, false otherwise.
+   */
+  public static boolean isEmpty(List<?> list) {
+    return list == null || list.isEmpty();
+  }
+
+  /**
+   * Checks if a {@code Map} is null or empty.
+   *
+   * @param map the map.
+   * @return true if the map is null or empty, false otherwise.
+   */
+  public static boolean isEmpty(Map<?, ?> map) {
+    return map == null || map.isEmpty();
+  }
+
+  /**
+   * Converts an {@code Iterable} to a {@code Stream}.
+   *
+   * @param it the iterable.
+   * @param <T> the type of elements in the iterable.
+   * @return a stream containing the elements of the iterable, or an empty stream if the iterable is
+   *     null.
+   */
+  public static <T> Stream<T> toStream(Iterable<T> it) {
+    return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  }
+}
+
+
+================================================================================
+FILE: utils/PresenterUtils.java
+================================================================================
+package com.pug.shared.utils;
+
+import com.pug.shared.i18n.I18n;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
+import java.util.Locale;
+
+/** Utility class for presenter-related functions. */
+public final class PresenterUtils {
+  /** Private constructor to prevent instantiation. */
+  private PresenterUtils() {}
+
+  /**
+   * Picks the most suitable locale from a list of acceptable locales. If the list is null or empty,
+   * defaults to "pt-BR".
+   *
+   * @param acceptable List of acceptable locales.
+   * @return The selected locale.
+   */
+  public static Locale pickLocale(List<Locale> acceptable) {
+    return CollectionUtils.isEmpty(acceptable)
+        ? Locale.forLanguageTag("pt-BR")
+        : acceptable.getFirst();
+  }
+
+  /**
+   * Formats the number of remaining days until a due date into a human-readable, localized string.
+   *
+   * @param dueDate the due date.
+   * @param locale the target locale.
+   * @param i18n the internationalization service.
+   * @return a localized string representing the remaining days (e.g., "Hoje", "Amanhã", "X dias
+   *     restantes", "Atrasado").
+   */
+  public static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
+    if (dueDate == null) {
+      return "";
+    }
+
+    long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+
+    String formattedString;
+    if (remainingDays < 0) {
+      formattedString =
+          i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
+    } else if (remainingDays == 0) {
+      formattedString = i18n.translation("academic.student.days.today", locale);
+    } else if (remainingDays == 1) {
+      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
+    } else {
+      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
+    }
+    return formattedString;
+  }
+}
+
+
+================================================================================
+FILE: utils/StringUtils.java
+================================================================================
+package com.pug.shared.utils;
+
+import java.text.Normalizer;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
+import java.util.regex.Pattern;
+
+/** Utility class for string manipulation, including normalization and formatting. */
+public final class StringUtils {
+  private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+
+  /** Private constructor to prevent instantiation. */
+  private StringUtils() {}
+
+  /**
+   * Converts a string to lowercase, removes accents (diacritics), and trims leading/trailing
+   * whitespace. Null-safe: returns an empty string if the input is null.
+   *
+   * @param s the string to fold.
+   * @return the folded string.
+   */
+  public static String fold(String s) {
+    if (s == null) {
+      return "";
+    }
+    String n = Normalizer.normalize(s, Normalizer.Form.NFD);
+    return DIACRITICS.matcher(n).replaceAll("").toLowerCase(Locale.ROOT).trim();
+  }
+
+  /**
+   * Checks if a string is null or blank (empty or contains only whitespace characters).
+   *
+   * @param s the string to check.
+   * @return true if the string is null or blank, false otherwise.
+   */
+  public static boolean isEmpty(String s) {
+    return s == null || s.isBlank();
+  }
+
+  /**
+   * Trims leading and trailing whitespace from a string. Null-safe.
+   *
+   * @param s the string to trim.
+   * @return the trimmed string, or null if the input was null.
+   */
+  public static String trim(String s) {
+    return s == null ? null : s.trim();
+  }
+
+  /**
+   * Formats an {@code OffsetDateTime} into a human-readable string using the specified locale.
+   * Null-safe: returns an empty string if {@code dateTime} is null.
+   *
+   * @param dateTime the date-time to format.
+   * @param locale the target locale; if null, the system default is used.
+   * @return a localized date-time string, or an empty string if {@code dateTime} is null.
+   */
+  public static String toStringFormatted(OffsetDateTime dateTime, Locale locale) {
+    if (dateTime == null) {
+      return "";
+    }
+    Locale loc = (locale != null) ? locale : Locale.getDefault();
+    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withLocale(loc);
+    return dateTime.format(fmt);
+  }
+
+  /**
+   * Formats a {@code LocalDate} into a human-readable string using the specified locale. Null-safe:
+   * returns an empty string if {@code date} is null.
+   *
+   * @param date the date to format.
+   * @param locale the target locale; if null, the system default is used.
+   * @return a localized date string, or an empty string if {@code date} is null.
+   */
+  public static String toStringFormatted(LocalDate date, Locale locale) {
+    if (date == null) {
+      return "";
+    }
+    Locale loc = (locale != null) ? locale : Locale.getDefault();
+    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(loc);
+    return date.format(fmt);
+  }
+}
+
+
+================================================================================
+FILE: validation/UuidV7.java
+================================================================================
+package com.pug.shared.validation;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE_USE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/** UUIDv7 validation annotation. */
+@Target({FIELD, PARAMETER, TYPE_USE})
+@Retention(RUNTIME)
+@Constraint(validatedBy = {UuidV7ForUuid.class, UuidV7ForString.class})
+public @interface UuidV7 {
+  /**
+   * Validation message key. Defaults to "{error.validation.uuid.v7}".
+   *
+   * @return the validation message key.
+   */
+  String message() default "{error.validation.uuid.v7}";
+
+  /**
+   * Validation groups.
+   *
+   * @return the validation groups.
+   */
+  Class<?>[] groups() default {};
+
+  /**
+   * Payload.
+   *
+   * @return the payload.
+   */
+  Class<? extends Payload>[] payload() default {};
+}
+
+
+================================================================================
+FILE: validation/UuidV7ForString.java
+================================================================================
+package com.pug.shared.validation;
+
+import com.pug.shared.utils.StringUtils;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.UUID;
+
+/** Validator for UUIDv7 strings. */
+public final class UuidV7ForString implements ConstraintValidator<UuidV7, String> {
+  /**
+   * Checks if the given string is a valid UUIDv7.
+   *
+   * @param value the string to validate
+   * @param ctx the constraint validator context
+   * @return true if valid, false otherwise
+   */
+  @Override
+  public boolean isValid(String value, ConstraintValidatorContext ctx) {
+    if (StringUtils.isEmpty(value)) {
+      return true;
+    }
+    try {
+      return UUID.fromString(value).version() == 7;
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
+}
+
+
+================================================================================
+FILE: validation/UuidV7ForUuid.java
+================================================================================
+package com.pug.shared.validation;
+
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.UUID;
+
+/** Validator for UUIDv7. */
+public final class UuidV7ForUuid implements ConstraintValidator<UuidV7, UUID> {
+  /**
+   * Checks if the given UUID is a valid UUIDv7.
+   *
+   * @param value the UUID to validate
+   * @param ctx the constraint validator context
+   * @return true if valid, false otherwise
+   */
+  @Override
+  public boolean isValid(UUID value, ConstraintValidatorContext ctx) {
+    return value == null || value.version() == 7;
+  }
+}
+

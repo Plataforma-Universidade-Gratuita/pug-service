@@ -148,26 +148,6 @@ public class CityServiceImpl implements CityService {
   }
 
   @Override
-  public City getByIbge(String ibgeCodeString) {
-    City city =
-        repo.findOptionalByIbgeCode(ibgeCodeString)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString)));
-
-    if (city.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: City with IBGE code %s in DB violates domain rules. Problems: %s",
-          ibgeCodeString, city.getProblemsSummary());
-      throw new ResourceNotFoundException(
-          GeoErrorCodes.CITY_NOT_FOUND, Map.of("code", ibgeCodeString));
-    }
-
-    return city;
-  }
-
-  @Override
   public boolean existsByIbge(IbgeCode ibgeCode) {
     if (ibgeCode == null) {
       return false;

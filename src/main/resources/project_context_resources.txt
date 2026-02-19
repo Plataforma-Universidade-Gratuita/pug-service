@@ -1,0 +1,548 @@
+PROJECT CONTEXT DUMP
+Project Name: resources
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/resources
+================================================================================
+
+
+================================================================================
+FILE: application.properties
+================================================================================
+# ------------------------------ ALL PROFILES ------------------------------
+quarkus.application.name=pug-service
+quarkus.application.version=0.1.4-SNAPSHOT
+quarkus.application.ui-header={applicationName} - {applicationVersion}
+# Datasource & ORM
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.db-version=16.0
+# Dev UI (applies only when Dev UI is active)
+quarkus.datasource.dev-ui.allow-sql=true
+# Console & logs
+quarkus.console.color=true
+quarkus.log.metrics.enabled=true
+quarkus.log.category."com.pug".level=DEBUG
+quarkus.log.console.level=DEBUG
+quarkus.log.console.darken=1
+# Flyway
+quarkus.flyway.migrate-at-start=true
+quarkus.flyway.locations=db/migration
+# HTTP & CORS
+quarkus.http.cors.enabled=true
+quarkus.http.cors.origins=none
+quarkus.http.cors.methods=GET,POST,PUT,PATCH,DELETE,OPTIONS
+quarkus.http.cors.headers=Accept,Authorization,Content-Type
+quarkus.http.cors.access-control-max-age=24H
+quarkus.http.cors.access-control-allow-credentials=true
+# OpenAPI / Swagger
+quarkus.smallrye-openapi.info-title=PUG Service API
+quarkus.smallrye-openapi.info-version=0.1.4-SNAPSHOT
+quarkus.smallrye-openapi.info-description=Endpoints for Universidade Gratuita platform
+quarkus.swagger-ui.always-include=true
+# Hibernate Search + ES
+quarkus.hibernate-search-orm.elasticsearch.version=9
+quarkus.hibernate-search-orm.elasticsearch.analysis.configurer=com.pug.shared.infra.search.EsAnalysis
+# ------------------------------ DEV PROFILE ------------------------------
+# Datasource & ORM
+%dev.quarkus.datasource.devservices.enabled=true
+%dev.quarkus.datasource.devservices.image-name=postgres:16
+%dev.quarkus.datasource.devservices.port=5433
+%dev.quarkus.datasource.devservices.db-name=pug
+%dev.quarkus.datasource.devservices.username=pug
+%dev.quarkus.datasource.devservices.password=pug
+%dev.quarkus.datasource.devservices.reuse=true
+# HTTP & CORS
+%dev.quarkus.http.cors.origins=/.*/
+# Hibernate Search + ES
+%dev.quarkus.elasticsearch.devservices.port=9201
+%dev.quarkus.elasticsearch.devservices.image-name=docker.io/elastic/elasticsearch:9.1.5
+%dev.quarkus.hibernate-search-orm.schema-management.strategy=create-or-validate
+%dev.quarkus.hibernate-search-orm.indexing.plan.synchronization.strategy=sync
+# Security
+%dev.security.password.pepper=dev-only-32+chars-secret
+# ------------------------------ PROD PROFILE ------------------------------
+# Datasource & ORM
+%prod.quarkus.datasource.jdbc.url=${DB_URL}
+%prod.quarkus.datasource.username=${DB_USER}
+%prod.quarkus.datasource.password=${DB_PASS}
+# Console & logs
+%prod.quarkus.log.category."com.pug".level=INFO
+%prod.quarkus.log.console.level=INFO
+%prod.quarkus.log.min-level=INFO
+# Hibernate Search + ES
+%prod.quarkus.hibernate-search-orm.elasticsearch.hosts=es1.example:9200,es2.example:9200
+%prod.quarkus.hibernate-search-orm.elasticsearch.protocol=https
+%prod.quarkus.hibernate-search-orm.elasticsearch.username=${ES_USER}
+%prod.quarkus.hibernate-search-orm.elasticsearch.password=${ES_PASS}
+%prod.quarkus.hibernate-search-orm.schema-management.strategy=validate
+
+================================================================================
+FILE: db/migration/V001__create_users_table.sql
+================================================================================
+CREATE TABLE users
+(
+    id         uuid,
+    cpf        char(11)                 NOT NULL,
+    name       varchar(150)             NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (cpf)
+);
+
+CREATE INDEX idx_users_name ON users (name);
+
+
+================================================================================
+FILE: db/migration/V002__create_accounts_table.sql
+================================================================================
+CREATE TABLE accounts
+(
+    id            uuid,
+    user_id       uuid                     NOT NULL,
+    email         varchar(254)             NOT NULL,
+    account_type  varchar(16)              NOT NULL,
+    password_hash varchar(255),
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    UNIQUE (email)
+);
+
+
+================================================================================
+FILE: db/migration/V003__create_cities_table.sql
+================================================================================
+CREATE TABLE cities
+(
+    id        uuid,
+    name      varchar(100) NOT NULL,
+    ibge_code char(7)      NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (ibge_code)
+);
+
+
+================================================================================
+FILE: db/migration/V004__create_admins_table.sql
+================================================================================
+CREATE TABLE admins
+(
+    account_id uuid,
+    granted_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (account_id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id)
+);
+
+
+================================================================================
+FILE: db/migration/V005__create_entities_table.sql
+================================================================================
+CREATE TABLE entities
+(
+    id         uuid,
+    cnpj       char(14)                 NOT NULL,
+    name       varchar(150)             NOT NULL,
+    city_id    uuid                     NOT NULL,
+    address    varchar(254),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (city_id) REFERENCES cities (id),
+    UNIQUE (cnpj)
+);
+
+CREATE INDEX idx_entities_name ON entities (name);
+CREATE INDEX idx_entities_city ON entities (city_id);
+
+
+================================================================================
+FILE: db/migration/V006__create_staff_table.sql
+================================================================================
+CREATE TABLE staff
+(
+    account_id uuid,
+    entity_id  uuid,
+    PRIMARY KEY (account_id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (entity_id) REFERENCES entities (id)
+);
+
+CREATE INDEX idx_staff_entity ON staff (entity_id);
+
+
+================================================================================
+FILE: db/migration/V007__create_schools_table.sql
+================================================================================
+CREATE TABLE schools
+(
+    id         uuid PRIMARY KEY,
+    name       varchar(100)             NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE (name)
+);
+
+
+================================================================================
+FILE: db/migration/V008__create_courses_table.sql
+================================================================================
+CREATE TABLE courses
+(
+    id         uuid,
+    name       varchar(120)             NOT NULL,
+    school_id  uuid,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (school_id) REFERENCES schools (id),
+    UNIQUE (name)
+);
+
+CREATE INDEX idx_courses_school ON courses (school_id);
+
+
+================================================================================
+FILE: db/migration/V009__create_students_table.sql
+================================================================================
+CREATE TABLE students
+(
+    account_id            uuid,
+    academic_registration varchar(15)              NOT NULL,
+    campus                varchar(150)             NOT NULL,
+    course_id             uuid                     NOT NULL,
+    required_hours        DECIMAL(6, 2)            NOT NULL,
+    start_date            date                     NOT NULL,
+    due_date              date                     NOT NULL,
+    created_at            TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at            TIMESTAMP WITH TIME ZONE NOT NULL,
+    PRIMARY KEY (account_id),
+    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (course_id) REFERENCES courses (id),
+    UNIQUE (academic_registration),
+    CONSTRAINT chk_students_dates CHECK (due_date >= start_date),
+    CONSTRAINT chk_students_required_nonneg CHECK (required_hours >= 0)
+);
+
+CREATE INDEX idx_students_course ON students (course_id);
+CREATE INDEX idx_students_window ON students (start_date, due_date);
+
+
+================================================================================
+FILE: db/migration/V010__create_projects_table.sql
+================================================================================
+CREATE TABLE projects
+(
+    id               uuid,
+    name             varchar(150)             NOT NULL,
+    entity_id        uuid                     NOT NULL,
+    description      varchar(4000)            NOT NULL,
+    created_by       uuid                     NOT NULL,
+    created_at       TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at       TIMESTAMP WITH TIME ZONE NOT NULL,
+    closed_at        TIMESTAMP WITH TIME ZONE,
+    offered_hours    DECIMAL(6, 2)            NOT NULL,
+    status           varchar(16)              NOT NULL,
+    max_participants integer,
+    PRIMARY KEY (id),
+    FOREIGN KEY (entity_id) REFERENCES entities (id),
+    FOREIGN KEY (created_by) REFERENCES staff (account_id),
+    UNIQUE (entity_id, name),
+    CONSTRAINT chk_proj_hours_pos CHECK (offered_hours >= 0),
+    CONSTRAINT chk_proj_max_part CHECK (max_participants IS NULL OR max_participants >= 0)
+);
+
+CREATE INDEX idx_projects_entity ON projects (entity_id);
+CREATE INDEX idx_projects_status ON projects (status);
+CREATE INDEX idx_projects_created_by ON projects (created_by);
+CREATE INDEX idx_projects_created_at ON projects (created_at);
+CREATE INDEX idx_projects_updated_at ON projects (updated_at);
+CREATE INDEX idx_projects_closed_at ON projects (closed_at);
+
+
+================================================================================
+FILE: db/migration/V011__create_projects_by_schools_table.sql
+================================================================================
+CREATE TABLE projects_by_schools
+(
+    project_id uuid NOT NULL,
+    school_id  uuid NOT NULL,
+    PRIMARY KEY (project_id, school_id),
+    FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
+    FOREIGN KEY (school_id) REFERENCES schools (id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_pbs_school ON projects_by_schools (school_id);
+
+
+================================================================================
+FILE: db/migration/V012__create_enrollments_table.sql
+================================================================================
+CREATE TABLE enrollments
+(
+    project_id        uuid                     NOT NULL,
+    student_id        uuid                     NOT NULL,
+    status            varchar(16)              NOT NULL,
+    created_at        TIMESTAMP WITH TIME ZONE NOT NULL,
+    updated_at        TIMESTAMP WITH TIME ZONE NOT NULL,
+    accepted_at       TIMESTAMP WITH TIME ZONE,
+    closing_status_at TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (project_id, student_id),
+    FOREIGN KEY (project_id) REFERENCES projects (id),
+    FOREIGN KEY (student_id) REFERENCES students (account_id),
+    CONSTRAINT chk_accepted_consistency CHECK (accepted_at IS NULL OR accepted_at >= created_at),
+    CONSTRAINT chk_closing_status_consistency CHECK (closing_status_at IS NULL OR closing_status_at >= created_at)
+);
+
+CREATE INDEX idx_enrollments_student ON enrollments (student_id);
+CREATE INDEX idx_enrollments_status ON enrollments (status);
+
+
+================================================================================
+FILE: db/migration/V013__create_attendances_table.sql
+================================================================================
+CREATE TABLE attendances
+(
+    id                 uuid,
+    project_id         uuid          NOT NULL,
+    student_id         uuid          NOT NULL,
+    duration           DECIMAL(4, 2) NOT NULL,
+    latitude           DECIMAL(9, 6),
+    longitude          DECIMAL(9, 6),
+    status             varchar(16)   NOT NULL,
+    qr_validation_hash varchar(512)  NOT NULL,
+    validated_by       uuid,
+    validated_at       TIMESTAMP WITH TIME ZONE,
+    created_at         TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (id),
+    FOREIGN KEY (project_id, student_id) REFERENCES enrollments (project_id, student_id),
+    FOREIGN KEY (validated_by) REFERENCES staff (account_id),
+    UNIQUE (qr_validation_hash),
+    CONSTRAINT chk_attendance_duration_pos CHECK (duration > 0),
+    CONSTRAINT chk_attendance_lat CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
+    CONSTRAINT chk_attendance_lon CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
+);
+
+CREATE INDEX idx_attendances_enrollment ON attendances (project_id, student_id);
+CREATE INDEX idx_attendances_status ON attendances (status);
+CREATE INDEX idx_attendances_validated_by ON attendances (validated_by);
+CREATE INDEX idx_attendances_validated_at ON attendances (validated_at);
+CREATE INDEX idx_attendances_student_stat ON attendances (student_id, status);
+
+
+================================================================================
+FILE: messages_en_US.properties
+================================================================================
+# --- ERRORS
+error.validation=Validation error
+# ACADEMIC ERRORS
+error.domain.academic.id.blank=ID cannot be null or blank.
+error.domain.academic.course.blank=Course cannot be null.
+error.domain.academic.course.name.blank=Course name cannot be null or blank.
+error.domain.academic.course.name.length=Course name cannot exceed 120 characters.
+error.domain.academic.campus.blank=Campus cannot be null.
+error.domain.academic.hours.blank=Hours cannot be null.
+error.domain.academic.hours.negative=Hours cannot be negative.
+error.domain.academic.hours.completed.gt.required=Completed hours cannot exceed required hours.
+error.domain.academic.period.blank=Period (start date or due date) cannot be null.
+error.domain.academic.period.range=Due date cannot be before start date.
+error.domain.academic.registration.blank=Academic registration cannot be null or blank.
+error.domain.academic.registration.length=Academic registration cannot exceed 15 characters.
+error.domain.academic.school.blank=School cannot be null.
+error.domain.academic.school.name.blank=School name cannot be null or blank.
+error.domain.academic.school.name.length=School name cannot exceed 100 characters.
+error.domain.academic.student.account.blank=Student account cannot be null.
+error.domain.academic.course.already.exists=A course with this name already exists.
+error.domain.academic.course.not.found=Course not found.
+error.domain.academic.school.already.exists=A school with this name already exists.
+error.domain.academic.school.not.found=School not found.
+error.domain.academic.student.already.exists=A student with this academic registration already exists.
+error.domain.academic.student.not.found=Student not found.
+error.domain.academic.school.still.referenced=School cannot be deleted because it is referenced by courses.
+error.domain.academic.course.still.referenced=Course cannot be deleted because it is referenced by students.
+error.domain.academic.student.still.referenced=Student cannot be deleted because it is referenced by other modules.
+# GEO ERRORS
+error.domain.geo.city-id.blank=City ID cannot be blank
+error.domain.geo.ibge-code.blank=IBGE code cannot be blank
+error.domain.geo.ibge-code.invalid=Invalid IBGE code format
+error.domain.geo.city-name.blank=City name cannot be blank
+error.domain.geo.city-name.toolong=City name is too long
+error.domain.geo.city.notfound=City not found
+error.domain.geo.city.alreadyexists=City already exists
+error.domain.geo.city.referenced=City is referenced by other records and cannot be deleted
+# IDENTITY ERRORS
+error.domain.identity.id.blank=ID cannot be blank
+error.domain.identity.user.id.blank=User ID cannot be blank
+error.domain.identity.cpf.blank=CPF cannot be blank
+error.domain.identity.cpf.format=Invalid CPF
+error.domain.identity.cpf.length=CPF must be 11 digits
+error.domain.identity.account.name.blank=User name cannot be blank
+error.domain.identity.account.name.toolong=User name is too long
+error.domain.identity.email.blank=Email cannot be blank
+error.domain.identity.email.format=Invalid email format
+error.domain.identity.email.toolong=Email is too long
+error.domain.identity.account.type.blank=Account type cannot be blank
+error.domain.identity.password.hash.blank=Password hash cannot be blank
+error.domain.identity.password.hash.toolong=Password hash is too long
+error.domain.identity.active.null=Active field cannot be null
+error.domain.identity.created.at.blank=Creation date cannot be blank
+error.domain.identity.created.at.future=Creation date cannot be in the future
+error.domain.identity.account.blank=Account ID cannot be blank
+error.domain.identity.granted.at.blank=Granted date cannot be blank
+error.domain.identity.granted.at.future=Granted date cannot be in the future
+error.domain.identity.account.already.exists=User already exists
+error.domain.identity.account.not.found=User not found
+error.domain.identity.admin.already.exists=Admin user already exists
+error.domain.identity.admin.not.found=Admin user not found
+error.domain.identity.admin.account.invalid=Invalid admin user
+error.domain.identity.user.already.exists=User already exists
+error.domain.identity.user.not.found=User not found
+error.domain.identity.user.blank=User cannot be blank
+error.domain.identity.account.still.referenced.by.admin=Account still referenced by an administrator
+error.domain.identity.account.still.referenced.by.staff=Account still referenced by a staff member
+error.domain.identity.account.still.referenced.by.student=Account still referenced by a student
+error.domain.identity.user.still.referenced=User still referenced by other entities
+# PARTNER ERRORS
+error.domain.partner.id.blank=Entity ID cannot be blank
+error.domain.partner.cnpj.blank=CNPJ cannot be blank
+error.domain.partner.cnpj.length=CNPJ must be 14 digits
+error.domain.partner.cnpj.format=Invalid CNPJ format
+error.domain.partner.name.blank=Entity name cannot be blank
+error.domain.partner.name.toolong=Entity name is too long
+error.domain.partner.city.blank=City cannot be blank
+error.domain.partner.address.toolong=Address is too long
+error.domain.partner.staff.account.blank=Staff account cannot be blank
+error.domain.partner.staff.entity.blank=Staff entity cannot be blank
+error.domain.partner.entity.exists=Entity already exists
+error.domain.partner.entity.notfound=Entity not found
+error.domain.partner.staff.exists=Staff already exists
+error.domain.partner.staff.notfound=Staff not found
+error.domain.partner.entity.still.referenced=Entity is referenced by other records and cannot be deleted
+# --- ACCOUNT TYPES
+shared.account.type.admin=Administrator
+shared.account.type.partner=Partner
+shared.account.type.student=Former student
+# --- ACADEMIC
+academic.campus.jaragua=Jaraguá do Sul
+academic.campus.joinville=Joinville
+academic.student.days.overdue={0} days ago
+academic.student.days.today=Today
+academic.student.days.tomorrow=Tomorrow
+academic.student.days.remaining={0} days left
+
+================================================================================
+FILE: messages_pt_BR.properties
+================================================================================
+# --- ERRORS
+error.validation=Erro de validação
+# ACADEMIC ERRORS
+error.domain.academic.id.blank=O ID não pode ser nulo ou em branco.
+error.domain.academic.course.blank=O curso não pode ser nulo.
+error.domain.academic.course.name.blank=O nome do curso não pode ser nulo ou em branco.
+error.domain.academic.course.name.length=O nome do curso não pode ter mais de 120 caracteres.
+error.domain.academic.campus.blank=O campus não pode ser nulo.
+error.domain.academic.hours.blank=As horas não podem ser nulas.
+error.domain.academic.hours.negative=As horas não podem ser negativas.
+error.domain.academic.hours.completed.gt.required=As horas completadas não podem exceder as horas requeridas.
+error.domain.academic.period.blank=O período (data de início ou data de término) não pode ser nulo.
+error.domain.academic.period.range=A data de término não pode ser anterior à data de início.
+error.domain.academic.registration.blank=A matrícula acadêmica não pode ser nula ou em branco.
+error.domain.academic.registration.length=A matrícula acadêmica não pode ter mais de 15 caracteres.
+error.domain.academic.school.blank=A escola não pode ser nula.
+error.domain.academic.school.name.blank=O nome da escola não pode ser nulo ou em branco.
+error.domain.academic.school.name.length=O nome da escola não pode ter mais de 100 caracteres.
+error.domain.academic.student.account.blank=A conta do estudante não pode ser nula.
+error.domain.academic.course.already.exists=Já existe um curso com este nome.
+error.domain.academic.course.not.found=Curso não encontrado.
+error.domain.academic.school.already.exists=Já existe uma escola com este nome.
+error.domain.academic.school.not.found=Escola não encontrada.
+error.domain.academic.student.already.exists=Já existe um estudante com esta matrícula acadêmica.
+error.domain.academic.student.not.found=Estudante não encontrado.
+error.domain.academic.school.still.referenced=A escola não pode ser excluída porque está referenciada por cursos.
+error.domain.academic.course.still.referenced=O curso não pode ser excluído porque está referenciado por estudantes.
+error.domain.academic.student.still.referenced=O estudante não pode ser excluído porque está referenciado por outros módulos.
+# GEO ERRORS
+error.domain.geo.city-id.blank=ID da cidade não pode estar vazio
+error.domain.geo.ibge-code.blank=Código IBGE não pode estar vazio
+error.domain.geo.ibge-code.invalid=Código IBGE com formato inválido
+error.domain.geo.city-name.blank=Nome da cidade não pode estar vazio
+error.domain.geo.city-name.toolong=Nome da cidade é muito longo
+error.domain.geo.city.notfound=Cidade não encontrada
+error.domain.geo.city.alreadyexists=Cidade já existe
+error.domain.geo.city.referenced=Cidade é referenciada por outros registros e não pode ser excluída
+# IDENTITY ERRORS
+error.domain.identity.id.blank=ID não pode estar vazio
+error.domain.identity.user.id.blank=ID do usuário não pode estar vazio
+error.domain.identity.cpf.blank=CPF não pode estar vazio
+error.domain.identity.cpf.format=CPF inválido
+error.domain.identity.cpf.length=CPF deve ter 11 dígitos
+error.domain.identity.account.name.blank=Nome do usuário não pode estar vazio
+error.domain.identity.account.name.toolong=Nome do usuário é muito longo
+error.domain.identity.email.blank=Email não pode estar vazio
+error.domain.identity.email.format=Formato de email inválido
+error.domain.identity.email.toolong=Email é muito longo
+error.domain.identity.account.type.blank=Tipo de conta não pode estar vazio
+error.domain.identity.password.hash.blank=Hash de senha não pode estar vazio
+error.domain.identity.password.hash.toolong=Hash de senha é muito longo
+error.domain.identity.active.null=Campo ativo não pode ser nulo
+error.domain.identity.created.at.blank=Data de criação não pode estar vazia
+error.domain.identity.created.at.future=Data de criação não pode estar no futuro
+error.domain.identity.account.blank=ID da conta não pode estar vazio
+error.domain.identity.granted.at.blank=Data de concessão não pode estar vazia
+error.domain.identity.granted.at.future=Data de concessão não pode estar no futuro
+error.domain.identity.account.already.exists=Usuário já existe
+error.domain.identity.account.not.found=Usuário não encontrado
+error.domain.identity.admin.already.exists=Usuário administrador já existe
+error.domain.identity.admin.not.found=Usuário administrador não encontrado
+error.domain.identity.admin.account.invalid=Usuário administrador inválido
+error.domain.identity.user.already.exists=Usuário já existe
+error.domain.identity.user.not.found=Usuário não encontrado
+error.domain.identity.user.blank=Usuário não pode estar vazio (considerar se esta é a mesma que user.id.blank)
+error.domain.identity.account.still.referenced.by.admin=Conta ainda referenciada por um administrador
+error.domain.identity.account.still.referenced.by.staff=Conta ainda referenciada por um funcionário
+error.domain.identity.account.still.referenced.by.student=Conta ainda referenciada por um estudante
+error.domain.identity.user.still.referenced=Usuário ainda referenciado por outras entidades
+# PARTNER ERRORS
+error.domain.partner.id.blank=ID da entidade não pode estar vazio
+error.domain.partner.cnpj.blank=CNPJ não pode estar vazio
+error.domain.partner.cnpj.length=CNPJ deve ter 14 dígitos
+error.domain.partner.cnpj.format=Formato de CNPJ inválido
+error.domain.partner.name.blank=Nome da entidade não pode estar vazio
+error.domain.partner.name.toolong=Nome da entidade é muito longo
+error.domain.partner.city.blank=Cidade não pode estar vazia
+error.domain.partner.address.toolong=Endereço é muito longo
+error.domain.partner.staff.account.blank=Conta do funcionário não pode estar vazia
+error.domain.partner.staff.entity.blank=Entidade do funcionário não pode estar vazia
+error.domain.partner.entity.exists=Entidade já existe
+error.domain.partner.entity.notfound=Entidade não encontrada
+error.domain.partner.staff.exists=Funcionário já existe
+error.domain.partner.staff.notfound=Funcionário não encontrado
+error.domain.partner.entity.still.referenced=Entidade ainda referenciada por outros registros e não pode ser excluída
+# --- ACCOUNT TYPES
+shared.account.type.admin=Administrador
+shared.account.type.partner=Parceiro
+shared.account.type.student=Egresso
+# --- ACADEMIC
+academic.campus.jaragua=Jaraguá do Sul
+academic.campus.joinville=Joinville
+academic.student.days.overdue={0} dias atrás
+academic.student.days.today=Hoje
+academic.student.days.tomorrow=Amanhã
+academic.student.days.remaining={0} dias restantes
+
+================================================================================
+FILE: META-INF/resources/.gitkeep
+================================================================================
+
+
+================================================================================
+FILE: ValidationMessages_en_US.properties
+================================================================================
+# ValidationMessages_en_US.properties
+error.validation.uuid.v7=UUID is not a valid version 7 UUID
+
+================================================================================
+FILE: ValidationMessages_pt_BR.properties
+================================================================================
+# ValidationMessages_pt_BR.properties
+error.validation.uuid.v7=UUID não é um UUID versão 7 válido

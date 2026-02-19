@@ -29,21 +29,24 @@ public class Account extends DomainError {
   AccountType accountType;
   String passwordHash;
   OffsetDateTime createdAt;
+  OffsetDateTime updatedAt;
 
   @Builder(toBuilder = true)
   private Account(
-      UUID id,
-      UUID userId,
-      Email email,
-      AccountType accountType,
-      String passwordHash,
-      OffsetDateTime createdAt) {
+          UUID id,
+          UUID userId,
+          Email email,
+          AccountType accountType,
+          String passwordHash,
+          OffsetDateTime createdAt, 
+          OffsetDateTime updatedAt) {
     this.id = id;
     this.userId = userId;
     this.email = email;
     this.accountType = accountType;
     this.passwordHash = passwordHash;
     this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   /**
@@ -53,12 +56,11 @@ public class Account extends DomainError {
    * @param email Account's email
    * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
-   * @param time time provider
    * @return new Account instance (may contain errors)
    */
   public static Account factory(
-      UUID userId, Email email, AccountType type, String passwordHash, TimeProvider time) {
-    var created = OffsetDateTime.now(time.clock());
+      UUID userId, Email email, AccountType type, String passwordHash) {
+    var created = OffsetDateTime.now();
 
     Account account =
         Account.builder()
@@ -68,9 +70,10 @@ public class Account extends DomainError {
             .accountType(type)
             .passwordHash(passwordHash)
             .createdAt(created)
+            .updatedAt(created)
             .build();
 
-    account.collectValidationProblems(time.clock());
+    account.collectValidationProblems();
     return account;
   }
 
@@ -81,11 +84,11 @@ public class Account extends DomainError {
    * @return new Account instance with changed email
    */
   public Account changeEmail(Email newEmail) {
-    if (this.email.equals(newEmail)) {
+    if (email.equals(newEmail)) {
       return this;
     }
-    Account updated = this.toBuilder().email(newEmail).build();
-    updated.collectValidationProblems(Clock.systemUTC());
+    Account updated = toBuilder().email(newEmail).updatedAt(OffsetDateTime.now()).build();
+    updated.collectValidationProblems();
     return updated;
   }
 
@@ -96,47 +99,31 @@ public class Account extends DomainError {
    * @return new Account instance with changed password hash
    */
   public Account changePasswordHash(String newHash) {
-    if (StringUtils.isEmpty(newHash) && StringUtils.isEmpty(this.passwordHash)) {
+    if (StringUtils.isEmpty(newHash) && StringUtils.isEmpty(passwordHash)) {
       return this;
     }
-    if (newHash != null && newHash.equals(this.passwordHash)) {
+    if (newHash != null && newHash.equals(passwordHash)) {
       return this;
     }
-    Account updated = this.toBuilder().passwordHash(newHash).build();
-    updated.collectValidationProblems(Clock.systemUTC());
+    Account updated = toBuilder().passwordHash(newHash).updatedAt(OffsetDateTime.now()).build();
+    updated.collectValidationProblems();
     return updated;
   }
 
   /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
-  private void collectValidationProblems(Clock clock) {
-    if (id == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ID_BLANK));
-    }
-
-    if (userId == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_USER_ID_BLANK));
-    }
-
-    if (email == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
-    } else if (email.hasErrors()) {
-      addErrors(email.getProblems());
-    }
+  private void collectValidationProblems() {
+    validateIdField(id);
+    validateForeignKeyField(userId, "userId");
+    validateStringField(passwordHash, 255L, "passwordHash");
+    validateAuditedFields(createdAt, updatedAt);
 
     if (accountType == null) {
       addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
     }
-
-    if (StringUtils.isEmpty(passwordHash)) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_PASSWORD_HASH_BLANK));
-    } else if (passwordHash.length() > 255) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_PASSWORD_HASH_LENGTH));
-    }
-
-    if (createdAt == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_BLANK));
-    } else if (createdAt.isAfter(OffsetDateTime.now(clock))) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CREATED_AT_FUTURE));
+    if (email == null) {
+      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
+    } else if (email.hasErrors()) {
+      addErrors(email.getProblems());
     }
   }
 }

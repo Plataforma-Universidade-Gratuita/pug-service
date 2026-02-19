@@ -91,11 +91,11 @@ public class Project extends DomainError {
 
     Project.ProjectBuilder builder = this.toBuilder();
 
-    if (!StringUtils.isEmpty(name)) {
+    if (StringUtils.isNotEmpty(name)) {
       builder.name(StringUtils.trim(name));
     }
 
-    if (!StringUtils.isEmpty(description)) {
+    if (StringUtils.isNotEmpty(description)) {
       builder.description(StringUtils.trim(description));
     }
 
