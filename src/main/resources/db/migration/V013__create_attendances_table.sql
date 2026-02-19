@@ -8,7 +8,7 @@ CREATE TABLE attendances
     longitude          DECIMAL(9, 6),
     status             varchar(16)   NOT NULL,
     qr_validation_hash varchar(512) UNIQUE,
-    validated_by       uuid REFERENCES staff (user_id),
+    validated_by       uuid REFERENCES staff (account_id),
     validated_at       TIMESTAMP WITH TIME ZONE,
     created_at         TIMESTAMP WITH TIME ZONE,
 

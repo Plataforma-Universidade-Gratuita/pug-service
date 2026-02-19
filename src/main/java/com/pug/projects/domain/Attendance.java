@@ -9,19 +9,16 @@ import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Domain entity representing an Attendance.
- */
+/** Domain entity representing an Attendance. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -44,12 +41,10 @@ public class Attendance extends DomainError {
    * @return a validated Attendance instance.
    */
   public static Attendance factory(
-          Project project,
-          Student student,
-          BigDecimal duration,
-          TimeProvider time) {
+      Project project, Student student, BigDecimal duration, TimeProvider time) {
 
-    Attendance att = Attendance.builder()
+    Attendance att =
+        Attendance.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .project(project)
             .student(student)
@@ -72,21 +67,17 @@ public class Attendance extends DomainError {
    * @param time the TimeProvider for current time.
    * @return a validated Attendance instance with updated information.
    */
-  public Attendance validateAttendance(UUID validatorId, BigDecimal lat, BigDecimal lon, String hash, TimeProvider time) {
-    QrValidationInfo newQr = QrValidationInfo.factory(
-            this.qrValidationInfo.getDuration(),
-            lat,
-            lon,
-            hash
-    );
+  public Attendance validateAttendance(
+      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash, TimeProvider time) {
+    QrValidationInfo newQr =
+        QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
 
-    AttendanceInfo newInfo = AttendanceInfo.factory(
-            validatorId,
-            OffsetDateTime.now(time.clock()),
-            this.attendanceInfo.getCreatedAt()
-    );
+    AttendanceInfo newInfo =
+        AttendanceInfo.factory(
+            validatorId, OffsetDateTime.now(time.clock()), this.attendanceInfo.getCreatedAt());
 
-    Attendance updated = this.toBuilder()
+    Attendance updated =
+        this.toBuilder()
             .qrValidationInfo(newQr)
             .attendanceInfo(newInfo)
             .status(AttendanceStatus.PRESENT)
@@ -99,27 +90,40 @@ public class Attendance extends DomainError {
   /** Validates the Attendance entity's fields and state. */
   private void collectValidationProblems() {
     if (project == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }
     if (student == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
     }
     if (status == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (qrValidationInfo != null) {
       if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
-        addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
       }
       BigDecimal lat = qrValidationInfo.getLatitude();
       BigDecimal lon = qrValidationInfo.getLongitude();
 
-      boolean invalidLat = lat != null && (lat.compareTo(BigDecimal.valueOf(90)) > 0 || lat.compareTo(BigDecimal.valueOf(-90)) < 0);
-      boolean invalidLon = lon != null && (lon.compareTo(BigDecimal.valueOf(180)) > 0 || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
+      boolean invalidLat =
+          lat != null
+              && (lat.compareTo(BigDecimal.valueOf(90)) > 0
+                  || lat.compareTo(BigDecimal.valueOf(-90)) < 0);
+      boolean invalidLon =
+          lon != null
+              && (lon.compareTo(BigDecimal.valueOf(180)) > 0
+                  || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
 
       if (invalidLat || invalidLon) {
-        addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+        addError(
+            new AppValidationException.Problem(
+                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
       }
     }
   }

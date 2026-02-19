@@ -1,7 +1,7 @@
 CREATE TABLE enrollments
 (
     project_id        uuid                     NOT NULL REFERENCES projects (id),
-    student_id        uuid                     NOT NULL REFERENCES students (user_id),
+    student_id        uuid                     NOT NULL REFERENCES students (account_id),
     status            varchar(16)              NOT NULL,
     request_at        TIMESTAMP WITH TIME ZONE NOT NULL,
     accepted_at       TIMESTAMP WITH TIME ZONE,

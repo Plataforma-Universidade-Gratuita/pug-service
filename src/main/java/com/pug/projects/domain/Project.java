@@ -11,21 +11,18 @@ import com.pug.shared.domain.DomainError;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Domain entity representing a Project.
- */
+/** Domain entity representing a Project. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -43,25 +40,25 @@ public class Project extends DomainError {
   /**
    * Factory method to create a new Project instance.
    *
-   * @param name          the name of the project
-   * @param entity        the associated entity
-   * @param description   the project description
-   * @param createdBy     the UUID of the user who created the project
-   * @param offeredHours  the number of hours offered for the project
+   * @param name the name of the project
+   * @param entity the associated entity
+   * @param description the project description
+   * @param createdBy the UUID of the user who created the project
+   * @param offeredHours the number of hours offered for the project
    * @param maxParticipants the maximum number of participants allowed
-   * @param schools       the list of associated schools
-   * @param time          the TimeProvider for current time
+   * @param schools the list of associated schools
+   * @param time the TimeProvider for current time
    * @return a validated Project instance
    */
   public static Project factory(
-          String name,
-          Entity entity,
-          String description,
-          UUID createdBy,
-          BigDecimal offeredHours,
-          Integer maxParticipants,
-          List<School> schools,
-          TimeProvider time) {
+      String name,
+      Entity entity,
+      String description,
+      UUID createdBy,
+      BigDecimal offeredHours,
+      Integer maxParticipants,
+      List<School> schools,
+      TimeProvider time) {
 
     var now = time.now();
     OffsetDateTime createdAt = OffsetDateTime.ofInstant(now, time.clock().getZone());
@@ -69,7 +66,8 @@ public class Project extends DomainError {
     ProjectHours hoursVo = ProjectHours.factory(offeredHours, BigDecimal.ZERO);
     ProjectInfo infoVo = ProjectInfo.factory(createdBy, createdAt, null, maxParticipants);
 
-    Project project = Project.builder()
+    Project project =
+        Project.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .name(StringUtils.trim(name))
             .entity(entity)
@@ -85,11 +83,11 @@ public class Project extends DomainError {
   }
 
   public Project updateDetails(
-          String name,
-          String description,
-          BigDecimal offeredHours,
-          Integer maxParticipants,
-          List<School> schools) {
+      String name,
+      String description,
+      BigDecimal offeredHours,
+      Integer maxParticipants,
+      List<School> schools) {
 
     Project.ProjectBuilder builder = this.toBuilder();
 
@@ -102,12 +100,14 @@ public class Project extends DomainError {
     }
 
     if (offeredHours != null) {
-      ProjectHours newHours = ProjectHours.factory(offeredHours, this.projectHours.getCompletedHours());
+      ProjectHours newHours =
+          ProjectHours.factory(offeredHours, this.projectHours.getCompletedHours());
       builder.projectHours(newHours);
     }
 
     if (maxParticipants != null) {
-      ProjectInfo newInfo = ProjectInfo.factory(
+      ProjectInfo newInfo =
+          ProjectInfo.factory(
               this.projectInfo.getCreatedBy(),
               this.projectInfo.getCreateAt(),
               this.projectInfo.getClosedAt(),
@@ -134,16 +134,14 @@ public class Project extends DomainError {
       closedAt = null;
     }
 
-    ProjectInfo newInfo = ProjectInfo.factory(
+    ProjectInfo newInfo =
+        ProjectInfo.factory(
             this.projectInfo.getCreatedBy(),
             this.projectInfo.getCreateAt(),
             closedAt,
             this.projectInfo.getMaxParticipants());
 
-    Project updated = this.toBuilder()
-            .projectStatus(newStatus)
-            .projectInfo(newInfo)
-            .build();
+    Project updated = this.toBuilder().projectStatus(newStatus).projectInfo(newInfo).build();
 
     updated.collectValidationProblems();
     return updated;
@@ -177,7 +175,8 @@ public class Project extends DomainError {
     }
 
     if (projectHours == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(
+          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     } else if (projectHours.hasErrors()) {
       addErrors(projectHours.getProblems());
     }
