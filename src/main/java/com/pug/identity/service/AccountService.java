@@ -4,8 +4,6 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.User;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
 
 import java.util.List;
 import java.util.Map;

@@ -1,11 +1,11 @@
 package com.pug.identity.presenter;
 
+import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
 import com.pug.identity.service.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
@@ -22,29 +22,24 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for reading user information. */
+/**
+ * REST resource for reading user information.
+ */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject UserReadService readService;
+  @Inject
+  UserReadService readService;
 
-  @Context HttpHeaders headers;
-
-  /**
-   * Picks the best locale from the request headers.
-   *
-   * @return the selected locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
+  @Context
+  HttpHeaders headers;
 
   /**
    * Retrieves a user by their unique identifier.
@@ -61,15 +56,30 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Lists all users.
+   * Lists users.
+   * <p>
+   * If the 'q' query parameter is provided, performs a search by name.
+   * Otherwise, returns all users.
+   * </p>
    *
-   * @return the response containing the list of users
+   * @param query optional name query to search for.
+   * @return the response containing the list of users.
    */
   @GET
-  public Response list() {
-    List<UserResponse> list =
-        readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  public Response list(@QueryParam("q") String query) {
+    List<UserView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
+    List<UserResponse> list = views.stream()
+            .map(v -> UserPresenter.toResponse(v, locale()))
+            .toList();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -77,7 +87,7 @@ public class UserReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the user
    * @return the response containing the user data
-   * @throws AppValidationException if the provided CPF is malformed.
+   * @throws AppValidationException    if the provided CPF is malformed.
    * @throws ResourceNotFoundException if no user with the given CPF is found.
    */
   @GET
@@ -88,20 +98,9 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Lists users by their name matching the query.
-   *
-   * @param query the name query to search for
-   * @return the response containing the list of users matching the name query
+   * Picks the best locale from the request headers.
    */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    var body = new ArrayList<UserResponse>();
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
-    }
-    List<UserResponse> list =
-        readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }

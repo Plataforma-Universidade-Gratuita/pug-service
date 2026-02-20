@@ -5,7 +5,6 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
 import com.pug.shared.presenter.rest.Details;
-import com.pug.shared.presenter.rest.FieldError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -14,7 +13,8 @@ import jakarta.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Mapper to catch uncaught exceptions and return a generic error response.
@@ -28,24 +28,28 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
   I18n i18n;
 
   /**
-   * Maps uncaught exceptions to an HTTP 500 response with a generic error message.
+   * Converts an uncaught exception into a standardized error response.
    *
-   * @param ex The caught exception.
-   * @return An HTTP 500 response with error details.
+   * <p>Logs the exception and returns a generic error message to the client, without exposing
+   * sensitive details.
+   *
+   * @param ex The uncaught exception that was thrown.
+   * @return A Response object containing the error details and an appropriate HTTP status code.
    */
   @Override
   public Response toResponse(Throwable ex) {
     LOG.error("An uncaught exception occurred:", ex);
-
     String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
 
-    var details = new Details(List.of(new FieldError(null, ex.getClass().getSimpleName(), ex.getLocalizedMessage())));
+    Map<String, Object> errorDetails = new LinkedHashMap<>();
+    errorDetails.put("exception", ex.getClass().getSimpleName());
+    errorDetails.put("reason", ex.getLocalizedMessage());
 
-    ApiError apiError =
-            ApiError.of(
-                    SharedErrorCodes.INTERNAL_ERROR.name(),
-                    msg,
-                    details);
+    ApiError apiError = ApiError.of(
+            SharedErrorCodes.INTERNAL_ERROR.name(),
+            msg,
+            new Details(errorDetails)
+    );
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
             .type(MediaType.APPLICATION_JSON_TYPE)

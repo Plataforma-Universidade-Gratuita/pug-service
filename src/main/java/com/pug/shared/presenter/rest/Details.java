@@ -1,11 +1,16 @@
 package com.pug.shared.presenter.rest;
 
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Represents the details of an error response, specifically for validation errors.
+ * Represents the details of an error response.
+ * <p>
+ * This wrapper can hold any structure (List of FieldError, a Map, a custom POJO, etc.).
+ * The @JsonValue annotation ensures that the underlying object is serialized directly
+ * as the value of the 'details' key in the ApiError, avoiding extra nesting.
+ * </p>
  *
- * @param fieldErrors A list of field-specific errors that occurred during validation.
+ * @param payload The actual error detail data.
  */
-public record Details(List<FieldError> fieldErrors) {
+public record Details(@JsonValue Object payload) {
 }

@@ -28,9 +28,9 @@ public final class UserPresenter {
       return null;
     }
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
+    String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
 
-    return new UserResponse(
-            v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted);
+    return new UserResponse(v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted, v.updatedAt(), updatedAtFormatted);
   }
 
   /**

@@ -56,14 +56,4 @@ public final class PresenterUtils {
     }
     return formattedString;
   }
-
-  /**
-   * Helper method to convert a Problem into a FieldError.
-   */
-  public static FieldError mapProblemsToFieldErrors(Problem problems, I18n i18n) {
-    String fieldName = problems.getFinalFieldName();
-    String errorCode = problems.getErrorCode();
-    String message = i18n.translation(problems.getMessageKey());
-    return new FieldError(fieldName, errorCode, message);
-  }
 }

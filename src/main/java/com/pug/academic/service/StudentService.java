@@ -3,8 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
 
 import java.util.List;
 import java.util.Map;

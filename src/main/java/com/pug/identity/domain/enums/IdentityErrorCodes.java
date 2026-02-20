@@ -21,7 +21,7 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
   INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
   /* Resource Errors */
-  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", "cpf"),
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
   USER_NOT_FOUND("error.domain.identity.user.not.found", null),
 
 

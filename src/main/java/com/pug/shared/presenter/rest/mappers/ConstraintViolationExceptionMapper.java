@@ -17,7 +17,8 @@ import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 
 /**
- * Mapper to catch ConstraintViolationException and return a detailed error response.
+ * Mapper to catch jakarta.validation.ConstraintViolationException (Bean Validation)
+ * and return a detailed HTTP 422 response.
  */
 @Provider
 public class ConstraintViolationExceptionMapper
@@ -27,19 +28,26 @@ public class ConstraintViolationExceptionMapper
   I18n i18n;
 
   /**
-   * Maps ConstraintViolationException to an HTTP 422 response with violation details.
+   * Converts a ConstraintViolationException into an HTTP 422 Unprocessable Entity response.
    *
-   * @param ex The caught exception.
-   * @return An HTTP 422 response with violation details.
+   * <p>The response body contains a structured JSON with error details, including the specific
+   * field errors extracted from the constraint violations.
+   *
+   * @param ex The ConstraintViolationException thrown during validation.
+   * @return A Response object with status 422 and a JSON body containing error details.
    */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
-    List<FieldError> violations =
-            ex.getConstraintViolations().stream()
-                    .map(this::mapViolationToFieldError).toList();
-
+    List<FieldError> violations = ex.getConstraintViolations().stream()
+            .map(this::mapViolationToFieldError)
+            .toList();
     String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
-    ApiError error = new ApiError(SharedErrorCodes.VALIDATION_ERROR.toString(), msg, new Details(violations));
+
+    ApiError error = new ApiError(
+            SharedErrorCodes.VALIDATION_ERROR.name(),
+            msg,
+            new Details(violations)
+    );
 
     return Response.status(422)
             .type(MediaType.APPLICATION_JSON_TYPE)
@@ -47,9 +55,6 @@ public class ConstraintViolationExceptionMapper
             .build();
   }
 
-  /**
-   * Converts a ConstraintViolation into a FieldError for API response.
-   */
   private FieldError mapViolationToFieldError(ConstraintViolation<?> violation) {
     String field = violation.getPropertyPath() == null ? "" : violation.getPropertyPath().toString();
     String message = violation.getMessage();

@@ -4,8 +4,6 @@ import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
 
 import java.util.List;
 import java.util.Map;

@@ -9,7 +9,6 @@ import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.academic.service.utils.SchoolProcessor;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;

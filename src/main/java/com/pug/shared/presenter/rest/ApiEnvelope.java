@@ -1,5 +1,7 @@
 package com.pug.shared.presenter.rest;
 
+import org.jboss.logging.MDC;
+
 import java.time.Instant;
 
 /**
@@ -11,7 +13,21 @@ import java.time.Instant;
  * @param timestamp the time the response was created
  * @param <T> the type of the response data
  */
-public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp) {
+public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp, String correlationId) {
+  /**
+   * Correlation ID key for MDC.
+   */
+  private static final String CID_KEY = "X-Correlation-Id";
+
+  /**
+   * Retrieves the correlation ID from MDC.
+   *
+   * @return the correlation ID or null if not present
+   */
+  private static String getCorrelationId() {
+    Object cid = MDC.get(CID_KEY);
+    return cid != null ? cid.toString() : null;
+  }
 
   /**
    * Success response (200).
@@ -21,7 +37,7 @@ public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant ti
    * @return ApiEnvelope.
    */
   public static <T> ApiEnvelope<T> ok(T data) {
-    return new ApiEnvelope<>(true, data, null, Instant.now());
+    return new ApiEnvelope<>(true, data, null, Instant.now(), getCorrelationId());
   }
 
   /**
@@ -42,6 +58,6 @@ public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant ti
    * @return ApiEnvelope.
    */
   public static ApiEnvelope<Void> error(ApiError err) {
-    return new ApiEnvelope<>(false, null, err, Instant.now());
+    return new ApiEnvelope<>(false, null, err, Instant.now(), getCorrelationId());
   }
 }

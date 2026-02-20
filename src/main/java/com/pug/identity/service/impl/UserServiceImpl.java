@@ -8,9 +8,7 @@ import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.identity.service.utils.UserProcessor;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -22,7 +20,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Service for managing users.
+ * Implementation of the {@link UserService} interface for managing user-related operations.
+ *
+ * <p>This service provides methods to create, update, delete, list, and retrieve users. It ensures
+ * that all operations adhere to the domain rules and handles validation and error scenarios
+ * appropriately.
  */
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
+    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
     User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
 
     if (userToPersist.hasErrors()) {
@@ -42,16 +45,25 @@ public class UserServiceImpl implements UserService {
     }
 
     if (existsByCpf(userToPersist.getCpf())) {
-      LOG.errorf("User with CPF %s already exists", userToPersist.getCpf());
-      throw new DuplicateResourceException(new Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
+      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
+      throw new DuplicateResourceException(
+              IdentityErrorCodes.USER_ALREADY_EXISTS,
+              "cpf",
+              userToPersist.getCpf().toString()
+      );
     }
 
-    return repo.persist(userToPersist);
+    User savedUser = repo.persist(userToPersist);
+    LOG.infof("User created successfully. ID: %s", savedUser.getId());
+
+    return savedUser;
   }
 
   @Transactional
   @Override
   public User update(UUID id, UserUpdateCommand cmd) {
+    LOG.debugf("Attempting to update User ID: %s", id);
+
     User current = getById(id);
     User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
 
@@ -60,45 +72,64 @@ public class UserServiceImpl implements UserService {
     }
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
-      LOG.errorf("User with CPF %s already exists", updated.getCpf());
-      throw new DuplicateResourceException(new Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
+      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
+      throw new DuplicateResourceException(
+        IdentityErrorCodes.USER_ALREADY_EXISTS,
+        "cpf",
+        updated.getCpf().toString()
+      );
     }
 
     repo.update(updated);
+    LOG.infof("User updated successfully. ID: %s", id);
+
     return getById(id);
   }
 
   @Transactional
   @Override
   public boolean delete(UUID id) {
-    return repo.deleteById(id);
+    LOG.debugf("Attempting to delete User ID: %s", id);
+
+    boolean deleted = repo.deleteById(id);
+
+    if (deleted) {
+      LOG.infof("User deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: User ID %s not found (idempotent response)", id);
+    }
+
+    return deleted;
   }
 
   @Override
   public List<User> listAll() {
+    LOG.debug("Listing all users");
     List<User> users = repo.listAllUsers();
 
-    for (User user : users) {
-      if (user.hasErrors()) {
-        LOG.errorf("Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
-                user.getId(), user.getProblemsSummary());
-        throw new DataIntegrityException();
-      }
-    }
-    return users;
+    return users.stream()
+            .filter(user -> {
+              if (user.hasErrors()) {
+                LOG.errorf("DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+                        user.getId(), user.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+            .toList();
   }
 
   @Override
   public User getById(UUID id) {
     User user = repo.findOptionalById(id).orElseThrow(() -> {
-      LOG.errorf("User with ID %s not found", id);
-      return new ResourceNotFoundException(new Problem(IdentityErrorCodes.USER_NOT_FOUND));
+      LOG.debugf("User lookup failed: ID %s not found", id);
+      return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
     });
 
     if (user.hasErrors()) {
-      LOG.errorf("Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
+      LOG.errorf("DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
               id, user.getProblemsSummary());
-      throw new DataIntegrityException();
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
     }
 
     return user;
