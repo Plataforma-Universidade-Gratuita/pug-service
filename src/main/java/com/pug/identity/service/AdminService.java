@@ -5,7 +5,6 @@ import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing admins. */
@@ -26,40 +25,24 @@ public interface AdminService {
   Admin save(AdminCreateCommand cmd);
 
   /**
-   * Creates and saves multiple new Admins.
-   *
-   * <p>This method also creates and saves the associated Accounts.
-   *
-   * @param cmds the commands containing the data to create the new Admins.
-   * @return the list of saved Admins.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     admin or account in the bulk.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any account email already
-   *     exists.
-   */
-  List<Admin> saveAll(Iterable<AdminCreateCommand> cmds);
-
-  /**
    * Updates an existing Admin's underlying Account.
    *
-   * @param id the ID of the Admin (which corresponds to the Account ID).
+   * @param accountId the ID of the Admin (which corresponds to the Account ID).
    * @param cmd the command containing the data to update the Account.
    * @return the updated Admin.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not
    *     exist.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
-  Admin update(UUID id, AdminUpdateCommand cmd);
+  Admin update(UUID accountId, AdminUpdateCommand cmd);
 
   /**
-   * Deletes all Admins with the given IDs.
+   * Deletes the Admin with the given ID (which corresponds to the Account ID).
    *
-   * <p>This method first removes the Admin role, then deletes the associated Accounts.
-   *
-   * @param ids the IDs of the Admins to delete.
-   * @return a map containing the count of deleted Admins and Accounts.
+   * @param accountId the ID of the Admin to delete.
+   * @return true if the Admin was deleted, false if no Admin with the given ID was found.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID accountId);
 
   /**
    * Retrieves an Admin by account ID.
@@ -69,7 +52,7 @@ public interface AdminService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
    *     ID does not exist (or data is corrupted in DB).
    */
-  Admin getById(UUID accountId);
+  Admin getByAccountId(UUID accountId);
 
   /**
    * Lists all Admin entities.
@@ -79,12 +62,4 @@ public interface AdminService {
    *     corrupted in the database.
    */
   List<Admin> listAll();
-
-  /**
-   * Checks if any Admin exists with account IDs in the provided iterable.
-   *
-   * @param ids the iterable of account IDs to check.
-   * @return true if any Admin exists with the given account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> ids);
 }

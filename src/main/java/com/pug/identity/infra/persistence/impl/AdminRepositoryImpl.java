@@ -31,52 +31,22 @@ public class AdminRepositoryImpl
 
   @Transactional
   @Override
-  public List<Admin> persistAll(Iterable<Admin> entities) {
-    if (CollectionUtils.isEmpty(entities)) {
-      return List.of();
+  public boolean deleteByAccountId(UUID accountId) {
+    if (accountId == null) {
+      return false;
     }
-    var batch = new ArrayList<AdminEntity>();
-    for (Admin d : entities) {
-      if (d == null || d.getAccountId() == null) {
-        continue;
-      }
-      batch.add(AdminMapper.toEntity(d));
-    }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-    persist(batch);
+    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
     flush();
-    return batch.stream().map(AdminMapper::toDomain).toList();
-  }
-
-  @Transactional
-  @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
-    }
-    long n = delete("accountId in ?1", ids);
-    flush();
-    getEntityManager().clear();
-    return n;
+    return deleted;
   }
 
   @Override
-  public Optional<Admin> findOptionalById(UUID accountId) {
+  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 
   @Override
   public List<Admin> listAllAdmins() {
     return findAll().list().stream().map(AdminMapper::toDomain).toList();
-  }
-
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return false;
-    }
-    return find("accountId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }

@@ -15,7 +15,6 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   /* Validation Errors */
   INVALID_ACCOUNT_TYPE_BLANK("error.domain.identity.account.type.blank", "accountType"),
   INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
-  INVALID_CPF_DUPLICATED_INPUT("error.domain.identity.cpf.duplicated.input", "cpf"),
   INVALID_CPF_FORMAT("error.domain.identity.cpf.format", "cpf"),
   INVALID_EMAIL_BLANK("error.domain.identity.email.blank", "email"),
   INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
@@ -23,18 +22,9 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   /* Resource Errors */
   ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
   ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
-  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
-  USER_NOT_FOUND("error.domain.identity.user.not.found", null),
-
-
   ADMIN_NOT_FOUND("error.domain.identity.admin.not.found", null),
-
-  ACCOUNT_STILL_REFERENCED_BY_ADMIN(
-      "error.domain.identity.account.still.referenced.by.admin", null),
-  ACCOUNT_STILL_REFERENCED_BY_STAFF(
-      "error.domain.identity.account.still.referenced.by.staff", null),
-  ACCOUNT_STILL_REFERENCED_BY_STUDENT(
-      "error.domain.identity.account.still.referenced.by.student", null);
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
+  USER_NOT_FOUND("error.domain.identity.user.not.found", null);
 
   private final String bundleKey;
   private final String fieldName;

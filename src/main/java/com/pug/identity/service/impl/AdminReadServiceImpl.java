@@ -8,38 +8,56 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/** Service for reading admin data. */
+/**
+ * Service for reading admin data.
+ */
 @ApplicationScoped
 public class AdminReadServiceImpl implements AdminReadService {
 
-  @Inject AdminQueries queries;
+  private static final Logger LOG = Logger.getLogger(AdminReadServiceImpl.class);
+
+  @Inject
+  AdminQueries queries;
 
   @Override
-  public AdminView getViewById(UUID accountId) {
+  public AdminView getViewByAccountId(UUID accountId) {
     return queries
-        .findOptionalById(accountId)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+            .findOptionalById(accountId)
+            .orElseThrow(() -> {
+              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND,
+                      "accountId",
+                      accountId.toString()
+              );
+            });
   }
 
   @Override
   public AdminView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email));
+              IdentityErrorCodes.ADMIN_NOT_FOUND,
+              "email",
+              "empty"
+      );
     }
+
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email)));
+            .findOptionalByEmail(email)
+            .orElseThrow(() -> {
+              LOG.debugf("Admin lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND,
+                      "email",
+                      email
+              );
+            });
   }
 
   @Override

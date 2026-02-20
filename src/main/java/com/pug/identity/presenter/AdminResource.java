@@ -17,14 +17,16 @@ import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -39,64 +41,75 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing admin users. */
+/**
+ * REST resource for managing admin users.
+ */
 @Path("/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AdminResource {
 
-  @Inject PasswordService passwordService;
-  @Inject AdminReadService readService;
-  @Inject AdminService writeService;
-  @Inject I18n i18n;
+  @Inject
+  PasswordService passwordService;
+  @Inject
+  AdminReadService readService;
+  @Inject
+  AdminService writeService;
+  @Inject
+  I18n i18n;
 
-  @Context HttpHeaders headers;
-  @Context UriInfo uri;
-
-  /**
-   * Picks the best locale from the request headers.
-   *
-   * @return the selected locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
+  @Context
+  HttpHeaders headers;
+  @Context
+  UriInfo uri;
 
   /**
    * Gets an admin by ID.
    *
    * @param id the admin's account ID.
    * @return the admin response.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the admin is not found.
+   * @throws ResourceNotFoundException if the admin is not found.
    */
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    AdminView v = readService.getViewById(id);
+    AdminView v = readService.getViewByAccountId(id);
     AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Lists all admins.
+   * Lists admins.
+   * <p>
+   * If the 'q' query parameter is provided, performs a search by user name.
+   * Otherwise, returns all admins.
+   * </p>
    *
+   * @param query optional name query to search for.
    * @return the list of admin responses.
    */
   @GET
-  public Response list() {
-    List<AdminResponse> list =
-        readService.listViews().stream()
+  public Response list(@QueryParam("q") String query) {
+    List<AdminView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
+    List<AdminResponse> list = views.stream()
             .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -110,10 +123,11 @@ public class AdminResource {
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") String cpfRaw) {
     List<AdminResponse> list =
-        readService.listViewsByCpf(cpfRaw).stream()
-            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+            readService.listViewsByCpf(cpfRaw).stream()
+                    .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -121,36 +135,15 @@ public class AdminResource {
    *
    * @param emailRaw the email string.
    * @return the admin response.
-   * @throws AppValidationException if the provided email is malformed.
+   * @throws AppValidationException    if the provided email is malformed.
+   * @throws ResourceNotFoundException if no admin with the given email is found.
    */
   @GET
-  @Path("by-email")
-  public Response getByEmail(@QueryParam("email") String emailRaw) {
-    if (StringUtils.isEmpty(emailRaw)) {
-      return list();
-    }
+  @Path("by-email/{email}")
+  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     AdminView view = readService.getViewByEmail(emailRaw);
     AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Searches admins by name.
-   *
-   * @param query the name query string.
-   * @return the list of admin responses.
-   */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(new ArrayList<>()))).build();
-    }
-    List<AdminResponse> list =
-        readService.search(query).stream()
-            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
   /**
@@ -158,9 +151,8 @@ public class AdminResource {
    *
    * @param req the admin creation request.
    * @return the response with the created admin.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an admin with the same
-   *     email/CPF already exists.
-   * @throws AppValidationException if input validation fails.
+   * @throws DuplicateResourceException if an admin with the same email/CPF already exists.
+   * @throws AppValidationException     if input validation fails.
    */
   @POST
   public Response create(@Valid AdminCreateRequest req) {
@@ -168,56 +160,26 @@ public class AdminResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
+            new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
     AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd);
 
     Admin admin = writeService.save(adminCmd);
 
     AdminResponse body =
-        AdminPresenter.toResponse(readService.getViewById(admin.getAccountId()), locale(), i18n);
+            AdminPresenter.toResponse(readService.getViewByAccountId(admin.getAccountId()), locale(), i18n);
     URI location = uri.getAbsolutePathBuilder().path(admin.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
-   * Creates multiple new admins in bulk.
-   *
-   * @param reqs the list of admin creation requests.
-   * @return the response with the amount of admins created.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any admin with the same
-   *     email/CPF already exists.
-   * @throws AppValidationException if input validation fails for any admin in the bulk.
-   */
-  @POST
-  @Path("bulk")
-  public Response createBulk(@Valid List<AdminCreateRequest> reqs) {
-    List<AdminCreateCommand> cmds =
-        reqs.stream()
-            .map(
-                req -> {
-                  String hashedPassword = passwordService.hash(req.password());
-                  UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
-                  AccountCreateCommand accountCmd =
-                      new AccountCreateCommand(
-                          req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-                  return new AdminCreateCommand(accountCmd);
-                })
-            .collect(Collectors.toList());
-
-    List<Admin> admins = writeService.saveAll(cmds);
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly(admins.size()))).build();
-  }
-
-  /**
    * Updates an existing admin.
    *
-   * @param id the admin's account ID.
+   * @param id  the admin's account ID.
    * @param req the admin update request.
    * @return the response with the updated admin.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the admin does not exist.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an admin with the updated
-   *     email/CPF already exists.
-   * @throws AppValidationException if input validation fails.
+   * @throws ResourceNotFoundException  if the admin does not exist.
+   * @throws DuplicateResourceException if an admin with the updated email/CPF already exists.
+   * @throws AppValidationException     if input validation fails.
    */
   @PUT
   @Path("{id}")
@@ -226,28 +188,35 @@ public class AdminResource {
 
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpfString(), req.name());
     AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+            new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
     AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd);
 
     Admin updatedAdmin = writeService.update(id, adminCmd);
 
     AdminResponse body =
-        AdminPresenter.toResponse(
-            readService.getViewById(updatedAdmin.getAccountId()), locale(), i18n);
+            AdminPresenter.toResponse(
+                    readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Deletes admins by their IDs.
+   * Deletes an admin by ID.
    *
-   * @param req the request containing the IDs to delete.
-   * @return the response with the deletion result.
-   * @throws DataIntegrityException if any admin is still referenced.
+   * @param id the admin's account ID.
+   * @return the response indicating successful deletion.
+   * @throws ResourceNotFoundException if the admin does not exist.
    */
   @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> result = writeService.deleteAll(req.ids());
+  @Path("{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
 
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(result))).build();
+  /**
+   * Picks the best locale from the request headers.
+   */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }

@@ -15,7 +15,7 @@ public interface AdminReadService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given account
    *     ID is found.
    */
-  AdminView getViewById(UUID accountId);
+  AdminView getViewByAccountId(UUID accountId);
 
   /**
    * Retrieves an AdminView by its email.

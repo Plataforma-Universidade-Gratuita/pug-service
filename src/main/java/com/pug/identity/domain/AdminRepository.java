@@ -15,20 +15,12 @@ public interface AdminRepository {
   Admin persist(Admin entity);
 
   /**
-   * Persists all given Admin domain objects.
+   * Deletes the Admin with the given account ID.
    *
-   * @param entities the iterable of Admin instances to persist.
-   * @return a list of persisted Admin instances.
+   * @param accountId the account ID of the Admin to delete.
+   * @return true if the Admin was deleted, false if no Admin with the given ID was found.
    */
-  List<Admin> persistAll(Iterable<Admin> entities);
-
-  /**
-   * Deletes Admin instances by their account IDs.
-   *
-   * @param ids the iterable of account IDs whose Admin instances should be deleted.
-   * @return the number of entities deleted.
-   */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteByAccountId(UUID accountId);
 
   /**
    * Finds an Admin by its account ID.
@@ -39,7 +31,7 @@ public interface AdminRepository {
    * @param accountId the account ID of the Admin to find.
    * @return an Optional containing the found Admin, or empty if not found.
    */
-  Optional<Admin> findOptionalById(UUID accountId);
+  Optional<Admin> findOptionalByAccountId(UUID accountId);
 
   /**
    * Lists all Admin instances.
@@ -50,12 +42,4 @@ public interface AdminRepository {
    * @return a list of all Admin instances.
    */
   List<Admin> listAllAdmins();
-
-  /**
-   * Checks if an Admin exists for the given iterable of account IDs.
-   *
-   * @param accountIds the iterable of account IDs to check.
-   * @return true if an Admin exists for any of the given account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
 }

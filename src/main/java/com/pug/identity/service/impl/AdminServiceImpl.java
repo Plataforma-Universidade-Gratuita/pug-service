@@ -11,116 +11,97 @@ import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.identity.service.utils.AdminProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.time.TimeProvider;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
-/** Service for managing admins. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Service for managing admins.
+ */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject AdminRepository adminsRepo;
-  @Inject AccountService accountService;
-  @Inject TimeProvider time;
+  @Inject
+  AdminRepository adminsRepo;
+
+  @Inject
+  AccountService accountService;
 
   @Transactional
   @Override
   public Admin save(AdminCreateCommand cmd) {
+    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
     Account account = accountService.save(cmd.accountCommand());
 
-    Admin admin = AdminProcessor.processCreateInput(account.getId(), time);
-
+    Admin admin = AdminProcessor.processCreateInput(account.getId());
     if (admin.hasErrors()) {
       throw new AppValidationException(admin.getProblems());
     }
 
-    return adminsRepo.persist(admin);
+    Admin savedAdmin = adminsRepo.persist(admin);
+    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
+    return savedAdmin;
   }
 
   @Transactional
   @Override
-  public List<Admin> saveAll(Iterable<AdminCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
+    if (adminsRepo.findOptionalByAccountId(accountId).isEmpty()) {
+      throw new ResourceNotFoundException(
+              IdentityErrorCodes.ADMIN_NOT_FOUND,
+              "accountId",
+              accountId.toString()
+      );
     }
 
-    List<Account> accounts =
-        accountService.saveAll(
-            CollectionUtils.toStream(cmds)
-                .map(AdminCreateCommand::accountCommand)
-                .collect(Collectors.toList()));
-
-    List<Problem> problems = new ArrayList<>();
-    List<Admin> adminsToPersist = new ArrayList<>();
-
-    for (Account account : accounts) {
-      Admin admin = AdminProcessor.processCreateInput(account.getId(), time);
-
-      if (admin.hasErrors()) {
-        problems.addAll(admin.getProblems());
-      } else {
-        adminsToPersist.add(admin);
-      }
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
-
-    return adminsRepo.persistAll(adminsToPersist);
+    accountService.update(accountId, cmd.accountCommand());
+    LOG.infof("Admin details updated. Account ID: %s", accountId);
+    return getByAccountId(accountId);
   }
 
   @Transactional
   @Override
-  public Admin update(UUID id, AdminUpdateCommand cmd) {
-    accountService.update(id, cmd.accountCommand());
-    return getById(id);
-  }
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to revoke Admin role for Account ID: %s", accountId);
+    boolean deleted = adminsRepo.deleteByAccountId(accountId);
 
-  @Transactional
-  @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.ADMINS, 0L, DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
+    if (deleted) {
+      LOG.infof("Admin role revoked successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Revoke failed: Admin ID %s not found (idempotent)", accountId);
     }
 
-    long adminsDeleted = adminsRepo.deleteByIds(ids);
-
-    Map<DeleteKeys, Long> accountDeleteResult = accountService.deleteAll(ids);
-
-    return Map.of(
-        DeleteKeys.ADMINS, adminsDeleted,
-        DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L));
+    return deleted;
   }
 
   @Override
-  public Admin getById(UUID accountId) {
-    Admin admin =
-        adminsRepo
-            .findOptionalById(accountId)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+  public Admin getByAccountId(UUID accountId) {
+    Admin admin = adminsRepo.findOptionalByAccountId(accountId)
+            .orElseThrow(() -> {
+              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND,
+                      "accountId",
+                      accountId.toString()
+              );
+            });
 
     if (admin.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: "
-              + "Admin with Account ID %s in DB violates domain rules. Problems: %s",
-          accountId, admin.getProblemsSummary());
+      LOG.errorf("DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+              accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
+              IdentityErrorCodes.ADMIN_NOT_FOUND,
+              "accountId",
+              accountId.toString()
+      );
     }
 
     return admin;
@@ -128,25 +109,18 @@ public class AdminServiceImpl implements AdminService {
 
   @Override
   public List<Admin> listAll() {
+    LOG.debug("Listing all admins");
     List<Admin> admins = adminsRepo.listAllAdmins();
 
-    for (Admin admin : admins) {
-      if (admin.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
-            admin.getProblemsSummary());
-        throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
-      }
-    }
-
-    return admins;
-  }
-
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return false;
-    }
-    return adminsRepo.existsAnyByAccountIdIn(ids);
+    return admins.stream()
+            .filter(admin -> {
+              if (admin.hasErrors()) {
+                LOG.errorf("DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+                        admin.getAccountId(), admin.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+            .toList();
   }
 }
