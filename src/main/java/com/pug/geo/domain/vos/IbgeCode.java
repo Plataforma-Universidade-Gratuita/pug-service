@@ -2,13 +2,16 @@ package com.pug.geo.domain.vos;
 
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Value object representing a city's IBGE code. Converted to class to extend DomainError. */
+/**
+ * Value object representing a city's IBGE code. Converted to class to extend DomainError.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -34,14 +37,13 @@ public class IbgeCode extends DomainError {
     return vo;
   }
 
-  /** Validates the IBGE code format and populates the problems list if invalid. */
+  /**
+   * Validates the IBGE code format and populates the problems list if invalid.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(code)) {
-      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
-    } else {
-      if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-        getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
-      }
+    validateStringField(code, 7L, "ibgeCode");
+    if (StringUtils.isNotEmpty(code) && !code.chars().allMatch(Character::isDigit)) {
+      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
     }
   }
 }

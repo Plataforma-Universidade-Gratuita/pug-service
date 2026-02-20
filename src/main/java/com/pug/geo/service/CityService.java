@@ -7,11 +7,12 @@ import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import java.util.List;
-import java.util.Map;
+
 import java.util.UUID;
 
-/** Interface for managing City entities. */
+/**
+ * Interface for managing City entities.
+ */
 public interface CityService {
 
   /**
@@ -20,40 +21,29 @@ public interface CityService {
    * @param cmd the command with city data.
    * @return the saved city.
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails (e.g., blank name, invalid IBGE code).
+   * @throws AppValidationException     if input validation fails (e.g., blank name, invalid IBGE code).
    */
   City save(CityCreateCommand cmd);
 
   /**
-   * Bulk save with intra-payload duplicate check.
-   *
-   * @param cmds the iterable of commands with city data.
-   * @return the saved cities.
-   * @throws DuplicateResourceException if any city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails for any city in the bulk.
-   */
-  List<City> saveAll(Iterable<CityCreateCommand> cmds);
-
-  /**
    * Update name and/or IBGE code.
    *
-   * @param id the city ID.
+   * @param id  the city ID.
    * @param cmd the command with updated city data.
    * @return the updated city.
-   * @throws ResourceNotFoundException if the city does not exist (or data is corrupted in DB).
+   * @throws ResourceNotFoundException  if the city does not exist (or data is corrupted in DB).
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails.
+   * @throws AppValidationException     if input validation fails.
    */
   City update(UUID id, CityUpdateCommand cmd);
 
   /**
-   * Delete cities by their IDs.
+   * Delete a city by its ID.
    *
-   * @param ids the iterable of city IDs to delete.
-   * @return a map with the number of deleted cities.
-   * @throws DataIntegrityException if any city is still referenced by another entity.
+   * @param id the city ID.
+   * @return true if the city was successfully deleted, false if the city does not exist or cannot be deleted
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID id);
 
   /**
    * Get a city by its ID.
@@ -61,7 +51,7 @@ public interface CityService {
    * @param id the city ID.
    * @return the found city.
    * @throws ResourceNotFoundException if the city does not exist OR if the city exists but violates
-   *     domain rules (data integrity error).
+   *                                   domain rules (data integrity error).
    */
   City getById(UUID id);
 

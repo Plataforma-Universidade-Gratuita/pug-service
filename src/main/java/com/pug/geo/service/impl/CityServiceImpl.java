@@ -8,34 +8,31 @@ import com.pug.geo.service.CityService;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.geo.service.utils.CityProcessor;
-import com.pug.partner.service.EntityService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for managing cities. */
+import java.util.UUID;
+
+/**
+ * Service for managing cities.
+ */
 @ApplicationScoped
 public class CityServiceImpl implements CityService {
 
   private static final Logger LOG = Logger.getLogger(CityServiceImpl.class);
 
-  @Inject CityRepository repo;
-  @Inject EntityService entityService;
+  @Inject
+  CityRepository repo;
 
   @Transactional
   @Override
   public City save(CityCreateCommand cmd) {
+    LOG.debugf("Attempting to create City: %s (IBGE: %s)", cmd.name(), cmd.ibgeCodeString());
     City cityToPersist = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
 
     if (cityToPersist.hasErrors()) {
@@ -43,102 +40,83 @@ public class CityServiceImpl implements CityService {
     }
 
     if (existsByIbge(cityToPersist.getIbgeCode())) {
+      LOG.warnf("Creation failed: City with IBGE Code %s already exists", cityToPersist.getIbgeCode());
       throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS,
-          Map.of("code", cityToPersist.getIbgeCode().toString()));
+              GeoErrorCodes.CITY_ALREADY_EXISTS,
+              "ibgeCode",
+              cityToPersist.getIbgeCode().toString()
+      );
     }
 
-    return repo.persist(cityToPersist);
-  }
+    City savedCity = repo.persist(cityToPersist);
+    LOG.infof("City created successfully. ID: %s", savedCity.getId());
 
-  @Transactional
-  @Override
-  public List<City> saveAll(Iterable<CityCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
-    }
-
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<City> citiesToPersist = new ArrayList<>();
-    Set<String> ibgeCodesInPayload = new HashSet<>();
-
-    for (CityCreateCommand cmd : cmds) {
-      City city = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
-
-      if (city.hasErrors()) {
-        allCollectedProblems.addAll(city.getProblems());
-      } else {
-        String ibgeCodeStr = city.getIbgeCode().toString();
-
-        if (!ibgeCodesInPayload.add(ibgeCodeStr)) {
-          allCollectedProblems.add(new Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
-        }
-        citiesToPersist.add(city);
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> ibgeCodesToPersist =
-        citiesToPersist.stream().map(c -> c.getIbgeCode().toString()).toList();
-
-    if (repo.existsAnyByIbgeCodeIn(ibgeCodesToPersist)) {
-      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(citiesToPersist);
+    return savedCity;
   }
 
   @Transactional
   @Override
   public City update(UUID id, CityUpdateCommand cmd) {
+    LOG.debugf("Attempting to update City ID: %s", id);
     City current = getById(id);
-
     City updated = CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getIbgeCode().equals(current.getIbgeCode())
-        && existsByIbge(updated.getIbgeCode())) {
+    if (!updated.getIbgeCode().equals(current.getIbgeCode()) && existsByIbge(updated.getIbgeCode())) {
+      LOG.warnf("Update failed: City ID %s tried to use existing IBGE %s", id, updated.getIbgeCode());
       throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", updated.getIbgeCode().toString()));
+              GeoErrorCodes.CITY_ALREADY_EXISTS,
+              "ibgeCode",
+              updated.getIbgeCode().toString()
+      );
     }
 
     repo.update(updated);
-
+    LOG.infof("City updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.CITIES, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete City ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    if (entityService.existsAnyByCityIdIn(ids)) {
-      throw new DataIntegrityException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("City deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: City ID %s not found (idempotent)", id);
     }
-    return Map.of(DeleteKeys.CITIES, repo.deleteByIds(ids));
+
+    return deleted;
   }
 
   @Override
   public City getById(UUID id) {
-    City city =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+    City city = repo.findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("City lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      GeoErrorCodes.CITY_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
 
     if (city.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: City with ID %s in DB violates domain rules. Problems: %s",
-          id, city.getProblemsSummary());
-      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id));
+      LOG.errorf("DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
+              id, city.getProblemsSummary());
+      throw new ResourceNotFoundException(
+              GeoErrorCodes.CITY_NOT_FOUND,
+              "id",
+              id.toString()
+      );
     }
 
     return city;
