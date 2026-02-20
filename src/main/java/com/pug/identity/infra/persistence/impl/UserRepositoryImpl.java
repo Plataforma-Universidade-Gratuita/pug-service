@@ -4,6 +4,7 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
 import com.pug.identity.infra.UserMapper;
 import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -50,6 +51,15 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     flush();
     return deleted;
   }
+
+  @Transactional
+  @Override
+    public long deleteAllByIds(List<UUID> ids) {
+      if (CollectionUtils.isEmpty(ids)) {
+        return 0;
+      }
+      return delete("id in ?1",ids);
+    }
 
   @Override
   public Optional<User> findOptionalById(UUID id) {

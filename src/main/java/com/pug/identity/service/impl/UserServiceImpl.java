@@ -11,6 +11,7 @@ import com.pug.identity.service.utils.UserProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -92,6 +93,19 @@ public class UserServiceImpl implements UserService {
     }
 
     return deleted;
+  }
+
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    LOG.debugf("Attempting to delete multiple Users. IDs: %s", ids);
+    long deletedCount = repo.deleteAllByIds(ids);
+
+    LOG.infof("Batch delete completed. Requested: %d, Deleted: %d", ids.size(), deletedCount);
+    return deletedCount;
   }
 
   @Override

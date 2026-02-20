@@ -4,19 +4,20 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.infra.StaffMapper;
 import com.pug.partner.infra.persistence.StaffEntity;
-import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the StaffRepository using Panache. */
+/**
+ * Implementation of the StaffRepository using Panache.
+ */
 @ApplicationScoped
 public class StaffRepositoryImpl
-    implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
+        implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
   @Transactional
   @Override
@@ -28,33 +29,6 @@ public class StaffRepositoryImpl
     persistAndFlush(e);
     StaffEntity loaded = find("accountId = ?1", e.getAccountId()).firstResultOptional().orElse(e);
     return StaffMapper.toDomain(loaded);
-  }
-
-  @Transactional
-  @Override
-  public List<Staff> persistAll(Iterable<Staff> entities) {
-    if (CollectionUtils.isEmpty(entities)) {
-      return List.of();
-    }
-
-    var batch = new ArrayList<StaffEntity>();
-    for (var s : entities) {
-      if (s != null) {
-        batch.add(StaffMapper.toEntity(s));
-      }
-    }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-
-    persist(batch);
-    flush();
-
-    var accountIds = batch.stream().map(StaffEntity::getAccountId).toList();
-    List<StaffEntity> loaded = find("accountId in ?1", accountIds).list();
-
-    return (loaded.size() == batch.size() ? loaded : batch)
-        .stream().map(StaffMapper::toDomain).toList();
   }
 
   @Transactional
@@ -72,18 +46,28 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return 0L;
+  public boolean deleteByAccountId(UUID accountId) {
+    if (accountId == null) {
+      return false;
     }
-    long n = delete("accountId in ?1", accountIds);
+    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
     flush();
-    getEntityManager().clear();
-    return n;
+    return deleted;
+  }
+
+  @Transactional
+  @Override
+  public long deleteByEntityId(UUID entityId) {
+    if (entityId == null) {
+      return 0;
+    }
+    long deletedCount = delete("entityId", entityId);
+    flush();
+    return deletedCount;
   }
 
   @Override
-  public Optional<Staff> findOptionalById(UUID accountId) {
+  public Optional<Staff> findOptionalByAccountId(UUID accountId) {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
@@ -100,13 +84,5 @@ public class StaffRepositoryImpl
   @Override
   public boolean existsByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return false;
-    }
-    return find("accountId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }

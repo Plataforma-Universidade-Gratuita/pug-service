@@ -16,14 +16,6 @@ public interface StaffRepository {
   Staff persist(Staff staff);
 
   /**
-   * Persists multiple Staff entities.
-   *
-   * @param staff an iterable of Staff entities to persist.
-   * @return a list of the persisted Staff entities.
-   */
-  List<Staff> persistAll(Iterable<Staff> staff);
-
-  /**
    * Updates an existing Staff entity.
    *
    * @param entity the Staff entity to update.
@@ -31,12 +23,20 @@ public interface StaffRepository {
   void update(Staff entity);
 
   /**
-   * Deletes Staff entities by their associated account IDs.
+   * Deletes a Staff entity by its account ID.
    *
-   * @param ids an iterable of account IDs whose Staff entities should be deleted.
+   * @param accountId the account ID of the Staff entity to delete.
+   * @return true if the entity was deleted, false otherwise.
+   */
+  boolean deleteByAccountId(UUID accountId);
+
+  /**
+   * Deletes all Staff entities associated with a specific entity ID.
+   *
+   * @param entityId the entity ID whose associated Staff entities should be deleted.
    * @return the number of Staff entities deleted.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  long deleteByEntityId(UUID entityId);
 
   /**
    * Finds a Staff entity by its associated account ID.
@@ -44,10 +44,10 @@ public interface StaffRepository {
    * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
-   * @param id the account ID to search for.
+   * @param accountId the account ID to search for.
    * @return an Optional containing the found Staff entity, or empty if not found.
    */
-  Optional<Staff> findOptionalById(UUID id);
+  Optional<Staff> findOptionalByAccountId(UUID accountId);
 
   /**
    * Lists all Staff entities.
@@ -73,16 +73,8 @@ public interface StaffRepository {
   /**
    * Checks if a Staff entity exists for a given account ID.
    *
-   * @param id the account ID to check.
+   * @param accountId the account ID to check.
    * @return true if a Staff entity exists for the given account ID, false otherwise.
    */
-  boolean existsByAccountId(UUID id);
-
-  /**
-   * Checks if any Staff entities exist for the given account IDs.
-   *
-   * @param ids an iterable of account IDs to check.
-   * @return true if any Staff entities exist for the provided account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> ids);
+  boolean existsByAccountId(UUID accountId);
 }

@@ -48,6 +48,16 @@ public interface UserService {
   boolean delete(UUID id);
 
   /**
+   * Deletes multiple Users by their IDs.
+   *
+   * @param ids a list of UUIDs of the users to delete
+   * @return the number of users successfully deleted
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any user with the given IDs does
+   *     not exist (or data is corrupted in DB).
+   */
+  long deleteAll(List<UUID> ids);
+
+  /**
    * Lists all users.
    *
    * @return a list of all User entities

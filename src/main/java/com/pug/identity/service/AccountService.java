@@ -50,6 +50,14 @@ public interface AccountService {
   boolean delete(UUID id);
 
   /**
+   * Deletes all accounts with the given list of IDs.
+   *
+   * @param ids the list of UUIDs of the Accounts to be deleted.
+   * @return the number of Accounts that were successfully deleted.
+   */
+  long deleteAll(List<UUID> ids);
+
+  /**
    * Lists all Account entities.
    *
    * @return a list of all Account entities.

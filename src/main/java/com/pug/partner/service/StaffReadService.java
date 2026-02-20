@@ -10,12 +10,12 @@ public interface StaffReadService {
   /**
    * Retrieves a StaffView by its account ID.
    *
-   * @param id the account ID of the staff member.
+   * @param accountId the account ID of the staff member.
    * @return the StaffView associated with the given ID.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no StaffView is found with the
    *     given ID.
    */
-  StaffView getViewById(UUID id);
+  StaffView getViewByAccountId(UUID accountId);
 
   /**
    * Retrieves a StaffView by email.

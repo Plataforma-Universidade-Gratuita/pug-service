@@ -31,6 +31,14 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
+   * Deletes multiple Users by their IDs.
+   *
+   * @param ids a list of IDs of the Users to delete.
+   * @return the number of Users that were deleted.
+   */
+  long deleteAllByIds(List<UUID> ids);
+
+  /**
    * Finds a User by its ID.
    *
    * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if

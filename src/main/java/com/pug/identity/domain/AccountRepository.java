@@ -31,6 +31,14 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
+   * Deletes all Accounts with the given list of IDs.
+   *
+   * @param ids the list of UUIDs of the Accounts to delete.
+   * @return the number of Accounts that were deleted.
+   */
+  long deleteAllByIds(List<UUID> ids);
+
+  /**
    * Finds an Accounts by its ID.
    *
    * <p>Note: The returned Account may contain validation errors (check {@code account.hasErrors()})
@@ -40,6 +48,23 @@ public interface AccountRepository {
    * @return an Optional containing the found Account, or empty if not found.
    */
   Optional<Account> findOptionalById(UUID id);
+
+  /**
+   * Finds the user IDs associated with a list of Account IDs.
+   *
+   * @param ids the list of Account UUIDs to find user IDs for.
+   * @return a list of user UUIDs associated with the given Account IDs.
+   */
+  List<UUID> findUserIdsByIds(List<UUID> ids);
+
+  /**
+   * Finds all user IDs that are considered "orphan" (i.e., have no associated Accounts) among a
+   * given list of user IDs.
+   *
+   * @param userIds the list of user UUIDs to check for orphan status.
+   * @return a list of user UUIDs that are orphaned (have no associated Accounts).
+   */
+  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
    * Lists all Accounts objects.

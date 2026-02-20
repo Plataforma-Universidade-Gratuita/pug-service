@@ -4,7 +4,6 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing staff assignments to partner entities. */
@@ -24,46 +23,42 @@ public interface StaffService {
   Staff save(StaffCreateCommand cmd);
 
   /**
-   * Saves multiple staff members in bulk.
-   *
-   * @param cmds an iterable of staff creation commands.
-   * @return a list of created Staff objects.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if duplicates detected.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any referenced entity is
-   *     missing.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
-   */
-  List<Staff> saveAll(Iterable<StaffCreateCommand> cmds);
-
-  /**
    * Updates an existing staff member's account details or entity link.
    *
-   * @param id the ID of the staff user (Account ID) to update.
+   * @param accountId the ID of the staff user (Account ID) to update.
    * @param cmd the command containing updated staff details.
    * @return the updated Staff object.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the staff or entity does not
    *     exist.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
-  Staff update(UUID id, StaffUpdateCommand cmd);
+  Staff update(UUID accountId, StaffUpdateCommand cmd);
 
   /**
-   * Deletes all staff members with the specified IDs.
+   * Deletes a staff member by their account ID, removing their association with any entity.
    *
-   * @param ids an iterable of staff user IDs (Account IDs) to delete.
-   * @return a map containing the count of deleted staff, accounts, and users.
-   * @throws DataIntegrityException if references prevent deletion.
+   * @param accountId the ID of the staff user (Account ID) to delete.
+   * @return true if deletion was successful, false if the staff member was not found.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID accountId);
+
+  /**
+   * Deletes all staff members associated with a specific entity ID.
+   *
+   * @param entityId the ID of the entity whose staff members should be deleted.
+   * @return the number of staff members that were deleted.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not exist.
+   */
+  long deleteAllByEntityId(UUID entityId);
 
   /**
    * Retrieves a staff member by their account ID.
    *
-   * @param id the ID of the staff account.
+   * @param accountId the ID of the staff account.
    * @return the Staff object.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found or corrupted.
    */
-  Staff getById(UUID id);
+  Staff getByAccountId(UUID accountId);
 
   /**
    * Lists all staff members.
@@ -78,7 +73,7 @@ public interface StaffService {
    * @param entityId the ID of the entity.
    * @return a list of Staff objects.
    */
-  List<Staff> listByEntity(UUID entityId);
+  List<Staff> listByEntityId(UUID entityId);
 
   /**
    * Checks if a staff member exists by their account ID.
@@ -87,12 +82,4 @@ public interface StaffService {
    * @return true if exists.
    */
   boolean existsByAccountId(UUID accountId);
-
-  /**
-   * Checks if any staff members exist for the given account IDs.
-   *
-   * @param accountIds an iterable of account IDs.
-   * @return true if any exist.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
 }

@@ -12,22 +12,14 @@ import lombok.Getter;
  */
 @Getter
 public enum PartnerErrorCodes implements GenericErrorCodes {
-  INVALID_ID_BLANK("error.domain.partner.id.blank", "id"),
+  /* Validation Errors */
   INVALID_CNPJ_BLANK("error.domain.partner.cnpj.blank", "cnpj"),
-  INVALID_CNPJ_LENGTH("error.domain.partner.cnpj.length", "cnpj"),
   INVALID_CNPJ_FORMAT("error.domain.partner.cnpj.format", "cnpj"),
-  INVALID_NAME_BLANK("error.domain.partner.name.blank", "name"),
-  INVALID_NAME_LENGTH("error.domain.partner.name.toolong", "name"),
-  INVALID_CITY_BLANK("error.domain.partner.city.blank", "cityId"),
-  INVALID_ADDRESS_LENGTH("error.domain.partner.address.toolong", "address"),
-  INVALID_STAFF_ACCOUNT_BLANK("error.domain.partner.staff.account.blank", "accountId"),
-  INVALID_STAFF_ENTITY_BLANK("error.domain.partner.staff.entity.blank", "entityId"),
-
+  /* Resource Errors */
   ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists", null),
-  ENTITY_NOT_FOUND("error.domain.partner.entity.notfound", null),
+  ENTITY_NOT_FOUND("error.domain.partner.entity.not.found", null),
   STAFF_ALREADY_EXISTS("error.domain.partner.staff.exists", null),
-  STAFF_NOT_FOUND("error.domain.partner.staff.notfound", null),
-  ENTITY_STILL_REFERENCED("error.domain.partner.entity.still.referenced", null);
+  STAFF_NOT_FOUND("error.domain.partner.staff.not.found", null);
 
   private final String bundleKey;
   private final String fieldName;

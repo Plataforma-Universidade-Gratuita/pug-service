@@ -4,19 +4,21 @@ import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.infra.EntityMapper;
 import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the EntityRepository using Panache. */
+/**
+ * Implementation of the EntityRepository using Panache.
+ */
 @ApplicationScoped
 public class EntityRepositoryImpl
-    implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
+        implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
   @Transactional
   @Override
@@ -27,9 +29,9 @@ public class EntityRepositoryImpl
     EntityEntity e = EntityMapper.toEntity(entity);
     persistAndFlush(e);
     EntityEntity loaded =
-        find("select e from EntityEntity e where e.id = ?1", e.getId())
-            .firstResultOptional()
-            .orElse(e);
+            find("select e from EntityEntity e where e.id = ?1", e.getId())
+                    .firstResultOptional()
+                    .orElse(e);
     return EntityMapper.toDomain(loaded);
   }
 
@@ -48,28 +50,27 @@ public class EntityRepositoryImpl
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
     }
-    long n = delete("id in ?1", ids);
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
     flush();
-    getEntityManager().clear();
-    return n;
+    return deleted;
   }
 
   @Override
   public Optional<Entity> findOptionalById(UUID id) {
     return find("select e from EntityEntity e where e.id = ?1", id)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
+            .firstResultOptional()
+            .map(EntityMapper::toDomain);
   }
 
   @Override
   public Optional<Entity> findOptionalByCnpj(String cnpj) {
     return find("select e from EntityEntity e where e.cnpj = ?1", cnpj)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
+            .firstResultOptional()
+            .map(EntityMapper::toDomain);
   }
 
   @Override
@@ -83,13 +84,5 @@ public class EntityRepositoryImpl
       return false;
     }
     return find("cnpj", cnpj).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByCityIdIn(Iterable<UUID> cityIds) {
-    if (CollectionUtils.isEmpty(cityIds)) {
-      return false;
-    }
-    return find("cityId in ?1", cityIds).firstResultOptional().isPresent();
   }
 }

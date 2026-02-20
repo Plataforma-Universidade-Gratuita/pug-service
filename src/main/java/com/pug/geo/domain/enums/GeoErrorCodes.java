@@ -10,8 +10,8 @@ public enum GeoErrorCodes implements GenericErrorCodes {
   INVALID_IBGE_CODE_BLANK("error.domain.geo.ibge.code.blank", "ibgeCode"),
   INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge.code.invalid", "ibgeCode"),
   /* Resource errors */
-  CITY_ALREADY_EXISTS("error.domain.geo.city.alreadyexists", null),
-  CITY_NOT_FOUND("error.domain.geo.city.notfound", null),
+  CITY_ALREADY_EXISTS("error.domain.geo.city.already.exists", null),
+  CITY_NOT_FOUND("error.domain.geo.city.not.found", null),
   CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null);
 
   private final String bundleKey;

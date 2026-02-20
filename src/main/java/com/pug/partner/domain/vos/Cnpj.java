@@ -2,6 +2,7 @@ package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -41,50 +42,14 @@ public class Cnpj extends DomainError {
 
   /** Validates the CNPJ, populating the problems list if invalid. */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(value)) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
-      return;
-    }
-
-    if (value.length() != 14) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_LENGTH));
-      return;
-    }
-
+    validateStringField(value, 14L, "cnpj");
     if (value.chars().distinct().count() == 1) {
       addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
       return;
     }
-
     if (!isValidChecksum(value)) {
       addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
     }
-  }
-
-  /**
-   * Returns the formatted string representation of the CNPJ (e.g., "XX.XXX.XXX/XXXX-XX"). Returns
-   * raw value if length is invalid.
-   *
-   * @return the formatted CNPJ as a String.
-   */
-  public String toFormattedString() {
-    if (value == null || value.length() != 14) {
-      return value;
-    }
-    return value.substring(0, 2)
-        + "."
-        + value.substring(2, 5)
-        + "."
-        + value.substring(5, 8)
-        + "/"
-        + value.substring(8, 12)
-        + "-"
-        + value.substring(12, 14);
-  }
-
-  @Override
-  public String toString() {
-    return value;
   }
 
   // --- Internal Validation Logic ---

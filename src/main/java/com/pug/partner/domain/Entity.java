@@ -4,15 +4,20 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Entity entity aggregate. */
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * Entity entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -23,34 +28,42 @@ public class Entity extends DomainError {
   String name;
   UUID cityId;
   String address;
+  OffsetDateTime createdAt;
+  OffsetDateTime updatedAt;
 
   @Builder(toBuilder = true)
-  private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address) {
+  private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
     this.id = id;
     this.cnpj = cnpj;
     this.name = name;
     this.cityId = cityId;
     this.address = address;
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
   }
 
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity.
-   * @param cityId the ID of the city where the entity is located
+   * @param cnpj    the CNPJ of the entity
+   * @param name    the name of the entity.
+   * @param cityId  the ID of the city where the entity is located
    * @param address the address where the entity is located
    * @return the created entity (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
+    var created = OffsetDateTime.now();
+
     Entity entity =
-        Entity.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .cnpj(cnpj)
-            .name(StringUtils.trim(name))
-            .cityId(cityId)
-            .address(StringUtils.trim(address))
-            .build();
+            Entity.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .cnpj(cnpj)
+                    .name(StringUtils.trim(name))
+                    .cityId(cityId)
+                    .address(StringUtils.trim(address))
+                    .createdAt(created)
+                    .updatedAt(created)
+                    .build();
 
     entity.collectValidationProblems();
     return entity;
@@ -67,7 +80,7 @@ public class Entity extends DomainError {
     if (this.name.equals(trimmed)) {
       return this;
     }
-    Entity updated = this.toBuilder().name(trimmed).build();
+    Entity updated = this.toBuilder().name(trimmed).updatedAt(OffsetDateTime.now()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -83,7 +96,7 @@ public class Entity extends DomainError {
     if (this.address != null && this.address.equals(trimmed)) {
       return this;
     }
-    Entity updated = this.toBuilder().address(trimmed).build();
+    Entity updated = this.toBuilder().address(trimmed).updatedAt(OffsetDateTime.now()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -98,7 +111,7 @@ public class Entity extends DomainError {
     if (this.cnpj.equals(newCnpj)) {
       return this;
     }
-    Entity updated = this.toBuilder().cnpj(newCnpj).build();
+    Entity updated = this.toBuilder().cnpj(newCnpj).updatedAt(OffsetDateTime.now()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -113,35 +126,23 @@ public class Entity extends DomainError {
     if (this.cityId.equals(newCityId)) {
       return this;
     }
-    Entity updated = this.toBuilder().cityId(newCityId).build();
+    Entity updated = this.toBuilder().cityId(newCityId).updatedAt(OffsetDateTime.now()).build();
     updated.collectValidationProblems();
     return updated;
   }
 
-  /** Collects all validation problems for the entity's attributes. */
+  /**
+   * Collects all validation problems for the entity's attributes.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(PartnerErrorCodes.INVALID_ID_BLANK));
-    }
-
+    validateIdField(id);
+    validateForeignKeyField(cityId, "cityId");
+    validateStringField(name, 150L, "name");
+    validateStringField(address, 254L, "address");
     if (cnpj == null) {
       addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
     } else if (cnpj.hasErrors()) {
       addErrors(cnpj.getProblems());
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
-    } else if (name.length() > 150) {
-      addError(new Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
-    }
-
-    if (cityId == null) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
-    }
-
-    if (address != null && address.length() > 254) {
-      addError(new Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
     }
   }
 }

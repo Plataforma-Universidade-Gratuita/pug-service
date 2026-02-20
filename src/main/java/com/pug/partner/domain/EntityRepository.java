@@ -23,13 +23,12 @@ public interface EntityRepository {
   void update(Entity entity);
 
   /**
-   * Deletes Entity objects by their IDs.
+   * Deletes an Entity by its ID.
    *
-   * @param ids the iterable collection of UUIDs representing the IDs of the Entity objects to
-   *     delete.
-   * @return the number of entities deleted.
+   * @param id the UUID of the Entity to delete.
+   * @return true if the Entity was successfully deleted, false if it was not found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Finds an Entity by its ID.
@@ -70,12 +69,4 @@ public interface EntityRepository {
    * @return true if an Entity with the given CNPJ exists, false otherwise.
    */
   boolean existsByCnpj(String cnpj);
-
-  /**
-   * Checks if any Entity exists with a city ID in the provided list.
-   *
-   * @param cityIds the list of city IDs to check.
-   * @return true if any Entity exists with a city ID in the list, false otherwise.
-   */
-  boolean existsAnyByCityIdIn(Iterable<UUID> cityIds);
 }

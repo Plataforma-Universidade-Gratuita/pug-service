@@ -8,37 +8,56 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/** Read-only service for staff views. */
+/**
+ * Read-only service for staff views.
+ */
 @ApplicationScoped
 public class StaffReadServiceImpl implements StaffReadService {
 
-  @Inject StaffQueries queries;
+  private static final Logger LOG = Logger.getLogger(StaffReadServiceImpl.class);
+
+  @Inject
+  StaffQueries queries;
 
   @Override
-  public StaffView getViewById(UUID id) {
+  public StaffView getViewByAccountId(UUID accountId) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("id", id)));
+            .findOptionalById(accountId)
+            .orElseThrow(() -> {
+              LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                      PartnerErrorCodes.STAFF_NOT_FOUND,
+                      "accountId",
+                      accountId.toString()
+              );
+            });
   }
 
   @Override
   public StaffView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw new ResourceNotFoundException(
-          PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email));
+              PartnerErrorCodes.STAFF_NOT_FOUND,
+              "email",
+              "empty"
+      );
     }
+
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    PartnerErrorCodes.STAFF_NOT_FOUND, Map.of("email", email)));
+            .findOptionalByEmail(email)
+            .orElseThrow(() -> {
+              LOG.debugf("Staff lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                      PartnerErrorCodes.STAFF_NOT_FOUND,
+                      "email",
+                      email
+              );
+            });
   }
 
   @Override
@@ -56,6 +75,9 @@ public class StaffReadServiceImpl implements StaffReadService {
 
   @Override
   public List<StaffView> listViewsByEntityId(UUID entityId) {
+    if (entityId == null) {
+      return List.of();
+    }
     return queries.listAllByEntityId(entityId);
   }
 
@@ -64,6 +86,6 @@ public class StaffReadServiceImpl implements StaffReadService {
     if (StringUtils.isEmpty(term)) {
       return List.of();
     }
-    return queries.searchByName(term);
+    return queries.searchByName(StringUtils.fold(term));
   }
 }

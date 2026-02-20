@@ -12,6 +12,7 @@ import com.pug.identity.service.utils.AccountProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -112,6 +113,25 @@ public class AccountServiceImpl implements AccountService {
     }
 
     return deleted;
+  }
+
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
+    List<UUID> userIds = repo.findUserIdsByIds(ids);
+
+    long deletedCount = repo.deleteAllByIds(ids);
+    if (deletedCount > 0) {
+      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
+      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
+      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
+        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
+        userService.deleteAll(userIdsToDelete);
+      }
+    }
+
+    return deletedCount;
   }
 
   @Override

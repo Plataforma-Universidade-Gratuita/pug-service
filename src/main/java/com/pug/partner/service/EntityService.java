@@ -38,13 +38,13 @@ public interface EntityService {
   Entity update(UUID id, EntityUpdateCommand cmd);
 
   /**
-   * Deletes Entities by their IDs.
+   * Deletes an Entity by its ID.
    *
-   * @param ids the UUIDs of the Entities to delete
-   * @return a map containing the count of deleted entities
-   * @throws DataIntegrityException if any entity is still referenced (e.g., by staff members).
+   * @param id the UUID of the Entity to delete
+   * @return true if the Entity was successfully deleted, false if the Entity was not found or is
+   *     still referenced by any Staff.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID id);
 
   /**
    * Gets an Entity by its ID.
@@ -55,16 +55,6 @@ public interface EntityService {
    *     is corrupted in DB).
    */
   Entity getById(UUID id);
-
-  /**
-   * Gets an Entity by its CNPJ string.
-   *
-   * @param cnpjString the CNPJ string of the Entity.
-   * @return the Entity with the specified CNPJ
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     is corrupted in DB).
-   */
-  Entity getByCnpj(String cnpjString);
 
   /**
    * Lists all Entities.
@@ -82,12 +72,4 @@ public interface EntityService {
    * @return true if an Entity with the given CNPJ exists, false otherwise.
    */
   boolean existsByCnpj(Cnpj cnpj);
-
-  /**
-   * Checks if any Entity exists in the given city IDs.
-   *
-   * @param cityIds the iterable of city UUIDs
-   * @return true if any Entity exists in the specified cities, false otherwise
-   */
-  boolean existsAnyByCityIdIn(Iterable<UUID> cityIds);
 }

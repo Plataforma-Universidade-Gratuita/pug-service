@@ -25,6 +25,8 @@ public final class EntityMapper {
         .name(e.getName())
         .cityId(e.getCityId())
         .address(e.getAddress())
+        .createdAt(e.getCreatedAt())
+        .updatedAt(e.getUpdatedAt())
         .build();
   }
 
@@ -44,6 +46,8 @@ public final class EntityMapper {
         .name(d.getName())
         .cityId(d.getCityId())
         .address(d.getAddress())
+        .createdAt(d.getCreatedAt())
+        .updatedAt(d.getUpdatedAt())
         .build();
   }
 
