@@ -40,7 +40,7 @@ public class StudentServiceImpl implements StudentService {
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     Account account = null;
 
     courseService.getById(cmd.courseId());
@@ -50,7 +50,7 @@ public class StudentServiceImpl implements StudentService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (DuplicateResourceException e) {
-      problems.add(new AppValidationException.Problem(e.getErrorCode()));
+      problems.add(new Problem(e.getErrorCode()));
     }
 
     UUID accountId = (account != null) ? account.getId() : null;
@@ -89,7 +89,7 @@ public class StudentServiceImpl implements StudentService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<Student> studentsToPersist = new ArrayList<>();
     Set<String> processedRegistrations = new HashSet<>();
     Set<UUID> uniqueCourseIds = new HashSet<>();
@@ -101,7 +101,7 @@ public class StudentServiceImpl implements StudentService {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-            new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+            new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
       }
     }
 
@@ -151,7 +151,7 @@ public class StudentServiceImpl implements StudentService {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
         } else {
           studentsToPersist.add(student);
         }
@@ -178,7 +178,7 @@ public class StudentServiceImpl implements StudentService {
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
     Student current = getById(accountId);
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
 
     if (cmd.accountUpdateCommand() != null) {
       try {
@@ -186,7 +186,7 @@ public class StudentServiceImpl implements StudentService {
       } catch (AppValidationException e) {
         problems.addAll(e.getProblems());
       } catch (DuplicateResourceException e) {
-        problems.add(new AppValidationException.Problem(e.getErrorCode()));
+        problems.add(new Problem(e.getErrorCode()));
       }
     }
 

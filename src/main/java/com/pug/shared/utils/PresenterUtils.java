@@ -1,6 +1,9 @@
 package com.pug.shared.utils;
 
+import com.pug.shared.domain.Problem;
 import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.FieldError;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -52,5 +55,15 @@ public final class PresenterUtils {
       formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
     }
     return formattedString;
+  }
+
+  /**
+   * Helper method to convert a Problem into a FieldError.
+   */
+  public static FieldError mapProblemsToFieldErrors(Problem problems, I18n i18n) {
+    String fieldName = problems.getFinalFieldName();
+    String errorCode = problems.getErrorCode();
+    String message = i18n.translation(problems.getMessageKey());
+    return new FieldError(fieldName, errorCode, message);
   }
 }

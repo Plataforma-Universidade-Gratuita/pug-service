@@ -90,17 +90,17 @@ public class Course extends DomainError {
   /** Collects all validation problems for the Course instance. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK));
     } else if (name.length() > 120) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH));
+      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH));
     }
 
     if (schoolId == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK));
     }
   }
 }
@@ -362,13 +362,13 @@ public class School extends DomainError {
   /** Collects all validation problems for the School instance. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
     } else if (name.length() > 100) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
+      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
     }
   }
 }
@@ -625,31 +625,31 @@ public class Student extends DomainError {
   private void collectValidationProblems() {
     if (accountId == null) {
       addError(
-          new AppValidationException.Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+          new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
     }
 
     if (academicRegistration == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (academicRegistration.hasErrors()) {
       addErrors(academicRegistration.getProblems());
     }
 
     if (campus == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
     }
 
     if (courseId == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
     }
 
     if (counterpartHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     } else if (counterpartHours.hasErrors()) {
       addErrors(counterpartHours.getProblems());
     }
 
     if (period == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     } else if (period.hasErrors()) {
       addErrors(period.getProblems());
     }
@@ -803,9 +803,9 @@ public class AcademicRegistration extends DomainError {
   /** Validates the registration format and length. */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (value.length() > 15) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
     }
   }
 
@@ -867,22 +867,22 @@ public class CounterpartHours extends DomainError {
   /** Validates the hours. */
   private void collectValidationProblems() {
     if (requiredHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
     if (completedHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
 
     if (requiredHours != null && completedHours != null) {
       if (requiredHours.signum() < 0) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.signum() < 0) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.compareTo(requiredHours) > 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
       }
     }
@@ -951,15 +951,15 @@ public class Period extends DomainError {
   /** Validates the period dates. */
   private void collectValidationProblems() {
     if (startDate == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     }
     if (dueDate == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     }
 
     if (startDate != null && dueDate != null) {
       if (dueDate.isBefore(startDate)) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_RANGE));
+        addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_RANGE));
       }
     }
   }
@@ -3407,6 +3407,8 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -3460,7 +3462,7 @@ public interface CourseService {
    *
    * @param ids an iterable of UUIDs representing the course IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any course is still referenced
+   * @throws DataIntegrityException if any course is still referenced
    *     by students.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.
@@ -3739,7 +3741,7 @@ import com.pug.academic.service.utils.CourseProcessor;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
@@ -3791,7 +3793,7 @@ public class CourseServiceImpl implements CourseService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<Course> coursesToPersist = new ArrayList<>();
     Set<String> processedNames = new HashSet<>();
     Set<UUID> uniqueSchoolIds = new HashSet<>();
@@ -3803,7 +3805,7 @@ public class CourseServiceImpl implements CourseService {
         schoolService.getById(schoolId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-            new AppValidationException.Problem(
+            new Problem(
                 AcademicErrorCodes
                     .INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly
         // mappable here easily without context
@@ -3823,7 +3825,7 @@ public class CourseServiceImpl implements CourseService {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
         } else {
           coursesToPersist.add(course);
         }
@@ -3880,7 +3882,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (studentService.existsAnyByCourseIdIn(ids)) {
-      throw new ReferencedEntityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
+      throw new DataIntegrityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
     }
 
     Set<UUID> studentAccountIdsToDelete = new HashSet<>();
@@ -4113,7 +4115,7 @@ public class SchoolServiceImpl implements SchoolService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<School> schoolsToPersist = new ArrayList<>();
     Set<String> processedNames = new HashSet<>();
 
@@ -4126,7 +4128,7 @@ public class SchoolServiceImpl implements SchoolService {
         String schoolName = school.getName();
         if (!processedNames.add(schoolName)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
         } else {
           schoolsToPersist.add(school);
         }
@@ -4405,7 +4407,7 @@ public class StudentServiceImpl implements StudentService {
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     Account account = null;
 
     courseService.getById(cmd.courseId());
@@ -4415,7 +4417,7 @@ public class StudentServiceImpl implements StudentService {
     } catch (AppValidationException e) {
       problems.addAll(e.getProblems());
     } catch (DuplicateResourceException e) {
-      problems.add(new AppValidationException.Problem(e.getErrorCode()));
+      problems.add(new Problem(e.getErrorCode()));
     }
 
     UUID accountId = (account != null) ? account.getId() : null;
@@ -4454,7 +4456,7 @@ public class StudentServiceImpl implements StudentService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<Student> studentsToPersist = new ArrayList<>();
     Set<String> processedRegistrations = new HashSet<>();
     Set<UUID> uniqueCourseIds = new HashSet<>();
@@ -4466,7 +4468,7 @@ public class StudentServiceImpl implements StudentService {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-            new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+            new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
       }
     }
 
@@ -4516,7 +4518,7 @@ public class StudentServiceImpl implements StudentService {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
         } else {
           studentsToPersist.add(student);
         }
@@ -4543,7 +4545,7 @@ public class StudentServiceImpl implements StudentService {
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
     Student current = getById(accountId);
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
 
     if (cmd.accountUpdateCommand() != null) {
       try {
@@ -4551,7 +4553,7 @@ public class StudentServiceImpl implements StudentService {
       } catch (AppValidationException e) {
         problems.addAll(e.getProblems());
       } catch (DuplicateResourceException e) {
-        problems.add(new AppValidationException.Problem(e.getErrorCode()));
+        problems.add(new Problem(e.getErrorCode()));
       }
     }
 
@@ -4743,6 +4745,8 @@ import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -4792,7 +4796,7 @@ public interface SchoolService {
    *
    * @param ids an iterable of UUIDs of the schools to delete.
    * @return a map containing the number of deleted schools and related entities.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any school is still referenced
+   * @throws DataIntegrityException if any school is still referenced
    *     by other modules.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
@@ -4918,6 +4922,8 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -4978,7 +4984,7 @@ public interface StudentService {
    *
    * @param accountIds an iterable of UUIDs representing the student's account IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any student is still referenced
+   * @throws DataIntegrityException if any student is still referenced
    *     by other modules (e.g. Enrollments).
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.

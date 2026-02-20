@@ -154,31 +154,31 @@ public class Student extends DomainError {
   private void collectValidationProblems() {
     if (accountId == null) {
       addError(
-          new AppValidationException.Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+          new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
     }
 
     if (academicRegistration == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (academicRegistration.hasErrors()) {
       addErrors(academicRegistration.getProblems());
     }
 
     if (campus == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
     }
 
     if (courseId == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
     }
 
     if (counterpartHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     } else if (counterpartHours.hasErrors()) {
       addErrors(counterpartHours.getProblems());
     }
 
     if (period == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     } else if (period.hasErrors()) {
       addErrors(period.getProblems());
     }

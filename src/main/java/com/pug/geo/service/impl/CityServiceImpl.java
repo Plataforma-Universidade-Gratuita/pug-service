@@ -11,8 +11,8 @@ import com.pug.geo.service.utils.CityProcessor;
 import com.pug.partner.service.EntityService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -60,7 +60,7 @@ public class CityServiceImpl implements CityService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<City> citiesToPersist = new ArrayList<>();
     Set<String> ibgeCodesInPayload = new HashSet<>();
 
@@ -74,7 +74,7 @@ public class CityServiceImpl implements CityService {
 
         if (!ibgeCodesInPayload.add(ibgeCodeStr)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
+              new Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
         }
         citiesToPersist.add(city);
       }
@@ -124,7 +124,7 @@ public class CityServiceImpl implements CityService {
     }
 
     if (entityService.existsAnyByCityIdIn(ids)) {
-      throw new ReferencedEntityException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
+      throw new DataIntegrityException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
     }
     return Map.of(DeleteKeys.CITIES, repo.deleteByIds(ids));
   }

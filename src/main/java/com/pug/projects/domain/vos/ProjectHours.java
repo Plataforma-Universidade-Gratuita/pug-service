@@ -45,23 +45,23 @@ public class ProjectHours extends DomainError {
   private void collectValidationProblems() {
     if (offeredHours == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
       return;
     }
 
     if (offeredHours.signum() < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     }
 
     if (completedHours.signum() < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
     }
 
     if (completedHours.compareTo(offeredHours) > 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
+          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
     }
   }
 }

@@ -331,6 +331,7 @@
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java
+│   │   │               │   ├── Problem.java
 │   │   │               │   └── enums/
 │   │   │               │       ├── AccountType.java
 │   │   │               │       ├── DeleteKeys.java
@@ -339,8 +340,8 @@
 │   │   │               ├── exceptions/
 │   │   │               │   ├── AppValidationException.java
 │   │   │               │   ├── ApplicationException.java
+│   │   │               │   ├── DataIntegrityException.java
 │   │   │               │   ├── DuplicateResourceException.java
-│   │   │               │   ├── ReferencedEntityException.java
 │   │   │               │   └── ResourceNotFoundException.java
 │   │   │               ├── generate-context.sh
 │   │   │               ├── http/
@@ -349,8 +350,8 @@
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
 │   │   │               │   ├── persistence/
-│   │   │               │   │   ├── BaseUuidV7Entity.java
-│   │   │               │   │   └── TimestampColumnsListener.java
+│   │   │               │   │   ├── BaseAuditedEntity.java
+│   │   │               │   │   └── BaseUuidV7Entity.java
 │   │   │               │   └── search/
 │   │   │               │       ├── EsAnalysis.java
 │   │   │               │       └── HibernateSearchUtils.java
@@ -363,17 +364,16 @@
 │   │   │               │   └── rest/
 │   │   │               │       ├── ApiEnvelope.java
 │   │   │               │       ├── ApiError.java
+│   │   │               │       ├── Details.java
+│   │   │               │       ├── FieldError.java
 │   │   │               │       └── mappers/
 │   │   │               │           ├── AppValidationExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
+│   │   │               │           ├── DataIntegrityExceptionMapper.java
 │   │   │               │           ├── DuplicateResourceExceptionMapper.java
-│   │   │               │           ├── ReferencedEntityExceptionMapper.java
 │   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── project_context_shared.txt
-│   │   │               ├── time/
-│   │   │               │   ├── SystemTimeProvider.java
-│   │   │               │   └── TimeProvider.java
 │   │   │               ├── utils/
 │   │   │               │   ├── CollectionUtils.java
 │   │   │               │   ├── PresenterUtils.java

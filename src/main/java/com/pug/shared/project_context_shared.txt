@@ -9,27 +9,34 @@ FILE: domain/DomainError.java
 ================================================================================
 package com.pug.shared.domain;
 
-import com.pug.shared.exceptions.AppValidationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.utils.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-/** Abstract base class for domain errors that can accumulate validation problems. */
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * Abstract base class for domain errors that can accumulate validation problems.
+ */
 @Getter
 public abstract class DomainError {
 
-  @ToString.Exclude @EqualsAndHashCode.Exclude
-  private final List<AppValidationException.Problem> problems = new ArrayList<>();
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  private final List<Problem> problems = new ArrayList<>();
 
   /**
    * Returns a defensive copy of the validation problems.
    *
    * @return a list of problems
    */
-  public List<AppValidationException.Problem> getProblems() {
+  public List<Problem> getProblems() {
     return new ArrayList<>(problems);
   }
 
@@ -47,7 +54,7 @@ public abstract class DomainError {
    *
    * @param problem the validation problem to add
    */
-  protected void addError(AppValidationException.Problem problem) {
+  protected void addError(Problem problem) {
     problems.add(problem);
   }
 
@@ -56,8 +63,64 @@ public abstract class DomainError {
    *
    * @param newProblems the list of validation problems to add
    */
-  protected void addErrors(List<AppValidationException.Problem> newProblems) {
+  protected void addErrors(List<Problem> newProblems) {
     problems.addAll(newProblems);
+  }
+
+  /**
+   * Validates that the given UUID id is not null.
+   *
+   * @param id the UUID to validate
+   */
+  protected void validateIdField(UUID id) {
+    if (id == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_ID_BLANK));
+    }
+  }
+
+  /**
+   * Validates that the given UUID foreign key id is not null.
+   *
+   * @param id        the UUID to validate
+   * @param fieldName the name of the foreign key field being validated (used for error messages)
+   */
+  protected void validateForeignKeyField(UUID id, String fieldName) {
+    if (id == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_FOREIGN_KEY_BLANK, fieldName));
+    }
+  }
+
+  /**
+   * Validates that the given string field is not null or empty, and optionally checks its length.
+   *
+   * @param value     the string value to validate
+   * @param length    the maximum allowed length of the string (null if no length check)
+   * @param fieldName the name of the field being validated (used for error messages)
+   */
+  protected void validateStringField(String value, Long length, String fieldName) {
+    if (StringUtils.isEmpty(value)) {
+      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
+    } else if (length != null && value.length() > length.intValue()) {
+      addError(new Problem(SharedErrorCodes.INVALID_FIELD_LENGTH, fieldName));
+    }
+  }
+
+  /**
+   * Validates the audited fields (createdAt and updatedAt) for null values and logical consistency.
+   *
+   * @param createdAt the creation timestamp to validate
+   * @param updatedAt the update timestamp to validate
+   */
+  protected void validateAuditedFields(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    if (createdAt == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_CREATED_AT_BLANK));
+    }
+    if (updatedAt == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BLANK));
+    }
+    if (createdAt != null && updatedAt != null && updatedAt.isBefore(createdAt)) {
+      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BEFORE_CREATED));
+    }
   }
 
   /**
@@ -70,13 +133,13 @@ public abstract class DomainError {
       return "No errors";
     }
     return problems.stream()
-        .map(
-            p -> {
-              String key = p.code().getBundleKey();
-              String field = p.code().getFieldName();
-              return field != null ? key + "(" + field + ")" : key;
-            })
-        .collect(Collectors.joining(", "));
+            .map(
+                    p -> {
+                      String key = p.code().getBundleKey();
+                      String field = p.code().getFieldName();
+                      return field != null ? key + "(" + field + ")" : key;
+                    })
+            .collect(Collectors.joining(", "));
   }
 }
 
@@ -134,6 +197,11 @@ package com.pug.shared.domain.enums;
 
 /** Interface for generic error codes with internationalization support. */
 public interface GenericErrorCodes {
+  /**
+   * Retrieves the key for the error message bundle, used for internationalization.
+   *
+   * @return the bundle key as a String.
+   */
   String getBundleKey();
 
   /**
@@ -159,8 +227,20 @@ import lombok.Getter;
  */
 @Getter
 public enum SharedErrorCodes implements GenericErrorCodes {
-  VALIDATION_ERROR("error.validation", null),
-  INTERNAL_ERROR("error.internal", null);
+  /* Validation Errors */
+  INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
+  INVALID_FIELD_BLANK("error.domain.field.blank", null),
+  INVALID_FIELD_LENGTH("error.domain.field.length", null),
+  INVALID_FOREIGN_KEY_BLANK("error.domain.foreign.key.blank", null),
+  INVALID_ID_BLANK("error.domain.id.blank", "id"),
+  INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
+  INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
+  /* Resource Errors */
+  DATA_INTEGRITY_ERROR("error.data.integrity", null),
+  DUPLICATED_RESOURCE_ERROR("error.duplicated.resource", null),
+  INTERNAL_ERROR("error.internal", null),
+  RESOURCE_NOT_FOUND_ERROR("error.resource.not.found", null),
+  VALIDATION_ERROR("error.validation", null);
 
   private final String bundleKey;
   private final String fieldName;
@@ -170,7 +250,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   *                  field-specific.
    */
   SharedErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
@@ -180,14 +260,78 @@ public enum SharedErrorCodes implements GenericErrorCodes {
 
 
 ================================================================================
+FILE: domain/Problem.java
+================================================================================
+package com.pug.shared.domain;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.Serializable;
+
+/**
+ * Represents an individual validation problem.
+ *
+ * @param code The error code (implements GenericErrorCodes).
+ */
+public record Problem(GenericErrorCodes code, String customFieldName) implements Serializable {
+
+    /**
+     * Constructor for a problem with only an error code.
+     *
+     * @param code The error code (implements GenericErrorCodes).
+     */
+    public Problem(GenericErrorCodes code) {
+        this(code, null);
+    }
+
+    /**
+     * Returns the final field name to be used for this problem, which is either the custom field name if provided, or the default field name from the error code.
+     *
+     * @return the final field name as a String
+     */
+    public String getFinalFieldName() {
+        return customFieldName() != null ? customFieldName() : code().getFieldName();
+    }
+
+    /**
+     * Returns the error code as a string, which is the name of the enum constant.
+     *
+     * @return the error code as a String
+     */
+    public String getErrorCode() {
+        return ((Enum<?>) code()).name();
+    }
+
+    /**
+     * Returns the message key for internationalization, which is obtained from the error code's bundle key.
+     *
+     * @return the message key as a String
+     */
+    public String getMessageKey() {
+        return code().getBundleKey();
+    }
+
+    /**
+     * Returns a string representation of the problem, including the error code and optional custom field name.
+     *
+     * @return a string representation of the problem
+     */
+    @Override
+    public @NotNull String toString() {
+      return "Problem{" +
+                 "code=" + code +
+                 (customFieldName != null ? ", customFieldName='" + customFieldName + '\'' : "") +
+                 '}';
+    }
+}
+
+================================================================================
 FILE: exceptions/ApplicationException.java
 ================================================================================
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.pug.shared.domain.Problem;
 import lombok.Getter;
 
 /**
@@ -195,37 +339,17 @@ import lombok.Getter;
  * optional details, allowing for consistent API error responses.
  */
 public abstract class ApplicationException extends RuntimeException {
-  @Getter private final GenericErrorCodes errorCode;
-  private final Map<String, Object> details;
+  @Getter
+  private final Problem problem;
 
   /**
-   * Constructs a new ApplicationException with the specified error code and details.
+   * Constructor for ApplicationException with a problem and optional details.
    *
-   * @param errorCode the generic error code representing the type of error
-   * @param details additional details about the error (can be null)
+   * @param problem The problem associated with this exception.
    */
-  protected ApplicationException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode.getBundleKey());
-    this.errorCode = errorCode;
-    this.details = details != null ? new HashMap<>(details) : new HashMap<>();
-  }
-
-  /**
-   * Constructs a new ApplicationException with the specified error code and no details.
-   *
-   * @param errorCode the generic error code representing the type of error
-   */
-  protected ApplicationException(GenericErrorCodes errorCode) {
-    this(errorCode, null);
-  }
-
-  /**
-   * Returns an unmodifiable view of the details map.
-   *
-   * @return an unmodifiable map containing the error details
-   */
-  public Map<String, Object> getDetails() {
-    return Collections.unmodifiableMap(details);
+  protected ApplicationException(Problem problem) {
+    super(problem.getMessageKey());
+    this.problem = problem;
   }
 }
 
@@ -235,6 +359,7 @@ FILE: exceptions/AppValidationException.java
 ================================================================================
 package com.pug.shared.exceptions;
 
+import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.GenericErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serial;
@@ -248,13 +373,6 @@ import lombok.Getter;
 public final class AppValidationException extends RuntimeException {
 
   @Serial private static final long serialVersionUID = 1L;
-
-  /**
-   * Represents an individual validation problem.
-   *
-   * @param code The error code (implements GenericErrorCodes).
-   */
-  public record Problem(GenericErrorCodes code) implements Serializable {}
 
   @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
   private final transient List<Problem> problems;
@@ -285,66 +403,47 @@ public final class AppValidationException extends RuntimeException {
 
 
 ================================================================================
-FILE: exceptions/DuplicateResourceException.java
+FILE: exceptions/DataIntegrityException.java
 ================================================================================
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Map;
-
-/** Exception thrown when attempting to create or add a resource that already exists. */
-public class DuplicateResourceException extends ApplicationException {
-  /**
-   * Constructs a new DuplicateResourceException with the specified error code and details.
-   *
-   * @param errorCode the generic error code representing the duplication error
-   * @param details additional details about the error
-   */
-  public DuplicateResourceException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode, details);
-  }
-
-  /**
-   * Constructs a new DuplicateResourceException with the specified error code.
-   *
-   * @param errorCode the generic error code representing the duplication error
-   */
-  public DuplicateResourceException(GenericErrorCodes errorCode) {
-    super(errorCode);
-  }
-}
-
-
-================================================================================
-FILE: exceptions/ReferencedEntityException.java
-================================================================================
-package com.pug.shared.exceptions;
-
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Map;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 
 /**
  * Exception thrown when an entity cannot be deleted or modified because it is referenced by other
  * entities.
  */
-public class ReferencedEntityException extends ApplicationException {
+public class DataIntegrityException extends ApplicationException {
   /**
-   * Constructor for ReferencedEntityException.
-   *
-   * @param errorCode The specific error code representing the referenced entity error.
+   * Constructs a new ReferencedEntityException with the specified error code and details.
    */
-  public ReferencedEntityException(GenericErrorCodes errorCode) {
-    super(errorCode);
+  public DataIntegrityException() {
+    super(new Problem(SharedErrorCodes.DATA_INTEGRITY_ERROR));
   }
+}
 
+
+================================================================================
+FILE: exceptions/DuplicateResourceException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.presenter.rest.Details;
+
+/**
+ * Exception thrown when attempting to create or add a resource that already exists.
+ */
+public class DuplicateResourceException extends ApplicationException {
   /**
-   * Constructor for ReferencedEntityException with additional details.
+   * Constructs a new DuplicateResourceException with the specified error code and details.
    *
-   * @param errorCode The specific error code representing the referenced entity error.
-   * @param details A map containing additional details about the error.
+   * @param problem the problem containing the error code and details about the duplicate resource error
    */
-  public ReferencedEntityException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode, details);
+  public DuplicateResourceException(Problem problem) {
+    super(problem);
   }
 }
 
@@ -354,28 +453,19 @@ FILE: exceptions/ResourceNotFoundException.java
 ================================================================================
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Map;
+import com.pug.shared.domain.Problem;
 
-/** Exception thrown when a requested resource is not found. */
+/**
+ * Exception thrown when a requested resource is not found.
+ */
 public class ResourceNotFoundException extends ApplicationException {
   /**
-   * Constructs a new ResourceNotFoundException with the specified error code and details.
+   * Constructs a new ResourceNotFoundException with a specific error code and details.
    *
-   * @param errorCode the generic error code representing the resource not found error
-   * @param details additional details about the error
+   * @param problem the problem details to include in the exception.
    */
-  public ResourceNotFoundException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode, details);
-  }
-
-  /**
-   * Constructs a new ResourceNotFoundException with the specified error code.
-   *
-   * @param errorCode the generic error code representing the resource not found error
-   */
-  public ResourceNotFoundException(GenericErrorCodes errorCode) {
-    super(errorCode);
+  public ResourceNotFoundException(Problem problem) {
+    super(problem);
   }
 }
 
@@ -478,6 +568,35 @@ public class I18n {
 
 
 ================================================================================
+FILE: infra/persistence/BaseAuditedEntity.java
+================================================================================
+package com.pug.shared.infra.persistence;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+import java.time.OffsetDateTime;
+
+@Getter
+@Setter
+@SuperBuilder
+@MappedSuperclass
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class BaseAuditedEntity extends BaseUuidV7Entity {
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private OffsetDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private OffsetDateTime updatedAt;
+}
+
+================================================================================
 FILE: infra/persistence/BaseUuidV7Entity.java
 ================================================================================
 package com.pug.shared.infra.persistence;
@@ -502,260 +621,6 @@ public abstract class BaseUuidV7Entity {
   @Id
   @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
   private UUID id;
-}
-
-
-================================================================================
-FILE: infra/persistence/TimestampColumnsListener.java
-================================================================================
-package com.pug.shared.infra.persistence;
-
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import java.lang.reflect.Field;
-import java.time.OffsetDateTime;
-import java.util.Locale;
-import java.util.Set;
-import lombok.Getter;
-import org.jboss.logging.Logger;
-
-/**
- * JPA Entity Listener to automatically manage timestamp columns such as createdAt, updatedAt,
- * closedAt, etc., based on entity lifecycle events and status changes.
- */
-public class TimestampColumnsListener {
-  private static final Logger LOG = Logger.getLogger(TimestampColumnsListener.class);
-
-  @Getter
-  private enum FieldNames {
-    CREATED_AT("createdAt"),
-    UPDATED_AT("updatedAt"),
-    GRANTED_AT("grantedAt"),
-    REQUEST_AT("requestAt"),
-    CLOSED_AT("closedAt"),
-    ACCEPTED_AT("acceptedAt"),
-    CLOSING_STATUS_AT("closingStatusAt"),
-    VALIDATED_AT("validatedAt"),
-    STATUS("status");
-
-    private final String fieldName;
-
-    /**
-     * Constructor for FieldNames enum.
-     *
-     * @param fieldName The name of the field.
-     */
-    FieldNames(String fieldName) {
-      this.fieldName = fieldName;
-    }
-  }
-
-  private static final Set<String> ON_CREATE =
-      Set.of(
-          FieldNames.CREATED_AT.getFieldName(),
-          FieldNames.GRANTED_AT.getFieldName(),
-          FieldNames.REQUEST_AT.getFieldName());
-  private static final Set<String> ON_UPDATE = Set.of(FieldNames.UPDATED_AT.getFieldName());
-
-  private static final Set<String> PROJECT_CLOSED_STATUSES = Set.of("INTERRUPTED", "CONCLUDED");
-  private static final Set<String> ENROLLMENT_ACCEPTED = Set.of("ACCEPTED");
-  private static final Set<String> ENROLLMENT_CLOSING_STATUSES =
-      Set.of("DECLINED", "EXITED", "REMOVED", "INTERRUPTED", "CONCLUDED");
-  private static final Set<String> ATTENDANCE_VALIDATED = Set.of("VALIDATED");
-
-  /**
-   * Sets timestamp fields before persisting a new entity.
-   *
-   * @param entity the entity being persisted.
-   */
-  @PrePersist
-  public void prePersist(Object entity) {
-    OffsetDateTime now = OffsetDateTime.now();
-
-    for (String f : ON_CREATE) {
-      setIfNull(entity, f, now);
-    }
-
-    applyStatusDrivenTimestamps(entity, now);
-  }
-
-  /**
-   * Sets timestamp fields before updating an existing entity.
-   *
-   * @param entity the entity being updated.
-   */
-  @PreUpdate
-  public void preUpdate(Object entity) {
-    OffsetDateTime now = OffsetDateTime.now();
-
-    for (String f : ON_UPDATE) {
-      setIfPresent(entity, f, now);
-    }
-
-    applyStatusDrivenTimestamps(entity, now);
-  }
-
-  /**
-   * Applies timestamp updates based on the entity's status field.
-   *
-   * @param entity the entity being processed.
-   * @param now the current timestamp.
-   */
-  private void applyStatusDrivenTimestamps(Object entity, OffsetDateTime now) {
-    String status = readStatus(entity);
-    if (status == null) {
-      return;
-    }
-
-    if (PROJECT_CLOSED_STATUSES.contains(status)
-        && hasField(entity, FieldNames.CLOSED_AT.getFieldName())) {
-      set(entity, FieldNames.CLOSED_AT.getFieldName(), now);
-    }
-
-    if (ENROLLMENT_ACCEPTED.contains(status)
-        && hasField(entity, FieldNames.ACCEPTED_AT.getFieldName())) {
-      set(entity, FieldNames.ACCEPTED_AT.getFieldName(), now);
-    }
-
-    if (ENROLLMENT_CLOSING_STATUSES.contains(status)
-        && hasField(entity, FieldNames.CLOSING_STATUS_AT.getFieldName())) {
-      set(entity, FieldNames.CLOSING_STATUS_AT.getFieldName(), now);
-    }
-
-    if (ATTENDANCE_VALIDATED.contains(status)
-        && hasField(entity, FieldNames.VALIDATED_AT.getFieldName())) {
-      set(entity, FieldNames.VALIDATED_AT.getFieldName(), now);
-    }
-  }
-
-  /**
-   * Reads the status field from the entity using reflection.
-   *
-   * @param entity the entity from which to read the status.
-   * @return the status as a string, or null if not found or inaccessible.
-   */
-  private String readStatus(Object entity) {
-    Field f = find(entity.getClass(), FieldNames.STATUS.getFieldName());
-    if (f == null) {
-      return null;
-    }
-    try {
-      f.setAccessible(true);
-      Object v = f.get(entity);
-      if (v == null) {
-        return null;
-      }
-      if (v instanceof Enum<?> e) {
-        return e.name();
-      }
-      return v.toString().trim().toUpperCase(Locale.ROOT);
-    } catch (IllegalAccessException e) {
-      LOG.debugf(
-          "Unable to read field 'status' on %s: %s", entity.getClass().getName(), e.getMessage());
-      return null;
-    }
-  }
-
-  /**
-   * Sets the field to the given value if it is currently null.
-   *
-   * @param target the target object.
-   * @param fieldName the name of the field to set.
-   * @param value the value to set.
-   */
-  private static void setIfNull(Object target, String fieldName, OffsetDateTime value) {
-    Field f = find(target.getClass(), fieldName);
-    if (f == null) {
-      return;
-    }
-    try {
-      f.setAccessible(true);
-      if (f.get(target) == null) {
-        f.set(target, value);
-      }
-    } catch (IllegalAccessException e) {
-      LOG.debugf(
-          "Unable to setIfNull '%s' on %s: %s",
-          fieldName, target.getClass().getName(), e.getMessage());
-    }
-  }
-
-  /**
-   * Sets the field to the given value if the field is present.
-   *
-   * @param target the target object.
-   * @param fieldName the name of the field to set.
-   * @param value the value to set.
-   */
-  private static void setIfPresent(Object target, String fieldName, OffsetDateTime value) {
-    Field f = find(target.getClass(), fieldName);
-    if (f == null) {
-      return;
-    }
-    try {
-      f.setAccessible(true);
-      f.set(target, value);
-    } catch (IllegalAccessException e) {
-      LOG.debugf(
-          "Unable to setIfNull '%s' on %s: %s",
-          fieldName, target.getClass().getName(), e.getMessage());
-    }
-  }
-
-  /**
-   * Sets the field to the given value.
-   *
-   * @param target the target object.
-   * @param fieldName the name of the field to set.
-   * @param value the value to set.
-   */
-  private static void set(Object target, String fieldName, OffsetDateTime value) {
-    Field f = find(target.getClass(), fieldName);
-    if (f == null) {
-      return;
-    }
-    try {
-      f.setAccessible(true);
-      Object cur = f.get(target);
-      if (cur == null) {
-        f.set(target, value);
-      }
-    } catch (IllegalAccessException e) {
-      LOG.debugf(
-          "Unable to setIfNull '%s' on %s: %s",
-          fieldName, target.getClass().getName(), e.getMessage());
-    }
-  }
-
-  /**
-   * Checks if the target object has the specified field.
-   *
-   * @param target the target object.
-   * @param fieldName the name of the field to check.
-   * @return true if the field exists, false otherwise.
-   */
-  private static boolean hasField(Object target, String fieldName) {
-    return find(target.getClass(), fieldName) != null;
-  }
-
-  /**
-   * Finds a field in the given class or its superclasses.
-   *
-   * @param c the class to search.
-   * @param fieldName the name of the field to find.
-   * @return the Field object if found, null otherwise.
-   */
-  private static Field find(Class<?> c, String fieldName) {
-    Class<?> cur = c;
-    while (cur != null && cur != Object.class) {
-      try {
-        return cur.getDeclaredField(fieldName);
-      } catch (NoSuchFieldException e) {
-        cur = cur.getSuperclass();
-      }
-    }
-    return null;
-  }
 }
 
 
@@ -1118,61 +983,30 @@ FILE: presenter/rest/ApiError.java
 ================================================================================
 package com.pug.shared.presenter.rest;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
  * Represents an error returned by the REST API.
  *
- * @param code The error code (untranslated, for machine/developer consumption).
+ * @param code    The error code (untranslated, for machine/developer consumption).
  * @param message The error message (already translated and formatted for the end user).
  * @param details An optional map of additional details about the error.
  */
-public record ApiError(String code, String message, Map<String, Object> details) {
-
-  /**
-   * Represents a specific field error in a validation context.
-   *
-   * @param field The name of the field that caused the error.
-   * @param code The error code related to the field.
-   * @param message The error message related to the field.
-   */
-  public record FieldError(String field, String code, String message) {}
-
-  /**
-   * Compact constructor for ApiError. Ensures that the 'details' map is never null and is a
-   * defensive copy.
-   */
-  public ApiError {
-    details = (details == null) ? Map.of() : new LinkedHashMap<>(details);
-  }
-
-  /**
-   * Returns a defensive copy of the details map.
-   *
-   * @return A new LinkedHashMap containing the error details.
-   */
-  @Override
-  public Map<String, Object> details() {
-    return new LinkedHashMap<>(details);
-  }
-
+public record ApiError(String code, String message, Details details) {
   /**
    * Factory method to create an ApiError instance.
    *
-   * @param code The error code (untranslated, for machine/developer consumption).
+   * @param code    The error code (untranslated, for machine/developer consumption).
    * @param message The error message (already translated and formatted for the end user).
    * @param details An optional map of additional details (can be null).
    * @return An ApiError instance.
    */
-  public static ApiError of(String code, String message, Map<String, Object> details) {
+  public static ApiError of(String code, String message, Details details) {
     return new ApiError(code, message, details);
   }
 
   /**
    * Overload for {@code of} without additional details.
    *
-   * @param code The error code.
+   * @param code    The error code.
    * @param message The error message.
    * @return An ApiError instance.
    */
@@ -1181,6 +1015,37 @@ public record ApiError(String code, String message, Map<String, Object> details)
   }
 }
 
+
+================================================================================
+FILE: presenter/rest/Details.java
+================================================================================
+package com.pug.shared.presenter.rest;
+
+import java.util.List;
+
+/**
+ * Represents the details of an error response, specifically for validation errors.
+ *
+ * @param fieldErrors A list of field-specific errors that occurred during validation.
+ */
+public record Details(List<FieldError> fieldErrors) {
+}
+
+
+================================================================================
+FILE: presenter/rest/FieldError.java
+================================================================================
+package com.pug.shared.presenter.rest;
+
+/**
+ * Represents a specific field error in a validation context.
+ *
+ * @param field The name of the field that caused the error.
+ * @param code The error code related to the field.
+ * @param message The error message related to the field.
+ */
+public record FieldError(String field, String code, String message){
+}
 
 ================================================================================
 FILE: presenter/rest/mappers/AppValidationExceptionMapper.java
@@ -1192,18 +1057,21 @@ import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.List;
-import java.util.Map;
 
-/** Mapper to catch AppValidationException and return a detailed error response. */
+/**
+ * Mapper to catch AppValidationException and return a detailed error response.
+ */
 @Provider
 public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
 
-  @Inject I18n i18n;
+  @Inject
+  I18n i18n;
 
   /**
    * Maps AppValidationException to an HTTP 400 response with validation error details.
@@ -1213,23 +1081,10 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    */
   @Override
   public Response toResponse(AppValidationException exception) {
-    String mainErrorCodeName = SharedErrorCodes.VALIDATION_ERROR.name();
-    String generalValidationMessage =
-        i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
-
-    List<ApiError.FieldError> fieldErrors =
-        exception.getProblems().stream()
-            .map(
-                problem ->
-                    new ApiError.FieldError(
-                        problem.code().getFieldName(),
-                        ((Enum<?>) problem.code()).name(),
-                        i18n.translation(problem.code().getBundleKey())))
-            .toList();
-
-    Map<String, Object> detailsMap = Map.of("fieldErrors", fieldErrors);
-
-    ApiError apiError = ApiError.of(mainErrorCodeName, generalValidationMessage, detailsMap);
+    Details detailsMap = new Details(exception.getProblems().stream()
+            .map(p -> PresenterUtils.mapProblemsToFieldErrors(p, i18n)).toList());
+    ApiError apiError = ApiError.of(SharedErrorCodes.VALIDATION_ERROR.name(),
+            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()), detailsMap);
 
     return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
   }
@@ -1245,21 +1100,27 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.presenter.rest.FieldError;
 import jakarta.inject.Inject;
+import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-/** Mapper to catch ConstraintViolationException and return a detailed error response. */
+import java.util.List;
+
+/**
+ * Mapper to catch ConstraintViolationException and return a detailed error response.
+ */
 @Provider
 public class ConstraintViolationExceptionMapper
-    implements ExceptionMapper<ConstraintViolationException> {
+        implements ExceptionMapper<ConstraintViolationException> {
 
-  @Inject I18n i18n;
+  @Inject
+  I18n i18n;
 
   /**
    * Maps ConstraintViolationException to an HTTP 422 response with violation details.
@@ -1269,25 +1130,72 @@ public class ConstraintViolationExceptionMapper
    */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
-    var violations =
-        ex.getConstraintViolations().stream()
-            .map(
-                v ->
-                    Map.of(
-                        "field",
-                        v.getPropertyPath() == null ? "" : v.getPropertyPath().toString(),
-                        "message",
-                        v.getMessage()))
-            .toList();
-
-    Map<String, Object> details = new LinkedHashMap<>();
-    details.put("count", violations.size());
-    details.put("violations", violations);
+    List<FieldError> violations =
+            ex.getConstraintViolations().stream()
+                    .map(this::mapViolationToFieldError).toList();
 
     String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
-    ApiError error = new ApiError(SharedErrorCodes.VALIDATION_ERROR.toString(), msg, details);
+    ApiError error = new ApiError(SharedErrorCodes.VALIDATION_ERROR.toString(), msg, new Details(violations));
 
     return Response.status(422)
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(error))
+            .build();
+  }
+
+  /**
+   * Converts a ConstraintViolation into a FieldError for API response.
+   */
+  private FieldError mapViolationToFieldError(ConstraintViolation<?> violation) {
+    String field = violation.getPropertyPath() == null ? "" : violation.getPropertyPath().toString();
+    String message = violation.getMessage();
+    return new FieldError(field, null, message);
+  }
+}
+
+
+================================================================================
+FILE: presenter/rest/mappers/DataIntegrityExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.exceptions.DataIntegrityException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.utils.PresenterUtils;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+import java.util.List;
+
+/**
+ * Maps ReferencedEntityException to an HTTP 409 (Conflict) response. Used when trying to delete an
+ * entity that is still being used by others.
+ */
+@Provider
+public class DataIntegrityExceptionMapper implements ExceptionMapper<DataIntegrityException> {
+
+  @Inject I18n i18n;
+
+  /**
+   * Converts a ReferencedEntityException into an HTTP 409 response with a localized error message.
+   *
+   * @param ex the ReferencedEntityException to be mapped.
+   * @return a Response with status 409 and error details in the body.
+   */
+  @Override
+  public Response toResponse(DataIntegrityException ex) {
+    Details details = new Details(List.of(PresenterUtils.mapProblemsToFieldErrors(ex.getProblem(), i18n)));
+    ApiError error = ApiError.of(SharedErrorCodes.DATA_INTEGRITY_ERROR.name(),
+            i18n.translation(SharedErrorCodes.DATA_INTEGRITY_ERROR.getBundleKey()), details);
+
+    return Response.status(Response.Status.CONFLICT)
         .type(MediaType.APPLICATION_JSON_TYPE)
         .entity(ApiEnvelope.error(error))
         .build();
@@ -1300,15 +1208,20 @@ FILE: presenter/rest/mappers/DuplicateResourceExceptionMapper.java
 ================================================================================
 package com.pug.shared.presenter.rest.mappers;
 
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+
+import java.util.List;
 
 /** Maps DuplicateResourceException to an HTTP 409 (Conflict) response. */
 @Provider
@@ -1325,53 +1238,9 @@ public class DuplicateResourceExceptionMapper
    */
   @Override
   public Response toResponse(DuplicateResourceException ex) {
-    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
-
-    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
-
-    return Response.status(Response.Status.CONFLICT)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(error))
-        .build();
-  }
-}
-
-
-================================================================================
-FILE: presenter/rest/mappers/ReferencedEntityExceptionMapper.java
-================================================================================
-package com.pug.shared.presenter.rest.mappers;
-
-import com.pug.shared.exceptions.ReferencedEntityException;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.presenter.rest.ApiError;
-import jakarta.inject.Inject;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.ext.ExceptionMapper;
-import jakarta.ws.rs.ext.Provider;
-
-/**
- * Maps ReferencedEntityException to an HTTP 409 (Conflict) response. Used when trying to delete an
- * entity that is still being used by others.
- */
-@Provider
-public class ReferencedEntityExceptionMapper implements ExceptionMapper<ReferencedEntityException> {
-
-  @Inject I18n i18n;
-
-  /**
-   * Converts a ReferencedEntityException into an HTTP 409 response with a localized error message.
-   *
-   * @param ex the ReferencedEntityException to be mapped.
-   * @return a Response with status 409 and error details in the body.
-   */
-  @Override
-  public Response toResponse(ReferencedEntityException ex) {
-    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
-
-    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
+    Details details = new Details(List.of(PresenterUtils.mapProblemsToFieldErrors(ex.getProblem(), i18n)));
+    ApiError error = ApiError.of(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.name(),
+            i18n.translation(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.getBundleKey()), details);
 
     return Response.status(Response.Status.CONFLICT)
         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -1386,15 +1255,20 @@ FILE: presenter/rest/mappers/ResourceNotFoundExceptionMapper.java
 ================================================================================
 package com.pug.shared.presenter.rest.mappers;
 
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+
+import java.util.List;
 
 /** Maps ResourceNotFoundException to an HTTP 404 response. */
 @Provider
@@ -1410,9 +1284,9 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
    */
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
-    String msg = i18n.translation(ex.getErrorCode().getBundleKey());
-
-    ApiError error = ApiError.of(ex.getErrorCode().toString(), msg, ex.getDetails());
+    Details details = new Details(List.of(PresenterUtils.mapProblemsToFieldErrors(ex.getProblem(), i18n)));
+    ApiError error = ApiError.of(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.name(),
+            i18n.translation(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.getBundleKey()), details);
 
     return Response.status(Response.Status.NOT_FOUND)
         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -1431,22 +1305,28 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.presenter.rest.FieldError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Mapper to catch uncaught exceptions and return a generic error response. */
+import java.util.List;
+
+/**
+ * Mapper to catch uncaught exceptions and return a generic error response.
+ */
 @Provider
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
-  @Inject I18n i18n;
+  @Inject
+  I18n i18n;
 
   /**
    * Maps uncaught exceptions to an HTTP 500 response with a generic error message.
@@ -1460,79 +1340,19 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
     String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
 
+    var details = new Details(List.of(new FieldError(null, ex.getClass().getSimpleName(), ex.getLocalizedMessage())));
+
     ApiError apiError =
-        ApiError.of(
-            SharedErrorCodes.INTERNAL_ERROR.name(),
-            msg,
-            Map.of("exceptionType", ex.getClass().getSimpleName()));
+            ApiError.of(
+                    SharedErrorCodes.INTERNAL_ERROR.name(),
+                    msg,
+                    details);
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(apiError))
-        .build();
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(apiError))
+            .build();
   }
-}
-
-
-================================================================================
-FILE: time/SystemTimeProvider.java
-================================================================================
-package com.pug.shared.time;
-
-import jakarta.enterprise.context.ApplicationScoped;
-import java.time.Clock;
-import java.time.Instant;
-
-/** A TimeProvider implementation that provides the current system time using UTC clock. */
-@ApplicationScoped
-public class SystemTimeProvider implements TimeProvider {
-  private final Clock clock = Clock.systemUTC();
-
-  /**
-   * Gets the current system time as an Instant.
-   *
-   * @return the current Instant.
-   */
-  @Override
-  public Instant now() {
-    return Instant.now(clock);
-  }
-
-  /**
-   * Gets the Clock instance used by this TimeProvider.
-   *
-   * @return the Clock instance.
-   */
-  @Override
-  public Clock clock() {
-    return clock;
-  }
-}
-
-
-================================================================================
-FILE: time/TimeProvider.java
-================================================================================
-package com.pug.shared.time;
-
-import java.time.Clock;
-import java.time.Instant;
-
-/** Provides the current time and clock instance. */
-public interface TimeProvider {
-  /**
-   * Gets the current instant.
-   *
-   * @return the current instant.
-   */
-  Instant now();
-
-  /**
-   * Gets the clock instance.
-   *
-   * @return the clock instance.
-   */
-  Clock clock();
 }
 
 
@@ -1546,10 +1366,15 @@ import java.util.Map;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-/** Utility class for collection operations. */
+/**
+ * Utility class for collection operations.
+ */
 public final class CollectionUtils {
-  /** Private constructor to prevent instantiation. */
-  private CollectionUtils() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private CollectionUtils() {
+  }
 
   /**
    * Checks if an {@code Iterable} is null or empty.
@@ -1582,12 +1407,42 @@ public final class CollectionUtils {
   }
 
   /**
-   * Converts an {@code Iterable} to a {@code Stream}.
+   * Checks if an {@code Iterable} is not null and not empty.
    *
    * @param it the iterable.
+   * @return true if the iterable is not null and not empty, false otherwise.
+   */
+  public static boolean isNotEmpty(Iterable<?> it) {
+    return !isEmpty(it);
+  }
+
+  /**
+   * Checks if a {@code List} is not null and not empty.
+   *
+   * @param list the list.
+   * @return true if the list is not null and not empty, false otherwise.
+   */
+  public static boolean isNotEmpty(List<?> list) {
+    return !isEmpty(list);
+  }
+
+  /**
+   * Checks if a {@code Map} is not null and not empty.
+   *
+   * @param map the map.
+   * @return true if the map is not null and not empty, false otherwise.
+   */
+  public static boolean isNotEmpty(Map<?, ?> map) {
+    return !isEmpty(map);
+  }
+
+  /**
+   * Converts an {@code Iterable} to a {@code Stream}.
+   *
+   * @param it  the iterable.
    * @param <T> the type of elements in the iterable.
    * @return a stream containing the elements of the iterable, or an empty stream if the iterable is
-   *     null.
+   * null.
    */
   public static <T> Stream<T> toStream(Iterable<T> it) {
     return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
@@ -1600,7 +1455,10 @@ FILE: utils/PresenterUtils.java
 ================================================================================
 package com.pug.shared.utils;
 
+import com.pug.shared.domain.Problem;
 import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.FieldError;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -1653,6 +1511,16 @@ public final class PresenterUtils {
     }
     return formattedString;
   }
+
+  /**
+   * Helper method to convert a Problem into a FieldError.
+   */
+  public static FieldError mapProblemsToFieldErrors(Problem problems, I18n i18n) {
+    String fieldName = problems.getFinalFieldName();
+    String errorCode = problems.getErrorCode();
+    String message = i18n.translation(problems.getMessageKey());
+    return new FieldError(fieldName, errorCode, message);
+  }
 }
 
 
@@ -1699,6 +1567,16 @@ public final class StringUtils {
    */
   public static boolean isEmpty(String s) {
     return s == null || s.isBlank();
+  }
+
+  /**
+   * Checks if a string is not null and contains non-whitespace characters.
+   *
+   * @param s the string to check.
+   * @return true if the string is not null and not blank, false otherwise.
+   */
+  public static boolean isNotEmpty(String s) {
+    return !isEmpty(s);
   }
 
   /**

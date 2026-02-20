@@ -371,33 +371,21 @@ error.domain.geo.city.notfound=City not found
 error.domain.geo.city.alreadyexists=City already exists
 error.domain.geo.city.referenced=City is referenced by other records and cannot be deleted
 # IDENTITY ERRORS
-error.domain.identity.id.blank=ID cannot be blank
-error.domain.identity.user.id.blank=User ID cannot be blank
+## validation
+error.domain.identity.account.type.blank=Field account type cannot be blank
 error.domain.identity.cpf.blank=CPF cannot be blank
+error.domain.identity.cpf.duplicated.input=There are duplicated values in the provided CPFs
 error.domain.identity.cpf.format=Invalid CPF
-error.domain.identity.cpf.length=CPF must be 11 digits
-error.domain.identity.account.name.blank=User name cannot be blank
-error.domain.identity.account.name.toolong=User name is too long
 error.domain.identity.email.blank=Email cannot be blank
 error.domain.identity.email.format=Invalid email format
-error.domain.identity.email.toolong=Email is too long
-error.domain.identity.account.type.blank=Account type cannot be blank
-error.domain.identity.password.hash.blank=Password hash cannot be blank
-error.domain.identity.password.hash.toolong=Password hash is too long
-error.domain.identity.active.null=Active field cannot be null
-error.domain.identity.created.at.blank=Creation date cannot be blank
-error.domain.identity.created.at.future=Creation date cannot be in the future
-error.domain.identity.account.blank=Account ID cannot be blank
 error.domain.identity.granted.at.blank=Granted date cannot be blank
-error.domain.identity.granted.at.future=Granted date cannot be in the future
+## resources
+error.domain.identity.user.already.exists=User already exists for given CPF
+
 error.domain.identity.account.already.exists=User already exists
 error.domain.identity.account.not.found=User not found
-error.domain.identity.admin.already.exists=Admin user already exists
 error.domain.identity.admin.not.found=Admin user not found
-error.domain.identity.admin.account.invalid=Invalid admin user
-error.domain.identity.user.already.exists=User already exists
 error.domain.identity.user.not.found=User not found
-error.domain.identity.user.blank=User cannot be blank
 error.domain.identity.account.still.referenced.by.admin=Account still referenced by an administrator
 error.domain.identity.account.still.referenced.by.staff=Account still referenced by a staff member
 error.domain.identity.account.still.referenced.by.student=Account still referenced by a student
@@ -471,33 +459,22 @@ error.domain.geo.city.notfound=Cidade não encontrada
 error.domain.geo.city.alreadyexists=Cidade já existe
 error.domain.geo.city.referenced=Cidade é referenciada por outros registros e não pode ser excluída
 # IDENTITY ERRORS
-error.domain.identity.id.blank=ID não pode estar vazio
-error.domain.identity.user.id.blank=ID do usuário não pode estar vazio
+## validation
+error.domain.identity.account.type.blank=Campo tipo de conta não pode ser vazio
 error.domain.identity.cpf.blank=CPF não pode estar vazio
+error.domain.identity.cpf.duplicated.input=Há valores duplicados nos CPFs informados
 error.domain.identity.cpf.format=CPF inválido
-error.domain.identity.cpf.length=CPF deve ter 11 dígitos
-error.domain.identity.account.name.blank=Nome do usuário não pode estar vazio
-error.domain.identity.account.name.toolong=Nome do usuário é muito longo
 error.domain.identity.email.blank=Email não pode estar vazio
 error.domain.identity.email.format=Formato de email inválido
-error.domain.identity.email.toolong=Email é muito longo
-error.domain.identity.account.type.blank=Tipo de conta não pode estar vazio
-error.domain.identity.password.hash.blank=Hash de senha não pode estar vazio
-error.domain.identity.password.hash.toolong=Hash de senha é muito longo
-error.domain.identity.active.null=Campo ativo não pode ser nulo
-error.domain.identity.created.at.blank=Data de criação não pode estar vazia
-error.domain.identity.created.at.future=Data de criação não pode estar no futuro
-error.domain.identity.account.blank=ID da conta não pode estar vazio
 error.domain.identity.granted.at.blank=Data de concessão não pode estar vazia
-error.domain.identity.granted.at.future=Data de concessão não pode estar no futuro
+## resources
+error.domain.identity.user.already.exists=Usuário já existe para este CPF
+
+
 error.domain.identity.account.already.exists=Usuário já existe
 error.domain.identity.account.not.found=Usuário não encontrado
-error.domain.identity.admin.already.exists=Usuário administrador já existe
 error.domain.identity.admin.not.found=Usuário administrador não encontrado
-error.domain.identity.admin.account.invalid=Usuário administrador inválido
-error.domain.identity.user.already.exists=Usuário já existe
 error.domain.identity.user.not.found=Usuário não encontrado
-error.domain.identity.user.blank=Usuário não pode estar vazio (considerar se esta é a mesma que user.id.blank)
 error.domain.identity.account.still.referenced.by.admin=Conta ainda referenciada por um administrador
 error.domain.identity.account.still.referenced.by.staff=Conta ainda referenciada por um funcionário
 error.domain.identity.account.still.referenced.by.student=Conta ainda referenciada por um estudante

@@ -9,15 +9,20 @@ import lombok.Getter;
  */
 @Getter
 public enum SharedErrorCodes implements GenericErrorCodes {
-  VALIDATION_ERROR("error.validation", null),
-  INTERNAL_ERROR("error.internal", null),
-  INVALID_ID_BLANK("error.domain.id.blank", "id"),
-  INVALID_FOREIGN_KEY_BLANK("error.domain.foreign.key.blank", null),
+  /* Validation Errors */
+  INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
   INVALID_FIELD_BLANK("error.domain.field.blank", null),
   INVALID_FIELD_LENGTH("error.domain.field.length", null),
-  INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
+  INVALID_FOREIGN_KEY_BLANK("error.domain.foreign.key.blank", null),
+  INVALID_ID_BLANK("error.domain.id.blank", "id"),
   INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
-  INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt");
+  INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
+  /* Resource Errors */
+  DATA_INTEGRITY_ERROR("error.data.integrity", null),
+  DUPLICATED_RESOURCE_ERROR("error.duplicated.resource", null),
+  INTERNAL_ERROR("error.internal", null),
+  RESOURCE_NOT_FOUND_ERROR("error.resource.not.found", null),
+  VALIDATION_ERROR("error.validation", null);
 
   private final String bundleKey;
   private final String fieldName;

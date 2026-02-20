@@ -43,22 +43,22 @@ public class Cnpj extends DomainError {
   /** Validates the CNPJ, populating the problems list if invalid. */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
       return;
     }
 
     if (value.length() != 14) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_LENGTH));
       return;
     }
 
     if (value.chars().distinct().count() == 1) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
       return;
     }
 
     if (!isValidChecksum(value)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
     }
   }
 

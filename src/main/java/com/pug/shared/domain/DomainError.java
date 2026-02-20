@@ -1,8 +1,6 @@
 package com.pug.shared.domain;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
 import com.pug.shared.domain.enums.SharedErrorCodes;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,14 +20,14 @@ public abstract class DomainError {
 
   @ToString.Exclude
   @EqualsAndHashCode.Exclude
-  private final List<AppValidationException.Problem> problems = new ArrayList<>();
+  private final List<Problem> problems = new ArrayList<>();
 
   /**
    * Returns a defensive copy of the validation problems.
    *
    * @return a list of problems
    */
-  public List<AppValidationException.Problem> getProblems() {
+  public List<Problem> getProblems() {
     return new ArrayList<>(problems);
   }
 
@@ -47,7 +45,7 @@ public abstract class DomainError {
    *
    * @param problem the validation problem to add
    */
-  protected void addError(AppValidationException.Problem problem) {
+  protected void addError(Problem problem) {
     problems.add(problem);
   }
 
@@ -56,7 +54,7 @@ public abstract class DomainError {
    *
    * @param newProblems the list of validation problems to add
    */
-  protected void addErrors(List<AppValidationException.Problem> newProblems) {
+  protected void addErrors(List<Problem> newProblems) {
     problems.addAll(newProblems);
   }
 
@@ -67,7 +65,7 @@ public abstract class DomainError {
    */
   protected void validateIdField(UUID id) {
     if (id == null) {
-      addError(new AppValidationException.Problem(SharedErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(SharedErrorCodes.INVALID_ID_BLANK));
     }
   }
 
@@ -79,9 +77,7 @@ public abstract class DomainError {
    */
   protected void validateForeignKeyField(UUID id, String fieldName) {
     if (id == null) {
-      addError(new AppValidationException.Problem(
-              new DynamicErrorCode(SharedErrorCodes.INVALID_FOREIGN_KEY_BLANK.getBundleKey(), fieldName)
-      ));
+      addError(new Problem(SharedErrorCodes.INVALID_FOREIGN_KEY_BLANK, fieldName));
     }
   }
 
@@ -94,11 +90,9 @@ public abstract class DomainError {
    */
   protected void validateStringField(String value, Long length, String fieldName) {
     if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(
-              new DynamicErrorCode(SharedErrorCodes.INVALID_FIELD_BLANK.getBundleKey(), fieldName)));
+      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
     } else if (length != null && value.length() > length.intValue()) {
-      addError(new AppValidationException.Problem(
-              new DynamicErrorCode(SharedErrorCodes.INVALID_FIELD_LENGTH.getBundleKey(), fieldName)));
+      addError(new Problem(SharedErrorCodes.INVALID_FIELD_LENGTH, fieldName));
     }
   }
 
@@ -110,13 +104,13 @@ public abstract class DomainError {
    */
   protected void validateAuditedFields(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
     if (createdAt == null) {
-      addError(new AppValidationException.Problem(SharedErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(SharedErrorCodes.INVALID_CREATED_AT_BLANK));
     }
     if (updatedAt == null) {
-      addError(new AppValidationException.Problem(SharedErrorCodes.INVALID_UPDATED_AT_BLANK));
+      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BLANK));
     }
     if (createdAt != null && updatedAt != null && updatedAt.isBefore(createdAt)) {
-      addError(new AppValidationException.Problem(SharedErrorCodes.INVALID_UPDATED_AT_BEFORE_CREATED));
+      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BEFORE_CREATED));
     }
   }
 
@@ -137,20 +131,5 @@ public abstract class DomainError {
                       return field != null ? key + "(" + field + ")" : key;
                     })
             .collect(Collectors.joining(", "));
-  }
-
-  /**
-   * Inner Record to handle dynamic field names thread-safely.
-   */
-  private record DynamicErrorCode(String bundleKey, String fieldName) implements GenericErrorCodes {
-    @Override
-    public String getBundleKey() {
-      return bundleKey;
-    }
-
-    @Override
-    public String getFieldName() {
-      return fieldName;
-    }
   }
 }

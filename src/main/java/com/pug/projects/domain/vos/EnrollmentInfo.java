@@ -53,19 +53,19 @@ public class EnrollmentInfo extends DomainError {
   private void collectValidationProblems() {
     if (requestAt == null) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       return;
     }
 
     if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
 
     if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
   }
 }

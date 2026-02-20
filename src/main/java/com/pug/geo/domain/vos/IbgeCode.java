@@ -38,11 +38,11 @@ public class IbgeCode extends DomainError {
   /** Validates the IBGE code format and populates the problems list if invalid. */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(code)) {
-      getProblems().add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
+      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else {
       if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
         getProblems()
-            .add(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
+            .add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
       }
     }
   }

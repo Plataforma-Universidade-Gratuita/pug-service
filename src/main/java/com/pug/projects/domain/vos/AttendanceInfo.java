@@ -60,7 +60,7 @@ public class AttendanceInfo extends DomainError {
    */
   private void collectValidationProblems() {
     if (createdAt == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     }
 
     boolean hasValidator = validatedBy != null;
@@ -68,10 +68,10 @@ public class AttendanceInfo extends DomainError {
 
     if (hasValidator != hasDate) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
     if (hasDate && createdAt != null && validatedAt.isBefore(createdAt)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }

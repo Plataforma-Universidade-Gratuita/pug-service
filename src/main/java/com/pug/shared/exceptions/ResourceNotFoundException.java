@@ -1,26 +1,17 @@
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Map;
+import com.pug.shared.domain.Problem;
 
-/** Exception thrown when a requested resource is not found. */
+/**
+ * Exception thrown when a requested resource is not found.
+ */
 public class ResourceNotFoundException extends ApplicationException {
   /**
-   * Constructs a new ResourceNotFoundException with the specified error code and details.
+   * Constructs a new ResourceNotFoundException with a specific error code and details.
    *
-   * @param errorCode the generic error code representing the resource not found error
-   * @param details additional details about the error
+   * @param problem the problem details to include in the exception.
    */
-  public ResourceNotFoundException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode, details);
-  }
-
-  /**
-   * Constructs a new ResourceNotFoundException with the specified error code.
-   *
-   * @param errorCode the generic error code representing the resource not found error
-   */
-  public ResourceNotFoundException(GenericErrorCodes errorCode) {
-    super(errorCode);
+  public ResourceNotFoundException(Problem problem) {
+    super(problem);
   }
 }

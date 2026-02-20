@@ -59,7 +59,7 @@ public class SchoolServiceImpl implements SchoolService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<School> schoolsToPersist = new ArrayList<>();
     Set<String> processedNames = new HashSet<>();
 
@@ -72,7 +72,7 @@ public class SchoolServiceImpl implements SchoolService {
         String schoolName = school.getName();
         if (!processedNames.add(schoolName)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
         } else {
           schoolsToPersist.add(school);
         }

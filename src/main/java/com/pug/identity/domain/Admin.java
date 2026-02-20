@@ -2,7 +2,7 @@ package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -48,7 +48,7 @@ public class Admin extends DomainError {
     validateForeignKeyField(accountId, "accountId");
 
     if (grantedAt == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
+      addError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
     }
   }
 }

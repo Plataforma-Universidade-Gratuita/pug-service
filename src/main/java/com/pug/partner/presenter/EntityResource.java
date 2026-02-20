@@ -11,6 +11,7 @@ import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -100,7 +101,7 @@ public class EntityResource {
    *
    * @param req the request containing the IDs to delete
    * @return the response containing the deletion result
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any entity is still referenced.
+   * @throws DataIntegrityException if any entity is still referenced.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {

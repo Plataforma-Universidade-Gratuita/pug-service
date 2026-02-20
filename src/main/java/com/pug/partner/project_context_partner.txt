@@ -131,27 +131,27 @@ public class Entity extends DomainError {
   /** Collects all validation problems for the entity's attributes. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_ID_BLANK));
     }
 
     if (cnpj == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
     } else if (cnpj.hasErrors()) {
       addErrors(cnpj.getProblems());
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
     } else if (name.length() > 150) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
     }
 
     if (cityId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
     }
 
     if (address != null && address.length() > 254) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
     }
   }
 }
@@ -339,10 +339,10 @@ public class Staff extends DomainError {
   /** Collects all validation problems for the Staff instance. */
   private void collectValidationProblems() {
     if (accountId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK));
     }
     if (entityId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK));
     }
   }
 }
@@ -489,22 +489,22 @@ public class Cnpj extends DomainError {
   /** Validates the CNPJ, populating the problems list if invalid. */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
       return;
     }
 
     if (value.length() != 14) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_LENGTH));
       return;
     }
 
     if (value.chars().distinct().count() == 1) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
       return;
     }
 
     if (!isValidChecksum(value)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
     }
   }
 
@@ -1639,6 +1639,7 @@ import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -1728,7 +1729,7 @@ public class EntityResource {
    *
    * @param req the request containing the IDs to delete
    * @return the response containing the deletion result
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any entity is still referenced.
+   * @throws DataIntegrityException if any entity is still referenced.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {
@@ -1888,6 +1889,7 @@ import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -2149,7 +2151,7 @@ public class StaffResource {
    *
    * @param req the request containing the list of staff member IDs to delete.
    * @return a Response containing the result of the deletion.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any associated account is still
+   * @throws DataIntegrityException if any associated account is still
    *     referenced.
    */
   @DELETE
@@ -2297,6 +2299,8 @@ import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -2335,7 +2339,7 @@ public interface EntityService {
    *
    * @param ids the UUIDs of the Entities to delete
    * @return a map containing the count of deleted entities
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any entity is still referenced
+   * @throws DataIntegrityException if any entity is still referenced
    *     (e.g., by staff members).
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
@@ -2468,7 +2472,7 @@ import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2550,7 +2554,7 @@ public class EntityServiceImpl implements EntityService {
 
     for (UUID entityId : ids) {
       if (!staffService.listByEntity(entityId).isEmpty()) {
-        throw new ReferencedEntityException(
+        throw new DataIntegrityException(
             PartnerErrorCodes.ENTITY_STILL_REFERENCED, Map.of("entityId", entityId));
       }
     }
@@ -2785,7 +2789,7 @@ public class StaffServiceImpl implements StaffService {
         accountService.saveAll(
             cmdList.stream().map(StaffCreateCommand::accountCommand).collect(Collectors.toList()));
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     List<Staff> staffToPersist = new ArrayList<>();
 
     if (accounts.size() != cmdList.size()) {
@@ -3002,6 +3006,8 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -3051,7 +3057,7 @@ public interface StaffService {
    *
    * @param ids an iterable of staff user IDs (Account IDs) to delete.
    * @return a map containing the count of deleted staff, accounts, and users.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if references prevent deletion.
+   * @throws DataIntegrityException if references prevent deletion.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
 

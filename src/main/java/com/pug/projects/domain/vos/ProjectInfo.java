@@ -57,20 +57,20 @@ public class ProjectInfo extends DomainError {
   /** Validates the ProjectInfo fields and adds errors if any validation fails. */
   private void collectValidationProblems() {
     if (createdBy == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
     }
 
     if (createAt == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     }
 
     if (maxParticipants != null && maxParticipants < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (createAt != null && closedAt != null && closedAt.isBefore(createAt)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }

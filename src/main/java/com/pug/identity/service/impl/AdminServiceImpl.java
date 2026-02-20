@@ -61,7 +61,7 @@ public class AdminServiceImpl implements AdminService {
                 .map(AdminCreateCommand::accountCommand)
                 .collect(Collectors.toList()));
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     List<Admin> adminsToPersist = new ArrayList<>();
 
     for (Account account : accounts) {

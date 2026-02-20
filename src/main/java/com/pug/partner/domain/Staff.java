@@ -40,10 +40,10 @@ public class Staff extends DomainError {
   /** Collects all validation problems for the Staff instance. */
   private void collectValidationProblems() {
     if (accountId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_STAFF_ACCOUNT_BLANK));
     }
     if (entityId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_STAFF_ENTITY_BLANK));
     }
   }
 }

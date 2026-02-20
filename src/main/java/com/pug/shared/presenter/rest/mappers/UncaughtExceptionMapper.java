@@ -4,22 +4,28 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import com.pug.shared.presenter.rest.FieldError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Mapper to catch uncaught exceptions and return a generic error response. */
+import java.util.List;
+
+/**
+ * Mapper to catch uncaught exceptions and return a generic error response.
+ */
 @Provider
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
-  @Inject I18n i18n;
+  @Inject
+  I18n i18n;
 
   /**
    * Maps uncaught exceptions to an HTTP 500 response with a generic error message.
@@ -33,15 +39,17 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
     String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
 
+    var details = new Details(List.of(new FieldError(null, ex.getClass().getSimpleName(), ex.getLocalizedMessage())));
+
     ApiError apiError =
-        ApiError.of(
-            SharedErrorCodes.INTERNAL_ERROR.name(),
-            msg,
-            Map.of("exceptionType", ex.getClass().getSimpleName()));
+            ApiError.of(
+                    SharedErrorCodes.INTERNAL_ERROR.name(),
+                    msg,
+                    details);
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(apiError))
-        .build();
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(apiError))
+            .build();
   }
 }

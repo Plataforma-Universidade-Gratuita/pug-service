@@ -46,22 +46,22 @@ public class CounterpartHours extends DomainError {
   /** Validates the hours. */
   private void collectValidationProblems() {
     if (requiredHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
     if (completedHours == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     }
 
     if (requiredHours != null && completedHours != null) {
       if (requiredHours.signum() < 0) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.signum() < 0) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
+        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.compareTo(requiredHours) > 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
       }
     }

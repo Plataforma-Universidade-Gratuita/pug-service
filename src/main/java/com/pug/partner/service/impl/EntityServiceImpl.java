@@ -12,7 +12,7 @@ import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -94,7 +94,7 @@ public class EntityServiceImpl implements EntityService {
 
     for (UUID entityId : ids) {
       if (!staffService.listByEntity(entityId).isEmpty()) {
-        throw new ReferencedEntityException(
+        throw new DataIntegrityException(
             PartnerErrorCodes.ENTITY_STILL_REFERENCED, Map.of("entityId", entityId));
       }
     }

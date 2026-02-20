@@ -56,7 +56,7 @@ public class QrValidationInfo extends DomainError {
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
     }
 
@@ -65,7 +65,7 @@ public class QrValidationInfo extends DomainError {
 
     if (hasLat != hasLon) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
     }
 
@@ -73,7 +73,7 @@ public class QrValidationInfo extends DomainError {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
           || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
       }
     }
@@ -82,7 +82,7 @@ public class QrValidationInfo extends DomainError {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
           || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
       }
     }

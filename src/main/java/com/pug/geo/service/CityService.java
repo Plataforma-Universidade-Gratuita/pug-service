@@ -6,8 +6,8 @@ import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +53,7 @@ public interface CityService {
    *
    * @param ids the iterable of city IDs to delete.
    * @return a map with the number of deleted cities.
-   * @throws ReferencedEntityException if any city is still referenced by another entity.
+   * @throws DataIntegrityException if any city is still referenced by another entity.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
 

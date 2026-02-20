@@ -1,5 +1,6 @@
 package com.pug.shared.exceptions;
 
+import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.GenericErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serial;
@@ -13,13 +14,6 @@ import lombok.Getter;
 public final class AppValidationException extends RuntimeException {
 
   @Serial private static final long serialVersionUID = 1L;
-
-  /**
-   * Represents an individual validation problem.
-   *
-   * @param code The error code (implements GenericErrorCodes).
-   */
-  public record Problem(GenericErrorCodes code) implements Serializable {}
 
   @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
   private final transient List<Problem> problems;

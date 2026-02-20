@@ -4,6 +4,7 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -101,7 +102,7 @@ public class User extends DomainError {
     validateAuditedFields(createdAt, updatedAt);
 
     if (cpf == null) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
+      addError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
     } else if (cpf.hasErrors()) {
       addErrors(cpf.getProblems());
     }

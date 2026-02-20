@@ -5,6 +5,8 @@ import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -43,7 +45,7 @@ public interface EntityService {
    *
    * @param ids the UUIDs of the Entities to delete
    * @return a map containing the count of deleted entities
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any entity is still referenced
+   * @throws DataIntegrityException if any entity is still referenced
    *     (e.g., by staff members).
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);

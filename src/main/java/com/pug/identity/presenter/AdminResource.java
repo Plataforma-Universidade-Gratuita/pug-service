@@ -18,6 +18,7 @@ import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -245,7 +246,7 @@ public class AdminResource {
    *
    * @param req the request containing the IDs to delete.
    * @return the response with the deletion result.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any admin is still referenced.
+   * @throws DataIntegrityException if any admin is still referenced.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {

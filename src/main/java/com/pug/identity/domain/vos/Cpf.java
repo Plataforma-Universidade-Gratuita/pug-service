@@ -2,6 +2,7 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
@@ -47,7 +48,7 @@ public class Cpf extends DomainError {
     validateStringField(value, 11L, "cpf");
 
     if (allSameDigit(value) || !validCheckDigits(value)) {
-      addError(new AppValidationException.Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
+      addError(new Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
     }
   }
 

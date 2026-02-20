@@ -149,40 +149,40 @@ public class Project extends DomainError {
 
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_BLANK));
     } else if (name.length() > 150) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_LENGTH));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_LENGTH));
     }
 
     if (entity == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENTITY_ID_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENTITY_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(description)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_BLANK));
     } else if (description.length() > 4000) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_LENGTH));
+      addError(new Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_LENGTH));
     }
 
     if (projectInfo == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     } else if (projectInfo.hasErrors()) {
       addErrors(projectInfo.getProblems());
     }
 
     if (projectHours == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     } else if (projectHours.hasErrors()) {
       addErrors(projectHours.getProblems());
     }
 
     if (projectStatus == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
     }
   }
 }

@@ -5,6 +5,8 @@ import com.pug.identity.domain.User;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -62,7 +64,7 @@ public interface AccountService {
    *
    * @param ids the iterable of UUIDs representing the IDs of the Account entities to be deleted.
    * @return a map containing the count of deleted Accounts and Users.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any account is still referenced
+   * @throws DataIntegrityException if any account is still referenced
    *     by Admin, Staff, or Student entities.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);

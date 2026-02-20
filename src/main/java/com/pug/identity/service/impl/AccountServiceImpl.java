@@ -15,8 +15,8 @@ import com.pug.identity.service.utils.AccountProcessor;
 import com.pug.partner.service.StaffService;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.CollectionUtils;
@@ -86,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allProblems = new ArrayList<>();
+    List<Problem> allProblems = new ArrayList<>();
     List<Account> accountsToPersist = new ArrayList<>();
     Set<String> emailsInPayload = new HashSet<>();
 
@@ -124,7 +124,7 @@ public class AccountServiceImpl implements AccountService {
       } else {
         if (!emailsInPayload.add(account.getEmail().toString())) {
           allProblems.add(
-              new AppValidationException.Problem(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
+              new Problem(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
         } else {
           accountsToPersist.add(account);
         }
@@ -180,13 +180,13 @@ public class AccountServiceImpl implements AccountService {
     }
 
     if (adminService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_ADMIN);
+      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_ADMIN);
     }
     if (staffService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STAFF);
+      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STAFF);
     }
     if (studentService.existsAnyByAccountIdIn(ids)) {
-      throw new ReferencedEntityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
+      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
     }
 
     Set<UUID> userIdsAssociated = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));

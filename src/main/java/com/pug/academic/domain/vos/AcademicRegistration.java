@@ -41,9 +41,9 @@ public class AcademicRegistration extends DomainError {
   /** Validates the registration format and length. */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (value.length() > 15) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
+      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
     }
   }
 

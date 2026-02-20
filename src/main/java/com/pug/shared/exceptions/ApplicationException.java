@@ -1,9 +1,6 @@
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.pug.shared.domain.Problem;
 import lombok.Getter;
 
 /**
@@ -11,36 +8,16 @@ import lombok.Getter;
  * optional details, allowing for consistent API error responses.
  */
 public abstract class ApplicationException extends RuntimeException {
-  @Getter private final GenericErrorCodes errorCode;
-  private final Map<String, Object> details;
+  @Getter
+  private final Problem problem;
 
   /**
-   * Constructs a new ApplicationException with the specified error code and details.
+   * Constructor for ApplicationException with a problem and optional details.
    *
-   * @param errorCode the generic error code representing the type of error
-   * @param details additional details about the error (can be null)
+   * @param problem The problem associated with this exception.
    */
-  protected ApplicationException(GenericErrorCodes errorCode, Map<String, Object> details) {
-    super(errorCode.getBundleKey());
-    this.errorCode = errorCode;
-    this.details = details != null ? new HashMap<>(details) : new HashMap<>();
-  }
-
-  /**
-   * Constructs a new ApplicationException with the specified error code and no details.
-   *
-   * @param errorCode the generic error code representing the type of error
-   */
-  protected ApplicationException(GenericErrorCodes errorCode) {
-    this(errorCode, null);
-  }
-
-  /**
-   * Returns an unmodifiable view of the details map.
-   *
-   * @return an unmodifiable map containing the error details
-   */
-  public Map<String, Object> getDetails() {
-    return Collections.unmodifiableMap(details);
+  protected ApplicationException(Problem problem) {
+    super(problem.getMessageKey());
+    this.problem = problem;
   }
 }

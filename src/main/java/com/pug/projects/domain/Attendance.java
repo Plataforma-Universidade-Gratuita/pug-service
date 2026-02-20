@@ -91,21 +91,21 @@ public class Attendance extends DomainError {
   private void collectValidationProblems() {
     if (project == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }
     if (student == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
     }
     if (status == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (qrValidationInfo != null) {
       if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
       }
       BigDecimal lat = qrValidationInfo.getLatitude();
@@ -122,7 +122,7 @@ public class Attendance extends DomainError {
 
       if (invalidLat || invalidLon) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
       }
     }

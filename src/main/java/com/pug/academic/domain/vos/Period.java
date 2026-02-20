@@ -44,15 +44,15 @@ public class Period extends DomainError {
   /** Validates the period dates. */
   private void collectValidationProblems() {
     if (startDate == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     }
     if (dueDate == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     }
 
     if (startDate != null && dueDate != null) {
       if (dueDate.isBefore(startDate)) {
-        addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_PERIOD_RANGE));
+        addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_RANGE));
       }
     }
   }

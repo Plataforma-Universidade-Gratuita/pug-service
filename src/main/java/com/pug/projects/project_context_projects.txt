@@ -100,21 +100,21 @@ public class Attendance extends DomainError {
   private void collectValidationProblems() {
     if (project == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }
     if (student == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
     }
     if (status == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (qrValidationInfo != null) {
       if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
       }
       BigDecimal lat = qrValidationInfo.getLatitude();
@@ -131,7 +131,7 @@ public class Attendance extends DomainError {
 
       if (invalidLat || invalidLon) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
       }
     }
@@ -250,26 +250,26 @@ public class Enrollment extends DomainError {
   private void collectValidationProblems() {
     if (student == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
     }
     if (project == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
     }
     if (status == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
     if (enrollmentInfo != null) {
       if (enrollmentInfo.getRequestAt() == null) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       }
       if (enrollmentInfo.getAcceptedAt() != null
           && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }
@@ -578,40 +578,40 @@ public class Project extends DomainError {
 
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_BLANK));
     } else if (name.length() > 150) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_LENGTH));
+      addError(new Problem(ProjectsErrorCodes.INVALID_PROJECT_NAME_LENGTH));
     }
 
     if (entity == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENTITY_ID_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENTITY_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(description)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_BLANK));
     } else if (description.length() > 4000) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_LENGTH));
+      addError(new Problem(ProjectsErrorCodes.INVALID_DESCRIPTION_LENGTH));
     }
 
     if (projectInfo == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     } else if (projectInfo.hasErrors()) {
       addErrors(projectInfo.getProblems());
     }
 
     if (projectHours == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     } else if (projectHours.hasErrors()) {
       addErrors(projectHours.getProblems());
     }
 
     if (projectStatus == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
     }
   }
 }
@@ -694,7 +694,7 @@ public class AttendanceInfo extends DomainError {
    */
   private void collectValidationProblems() {
     if (createdAt == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     }
 
     boolean hasValidator = validatedBy != null;
@@ -702,10 +702,10 @@ public class AttendanceInfo extends DomainError {
 
     if (hasValidator != hasDate) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
     if (hasDate && createdAt != null && validatedAt.isBefore(createdAt)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }
@@ -769,19 +769,19 @@ public class EnrollmentInfo extends DomainError {
   private void collectValidationProblems() {
     if (requestAt == null) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       return;
     }
 
     if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
 
     if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
   }
 }
@@ -837,23 +837,23 @@ public class ProjectHours extends DomainError {
   private void collectValidationProblems() {
     if (offeredHours == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
       return;
     }
 
     if (offeredHours.signum() < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     }
 
     if (completedHours.signum() < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
     }
 
     if (completedHours.compareTo(offeredHours) > 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
+          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
     }
   }
 }
@@ -921,20 +921,20 @@ public class ProjectInfo extends DomainError {
   /** Validates the ProjectInfo fields and adds errors if any validation fails. */
   private void collectValidationProblems() {
     if (createdBy == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_BY_BLANK));
     }
 
     if (createAt == null) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_BLANK));
     }
 
     if (maxParticipants != null && maxParticipants < 0) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+          new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (createAt != null && closedAt != null && closedAt.isBefore(createAt)) {
-      addError(new AppValidationException.Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }
@@ -1001,7 +1001,7 @@ public class QrValidationInfo extends DomainError {
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
     }
 
@@ -1010,7 +1010,7 @@ public class QrValidationInfo extends DomainError {
 
     if (hasLat != hasLon) {
       addError(
-          new AppValidationException.Problem(
+          new Problem(
               ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
     }
 
@@ -1018,7 +1018,7 @@ public class QrValidationInfo extends DomainError {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
           || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
       }
     }
@@ -1027,7 +1027,7 @@ public class QrValidationInfo extends DomainError {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
           || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
       }
     }
@@ -1057,7 +1057,6 @@ FILE: infra/persistence/AttendanceEntity.java
 package com.pug.projects.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -1098,7 +1097,7 @@ import lombok.ToString;
       @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
       @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
     })
-@EntityListeners(TimestampColumnsListener.class)
+@EntityListeners(TimestampTechnicalColumns.class)
 public class AttendanceEntity extends BaseUuidV7Entity {
 
   @NotNull
@@ -1169,7 +1168,6 @@ FILE: infra/persistence/EnrollmentEntity.java
 ================================================================================
 package com.pug.projects.infra.persistence;
 
-import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -1208,7 +1206,7 @@ import lombok.ToString;
       @Index(name = "idx_enrollments_status", columnList = "status"),
       @Index(name = "idx_enrollments_project", columnList = "project_id")
     })
-@EntityListeners(TimestampColumnsListener.class)
+@EntityListeners(TimestampTechnicalColumns.class)
 public class EnrollmentEntity {
 
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
@@ -1271,7 +1269,6 @@ FILE: infra/persistence/ProjectEntity.java
 package com.pug.projects.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
-import com.pug.shared.infra.persistence.TimestampTechnicalColumns;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -1318,7 +1315,7 @@ import lombok.ToString;
       @Index(name = "idx_projects_created_at", columnList = "created_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
-@EntityListeners(TimestampColumnsListener.class)
+@EntityListeners(TimestampTechnicalColumns.class)
 public class ProjectEntity extends BaseUuidV7Entity {
 
   @NotBlank

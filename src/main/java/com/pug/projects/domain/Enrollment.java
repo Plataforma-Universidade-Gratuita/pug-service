@@ -94,26 +94,26 @@ public class Enrollment extends DomainError {
   private void collectValidationProblems() {
     if (student == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
     }
     if (project == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
     }
     if (status == null) {
       addError(
-          new AppValidationException.Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
     if (enrollmentInfo != null) {
       if (enrollmentInfo.getRequestAt() == null) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       }
       if (enrollmentInfo.getAcceptedAt() != null
           && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
         addError(
-            new AppValidationException.Problem(
+            new Problem(
                 ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }

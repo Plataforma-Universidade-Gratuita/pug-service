@@ -4,6 +4,8 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.DeleteKeys;
+import com.pug.shared.exceptions.DataIntegrityException;
+
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -53,7 +55,7 @@ public interface StaffService {
    *
    * @param ids an iterable of staff user IDs (Account IDs) to delete.
    * @return a map containing the count of deleted staff, accounts, and users.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if references prevent deletion.
+   * @throws DataIntegrityException if references prevent deletion.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
 

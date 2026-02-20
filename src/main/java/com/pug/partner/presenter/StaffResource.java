@@ -18,6 +18,7 @@ import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.dtos.DeleteResult;
@@ -279,7 +280,7 @@ public class StaffResource {
    *
    * @param req the request containing the list of staff member IDs to delete.
    * @return a Response containing the result of the deletion.
-   * @throws com.pug.shared.exceptions.ReferencedEntityException if any associated account is still
+   * @throws DataIntegrityException if any associated account is still
    *     referenced.
    */
   @DELETE

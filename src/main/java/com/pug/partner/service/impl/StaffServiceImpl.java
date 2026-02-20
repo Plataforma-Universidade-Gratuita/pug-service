@@ -71,7 +71,7 @@ public class StaffServiceImpl implements StaffService {
         accountService.saveAll(
             cmdList.stream().map(StaffCreateCommand::accountCommand).collect(Collectors.toList()));
 
-    List<AppValidationException.Problem> problems = new ArrayList<>();
+    List<Problem> problems = new ArrayList<>();
     List<Staff> staffToPersist = new ArrayList<>();
 
     if (accounts.size() != cmdList.size()) {

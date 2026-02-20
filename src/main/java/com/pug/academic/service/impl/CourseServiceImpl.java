@@ -13,7 +13,7 @@ import com.pug.academic.service.utils.CourseProcessor;
 import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ReferencedEntityException;
+import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
@@ -65,7 +65,7 @@ public class CourseServiceImpl implements CourseService {
       return List.of();
     }
 
-    List<AppValidationException.Problem> allCollectedProblems = new ArrayList<>();
+    List<Problem> allCollectedProblems = new ArrayList<>();
     List<Course> coursesToPersist = new ArrayList<>();
     Set<String> processedNames = new HashSet<>();
     Set<UUID> uniqueSchoolIds = new HashSet<>();
@@ -77,7 +77,7 @@ public class CourseServiceImpl implements CourseService {
         schoolService.getById(schoolId);
       } catch (ResourceNotFoundException e) {
         allCollectedProblems.add(
-            new AppValidationException.Problem(
+            new Problem(
                 AcademicErrorCodes
                     .INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly
         // mappable here easily without context
@@ -97,7 +97,7 @@ public class CourseServiceImpl implements CourseService {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
           allCollectedProblems.add(
-              new AppValidationException.Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+              new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
         } else {
           coursesToPersist.add(course);
         }
@@ -154,7 +154,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (studentService.existsAnyByCourseIdIn(ids)) {
-      throw new ReferencedEntityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
+      throw new DataIntegrityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
     }
 
     Set<UUID> studentAccountIdsToDelete = new HashSet<>();

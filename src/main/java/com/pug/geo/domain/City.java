@@ -86,17 +86,17 @@ public class City extends DomainError {
   /** Validates the City instance and collects all validation problems. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK));
+      addError(new Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK));
+      addError(new Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK));
     } else if (name.length() > 100) {
-      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH));
+      addError(new Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH));
     }
 
     if (ibgeCode == null) {
-      addError(new AppValidationException.Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
+      addError(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else if (ibgeCode.hasErrors()) {
       addErrors(ibgeCode.getProblems());
     }

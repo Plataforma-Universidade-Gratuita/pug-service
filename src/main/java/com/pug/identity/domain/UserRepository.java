@@ -16,14 +16,6 @@ public interface UserRepository {
   User persist(User entity);
 
   /**
-   * Persists multiple User domain objects.
-   *
-   * @param entities the User objects to persist.
-   * @return a list of persisted User objects.
-   */
-  List<User> persistAll(Iterable<User> entities);
-
-  /**
    * Updates a User domain object.
    *
    * @param entity the User to update.
@@ -31,12 +23,12 @@ public interface UserRepository {
   void update(User entity);
 
   /**
-   * Deletes User objects by their IDs.
+   * Deletes a User by its ID.
    *
-   * @param ids the IDs of the User objects to delete.
-   * @return the number of entities deleted.
+   * @param id the ID of the User to delete.
+   * @return true if the User was deleted, false if no User with the given ID was found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Finds a User by its ID.
@@ -50,17 +42,6 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
-   * Finds a User by its CPF.
-   *
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @param cpf the CPF of the User to find.
-   * @return an Optional containing the User if found, or empty if not found.
-   */
-  Optional<User> findOptionalByCpf(String cpf);
-
-  /**
    * Lists all User objects.
    *
    * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()}) if
@@ -71,29 +52,10 @@ public interface UserRepository {
   List<User> listAllUsers();
 
   /**
-   * Lists all User objects by their CPFs.
-   *
-   * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @param cpfs an iterable of CPFs.
-   * @return a list of User objects with the given CPFs.
-   */
-  List<User> listByCpfs(Iterable<String> cpfs);
-
-  /**
    * Checks if a User exists with the given CPF.
    *
    * @param cpf the CPF to check.
    * @return true if a User exists with the given CPF, false otherwise.
    */
   boolean existsByCpf(String cpf);
-
-  /**
-   * Checks if any User exists with a CPF in the given collection.
-   *
-   * @param cpfs the collection of CPFs to check.
-   * @return true if any User exists with a CPF in the collection, false otherwise.
-   */
-  boolean existsAnyByCpfIn(Iterable<String> cpfs);
 }

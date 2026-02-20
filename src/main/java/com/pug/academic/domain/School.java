@@ -59,13 +59,13 @@ public class School extends DomainError {
   /** Collects all validation problems for the School instance. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
     } else if (name.length() > 100) {
-      addError(new AppValidationException.Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
+      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
     }
   }
 }

@@ -122,27 +122,27 @@ public class Entity extends DomainError {
   /** Collects all validation problems for the entity's attributes. */
   private void collectValidationProblems() {
     if (id == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ID_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_ID_BLANK));
     }
 
     if (cnpj == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
     } else if (cnpj.hasErrors()) {
       addErrors(cnpj.getProblems());
     }
 
     if (StringUtils.isEmpty(name)) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_NAME_BLANK));
     } else if (name.length() > 150) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_NAME_LENGTH));
     }
 
     if (cityId == null) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
+      addError(new Problem(PartnerErrorCodes.INVALID_CITY_BLANK));
     }
 
     if (address != null && address.length() > 254) {
-      addError(new AppValidationException.Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
+      addError(new Problem(PartnerErrorCodes.INVALID_ADDRESS_LENGTH));
     }
   }
 }
