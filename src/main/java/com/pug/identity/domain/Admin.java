@@ -4,17 +4,14 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Admin entity aggregate.
- */
+/** Admin entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -41,9 +38,7 @@ public class Admin extends DomainError {
     return admin;
   }
 
-  /**
-   * Validates the Admin instance.
-   */
+  /** Validates the Admin instance. */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
 

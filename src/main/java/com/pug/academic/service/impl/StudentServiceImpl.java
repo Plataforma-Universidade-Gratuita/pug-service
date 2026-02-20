@@ -99,8 +99,7 @@ public class StudentServiceImpl implements StudentService {
       try {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(
-            new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+        allCollectedProblems.add(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
       }
     }
 
@@ -149,8 +148,7 @@ public class StudentServiceImpl implements StudentService {
       } else {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
         } else {
           studentsToPersist.add(student);
         }

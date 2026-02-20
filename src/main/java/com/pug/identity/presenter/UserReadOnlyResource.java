@@ -22,24 +22,19 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * REST resource for reading user information.
- */
+/** REST resource for reading user information. */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject
-  UserReadService readService;
+  @Inject UserReadService readService;
 
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a user by their unique identifier.
@@ -57,10 +52,9 @@ public class UserReadOnlyResource {
 
   /**
    * Lists users.
-   * <p>
-   * If the 'q' query parameter is provided, performs a search by name.
-   * Otherwise, returns all users.
-   * </p>
+   *
+   * <p>If the 'q' query parameter is provided, performs a search by name. Otherwise, returns all
+   * users.
    *
    * @param query optional name query to search for.
    * @return the response containing the list of users.
@@ -75,9 +69,8 @@ public class UserReadOnlyResource {
       views = readService.listViews();
     }
 
-    List<UserResponse> list = views.stream()
-            .map(v -> UserPresenter.toResponse(v, locale()))
-            .toList();
+    List<UserResponse> list =
+        views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
 
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
@@ -87,7 +80,7 @@ public class UserReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the user
    * @return the response containing the user data
-   * @throws AppValidationException    if the provided CPF is malformed.
+   * @throws AppValidationException if the provided CPF is malformed.
    * @throws ResourceNotFoundException if no user with the given CPF is found.
    */
   @GET
@@ -97,9 +90,7 @@ public class UserReadOnlyResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /**
-   * Picks the best locale from the request headers.
-   */
+  /** Picks the best locale from the request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

@@ -11,18 +11,14 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Maps ResourceNotFoundException to an HTTP 404 response.
- */
+/** Maps ResourceNotFoundException to an HTTP 404 response. */
 @Provider
 public class ResourceNotFoundExceptionMapper implements ExceptionMapper<ResourceNotFoundException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
@@ -38,15 +34,15 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
     }
     notFoundDetails.put("reason", specificReason);
 
-    ApiError error = ApiError.of(
+    ApiError error =
+        ApiError.of(
             SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.name(),
             mainMessage,
-            new Details(notFoundDetails)
-    );
+            new Details(notFoundDetails));
 
     return Response.status(Response.Status.NOT_FOUND)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }

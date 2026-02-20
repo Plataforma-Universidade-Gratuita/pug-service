@@ -23,27 +23,21 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for read-only operations on accounts.
- */
+/** REST resource for read-only operations on accounts. */
 @Path("/identity/accounts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountReadOnlyResource {
 
-  @Inject
-  AccountReadService readService;
-  @Inject
-  I18n i18n;
+  @Inject AccountReadService readService;
+  @Inject I18n i18n;
 
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves an account by its ID.
@@ -61,10 +55,9 @@ public class AccountReadOnlyResource {
 
   /**
    * Lists accounts.
-   * <p>
-   * If the 'q' query parameter is provided, performs a search by user name.
-   * Otherwise, returns all accounts.
-   * </p>
+   *
+   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * all accounts.
    *
    * @param query optional name query to search for.
    * @return the response containing the list of accounts.
@@ -79,7 +72,8 @@ public class AccountReadOnlyResource {
       views = readService.listViews();
     }
 
-    List<AccountResponse> list = views.stream()
+    List<AccountResponse> list =
+        views.stream()
             .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
 
@@ -91,7 +85,7 @@ public class AccountReadOnlyResource {
    *
    * @param emailRaw the raw email string of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws AppValidationException    if the provided email is malformed.
+   * @throws AppValidationException if the provided email is malformed.
    * @throws ResourceNotFoundException if no account with the given email is found.
    */
   @GET
@@ -106,22 +100,20 @@ public class AccountReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the accounts.
    * @return a list of account responses wrapped in an ApiEnvelope.
-   * @throws AppValidationException    if the provided CPF is malformed.
+   * @throws AppValidationException if the provided CPF is malformed.
    * @throws ResourceNotFoundException if associated user data is missing for any found account.
    */
   @GET
   @Path("by-cpf/{cpf}")
   public Response listByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
     List<AccountResponse> list =
-            readService.listViewsByCpf(cpfRaw).stream()
-                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.listViewsByCpf(cpfRaw).stream()
+            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
-  /**
-   * Picks the best locale from the Accept-Language header.
-   */
+  /** Picks the best locale from the Accept-Language header. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

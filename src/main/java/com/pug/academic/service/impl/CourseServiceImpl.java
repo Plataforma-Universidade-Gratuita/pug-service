@@ -94,8 +94,7 @@ public class CourseServiceImpl implements CourseService {
       } else {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
         } else {
           coursesToPersist.add(course);
         }

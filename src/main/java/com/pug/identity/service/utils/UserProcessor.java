@@ -4,16 +4,14 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.utils.StringUtils;
 
-/**
- * Utility class for processing User DTO inputs.
- */
+/** Utility class for processing User DTO inputs. */
 public class UserProcessor {
 
   /**
    * Helper method to process DTO input and build a new User domain object.
    *
    * @param cpfString The CPF string from DTO.
-   * @param name      The user's name.
+   * @param name The user's name.
    * @return The constructed User domain object.
    */
   public static User processCreateInput(String cpfString, String name) {
@@ -25,8 +23,8 @@ public class UserProcessor {
    * Helper method to process DTO input and update an existing User domain object.
    *
    * @param existingUser The existing user to be updated.
-   * @param cpfString    The CPF string from DTO (can be null for no change).
-   * @param name         The name from DTO (can be null for no change).
+   * @param cpfString The CPF string from DTO (can be null for no change).
+   * @param name The name from DTO (can be null for no change).
    * @return The updated User domain object.
    */
   public static User processUpdateInput(User existingUser, String cpfString, String name) {

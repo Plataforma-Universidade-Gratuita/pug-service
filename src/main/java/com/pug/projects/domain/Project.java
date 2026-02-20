@@ -8,7 +8,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectHours;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -175,8 +174,7 @@ public class Project extends DomainError {
     }
 
     if (projectHours == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     } else if (projectHours.hasErrors()) {
       addErrors(projectHours.getProblems());
     }

@@ -8,55 +8,43 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service for reading admin data.
- */
+/** Service for reading admin data. */
 @ApplicationScoped
 public class AdminReadServiceImpl implements AdminReadService {
 
   private static final Logger LOG = Logger.getLogger(AdminReadServiceImpl.class);
 
-  @Inject
-  AdminQueries queries;
+  @Inject AdminQueries queries;
 
   @Override
   public AdminView getViewByAccountId(UUID accountId) {
     return queries
-            .findOptionalById(accountId)
-            .orElseThrow(() -> {
+        .findOptionalById(accountId)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
               return new ResourceNotFoundException(
-                      IdentityErrorCodes.ADMIN_NOT_FOUND,
-                      "accountId",
-                      accountId.toString()
-              );
+                  IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
             });
   }
 
   @Override
   public AdminView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(
-              IdentityErrorCodes.ADMIN_NOT_FOUND,
-              "email",
-              "empty"
-      );
+      throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND, "email", "empty");
     }
 
     return queries
-            .findOptionalByEmail(email)
-            .orElseThrow(() -> {
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Admin lookup failed: Email %s not found", email);
               return new ResourceNotFoundException(
-                      IdentityErrorCodes.ADMIN_NOT_FOUND,
-                      "email",
-                      email
-              );
+                  IdentityErrorCodes.ADMIN_NOT_FOUND, "email", email);
             });
   }
 

@@ -276,8 +276,7 @@ public class StaffResource {
    *
    * @param req the request containing the list of staff member IDs to delete.
    * @return a Response containing the result of the deletion.
-   * @throws DataIntegrityException if any associated account is still
-   *     referenced.
+   * @throws DataIntegrityException if any associated account is still referenced.
    */
   @DELETE
   public Response delete(@Valid UuidsRequest req) {

@@ -14,10 +14,9 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link UserService} interface for managing user-related operations.
@@ -31,8 +30,7 @@ public class UserServiceImpl implements UserService {
 
   private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
-  @Inject
-  UserRepository repo;
+  @Inject UserRepository repo;
 
   @Transactional
   @Override
@@ -47,10 +45,7 @@ public class UserServiceImpl implements UserService {
     if (existsByCpf(userToPersist.getCpf())) {
       LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
       throw new DuplicateResourceException(
-              IdentityErrorCodes.USER_ALREADY_EXISTS,
-              "cpf",
-              userToPersist.getCpf().toString()
-      );
+          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", userToPersist.getCpf().toString());
     }
 
     User savedUser = repo.persist(userToPersist);
@@ -74,10 +69,7 @@ public class UserServiceImpl implements UserService {
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
       LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
       throw new DuplicateResourceException(
-        IdentityErrorCodes.USER_ALREADY_EXISTS,
-        "cpf",
-        updated.getCpf().toString()
-      );
+          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", updated.getCpf().toString());
     }
 
     repo.update(updated);
@@ -108,27 +100,34 @@ public class UserServiceImpl implements UserService {
     List<User> users = repo.listAllUsers();
 
     return users.stream()
-            .filter(user -> {
+        .filter(
+            user -> {
               if (user.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-                        user.getId(), user.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+                    user.getId(), user.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 
   @Override
   public User getById(UUID id) {
-    User user = repo.findOptionalById(id).orElseThrow(() -> {
-      LOG.debugf("User lookup failed: ID %s not found", id);
-      return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
-    });
+    User user =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
+                });
 
     if (user.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-              id, user.getProblemsSummary());
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+          id, user.getProblemsSummary());
       throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
     }
 
@@ -137,14 +136,19 @@ public class UserServiceImpl implements UserService {
 
   @Override
   public User getByCpf(Cpf cpf) {
-    User user = repo.findOptionalByCpf(cpf.toString()).orElseThrow(() -> {
-      LOG.debugf("User lookup failed: CPF %s not found", cpf);
-      return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
-    });
+    User user =
+        repo.findOptionalByCpf(cpf.toString())
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: CPF %s not found", cpf);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
+                });
 
     if (user.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
-              cpf, user.getProblemsSummary());
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
+          cpf, user.getProblemsSummary());
       throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
     }
 

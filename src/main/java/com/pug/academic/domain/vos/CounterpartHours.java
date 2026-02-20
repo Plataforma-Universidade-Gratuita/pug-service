@@ -2,7 +2,6 @@ package com.pug.academic.domain.vos;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -60,9 +59,7 @@ public class CounterpartHours extends DomainError {
         addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
       }
       if (completedHours.compareTo(requiredHours) > 0) {
-        addError(
-            new Problem(
-                AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
+        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
       }
     }
   }

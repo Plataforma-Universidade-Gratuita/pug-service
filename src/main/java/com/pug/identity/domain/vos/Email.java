@@ -3,14 +3,12 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
+import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import org.apache.commons.validator.routines.EmailValidator;
-
-import java.util.Locale;
 
 /**
  * Value object representing an email address. Converted to class to extend DomainError, allowing
@@ -45,9 +43,7 @@ public class Email extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the email format and length, populating the problems list if invalid.
-   */
+  /** Validates the email format and length, populating the problems list if invalid. */
   private void collectValidationProblems() {
     validateStringField(value, 254L, "email");
 

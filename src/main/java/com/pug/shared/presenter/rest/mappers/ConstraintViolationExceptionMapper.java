@@ -13,19 +13,17 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.List;
 
 /**
- * Mapper to catch jakarta.validation.ConstraintViolationException (Bean Validation)
- * and return a detailed HTTP 422 response.
+ * Mapper to catch jakarta.validation.ConstraintViolationException (Bean Validation) and return a
+ * detailed HTTP 422 response.
  */
 @Provider
 public class ConstraintViolationExceptionMapper
-        implements ExceptionMapper<ConstraintViolationException> {
+    implements ExceptionMapper<ConstraintViolationException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a ConstraintViolationException into an HTTP 422 Unprocessable Entity response.
@@ -38,25 +36,22 @@ public class ConstraintViolationExceptionMapper
    */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
-    List<FieldError> violations = ex.getConstraintViolations().stream()
-            .map(this::mapViolationToFieldError)
-            .toList();
+    List<FieldError> violations =
+        ex.getConstraintViolations().stream().map(this::mapViolationToFieldError).toList();
     String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
 
-    ApiError error = new ApiError(
-            SharedErrorCodes.VALIDATION_ERROR.name(),
-            msg,
-            new Details(violations)
-    );
+    ApiError error =
+        new ApiError(SharedErrorCodes.VALIDATION_ERROR.name(), msg, new Details(violations));
 
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 
   private FieldError mapViolationToFieldError(ConstraintViolation<?> violation) {
-    String field = violation.getPropertyPath() == null ? "" : violation.getPropertyPath().toString();
+    String field =
+        violation.getPropertyPath() == null ? "" : violation.getPropertyPath().toString();
     String message = violation.getMessage();
     return new FieldError(field, null, message);
   }

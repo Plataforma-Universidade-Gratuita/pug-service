@@ -9,6 +9,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -17,30 +18,26 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
-/**
- * Entity representing a user in the system.
- */
+/** Entity representing a user in the system. */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"email", "userId"})
+    callSuper = true,
+    of = {"email", "userId"})
 @Entity
 @Table(
-        name = "accounts",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_accounts_email",
-                        columnNames = {"email"})
-        },
-        indexes = {
-                @Index(name = "idx_accounts_email", columnList = "email"),
-        })
+    name = "accounts",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_accounts_email",
+          columnNames = {"email"})
+    },
+    indexes = {
+      @Index(name = "idx_accounts_email", columnList = "email"),
+    })
 @SuperBuilder
 public class AccountEntity extends BaseAuditedEntity {
 

@@ -7,15 +7,10 @@ import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
 
-/**
- * Maps between Account domain and AccountEntity persistence.
- */
+/** Maps between Account domain and AccountEntity persistence. */
 public final class AccountMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountMapper() {}
 
   /**
    * Maps an AccountEntity to an Account domain object.
@@ -28,14 +23,14 @@ public final class AccountMapper {
       return null;
     }
     return Account.builder()
-            .id(e.getId())
-            .userId(e.getUserId())
-            .email(Email.factory(e.getEmail()))
-            .accountType(e.getAccountType())
-            .passwordHash(e.getPasswordHash())
-            .createdAt(e.getCreatedAt())
-            .updatedAt(e.getUpdatedAt())
-            .build();
+        .id(e.getId())
+        .userId(e.getUserId())
+        .email(Email.factory(e.getEmail()))
+        .accountType(e.getAccountType())
+        .passwordHash(e.getPasswordHash())
+        .createdAt(e.getCreatedAt())
+        .updatedAt(e.getUpdatedAt())
+        .build();
   }
 
   /**
@@ -49,14 +44,14 @@ public final class AccountMapper {
       return null;
     }
     return AccountEntity.builder()
-            .id(d.getId())
-            .userId(d.getUserId())
-            .email(d.getEmail().toString())
-            .accountType(d.getAccountType())
-            .passwordHash(d.getPasswordHash())
-            .createdAt(d.getCreatedAt())
-            .updatedAt(d.getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .userId(d.getUserId())
+        .email(d.getEmail().toString())
+        .accountType(d.getAccountType())
+        .passwordHash(d.getPasswordHash())
+        .createdAt(d.getCreatedAt())
+        .updatedAt(d.getUpdatedAt())
+        .build();
   }
 
   /**
@@ -78,7 +73,7 @@ public final class AccountMapper {
    * Converts an AccountEntity and its associated UserEntity to an AccountView.
    *
    * @param accountEntity the AccountEntity.
-   * @param userEntity    the associated UserEntity.
+   * @param userEntity the associated UserEntity.
    * @return the AccountView.
    */
   public static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
@@ -86,16 +81,16 @@ public final class AccountMapper {
       return null;
     }
     return new AccountView(
-            accountEntity.getId(),
-            new UserView(
-                    userEntity.getId(),
-                    userEntity.getCpf(),
-                    userEntity.getName(),
-                    userEntity.getCreatedAt(),
-                    userEntity.getUpdatedAt()),
-            accountEntity.getEmail(),
-            accountEntity.getAccountType(),
-            accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt());
+        accountEntity.getId(),
+        new UserView(
+            userEntity.getId(),
+            userEntity.getCpf(),
+            userEntity.getName(),
+            userEntity.getCreatedAt(),
+            userEntity.getUpdatedAt()),
+        accountEntity.getEmail(),
+        accountEntity.getAccountType(),
+        accountEntity.getCreatedAt(),
+        accountEntity.getUpdatedAt());
   }
 }

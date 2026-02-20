@@ -4,8 +4,8 @@ import com.pug.shared.domain.enums.GenericErrorCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when a requested resource is not found.
- * Does not use the 'Problem' domain pattern, as this is a specific lookup failure.
+ * Exception thrown when a requested resource is not found. Does not use the 'Problem' domain
+ * pattern, as this is a specific lookup failure.
  */
 @Getter
 public class ResourceNotFoundException extends RuntimeException {
@@ -17,7 +17,7 @@ public class ResourceNotFoundException extends RuntimeException {
   /**
    * Constructs a new ResourceNotFoundException.
    *
-   * @param code        The specific error code (e.g. USER_NOT_FOUND).
+   * @param code The specific error code (e.g. USER_NOT_FOUND).
    * @param searchField The name of the field used for the search (e.g. "id", "email").
    * @param searchValue The value that was not found (e.g. "uuid-123").
    */

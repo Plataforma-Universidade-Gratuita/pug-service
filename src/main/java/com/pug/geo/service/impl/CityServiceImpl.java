@@ -71,8 +71,7 @@ public class CityServiceImpl implements CityService {
         String ibgeCodeStr = city.getIbgeCode().toString();
 
         if (!ibgeCodesInPayload.add(ibgeCodeStr)) {
-          allCollectedProblems.add(
-              new Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
         }
         citiesToPersist.add(city);
       }

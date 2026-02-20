@@ -15,24 +15,19 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Account entities.
- */
+/** Service class for managing Account entities. */
 @ApplicationScoped
 public class AccountServiceImpl implements AccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
 
-  @Inject
-  AccountRepository repo;
+  @Inject AccountRepository repo;
 
-  @Inject
-  UserService userService;
+  @Inject UserService userService;
 
   @Transactional
   @Override
@@ -50,7 +45,9 @@ public class AccountServiceImpl implements AccountService {
       LOG.debugf("Created new User ID: %s for Account", userId);
     }
 
-    Account account = AccountProcessor.processCreateInput(userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
+    Account account =
+        AccountProcessor.processCreateInput(
+            userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
     if (account.hasErrors()) {
       throw new AppValidationException(account.getProblems());
@@ -58,7 +55,8 @@ public class AccountServiceImpl implements AccountService {
 
     if (existsByEmail(account.getEmail().toString())) {
       LOG.warnf("Creation failed: Account with email %s already exists", account.getEmail());
-      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", account.getEmail().toString());
+      throw new DuplicateResourceException(
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", account.getEmail().toString());
     }
 
     Account savedAccount = repo.persist(account);
@@ -76,15 +74,19 @@ public class AccountServiceImpl implements AccountService {
       userService.update(current.getUserId(), cmd.userCommand());
     }
 
-    Account updated = AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
+    Account updated =
+        AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getEmail().equals(current.getEmail()) && existsByEmail(updated.getEmail().toString())) {
-      LOG.warnf("Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
-      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", updated.getEmail().toString());
+    if (!updated.getEmail().equals(current.getEmail())
+        && existsByEmail(updated.getEmail().toString())) {
+      LOG.warnf(
+          "Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
+      throw new DuplicateResourceException(
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", updated.getEmail().toString());
     }
 
     repo.update(updated);
@@ -118,28 +120,36 @@ public class AccountServiceImpl implements AccountService {
     List<Account> accounts = repo.listAllAccounts();
 
     return accounts.stream()
-            .filter(account -> {
+        .filter(
+            account -> {
               if (account.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-                        account.getId(), account.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+                    account.getId(), account.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 
   @Override
   public Account getById(UUID id) {
-    Account account = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("Account lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
-            });
+    Account account =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Account lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
+                });
 
     if (account.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: Account %s violates domain rules: %s", id, account.getProblemsSummary());
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+          id, account.getProblemsSummary());
+      throw new ResourceNotFoundException(
+          IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
     }
     return account;
   }

@@ -7,5 +7,4 @@ package com.pug.shared.presenter.rest;
  * @param code The error code related to the field.
  * @param message The error message related to the field.
  */
-public record FieldError(String field, String code, String message){
-}
+public record FieldError(String field, String code, String message) {}

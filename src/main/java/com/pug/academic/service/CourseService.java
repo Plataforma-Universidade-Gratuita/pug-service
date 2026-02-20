@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Course;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -57,8 +56,7 @@ public interface CourseService {
    *
    * @param ids an iterable of UUIDs representing the course IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any course is still referenced
-   *     by students.
+   * @throws DataIntegrityException if any course is still referenced by students.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.
    */

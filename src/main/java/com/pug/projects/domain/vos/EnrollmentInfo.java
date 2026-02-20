@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -52,20 +51,16 @@ public class EnrollmentInfo extends DomainError {
   /** Validates the EnrollmentInfo instance. */
   private void collectValidationProblems() {
     if (requestAt == null) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       return;
     }
 
     if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
 
     if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
   }
 }

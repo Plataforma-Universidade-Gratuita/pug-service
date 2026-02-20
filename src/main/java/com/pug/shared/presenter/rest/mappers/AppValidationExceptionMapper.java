@@ -13,14 +13,11 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 
-/**
- * Mapper to catch AppValidationException and return a detailed error response.
- */
+/** Mapper to catch AppValidationException and return a detailed error response. */
 @Provider
 public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Maps AppValidationException to an HTTP 400 response with validation error details.
@@ -30,17 +27,18 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    */
   @Override
   public Response toResponse(AppValidationException exception) {
-    Details detailsMap = new Details(exception.getProblems().stream()
-            .map(this::mapProblemsToFieldErrors).toList());
-    ApiError apiError = ApiError.of(SharedErrorCodes.VALIDATION_ERROR.name(),
-            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()), detailsMap);
+    Details detailsMap =
+        new Details(exception.getProblems().stream().map(this::mapProblemsToFieldErrors).toList());
+    ApiError apiError =
+        ApiError.of(
+            SharedErrorCodes.VALIDATION_ERROR.name(),
+            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
+            detailsMap);
 
     return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
   }
 
-  /**
-   * Helper method to convert a Problem into a FieldError.
-   */
+  /** Helper method to convert a Problem into a FieldError. */
   private FieldError mapProblemsToFieldErrors(Problem problems) {
     String fieldName = problems.getFinalFieldName();
     String errorCode = problems.getErrorCode();

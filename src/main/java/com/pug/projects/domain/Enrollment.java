@@ -5,7 +5,6 @@ import com.pug.projects.domain.enums.EnrollmentStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
@@ -93,28 +92,21 @@ public class Enrollment extends DomainError {
   /** Validates the Enrollment entity and accumulates errors if any. */
   private void collectValidationProblems() {
     if (student == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
     }
     if (project == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
     }
     if (status == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
     if (enrollmentInfo != null) {
       if (enrollmentInfo.getRequestAt() == null) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       }
       if (enrollmentInfo.getAcceptedAt() != null
           && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }
   }

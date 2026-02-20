@@ -7,7 +7,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -90,23 +89,18 @@ public class Attendance extends DomainError {
   /** Validates the Attendance entity's fields and state. */
   private void collectValidationProblems() {
     if (project == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }
     if (student == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
     }
     if (status == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (qrValidationInfo != null) {
       if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
       }
       BigDecimal lat = qrValidationInfo.getLatitude();
       BigDecimal lon = qrValidationInfo.getLongitude();
@@ -121,9 +115,7 @@ public class Attendance extends DomainError {
                   || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
 
       if (invalidLat || invalidLon) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
       }
     }
   }

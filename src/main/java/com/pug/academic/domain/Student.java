@@ -6,7 +6,6 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -153,8 +152,7 @@ public class Student extends DomainError {
   /** Collects all validation problems for the Student instance. */
   private void collectValidationProblems() {
     if (accountId == null) {
-      addError(
-          new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+      addError(new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
     }
 
     if (academicRegistration == null) {

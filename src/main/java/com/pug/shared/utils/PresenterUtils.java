@@ -1,9 +1,6 @@
 package com.pug.shared.utils;
 
-import com.pug.shared.domain.Problem;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.FieldError;
-
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;

@@ -1,8 +1,7 @@
 package com.pug.shared.presenter.rest;
 
-import org.jboss.logging.MDC;
-
 import java.time.Instant;
+import org.jboss.logging.MDC;
 
 /**
  * API response envelope.
@@ -13,10 +12,9 @@ import java.time.Instant;
  * @param timestamp the time the response was created
  * @param <T> the type of the response data
  */
-public record ApiEnvelope<T>(boolean success, T data, ApiError error, Instant timestamp, String correlationId) {
-  /**
-   * Correlation ID key for MDC.
-   */
+public record ApiEnvelope<T>(
+    boolean success, T data, ApiError error, Instant timestamp, String correlationId) {
+  /** Correlation ID key for MDC. */
   private static final String CID_KEY = "X-Correlation-Id";
 
   /**

@@ -1,13 +1,11 @@
 package com.pug.identity.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseAuditedEntity;
-import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

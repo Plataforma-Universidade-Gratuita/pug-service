@@ -7,7 +7,6 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,7 +17,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override

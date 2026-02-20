@@ -4,7 +4,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;

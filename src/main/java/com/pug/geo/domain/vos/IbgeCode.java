@@ -2,7 +2,6 @@ package com.pug.geo.domain.vos;
 
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -41,8 +40,7 @@ public class IbgeCode extends DomainError {
       getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else {
       if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-        getProblems()
-            .add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
+        getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
       }
     }
   }

@@ -1,12 +1,9 @@
 package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.Admin;
-
 import java.util.UUID;
 
-/**
- * Utility class for processing Admin DTO inputs.
- */
+/** Utility class for processing Admin DTO inputs. */
 public class AdminProcessor {
 
   /**

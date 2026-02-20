@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -55,35 +54,27 @@ public class QrValidationInfo extends DomainError {
   /** Validates the QrValidationInfo fields and accumulates errors if any. */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
     }
 
     boolean hasLat = latitude != null;
     boolean hasLon = longitude != null;
 
     if (hasLat != hasLon) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
     }
 
     if (hasLat) {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
           || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
       }
     }
 
     if (hasLon) {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
           || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
       }
     }
   }

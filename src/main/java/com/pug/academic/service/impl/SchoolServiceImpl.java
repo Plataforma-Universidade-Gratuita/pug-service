@@ -70,8 +70,7 @@ public class SchoolServiceImpl implements SchoolService {
       } else {
         String schoolName = school.getName();
         if (!processedNames.add(schoolName)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
         } else {
           schoolsToPersist.add(school);
         }

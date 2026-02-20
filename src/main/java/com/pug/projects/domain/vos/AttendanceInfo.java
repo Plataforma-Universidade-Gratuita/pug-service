@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -67,8 +66,7 @@ public class AttendanceInfo extends DomainError {
     boolean hasDate = validatedAt != null;
 
     if (hasValidator != hasDate) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
     if (hasDate && createdAt != null && validatedAt.isBefore(createdAt)) {
       addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));

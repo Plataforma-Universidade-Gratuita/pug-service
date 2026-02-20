@@ -8,17 +8,14 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -34,13 +31,13 @@ public class Account extends DomainError {
 
   @Builder(toBuilder = true)
   private Account(
-          UUID id,
-          UUID userId,
-          Email email,
-          AccountType accountType,
-          String passwordHash,
-          OffsetDateTime createdAt,
-          OffsetDateTime updatedAt) {
+      UUID id,
+      UUID userId,
+      Email email,
+      AccountType accountType,
+      String passwordHash,
+      OffsetDateTime createdAt,
+      OffsetDateTime updatedAt) {
     this.id = id;
     this.userId = userId;
     this.email = email;
@@ -53,26 +50,25 @@ public class Account extends DomainError {
   /**
    * Factory for new Account.
    *
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param type         the account type for the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
    * @return new Account instance (may contain errors)
    */
-  public static Account factory(
-          UUID userId, Email email, AccountType type, String passwordHash) {
+  public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
     var created = OffsetDateTime.now();
 
     Account account =
-            Account.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .userId(userId)
-                    .email(email)
-                    .accountType(type)
-                    .passwordHash(passwordHash)
-                    .createdAt(created)
-                    .updatedAt(created)
-                    .build();
+        Account.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .userId(userId)
+            .email(email)
+            .accountType(type)
+            .passwordHash(passwordHash)
+            .createdAt(created)
+            .updatedAt(created)
+            .build();
 
     account.collectValidationProblems();
     return account;
@@ -111,9 +107,7 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Behavior: Activate/Deactivate logic could go here if needed. For now, just validation.
-   */
+  /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(userId, "userId");

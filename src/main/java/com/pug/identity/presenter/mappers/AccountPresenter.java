@@ -5,25 +5,19 @@ import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.utils.StringUtils;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting AccountView to AccountResponse.
- */
+/** Mapper class for converting AccountView to AccountResponse. */
 public final class AccountPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountPresenter() {}
 
   /**
    * Converts an AccountView to an AccountResponse.
    *
-   * @param v      the AccountView
+   * @param v the AccountView
    * @param locale the locale for formatting
-   * @param i18n   the internationalization instance
+   * @param i18n the internationalization instance
    * @return the corresponding AccountResponse
    */
   public static AccountResponse toResponse(AccountView v, Locale locale, I18n i18n) {
@@ -41,14 +35,14 @@ public final class AccountPresenter {
     String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
 
     return new AccountResponse(
-            v.id(),
-            userResponse,
-            v.email(),
-            v.accountType(),
-            typeFormatted,
-            v.createdAt(),
-            createdAtFormatted,
-            v.updatedAt(),
-            updatedAtFormatted);
+        v.id(),
+        userResponse,
+        v.email(),
+        v.accountType(),
+        typeFormatted,
+        v.createdAt(),
+        createdAtFormatted,
+        v.updatedAt(),
+        updatedAtFormatted);
   }
 }

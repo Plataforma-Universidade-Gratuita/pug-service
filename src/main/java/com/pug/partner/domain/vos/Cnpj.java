@@ -2,7 +2,6 @@ package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

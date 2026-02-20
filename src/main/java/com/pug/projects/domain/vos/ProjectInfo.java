@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -65,8 +64,7 @@ public class ProjectInfo extends DomainError {
     }
 
     if (maxParticipants != null && maxParticipants < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (createAt != null && closedAt != null && closedAt.isBefore(createAt)) {

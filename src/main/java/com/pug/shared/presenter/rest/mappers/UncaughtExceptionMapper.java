@@ -10,22 +10,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-/**
- * Mapper to catch uncaught exceptions and return a generic error response.
- */
+/** Mapper to catch uncaught exceptions and return a generic error response. */
 @Provider
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts an uncaught exception into a standardized error response.
@@ -45,15 +41,12 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
     errorDetails.put("exception", ex.getClass().getSimpleName());
     errorDetails.put("reason", ex.getLocalizedMessage());
 
-    ApiError apiError = ApiError.of(
-            SharedErrorCodes.INTERNAL_ERROR.name(),
-            msg,
-            new Details(errorDetails)
-    );
+    ApiError apiError =
+        ApiError.of(SharedErrorCodes.INTERNAL_ERROR.name(), msg, new Details(errorDetails));
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(apiError))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(apiError))
+        .build();
   }
 }

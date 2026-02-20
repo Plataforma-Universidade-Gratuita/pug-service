@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,8 +63,8 @@ public interface StudentService {
    *
    * @param accountIds an iterable of UUIDs representing the student's account IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any student is still referenced
-   *     by other modules (e.g. Enrollments).
+   * @throws DataIntegrityException if any student is still referenced by other modules (e.g.
+   *     Enrollments).
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.
    */

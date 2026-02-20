@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -53,8 +52,7 @@ public interface SchoolService {
    *
    * @param ids an iterable of UUIDs of the schools to delete.
    * @return a map containing the number of deleted schools and related entities.
-   * @throws DataIntegrityException if any school is still referenced
-   *     by other modules.
+   * @throws DataIntegrityException if any school is still referenced by other modules.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
 

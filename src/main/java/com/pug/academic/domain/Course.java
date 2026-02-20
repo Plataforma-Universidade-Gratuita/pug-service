@@ -3,7 +3,6 @@ package com.pug.academic.domain;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 import lombok.Builder;

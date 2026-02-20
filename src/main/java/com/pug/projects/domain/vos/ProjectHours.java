@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -44,24 +43,20 @@ public class ProjectHours extends DomainError {
   /** Validates the ProjectHours value object. */
   private void collectValidationProblems() {
     if (offeredHours == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
       return;
     }
 
     if (offeredHours.signum() < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     }
 
     if (completedHours.signum() < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
     }
 
     if (completedHours.compareTo(offeredHours) > 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
+      addError(new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
     }
   }
 }

@@ -4,7 +4,6 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.GenericErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serial;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import lombok.Getter;

@@ -4,9 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Account objects.
- */
+/** Repository interface for managing Account objects. */
 public interface AccountRepository {
 
   /**

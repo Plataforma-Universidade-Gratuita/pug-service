@@ -3,7 +3,6 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -41,9 +40,7 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the CPF format and digits, populating the problems list if invalid.
-   */
+  /** Validates the CPF format and digits, populating the problems list if invalid. */
   private void collectValidationProblems() {
     validateStringField(value, 11L, "cpf");
 
@@ -88,7 +85,7 @@ public class Cpf extends DomainError {
   /**
    * Calculates a CPF check digit.
    *
-   * @param s   the string with digits
+   * @param s the string with digits
    * @param len number of digits to use for calculation (9 or 10)
    * @return the calculated check digit
    */

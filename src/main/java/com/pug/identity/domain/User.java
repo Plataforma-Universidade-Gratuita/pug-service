@@ -5,20 +5,16 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * User entity aggregate.
- */
+/** User entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -42,7 +38,7 @@ public class User extends DomainError {
   /**
    * Factory for new users.
    *
-   * @param cpf  person's CPF
+   * @param cpf person's CPF
    * @param name person's name
    * @return new User instance (may contain errors)
    */
@@ -50,13 +46,13 @@ public class User extends DomainError {
     var created = OffsetDateTime.now();
 
     User user =
-            User.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cpf(cpf)
-                    .name(StringUtils.trim(name))
-                    .createdAt(created)
-                    .updatedAt(created)
-                    .build();
+        User.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cpf(cpf)
+            .name(StringUtils.trim(name))
+            .createdAt(created)
+            .updatedAt(created)
+            .build();
 
     user.collectValidationProblems();
     return user;
@@ -93,9 +89,7 @@ public class User extends DomainError {
     return updated;
   }
 
-  /**
-   * Validates the User instance.
-   */
+  /** Validates the User instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");
