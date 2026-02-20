@@ -42,6 +42,17 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
+   * Finds a User by its CPF.
+   *
+   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * the stored data is inconsistent with current domain rules.
+   *
+   * @param cpf the CPF of the User to find.
+   * @return an Optional containing the User if found, or empty if not found.
+   */
+  Optional<User> findOptionalByCpf(String cpf);
+
+  /**
    * Lists all User objects.
    *
    * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()}) if

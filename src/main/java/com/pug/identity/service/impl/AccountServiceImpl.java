@@ -1,243 +1,147 @@
 package com.pug.identity.service.impl;
 
-import com.pug.academic.service.StudentService;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
-import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.service.AccountService;
-import com.pug.identity.service.AdminService;
 import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.utils.AccountProcessor;
-import com.pug.partner.service.StaffService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.time.TimeProvider;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Account entities. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Service class for managing Account entities.
+ */
 @ApplicationScoped
 public class AccountServiceImpl implements AccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
 
-  @Inject AccountRepository repo;
-  @Inject TimeProvider time;
-  @Inject UserService userService;
-  @Inject AdminService adminService;
-  @Inject StaffService staffService;
-  @Inject StudentService studentService;
+  @Inject
+  AccountRepository repo;
+
+  @Inject
+  UserService userService;
 
   @Transactional
   @Override
   public Account save(AccountCreateCommand cmd) {
-    UUID userId;
+    LOG.debugf("Attempting to create Account for email: '%s'", cmd.emailString());
 
+    UUID userId;
     Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
 
     if (userService.existsByCpf(cpf)) {
-      userId = userService.getByCpf(cpf.toString()).getId();
+      userId = userService.getByCpf(cpf).getId();
+      LOG.debugf("Associating new Account with existing User ID: %s", userId);
     } else {
-      User newUser = userService.save(cmd.userCommand());
-      userId = newUser.getId();
+      userId = userService.save(cmd.userCommand()).getId();
+      LOG.debugf("Created new User ID: %s for Account", userId);
     }
 
-    Account account =
-        AccountProcessor.processCreateInput(
-            userId,
-            cmd.emailString(),
-            (cmd.type() != null ? cmd.type().name() : null),
-            cmd.passwordHash(),
-            time);
+    Account account = AccountProcessor.processCreateInput(userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
     if (account.hasErrors()) {
       throw new AppValidationException(account.getProblems());
     }
 
     if (existsByEmail(account.getEmail().toString())) {
-      throw new DuplicateResourceException(
-          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-          Map.of("email", account.getEmail().toString()));
+      LOG.warnf("Creation failed: Account with email %s already exists", account.getEmail());
+      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", account.getEmail().toString());
     }
 
-    return repo.persist(account);
-  }
-
-  @Transactional
-  @Override
-  public List<Account> saveAll(Iterable<AccountCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
-    }
-
-    List<Problem> allProblems = new ArrayList<>();
-    List<Account> accountsToPersist = new ArrayList<>();
-    Set<String> emailsInPayload = new HashSet<>();
-
-    for (AccountCreateCommand cmd : cmds) {
-      UUID userId = null;
-      try {
-        Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
-        if (userService.existsByCpf(cpf)) {
-          userId = userService.getByCpf(cpf.toString()).getId();
-        } else {
-          User newUser = userService.save(cmd.userCommand());
-          userId = newUser.getId();
-        }
-      } catch (AppValidationException e) {
-        allProblems.addAll(e.getProblems());
-        continue;
-      } catch (DuplicateResourceException e) {
-        userId = userService.getByCpf(cmd.userCommand().cpfString()).getId();
-      }
-
-      if (userId == null) {
-        continue;
-      }
-
-      Account account =
-          AccountProcessor.processCreateInput(
-              userId,
-              cmd.emailString(),
-              (cmd.type() != null ? cmd.type().name() : null),
-              cmd.passwordHash(),
-              time);
-
-      if (account.hasErrors()) {
-        allProblems.addAll(account.getProblems());
-      } else {
-        if (!emailsInPayload.add(account.getEmail().toString())) {
-          allProblems.add(
-              new Problem(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
-        } else {
-          accountsToPersist.add(account);
-        }
-      }
-    }
-
-    if (!allProblems.isEmpty()) {
-      throw new AppValidationException(allProblems);
-    }
-
-    List<String> emailsToCheck =
-        accountsToPersist.stream().map(a -> a.getEmail().toString()).toList();
-
-    if (repo.existsAnyByEmailIn(emailsToCheck)) {
-      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(accountsToPersist);
+    Account savedAccount = repo.persist(account);
+    LOG.infof("Account created successfully. ID: %s", savedAccount.getId());
+    return savedAccount;
   }
 
   @Transactional
   @Override
   public Account update(UUID id, AccountUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Account ID: %s", id);
     Account current = getById(id);
 
     if (cmd.userCommand() != null) {
       userService.update(current.getUserId(), cmd.userCommand());
     }
 
-    Account updated =
-        AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
+    Account updated = AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getEmail().equals(current.getEmail())
-        && existsByEmail(updated.getEmail().toString())) {
-      throw new DuplicateResourceException(
-          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-          Map.of("email", updated.getEmail().toString()));
+    if (!updated.getEmail().equals(current.getEmail()) && existsByEmail(updated.getEmail().toString())) {
+      LOG.warnf("Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
+      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", updated.getEmail().toString());
     }
 
     repo.update(updated);
+    LOG.infof("Account updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Account ID: %s", id);
+    Account account = getById(id);
+
+    long count = repo.countAllAccountsByUserId(account.getUserId());
+    boolean deleted = repo.deleteById(account.getId());
+
+    if (deleted) {
+      LOG.infof("Account deleted successfully. ID: %s", id);
+      if (count <= 1) {
+        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
+        userService.delete(account.getUserId());
+      }
     }
 
-    if (adminService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_ADMIN);
-    }
-    if (staffService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STAFF);
-    }
-    if (studentService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
-    }
-
-    Set<UUID> userIdsAssociated = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
-    Set<UUID> userIdsWithOtherAccounts =
-        new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, userIdsAssociated));
-
-    Set<UUID> userIdsToDelete = new HashSet<>(userIdsAssociated);
-    userIdsToDelete.removeAll(userIdsWithOtherAccounts);
-
-    long deletedAccounts = repo.deleteByIds(ids);
-    long deletedUsers = 0L;
-
-    if (!userIdsToDelete.isEmpty()) {
-      Map<DeleteKeys, Long> userRes = userService.deleteAll(userIdsToDelete);
-      deletedUsers = userRes.getOrDefault(DeleteKeys.USERS, 0L);
-    }
-
-    return Map.of(DeleteKeys.ACCOUNTS, deletedAccounts, DeleteKeys.USERS, deletedUsers);
+    return deleted;
   }
 
   @Override
   public List<Account> listAll() {
+    LOG.debug("Listing all accounts");
     List<Account> accounts = repo.listAllAccounts();
-    for (Account account : accounts) {
-      if (account.hasErrors()) {
-        LOG.errorf(
-            "Corrupted Account found. ID: %s. Problems: %s",
-            account.getId(), account.getProblemsSummary());
-        throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
-      }
-    }
-    return accounts;
+
+    return accounts.stream()
+            .filter(account -> {
+              if (account.hasErrors()) {
+                LOG.errorf("DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+                        account.getId(), account.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+            .toList();
   }
 
   @Override
   public Account getById(UUID id) {
-    Account account =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+    Account account = repo.findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("Account lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
+            });
 
     if (account.hasErrors()) {
-      LOG.errorf("Corrupted Account found. ID: %s. Problems: %s", id, account.getProblemsSummary());
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id));
+      LOG.errorf("DATA CORRUPTION DETECTED: Account %s violates domain rules: %s", id, account.getProblemsSummary());
+      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
     }
     return account;
-  }
-
-  @Override
-  public boolean existsByUserIdIn(Iterable<UUID> userIds) {
-    return repo.existsAnyByUserIdIn(userIds);
   }
 
   @Override
@@ -246,13 +150,5 @@ public class AccountServiceImpl implements AccountService {
       return false;
     }
     return repo.existsByEmail(email);
-  }
-
-  @Override
-  public boolean existsAnyByEmailIn(Iterable<String> emails) {
-    if (CollectionUtils.isEmpty(emails)) {
-      return false;
-    }
-    return repo.existsAnyByEmailIn(emails);
   }
 }

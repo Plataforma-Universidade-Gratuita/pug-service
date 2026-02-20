@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Account objects. */
+/**
+ * Repository interface for managing Account objects.
+ */
 public interface AccountRepository {
 
   /**
@@ -16,14 +18,6 @@ public interface AccountRepository {
   Account persist(Account entity);
 
   /**
-   * Persists multiple Accounts objects.
-   *
-   * @param entities the iterable collection of Account objects to persist.
-   * @return a list of the persisted Account objects.
-   */
-  List<Account> persistAll(Iterable<Account> entities);
-
-  /**
    * Updates an Accounts object.
    *
    * @param entity the Accounts to update.
@@ -31,13 +25,12 @@ public interface AccountRepository {
   void update(Account entity);
 
   /**
-   * Deletes Accounts objects by their IDs.
+   * Deletes an Accounts by its ID.
    *
-   * @param ids the iterable collection of UUIDs representing the IDs of the Accounts objects to
-   *     delete.
-   * @return the number of entities deleted.
+   * @param id the UUID of the Accounts to delete.
+   * @return true if the Accounts was deleted, false if it was not found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Finds an Accounts by its ID.
@@ -61,25 +54,12 @@ public interface AccountRepository {
   List<Account> listAllAccounts();
 
   /**
-   * Lists all Account user IDs by their Account IDs.
+   * Counts the total number of Accounts associated with a given user ID.
    *
-   * @param ids the iterable collection of UUIDs representing the Account IDs.
-   * @return a list of UUIDs representing the user IDs associated with the given Account IDs.
+   * @param userId the UUID of the user whose accounts are to be counted.
+   * @return the total number of Accounts associated with the specified user ID.
    */
-  List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids);
-
-  /**
-   * Finds user IDs that have Accounts, excluding those associated with the given Account IDs.
-   *
-   * @param excludedAccountIds the iterable collection of UUIDs representing the Account IDs to
-   *     exclude.
-   * @param candidateUserIds the iterable collection of UUIDs representing the candidate user IDs to
-   *     check.
-   * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
-   *     associated with the excluded Account IDs.
-   */
-  List<UUID> findUserIdsWithAccountsExcluding(
-      Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+  long countAllAccountsByUserId(UUID userId);
 
   /**
    * Checks if an Accounts exists by email.
@@ -88,20 +68,4 @@ public interface AccountRepository {
    * @return true if an Accounts with the given email exists, false otherwise.
    */
   boolean existsByEmail(String email);
-
-  /**
-   * Checks if any Accounts exists with emails in the given iterable.
-   *
-   * @param emails the iterable of emails to check for existence.
-   * @return true if any Accounts with emails in the iterable exists, false otherwise.
-   */
-  boolean existsAnyByEmailIn(Iterable<String> emails);
-
-  /**
-   * Checks if any Accounts exists with user IDs in the given iterable.
-   *
-   * @param userIds the iterable of user IDs to check for existence.
-   * @return true if any Accounts with user IDs in the iterable exists, false otherwise.
-   */
-  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
 }

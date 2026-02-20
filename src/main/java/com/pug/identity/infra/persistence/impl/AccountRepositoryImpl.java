@@ -4,11 +4,10 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
 import com.pug.identity.infra.AccountMapper;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -19,7 +18,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
@@ -30,26 +29,6 @@ public class AccountRepositoryImpl
     AccountEntity e = AccountMapper.toEntity(entity);
     persistAndFlush(e);
     return AccountMapper.toDomain(e);
-  }
-
-  @Transactional
-  @Override
-  public List<Account> persistAll(Iterable<Account> entities) {
-    if (CollectionUtils.isEmpty(entities)) {
-      return List.of();
-    }
-    var batch = new ArrayList<AccountEntity>();
-    for (Account d : entities) {
-      if (d != null) {
-        batch.add(AccountMapper.toEntity(d));
-      }
-    }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-    persist(batch);
-    flush();
-    return batch.stream().map(AccountMapper::toDomain).toList();
   }
 
   @Transactional
@@ -67,14 +46,13 @@ public class AccountRepositoryImpl
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
     }
-    long deleted = delete("id in ?1", ids);
+    var result = PanacheRepositoryBase.super.deleteById(id);
     flush();
-    getEntityManager().clear();
-    return deleted;
+    return result;
   }
 
   @Override
@@ -88,49 +66,15 @@ public class AccountRepositoryImpl
   }
 
   @Override
-  public List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return List.of();
+  public long countAllAccountsByUserId(UUID userId) {
+    if (userId == null) {
+      return 0;
     }
-    return find("id in ?1", ids).stream().map(AccountEntity::getUserId).toList();
-  }
-
-  @Override
-  public List<UUID> findUserIdsWithAccountsExcluding(
-      Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
-    if (CollectionUtils.isEmpty(userIds)) {
-      return List.of();
-    }
-    String query = "userId in ?1";
-    if (!CollectionUtils.isEmpty(excludeAccountIds)) {
-      query += " and id not in ?2";
-      return find(query, userIds, excludeAccountIds).stream()
-          .map(AccountEntity::getUserId)
-          .distinct()
-          .toList();
-    } else {
-      return find(query, userIds).stream().map(AccountEntity::getUserId).distinct().toList();
-    }
+    return count("userId", userId);
   }
 
   @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByEmailIn(Iterable<String> emails) {
-    if (CollectionUtils.isEmpty(emails)) {
-      return false;
-    }
-    return find("email in ?1", emails).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (CollectionUtils.isEmpty(userIds)) {
-      return false;
-    }
-    return find("userId in ?1", userIds).firstResultOptional().isPresent();
   }
 }

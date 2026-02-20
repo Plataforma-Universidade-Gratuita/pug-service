@@ -70,6 +70,16 @@ public interface UserService {
   User getById(UUID id);
 
   /**
+   * Retrieves a User by its CPF.
+   *
+   * @param cpf the CPF of the user (already a validated Value Object).
+   * @return the User entity
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given CPF does
+   *                                                             not exist (or data is corrupted in DB).
+   */
+  User getByCpf(Cpf cpf);
+
+  /**
    * Checks if a user exists by CPF.
    *
    * @param cpf the CPF to check (already a validated Value Object).

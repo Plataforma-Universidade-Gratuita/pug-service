@@ -1,25 +1,31 @@
 package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.domain.enums.AccountType;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * AccountResponse record.
+ * AccountResponse is a record that represents the response data for an account.
  *
- * @param id the account ID
- * @param user the user details associated with this account (as a UserResponse)
- * @param email the email of the account
- * @param accountType the type of account
- * @param accountTypeFormatted the formatted text for the account type (localized)
- * @param createdAt the creation date and time
- * @param createdAtFormatted the formatted text for the creation date and time (localized)
+ * @param id                   The unique identifier of the account.
+ * @param user                 The user associated with the account.
+ * @param email                The email address associated with the account.
+ * @param accountType          The type of the account (e.g., ADMIN, USER).
+ * @param accountTypeFormatted A formatted string representation of the account type.
+ * @param createdAt            The date and time when the account was created.
+ * @param createdAtFormatted   A formatted string representation of the creation date and time.
+ * @param updatedAt            The date and time when the account was last updated.
+ * @param updatedAtFormatted   A formatted string representation of the last update date and time.
  */
 public record AccountResponse(
-    UUID id,
-    UserResponse user,
-    String email,
-    AccountType accountType,
-    String accountTypeFormatted,
-    OffsetDateTime createdAt,
-    String createdAtFormatted) {}
+        UUID id,
+        UserResponse user,
+        String email,
+        AccountType accountType,
+        String accountTypeFormatted,
+        OffsetDateTime createdAt,
+        String createdAtFormatted,
+        OffsetDateTime updatedAt,
+        String updatedAtFormatted) {
+}

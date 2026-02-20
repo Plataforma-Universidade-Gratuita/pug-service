@@ -59,6 +59,14 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
+  public Optional<User> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
+  }
+
+  @Override
   public List<User> listAllUsers() {
     return listAll().stream().map(UserMapper::toDomain).toList();
   }

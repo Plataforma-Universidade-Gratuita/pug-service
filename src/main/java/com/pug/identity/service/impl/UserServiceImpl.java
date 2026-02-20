@@ -136,6 +136,22 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public User getByCpf(Cpf cpf) {
+    User user = repo.findOptionalByCpf(cpf.toString()).orElseThrow(() -> {
+      LOG.debugf("User lookup failed: CPF %s not found", cpf);
+      return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
+    });
+
+    if (user.hasErrors()) {
+      LOG.errorf("DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
+              cpf, user.getProblemsSummary());
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
+    }
+
+    return user;
+  }
+
+  @Override
   public boolean existsByCpf(Cpf cpf) {
     if (cpf == null) {
       return false;

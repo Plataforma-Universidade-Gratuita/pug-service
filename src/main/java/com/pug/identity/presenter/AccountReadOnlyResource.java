@@ -1,5 +1,6 @@
 package com.pug.identity.presenter;
 
+import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.identity.service.AccountReadService;
@@ -22,39 +23,34 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for read-only operations on accounts. */
+/**
+ * REST resource for read-only operations on accounts.
+ */
 @Path("/identity/accounts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AccountReadOnlyResource {
 
-  @Inject AccountReadService readService;
-  @Inject I18n i18n;
+  @Inject
+  AccountReadService readService;
+  @Inject
+  I18n i18n;
 
-  @Context HttpHeaders headers;
-
-  /**
-   * Picks the best locale from the Accept-Language header.
-   *
-   * @return the selected Locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
+  @Context
+  HttpHeaders headers;
 
   /**
    * Retrieves an account by its ID.
    *
    * @param id the UUIDv7 of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws ResourceNotFoundException if no account with the given ID is found (or its associated
-   *     user is missing).
+   * @throws ResourceNotFoundException if no account with the given ID is found.
    */
   @GET
   @Path("{id}")
@@ -64,17 +60,30 @@ public class AccountReadOnlyResource {
   }
 
   /**
-   * Lists all accounts.
+   * Lists accounts.
+   * <p>
+   * If the 'q' query parameter is provided, performs a search by user name.
+   * Otherwise, returns all accounts.
+   * </p>
    *
-   * @return a list of account responses wrapped in an ApiEnvelope.
+   * @param query optional name query to search for.
+   * @return the response containing the list of accounts.
    */
   @GET
-  public Response list() {
-    List<AccountResponse> list =
-        readService.listViews().stream()
+  public Response list(@QueryParam("q") String query) {
+    List<AccountView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
+    List<AccountResponse> list = views.stream()
             .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -82,9 +91,8 @@ public class AccountReadOnlyResource {
    *
    * @param emailRaw the raw email string of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws AppValidationException if the provided email is malformed.
-   * @throws ResourceNotFoundException if no account with the given email is found (or its
-   *     associated user is missing).
+   * @throws AppValidationException    if the provided email is malformed.
+   * @throws ResourceNotFoundException if no account with the given email is found.
    */
   @GET
   @Path("by-email/{email}")
@@ -98,37 +106,23 @@ public class AccountReadOnlyResource {
    *
    * @param cpfRaw the raw CPF string of the accounts.
    * @return a list of account responses wrapped in an ApiEnvelope.
-   * @throws AppValidationException if the provided CPF is malformed.
+   * @throws AppValidationException    if the provided CPF is malformed.
    * @throws ResourceNotFoundException if associated user data is missing for any found account.
    */
   @GET
   @Path("by-cpf/{cpf}")
   public Response listByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
     List<AccountResponse> list =
-        readService.listViewsByCpf(cpfRaw).stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+            readService.listViewsByCpf(cpfRaw).stream()
+                    .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
-   * Searches accounts by name.
-   *
-   * @param query the name query string.
-   * @return a list of account responses wrapped in an ApiEnvelope.
-   * @throws ResourceNotFoundException if associated user data is missing for any found account.
+   * Picks the best locale from the Accept-Language header.
    */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(new ArrayList<>()))).build();
-    }
-
-    List<AccountResponse> list =
-        readService.search(query).stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }

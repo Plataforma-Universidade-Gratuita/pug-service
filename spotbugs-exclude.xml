@@ -3,5 +3,8 @@
     <!-- Ignore the com.pug.projects package for now -->
     <Match>
         <Package name="~com\.pug\.projects.*"/>
+        <Package name="~com\.pug\.academic.*"/>
+        <Package name="~com\.pug\.geo.*"/>
+        <Package name="~com\.pug\.partner.*"/>
     </Match>
 </FindBugsFilter>

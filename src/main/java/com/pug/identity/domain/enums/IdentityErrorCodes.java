@@ -21,12 +21,12 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
   INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
   /* Resource Errors */
+  ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
+  ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
   USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
   USER_NOT_FOUND("error.domain.identity.user.not.found", null),
 
 
-  ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
-  ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
   ADMIN_NOT_FOUND("error.domain.identity.admin.not.found", null),
 
   ACCOUNT_STILL_REFERENCED_BY_ADMIN(
