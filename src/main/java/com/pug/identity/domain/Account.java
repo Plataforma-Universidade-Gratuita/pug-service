@@ -6,16 +6,20 @@ import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Account entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Account entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -26,49 +30,43 @@ public class Account extends DomainError {
   Email email;
   AccountType accountType;
   String passwordHash;
-  OffsetDateTime createdAt;
-  OffsetDateTime updatedAt;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
   private Account(
-      UUID id,
-      UUID userId,
-      Email email,
-      AccountType accountType,
-      String passwordHash,
-      OffsetDateTime createdAt,
-      OffsetDateTime updatedAt) {
+          UUID id,
+          UUID userId,
+          Email email,
+          AccountType accountType,
+          String passwordHash,
+          AuditInfo auditInfo) {
     this.id = id;
     this.userId = userId;
     this.email = email;
     this.accountType = accountType;
     this.passwordHash = passwordHash;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new Account.
    *
-   * @param userId the ID of the person associated with the Account
-   * @param email Account's email
-   * @param type the account type for the Account
+   * @param userId       the ID of the person associated with the Account
+   * @param email        Account's email
+   * @param type         the account type for the Account
    * @param passwordHash the password of the Account hashed
    * @return new Account instance (may contain errors)
    */
   public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
-    var created = OffsetDateTime.now();
-
     Account account =
-        Account.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .userId(userId)
-            .email(email)
-            .accountType(type)
-            .passwordHash(passwordHash)
-            .createdAt(created)
-            .updatedAt(created)
-            .build();
+            Account.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .userId(userId)
+                    .email(email)
+                    .accountType(type)
+                    .passwordHash(passwordHash)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     account.collectValidationProblems();
     return account;
@@ -84,7 +82,7 @@ public class Account extends DomainError {
     if (email.equals(newEmail)) {
       return this;
     }
-    Account updated = toBuilder().email(newEmail).updatedAt(OffsetDateTime.now()).build();
+    Account updated = toBuilder().email(newEmail).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -102,18 +100,18 @@ public class Account extends DomainError {
     if (newHash != null && newHash.equals(passwordHash)) {
       return this;
     }
-    Account updated = toBuilder().passwordHash(newHash).updatedAt(OffsetDateTime.now()).build();
+    Account updated = toBuilder().passwordHash(newHash).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
 
-  /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
+  /**
+   * Behavior: Activate/Deactivate logic could go here if needed. For now, just validation.
+   */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(userId, "userId");
     validateStringField(passwordHash, 255L, "passwordHash");
-    validateAuditedFields(createdAt, updatedAt);
-
     if (accountType == null) {
       addError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
     }
@@ -121,6 +119,11 @@ public class Account extends DomainError {
       addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
     } else if (email.hasErrors()) {
       addErrors(email.getProblems());
+    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }

@@ -1,16 +1,21 @@
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Course entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Course entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -18,29 +23,32 @@ public class Course extends DomainError {
   UUID id;
   String name;
   UUID schoolId;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private Course(UUID id, String name, UUID schoolId) {
+  private Course(UUID id, String name, UUID schoolId, AuditInfo auditInfo) {
     this.id = id;
     this.name = name;
     this.schoolId = schoolId;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new courses.
    *
-   * @param name the name of the course
+   * @param name     the name of the course
    * @param schoolId the ID of the school
    * @return the created course (may contain errors)
    */
   public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-        Course.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(trimmedName)
-            .schoolId(schoolId)
-            .build();
+            Course.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(trimmedName)
+                    .schoolId(schoolId)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     course.collectValidationProblems();
     return course;
@@ -54,10 +62,10 @@ public class Course extends DomainError {
    */
   public Course changeName(String newName) {
     String trimmedName = StringUtils.trim(newName);
-    if (this.name.equals(trimmedName)) {
+    if (name.equals(trimmedName)) {
       return this;
     }
-    Course updatedCourse = this.toBuilder().name(trimmedName).build();
+    Course updatedCourse = toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
     updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
@@ -69,28 +77,25 @@ public class Course extends DomainError {
    * @return the updated course with the new school ID
    */
   public Course moveToSchool(UUID newSchoolId) {
-    if (this.schoolId.equals(newSchoolId)) {
+    if (schoolId.equals(newSchoolId)) {
       return this;
     }
-    Course updatedCourse = this.toBuilder().schoolId(newSchoolId).build();
+    Course updatedCourse = toBuilder().schoolId(newSchoolId).auditInfo(auditInfo.update()).build();
     updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
 
-  /** Collects all validation problems for the Course instance. */
+  /**
+   * Collects all validation problems for the Course instance.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK));
-    } else if (name.length() > 120) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH));
-    }
-
-    if (schoolId == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK));
+    validateIdField(id);
+    validateStringField(name, 120L, "name");
+    validateForeignKeyField(schoolId, "schoolId");
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else {
+      addErrors(auditInfo.getProblems());
     }
   }
 }

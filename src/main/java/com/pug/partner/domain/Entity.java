@@ -5,6 +5,8 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
@@ -12,7 +14,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -28,18 +29,16 @@ public class Entity extends DomainError {
   String name;
   UUID cityId;
   String address;
-  OffsetDateTime createdAt;
-  OffsetDateTime updatedAt;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+  private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address, AuditInfo auditInfo) {
     this.id = id;
     this.cnpj = cnpj;
     this.name = name;
     this.cityId = cityId;
     this.address = address;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
@@ -52,8 +51,6 @@ public class Entity extends DomainError {
    * @return the created entity (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
-    var created = OffsetDateTime.now();
-
     Entity entity =
             Entity.builder()
                     .id(UuidCreator.getTimeOrderedEpoch())
@@ -61,8 +58,7 @@ public class Entity extends DomainError {
                     .name(StringUtils.trim(name))
                     .cityId(cityId)
                     .address(StringUtils.trim(address))
-                    .createdAt(created)
-                    .updatedAt(created)
+                    .auditInfo(AuditInfo.factory())
                     .build();
 
     entity.collectValidationProblems();
@@ -77,10 +73,10 @@ public class Entity extends DomainError {
    */
   public Entity changeName(String newName) {
     String trimmed = StringUtils.trim(newName);
-    if (this.name.equals(trimmed)) {
+    if (name.equals(trimmed)) {
       return this;
     }
-    Entity updated = this.toBuilder().name(trimmed).updatedAt(OffsetDateTime.now()).build();
+    Entity updated = toBuilder().name(trimmed).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -93,10 +89,10 @@ public class Entity extends DomainError {
    */
   public Entity changeAddress(String newAddress) {
     String trimmed = StringUtils.trim(newAddress);
-    if (this.address != null && this.address.equals(trimmed)) {
+    if (address != null && address.equals(trimmed)) {
       return this;
     }
-    Entity updated = this.toBuilder().address(trimmed).updatedAt(OffsetDateTime.now()).build();
+    Entity updated = toBuilder().address(trimmed).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -108,10 +104,10 @@ public class Entity extends DomainError {
    * @return the updated entity with the new CNPJ
    */
   public Entity changeCnpj(Cnpj newCnpj) {
-    if (this.cnpj.equals(newCnpj)) {
+    if (cnpj.equals(newCnpj)) {
       return this;
     }
-    Entity updated = this.toBuilder().cnpj(newCnpj).updatedAt(OffsetDateTime.now()).build();
+    Entity updated = toBuilder().cnpj(newCnpj).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -123,10 +119,10 @@ public class Entity extends DomainError {
    * @return the updated entity with the new city ID
    */
   public Entity moveToCity(UUID newCityId) {
-    if (this.cityId.equals(newCityId)) {
+    if (cityId.equals(newCityId)) {
       return this;
     }
-    Entity updated = this.toBuilder().cityId(newCityId).updatedAt(OffsetDateTime.now()).build();
+    Entity updated = toBuilder().cityId(newCityId).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -143,6 +139,11 @@ public class Entity extends DomainError {
       addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
     } else if (cnpj.hasErrors()) {
       addErrors(cnpj.getProblems());
+    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }

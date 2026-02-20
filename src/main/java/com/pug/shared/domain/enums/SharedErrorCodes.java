@@ -10,11 +10,15 @@ import lombok.Getter;
 @Getter
 public enum SharedErrorCodes implements GenericErrorCodes {
   /* Validation Errors */
+  INVALID_AUDIT_INFO_BLANK("error.domain.audit.info.blank", null),
   INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
   INVALID_FIELD_BLANK("error.domain.field.blank", null),
   INVALID_FIELD_LENGTH("error.domain.field.length", null),
   INVALID_FOREIGN_KEY_BLANK("error.domain.foreign.key.blank", null),
+  INVALID_NUMBER_NEGATIVE("error.domain.number.negative", null),
+  INVALID_NUMBER_ZERO("error.domain.number.zero", null),
   INVALID_ID_BLANK("error.domain.id.blank", "id"),
+  INVALID_PERIOD_RANGE("error.domain.period.range", "period"),
   INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
   INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
   /* Resource Errors */
@@ -32,7 +36,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   *                  field-specific.
    */
   SharedErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

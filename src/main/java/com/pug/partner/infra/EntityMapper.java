@@ -3,11 +3,17 @@ package com.pug.partner.infra;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.persistence.EntityEntity;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/** Maps between Entity domain and EntityEntity persistence. */
+/**
+ * Maps between Entity domain and EntityEntity persistence.
+ */
 public final class EntityMapper {
-  /** Private constructor to prevent instantiation. */
-  private EntityMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private EntityMapper() {
+  }
 
   /**
    * Maps an EntityEntity to an Entity domain object.
@@ -20,14 +26,13 @@ public final class EntityMapper {
       return null;
     }
     return Entity.builder()
-        .id(e.getId())
-        .cnpj(Cnpj.factory(e.getCnpj()))
-        .name(e.getName())
-        .cityId(e.getCityId())
-        .address(e.getAddress())
-        .createdAt(e.getCreatedAt())
-        .updatedAt(e.getUpdatedAt())
-        .build();
+            .id(e.getId())
+            .cnpj(Cnpj.factory(e.getCnpj()))
+            .name(e.getName())
+            .cityId(e.getCityId())
+            .address(e.getAddress())
+            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+            .build();
   }
 
   /**
@@ -41,14 +46,14 @@ public final class EntityMapper {
       return null;
     }
     return EntityEntity.builder()
-        .id(d.getId())
-        .cnpj(d.getCnpj().toString())
-        .name(d.getName())
-        .cityId(d.getCityId())
-        .address(d.getAddress())
-        .createdAt(d.getCreatedAt())
-        .updatedAt(d.getUpdatedAt())
-        .build();
+            .id(d.getId())
+            .cnpj(d.getCnpj().toString())
+            .name(d.getName())
+            .cityId(d.getCityId())
+            .address(d.getAddress())
+            .createdAt(d.getAuditInfo().getCreatedAt())
+            .updatedAt(d.getAuditInfo().getUpdatedAt())
+            .build();
   }
 
   /**

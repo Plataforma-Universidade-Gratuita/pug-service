@@ -5,6 +5,8 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
@@ -23,16 +25,14 @@ public class User extends DomainError {
   UUID id;
   Cpf cpf;
   String name;
-  OffsetDateTime createdAt;
-  OffsetDateTime updatedAt;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private User(UUID id, Cpf cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+  private User(UUID id, Cpf cpf, String name, AuditInfo auditInfo) {
     this.id = id;
     this.cpf = cpf;
     this.name = name;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
@@ -43,15 +43,12 @@ public class User extends DomainError {
    * @return new User instance (may contain errors)
    */
   public static User factory(Cpf cpf, String name) {
-    var created = OffsetDateTime.now();
-
     User user =
         User.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .cpf(cpf)
             .name(StringUtils.trim(name))
-            .createdAt(created)
-            .updatedAt(created)
+            .auditInfo(AuditInfo.factory())
             .build();
 
     user.collectValidationProblems();
@@ -69,7 +66,7 @@ public class User extends DomainError {
     if (name.equals(trimmed)) {
       return this;
     }
-    User updated = toBuilder().name(trimmed).updatedAt(OffsetDateTime.now()).build();
+    User updated = toBuilder().name(trimmed).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -84,7 +81,7 @@ public class User extends DomainError {
     if (cpf.equals(newCpf)) {
       return this;
     }
-    User updated = toBuilder().cpf(newCpf).updatedAt(OffsetDateTime.now()).build();
+    User updated = toBuilder().cpf(newCpf).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -93,12 +90,15 @@ public class User extends DomainError {
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");
-    validateAuditedFields(createdAt, updatedAt);
-
     if (cpf == null) {
       addError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
     } else if (cpf.hasErrors()) {
       addErrors(cpf.getProblems());
+    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }

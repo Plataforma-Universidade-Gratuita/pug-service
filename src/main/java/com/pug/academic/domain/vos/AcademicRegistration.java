@@ -1,6 +1,5 @@
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
@@ -37,17 +36,10 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /** Validates the registration format and length. */
+  /**
+   * Validates the registration format and length.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(value)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
-    } else if (value.length() > 15) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
-    }
-  }
-
-  @Override
-  public String toString() {
-    return value;
+    validateStringField(value, 15L, "academicRegistration");
   }
 }

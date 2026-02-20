@@ -96,6 +96,8 @@ public final class StaffMapper {
                     entityEntity.getCnpj(),
                     entityEntity.getName(),
                     entityEntity.getAddress(),
-                    new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode())));
+                    new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode()),
+                    entityEntity.getCreatedAt(),
+                    entityEntity.getUpdatedAt()));
   }
 }

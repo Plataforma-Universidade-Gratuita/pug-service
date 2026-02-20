@@ -6,6 +6,7 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.shared.domain.vos.AuditInfo;
 
 /** Maps between Account domain and AccountEntity persistence. */
 public final class AccountMapper {
@@ -28,8 +29,7 @@ public final class AccountMapper {
         .email(Email.factory(e.getEmail()))
         .accountType(e.getAccountType())
         .passwordHash(e.getPasswordHash())
-        .createdAt(e.getCreatedAt())
-        .updatedAt(e.getUpdatedAt())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
   }
 
@@ -49,8 +49,8 @@ public final class AccountMapper {
         .email(d.getEmail().toString())
         .accountType(d.getAccountType())
         .passwordHash(d.getPasswordHash())
-        .createdAt(d.getCreatedAt())
-        .updatedAt(d.getUpdatedAt())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
         .build();
   }
 

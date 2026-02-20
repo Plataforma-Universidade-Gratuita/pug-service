@@ -6,14 +6,19 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Student entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Student entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -25,50 +30,54 @@ public class Student extends DomainError {
   UUID courseId;
   CounterpartHours counterpartHours;
   Period period;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
   private Student(
-      UUID accountId,
-      AcademicRegistration academicRegistration,
-      Campi campus,
-      UUID courseId,
-      CounterpartHours counterpartHours,
-      Period period) {
+          UUID accountId,
+          AcademicRegistration academicRegistration,
+          Campi campus,
+          UUID courseId,
+          CounterpartHours counterpartHours,
+          Period period,
+          AuditInfo auditInfo) {
     this.accountId = accountId;
     this.academicRegistration = academicRegistration;
     this.campus = campus;
     this.courseId = courseId;
     this.counterpartHours = counterpartHours;
     this.period = period;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg the academic registration for the student
-   * @param campus the campus at which the student is enrolled
-   * @param courseId the course identifier the student is enrolled in
-   * @param hours the counterpart hours details
-   * @param period the academic period details
+   * @param reg       the academic registration for the student
+   * @param campus    the campus at which the student is enrolled
+   * @param courseId  the course identifier the student is enrolled in
+   * @param hours     the counterpart hours details
+   * @param period    the academic period details
    * @return the created student (may contain errors)
    */
   public static Student factory(
-      UUID accountId,
-      AcademicRegistration reg,
-      Campi campus,
-      UUID courseId,
-      CounterpartHours hours,
-      Period period) {
+          UUID accountId,
+          AcademicRegistration reg,
+          Campi campus,
+          UUID courseId,
+          CounterpartHours hours,
+          Period period) {
     Student student =
-        Student.builder()
-            .accountId(accountId)
-            .academicRegistration(reg)
-            .campus(campus)
-            .courseId(courseId)
-            .counterpartHours(hours)
-            .period(period)
-            .build();
+            Student.builder()
+                    .accountId(accountId)
+                    .academicRegistration(reg)
+                    .campus(campus)
+                    .courseId(courseId)
+                    .counterpartHours(hours)
+                    .period(period)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     student.collectValidationProblems();
     return student;
@@ -81,10 +90,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated campus
    */
   public Student changeCampus(Campi newCampus) {
-    if (this.campus == newCampus) {
+    if (campus == newCampus) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().campus(newCampus).build();
+    Student updatedStudent = toBuilder().campus(newCampus).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -96,10 +105,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated academic registration
    */
   public Student changeAcademicRegistration(AcademicRegistration newReg) {
-    if (this.academicRegistration.equals(newReg)) {
+    if (academicRegistration.equals(newReg)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().academicRegistration(newReg).build();
+    Student updatedStudent = toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -111,10 +120,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated course
    */
   public Student changeCourse(UUID newCourseId) {
-    if (this.courseId.equals(newCourseId)) {
+    if (courseId.equals(newCourseId)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().courseId(newCourseId).build();
+    Student updatedStudent = toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -126,10 +135,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated counterpart hours
    */
   public Student changeCounterpartHours(CounterpartHours newHours) {
-    if (this.counterpartHours.equals(newHours)) {
+    if (counterpartHours.equals(newHours)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().counterpartHours(newHours).build();
+    Student updatedStudent = toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -141,40 +150,33 @@ public class Student extends DomainError {
    * @return a new student instance with the updated period
    */
   public Student changePeriod(Period newPeriod) {
-    if (this.period.equals(newPeriod)) {
+    if (period.equals(newPeriod)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().period(newPeriod).build();
+    Student updatedStudent = toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
 
-  /** Collects all validation problems for the Student instance. */
+  /**
+   * Collects all validation problems for the Student instance.
+   */
   private void collectValidationProblems() {
-    if (accountId == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+    validateForeignKeyField(accountId, "accountId");
+    validateForeignKeyField(courseId, "courseId");
+    if (campus == null) {
+      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
     }
-
     if (academicRegistration == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (academicRegistration.hasErrors()) {
       addErrors(academicRegistration.getProblems());
     }
-
-    if (campus == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
-    }
-
-    if (courseId == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
-    }
-
     if (counterpartHours == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     } else if (counterpartHours.hasErrors()) {
       addErrors(counterpartHours.getProblems());
     }
-
     if (period == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     } else if (period.hasErrors()) {

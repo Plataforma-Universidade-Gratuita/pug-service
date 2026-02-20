@@ -1,27 +1,34 @@
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** School entity aggregate. */
+import java.util.UUID;
+
+/**
+ * School entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class School extends DomainError {
   UUID id;
   String name;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private School(UUID id, String name) {
+  private School(UUID id, String name, AuditInfo auditInfo) {
     this.id = id;
     this.name = name;
+    this.auditInfo = auditInfo;
   }
 
   /**
@@ -33,7 +40,7 @@ public class School extends DomainError {
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
     School school =
-        School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
+            School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).auditInfo(AuditInfo.factory()).build();
 
     school.collectValidationProblems();
     return school;
@@ -47,24 +54,24 @@ public class School extends DomainError {
    */
   public School changeName(String newName) {
     String trimmedName = StringUtils.trim(newName);
-    if (this.name.equals(trimmedName)) {
+    if (name.equals(trimmedName)) {
       return this;
     }
-    School updatedSchool = this.toBuilder().name(trimmedName).build();
+    School updatedSchool = toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
     updatedSchool.collectValidationProblems();
     return updatedSchool;
   }
 
-  /** Collects all validation problems for the School instance. */
+  /**
+   * Collects all validation problems for the School instance.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
-    } else if (name.length() > 100) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
+    validateIdField(id);
+    validateStringField(name, 100L, "name");
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }

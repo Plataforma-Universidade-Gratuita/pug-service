@@ -1,12 +1,12 @@
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /**
  * Value Object representing Counterpart Hours. Extends DomainError to allow deferred validation.
@@ -15,64 +15,32 @@ import lombok.Value;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class CounterpartHours extends DomainError {
-
   BigDecimal requiredHours;
-  BigDecimal completedHours;
 
   @Builder(toBuilder = true)
-  private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours) {
+  private CounterpartHours(BigDecimal requiredHours) {
     this.requiredHours = requiredHours;
-    this.completedHours = completedHours;
   }
 
   /**
    * Factory method to create a new CounterpartHours.
    *
    * @param requiredHours the required hours
-   * @param completedHours the completed hours
    * @return The CounterpartHours instance (which may contain errors)
    */
-  public static CounterpartHours factory(BigDecimal requiredHours, BigDecimal completedHours) {
+  public static CounterpartHours factory(BigDecimal requiredHours) {
     CounterpartHours vo =
-        CounterpartHours.builder()
-            .requiredHours(requiredHours)
-            .completedHours(completedHours)
-            .build();
+            CounterpartHours.builder()
+                    .requiredHours(requiredHours)
+                    .build();
     vo.collectValidationProblems();
     return vo;
   }
 
-  /** Validates the hours. */
-  private void collectValidationProblems() {
-    if (requiredHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    }
-    if (completedHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    }
-
-    if (requiredHours != null && completedHours != null) {
-      if (requiredHours.signum() < 0) {
-        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
-      }
-      if (completedHours.signum() < 0) {
-        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
-      }
-      if (completedHours.compareTo(requiredHours) > 0) {
-        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
-      }
-    }
-  }
-
   /**
-   * Calculates the remaining hours until the required hours are met.
-   *
-   * @return the number of hours still needed.
+   * Validates the hours.
    */
-  public BigDecimal getRemainingHours() {
-    if (requiredHours != null && completedHours != null) {
-      return requiredHours.subtract(completedHours);
-    }
-    return BigDecimal.ZERO;
+  private void collectValidationProblems() {
+    validateBigDecimalField(requiredHours, "requiredHours", false, true);
   }
 }
