@@ -3,11 +3,17 @@ package com.pug.academic.infra;
 import com.pug.academic.domain.School;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/** Mapper for School and SchoolEntity. */
+/**
+ * Mapper for School and SchoolEntity.
+ */
 public final class SchoolMapper {
-  /** Private constructor to prevent instantiation. */
-  private SchoolMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private SchoolMapper() {
+  }
 
   /**
    * Convert SchoolEntity to School domain object.
@@ -19,7 +25,7 @@ public final class SchoolMapper {
     if (e == null) {
       return null;
     }
-    return School.builder().id(e.getId()).name(e.getName()).build();
+    return School.builder().id(e.getId()).name(e.getName()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
   }
 
   /**
@@ -32,7 +38,7 @@ public final class SchoolMapper {
     if (d == null) {
       return null;
     }
-    return SchoolEntity.builder().id(d.getId()).name(d.getName()).build();
+    return SchoolEntity.builder().id(d.getId()).name(d.getName()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
   }
 
   /**
@@ -58,6 +64,6 @@ public final class SchoolMapper {
     if (s == null) {
       return null;
     }
-    return new SchoolView(s.getId(), s.getName());
+    return new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
   }
 }

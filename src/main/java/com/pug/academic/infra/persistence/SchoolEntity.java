@@ -1,5 +1,6 @@
 package com.pug.academic.infra.persistence;
 
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -36,7 +37,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
           columnNames = {"name"})
     })
 @Indexed
-public class SchoolEntity extends BaseUuidV7Entity {
+public class SchoolEntity extends BaseAuditedEntity {
 
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")

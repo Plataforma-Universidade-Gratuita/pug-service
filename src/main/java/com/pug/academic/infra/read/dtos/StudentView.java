@@ -1,25 +1,32 @@
 package com.pug.academic.infra.read.dtos;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 /**
- * StudentView DTO.
+ * DTO for Student read operations.
  *
- * @param account the account information
- * @param course the course information
- * @param requiredHours the required hours for the course
- * @param completedHours the completed hours by the student
- * @param startDate the start date of the program
- * @param dueDate the due date for program completion
+ * @param account              the account of the student
+ * @param academicRegistration the academic registration of the student
+ * @param campus               the campus of the student
+ * @param course               the course of the student
+ * @param requiredHours        the required hours for the student
+ * @param startDate            the start date of the student
+ * @param dueDate              the due date of the student
+ * @param createdAt            the creation time of the student
+ * @param updatedAt            the update time of the student
  */
 public record StudentView(
-    AccountView account,
-    String academicRegistration,
-    String campus,
-    CourseView course,
-    BigDecimal requiredHours,
-    BigDecimal completedHours,
-    LocalDate startDate,
-    LocalDate dueDate) {}
+        AccountView account,
+        String academicRegistration,
+        String campus,
+        CourseView course,
+        BigDecimal requiredHours,
+        LocalDate startDate,
+        LocalDate dueDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt) {
+}

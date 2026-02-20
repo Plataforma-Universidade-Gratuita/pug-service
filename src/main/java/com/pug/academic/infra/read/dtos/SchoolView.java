@@ -1,11 +1,15 @@
 package com.pug.academic.infra.read.dtos;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * School view DTO.
+ * DTO for School read operations.
  *
- * @param id the unique identifier of the school
- * @param name the name of the school
+ * @param id        the school id
+ * @param name      the school name
+ * @param createdAt the school creation time
+ * @param updatedAt the school update time
  */
-public record SchoolView(UUID id, String name) {}
+public record SchoolView(UUID id, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+}

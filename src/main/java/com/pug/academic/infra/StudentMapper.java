@@ -14,6 +14,7 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.shared.domain.vos.AuditInfo;
 
 /** Mapper for Student and StudentEntity. */
 public final class StudentMapper {
@@ -35,8 +36,9 @@ public final class StudentMapper {
         .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
         .campus(e.getCampus())
         .courseId(e.getCourseId())
-        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours()))
+        .counterpartHours(CounterpartHours.factory(e.getRequiredHours()))
         .period(Period.factory(e.getStartDate(), e.getDueDate()))
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
   }
 
@@ -56,9 +58,10 @@ public final class StudentMapper {
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
-        .completedHours(d.getCounterpartHours().getCompletedHours())
         .startDate(d.getPeriod().getStartDate())
         .dueDate(d.getPeriod().getDueDate())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
         .build();
   }
 
@@ -76,7 +79,6 @@ public final class StudentMapper {
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
-    e.setCompletedHours(d.getCounterpartHours().getCompletedHours());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
   }
@@ -89,15 +91,15 @@ public final class StudentMapper {
     }
 
     UserView userView =
-        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()) : null;
+        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt()) : null;
     AccountView accountView =
         (acc != null)
             ? new AccountView(
-                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt())
+                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt(), acc.getUpdatedAt())
             : null;
 
-    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName()) : null;
-    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView) : null;
+    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
+    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt()) : null;
 
     return new StudentView(
         accountView,
@@ -105,8 +107,9 @@ public final class StudentMapper {
         s.getCampus().toString(),
         courseView,
         s.getRequiredHours(),
-        s.getCompletedHours(),
         s.getStartDate(),
-        s.getDueDate());
+        s.getDueDate(),
+        s.getCreatedAt(),
+        s.getUpdatedAt());
   }
 }
