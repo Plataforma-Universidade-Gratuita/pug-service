@@ -11,6 +11,7 @@ import lombok.Getter;
 public enum SharedErrorCodes implements GenericErrorCodes {
   /* Validation Errors */
   INVALID_AUDIT_INFO_BLANK("error.domain.audit.info.blank", null),
+  INVALID_CAMPUS_BLANK("error.domain.academic.campus.blank", "campus"),
   INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
   INVALID_FIELD_BLANK("error.domain.field.blank", null),
   INVALID_FIELD_LENGTH("error.domain.field.length", null),

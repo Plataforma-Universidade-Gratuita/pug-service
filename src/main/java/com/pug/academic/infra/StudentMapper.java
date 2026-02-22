@@ -36,7 +36,7 @@ public final class StudentMapper {
         .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
         .campus(e.getCampus())
         .courseId(e.getCourseId())
-        .counterpartHours(CounterpartHours.factory(e.getRequiredHours()))
+        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getConcluded()))
         .period(Period.factory(e.getStartDate(), e.getDueDate()))
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
@@ -58,6 +58,7 @@ public final class StudentMapper {
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
+        .concluded(d.getCounterpartHours().getConcluded())
         .startDate(d.getPeriod().getStartDate())
         .dueDate(d.getPeriod().getDueDate())
         .createdAt(d.getAuditInfo().getCreatedAt())
@@ -79,6 +80,7 @@ public final class StudentMapper {
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
+    e.setConcluded(d.getCounterpartHours().getConcluded());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
   }
@@ -107,6 +109,7 @@ public final class StudentMapper {
         s.getCampus().toString(),
         courseView,
         s.getRequiredHours(),
+        s.getConcluded(),
         s.getStartDate(),
         s.getDueDate(),
         s.getCreatedAt(),

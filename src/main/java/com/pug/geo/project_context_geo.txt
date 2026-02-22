@@ -13,16 +13,19 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** City entity aggregate. */
+import java.util.UUID;
+
+/**
+ * City entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -43,17 +46,17 @@ public class City extends DomainError {
   /**
    * Factory for new cities.
    *
-   * @param name the name of the city
+   * @param name     the name of the city
    * @param ibgeCode the IBGE code of the city
    * @return the created City instance
    */
   public static City factory(String name, IbgeCode ibgeCode) {
     City c =
-        City.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(StringUtils.trim(name))
-            .ibgeCode(ibgeCode)
-            .build();
+            City.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(StringUtils.trim(name))
+                    .ibgeCode(ibgeCode)
+                    .build();
 
     c.collectValidationProblems();
     return c;
@@ -92,18 +95,12 @@ public class City extends DomainError {
     return c;
   }
 
-  /** Validates the City instance and collects all validation problems. */
+  /**
+   * Validates the City instance and collects all validation problems.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(GeoErrorCodes.INVALID_CITY_ID_BLANK));
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(GeoErrorCodes.INVALID_CITY_NAME_BLANK));
-    } else if (name.length() > 100) {
-      addError(new Problem(GeoErrorCodes.INVALID_CITY_NAME_LENGTH));
-    }
-
+    validateIdField(id);
+    validateStringField(name, 100L, "name");
     if (ibgeCode == null) {
       addError(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
     } else if (ibgeCode.hasErrors()) {
@@ -118,11 +115,12 @@ FILE: domain/CityRepository.java
 ================================================================================
 package com.pug.geo.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing City domain objects. */
+/**
+ * Repository interface for managing City domain objects.
+ */
 public interface CityRepository {
 
   /**
@@ -134,14 +132,6 @@ public interface CityRepository {
   City persist(City city);
 
   /**
-   * Persists multiple city entities.
-   *
-   * @param cities the iterable of city entities to persist.
-   * @return the list of persisted city entities.
-   */
-  List<City> persistAll(Iterable<City> cities);
-
-  /**
    * Updates an existing city entity.
    *
    * @param updated the city entity with updated information.
@@ -149,12 +139,12 @@ public interface CityRepository {
   void update(City updated);
 
   /**
-   * Deletes city entities by their unique identifiers.
+   * Deletes a city entity by its unique identifier.
    *
-   * @param ids the iterable of unique identifiers of the cities to delete.
-   * @return the number of entities deleted.
+   * @param id the unique identifier of the city to delete.
+   * @return true if the city was successfully deleted, false if the city was not found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Finds a city entity by its unique identifier.
@@ -168,31 +158,12 @@ public interface CityRepository {
   Optional<City> findOptionalById(UUID id);
 
   /**
-   * Finds a city entity by its IBGE code.
-   *
-   * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @param ibgeCodeDigits the IBGE code digits of the city.
-   * @return an Optional containing the city entity if found.
-   */
-  Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits);
-
-  /**
    * Checks if a city exists by its IBGE code.
    *
    * @param ibgeCodeDigits the IBGE code digits of the city.
    * @return true if a city with the given IBGE code exists, false otherwise.
    */
   boolean existsByIbgeCode(String ibgeCodeDigits);
-
-  /**
-   * Checks if any city exists with the given IBGE codes.
-   *
-   * @param ibges a collection of IBGE code digits.
-   * @return true if any city with the given IBGE code exists, false otherwise.
-   */
-  boolean existsAnyByIbgeCodeIn(Iterable<String> ibges);
 }
 
 
@@ -207,14 +178,13 @@ import lombok.Getter;
 /** Enumeration of error codes related to geographical operations. */
 @Getter
 public enum GeoErrorCodes implements GenericErrorCodes {
-  CITY_ALREADY_EXISTS("error.domain.geo.city.alreadyexists", null),
-  CITY_NOT_FOUND("error.domain.geo.city.notfound", null),
-  CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null),
-  INVALID_CITY_ID_BLANK("error.domain.geo.city-id.blank", "id"),
-  INVALID_CITY_NAME_BLANK("error.domain.geo.city-name.blank", "name"),
-  INVALID_CITY_NAME_LENGTH("error.domain.geo.city-name.toolong", "name"),
-  INVALID_IBGE_CODE_BLANK("error.domain.geo.ibge-code.blank", "ibgeCode"),
-  INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge-code.invalid", "ibgeCode");
+  /* Validation errors */
+  INVALID_IBGE_CODE_BLANK("error.domain.geo.ibge.code.blank", "ibgeCode"),
+  INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge.code.invalid", "ibgeCode"),
+  /* Resource errors */
+  CITY_ALREADY_EXISTS("error.domain.geo.city.already.exists", null),
+  CITY_NOT_FOUND("error.domain.geo.city.not.found", null),
+  CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null);
 
   private final String bundleKey;
   private final String fieldName;
@@ -239,14 +209,16 @@ package com.pug.geo.domain.vos;
 
 import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Value object representing a city's IBGE code. Converted to class to extend DomainError. */
+/**
+ * Value object representing a city's IBGE code. Converted to class to extend DomainError.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -272,15 +244,13 @@ public class IbgeCode extends DomainError {
     return vo;
   }
 
-  /** Validates the IBGE code format and populates the problems list if invalid. */
+  /**
+   * Validates the IBGE code format and populates the problems list if invalid.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(code)) {
-      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_BLANK));
-    } else {
-      if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
-        getProblems()
-            .add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
-      }
+    validateStringField(code, 7L, "ibgeCode");
+    if (StringUtils.isNotEmpty(code) && !code.chars().allMatch(Character::isDigit)) {
+      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
     }
   }
 }
@@ -431,17 +401,17 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.infra.CityMapper;
 import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the CityRepository using Panache and Hibernate Search. */
+/**
+ * Implementation of the CityRepository using Panache and Hibernate Search.
+ */
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
@@ -454,26 +424,6 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
     var e = CityMapper.toEntity(city);
     persistAndFlush(e);
     return CityMapper.toDomain(e);
-  }
-
-  @Transactional
-  @Override
-  public List<City> persistAll(Iterable<City> cities) {
-    if (CollectionUtils.isEmpty(cities)) {
-      return List.of();
-    }
-    var entities = new ArrayList<CityEntity>();
-    for (City c : cities) {
-      if (c != null) {
-        entities.add(CityMapper.toEntity(c));
-      }
-    }
-    if (entities.isEmpty()) {
-      return List.of();
-    }
-    persist(entities);
-    flush();
-    return entities.stream().map(CityMapper::toDomain).toList();
   }
 
   @Override
@@ -490,13 +440,12 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
     }
-    long deleted = delete("id in ?1", ids);
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
     flush();
-    getEntityManager().clear();
     return deleted;
   }
 
@@ -506,24 +455,11 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
   }
 
   @Override
-  public Optional<City> findOptionalByIbgeCode(String ibgeCodeDigits) {
-    return find("ibgeCode", ibgeCodeDigits).firstResultOptional().map(CityMapper::toDomain);
-  }
-
-  @Override
   public boolean existsByIbgeCode(String ibgeCodeDigits) {
     if (StringUtils.isEmpty(ibgeCodeDigits)) {
       return false;
     }
     return find("ibgeCode", ibgeCodeDigits).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByIbgeCodeIn(Iterable<String> ibges) {
-    if (CollectionUtils.isEmpty(ibges)) {
-      return false;
-    }
-    return find("ibgeCode in ?1", ibges).firstResultOptional().isPresent();
   }
 }
 
@@ -676,13 +612,9 @@ import com.pug.geo.service.CityReadService;
 import com.pug.geo.service.CityService;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.presenter.dtos.BulkCreateRequest;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
-import com.pug.shared.presenter.dtos.DeleteResult;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.StringUtils;
+import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -699,93 +631,28 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing cities. */
+/**
+ * REST resource for managing cities.
+ */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject CityService writeService;
-  @Inject CityReadService readService;
+  @Inject
+  CityService writeService;
+  @Inject
+  CityReadService readService;
 
-  @Context UriInfo uri;
-
-  /**
-   * Creates a new city.
-   *
-   * @param req the city creation request.
-   * @return a Response containing the created city.
-   */
-  @POST
-  public Response create(@Valid CityCreateRequest req) {
-    City createdCityDomain =
-        writeService.save(new CityCreateCommand(req.name(), req.ibgeCodeString()));
-
-    CityView cityView = readService.getViewById(createdCityDomain.getId());
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-
-    URI location = uri.getAbsolutePathBuilder().path(responseBody.id().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(responseBody)).build();
-  }
-
-  /**
-   * Creates multiple cities in bulk.
-   *
-   * @param req the bulk creation request.
-   * @return a Response indicating the result of the bulk creation.
-   */
-  @POST
-  @Path("/bulk")
-  public Response createBulk(@Valid BulkCreateRequest<CityCreateRequest> req) {
-    List<CityCreateCommand> toSave =
-        req.entities().stream()
-            .map(r -> new CityCreateCommand(r.name(), r.ibgeCodeString()))
-            .collect(Collectors.toList());
-
-    List<City> createdCitiesDomain = writeService.saveAll(toSave);
-
-    return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(createdCitiesDomain.size())))
-        .build();
-  }
-
-  /**
-   * Updates an existing city.
-   *
-   * @param id the ID of the city to update.
-   * @param req the city update request.
-   * @return a Response containing the updated city.
-   */
-  @PUT
-  @Path("/{id}")
-  public Response update(@PathParam("id") UUID id, @Valid CityUpdateRequest req) {
-    City updatedCityDomain =
-        writeService.update(id, new CityUpdateCommand(req.name(), req.ibgeCodeString()));
-
-    CityView cityView = readService.getViewById(updatedCityDomain.getId());
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-
-    return Response.ok(ApiEnvelope.ok(responseBody)).build();
-  }
-
-  /**
-   * Deletes cities by their IDs.
-   *
-   * @param req the request containing the IDs of the cities to delete.
-   * @return a Response indicating the result of the deletion.
-   */
-  @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
-  }
+  @Context
+  UriInfo uri;
 
   /**
    * Retrieves a city by its ID.
@@ -794,23 +661,9 @@ public class CityResource {
    * @return a Response containing the city.
    */
   @GET
-  @Path("/{id}")
-  public Response get(@PathParam("id") UUID id) {
+  @Path("{id}")
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
     CityView cityView = readService.getViewById(id);
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-    return Response.ok(ApiEnvelope.ok(responseBody)).build();
-  }
-
-  /**
-   * Retrieves a city by its IBGE code.
-   *
-   * @param ibgeCode the IBGE code of the city.
-   * @return a Response containing the city.
-   */
-  @GET
-  @Path("/ibge/{ibgeCode}")
-  public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
-    CityView cityView = readService.getViewByIbgeCode(ibgeCode);
     CityResponse responseBody = CityPresenter.toResponse(cityView);
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
@@ -822,16 +675,86 @@ public class CityResource {
    * @return a Response containing the list of cities.
    */
   @GET
-  public Response listOrSearch(@QueryParam("q") String q) {
-    List<CityView> views =
-        (StringUtils.isEmpty(q)) ? readService.listViews() : readService.search(q);
-    List<CityResponse> responseBody =
-        views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+  public Response list(@QueryParam("q") String q) {
+    List<CityView> views;
 
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(responseBody))).build();
+    if (StringUtils.isNotEmpty(q)) {
+      views = readService.search(q);
+    } else {
+      views = readService.listViews();
+    }
+
+    List<CityResponse> responseBody =
+            views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
+  }
+
+  /**
+   * Retrieves a city by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code of the city.
+   * @return a Response containing the city.
+   */
+  @GET
+  @Path("by-ibge/{ibgeCode}")
+  public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
+    CityView cityView = readService.getViewByIbgeCode(ibgeCode);
+    CityResponse responseBody = CityPresenter.toResponse(cityView);
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
+  }
+
+  /**
+   * Creates a new city.
+   *
+   * @param req the city creation request.
+   * @return a Response containing the created city.
+   */
+  @POST
+  public Response create(@Valid CityCreateRequest req) {
+    CityCreateCommand cmd = new CityCreateCommand(req.name(), req.ibgeCodeString());
+    City createdCityDomain = writeService.save(cmd);
+
+    // Re-fetch view to ensure consistent response format
+    CityView cityView = readService.getViewById(createdCityDomain.getId());
+    CityResponse responseBody = CityPresenter.toResponse(cityView);
+
+    URI location = uri.getAbsolutePathBuilder().path(responseBody.id().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(responseBody)).build();
+  }
+
+  /**
+   * Updates an existing city.
+   *
+   * @param id  the ID of the city to update.
+   * @param req the city update request.
+   * @return a Response containing the updated city.
+   */
+  @PUT
+  @Path("{id}")
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CityUpdateRequest req) {
+    CityUpdateCommand cmd = new CityUpdateCommand(req.name(), req.ibgeCodeString());
+    City updatedCityDomain = writeService.update(id, cmd);
+
+    CityView cityView = readService.getViewById(updatedCityDomain.getId());
+    CityResponse responseBody = CityPresenter.toResponse(cityView);
+
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
+  }
+
+  /**
+   * Deletes a city by its ID.
+   *
+   * @param id the ID of the city to delete.
+   * @return a Response indicating the result of the deletion.
+   */
+  @DELETE
+  @Path("{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
   }
 }
-
 
 ================================================================================
 FILE: presenter/dtos/CityCreateRequest.java
@@ -967,16 +890,15 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import java.util.List;
-import java.util.Map;
+
 import java.util.UUID;
 
-/** Interface for managing City entities. */
+/**
+ * Interface for managing City entities.
+ */
 public interface CityService {
 
   /**
@@ -985,40 +907,29 @@ public interface CityService {
    * @param cmd the command with city data.
    * @return the saved city.
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails (e.g., blank name, invalid IBGE code).
+   * @throws AppValidationException     if input validation fails (e.g., blank name, invalid IBGE code).
    */
   City save(CityCreateCommand cmd);
 
   /**
-   * Bulk save with intra-payload duplicate check.
-   *
-   * @param cmds the iterable of commands with city data.
-   * @return the saved cities.
-   * @throws DuplicateResourceException if any city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails for any city in the bulk.
-   */
-  List<City> saveAll(Iterable<CityCreateCommand> cmds);
-
-  /**
    * Update name and/or IBGE code.
    *
-   * @param id the city ID.
+   * @param id  the city ID.
    * @param cmd the command with updated city data.
    * @return the updated city.
-   * @throws ResourceNotFoundException if the city does not exist (or data is corrupted in DB).
+   * @throws ResourceNotFoundException  if the city does not exist (or data is corrupted in DB).
    * @throws DuplicateResourceException if a city with the same IBGE code already exists.
-   * @throws AppValidationException if input validation fails.
+   * @throws AppValidationException     if input validation fails.
    */
   City update(UUID id, CityUpdateCommand cmd);
 
   /**
-   * Delete cities by their IDs.
+   * Delete a city by its ID.
    *
-   * @param ids the iterable of city IDs to delete.
-   * @return a map with the number of deleted cities.
-   * @throws DataIntegrityException if any city is still referenced by another entity.
+   * @param id the city ID.
+   * @return true if the city was successfully deleted, false if the city does not exist or cannot be deleted
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID id);
 
   /**
    * Get a city by its ID.
@@ -1026,7 +937,7 @@ public interface CityService {
    * @param id the city ID.
    * @return the found city.
    * @throws ResourceNotFoundException if the city does not exist OR if the city exists but violates
-   *     domain rules (data integrity error).
+   *                                   domain rules (data integrity error).
    */
   City getById(UUID id);
 
@@ -1081,36 +992,56 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/** Service for reading city information. */
+/**
+ * Service for reading city information.
+ */
 @ApplicationScoped
 public class CityReadServiceImpl implements CityReadService {
 
-  @Inject CityQueries queries;
+  private static final Logger LOG = Logger.getLogger(CityReadServiceImpl.class);
+
+  @Inject
+  CityQueries queries;
 
   @Override
   public CityView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+            .findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("City lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      GeoErrorCodes.CITY_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
   }
 
   @Override
   public CityView getViewByIbgeCode(String ibgeCode) {
     if (StringUtils.isEmpty(ibgeCode)) {
       throw new ResourceNotFoundException(
-          GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode));
+              GeoErrorCodes.CITY_NOT_FOUND,
+              "ibgeCode",
+              "empty"
+      );
     }
+
     return queries
-        .findOptionalByIbgeCode(ibgeCode)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    GeoErrorCodes.CITY_NOT_FOUND, Map.of("ibgeCode", ibgeCode)));
+            .findOptionalByIbgeCode(ibgeCode)
+            .orElseThrow(() -> {
+              LOG.debugf("City lookup failed: IBGE Code %s not found", ibgeCode);
+              return new ResourceNotFoundException(
+                      GeoErrorCodes.CITY_NOT_FOUND,
+                      "ibgeCode",
+                      ibgeCode
+              );
+            });
   }
 
   @Override
@@ -1125,7 +1056,6 @@ public class CityReadServiceImpl implements CityReadService {
   }
 }
 
-
 ================================================================================
 FILE: service/impl/CityServiceImpl.java
 ================================================================================
@@ -1139,36 +1069,31 @@ import com.pug.geo.service.CityService;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.geo.service.utils.CityProcessor;
-import com.pug.partner.service.EntityService;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for managing cities. */
+import java.util.UUID;
+
+/**
+ * Service for managing cities.
+ */
 @ApplicationScoped
 public class CityServiceImpl implements CityService {
 
   private static final Logger LOG = Logger.getLogger(CityServiceImpl.class);
 
-  @Inject CityRepository repo;
-  @Inject EntityService entityService;
+  @Inject
+  CityRepository repo;
 
   @Transactional
   @Override
   public City save(CityCreateCommand cmd) {
+    LOG.debugf("Attempting to create City: %s (IBGE: %s)", cmd.name(), cmd.ibgeCodeString());
     City cityToPersist = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
 
     if (cityToPersist.hasErrors()) {
@@ -1176,103 +1101,83 @@ public class CityServiceImpl implements CityService {
     }
 
     if (existsByIbge(cityToPersist.getIbgeCode())) {
+      LOG.warnf("Creation failed: City with IBGE Code %s already exists", cityToPersist.getIbgeCode());
       throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS,
-          Map.of("code", cityToPersist.getIbgeCode().toString()));
+              GeoErrorCodes.CITY_ALREADY_EXISTS,
+              "ibgeCode",
+              cityToPersist.getIbgeCode().toString()
+      );
     }
 
-    return repo.persist(cityToPersist);
-  }
+    City savedCity = repo.persist(cityToPersist);
+    LOG.infof("City created successfully. ID: %s", savedCity.getId());
 
-  @Transactional
-  @Override
-  public List<City> saveAll(Iterable<CityCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
-    }
-
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<City> citiesToPersist = new ArrayList<>();
-    Set<String> ibgeCodesInPayload = new HashSet<>();
-
-    for (CityCreateCommand cmd : cmds) {
-      City city = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
-
-      if (city.hasErrors()) {
-        allCollectedProblems.addAll(city.getProblems());
-      } else {
-        String ibgeCodeStr = city.getIbgeCode().toString();
-
-        if (!ibgeCodesInPayload.add(ibgeCodeStr)) {
-          allCollectedProblems.add(
-              new Problem(GeoErrorCodes.CITY_ALREADY_EXISTS));
-        }
-        citiesToPersist.add(city);
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> ibgeCodesToPersist =
-        citiesToPersist.stream().map(c -> c.getIbgeCode().toString()).toList();
-
-    if (repo.existsAnyByIbgeCodeIn(ibgeCodesToPersist)) {
-      throw new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(citiesToPersist);
+    return savedCity;
   }
 
   @Transactional
   @Override
   public City update(UUID id, CityUpdateCommand cmd) {
+    LOG.debugf("Attempting to update City ID: %s", id);
     City current = getById(id);
-
     City updated = CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
 
     if (updated.hasErrors()) {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getIbgeCode().equals(current.getIbgeCode())
-        && existsByIbge(updated.getIbgeCode())) {
+    if (!updated.getIbgeCode().equals(current.getIbgeCode()) && existsByIbge(updated.getIbgeCode())) {
+      LOG.warnf("Update failed: City ID %s tried to use existing IBGE %s", id, updated.getIbgeCode());
       throw new DuplicateResourceException(
-          GeoErrorCodes.CITY_ALREADY_EXISTS, Map.of("code", updated.getIbgeCode().toString()));
+              GeoErrorCodes.CITY_ALREADY_EXISTS,
+              "ibgeCode",
+              updated.getIbgeCode().toString()
+      );
     }
 
     repo.update(updated);
-
+    LOG.infof("City updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.CITIES, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete City ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    if (entityService.existsAnyByCityIdIn(ids)) {
-      throw new DataIntegrityException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("City deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: City ID %s not found (idempotent)", id);
     }
-    return Map.of(DeleteKeys.CITIES, repo.deleteByIds(ids));
+
+    return deleted;
   }
 
   @Override
   public City getById(UUID id) {
-    City city =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id)));
+    City city = repo.findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("City lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      GeoErrorCodes.CITY_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
 
     if (city.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: City with ID %s in DB violates domain rules. Problems: %s",
-          id, city.getProblemsSummary());
-      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, Map.of("id", id));
+      LOG.errorf("DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
+              id, city.getProblemsSummary());
+      throw new ResourceNotFoundException(
+              GeoErrorCodes.CITY_NOT_FOUND,
+              "id",
+              id.toString()
+      );
     }
 
     return city;
@@ -1286,7 +1191,6 @@ public class CityServiceImpl implements CityService {
     return repo.existsByIbgeCode(ibgeCode.toString());
   }
 }
-
 
 ================================================================================
 FILE: service/utils/CityProcessor.java

@@ -1,7 +1,7 @@
 package com.pug.academic.presenter;
 
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;

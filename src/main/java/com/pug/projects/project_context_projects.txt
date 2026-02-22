@@ -16,7 +16,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -99,23 +98,18 @@ public class Attendance extends DomainError {
   /** Validates the Attendance entity's fields and state. */
   private void collectValidationProblems() {
     if (project == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
     }
     if (student == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
     }
     if (status == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (qrValidationInfo != null) {
       if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
       }
       BigDecimal lat = qrValidationInfo.getLatitude();
       BigDecimal lon = qrValidationInfo.getLongitude();
@@ -130,9 +124,7 @@ public class Attendance extends DomainError {
                   || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
 
       if (invalidLat || invalidLon) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
       }
     }
   }
@@ -161,7 +153,6 @@ import com.pug.projects.domain.enums.EnrollmentStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
@@ -249,28 +240,21 @@ public class Enrollment extends DomainError {
   /** Validates the Enrollment entity and accumulates errors if any. */
   private void collectValidationProblems() {
     if (student == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
     }
     if (project == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
     }
     if (status == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
     if (enrollmentInfo != null) {
       if (enrollmentInfo.getRequestAt() == null) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       }
       if (enrollmentInfo.getAcceptedAt() != null
           && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }
   }
@@ -437,7 +421,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectHours;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -604,8 +587,7 @@ public class Project extends DomainError {
     }
 
     if (projectHours == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     } else if (projectHours.hasErrors()) {
       addErrors(projectHours.getProblems());
     }
@@ -636,7 +618,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -701,8 +682,7 @@ public class AttendanceInfo extends DomainError {
     boolean hasDate = validatedAt != null;
 
     if (hasValidator != hasDate) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
     if (hasDate && createdAt != null && validatedAt.isBefore(createdAt)) {
       addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
@@ -718,7 +698,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -768,20 +747,16 @@ public class EnrollmentInfo extends DomainError {
   /** Validates the EnrollmentInfo instance. */
   private void collectValidationProblems() {
     if (requestAt == null) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
       return;
     }
 
     if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
 
     if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
     }
   }
 }
@@ -794,7 +769,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -836,24 +810,20 @@ public class ProjectHours extends DomainError {
   /** Validates the ProjectHours value object. */
   private void collectValidationProblems() {
     if (offeredHours == null) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
       return;
     }
 
     if (offeredHours.signum() < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_OFFERED_HOURS_NEGATIVE));
     }
 
     if (completedHours.signum() < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE));
     }
 
     if (completedHours.compareTo(offeredHours) > 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
+      addError(new Problem(ProjectsErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS));
     }
   }
 }
@@ -866,7 +836,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -929,8 +898,7 @@ public class ProjectInfo extends DomainError {
     }
 
     if (maxParticipants != null && maxParticipants < 0) {
-      addError(
-          new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+      addError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (createAt != null && closedAt != null && closedAt.isBefore(createAt)) {
@@ -947,7 +915,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1000,35 +967,27 @@ public class QrValidationInfo extends DomainError {
   /** Validates the QrValidationInfo fields and accumulates errors if any. */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
     }
 
     boolean hasLat = latitude != null;
     boolean hasLon = longitude != null;
 
     if (hasLat != hasLon) {
-      addError(
-          new Problem(
-              ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
     }
 
     if (hasLat) {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
           || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
       }
     }
 
     if (hasLon) {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
           || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addError(
-            new Problem(
-                ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
+        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
       }
     }
   }

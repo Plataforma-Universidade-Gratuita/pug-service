@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
  * @param campus               the campus of the student
  * @param course               the course of the student
  * @param requiredHours        the required hours for the student
+ * @param concluded            the status telling if the required hours were concluded or not
  * @param startDate            the start date of the student
  * @param dueDate              the due date of the student
  * @param createdAt            the creation time of the student
@@ -25,6 +26,7 @@ public record StudentView(
         String campus,
         CourseView course,
         BigDecimal requiredHours,
+        Boolean concluded,
         LocalDate startDate,
         LocalDate dueDate,
         OffsetDateTime createdAt,

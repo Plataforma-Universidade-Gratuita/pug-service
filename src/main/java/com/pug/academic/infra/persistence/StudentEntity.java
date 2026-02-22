@@ -1,6 +1,6 @@
 package com.pug.academic.infra.persistence;
 
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -57,6 +57,9 @@ public class StudentEntity {
 
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
+
+  @Column(name = "concluded", nullable = false)
+  private Boolean concluded;
 
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;

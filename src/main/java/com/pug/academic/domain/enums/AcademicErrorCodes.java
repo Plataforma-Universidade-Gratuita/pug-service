@@ -13,7 +13,6 @@ import lombok.Getter;
 @Getter
 public enum AcademicErrorCodes implements GenericErrorCodes {
   /* Validation Errors */
-  INVALID_CAMPUS_BLANK("error.domain.academic.campus.blank", "campus"),
   INVALID_COURSE_BLANK("error.domain.academic.course.blank", "courseId"),
   INVALID_HOURS_BLANK("error.domain.academic.hours.blank", "hours"),
   INVALID_PERIOD_BLANK("error.domain.academic.period.blank", "period"),

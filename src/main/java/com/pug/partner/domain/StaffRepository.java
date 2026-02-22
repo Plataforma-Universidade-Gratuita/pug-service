@@ -16,13 +16,6 @@ public interface StaffRepository {
   Staff persist(Staff staff);
 
   /**
-   * Updates an existing Staff entity.
-   *
-   * @param entity the Staff entity to update.
-   */
-  void update(Staff entity);
-
-  /**
    * Deletes a Staff entity by its account ID.
    *
    * @param accountId the account ID of the Staff entity to delete.

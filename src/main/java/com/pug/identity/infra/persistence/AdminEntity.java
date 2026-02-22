@@ -1,7 +1,10 @@
 package com.pug.identity.infra.persistence;
 
+import com.pug.shared.domain.enums.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
@@ -33,4 +36,8 @@ public class AdminEntity {
 
   @Column(name = "granted_at", nullable = false, updatable = false)
   private OffsetDateTime grantedAt;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "campus", nullable = false, length = 16)
+  private Campi campus;
 }

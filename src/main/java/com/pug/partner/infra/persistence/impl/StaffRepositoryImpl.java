@@ -33,19 +33,6 @@ public class StaffRepositoryImpl
 
   @Transactional
   @Override
-  public void update(Staff entity) {
-    if (entity == null) {
-      return;
-    }
-    StaffEntity managed = getEntityManager().find(StaffEntity.class, entity.getAccountId());
-    if (managed == null) {
-      return;
-    }
-    StaffMapper.copy(entity, managed);
-  }
-
-  @Transactional
-  @Override
   public boolean deleteByAccountId(UUID accountId) {
     if (accountId == null) {
       return false;

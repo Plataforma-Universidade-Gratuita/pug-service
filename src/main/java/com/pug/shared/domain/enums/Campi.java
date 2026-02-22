@@ -1,4 +1,4 @@
-package com.pug.academic.domain.enums;
+package com.pug.shared.domain.enums;
 
 import lombok.Getter;
 

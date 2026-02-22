@@ -32,7 +32,7 @@ public class StaffQueriesImpl implements StaffQueries {
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
                       new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt),
+                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
                       acc.email,
                       acc.accountType,
                       acc.createdAt

@@ -15,14 +15,6 @@ public interface CourseRepository {
   Course persist(Course entity);
 
   /**
-   * Persist multiple courses.
-   *
-   * @param entities the courses to persist.
-   * @return the persisted courses.
-   */
-  List<Course> persistAll(Iterable<Course> entities);
-
-  /**
    * Update a course.
    *
    * @param entity the course with updated data.
@@ -30,12 +22,12 @@ public interface CourseRepository {
   void update(Course entity);
 
   /**
-   * Delete courses by their IDs.
+   * Delete a course by its ID.
    *
-   * @param ids the IDs of the courses to delete.
-   * @return the number of deleted courses.
+   * @param id the ID of the course to delete.
+   * @return true if the course was deleted, false if no course with the given ID was found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Find a course by its ID.
@@ -47,17 +39,6 @@ public interface CourseRepository {
    * @return the found course.
    */
   Optional<Course> findOptionalById(UUID id);
-
-  /**
-   * Find a course by its name.
-   *
-   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param name the name of the course.
-   * @return the found course.
-   */
-  Optional<Course> findOptionalByName(String name);
 
   /**
    * List all courses.
@@ -87,12 +68,4 @@ public interface CourseRepository {
    * @return true if a course with the given name exists, false otherwise.
    */
   boolean existsByName(String name);
-
-  /**
-   * Check if any courses exist by their names.
-   *
-   * @param names the names of the courses.
-   * @return true if any course with the given names exists, false otherwise.
-   */
-  boolean existsAnyByNameIn(Iterable<String> names);
 }

@@ -24,7 +24,7 @@ public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject AdminRepository adminsRepo;
+  @Inject AdminRepository repo;
 
   @Inject AccountService accountService;
 
@@ -39,7 +39,7 @@ public class AdminServiceImpl implements AdminService {
       throw new AppValidationException(admin.getProblems());
     }
 
-    Admin savedAdmin = adminsRepo.persist(admin);
+    Admin savedAdmin = repo.persist(admin);
     LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
     return savedAdmin;
   }
@@ -48,12 +48,19 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin update(UUID accountId, AdminUpdateCommand cmd) {
     LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
-    if (adminsRepo.findOptionalByAccountId(accountId).isEmpty()) {
-      throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+    Admin current = getByAccountId(accountId);
+
+    if (cmd.accountCommand() != null) {
+      accountService.update(accountId, cmd.accountCommand());
     }
 
-    accountService.update(accountId, cmd.accountCommand());
+    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
+
+    if (updatedAdmin.hasErrors()) {
+      throw new AppValidationException(updatedAdmin.getProblems());
+    }
+
+    repo.update(updatedAdmin);
     LOG.infof("Admin details updated. Account ID: %s", accountId);
     return getByAccountId(accountId);
   }
@@ -62,7 +69,7 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to revoke Admin role for Account ID: %s", accountId);
-    boolean deleted = adminsRepo.deleteByAccountId(accountId);
+    boolean deleted = repo.deleteByAccountId(accountId);
 
     if (deleted) {
       LOG.infof("Admin role revoked successfully. Account ID: %s", accountId);
@@ -77,7 +84,7 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-        adminsRepo
+        repo
             .findOptionalByAccountId(accountId)
             .orElseThrow(
                 () -> {
@@ -100,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public List<Admin> listAll() {
     LOG.debug("Listing all admins");
-    List<Admin> admins = adminsRepo.listAllAdmins();
+    List<Admin> admins = repo.listAllAdmins();
 
     return admins.stream()
         .filter(

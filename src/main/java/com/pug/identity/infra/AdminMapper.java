@@ -23,7 +23,7 @@ public final class AdminMapper {
     if (e == null) {
       return null;
     }
-    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).build();
+    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).campus(e.getCampus()).build();
   }
 
   /**
@@ -36,7 +36,20 @@ public final class AdminMapper {
     if (d == null) {
       return null;
     }
-    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).build();
+    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).campus(d.getCampus()).build();
+  }
+
+  /**
+   * Copies properties from an Admin domain object to an existing AdminEntity.
+   *
+   * @param d the Admin domain object with updated values.
+   * @param e the existing AdminEntity to be updated.
+   */
+  public static void copy(Admin d, AdminEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setCampus(d.getCampus());
   }
 
   /**
@@ -62,6 +75,7 @@ public final class AdminMapper {
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt()),
-        adminEntity.getGrantedAt());
+        adminEntity.getGrantedAt(),
+        adminEntity.getCampus());
   }
 }

@@ -1,6 +1,6 @@
 package com.pug.academic.service.dtos;
 
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import java.math.BigDecimal;
 import java.time.LocalDate;

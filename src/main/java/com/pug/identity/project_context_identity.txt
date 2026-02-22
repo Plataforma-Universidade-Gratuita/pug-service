@@ -15,6 +15,8 @@ import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
@@ -22,7 +24,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -38,8 +39,7 @@ public class Account extends DomainError {
   Email email;
   AccountType accountType;
   String passwordHash;
-  OffsetDateTime createdAt;
-  OffsetDateTime updatedAt;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
   private Account(
@@ -48,15 +48,13 @@ public class Account extends DomainError {
           Email email,
           AccountType accountType,
           String passwordHash,
-          OffsetDateTime createdAt,
-          OffsetDateTime updatedAt) {
+          AuditInfo auditInfo) {
     this.id = id;
     this.userId = userId;
     this.email = email;
     this.accountType = accountType;
     this.passwordHash = passwordHash;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
@@ -68,10 +66,7 @@ public class Account extends DomainError {
    * @param passwordHash the password of the Account hashed
    * @return new Account instance (may contain errors)
    */
-  public static Account factory(
-          UUID userId, Email email, AccountType type, String passwordHash) {
-    var created = OffsetDateTime.now();
-
+  public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
     Account account =
             Account.builder()
                     .id(UuidCreator.getTimeOrderedEpoch())
@@ -79,8 +74,7 @@ public class Account extends DomainError {
                     .email(email)
                     .accountType(type)
                     .passwordHash(passwordHash)
-                    .createdAt(created)
-                    .updatedAt(created)
+                    .auditInfo(AuditInfo.factory())
                     .build();
 
     account.collectValidationProblems();
@@ -97,7 +91,7 @@ public class Account extends DomainError {
     if (email.equals(newEmail)) {
       return this;
     }
-    Account updated = toBuilder().email(newEmail).updatedAt(OffsetDateTime.now()).build();
+    Account updated = toBuilder().email(newEmail).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -115,7 +109,7 @@ public class Account extends DomainError {
     if (newHash != null && newHash.equals(passwordHash)) {
       return this;
     }
-    Account updated = toBuilder().passwordHash(newHash).updatedAt(OffsetDateTime.now()).build();
+    Account updated = toBuilder().passwordHash(newHash).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -127,8 +121,6 @@ public class Account extends DomainError {
     validateIdField(id);
     validateForeignKeyField(userId, "userId");
     validateStringField(passwordHash, 255L, "passwordHash");
-    validateAuditedFields(createdAt, updatedAt);
-
     if (accountType == null) {
       addError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
     }
@@ -136,6 +128,11 @@ public class Account extends DomainError {
       addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
     } else if (email.hasErrors()) {
       addErrors(email.getProblems());
+    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }
@@ -162,14 +159,6 @@ public interface AccountRepository {
   Account persist(Account entity);
 
   /**
-   * Persists multiple Accounts objects.
-   *
-   * @param entities the iterable collection of Account objects to persist.
-   * @return a list of the persisted Account objects.
-   */
-  List<Account> persistAll(Iterable<Account> entities);
-
-  /**
    * Updates an Accounts object.
    *
    * @param entity the Accounts to update.
@@ -177,13 +166,20 @@ public interface AccountRepository {
   void update(Account entity);
 
   /**
-   * Deletes Accounts objects by their IDs.
+   * Deletes an Accounts by its ID.
    *
-   * @param ids the iterable collection of UUIDs representing the IDs of the Accounts objects to
-   *     delete.
-   * @return the number of entities deleted.
+   * @param id the UUID of the Accounts to delete.
+   * @return true if the Accounts was deleted, false if it was not found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
+
+  /**
+   * Deletes all Accounts with the given list of IDs.
+   *
+   * @param ids the list of UUIDs of the Accounts to delete.
+   * @return the number of Accounts that were deleted.
+   */
+  long deleteAllByIds(List<UUID> ids);
 
   /**
    * Finds an Accounts by its ID.
@@ -197,6 +193,23 @@ public interface AccountRepository {
   Optional<Account> findOptionalById(UUID id);
 
   /**
+   * Finds the user IDs associated with a list of Account IDs.
+   *
+   * @param ids the list of Account UUIDs to find user IDs for.
+   * @return a list of user UUIDs associated with the given Account IDs.
+   */
+  List<UUID> findUserIdsByIds(List<UUID> ids);
+
+  /**
+   * Finds all user IDs that are considered "orphan" (i.e., have no associated Accounts) among a
+   * given list of user IDs.
+   *
+   * @param userIds the list of user UUIDs to check for orphan status.
+   * @return a list of user UUIDs that are orphaned (have no associated Accounts).
+   */
+  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
+
+  /**
    * Lists all Accounts objects.
    *
    * <p>Note: The returned Accounts may contain validation errors (check {@code
@@ -207,25 +220,12 @@ public interface AccountRepository {
   List<Account> listAllAccounts();
 
   /**
-   * Lists all Account user IDs by their Account IDs.
+   * Counts the total number of Accounts associated with a given user ID.
    *
-   * @param ids the iterable collection of UUIDs representing the Account IDs.
-   * @return a list of UUIDs representing the user IDs associated with the given Account IDs.
+   * @param userId the UUID of the user whose accounts are to be counted.
+   * @return the total number of Accounts associated with the specified user ID.
    */
-  List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids);
-
-  /**
-   * Finds user IDs that have Accounts, excluding those associated with the given Account IDs.
-   *
-   * @param excludedAccountIds the iterable collection of UUIDs representing the Account IDs to
-   *     exclude.
-   * @param candidateUserIds the iterable collection of UUIDs representing the candidate user IDs to
-   *     check.
-   * @return a list of UUIDs representing the user IDs that have Accounts, excluding those
-   *     associated with the excluded Account IDs.
-   */
-  List<UUID> findUserIdsWithAccountsExcluding(
-      Iterable<UUID> excludedAccountIds, Iterable<UUID> candidateUserIds);
+  long countAllAccountsByUserId(UUID userId);
 
   /**
    * Checks if an Accounts exists by email.
@@ -234,22 +234,6 @@ public interface AccountRepository {
    * @return true if an Accounts with the given email exists, false otherwise.
    */
   boolean existsByEmail(String email);
-
-  /**
-   * Checks if any Accounts exists with emails in the given iterable.
-   *
-   * @param emails the iterable of emails to check for existence.
-   * @return true if any Accounts with emails in the iterable exists, false otherwise.
-   */
-  boolean existsAnyByEmailIn(Iterable<String> emails);
-
-  /**
-   * Checks if any Accounts exists with user IDs in the given iterable.
-   *
-   * @param userIds the iterable of user IDs to check for existence.
-   * @return true if any Accounts with user IDs in the iterable exists, false otherwise.
-   */
-  boolean existsAnyByUserIdIn(Iterable<UUID> userIds);
 }
 
 
@@ -261,6 +245,8 @@ package com.pug.identity.domain;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -280,11 +266,13 @@ import java.util.UUID;
 public class Admin extends DomainError {
   UUID accountId;
   OffsetDateTime grantedAt;
+  Campi campus;
 
   @Builder(toBuilder = true)
-  private Admin(UUID accountId, OffsetDateTime grantedAt) {
+  private Admin(UUID accountId, OffsetDateTime grantedAt, Campi campus) {
     this.accountId = accountId;
     this.grantedAt = grantedAt;
+    this.campus = campus;
   }
 
   /**
@@ -300,13 +288,30 @@ public class Admin extends DomainError {
   }
 
   /**
+   * Behavior: Change the campus at which the student is enrolled.
+   *
+   * @param newCampus the new campus to set
+   * @return a new student instance with the updated campus
+   */
+  public Admin changeCampus(Campi newCampus) {
+    if (campus == newCampus) {
+      return this;
+    }
+    var updatedAdmin = this.toBuilder().campus(newCampus).build();
+    updatedAdmin.collectValidationProblems();
+    return updatedAdmin;
+  }
+
+  /**
    * Validates the Admin instance.
    */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
-
     if (grantedAt == null) {
       addError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
+    }
+    if (campus == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
   }
 }
@@ -332,20 +337,19 @@ public interface AdminRepository {
   Admin persist(Admin entity);
 
   /**
-   * Persists all given Admin domain objects.
+   * Updates the given Admin domain object.
    *
-   * @param entities the iterable of Admin instances to persist.
-   * @return a list of persisted Admin instances.
+   * @param entity the Admin to update.
    */
-  List<Admin> persistAll(Iterable<Admin> entities);
+  void update(Admin entity);
 
   /**
-   * Deletes Admin instances by their account IDs.
+   * Deletes the Admin with the given account ID.
    *
-   * @param ids the iterable of account IDs whose Admin instances should be deleted.
-   * @return the number of entities deleted.
+   * @param accountId the account ID of the Admin to delete.
+   * @return true if the Admin was deleted, false if no Admin with the given ID was found.
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteByAccountId(UUID accountId);
 
   /**
    * Finds an Admin by its account ID.
@@ -356,7 +360,7 @@ public interface AdminRepository {
    * @param accountId the account ID of the Admin to find.
    * @return an Optional containing the found Admin, or empty if not found.
    */
-  Optional<Admin> findOptionalById(UUID accountId);
+  Optional<Admin> findOptionalByAccountId(UUID accountId);
 
   /**
    * Lists all Admin instances.
@@ -367,14 +371,6 @@ public interface AdminRepository {
    * @return a list of all Admin instances.
    */
   List<Admin> listAllAdmins();
-
-  /**
-   * Checks if an Admin exists for the given iterable of account IDs.
-   *
-   * @param accountIds the iterable of account IDs to check.
-   * @return true if an Admin exists for any of the given account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
 }
 
 
@@ -398,26 +394,16 @@ public enum IdentityErrorCodes implements GenericErrorCodes {
   /* Validation Errors */
   INVALID_ACCOUNT_TYPE_BLANK("error.domain.identity.account.type.blank", "accountType"),
   INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
-  INVALID_CPF_DUPLICATED_INPUT("error.domain.identity.cpf.duplicated.input", "cpf"),
   INVALID_CPF_FORMAT("error.domain.identity.cpf.format", "cpf"),
   INVALID_EMAIL_BLANK("error.domain.identity.email.blank", "email"),
   INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
   INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
   /* Resource Errors */
-  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", "cpf"),
-  USER_NOT_FOUND("error.domain.identity.user.not.found", null),
-
-
   ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
   ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
   ADMIN_NOT_FOUND("error.domain.identity.admin.not.found", null),
-
-  ACCOUNT_STILL_REFERENCED_BY_ADMIN(
-      "error.domain.identity.account.still.referenced.by.admin", null),
-  ACCOUNT_STILL_REFERENCED_BY_STAFF(
-      "error.domain.identity.account.still.referenced.by.staff", null),
-  ACCOUNT_STILL_REFERENCED_BY_STUDENT(
-      "error.domain.identity.account.still.referenced.by.student", null);
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
+  USER_NOT_FOUND("error.domain.identity.user.not.found", null);
 
   private final String bundleKey;
   private final String fieldName;
@@ -446,20 +432,18 @@ import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * User entity aggregate.
- */
+/** User entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -468,36 +452,31 @@ public class User extends DomainError {
   UUID id;
   Cpf cpf;
   String name;
-  OffsetDateTime createdAt;
-  OffsetDateTime updatedAt;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private User(UUID id, Cpf cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+  private User(UUID id, Cpf cpf, String name, AuditInfo auditInfo) {
     this.id = id;
     this.cpf = cpf;
     this.name = name;
-    this.createdAt = createdAt;
-    this.updatedAt = updatedAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new users.
    *
-   * @param cpf  person's CPF
+   * @param cpf person's CPF
    * @param name person's name
    * @return new User instance (may contain errors)
    */
   public static User factory(Cpf cpf, String name) {
-    var created = OffsetDateTime.now();
-
     User user =
-            User.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cpf(cpf)
-                    .name(StringUtils.trim(name))
-                    .createdAt(created)
-                    .updatedAt(created)
-                    .build();
+        User.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cpf(cpf)
+            .name(StringUtils.trim(name))
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     user.collectValidationProblems();
     return user;
@@ -514,7 +493,7 @@ public class User extends DomainError {
     if (name.equals(trimmed)) {
       return this;
     }
-    User updated = toBuilder().name(trimmed).updatedAt(OffsetDateTime.now()).build();
+    User updated = toBuilder().name(trimmed).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -529,23 +508,24 @@ public class User extends DomainError {
     if (cpf.equals(newCpf)) {
       return this;
     }
-    User updated = toBuilder().cpf(newCpf).updatedAt(OffsetDateTime.now()).build();
+    User updated = toBuilder().cpf(newCpf).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
 
-  /**
-   * Validates the User instance.
-   */
+  /** Validates the User instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");
-    validateAuditedFields(createdAt, updatedAt);
-
     if (cpf == null) {
       addError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
     } else if (cpf.hasErrors()) {
       addErrors(cpf.getProblems());
+    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }
@@ -587,6 +567,14 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
+   * Deletes multiple Users by their IDs.
+   *
+   * @param ids a list of IDs of the Users to delete.
+   * @return the number of Users that were deleted.
+   */
+  long deleteAllByIds(List<UUID> ids);
+
+  /**
    * Finds a User by its ID.
    *
    * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
@@ -596,6 +584,17 @@ public interface UserRepository {
    * @return an Optional containing the User if found, or empty if not found.
    */
   Optional<User> findOptionalById(UUID id);
+
+  /**
+   * Finds a User by its CPF.
+   *
+   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * the stored data is inconsistent with current domain rules.
+   *
+   * @param cpf the CPF of the User to find.
+   * @return an Optional containing the User if found, or empty if not found.
+   */
+  Optional<User> findOptionalByCpf(String cpf);
 
   /**
    * Lists all User objects.
@@ -625,7 +624,6 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -663,9 +661,7 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the CPF format and digits, populating the problems list if invalid.
-   */
+  /** Validates the CPF format and digits, populating the problems list if invalid. */
   private void collectValidationProblems() {
     validateStringField(value, 11L, "cpf");
 
@@ -710,7 +706,7 @@ public class Cpf extends DomainError {
   /**
    * Calculates a CPF check digit.
    *
-   * @param s   the string with digits
+   * @param s the string with digits
    * @param len number of digits to use for calculation (9 or 10)
    * @return the calculated check digit
    */
@@ -734,14 +730,12 @@ package com.pug.identity.domain.vos;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import com.pug.shared.exceptions.AppValidationException;
+import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 import org.apache.commons.validator.routines.EmailValidator;
-
-import java.util.Locale;
 
 /**
  * Value object representing an email address. Converted to class to extend DomainError, allowing
@@ -776,9 +770,7 @@ public class Email extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the email format and length, populating the problems list if invalid.
-   */
+  /** Validates the email format and length, populating the problems list if invalid. */
   private void collectValidationProblems() {
     validateStringField(value, 254L, "email");
 
@@ -800,16 +792,12 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Maps between Account domain and AccountEntity persistence.
- */
+/** Maps between Account domain and AccountEntity persistence. */
 public final class AccountMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountMapper() {}
 
   /**
    * Maps an AccountEntity to an Account domain object.
@@ -822,14 +810,13 @@ public final class AccountMapper {
       return null;
     }
     return Account.builder()
-            .id(e.getId())
-            .userId(e.getUserId())
-            .email(Email.factory(e.getEmail()))
-            .accountType(e.getAccountType())
-            .passwordHash(e.getPasswordHash())
-            .createdAt(e.getCreatedAt())
-            .updatedAt(e.getUpdatedAt())
-            .build();
+        .id(e.getId())
+        .userId(e.getUserId())
+        .email(Email.factory(e.getEmail()))
+        .accountType(e.getAccountType())
+        .passwordHash(e.getPasswordHash())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -843,14 +830,14 @@ public final class AccountMapper {
       return null;
     }
     return AccountEntity.builder()
-            .id(d.getId())
-            .userId(d.getUserId())
-            .email(d.getEmail().toString())
-            .accountType(d.getAccountType())
-            .passwordHash(d.getPasswordHash())
-            .createdAt(d.getCreatedAt())
-            .updatedAt(d.getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .userId(d.getUserId())
+        .email(d.getEmail().toString())
+        .accountType(d.getAccountType())
+        .passwordHash(d.getPasswordHash())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
@@ -872,7 +859,7 @@ public final class AccountMapper {
    * Converts an AccountEntity and its associated UserEntity to an AccountView.
    *
    * @param accountEntity the AccountEntity.
-   * @param userEntity    the associated UserEntity.
+   * @param userEntity the associated UserEntity.
    * @return the AccountView.
    */
   public static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
@@ -880,17 +867,17 @@ public final class AccountMapper {
       return null;
     }
     return new AccountView(
-            accountEntity.getId(),
-            new UserView(
-                    userEntity.getId(),
-                    userEntity.getCpf(),
-                    userEntity.getName(),
-                    userEntity.getCreatedAt(),
-                    userEntity.getUpdatedAt()),
-            accountEntity.getEmail(),
-            accountEntity.getAccountType(),
-            accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt());
+        accountEntity.getId(),
+        new UserView(
+            userEntity.getId(),
+            userEntity.getCpf(),
+            userEntity.getName(),
+            userEntity.getCreatedAt(),
+            userEntity.getUpdatedAt()),
+        accountEntity.getEmail(),
+        accountEntity.getAccountType(),
+        accountEntity.getCreatedAt(),
+        accountEntity.getUpdatedAt());
   }
 }
 
@@ -923,7 +910,7 @@ public final class AdminMapper {
     if (e == null) {
       return null;
     }
-    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).build();
+    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).campus(e.getCampus()).build();
   }
 
   /**
@@ -936,7 +923,20 @@ public final class AdminMapper {
     if (d == null) {
       return null;
     }
-    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).build();
+    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).campus(d.getCampus()).build();
+  }
+
+  /**
+   * Copies properties from an Admin domain object to an existing AdminEntity.
+   *
+   * @param d the Admin domain object with updated values.
+   * @param e the existing AdminEntity to be updated.
+   */
+  public static void copy(Admin d, AdminEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setCampus(d.getCampus());
   }
 
   /**
@@ -962,7 +962,8 @@ public final class AdminMapper {
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt()),
-        adminEntity.getGrantedAt());
+        adminEntity.getGrantedAt(),
+        adminEntity.getCampus());
   }
 }
 
@@ -981,6 +982,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -989,30 +991,26 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
-/**
- * Entity representing a user in the system.
- */
+/** Entity representing a user in the system. */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-        callSuper = true,
-        of = {"email", "userId"})
+    callSuper = true,
+    of = {"email", "userId"})
 @Entity
 @Table(
-        name = "accounts",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        name = "uq_accounts_email",
-                        columnNames = {"email"})
-        },
-        indexes = {
-                @Index(name = "idx_accounts_email", columnList = "email"),
-        })
+    name = "accounts",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_accounts_email",
+          columnNames = {"email"})
+    },
+    indexes = {
+      @Index(name = "idx_accounts_email", columnList = "email"),
+    })
 @SuperBuilder
 public class AccountEntity extends BaseAuditedEntity {
 
@@ -1036,11 +1034,15 @@ FILE: infra/persistence/AdminEntity.java
 ================================================================================
 package com.pug.identity.infra.persistence;
 
-
+import com.pug.shared.domain.enums.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -1050,12 +1052,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Admin entity representing admin users in the system.
- */
+/** Admin entity representing admin users in the system. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -1073,6 +1070,10 @@ public class AdminEntity {
 
   @Column(name = "granted_at", nullable = false, updatable = false)
   private OffsetDateTime grantedAt;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "campus", nullable = false, length = 16)
+  private Campi campus;
 }
 
 
@@ -1089,6 +1090,7 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -1100,7 +1102,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
@@ -1111,26 +1113,6 @@ public class AccountRepositoryImpl
     AccountEntity e = AccountMapper.toEntity(entity);
     persistAndFlush(e);
     return AccountMapper.toDomain(e);
-  }
-
-  @Transactional
-  @Override
-  public List<Account> persistAll(Iterable<Account> entities) {
-    if (CollectionUtils.isEmpty(entities)) {
-      return List.of();
-    }
-    var batch = new ArrayList<AccountEntity>();
-    for (Account d : entities) {
-      if (d != null) {
-        batch.add(AccountMapper.toEntity(d));
-      }
-    }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-    persist(batch);
-    flush();
-    return batch.stream().map(AccountMapper::toDomain).toList();
   }
 
   @Transactional
@@ -1148,14 +1130,22 @@ public class AccountRepositoryImpl
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
     }
-    long deleted = delete("id in ?1", ids);
+    var result = PanacheRepositoryBase.super.deleteById(id);
     flush();
-    getEntityManager().clear();
-    return deleted;
+    return result;
+  }
+
+  @Transactional
+  @Override
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    return delete("id in ?1", ids);
   }
 
   @Override
@@ -1164,55 +1154,48 @@ public class AccountRepositoryImpl
   }
 
   @Override
+  public List<UUID> findUserIdsByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return List.of();
+    }
+    return getEntityManager()
+            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
+            .setParameter("ids", ids)
+            .getResultList();
+  }
+
+  @Override
+  public List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds) {
+    if (CollectionUtils.isEmpty(userIds)) {
+      return List.of();
+    }
+
+    List<UUID> usedUserIds = getEntityManager()
+            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
+            .setParameter("ids", userIds)
+            .getResultList();
+
+    List<UUID> orphans = new ArrayList<>(userIds);
+    orphans.removeAll(usedUserIds);
+    return orphans;
+  }
+
+  @Override
   public List<Account> listAllAccounts() {
     return listAll().stream().map(AccountMapper::toDomain).toList();
   }
 
   @Override
-  public List<UUID> listAllAccountUserIdsByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return List.of();
+  public long countAllAccountsByUserId(UUID userId) {
+    if (userId == null) {
+      return 0;
     }
-    return find("id in ?1", ids).stream().map(AccountEntity::getUserId).toList();
-  }
-
-  @Override
-  public List<UUID> findUserIdsWithAccountsExcluding(
-      Iterable<UUID> excludeAccountIds, Iterable<UUID> userIds) {
-    if (CollectionUtils.isEmpty(userIds)) {
-      return List.of();
-    }
-    String query = "userId in ?1";
-    if (!CollectionUtils.isEmpty(excludeAccountIds)) {
-      query += " and id not in ?2";
-      return find(query, userIds, excludeAccountIds).stream()
-          .map(AccountEntity::getUserId)
-          .distinct()
-          .toList();
-    } else {
-      return find(query, userIds).stream().map(AccountEntity::getUserId).distinct().toList();
-    }
+    return count("userId", userId);
   }
 
   @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByEmailIn(Iterable<String> emails) {
-    if (CollectionUtils.isEmpty(emails)) {
-      return false;
-    }
-    return find("email in ?1", emails).firstResultOptional().isPresent();
-  }
-
-  @Override
-  public boolean existsAnyByUserIdIn(Iterable<UUID> userIds) {
-    if (CollectionUtils.isEmpty(userIds)) {
-      return false;
-    }
-    return find("userId in ?1", userIds).firstResultOptional().isPresent();
   }
 }
 
@@ -1226,11 +1209,9 @@ import com.pug.identity.domain.Admin;
 import com.pug.identity.domain.AdminRepository;
 import com.pug.identity.infra.AdminMapper;
 import com.pug.identity.infra.persistence.AdminEntity;
-import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -1253,53 +1234,36 @@ public class AdminRepositoryImpl
 
   @Transactional
   @Override
-  public List<Admin> persistAll(Iterable<Admin> entities) {
-    if (CollectionUtils.isEmpty(entities)) {
-      return List.of();
+  public void update(Admin entity) {
+    if (entity == null || entity.getAccountId() == null) {
+      return;
     }
-    var batch = new ArrayList<AdminEntity>();
-    for (Admin d : entities) {
-      if (d == null || d.getAccountId() == null) {
-        continue;
-      }
-      batch.add(AdminMapper.toEntity(d));
+    AdminEntity e = findById(entity.getAccountId());
+    if (e == null) {
+      return;
     }
-    if (batch.isEmpty()) {
-      return List.of();
-    }
-    persist(batch);
-    flush();
-    return batch.stream().map(AdminMapper::toDomain).toList();
+    AdminMapper.copy(entity, e);
   }
 
   @Transactional
   @Override
-  public long deleteByIds(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0L;
+  public boolean deleteByAccountId(UUID accountId) {
+    if (accountId == null) {
+      return false;
     }
-    long n = delete("accountId in ?1", ids);
+    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
     flush();
-    getEntityManager().clear();
-    return n;
+    return deleted;
   }
 
   @Override
-  public Optional<Admin> findOptionalById(UUID accountId) {
+  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 
   @Override
   public List<Admin> listAllAdmins() {
     return findAll().list().stream().map(AdminMapper::toDomain).toList();
-  }
-
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return false;
-    }
-    return find("accountId in ?1", accountIds).firstResultOptional().isPresent();
   }
 }
 
@@ -1318,7 +1282,6 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -1362,9 +1325,26 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     return deleted;
   }
 
+  @Transactional
+  @Override
+    public long deleteAllByIds(List<UUID> ids) {
+      if (CollectionUtils.isEmpty(ids)) {
+        return 0;
+      }
+      return delete("id in ?1",ids);
+    }
+
   @Override
   public Optional<User> findOptionalById(UUID id) {
     return findByIdOptional(id).map(UserMapper::toDomain);
+  }
+
+  @Override
+  public Optional<User> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
   }
 
   @Override
@@ -1388,13 +1368,11 @@ FILE: infra/persistence/UserEntity.java
 package com.pug.identity.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseAuditedEntity;
-import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -1559,24 +1537,26 @@ FILE: infra/read/dtos/AccountView.java
 package com.pug.identity.infra.read.dtos;
 
 import com.pug.shared.domain.enums.AccountType;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
  * Data Transfer Object representing an account view.
  *
- * @param id          the unique identifier of the account
- * @param user        the user associated with the account (a UserView DTO)
- * @param email       the email address of the account
+ * @param id the unique identifier of the account
+ * @param user the user associated with the account (a UserView DTO)
+ * @param email the email address of the account
  * @param accountType the type of account
- * @param createdAt   the timestamp when the account was created
- * @param updatedAt   the timestamp when the account was last updated
+ * @param createdAt the timestamp when the account was created
+ * @param updatedAt the timestamp when the account was last updated
  */
 public record AccountView(
-        UUID id, UserView user, String email, AccountType accountType, OffsetDateTime createdAt,
-        OffsetDateTime updatedAt) {
-}
+    UUID id,
+    UserView user,
+    String email,
+    AccountType accountType,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt) {}
 
 
 ================================================================================
@@ -1604,6 +1584,8 @@ FILE: infra/read/dtos/AdminView.java
 ================================================================================
 package com.pug.identity.infra.read.dtos;
 
+import com.pug.shared.domain.enums.Campi;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -1611,8 +1593,9 @@ import java.time.OffsetDateTime;
  *
  * @param accountView the view of the account associated with the admin.
  * @param grantedAt the timestamp when admin privileges were granted.
+ * @param campus the campus at which the admin comes from.
  */
-public record AdminView(AccountView accountView, OffsetDateTime grantedAt) {}
+public record AdminView(AccountView accountView, OffsetDateTime grantedAt, Campi campus) {}
 
 
 ================================================================================
@@ -1626,14 +1609,14 @@ import java.util.UUID;
 /**
  * UserView DTO.
  *
- * @param id        the unique identifier of the user
- * @param cpf       the CPF (Cadastro de Pessoas Físicas) number of the user
- * @param name      the name of the user
+ * @param id the unique identifier of the user
+ * @param cpf the CPF (Cadastro de Pessoas Físicas) number of the user
+ * @param name the name of the user
  * @param createdAt the timestamp when the user record was created
  * @param updatedAt the timestamp when the user record was last updated
  */
-public record UserView(UUID id, String cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-}
+public record UserView(
+    UUID id, String cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
 
 
 ================================================================================
@@ -2020,11 +2003,17 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/** Maps between User domain and UserEntity persistence. */
+/**
+ * Maps between User domain and UserEntity persistence.
+ */
 public final class UserMapper {
-  /** Private constructor to prevent instantiation. */
-  private UserMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private UserMapper() {
+  }
 
   /**
    * Maps a UserEntity to a User domain object.
@@ -2037,12 +2026,11 @@ public final class UserMapper {
       return null;
     }
     return User.builder()
-        .id(e.getId())
-        .name(e.getName())
-        .cpf(Cpf.factory(e.getCpf()))
-        .createdAt(e.getCreatedAt())
-        .updatedAt(e.getUpdatedAt())
-        .build();
+            .id(e.getId())
+            .name(e.getName())
+            .cpf(Cpf.factory(e.getCpf()))
+            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+            .build();
   }
 
   /**
@@ -2056,12 +2044,12 @@ public final class UserMapper {
       return null;
     }
     return UserEntity.builder()
-        .id(d.getId())
-        .cpf(d.getCpf().toString())
-        .name(d.getName())
-        .createdAt(d.getCreatedAt())
-        .updatedAt(d.getUpdatedAt())
-        .build();
+            .id(d.getId())
+            .cpf(d.getCpf().toString())
+            .name(d.getName())
+            .createdAt(d.getAuditInfo().getCreatedAt())
+            .updatedAt(d.getAuditInfo().getUpdatedAt())
+            .build();
   }
 
   /**
@@ -2098,13 +2086,13 @@ FILE: presenter/AccountReadOnlyResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
+import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.identity.service.AccountReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
@@ -2121,7 +2109,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -2139,21 +2126,11 @@ public class AccountReadOnlyResource {
   @Context HttpHeaders headers;
 
   /**
-   * Picks the best locale from the Accept-Language header.
-   *
-   * @return the selected Locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
-
-  /**
    * Retrieves an account by its ID.
    *
    * @param id the UUIDv7 of the account.
    * @return the account response wrapped in an ApiEnvelope.
-   * @throws ResourceNotFoundException if no account with the given ID is found (or its associated
-   *     user is missing).
+   * @throws ResourceNotFoundException if no account with the given ID is found.
    */
   @GET
   @Path("{id}")
@@ -2163,17 +2140,30 @@ public class AccountReadOnlyResource {
   }
 
   /**
-   * Lists all accounts.
+   * Lists accounts.
    *
-   * @return a list of account responses wrapped in an ApiEnvelope.
+   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * all accounts.
+   *
+   * @param query optional name query to search for.
+   * @return the response containing the list of accounts.
    */
   @GET
-  public Response list() {
+  public Response list(@QueryParam("q") String query) {
+    List<AccountView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
     List<AccountResponse> list =
-        readService.listViews().stream()
+        views.stream()
             .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -2182,8 +2172,7 @@ public class AccountReadOnlyResource {
    * @param emailRaw the raw email string of the account.
    * @return the account response wrapped in an ApiEnvelope.
    * @throws AppValidationException if the provided email is malformed.
-   * @throws ResourceNotFoundException if no account with the given email is found (or its
-   *     associated user is missing).
+   * @throws ResourceNotFoundException if no account with the given email is found.
    */
   @GET
   @Path("by-email/{email}")
@@ -2207,28 +2196,12 @@ public class AccountReadOnlyResource {
         readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
-  /**
-   * Searches accounts by name.
-   *
-   * @param query the name query string.
-   * @return a list of account responses wrapped in an ApiEnvelope.
-   * @throws ResourceNotFoundException if associated user data is missing for any found account.
-   */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(new ArrayList<>()))).build();
-    }
-
-    List<AccountResponse> list =
-        readService.search(query).stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  /** Picks the best locale from the Accept-Language header. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -2254,19 +2227,17 @@ import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
-import com.pug.shared.presenter.dtos.DeleteResult;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -2282,10 +2253,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -2304,41 +2273,45 @@ public class AdminResource {
   @Context UriInfo uri;
 
   /**
-   * Picks the best locale from the request headers.
-   *
-   * @return the selected locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
-
-  /**
    * Gets an admin by ID.
    *
    * @param id the admin's account ID.
    * @return the admin response.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the admin is not found.
+   * @throws ResourceNotFoundException if the admin is not found.
    */
   @GET
   @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    AdminView v = readService.getViewById(id);
+    AdminView v = readService.getViewByAccountId(id);
     AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Lists all admins.
+   * Lists admins.
    *
+   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * all admins.
+   *
+   * @param query optional name query to search for.
    * @return the list of admin responses.
    */
   @GET
-  public Response list() {
+  public Response list(@QueryParam("q") String query) {
+    List<AdminView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
     List<AdminResponse> list =
-        readService.listViews().stream()
+        views.stream()
             .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -2355,7 +2328,8 @@ public class AdminResource {
         readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -2364,35 +2338,14 @@ public class AdminResource {
    * @param emailRaw the email string.
    * @return the admin response.
    * @throws AppValidationException if the provided email is malformed.
+   * @throws ResourceNotFoundException if no admin with the given email is found.
    */
   @GET
-  @Path("by-email")
-  public Response getByEmail(@QueryParam("email") String emailRaw) {
-    if (StringUtils.isEmpty(emailRaw)) {
-      return list();
-    }
+  @Path("by-email/{email}")
+  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     AdminView view = readService.getViewByEmail(emailRaw);
     AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Searches admins by name.
-   *
-   * @param query the name query string.
-   * @return the list of admin responses.
-   */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(new ArrayList<>()))).build();
-    }
-    List<AdminResponse> list =
-        readService.search(query).stream()
-            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
   }
 
   /**
@@ -2400,8 +2353,7 @@ public class AdminResource {
    *
    * @param req the admin creation request.
    * @return the response with the created admin.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an admin with the same
-   *     email/CPF already exists.
+   * @throws DuplicateResourceException if an admin with the same email/CPF already exists.
    * @throws AppValidationException if input validation fails.
    */
   @POST
@@ -2416,38 +2368,10 @@ public class AdminResource {
     Admin admin = writeService.save(adminCmd);
 
     AdminResponse body =
-        AdminPresenter.toResponse(readService.getViewById(admin.getAccountId()), locale(), i18n);
+        AdminPresenter.toResponse(
+            readService.getViewByAccountId(admin.getAccountId()), locale(), i18n);
     URI location = uri.getAbsolutePathBuilder().path(admin.getAccountId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
-  }
-
-  /**
-   * Creates multiple new admins in bulk.
-   *
-   * @param reqs the list of admin creation requests.
-   * @return the response with the amount of admins created.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any admin with the same
-   *     email/CPF already exists.
-   * @throws AppValidationException if input validation fails for any admin in the bulk.
-   */
-  @POST
-  @Path("bulk")
-  public Response createBulk(@Valid List<AdminCreateRequest> reqs) {
-    List<AdminCreateCommand> cmds =
-        reqs.stream()
-            .map(
-                req -> {
-                  String hashedPassword = passwordService.hash(req.password());
-                  UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
-                  AccountCreateCommand accountCmd =
-                      new AccountCreateCommand(
-                          req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-                  return new AdminCreateCommand(accountCmd);
-                })
-            .collect(Collectors.toList());
-
-    List<Admin> admins = writeService.saveAll(cmds);
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.sizeOnly(admins.size()))).build();
   }
 
   /**
@@ -2456,9 +2380,8 @@ public class AdminResource {
    * @param id the admin's account ID.
    * @param req the admin update request.
    * @return the response with the updated admin.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the admin does not exist.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an admin with the updated
-   *     email/CPF already exists.
+   * @throws ResourceNotFoundException if the admin does not exist.
+   * @throws DuplicateResourceException if an admin with the updated email/CPF already exists.
    * @throws AppValidationException if input validation fails.
    */
   @PUT
@@ -2475,22 +2398,27 @@ public class AdminResource {
 
     AdminResponse body =
         AdminPresenter.toResponse(
-            readService.getViewById(updatedAdmin.getAccountId()), locale(), i18n);
+            readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Deletes admins by their IDs.
+   * Deletes an admin by ID.
    *
-   * @param req the request containing the IDs to delete.
-   * @return the response with the deletion result.
-   * @throws DataIntegrityException if any admin is still referenced.
+   * @param id the admin's account ID.
+   * @return the response indicating successful deletion.
+   * @throws ResourceNotFoundException if the admin does not exist.
    */
   @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> result = writeService.deleteAll(req.ids());
+  @Path("{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
 
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(result))).build();
+  /** Picks the best locale from the request headers. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -2505,15 +2433,17 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * AccountResponse record.
+ * AccountResponse is a record that represents the response data for an account.
  *
- * @param id the account ID
- * @param user the user details associated with this account (as a UserResponse)
- * @param email the email of the account
- * @param accountType the type of account
- * @param accountTypeFormatted the formatted text for the account type (localized)
- * @param createdAt the creation date and time
- * @param createdAtFormatted the formatted text for the creation date and time (localized)
+ * @param id The unique identifier of the account.
+ * @param user The user associated with the account.
+ * @param email The email address associated with the account.
+ * @param accountType The type of the account (e.g., ADMIN, USER).
+ * @param accountTypeFormatted A formatted string representation of the account type.
+ * @param createdAt The date and time when the account was created.
+ * @param createdAtFormatted A formatted string representation of the creation date and time.
+ * @param updatedAt The date and time when the account was last updated.
+ * @param updatedAtFormatted A formatted string representation of the last update date and time.
  */
 public record AccountResponse(
     UUID id,
@@ -2522,7 +2452,9 @@ public record AccountResponse(
     AccountType accountType,
     String accountTypeFormatted,
     OffsetDateTime createdAt,
-    String createdAtFormatted) {}
+    String createdAtFormatted,
+    OffsetDateTime updatedAt,
+    String updatedAtFormatted) {}
 
 
 ================================================================================
@@ -2592,14 +2524,21 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Response DTO for a user.
+ * Data Transfer Object (DTO) representing the response for user-related operations.
  *
- * @param id the user ID
- * @param cpf the CPF (Cadastro de Pessoas Físicas) of the user
- * @param cpfFormatted the CPF formatted as XXX.XXX.XXX-XX
+ * <p>This record encapsulates the essential information about a user, including their unique
+ * identifier, CPF (Brazilian individual taxpayer registry identification), name, and timestamps for
+ * creation and last update. The formatted versions of the CPF and timestamps are also included for
+ * easier presentation in the API responses.
+ *
+ * @param id the unique identifier of the user
+ * @param cpf the CPF number of the user
+ * @param cpfFormatted the formatted CPF number for display purposes
  * @param name the name of the user
- * @param createdAt the creation date and time
- * @param createdAtFormatted the formatted creation date and time
+ * @param createdAt the timestamp when the user was created
+ * @param createdAtFormatted the formatted creation timestamp for display purposes
+ * @param updatedAt the timestamp when the user was last updated
+ * @param updatedAtFormatted the formatted last update timestamp for display purposes
  */
 public record UserResponse(
     UUID id,
@@ -2607,7 +2546,9 @@ public record UserResponse(
     String cpfFormatted,
     String name,
     OffsetDateTime createdAt,
-    String createdAtFormatted) {}
+    String createdAtFormatted,
+    OffsetDateTime updatedAt,
+    String updatedAtFormatted) {}
 
 
 ================================================================================
@@ -2647,6 +2588,7 @@ public final class AccountPresenter {
     UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
+    String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
 
     return new AccountResponse(
         v.id(),
@@ -2655,7 +2597,9 @@ public final class AccountPresenter {
         v.accountType(),
         typeFormatted,
         v.createdAt(),
-        createdAtFormatted);
+        createdAtFormatted,
+        v.updatedAt(),
+        updatedAtFormatted);
   }
 }
 
@@ -2705,23 +2649,17 @@ package com.pug.identity.presenter.mappers;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.utils.StringUtils;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting UserView to UserResponse.
- */
+/** Mapper class for converting UserView to UserResponse. */
 public final class UserPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserPresenter() {}
 
   /**
    * Converts a UserView to a UserResponse.
    *
-   * @param v      the UserView to convert
+   * @param v the UserView to convert
    * @param locale the locale for localization
    * @return the converted UserResponse
    */
@@ -2730,9 +2668,17 @@ public final class UserPresenter {
       return null;
     }
     String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
+    String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
 
     return new UserResponse(
-            v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), v.createdAt(), createdAtFormatted);
+        v.id(),
+        v.cpf(),
+        cpfFormatted(v.cpf()),
+        v.name(),
+        v.createdAt(),
+        createdAtFormatted,
+        v.updatedAt(),
+        updatedAtFormatted);
   }
 
   /**
@@ -2746,12 +2692,12 @@ public final class UserPresenter {
       return cpf;
     }
     return cpf.substring(0, 3)
-            + "."
-            + cpf.substring(3, 6)
-            + "."
-            + cpf.substring(6, 9)
-            + "-"
-            + cpf.substring(9, 11);
+        + "."
+        + cpf.substring(3, 6)
+        + "."
+        + cpf.substring(6, 9)
+        + "-"
+        + cpf.substring(9, 11);
   }
 }
 
@@ -2761,12 +2707,12 @@ FILE: presenter/UserReadOnlyResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
+import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
 import com.pug.identity.service.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
@@ -2783,7 +2729,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -2797,15 +2742,6 @@ public class UserReadOnlyResource {
   @Inject UserReadService readService;
 
   @Context HttpHeaders headers;
-
-  /**
-   * Picks the best locale from the request headers.
-   *
-   * @return the selected locale.
-   */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
 
   /**
    * Retrieves a user by their unique identifier.
@@ -2822,15 +2758,28 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Lists all users.
+   * Lists users.
    *
-   * @return the response containing the list of users
+   * <p>If the 'q' query parameter is provided, performs a search by name. Otherwise, returns all
+   * users.
+   *
+   * @param query optional name query to search for.
+   * @return the response containing the list of users.
    */
   @GET
-  public Response list() {
+  public Response list(@QueryParam("q") String query) {
+    List<UserView> views;
+
+    if (StringUtils.isNotEmpty(query)) {
+      views = readService.search(query);
+    } else {
+      views = readService.listViews();
+    }
+
     List<UserResponse> list =
-        readService.listViews().stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+        views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+
+    return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
@@ -2848,22 +2797,9 @@ public class UserReadOnlyResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /**
-   * Lists users by their name matching the query.
-   *
-   * @param query the name query to search for
-   * @return the response containing the list of users matching the name query
-   */
-  @GET
-  @Path("by-name")
-  public Response listByName(@QueryParam("q") String query) {
-    var body = new ArrayList<UserResponse>();
-    if (StringUtils.isEmpty(query)) {
-      return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(body))).build();
-    }
-    List<UserResponse> list =
-        readService.search(query).stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
-    return Response.ok(ApiEnvelope.ok(BulkCreateResult.of(list))).build();
+  /** Picks the best locale from the request headers. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -2934,11 +2870,7 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.User;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
-
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing accounts. */
@@ -2959,20 +2891,6 @@ public interface AccountService {
   Account save(AccountCreateCommand cmd);
 
   /**
-   * Creates and saves multiple new Accounts.
-   *
-   * <p>If the associated {@link User} entities do not exist, they will be created.
-   *
-   * @param cmds the commands containing the data to create the new Accounts.
-   * @return the list of saved Accounts.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any account with the given
-   *     emails already exists or if there are duplicate emails in the input commands.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     account or user in the bulk.
-   */
-  List<Account> saveAll(Iterable<AccountCreateCommand> cmds);
-
-  /**
    * Updates an existing Account with the given ID using the provided data.
    *
    * @param id the UUID of the Account to be updated.
@@ -2988,16 +2906,22 @@ public interface AccountService {
   Account update(UUID id, AccountUpdateCommand cmd);
 
   /**
-   * Deletes multiple Account entities by their IDs.
+   * Deletes an Account by its ID.
    *
-   * <p>Also deletes associated User entities if they are not referenced elsewhere.
-   *
-   * @param ids the iterable of UUIDs representing the IDs of the Account entities to be deleted.
-   * @return a map containing the count of deleted Accounts and Users.
-   * @throws DataIntegrityException if any account is still referenced
-   *     by Admin, Staff, or Student entities.
+   * @param id the UUID of the Account to be deleted.
+   * @return true if the Account was successfully deleted, false if the Account was not found.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID id);
+
+  /**
+   * Deletes all accounts with the given list of IDs.
+   *
+   * @param ids the list of UUIDs of the Accounts to be deleted.
+   * @return the number of Accounts that were successfully deleted.
+   */
+  long deleteAll(List<UUID> ids);
 
   /**
    * Lists all Account entities.
@@ -3021,28 +2945,12 @@ public interface AccountService {
   Account getById(UUID id);
 
   /**
-   * Checks if any account exists with a user ID in the provided list.
-   *
-   * @param userIds the list of user IDs to check
-   * @return true if any account exists with a user ID in the list, false otherwise
-   */
-  boolean existsByUserIdIn(Iterable<UUID> userIds);
-
-  /**
    * Checks if any account exists with the provided email.
    *
    * @param email the email to check (already a validated Value Object).
    * @return true if any account exists with the email, false otherwise
    */
   boolean existsByEmail(String email);
-
-  /**
-   * Checks if any account exists with an email in the provided list.
-   *
-   * @param emails the list of emails to check
-   * @return true if any account exists with an email in the list, false otherwise.
-   */
-  boolean existsAnyByEmailIn(Iterable<String> emails);
 }
 
 
@@ -3066,7 +2974,7 @@ public interface AdminReadService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given account
    *     ID is found.
    */
-  AdminView getViewById(UUID accountId);
+  AdminView getViewByAccountId(UUID accountId);
 
   /**
    * Retrieves an AdminView by its email.
@@ -3111,9 +3019,7 @@ package com.pug.identity.service;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing admins. */
@@ -3134,40 +3040,24 @@ public interface AdminService {
   Admin save(AdminCreateCommand cmd);
 
   /**
-   * Creates and saves multiple new Admins.
-   *
-   * <p>This method also creates and saves the associated Accounts.
-   *
-   * @param cmds the commands containing the data to create the new Admins.
-   * @return the list of saved Admins.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     admin or account in the bulk.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any account email already
-   *     exists.
-   */
-  List<Admin> saveAll(Iterable<AdminCreateCommand> cmds);
-
-  /**
    * Updates an existing Admin's underlying Account.
    *
-   * @param id the ID of the Admin (which corresponds to the Account ID).
+   * @param accountId the ID of the Admin (which corresponds to the Account ID).
    * @param cmd the command containing the data to update the Account.
    * @return the updated Admin.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not
    *     exist.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
-  Admin update(UUID id, AdminUpdateCommand cmd);
+  Admin update(UUID accountId, AdminUpdateCommand cmd);
 
   /**
-   * Deletes all Admins with the given IDs.
+   * Deletes the Admin with the given ID (which corresponds to the Account ID).
    *
-   * <p>This method first removes the Admin role, then deletes the associated Accounts.
-   *
-   * @param ids the IDs of the Admins to delete.
-   * @return a map containing the count of deleted Admins and Accounts.
+   * @param accountId the ID of the Admin to delete.
+   * @return true if the Admin was deleted, false if no Admin with the given ID was found.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
+  boolean delete(UUID accountId);
 
   /**
    * Retrieves an Admin by account ID.
@@ -3177,7 +3067,7 @@ public interface AdminService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
    *     ID does not exist (or data is corrupted in DB).
    */
-  Admin getById(UUID accountId);
+  Admin getByAccountId(UUID accountId);
 
   /**
    * Lists all Admin entities.
@@ -3187,14 +3077,6 @@ public interface AdminService {
    *     corrupted in the database.
    */
   List<Admin> listAll();
-
-  /**
-   * Checks if any Admin exists with account IDs in the provided iterable.
-   *
-   * @param ids the iterable of account IDs to check.
-   * @return true if any Admin exists with the given account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> ids);
 }
 
 
@@ -3251,12 +3133,15 @@ FILE: service/dtos/AdminUpdateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
 
+import com.pug.shared.domain.enums.Campi;
+
 /**
  * Command to update an existing admin user.
  *
  * @param accountCommand the command containing the data to update the underlying account.
+ * @param campus the new campus to which the admin comes from.
  */
-public record AdminUpdateCommand(AccountUpdateCommand accountCommand) {}
+public record AdminUpdateCommand(AccountUpdateCommand accountCommand, Campi campus) {}
 
 
 ================================================================================
@@ -3301,12 +3186,14 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /** Read-only service for account views. */
 @ApplicationScoped
 public class AccountReadServiceImpl implements AccountReadService {
+
+  private static final Logger LOG = Logger.getLogger(AccountReadServiceImpl.class);
 
   @Inject AccountQueries queries;
 
@@ -3315,23 +3202,27 @@ public class AccountReadServiceImpl implements AccountReadService {
     return queries
         .findOptionalById(id)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+            () -> {
+              LOG.debugf("Account lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                  IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
+            });
   }
 
   @Override
   public AccountView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(
-          IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email));
+      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "email", "empty");
     }
+
     return queries
         .findOptionalByEmail(email)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("email", email)));
+            () -> {
+              LOG.debugf("Account lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                  IdentityErrorCodes.ACCOUNT_NOT_FOUND, "email", email);
+            });
   }
 
   @Override
@@ -3360,34 +3251,23 @@ FILE: service/impl/AccountServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.academic.service.StudentService;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
-import com.pug.identity.domain.User;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.service.AccountService;
-import com.pug.identity.service.AdminService;
 import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.utils.AccountProcessor;
-import com.pug.partner.service.StaffService;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.time.TimeProvider;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -3398,116 +3278,48 @@ public class AccountServiceImpl implements AccountService {
   private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
 
   @Inject AccountRepository repo;
-  @Inject TimeProvider time;
+
   @Inject UserService userService;
-  @Inject AdminService adminService;
-  @Inject StaffService staffService;
-  @Inject StudentService studentService;
 
   @Transactional
   @Override
   public Account save(AccountCreateCommand cmd) {
-    UUID userId;
+    LOG.debugf("Attempting to create Account for email: '%s'", cmd.emailString());
 
+    UUID userId;
     Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
 
     if (userService.existsByCpf(cpf)) {
-      userId = userService.getByCpf(cpf.toString()).getId();
+      userId = userService.getByCpf(cpf).getId();
+      LOG.debugf("Associating new Account with existing User ID: %s", userId);
     } else {
-      User newUser = userService.save(cmd.userCommand());
-      userId = newUser.getId();
+      userId = userService.save(cmd.userCommand()).getId();
+      LOG.debugf("Created new User ID: %s for Account", userId);
     }
 
     Account account =
         AccountProcessor.processCreateInput(
-            userId,
-            cmd.emailString(),
-            (cmd.type() != null ? cmd.type().name() : null),
-            cmd.passwordHash(),
-            time);
+            userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
     if (account.hasErrors()) {
       throw new AppValidationException(account.getProblems());
     }
 
     if (existsByEmail(account.getEmail().toString())) {
+      LOG.warnf("Creation failed: Account with email %s already exists", account.getEmail());
       throw new DuplicateResourceException(
-          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-          Map.of("email", account.getEmail().toString()));
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", account.getEmail().toString());
     }
 
-    return repo.persist(account);
-  }
-
-  @Transactional
-  @Override
-  public List<Account> saveAll(Iterable<AccountCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
-    }
-
-    List<Problem> allProblems = new ArrayList<>();
-    List<Account> accountsToPersist = new ArrayList<>();
-    Set<String> emailsInPayload = new HashSet<>();
-
-    for (AccountCreateCommand cmd : cmds) {
-      UUID userId = null;
-      try {
-        Cpf cpf = Cpf.factory(cmd.userCommand().cpfString());
-        if (userService.existsByCpf(cpf)) {
-          userId = userService.getByCpf(cpf.toString()).getId();
-        } else {
-          User newUser = userService.save(cmd.userCommand());
-          userId = newUser.getId();
-        }
-      } catch (AppValidationException e) {
-        allProblems.addAll(e.getProblems());
-        continue;
-      } catch (DuplicateResourceException e) {
-        userId = userService.getByCpf(cmd.userCommand().cpfString()).getId();
-      }
-
-      if (userId == null) {
-        continue;
-      }
-
-      Account account =
-          AccountProcessor.processCreateInput(
-              userId,
-              cmd.emailString(),
-              (cmd.type() != null ? cmd.type().name() : null),
-              cmd.passwordHash(),
-              time);
-
-      if (account.hasErrors()) {
-        allProblems.addAll(account.getProblems());
-      } else {
-        if (!emailsInPayload.add(account.getEmail().toString())) {
-          allProblems.add(
-              new Problem(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS));
-        } else {
-          accountsToPersist.add(account);
-        }
-      }
-    }
-
-    if (!allProblems.isEmpty()) {
-      throw new AppValidationException(allProblems);
-    }
-
-    List<String> emailsToCheck =
-        accountsToPersist.stream().map(a -> a.getEmail().toString()).toList();
-
-    if (repo.existsAnyByEmailIn(emailsToCheck)) {
-      throw new DuplicateResourceException(IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(accountsToPersist);
+    Account savedAccount = repo.persist(account);
+    LOG.infof("Account created successfully. ID: %s", savedAccount.getId());
+    return savedAccount;
   }
 
   @Transactional
   @Override
   public Account update(UUID id, AccountUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Account ID: %s", id);
     Account current = getById(id);
 
     if (cmd.userCommand() != null) {
@@ -3523,62 +3335,73 @@ public class AccountServiceImpl implements AccountService {
 
     if (!updated.getEmail().equals(current.getEmail())
         && existsByEmail(updated.getEmail().toString())) {
+      LOG.warnf(
+          "Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
       throw new DuplicateResourceException(
-          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS,
-          Map.of("email", updated.getEmail().toString()));
+          IdentityErrorCodes.ACCOUNT_ALREADY_EXISTS, "email", updated.getEmail().toString());
     }
 
     repo.update(updated);
+    LOG.infof("Account updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Account ID: %s", id);
+    Account account = getById(id);
+
+    long count = repo.countAllAccountsByUserId(account.getUserId());
+    boolean deleted = repo.deleteById(account.getId());
+
+    if (deleted) {
+      LOG.infof("Account deleted successfully. ID: %s", id);
+      if (count <= 1) {
+        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
+        userService.delete(account.getUserId());
+      }
     }
 
-    if (adminService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_ADMIN);
-    }
-    if (staffService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STAFF);
-    }
-    if (studentService.existsAnyByAccountIdIn(ids)) {
-      throw new DataIntegrityException(IdentityErrorCodes.ACCOUNT_STILL_REFERENCED_BY_STUDENT);
-    }
+    return deleted;
+  }
 
-    Set<UUID> userIdsAssociated = new HashSet<>(repo.listAllAccountUserIdsByIds(ids));
-    Set<UUID> userIdsWithOtherAccounts =
-        new HashSet<>(repo.findUserIdsWithAccountsExcluding(ids, userIdsAssociated));
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
+    List<UUID> userIds = repo.findUserIdsByIds(ids);
 
-    Set<UUID> userIdsToDelete = new HashSet<>(userIdsAssociated);
-    userIdsToDelete.removeAll(userIdsWithOtherAccounts);
-
-    long deletedAccounts = repo.deleteByIds(ids);
-    long deletedUsers = 0L;
-
-    if (!userIdsToDelete.isEmpty()) {
-      Map<DeleteKeys, Long> userRes = userService.deleteAll(userIdsToDelete);
-      deletedUsers = userRes.getOrDefault(DeleteKeys.USERS, 0L);
+    long deletedCount = repo.deleteAllByIds(ids);
+    if (deletedCount > 0) {
+      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
+      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
+      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
+        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
+        userService.deleteAll(userIdsToDelete);
+      }
     }
 
-    return Map.of(DeleteKeys.ACCOUNTS, deletedAccounts, DeleteKeys.USERS, deletedUsers);
+    return deletedCount;
   }
 
   @Override
   public List<Account> listAll() {
+    LOG.debug("Listing all accounts");
     List<Account> accounts = repo.listAllAccounts();
-    for (Account account : accounts) {
-      if (account.hasErrors()) {
-        LOG.errorf(
-            "Corrupted Account found. ID: %s. Problems: %s",
-            account.getId(), account.getProblemsSummary());
-        throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
-      }
-    }
-    return accounts;
+
+    return accounts.stream()
+        .filter(
+            account -> {
+              if (account.hasErrors()) {
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+                    account.getId(), account.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+        .toList();
   }
 
   @Override
@@ -3586,20 +3409,20 @@ public class AccountServiceImpl implements AccountService {
     Account account =
         repo.findOptionalById(id)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id)));
+                () -> {
+                  LOG.debugf("Account lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
+                });
 
     if (account.hasErrors()) {
-      LOG.errorf("Corrupted Account found. ID: %s. Problems: %s", id, account.getProblemsSummary());
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, Map.of("id", id));
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+          id, account.getProblemsSummary());
+      throw new ResourceNotFoundException(
+          IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
     }
     return account;
-  }
-
-  @Override
-  public boolean existsByUserIdIn(Iterable<UUID> userIds) {
-    return repo.existsAnyByUserIdIn(userIds);
   }
 
   @Override
@@ -3608,14 +3431,6 @@ public class AccountServiceImpl implements AccountService {
       return false;
     }
     return repo.existsByEmail(email);
-  }
-
-  @Override
-  public boolean existsAnyByEmailIn(Iterable<String> emails) {
-    if (CollectionUtils.isEmpty(emails)) {
-      return false;
-    }
-    return repo.existsAnyByEmailIn(emails);
   }
 }
 
@@ -3634,37 +3449,43 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /** Service for reading admin data. */
 @ApplicationScoped
 public class AdminReadServiceImpl implements AdminReadService {
 
+  private static final Logger LOG = Logger.getLogger(AdminReadServiceImpl.class);
+
   @Inject AdminQueries queries;
 
   @Override
-  public AdminView getViewById(UUID accountId) {
+  public AdminView getViewByAccountId(UUID accountId) {
     return queries
         .findOptionalById(accountId)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+            () -> {
+              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                  IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+            });
   }
 
   @Override
   public AdminView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email));
+      throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND, "email", "empty");
     }
+
     return queries
         .findOptionalByEmail(email)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("email", email)));
+            () -> {
+              LOG.debugf("Admin lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                  IdentityErrorCodes.ADMIN_NOT_FOUND, "email", email);
+            });
   }
 
   @Override
@@ -3702,19 +3523,13 @@ import com.pug.identity.service.AdminService;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.identity.service.utils.AdminProcessor;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.time.TimeProvider;
-import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /** Service for managing admins. */
@@ -3723,98 +3538,81 @@ public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject AdminRepository adminsRepo;
+  @Inject AdminRepository repo;
+
   @Inject AccountService accountService;
-  @Inject TimeProvider time;
 
   @Transactional
   @Override
   public Admin save(AdminCreateCommand cmd) {
+    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
     Account account = accountService.save(cmd.accountCommand());
 
-    Admin admin = AdminProcessor.processCreateInput(account.getId(), time);
-
+    Admin admin = AdminProcessor.processCreateInput(account.getId());
     if (admin.hasErrors()) {
       throw new AppValidationException(admin.getProblems());
     }
 
-    return adminsRepo.persist(admin);
+    Admin savedAdmin = repo.persist(admin);
+    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
+    return savedAdmin;
   }
 
   @Transactional
   @Override
-  public List<Admin> saveAll(Iterable<AdminCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
+    Admin current = getByAccountId(accountId);
+
+    if (cmd.accountCommand() != null) {
+      accountService.update(accountId, cmd.accountCommand());
     }
 
-    List<Account> accounts =
-        accountService.saveAll(
-            CollectionUtils.toStream(cmds)
-                .map(AdminCreateCommand::accountCommand)
-                .collect(Collectors.toList()));
+    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
 
-    List<Problem> problems = new ArrayList<>();
-    List<Admin> adminsToPersist = new ArrayList<>();
-
-    for (Account account : accounts) {
-      Admin admin = AdminProcessor.processCreateInput(account.getId(), time);
-
-      if (admin.hasErrors()) {
-        problems.addAll(admin.getProblems());
-      } else {
-        adminsToPersist.add(admin);
-      }
+    if (updatedAdmin.hasErrors()) {
+      throw new AppValidationException(updatedAdmin.getProblems());
     }
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
-
-    return adminsRepo.persistAll(adminsToPersist);
+    repo.update(updatedAdmin);
+    LOG.infof("Admin details updated. Account ID: %s", accountId);
+    return getByAccountId(accountId);
   }
 
   @Transactional
   @Override
-  public Admin update(UUID id, AdminUpdateCommand cmd) {
-    accountService.update(id, cmd.accountCommand());
-    return getById(id);
-  }
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to revoke Admin role for Account ID: %s", accountId);
+    boolean deleted = repo.deleteByAccountId(accountId);
 
-  @Transactional
-  @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(DeleteKeys.ADMINS, 0L, DeleteKeys.ACCOUNTS, 0L, DeleteKeys.USERS, 0L);
+    if (deleted) {
+      LOG.infof("Admin role revoked successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Revoke failed: Admin ID %s not found (idempotent)", accountId);
     }
 
-    long adminsDeleted = adminsRepo.deleteByIds(ids);
-
-    Map<DeleteKeys, Long> accountDeleteResult = accountService.deleteAll(ids);
-
-    return Map.of(
-        DeleteKeys.ADMINS, adminsDeleted,
-        DeleteKeys.ACCOUNTS, accountDeleteResult.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, accountDeleteResult.getOrDefault(DeleteKeys.USERS, 0L));
+    return deleted;
   }
 
   @Override
-  public Admin getById(UUID accountId) {
+  public Admin getByAccountId(UUID accountId) {
     Admin admin =
-        adminsRepo
-            .findOptionalById(accountId)
+        repo
+            .findOptionalByAccountId(accountId)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId)));
+                () -> {
+                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (admin.hasErrors()) {
       LOG.errorf(
-          "Data integrity error: "
-              + "Admin with Account ID %s in DB violates domain rules. Problems: %s",
+          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
           accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, Map.of("accountId", accountId));
+          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return admin;
@@ -3822,26 +3620,21 @@ public class AdminServiceImpl implements AdminService {
 
   @Override
   public List<Admin> listAll() {
-    List<Admin> admins = adminsRepo.listAllAdmins();
+    LOG.debug("Listing all admins");
+    List<Admin> admins = repo.listAllAdmins();
 
-    for (Admin admin : admins) {
-      if (admin.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Admin entity found in DB. Problems: %s",
-            admin.getProblemsSummary());
-        throw new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
-      }
-    }
-
-    return admins;
-  }
-
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return false;
-    }
-    return adminsRepo.existsAnyByAccountIdIn(ids);
+    return admins.stream()
+        .filter(
+            admin -> {
+              if (admin.hasErrors()) {
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+                    admin.getAccountId(), admin.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+        .toList();
   }
 }
 
@@ -3901,12 +3694,20 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/** Read-only service for user views. */
+/**
+ * Implementation of the {@link UserReadService} interface for retrieving user-related information.
+ *
+ * <p>This service provides methods to get user views by ID or CPF, list all user views, and search
+ * for users based on a query string. It handles scenarios where users are not found and ensures
+ * that appropriate exceptions are thrown with relevant error codes.
+ */
 @ApplicationScoped
 public class UserReadServiceImpl implements UserReadService {
+
+  private static final Logger LOG = Logger.getLogger(UserReadServiceImpl.class);
 
   @Inject UserQueries queries;
 
@@ -3915,21 +3716,26 @@ public class UserReadServiceImpl implements UserReadService {
     return queries
         .findOptionalById(id)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("id", id)));
+            () -> {
+              LOG.debugf("User lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                  IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
+            });
   }
 
   @Override
   public UserView getViewByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf));
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", "empty");
     }
+
     return queries
         .findOptionalByCpf(cpf)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    IdentityErrorCodes.USER_NOT_FOUND, Map.of("cpf", cpf)));
+            () -> {
+              LOG.debugf("User lookup failed: CPF %s not found", cpf);
+              return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf);
+            });
   }
 
   @Override
@@ -3958,33 +3764,35 @@ import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.identity.service.utils.UserProcessor;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
- * Service for managing users.
+ * Implementation of the {@link UserService} interface for managing user-related operations.
+ *
+ * <p>This service provides methods to create, update, delete, list, and retrieve users. It ensures
+ * that all operations adhere to the domain rules and handles validation and error scenarios
+ * appropriately.
  */
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
 
   private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
-  @Inject
-  UserRepository repo;
+  @Inject UserRepository repo;
 
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
+    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
     User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
 
     if (userToPersist.hasErrors()) {
@@ -3992,16 +3800,22 @@ public class UserServiceImpl implements UserService {
     }
 
     if (existsByCpf(userToPersist.getCpf())) {
-      LOG.errorf("User with CPF %s already exists", userToPersist.getCpf());
-      throw new DuplicateResourceException(new Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
+      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
+      throw new DuplicateResourceException(
+          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", userToPersist.getCpf().toString());
     }
 
-    return repo.persist(userToPersist);
+    User savedUser = repo.persist(userToPersist);
+    LOG.infof("User created successfully. ID: %s", savedUser.getId());
+
+    return savedUser;
   }
 
   @Transactional
   @Override
   public User update(UUID id, UserUpdateCommand cmd) {
+    LOG.debugf("Attempting to update User ID: %s", id);
+
     User current = getById(id);
     User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
 
@@ -4010,45 +3824,102 @@ public class UserServiceImpl implements UserService {
     }
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
-      LOG.errorf("User with CPF %s already exists", updated.getCpf());
-      throw new DuplicateResourceException(new Problem(IdentityErrorCodes.USER_ALREADY_EXISTS));
+      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
+      throw new DuplicateResourceException(
+          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", updated.getCpf().toString());
     }
 
     repo.update(updated);
+    LOG.infof("User updated successfully. ID: %s", id);
+
     return getById(id);
   }
 
   @Transactional
   @Override
   public boolean delete(UUID id) {
-    return repo.deleteById(id);
+    LOG.debugf("Attempting to delete User ID: %s", id);
+
+    boolean deleted = repo.deleteById(id);
+
+    if (deleted) {
+      LOG.infof("User deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: User ID %s not found (idempotent response)", id);
+    }
+
+    return deleted;
+  }
+
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    LOG.debugf("Attempting to delete multiple Users. IDs: %s", ids);
+    long deletedCount = repo.deleteAllByIds(ids);
+
+    LOG.infof("Batch delete completed. Requested: %d, Deleted: %d", ids.size(), deletedCount);
+    return deletedCount;
   }
 
   @Override
   public List<User> listAll() {
+    LOG.debug("Listing all users");
     List<User> users = repo.listAllUsers();
 
-    for (User user : users) {
-      if (user.hasErrors()) {
-        LOG.errorf("Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
-                user.getId(), user.getProblemsSummary());
-        throw new DataIntegrityException();
-      }
-    }
-    return users;
+    return users.stream()
+        .filter(
+            user -> {
+              if (user.hasErrors()) {
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+                    user.getId(), user.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+        .toList();
   }
 
   @Override
   public User getById(UUID id) {
-    User user = repo.findOptionalById(id).orElseThrow(() -> {
-      LOG.errorf("User with ID %s not found", id);
-      return new ResourceNotFoundException(new Problem(IdentityErrorCodes.USER_NOT_FOUND));
-    });
+    User user =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
+                });
 
     if (user.hasErrors()) {
-      LOG.errorf("Data integrity error: User with ID %s in DB violates domain rules. Problems: %s",
-              id, user.getProblemsSummary());
-      throw new DataIntegrityException();
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+          id, user.getProblemsSummary());
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
+    }
+
+    return user;
+  }
+
+  @Override
+  public User getByCpf(Cpf cpf) {
+    User user =
+        repo.findOptionalByCpf(cpf.toString())
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: CPF %s not found", cpf);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
+                });
+
+    if (user.hasErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
+          cpf, user.getProblemsSummary());
+      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
     }
 
     return user;
@@ -4148,13 +4019,10 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Interface for managing user entities.
- */
+/** Interface for managing user entities. */
 public interface UserService {
 
   /**
@@ -4163,24 +4031,24 @@ public interface UserService {
    * @param cmd the command containing the data to create the new User
    * @return the saved User entity
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the same CPF
-   *                                                              already exists
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails (e.g., blank
-   *                                                              name, invalid CPF).
+   *     already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   *     name, invalid CPF).
    */
   User save(UserCreateCommand cmd);
 
   /**
    * Updates an existing User with the given ID using the provided data.
    *
-   * @param id  the UUID of the user to update
+   * @param id the UUID of the user to update
    * @param cmd the command containing the data to update the User
    * @return the updated User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the user with the given ID does
-   *                                                              not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   *     not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the updated CPF
-   *                                                              already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails for user
-   *                                                              data.
+   *     already exists.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for user
+   *     data.
    */
   User update(UUID id, UserUpdateCommand cmd);
 
@@ -4190,16 +4058,26 @@ public interface UserService {
    * @param id the UUID of the user to delete
    * @return true if the user was successfully deleted, false if the user was not found
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
-   *                                                             not exist (or data is corrupted in DB).
+   *     not exist (or data is corrupted in DB).
    */
   boolean delete(UUID id);
+
+  /**
+   * Deletes multiple Users by their IDs.
+   *
+   * @param ids a list of UUIDs of the users to delete
+   * @return the number of users successfully deleted
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any user with the given IDs does
+   *     not exist (or data is corrupted in DB).
+   */
+  long deleteAll(List<UUID> ids);
 
   /**
    * Lists all users.
    *
    * @return a list of all User entities
    * @throws com.pug.shared.exceptions.AppValidationException if any User entity found is corrupted
-   *                                                          in the database.
+   *     in the database.
    */
   List<User> listAll();
 
@@ -4209,9 +4087,19 @@ public interface UserService {
    * @param id the UUID of the user
    * @return the User entity
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
-   *                                                             not exist (or data is corrupted in DB).
+   *     not exist (or data is corrupted in DB).
    */
   User getById(UUID id);
+
+  /**
+   * Retrieves a User by its CPF.
+   *
+   * @param cpf the CPF of the user (already a validated Value Object).
+   * @return the User entity
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given CPF does
+   *     not exist (or data is corrupted in DB).
+   */
+  User getByCpf(Cpf cpf);
 
   /**
    * Checks if a user exists by CPF.
@@ -4232,32 +4120,26 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.utils.StringUtils;
-
 import java.util.UUID;
 
-/**
- * Utility class for processing Account DTO inputs.
- */
+/** Utility class for processing Account DTO inputs. */
 public class AccountProcessor {
 
   /**
    * Helper method to process DTO input and build a new Account domain object.
    *
-   * @param userId         The ID of the user owner.
-   * @param emailString    The email string from DTO.
+   * @param userId The ID of the user owner.
+   * @param emailString The email string from DTO.
    * @param accountTypeStr The account type string (e.g., "INDIVIDUAL", "COMPANY").
-   * @param passwordHash   The hashed password.
+   * @param passwordHash The hashed password.
    * @return The constructed Account domain object.
    */
   public static Account processCreateInput(
-          UUID userId,
-          String emailString,
-          String accountTypeStr,
-          String passwordHash) {
+      UUID userId, String emailString, String accountTypeStr, String passwordHash) {
 
     Email emailVo = Email.factory(emailString);
     AccountType type =
-            StringUtils.isEmpty(accountTypeStr) ? null : AccountType.valueOf(accountTypeStr);
+        StringUtils.isEmpty(accountTypeStr) ? null : AccountType.valueOf(accountTypeStr);
 
     return Account.factory(userId, emailVo, type, passwordHash);
   }
@@ -4266,12 +4148,12 @@ public class AccountProcessor {
    * Helper method to process DTO input and update an existing Account domain object.
    *
    * @param existingAccount The existing account to be updated.
-   * @param emailString     The email string from DTO (can be null for no change).
-   * @param passwordHash    The new password hash (can be null for no change).
+   * @param emailString The email string from DTO (can be null for no change).
+   * @param passwordHash The new password hash (can be null for no change).
    * @return The updated Account domain object.
    */
   public static Account processUpdateInput(
-          Account existingAccount, String emailString, String passwordHash) {
+      Account existingAccount, String emailString, String passwordHash) {
 
     Account updatedAccount = existingAccount;
 
@@ -4295,12 +4177,11 @@ FILE: service/utils/AdminProcessor.java
 package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.Admin;
+import com.pug.shared.domain.enums.Campi;
 
 import java.util.UUID;
 
-/**
- * Utility class for processing Admin DTO inputs.
- */
+/** Utility class for processing Admin DTO inputs. */
 public class AdminProcessor {
 
   /**
@@ -4311,6 +4192,23 @@ public class AdminProcessor {
    */
   public static Admin processCreateInput(UUID accountId) {
     return Admin.factory(accountId);
+  }
+
+  /**
+   * Helper method to process DTO input and update an existing Admin domain object.
+   *
+   * @param existingAdmin The existing admin to be updated.
+   * @param newCampus The new campus from DTO (can be null for no change).
+   * @return The updated Admin domain object.
+   */
+  public static Admin processUpdateInput(Admin existingAdmin, Campi newCampus) {
+    Admin updatedAdmin = existingAdmin;
+
+    if (newCampus != null) {
+      updatedAdmin = updatedAdmin.changeCampus(newCampus);
+    }
+
+    return updatedAdmin;
   }
 }
 
@@ -4324,16 +4222,14 @@ import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.utils.StringUtils;
 
-/**
- * Utility class for processing User DTO inputs.
- */
+/** Utility class for processing User DTO inputs. */
 public class UserProcessor {
 
   /**
    * Helper method to process DTO input and build a new User domain object.
    *
    * @param cpfString The CPF string from DTO.
-   * @param name      The user's name.
+   * @param name The user's name.
    * @return The constructed User domain object.
    */
   public static User processCreateInput(String cpfString, String name) {
@@ -4345,8 +4241,8 @@ public class UserProcessor {
    * Helper method to process DTO input and update an existing User domain object.
    *
    * @param existingUser The existing user to be updated.
-   * @param cpfString    The CPF string from DTO (can be null for no change).
-   * @param name         The name from DTO (can be null for no change).
+   * @param cpfString The CPF string from DTO (can be null for no change).
+   * @param name The name from DTO (can be null for no change).
    * @return The updated User domain object.
    */
   public static User processUpdateInput(User existingUser, String cpfString, String name) {

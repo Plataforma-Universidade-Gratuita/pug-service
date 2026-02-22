@@ -29,8 +29,7 @@
 │   │   │           │   │   ├── Student.java
 │   │   │           │   │   ├── StudentRepository.java
 │   │   │           │   │   ├── enums/
-│   │   │           │   │   │   ├── AcademicErrorCodes.java
-│   │   │           │   │   │   └── Campi.java
+│   │   │           │   │   │   └── AcademicErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── AcademicRegistration.java
 │   │   │           │   │       ├── CounterpartHours.java
@@ -265,8 +264,7 @@
 │   │   │           │   │   │   ├── EntityResponse.java
 │   │   │           │   │   │   ├── EntityUpdateRequest.java
 │   │   │           │   │   │   ├── StaffCreateRequest.java
-│   │   │           │   │   │   ├── StaffResponse.java
-│   │   │           │   │   │   └── StaffUpdateRequest.java
+│   │   │           │   │   │   └── StaffResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
@@ -279,8 +277,7 @@
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── EntityCreateCommand.java
 │   │   │           │       │   ├── EntityUpdateCommand.java
-│   │   │           │       │   ├── StaffCreateCommand.java
-│   │   │           │       │   └── StaffUpdateCommand.java
+│   │   │           │       │   └── StaffCreateCommand.java
 │   │   │           │       ├── impl/
 │   │   │           │       │   ├── EntityReadServiceImpl.java
 │   │   │           │       │   ├── EntityServiceImpl.java
@@ -320,9 +317,6 @@
 │   │   │           │   │       ├── EnrollmentRepositoryImpl.java
 │   │   │           │   │       ├── ProjectEntity.java
 │   │   │           │   │       └── ProjectRepositoryImpl.java
-│   │   │           │   ├── presenter/
-│   │   │           │   │   ├── dtos/
-│   │   │           │   │   └── rest/
 │   │   │           │   ├── project_context_projects.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── AttendanceService.java
@@ -332,15 +326,15 @@
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java
 │   │   │               │   ├── Problem.java
-│   │   │               │   └── enums/
-│   │   │               │       ├── AccountType.java
-│   │   │               │       ├── DeleteKeys.java
-│   │   │               │       ├── GenericErrorCodes.java
-│   │   │               │       └── SharedErrorCodes.java
+│   │   │               │   ├── enums/
+│   │   │               │   │   ├── AccountType.java
+│   │   │               │   │   ├── Campi.java
+│   │   │               │   │   ├── GenericErrorCodes.java
+│   │   │               │   │   └── SharedErrorCodes.java
+│   │   │               │   └── vos/
+│   │   │               │       └── AuditInfo.java
 │   │   │               ├── exceptions/
 │   │   │               │   ├── AppValidationException.java
-│   │   │               │   ├── ApplicationException.java
-│   │   │               │   ├── DataIntegrityException.java
 │   │   │               │   ├── DuplicateResourceException.java
 │   │   │               │   └── ResourceNotFoundException.java
 │   │   │               ├── generate-context.sh
@@ -357,9 +351,6 @@
 │   │   │               │       └── HibernateSearchUtils.java
 │   │   │               ├── presenter/
 │   │   │               │   ├── dtos/
-│   │   │               │   │   ├── BulkCreateRequest.java
-│   │   │               │   │   ├── BulkCreateResult.java
-│   │   │               │   │   ├── DeleteResult.java
 │   │   │               │   │   └── UuidsRequest.java
 │   │   │               │   └── rest/
 │   │   │               │       ├── ApiEnvelope.java
@@ -369,8 +360,8 @@
 │   │   │               │       └── mappers/
 │   │   │               │           ├── AppValidationExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
-│   │   │               │           ├── DataIntegrityExceptionMapper.java
 │   │   │               │           ├── DuplicateResourceExceptionMapper.java
+│   │   │               │           ├── PersistenceExceptionMapper.java
 │   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── project_context_shared.txt

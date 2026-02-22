@@ -29,6 +29,19 @@ public class AdminRepositoryImpl
 
   @Transactional
   @Override
+  public void update(Admin entity) {
+    if (entity == null || entity.getAccountId() == null) {
+      return;
+    }
+    AdminEntity e = findById(entity.getAccountId());
+    if (e == null) {
+      return;
+    }
+    AdminMapper.copy(entity, e);
+  }
+
+  @Transactional
+  @Override
   public boolean deleteByAccountId(UUID accountId) {
     if (accountId == null) {
       return false;

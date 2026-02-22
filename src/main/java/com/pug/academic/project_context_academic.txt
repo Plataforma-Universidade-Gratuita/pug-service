@@ -10,17 +10,21 @@ FILE: domain/Course.java
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Course entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Course entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -28,29 +32,32 @@ public class Course extends DomainError {
   UUID id;
   String name;
   UUID schoolId;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private Course(UUID id, String name, UUID schoolId) {
+  private Course(UUID id, String name, UUID schoolId, AuditInfo auditInfo) {
     this.id = id;
     this.name = name;
     this.schoolId = schoolId;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new courses.
    *
-   * @param name the name of the course
+   * @param name     the name of the course
    * @param schoolId the ID of the school
    * @return the created course (may contain errors)
    */
   public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-        Course.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(trimmedName)
-            .schoolId(schoolId)
-            .build();
+            Course.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(trimmedName)
+                    .schoolId(schoolId)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     course.collectValidationProblems();
     return course;
@@ -64,10 +71,10 @@ public class Course extends DomainError {
    */
   public Course changeName(String newName) {
     String trimmedName = StringUtils.trim(newName);
-    if (this.name.equals(trimmedName)) {
+    if (name.equals(trimmedName)) {
       return this;
     }
-    Course updatedCourse = this.toBuilder().name(trimmedName).build();
+    Course updatedCourse = toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
     updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
@@ -79,28 +86,25 @@ public class Course extends DomainError {
    * @return the updated course with the new school ID
    */
   public Course moveToSchool(UUID newSchoolId) {
-    if (this.schoolId.equals(newSchoolId)) {
+    if (schoolId.equals(newSchoolId)) {
       return this;
     }
-    Course updatedCourse = this.toBuilder().schoolId(newSchoolId).build();
+    Course updatedCourse = toBuilder().schoolId(newSchoolId).auditInfo(auditInfo.update()).build();
     updatedCourse.collectValidationProblems();
     return updatedCourse;
   }
 
-  /** Collects all validation problems for the Course instance. */
+  /**
+   * Collects all validation problems for the Course instance.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_BLANK));
-    } else if (name.length() > 120) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_NAME_LENGTH));
-    }
-
-    if (schoolId == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_BLANK));
+    validateIdField(id);
+    validateStringField(name, 120L, "name");
+    validateForeignKeyField(schoolId, "schoolId");
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else {
+      addErrors(auditInfo.getProblems());
     }
   }
 }
@@ -226,34 +230,20 @@ import lombok.Getter;
  */
 @Getter
 public enum AcademicErrorCodes implements GenericErrorCodes {
-  INVALID_ID_BLANK("error.domain.academic.id.blank", "id"),
+  /* Validation Errors */
   INVALID_COURSE_BLANK("error.domain.academic.course.blank", "courseId"),
-  INVALID_COURSE_NAME_BLANK("error.domain.academic.course.name.blank", "name"),
-  INVALID_COURSE_NAME_LENGTH("error.domain.academic.course.name.length", "name"),
-  INVALID_CAMPUS_BLANK("error.domain.academic.campus.blank", "campus"),
   INVALID_HOURS_BLANK("error.domain.academic.hours.blank", "hours"),
-  INVALID_HOURS_COMPLETED_GT_REQUIRED(
-      "error.domain.academic.hours.completed.gt.required", "completedHours"),
-  INVALID_HOURS_NEGATIVE("error.domain.academic.hours.negative", "hours"),
   INVALID_PERIOD_BLANK("error.domain.academic.period.blank", "period"),
-  INVALID_PERIOD_RANGE("error.domain.academic.period.range", "period"),
   INVALID_REGISTRATION_BLANK("error.domain.academic.registration.blank", "registration"),
-  INVALID_REGISTRATION_LENGTH("error.domain.academic.registration.length", "registration"),
   INVALID_SCHOOL_BLANK("error.domain.academic.school.blank", "schoolId"),
-  INVALID_SCHOOL_NAME_BLANK("error.domain.academic.school.name.blank", "name"),
-  INVALID_SCHOOL_NAME_LENGTH("error.domain.academic.school.name.length", "name"),
-  INVALID_STUDENT_ACCOUNT_BLANK("error.domain.academic.student.account.blank", "accountId"),
-
+  /* Resource Errors */
   COURSE_ALREADY_EXISTS("error.domain.academic.course.already.exists", null),
   COURSE_NOT_FOUND("error.domain.academic.course.not.found", null),
   SCHOOL_ALREADY_EXISTS("error.domain.academic.school.already.exists", null),
   SCHOOL_NOT_FOUND("error.domain.academic.school.not.found", null),
   STUDENT_ALREADY_EXISTS("error.domain.academic.student.already.exists", null),
   STUDENT_NOT_FOUND("error.domain.academic.student.not.found", null),
-
-  SCHOOL_STILL_REFERENCED("error.domain.academic.school.still.referenced", null),
-  COURSE_STILL_REFERENCED("error.domain.academic.course.still.referenced", null),
-  STUDENT_STILL_REFERENCED("error.domain.academic.student.still.referenced", null);
+  COURSE_STILL_REFERENCED("error.domain.academic.course.still.referenced", null);
 
   private final String bundleKey;
   private final String fieldName;
@@ -263,37 +253,11 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   *                  field-specific.
    */
   AcademicErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;
-  }
-}
-
-
-================================================================================
-FILE: domain/enums/Campi.java
-================================================================================
-package com.pug.academic.domain.enums;
-
-import lombok.Getter;
-
-/** Enum representing the different campus locations. */
-@Getter
-public enum Campi {
-  JARAGUA("academic.campus.jaragua"),
-  JOINVILLE("academic.campus.joinville");
-
-  private final String bundleKey;
-
-  /**
-   * Constructor for Campi enum.
-   *
-   * @param bundleKey The internationalization resource key for the campus description.
-   */
-  Campi(String bundleKey) {
-    this.bundleKey = bundleKey;
   }
 }
 
@@ -304,28 +268,34 @@ FILE: domain/School.java
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** School entity aggregate. */
+import java.util.UUID;
+
+/**
+ * School entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class School extends DomainError {
   UUID id;
   String name;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private School(UUID id, String name) {
+  private School(UUID id, String name, AuditInfo auditInfo) {
     this.id = id;
     this.name = name;
+    this.auditInfo = auditInfo;
   }
 
   /**
@@ -337,7 +307,7 @@ public class School extends DomainError {
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
     School school =
-        School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).build();
+            School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).auditInfo(AuditInfo.factory()).build();
 
     school.collectValidationProblems();
     return school;
@@ -351,24 +321,24 @@ public class School extends DomainError {
    */
   public School changeName(String newName) {
     String trimmedName = StringUtils.trim(newName);
-    if (this.name.equals(trimmedName)) {
+    if (name.equals(trimmedName)) {
       return this;
     }
-    School updatedSchool = this.toBuilder().name(trimmedName).build();
+    School updatedSchool = toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
     updatedSchool.collectValidationProblems();
     return updatedSchool;
   }
 
-  /** Collects all validation problems for the School instance. */
+  /**
+   * Collects all validation problems for the School instance.
+   */
   private void collectValidationProblems() {
-    if (id == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_ID_BLANK));
-    }
-
-    if (StringUtils.isEmpty(name)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_BLANK));
-    } else if (name.length() > 100) {
-      addError(new Problem(AcademicErrorCodes.INVALID_SCHOOL_NAME_LENGTH));
+    validateIdField(id);
+    validateStringField(name, 100L, "name");
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasErrors()) {
+      addErrors(auditInfo.getProblems());
     }
   }
 }
@@ -472,20 +442,25 @@ FILE: domain/Student.java
 package com.pug.academic.domain;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Student entity aggregate. */
+import java.util.UUID;
+
+/**
+ * Student entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -497,50 +472,54 @@ public class Student extends DomainError {
   UUID courseId;
   CounterpartHours counterpartHours;
   Period period;
+  AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
   private Student(
-      UUID accountId,
-      AcademicRegistration academicRegistration,
-      Campi campus,
-      UUID courseId,
-      CounterpartHours counterpartHours,
-      Period period) {
+          UUID accountId,
+          AcademicRegistration academicRegistration,
+          Campi campus,
+          UUID courseId,
+          CounterpartHours counterpartHours,
+          Period period,
+          AuditInfo auditInfo) {
     this.accountId = accountId;
     this.academicRegistration = academicRegistration;
     this.campus = campus;
     this.courseId = courseId;
     this.counterpartHours = counterpartHours;
     this.period = period;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg the academic registration for the student
-   * @param campus the campus at which the student is enrolled
-   * @param courseId the course identifier the student is enrolled in
-   * @param hours the counterpart hours details
-   * @param period the academic period details
+   * @param reg       the academic registration for the student
+   * @param campus    the campus at which the student is enrolled
+   * @param courseId  the course identifier the student is enrolled in
+   * @param hours     the counterpart hours details
+   * @param period    the academic period details
    * @return the created student (may contain errors)
    */
   public static Student factory(
-      UUID accountId,
-      AcademicRegistration reg,
-      Campi campus,
-      UUID courseId,
-      CounterpartHours hours,
-      Period period) {
+          UUID accountId,
+          AcademicRegistration reg,
+          Campi campus,
+          UUID courseId,
+          CounterpartHours hours,
+          Period period) {
     Student student =
-        Student.builder()
-            .accountId(accountId)
-            .academicRegistration(reg)
-            .campus(campus)
-            .courseId(courseId)
-            .counterpartHours(hours)
-            .period(period)
-            .build();
+            Student.builder()
+                    .accountId(accountId)
+                    .academicRegistration(reg)
+                    .campus(campus)
+                    .courseId(courseId)
+                    .counterpartHours(hours)
+                    .period(period)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     student.collectValidationProblems();
     return student;
@@ -553,10 +532,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated campus
    */
   public Student changeCampus(Campi newCampus) {
-    if (this.campus == newCampus) {
+    if (campus == newCampus) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().campus(newCampus).build();
+    Student updatedStudent = toBuilder().campus(newCampus).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -568,10 +547,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated academic registration
    */
   public Student changeAcademicRegistration(AcademicRegistration newReg) {
-    if (this.academicRegistration.equals(newReg)) {
+    if (academicRegistration.equals(newReg)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().academicRegistration(newReg).build();
+    Student updatedStudent = toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -583,10 +562,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated course
    */
   public Student changeCourse(UUID newCourseId) {
-    if (this.courseId.equals(newCourseId)) {
+    if (courseId.equals(newCourseId)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().courseId(newCourseId).build();
+    Student updatedStudent = toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -598,10 +577,10 @@ public class Student extends DomainError {
    * @return a new student instance with the updated counterpart hours
    */
   public Student changeCounterpartHours(CounterpartHours newHours) {
-    if (this.counterpartHours.equals(newHours)) {
+    if (counterpartHours.equals(newHours)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().counterpartHours(newHours).build();
+    Student updatedStudent = toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -613,41 +592,33 @@ public class Student extends DomainError {
    * @return a new student instance with the updated period
    */
   public Student changePeriod(Period newPeriod) {
-    if (this.period.equals(newPeriod)) {
+    if (period.equals(newPeriod)) {
       return this;
     }
-    Student updatedStudent = this.toBuilder().period(newPeriod).build();
+    Student updatedStudent = toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
 
-  /** Collects all validation problems for the Student instance. */
+  /**
+   * Collects all validation problems for the Student instance.
+   */
   private void collectValidationProblems() {
-    if (accountId == null) {
-      addError(
-          new Problem(AcademicErrorCodes.INVALID_STUDENT_ACCOUNT_BLANK));
+    validateForeignKeyField(accountId, "accountId");
+    validateForeignKeyField(courseId, "courseId");
+    if (campus == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
-
     if (academicRegistration == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
     } else if (academicRegistration.hasErrors()) {
       addErrors(academicRegistration.getProblems());
     }
-
-    if (campus == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
-    }
-
-    if (courseId == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
-    }
-
     if (counterpartHours == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
     } else if (counterpartHours.hasErrors()) {
       addErrors(counterpartHours.getProblems());
     }
-
     if (period == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
     } else if (period.hasErrors()) {
@@ -762,9 +733,7 @@ FILE: domain/vos/AcademicRegistration.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -800,18 +769,11 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /** Validates the registration format and length. */
+  /**
+   * Validates the registration format and length.
+   */
   private void collectValidationProblems() {
-    if (StringUtils.isEmpty(value)) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
-    } else if (value.length() > 15) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_LENGTH));
-    }
-  }
-
-  @Override
-  public String toString() {
-    return value;
+    validateStringField(value, 15L, "academicRegistration");
   }
 }
 
@@ -821,14 +783,13 @@ FILE: domain/vos/CounterpartHours.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
-import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
+
+import java.math.BigDecimal;
 
 /**
  * Value Object representing Counterpart Hours. Extends DomainError to allow deferred validation.
@@ -837,67 +798,36 @@ import lombok.Value;
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class CounterpartHours extends DomainError {
-
   BigDecimal requiredHours;
-  BigDecimal completedHours;
+  Boolean concluded;
 
   @Builder(toBuilder = true)
-  private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours) {
+  private CounterpartHours(BigDecimal requiredHours, Boolean concluded) {
     this.requiredHours = requiredHours;
-    this.completedHours = completedHours;
+    this.concluded = concluded;
   }
 
   /**
    * Factory method to create a new CounterpartHours.
    *
    * @param requiredHours the required hours
-   * @param completedHours the completed hours
    * @return The CounterpartHours instance (which may contain errors)
    */
-  public static CounterpartHours factory(BigDecimal requiredHours, BigDecimal completedHours) {
+  public static CounterpartHours factory(BigDecimal requiredHours, Boolean concluded) {
     CounterpartHours vo =
-        CounterpartHours.builder()
-            .requiredHours(requiredHours)
-            .completedHours(completedHours)
-            .build();
+            CounterpartHours.builder()
+                    .requiredHours(requiredHours)
+                    .concluded(concluded != null ? concluded : Boolean.FALSE)
+                    .build();
     vo.collectValidationProblems();
     return vo;
   }
 
-  /** Validates the hours. */
-  private void collectValidationProblems() {
-    if (requiredHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    }
-    if (completedHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    }
-
-    if (requiredHours != null && completedHours != null) {
-      if (requiredHours.signum() < 0) {
-        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
-      }
-      if (completedHours.signum() < 0) {
-        addError(new Problem(AcademicErrorCodes.INVALID_HOURS_NEGATIVE));
-      }
-      if (completedHours.compareTo(requiredHours) > 0) {
-        addError(
-            new Problem(
-                AcademicErrorCodes.INVALID_HOURS_COMPLETED_GT_REQUIRED));
-      }
-    }
-  }
-
   /**
-   * Calculates the remaining hours until the required hours are met.
-   *
-   * @return the number of hours still needed.
+   * Validates the hours.
    */
-  public BigDecimal getRemainingHours() {
-    if (requiredHours != null && completedHours != null) {
-      return requiredHours.subtract(completedHours);
-    }
-    return BigDecimal.ZERO;
+  private void collectValidationProblems() {
+    validateBigDecimalField(requiredHours, "requiredHours", false, false);
   }
 }
 
@@ -907,15 +837,14 @@ FILE: domain/vos/Period.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.AppValidationException;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
+
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Value Object representing a Period with start and due dates. Extends DomainError to allow
@@ -939,7 +868,7 @@ public class Period extends DomainError {
    * Factory method to create a new Period.
    *
    * @param startDate the start date
-   * @param dueDate the due date
+   * @param dueDate   the due date
    * @return The Period instance (which may contain errors)
    */
   public static Period factory(LocalDate startDate, LocalDate dueDate) {
@@ -948,20 +877,25 @@ public class Period extends DomainError {
     return vo;
   }
 
-  /** Validates the period dates. */
+  /**
+   * Validates the period dates.
+   */
   private void collectValidationProblems() {
-    if (startDate == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
-    }
-    if (dueDate == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
-    }
+    validateDateFields(startDate, dueDate);
+  }
 
-    if (startDate != null && dueDate != null) {
-      if (dueDate.isBefore(startDate)) {
-        addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_RANGE));
-      }
+  /**
+   * Calculates the total number of days in the period.
+   *
+   * @return the number of days between startDate and dueDate
+   * @throws IllegalStateException if startDate or dueDate is null
+   */
+  public long getPeriodInDays() {
+    if (startDate == null || dueDate == null) {
+      throw new IllegalStateException(
+              "Cannot calculate period in days when start date or due date is null.");
     }
+    return ChronoUnit.DAYS.between(startDate, dueDate);
   }
 
   /**
@@ -969,11 +903,12 @@ public class Period extends DomainError {
    *
    * @param referenceDate the date from which to calculate remaining days.
    * @return the number of remaining days.
+   * @throws IllegalArgumentException if referenceDate is null
    */
   public long getRemainingDays(LocalDate referenceDate) {
     if (referenceDate == null) {
       throw new IllegalArgumentException(
-          "Reference date cannot be null for remaining days calculation.");
+              "Reference date cannot be null for remaining days calculation.");
     }
     return ChronoUnit.DAYS.between(referenceDate, dueDate);
   }
@@ -990,11 +925,17 @@ import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/** Mapper for Course and CourseEntity. */
+/**
+ * Mapper for Course and CourseEntity.
+ */
 public final class CourseMapper {
-  /** Private constructor. */
-  private CourseMapper() {}
+  /**
+   * Private constructor.
+   */
+  private CourseMapper() {
+  }
 
   /**
    * Convert CourseEntity to Course domain object.
@@ -1006,7 +947,7 @@ public final class CourseMapper {
     if (e == null) {
       return null;
     }
-    return Course.builder().id(e.getId()).name(e.getName()).schoolId(e.getSchoolId()).build();
+    return Course.builder().id(e.getId()).name(e.getName()).schoolId(e.getSchoolId()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
   }
 
   /**
@@ -1019,7 +960,7 @@ public final class CourseMapper {
     if (d == null) {
       return null;
     }
-    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).build();
+    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
   }
 
   /**
@@ -1047,8 +988,8 @@ public final class CourseMapper {
     if (c == null) {
       return null;
     }
-    SchoolView schoolView = (s != null) ? new SchoolView(s.getId(), s.getName()) : null;
-    return new CourseView(c.getId(), c.getName(), schoolView);
+    SchoolView schoolView = (s != null) ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
+    return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }
 
@@ -1058,6 +999,7 @@ FILE: infra/persistence/CourseEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -1091,7 +1033,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
     name = "courses",
     indexes = {@Index(name = "idx_courses_school", columnList = "school_id")})
 @Indexed
-public class CourseEntity extends BaseUuidV7Entity {
+public class CourseEntity extends BaseAuditedEntity {
 
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
@@ -1496,6 +1438,7 @@ FILE: infra/persistence/SchoolEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -1532,7 +1475,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
           columnNames = {"name"})
     })
 @Indexed
-public class SchoolEntity extends BaseUuidV7Entity {
+public class SchoolEntity extends BaseAuditedEntity {
 
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
@@ -1548,7 +1491,7 @@ FILE: infra/persistence/StudentEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -1559,6 +1502,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -1605,14 +1549,20 @@ public class StudentEntity {
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
 
-  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
-  private BigDecimal completedHours;
+  @Column(name = "concluded", nullable = false)
+  private Boolean concluded;
 
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
 
   @Column(name = "due_date", nullable = false)
   private LocalDate dueDate;
+
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private OffsetDateTime createdAt;
+
+  @Column(name = "updated_at", nullable = false)
+  private OffsetDateTime updatedAt;
 }
 
 
@@ -1674,16 +1624,20 @@ FILE: infra/read/dtos/CourseView.java
 ================================================================================
 package com.pug.academic.infra.read.dtos;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Course view DTO.
+ * DTO for Course read operations.
  *
- * @param id the course id
- * @param name the course name
- * @param school the associated school
+ * @param id        the course id
+ * @param name      the course name
+ * @param school    the school of the course
+ * @param createdAt the course creation time
+ * @param updatedAt the course update time
  */
-public record CourseView(UUID id, String name, SchoolView school) {}
+public record CourseView(UUID id, String name, SchoolView school, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+}
 
 
 ================================================================================
@@ -1691,15 +1645,19 @@ FILE: infra/read/dtos/SchoolView.java
 ================================================================================
 package com.pug.academic.infra.read.dtos;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * School view DTO.
+ * DTO for School read operations.
  *
- * @param id the unique identifier of the school
- * @param name the name of the school
+ * @param id        the school id
+ * @param name      the school name
+ * @param createdAt the school creation time
+ * @param updatedAt the school update time
  */
-public record SchoolView(UUID id, String name) {}
+public record SchoolView(UUID id, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+}
 
 
 ================================================================================
@@ -1732,28 +1690,37 @@ FILE: infra/read/dtos/StudentView.java
 package com.pug.academic.infra.read.dtos;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 /**
- * StudentView DTO.
+ * DTO for Student read operations.
  *
- * @param account the account information
- * @param course the course information
- * @param requiredHours the required hours for the course
- * @param completedHours the completed hours by the student
- * @param startDate the start date of the program
- * @param dueDate the due date for program completion
+ * @param account              the account of the student
+ * @param academicRegistration the academic registration of the student
+ * @param campus               the campus of the student
+ * @param course               the course of the student
+ * @param requiredHours        the required hours for the student
+ * @param concluded            the status telling if the required hours were concluded or not
+ * @param startDate            the start date of the student
+ * @param dueDate              the due date of the student
+ * @param createdAt            the creation time of the student
+ * @param updatedAt            the update time of the student
  */
 public record StudentView(
-    AccountView account,
-    String academicRegistration,
-    String campus,
-    CourseView course,
-    BigDecimal requiredHours,
-    BigDecimal completedHours,
-    LocalDate startDate,
-    LocalDate dueDate) {}
+        AccountView account,
+        String academicRegistration,
+        String campus,
+        CourseView course,
+        BigDecimal requiredHours,
+        Boolean concluded,
+        LocalDate startDate,
+        LocalDate dueDate,
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt) {
+}
 
 
 ================================================================================
@@ -2227,11 +2194,17 @@ package com.pug.academic.infra;
 import com.pug.academic.domain.School;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.shared.domain.vos.AuditInfo;
 
-/** Mapper for School and SchoolEntity. */
+/**
+ * Mapper for School and SchoolEntity.
+ */
 public final class SchoolMapper {
-  /** Private constructor to prevent instantiation. */
-  private SchoolMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private SchoolMapper() {
+  }
 
   /**
    * Convert SchoolEntity to School domain object.
@@ -2243,7 +2216,7 @@ public final class SchoolMapper {
     if (e == null) {
       return null;
     }
-    return School.builder().id(e.getId()).name(e.getName()).build();
+    return School.builder().id(e.getId()).name(e.getName()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
   }
 
   /**
@@ -2256,7 +2229,7 @@ public final class SchoolMapper {
     if (d == null) {
       return null;
     }
-    return SchoolEntity.builder().id(d.getId()).name(d.getName()).build();
+    return SchoolEntity.builder().id(d.getId()).name(d.getName()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
   }
 
   /**
@@ -2282,7 +2255,7 @@ public final class SchoolMapper {
     if (s == null) {
       return null;
     }
-    return new SchoolView(s.getId(), s.getName());
+    return new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
   }
 }
 
@@ -2306,6 +2279,7 @@ import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.shared.domain.vos.AuditInfo;
 
 /** Mapper for Student and StudentEntity. */
 public final class StudentMapper {
@@ -2327,8 +2301,9 @@ public final class StudentMapper {
         .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
         .campus(e.getCampus())
         .courseId(e.getCourseId())
-        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours()))
+        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getConcluded()))
         .period(Period.factory(e.getStartDate(), e.getDueDate()))
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
   }
 
@@ -2348,9 +2323,11 @@ public final class StudentMapper {
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
-        .completedHours(d.getCounterpartHours().getCompletedHours())
+        .concluded(d.getCounterpartHours().getConcluded())
         .startDate(d.getPeriod().getStartDate())
         .dueDate(d.getPeriod().getDueDate())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
         .build();
   }
 
@@ -2368,7 +2345,7 @@ public final class StudentMapper {
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
-    e.setCompletedHours(d.getCounterpartHours().getCompletedHours());
+    e.setConcluded(d.getCounterpartHours().getConcluded());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
   }
@@ -2381,15 +2358,15 @@ public final class StudentMapper {
     }
 
     UserView userView =
-        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt()) : null;
+        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt()) : null;
     AccountView accountView =
         (acc != null)
             ? new AccountView(
-                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt())
+                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt(), acc.getUpdatedAt())
             : null;
 
-    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName()) : null;
-    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView) : null;
+    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
+    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt()) : null;
 
     return new StudentView(
         accountView,
@@ -2397,9 +2374,11 @@ public final class StudentMapper {
         s.getCampus().toString(),
         courseView,
         s.getRequiredHours(),
-        s.getCompletedHours(),
+        s.getConcluded(),
         s.getStartDate(),
-        s.getDueDate());
+        s.getDueDate(),
+        s.getCreatedAt(),
+        s.getUpdatedAt());
   }
 }
 
@@ -2419,9 +2398,6 @@ import com.pug.academic.service.CourseReadService;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
-import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.StringUtils;
@@ -2920,9 +2896,6 @@ import com.pug.academic.service.SchoolReadService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
-import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.StringUtils;
@@ -3068,7 +3041,7 @@ FILE: presenter/StudentResource.java
 package com.pug.academic.presenter;
 
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;
@@ -3083,11 +3056,8 @@ import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.BulkCreateResult;
-import com.pug.shared.presenter.dtos.DeleteResult;
 import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
@@ -3406,9 +3376,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Course;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -3462,8 +3429,7 @@ public interface CourseService {
    *
    * @param ids an iterable of UUIDs representing the course IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any course is still referenced
-   *     by students.
+   * @throws DataIntegrityException if any course is still referenced by students.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.
    */
@@ -3595,7 +3561,7 @@ FILE: service/dtos/StudentCreateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -3629,7 +3595,7 @@ FILE: service/dtos/StudentUpdateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -3738,10 +3704,8 @@ import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.DataIntegrityException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
@@ -3824,8 +3788,7 @@ public class CourseServiceImpl implements CourseService {
       } else {
         String courseName = course.getName();
         if (!processedNames.add(courseName)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
         } else {
           coursesToPersist.add(course);
         }
@@ -4065,7 +4028,6 @@ import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.academic.service.utils.SchoolProcessor;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -4127,8 +4089,7 @@ public class SchoolServiceImpl implements SchoolService {
       } else {
         String schoolName = school.getName();
         if (!processedNames.add(schoolName)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
         } else {
           schoolsToPersist.add(school);
         }
@@ -4377,7 +4338,6 @@ import com.pug.academic.service.dtos.StudentUpdateCommand;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
-import com.pug.shared.domain.enums.DeleteKeys;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -4467,8 +4427,7 @@ public class StudentServiceImpl implements StudentService {
       try {
         courseService.getById(courseId);
       } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(
-            new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
+        allCollectedProblems.add(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
       }
     }
 
@@ -4517,8 +4476,7 @@ public class StudentServiceImpl implements StudentService {
       } else {
         String registration = student.getAcademicRegistration().toString();
         if (!processedRegistrations.add(registration)) {
-          allCollectedProblems.add(
-              new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
+          allCollectedProblems.add(new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
         } else {
           studentsToPersist.add(student);
         }
@@ -4744,9 +4702,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -4796,8 +4751,7 @@ public interface SchoolService {
    *
    * @param ids an iterable of UUIDs of the schools to delete.
    * @return a map containing the number of deleted schools and related entities.
-   * @throws DataIntegrityException if any school is still referenced
-   *     by other modules.
+   * @throws DataIntegrityException if any school is still referenced by other modules.
    */
   Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
 
@@ -4921,9 +4875,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.shared.domain.enums.DeleteKeys;
-import com.pug.shared.exceptions.DataIntegrityException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -4984,8 +4935,8 @@ public interface StudentService {
    *
    * @param accountIds an iterable of UUIDs representing the student's account IDs to delete.
    * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any student is still referenced
-   *     by other modules (e.g. Enrollments).
+   * @throws DataIntegrityException if any student is still referenced by other modules (e.g.
+   *     Enrollments).
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
    *     during cascade deletion.
    */
@@ -5152,7 +5103,7 @@ FILE: service/utils/StudentProcessor.java
 package com.pug.academic.service.utils;
 
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;

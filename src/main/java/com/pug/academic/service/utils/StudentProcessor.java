@@ -1,7 +1,7 @@
 package com.pug.academic.service.utils;
 
 import com.pug.academic.domain.Student;
-import com.pug.academic.domain.enums.Campi;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;

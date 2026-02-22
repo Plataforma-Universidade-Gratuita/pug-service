@@ -15,14 +15,6 @@ public interface SchoolRepository {
   School persist(School entity);
 
   /**
-   * Persist multiple school entities.
-   *
-   * @param entities the iterable of school entities to persist
-   * @return the list of persisted school entities
-   */
-  List<School> persistAll(Iterable<School> entities);
-
-  /**
    * Update a school entity.
    *
    * @param entity the school entity with updated information
@@ -30,12 +22,12 @@ public interface SchoolRepository {
   void update(School entity);
 
   /**
-   * Delete schools by their IDs.
+   * Delete a school by its ID.
    *
-   * @param ids the iterable of UUIDs of the schools to delete
-   * @return the number of schools deleted
+   * @param id the UUID of the school to delete
+   * @return true if the school was successfully deleted, false if it was not found
    */
-  long deleteByIds(Iterable<UUID> ids);
+  boolean deleteById(UUID id);
 
   /**
    * Find a school by its ID.
@@ -47,17 +39,6 @@ public interface SchoolRepository {
    * @return an Optional containing the found school or empty if not found
    */
   Optional<School> findOptionalById(UUID id);
-
-  /**
-   * Find a school by its name.
-   *
-   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param name the name of the school to find
-   * @return an Optional containing the found school or empty if not found
-   */
-  Optional<School> findOptionalByName(String name);
 
   /**
    * List all schools.
@@ -76,12 +57,4 @@ public interface SchoolRepository {
    * @return true if a school with the given name exists, false otherwise
    */
   boolean existsByName(String name);
-
-  /**
-   * Check if any schools exist by their names.
-   *
-   * @param names the iterable of school names to check
-   * @return true if any schools with the given names exist, false otherwise
-   */
-  boolean existsAnyByNameIn(Iterable<String> names);
 }

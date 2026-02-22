@@ -1,7 +1,6 @@
 package com.pug.academic.infra.persistence;
 
 import com.pug.shared.infra.persistence.BaseAuditedEntity;
-import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

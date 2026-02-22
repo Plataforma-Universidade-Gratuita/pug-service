@@ -52,19 +52,6 @@ public final class StaffMapper {
   }
 
   /**
-   * Copies domain fields into an existing StaffEntity (for update).
-   *
-   * @param d the Staff domain object.
-   * @param e the StaffEntity to copy into.
-   */
-  public static void copy(Staff d, StaffEntity e) {
-    if (d == null || e == null) {
-      return;
-    }
-    e.setEntityId(d.getEntityId());
-  }
-
-  /**
    * Converts an AccountEntity, EntityEntity, CityEntity, and UserEntity into a StaffView.
    *
    * @param accountEntity the associated AccountEntity.

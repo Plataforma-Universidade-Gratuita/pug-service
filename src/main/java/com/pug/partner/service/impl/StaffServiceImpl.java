@@ -8,7 +8,6 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.partner.service.utils.StaffProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -54,29 +53,6 @@ public class StaffServiceImpl implements StaffService {
     LOG.infof("Staff role granted successfully. Account ID: %s, Entity ID: %s",
             savedStaff.getAccountId(), savedStaff.getEntityId());
     return savedStaff;
-  }
-
-  @Transactional
-  @Override
-  public Staff update(UUID accountId, StaffUpdateCommand cmd) {
-    LOG.debugf("Attempting to update Staff Account ID: %s", accountId);
-    Staff current = getByAccountId(accountId);
-
-    if (cmd.accountCommand() != null) {
-      accountService.update(accountId, cmd.accountCommand());
-    }
-    if (cmd.entityId() != null) {
-      entityService.getById(cmd.entityId());
-    }
-
-    Staff updatedStaff = StaffProcessor.processUpdateInput(current, cmd.entityId());
-    if (updatedStaff.hasErrors()) {
-      throw new AppValidationException(updatedStaff.getProblems());
-    }
-
-    repo.update(updatedStaff);
-    LOG.infof("Staff details updated. Account ID: %s", accountId);
-    return getByAccountId(accountId);
   }
 
   @Transactional

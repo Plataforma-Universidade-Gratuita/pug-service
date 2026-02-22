@@ -1,7 +1,7 @@
 CREATE TABLE staff
 (
     account_id uuid,
-    entity_id  uuid,
+    entity_id  uuid NOT NULL,
     PRIMARY KEY (account_id),
     FOREIGN KEY (account_id) REFERENCES accounts (id),
     FOREIGN KEY (entity_id) REFERENCES entities (id)

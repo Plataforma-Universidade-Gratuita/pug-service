@@ -1,12 +1,13 @@
 package com.pug.academic.domain;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.academic.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import lombok.Builder;
@@ -165,7 +166,7 @@ public class Student extends DomainError {
     validateForeignKeyField(accountId, "accountId");
     validateForeignKeyField(courseId, "courseId");
     if (campus == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_CAMPUS_BLANK));
+      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
     if (academicRegistration == null) {
       addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));

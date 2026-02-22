@@ -2,19 +2,15 @@ package com.pug.partner.presenter;
 
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
 import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
-import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -32,7 +28,6 @@ import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -190,34 +185,6 @@ public class StaffResource {
     URI location = uri.getAbsolutePathBuilder().path(staff.getAccountId().toString()).build();
 
     return Response.created(location).entity(ApiEnvelope.created(out)).build();
-  }
-
-  /**
-   * Updates an existing staff member.
-   *
-   * @param id  the UUID of the staff member's account to update.
-   * @param req the request containing updated staff member details.
-   * @return a Response containing the updated staff member details.
-   * @throws ResourceNotFoundException  if the staff member does not exist.
-   * @throws DuplicateResourceException if updated details conflict with existing records.
-   * @throws AppValidationException     if input validation fails.
-   */
-  @PUT
-  @Path("{id}")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
-    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
-
-    var userCmd = new UserUpdateCommand(req.cpfString(), req.name());
-    AccountUpdateCommand accountCmd =
-            new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    StaffUpdateCommand staffCmd = new StaffUpdateCommand(req.entityId(), accountCmd);
-
-    Staff updatedStaff = writeService.update(id, staffCmd);
-
-    StaffView v = readService.getViewByAccountId(updatedStaff.getAccountId());
-    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
-
-    return Response.ok(ApiEnvelope.ok(out)).build();
   }
 
   /**

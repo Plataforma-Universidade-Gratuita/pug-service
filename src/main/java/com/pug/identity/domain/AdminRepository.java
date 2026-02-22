@@ -15,6 +15,13 @@ public interface AdminRepository {
   Admin persist(Admin entity);
 
   /**
+   * Updates the given Admin domain object.
+   *
+   * @param entity the Admin to update.
+   */
+  void update(Admin entity);
+
+  /**
    * Deletes the Admin with the given account ID.
    *
    * @param accountId the account ID of the Admin to delete.
