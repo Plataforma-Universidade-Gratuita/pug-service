@@ -75,6 +75,32 @@ quarkus.hibernate-search-orm.elasticsearch.analysis.configurer=com.pug.shared.in
 %prod.quarkus.hibernate-search-orm.schema-management.strategy=validate
 
 ================================================================================
+FILE: db/migration/V000__generate_uuid_v7_from_db.sql
+================================================================================
+CREATE
+OR REPLACE FUNCTION uuid_generate_v7()
+RETURNS uuid
+AS $$
+DECLARE
+unix_ts_ms bytea;
+  uuid_bytes
+bytea;
+BEGIN
+  unix_ts_ms
+= substring(int8send(floor(extract(epoch from clock_timestamp()) * 1000)::bigint) from 3);
+  uuid_bytes
+= unix_ts_ms || gen_random_bytes(10);
+  uuid_bytes
+= set_byte(uuid_bytes, 6, (get_byte(uuid_bytes, 6) & x'0f'::int) | x'70'::int);
+  uuid_bytes
+= set_byte(uuid_bytes, 8, (get_byte(uuid_bytes, 8) & x'3f'::int) | x'80'::int);
+
+RETURN encode(uuid_bytes, 'hex')::uuid;
+END;
+$$
+LANGUAGE plpgsql;
+
+================================================================================
 FILE: db/migration/V001__create_users_table.sql
 ================================================================================
 CREATE TABLE users
@@ -121,6 +147,29 @@ CREATE TABLE cities
     UNIQUE (ibge_code)
 );
 
+INSERT INTO cities (id, name, ibge_code)
+VALUES (uuid_generate_v7(), 'JaraguÃ¡ do Sul', '4205407'),
+       (uuid_generate_v7(), 'Joinville', '4209106');
+
+CREATE
+OR REPLACE FUNCTION prevent_default_cities_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF
+OLD.ibge_code IN ('4205407', '4209106') THEN
+        RAISE EXCEPTION 'Action not allowed: JaraguÃ¡ do Sul and Joinville are default system cities and cannot be changed or deleted.';
+END IF;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_protect_default_cities
+    BEFORE UPDATE OR
+DELETE
+ON cities
+FOR EACH ROW
+EXECUTE FUNCTION prevent_default_cities_modification();
 
 ================================================================================
 FILE: db/migration/V004__create_admins_table.sql
@@ -335,12 +384,17 @@ CREATE INDEX idx_attendances_student_stat ON attendances (student_id, status);
 ================================================================================
 FILE: messages_en_US.properties
 ================================================================================
+# --- SHARED MESSAGES ---
+academic.campus.jaragua=Jaragua do Sul
+academic.campus.joinville=Joinville
+
 # --- SHARED ERRORS ---
-error.validation=Validation error
+error.business.rule.violation=Business rule violation.
+error.data.integrity=Data integrity violation.
+error.duplicated.resource=Resource already exists.
 error.internal=An internal server error has occurred.
 error.resource.not.found=Resource not found.
-error.duplicated.resource=Resource already exists.
-error.data.integrity=Data integrity violation.
+error.validation=Validation error.
 
 # --- SHARED VALIDATION ---
 error.domain.audit.info.blank=Audit information cannot be blank.
@@ -376,6 +430,7 @@ error.domain.geo.ibge.code.blank=IBGE code cannot be blank.
 error.domain.geo.ibge.code.invalid=Invalid IBGE code format.
 # Resources
 error.domain.geo.city.already.exists=A city with this IBGE code already exists.
+error.domain.geo.city.is.default=City is set as default and cannot be updated or deleted.
 error.domain.geo.city.not.found=City not found.
 error.domain.geo.city.referenced=City cannot be deleted because it is referenced by one or more entities.
 
@@ -392,12 +447,17 @@ error.domain.partner.staff.not.found=Staff member not found.
 ================================================================================
 FILE: messages_pt_BR.properties
 ================================================================================
+# --- SHARED MESSAGES ---
+academic.campus.jaragua=Jaraguá do Sul
+academic.campus.joinville=Joinville
+
 # --- SHARED ERRORS ---
-error.validation=Erro de validação
+error.business.rule.violation=Violação de regra de negócio.
+error.data.integrity=Violação de integridade de dados.
+error.duplicated.resource=Recurso já existe.
 error.internal=Ocorreu um erro interno no servidor.
 error.resource.not.found=Recurso não encontrado.
-error.duplicated.resource=Recurso já existe.
-error.data.integrity=Violação de integridade de dados.
+error.validation=Erro de validação.
 
 # --- SHARED VALIDATION ---
 error.domain.audit.info.blank=As informações de auditoria não podem estar em branco.
@@ -434,6 +494,7 @@ error.domain.geo.ibge.code.blank=O código IBGE não pode estar em branco.
 error.domain.geo.ibge.code.invalid=Formato de código IBGE inválido.
 # Resources
 error.domain.geo.city.already.exists=Já existe uma cidade com este código IBGE.
+error.domain.geo.city.is.default=A cidade está definida como padrão e não pode ser atualizada ou excluída.
 error.domain.geo.city.not.found=Cidade não encontrada.
 error.domain.geo.city.referenced=A cidade não pode ser excluída pois é referenciada por uma ou mais entidades.
 

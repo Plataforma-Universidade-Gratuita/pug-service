@@ -455,7 +455,7 @@ public class Project extends DomainError {
    * @param name the name of the project
    * @param entity the associated entity
    * @param description the project description
-   * @param createdBy the UUID of the user who created the project
+   * @param createdBy the UUID of the account who created the project
    * @param offeredHours the number of hours offered for the project
    * @param maxParticipants the maximum number of participants allowed
    * @param schools the list of associated schools
@@ -638,7 +638,7 @@ public class AttendanceInfo extends DomainError {
   /**
    * Private constructor for AttendanceInfo.
    *
-   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedBy UUID of the account who validated the attendance
    * @param validatedAt Date and time when the attendance was validated
    * @param createdAt Date and time when the attendance record was created
    */
@@ -652,7 +652,7 @@ public class AttendanceInfo extends DomainError {
   /**
    * Factory method to create and validate an AttendanceInfo instance.
    *
-   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedBy UUID of the account who validated the attendance
    * @param validatedAt Date and time when the attendance was validated
    * @param createdAt Date and time when the attendance record was created
    * @return A validated AttendanceInfo instance

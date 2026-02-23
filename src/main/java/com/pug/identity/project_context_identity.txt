@@ -193,19 +193,19 @@ public interface AccountRepository {
   Optional<Account> findOptionalById(UUID id);
 
   /**
-   * Finds the user IDs associated with a list of Account IDs.
+   * Finds the account IDs associated with a list of Account IDs.
    *
-   * @param ids the list of Account UUIDs to find user IDs for.
-   * @return a list of user UUIDs associated with the given Account IDs.
+   * @param ids the list of Account UUIDs to find account IDs for.
+   * @return a list of account UUIDs associated with the given Account IDs.
    */
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Finds all user IDs that are considered "orphan" (i.e., have no associated Accounts) among a
-   * given list of user IDs.
+   * Finds all account IDs that are considered "orphan" (i.e., have no associated Accounts) among a
+   * given list of account IDs.
    *
-   * @param userIds the list of user UUIDs to check for orphan status.
-   * @return a list of user UUIDs that are orphaned (have no associated Accounts).
+   * @param userIds the list of account UUIDs to check for orphan status.
+   * @return a list of account UUIDs that are orphaned (have no associated Accounts).
    */
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
@@ -220,10 +220,10 @@ public interface AccountRepository {
   List<Account> listAllAccounts();
 
   /**
-   * Counts the total number of Accounts associated with a given user ID.
+   * Counts the total number of Accounts associated with a given account ID.
    *
-   * @param userId the UUID of the user whose accounts are to be counted.
-   * @return the total number of Accounts associated with the specified user ID.
+   * @param userId the UUID of the account whose accounts are to be counted.
+   * @return the total number of Accounts associated with the specified account ID.
    */
   long countAllAccountsByUserId(UUID userId);
 
@@ -279,19 +279,20 @@ public class Admin extends DomainError {
    * Factory for new Admin.
    *
    * @param accountId the ID of the Account associated with the Admin
+   * @param campus the campus where the admin comes from.
    * @return new Admin instance (may contain errors)
    */
-  public static Admin factory(UUID accountId) {
-    Admin admin = Admin.builder().accountId(accountId).grantedAt(OffsetDateTime.now()).build();
+  public static Admin factory(UUID accountId, Campi campus) {
+    Admin admin = Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
     admin.collectValidationProblems();
     return admin;
   }
 
   /**
-   * Behavior: Change the campus at which the student is enrolled.
+   * Behavior: Change the campus at which the admin works at.
    *
    * @param newCampus the new campus to set
-   * @return a new student instance with the updated campus
+   * @return a new Admin instance with the updated campus
    */
   public Admin changeCampus(Campi newCampus) {
     if (campus == newCampus) {
@@ -436,14 +437,16 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** User entity aggregate. */
+import java.util.UUID;
+
+/**
+ * User entity aggregate.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -465,18 +468,18 @@ public class User extends DomainError {
   /**
    * Factory for new users.
    *
-   * @param cpf person's CPF
+   * @param cpf  person's CPF
    * @param name person's name
    * @return new User instance (may contain errors)
    */
   public static User factory(Cpf cpf, String name) {
     User user =
-        User.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .cpf(cpf)
-            .name(StringUtils.trim(name))
-            .auditInfo(AuditInfo.factory())
-            .build();
+            User.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .cpf(cpf)
+                    .name(StringUtils.trim(name))
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     user.collectValidationProblems();
     return user;
@@ -513,7 +516,9 @@ public class User extends DomainError {
     return updated;
   }
 
-  /** Validates the User instance. */
+  /**
+   * Validates the User instance.
+   */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");
@@ -577,7 +582,7 @@ public interface UserRepository {
   /**
    * Finds a User by its ID.
    *
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned User may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param id the ID of the User to find.
@@ -588,7 +593,7 @@ public interface UserRepository {
   /**
    * Finds a User by its CPF.
    *
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned User may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param cpf the CPF of the User to find.
@@ -599,7 +604,7 @@ public interface UserRepository {
   /**
    * Lists all User objects.
    *
-   * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned Users may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @return a list of all User objects.
@@ -991,7 +996,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** Entity representing a user in the system. */
+/** Entity representing a account in the system. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -1387,7 +1392,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** UserEntity represents a user in the identity system. */
+/** UserEntity represents a account in the identity system. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -1469,7 +1474,7 @@ public interface AccountQueries {
   List<AccountView> listByCpf(String cpf);
 
   /**
-   * Searches for AccountView objects by name (of the associated user).
+   * Searches for AccountView objects by name (of the associated account).
    *
    * @param key the name key to search for.
    * @return a list of AccountView objects matching the search key.
@@ -1522,7 +1527,7 @@ public interface AdminQueries {
   List<AdminView> listByCpf(String cpf);
 
   /**
-   * Searches for AdminViews by name (of the associated user).
+   * Searches for AdminViews by name (of the associated account).
    *
    * @param key the name key to search for.
    * @return a list of AdminViews matching the search key.
@@ -1544,7 +1549,7 @@ import java.util.UUID;
  * Data Transfer Object representing an account view.
  *
  * @param id the unique identifier of the account
- * @param user the user associated with the account (a UserView DTO)
+ * @param user the account associated with the account (a UserView DTO)
  * @param email the email address of the account
  * @param accountType the type of account
  * @param createdAt the timestamp when the account was created
@@ -1609,11 +1614,11 @@ import java.util.UUID;
 /**
  * UserView DTO.
  *
- * @param id the unique identifier of the user
- * @param cpf the CPF (Cadastro de Pessoas Físicas) number of the user
- * @param name the name of the user
- * @param createdAt the timestamp when the user record was created
- * @param updatedAt the timestamp when the user record was last updated
+ * @param id the unique identifier of the account
+ * @param cpf the CPF (Cadastro de Pessoas Físicas) number of the account
+ * @param name the name of the account
+ * @param createdAt the timestamp when the account record was created
+ * @param updatedAt the timestamp when the account record was last updated
  */
 public record UserView(
     UUID id, String cpf, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
@@ -1958,7 +1963,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** UserQueries interface for querying user-related data. */
+/** UserQueries interface for querying account-related data. */
 public interface UserQueries {
 
   /**
@@ -2142,7 +2147,7 @@ public class AccountReadOnlyResource {
   /**
    * Lists accounts.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
    * all accounts.
    *
    * @param query optional name query to search for.
@@ -2187,7 +2192,7 @@ public class AccountReadOnlyResource {
    * @param cpfRaw the raw CPF string of the accounts.
    * @return a list of account responses wrapped in an ApiEnvelope.
    * @throws AppValidationException if the provided CPF is malformed.
-   * @throws ResourceNotFoundException if associated user data is missing for any found account.
+   * @throws ResourceNotFoundException if associated account data is missing for any found account.
    */
   @GET
   @Path("by-cpf/{cpf}")
@@ -2290,7 +2295,7 @@ public class AdminResource {
   /**
    * Lists admins.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
    * all admins.
    *
    * @param query optional name query to search for.
@@ -2363,7 +2368,7 @@ public class AdminResource {
     UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
         new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd);
+    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd, req.campus());
 
     Admin admin = writeService.save(adminCmd);
 
@@ -2392,7 +2397,7 @@ public class AdminResource {
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpfString(), req.name());
     AccountUpdateCommand accountCmd =
         new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd);
+    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
 
     Admin updatedAdmin = writeService.update(id, adminCmd);
 
@@ -2429,6 +2434,8 @@ FILE: presenter/dtos/AccountResponse.java
 package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -2436,25 +2443,19 @@ import java.util.UUID;
  * AccountResponse is a record that represents the response data for an account.
  *
  * @param id The unique identifier of the account.
- * @param user The user associated with the account.
+ * @param user The account associated with the account.
  * @param email The email address associated with the account.
  * @param accountType The type of the account (e.g., ADMIN, USER).
  * @param accountTypeFormatted A formatted string representation of the account type.
- * @param createdAt The date and time when the account was created.
- * @param createdAtFormatted A formatted string representation of the creation date and time.
- * @param updatedAt The date and time when the account was last updated.
- * @param updatedAtFormatted A formatted string representation of the last update date and time.
+ * @param auditInfo The creation and update info.
  */
 public record AccountResponse(
-    UUID id,
-    UserResponse user,
-    String email,
-    AccountType accountType,
-    String accountTypeFormatted,
-    OffsetDateTime createdAt,
-    String createdAtFormatted,
-    OffsetDateTime updatedAt,
-    String updatedAtFormatted) {}
+        UUID id,
+        UserResponse user,
+        String email,
+        AccountType accountType,
+        String accountTypeFormatted,
+        AuditInfoResponse auditInfo) {}
 
 
 ================================================================================
@@ -2462,6 +2463,7 @@ FILE: presenter/dtos/AdminCreateRequest.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
+import com.pug.shared.domain.enums.Campi;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -2469,15 +2471,17 @@ import jakarta.validation.constraints.Size;
  * Request DTO for creating or updating an Admin.
  *
  * @param cpfString the CPF number as a string.
- * @param name the name of the user.
- * @param emailString the email of the user as a string.
- * @param password the password of the user.
+ * @param name the name of the account.
+ * @param emailString the email of the account as a string.
+ * @param password the password of the account.
+ * @param campus the campus where the account is associated with.
  */
 public record AdminCreateRequest(
     @NotBlank String cpfString,
     @NotBlank @Size(max = 150) String name,
     @NotBlank String emailString,
-    @NotBlank @Size(min = 8, max = 255) String password) {}
+    @NotBlank @Size(min = 8, max = 255) String password,
+    @NotBlank Campi campus) {}
 
 
 ================================================================================
@@ -2485,17 +2489,22 @@ FILE: presenter/dtos/AdminResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
+import com.pug.shared.presenter.dtos.CampusResponse;
+
 import java.time.OffsetDateTime;
 
 /**
  * AdminResponse record.
  *
- * @param accountResponse the account details associated with the admin (as an AccountResponse).
- * @param grantedAt the date and time when admin privileges were granted.
+ * @param accountResponse    the account details associated with the admin (as an AccountResponse).
+ * @param campus             the campus associated with the admin (as a CampusResponse).
+ * @param grantedAt          the date and time when admin privileges were granted.
  * @param grantedAtFormatted the formatted text for the granted date and time (localized).
  */
 public record AdminResponse(
-    AccountResponse accountResponse, OffsetDateTime grantedAt, String grantedAtFormatted) {}
+        AccountResponse accountResponse, CampusResponse campus, OffsetDateTime grantedAt,
+        String grantedAtFormatted) {
+}
 
 
 ================================================================================
@@ -2503,16 +2512,19 @@ FILE: presenter/dtos/AdminUpdateRequest.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
+import com.pug.shared.domain.enums.Campi;
+
 /**
  * Request DTO for creating or updating an Admin.
  *
  * @param cpfString the CPF number as a string.
- * @param name the name of the user.
- * @param emailString the email of the user as a string.
- * @param password the password of the user.
+ * @param name the name of the account.
+ * @param emailString the email of the account as a string.
+ * @param password the password of the account.
+ * @param campus the campus where the account is associated with.
  */
 public record AdminUpdateRequest(
-    String cpfString, String name, String emailString, String password) {}
+        String cpfString, String name, String emailString, String password, Campi campus) {}
 
 
 ================================================================================
@@ -2520,35 +2532,31 @@ FILE: presenter/dtos/UserResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import java.time.OffsetDateTime;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+
 import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) representing the response for user-related operations.
+ * Data Transfer Object (DTO) representing the response for account-related operations.
  *
- * <p>This record encapsulates the essential information about a user, including their unique
+ * <p>This record encapsulates the essential information about a account, including their unique
  * identifier, CPF (Brazilian individual taxpayer registry identification), name, and timestamps for
  * creation and last update. The formatted versions of the CPF and timestamps are also included for
  * easier presentation in the API responses.
  *
- * @param id the unique identifier of the user
- * @param cpf the CPF number of the user
+ * @param id           the unique identifier of the account
+ * @param cpf          the CPF number of the account
  * @param cpfFormatted the formatted CPF number for display purposes
- * @param name the name of the user
- * @param createdAt the timestamp when the user was created
- * @param createdAtFormatted the formatted creation timestamp for display purposes
- * @param updatedAt the timestamp when the user was last updated
- * @param updatedAtFormatted the formatted last update timestamp for display purposes
+ * @param name         the name of the account
+ * @param auditInfo    the audit information containing creation and update timestamps, along with their formatted string representations
  */
 public record UserResponse(
-    UUID id,
-    String cpf,
-    String cpfFormatted,
-    String name,
-    OffsetDateTime createdAt,
-    String createdAtFormatted,
-    OffsetDateTime updatedAt,
-    String updatedAtFormatted) {}
+        UUID id,
+        String cpf,
+        String cpfFormatted,
+        String name,
+        AuditInfoResponse auditInfo) {
+}
 
 
 ================================================================================
@@ -2560,46 +2568,45 @@ import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
-import com.pug.shared.utils.StringUtils;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import com.pug.shared.presenter.mappers.SharedDataPresenter;
+
 import java.util.Locale;
 
-/** Mapper class for converting AccountView to AccountResponse. */
+/**
+ * Mapper class for converting AccountView to AccountResponse.
+ */
 public final class AccountPresenter {
-  /** Private constructor to prevent instantiation. */
-  private AccountPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private AccountPresenter() {
+  }
 
   /**
    * Converts an AccountView to an AccountResponse.
    *
-   * @param v the AccountView
+   * @param v      the AccountView
    * @param locale the locale for formatting
-   * @param i18n the internationalization instance
+   * @param i18n   the internationalization instance
    * @return the corresponding AccountResponse
    */
   public static AccountResponse toResponse(AccountView v, Locale locale, I18n i18n) {
-    if (v == null) {
-      return null;
-    }
-
-    if (v.user() == null) {
+    if (v == null || locale == null || i18n == null) {
       return null;
     }
 
     UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
-    String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
-    String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
+    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(),
-        userResponse,
-        v.email(),
-        v.accountType(),
-        typeFormatted,
-        v.createdAt(),
-        createdAtFormatted,
-        v.updatedAt(),
-        updatedAtFormatted);
+            v.id(),
+            userResponse,
+            v.email(),
+            v.accountType(),
+            typeFormatted,
+            auditInfo);
   }
 }
 
@@ -2613,30 +2620,40 @@ import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.dtos.AdminResponse;
 import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.dtos.CampusResponse;
+import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.StringUtils;
+
 import java.util.Locale;
 
-/** Mapper class for converting AdminView to AdminResponse. */
+/**
+ * Mapper class for converting AdminView to AdminResponse.
+ */
 public final class AdminPresenter {
-  /** Private constructor to prevent instantiation. */
-  private AdminPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private AdminPresenter() {
+  }
 
   /**
    * Converts an AdminView to an AdminResponse.
    *
-   * @param a the AdminView.
+   * @param a      the AdminView.
    * @param locale the locale for formatting.
-   * @param i18n the internationalization instance.
+   * @param i18n   the internationalization instance.
    * @return the corresponding AdminResponse.
    */
   public static AdminResponse toResponse(AdminView a, Locale locale, I18n i18n) {
-    if (a == null) {
+    if (a == null || locale == null || i18n == null) {
       return null;
     }
-    AccountResponse accountResponse = AccountPresenter.toResponse(a.accountView(), locale, i18n);
 
+    AccountResponse accountResponse = AccountPresenter.toResponse(a.accountView(), locale, i18n);
+    CampusResponse campus = SharedDataPresenter.createCampusResponse(a.campus(), locale, i18n);
     String grantedAtFormatted = StringUtils.toStringFormatted(a.grantedAt(), locale);
-    return new AdminResponse(accountResponse, a.grantedAt(), grantedAtFormatted);
+
+    return new AdminResponse(accountResponse, campus, a.grantedAt(), grantedAtFormatted);
   }
 }
 
@@ -2648,18 +2665,25 @@ package com.pug.identity.presenter.mappers;
 
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
-import com.pug.shared.utils.StringUtils;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import com.pug.shared.presenter.mappers.SharedDataPresenter;
+
 import java.util.Locale;
 
-/** Mapper class for converting UserView to UserResponse. */
+/**
+ * Mapper class for converting UserView to UserResponse.
+ */
 public final class UserPresenter {
-  /** Private constructor to prevent instantiation. */
-  private UserPresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private UserPresenter() {
+  }
 
   /**
    * Converts a UserView to a UserResponse.
    *
-   * @param v the UserView to convert
+   * @param v      the UserView to convert
    * @param locale the locale for localization
    * @return the converted UserResponse
    */
@@ -2667,18 +2691,15 @@ public final class UserPresenter {
     if (v == null) {
       return null;
     }
-    String createdAtFormatted = StringUtils.toStringFormatted(v.createdAt(), locale);
-    String updatedAtFormatted = StringUtils.toStringFormatted(v.updatedAt(), locale);
+
+    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new UserResponse(
-        v.id(),
-        v.cpf(),
-        cpfFormatted(v.cpf()),
-        v.name(),
-        v.createdAt(),
-        createdAtFormatted,
-        v.updatedAt(),
-        updatedAtFormatted);
+            v.id(),
+            v.cpf(),
+            cpfFormatted(v.cpf()),
+            v.name(),
+            auditInfo);
   }
 
   /**
@@ -2692,12 +2713,12 @@ public final class UserPresenter {
       return cpf;
     }
     return cpf.substring(0, 3)
-        + "."
-        + cpf.substring(3, 6)
-        + "."
-        + cpf.substring(6, 9)
-        + "-"
-        + cpf.substring(9, 11);
+            + "."
+            + cpf.substring(3, 6)
+            + "."
+            + cpf.substring(6, 9)
+            + "-"
+            + cpf.substring(9, 11);
   }
 }
 
@@ -2733,7 +2754,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for reading user information. */
+/** REST resource for reading account information. */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -2744,11 +2765,11 @@ public class UserReadOnlyResource {
   @Context HttpHeaders headers;
 
   /**
-   * Retrieves a user by their unique identifier.
+   * Retrieves a account by their unique identifier.
    *
-   * @param id the UUID of the user
-   * @return the response containing the user data
-   * @throws ResourceNotFoundException if no user with the given ID is found.
+   * @param id the UUID of the account
+   * @return the response containing the account data
+   * @throws ResourceNotFoundException if no account with the given ID is found.
    */
   @GET
   @Path("{id}")
@@ -2783,12 +2804,12 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Retrieves a user by their CPF.
+   * Retrieves a account by their CPF.
    *
-   * @param cpfRaw the raw CPF string of the user
-   * @return the response containing the user data
+   * @param cpfRaw the raw CPF string of the account
+   * @return the response containing the account data
    * @throws AppValidationException if the provided CPF is malformed.
-   * @throws ResourceNotFoundException if no user with the given CPF is found.
+   * @throws ResourceNotFoundException if no account with the given CPF is found.
    */
   @GET
   @Path("by-cpf/{cpf}")
@@ -2852,7 +2873,7 @@ public interface AccountReadService {
   List<AccountView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AccountViews by name (of the associated user).
+   * Searches for AccountViews by name (of the associated account).
    *
    * @param query the search query
    * @return a list of AccountViews matching the search query
@@ -2901,7 +2922,7 @@ public interface AccountService {
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the updated
    *     email already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
-   *     or user data.
+   *     or account data.
    */
   Account update(UUID id, AccountUpdateCommand cmd);
 
@@ -2943,14 +2964,6 @@ public interface AccountService {
    *     is corrupted in the database.
    */
   Account getById(UUID id);
-
-  /**
-   * Checks if any account exists with the provided email.
-   *
-   * @param email the email to check (already a validated Value Object).
-   * @return true if any account exists with the email, false otherwise
-   */
-  boolean existsByEmail(String email);
 }
 
 
@@ -3002,7 +3015,7 @@ public interface AdminReadService {
   List<AdminView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AdminViews by name (of the associated user).
+   * Searches for AdminViews by name (of the associated account).
    *
    * @param query the search query.
    * @return a list of matching AdminViews.
@@ -3019,10 +3032,12 @@ package com.pug.identity.service;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
-import java.util.List;
+
 import java.util.UUID;
 
-/** Interface for managing admins. */
+/**
+ * Interface for managing admins.
+ */
 public interface AdminService {
 
   /**
@@ -3032,10 +3047,10 @@ public interface AdminService {
    *
    * @param cmd the command containing the data to create the new Admin.
    * @return the saved Admin.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
-   *     or admin data.
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails for account
+   *                                                              or admin data.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
-   *     exists.
+   *                                                              exists.
    */
   Admin save(AdminCreateCommand cmd);
 
@@ -3043,11 +3058,11 @@ public interface AdminService {
    * Updates an existing Admin's underlying Account.
    *
    * @param accountId the ID of the Admin (which corresponds to the Account ID).
-   * @param cmd the command containing the data to update the Account.
+   * @param cmd       the command containing the data to update the Account.
    * @return the updated Admin.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not
-   *     exist.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   *                                                             exist.
+   * @throws com.pug.shared.exceptions.AppValidationException    if input validation fails.
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
 
@@ -3065,18 +3080,9 @@ public interface AdminService {
    * @param accountId the UUID of the account.
    * @return the Admin entity.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
-   *     ID does not exist (or data is corrupted in DB).
+   *                                                             ID does not exist (or data is corrupted in DB).
    */
   Admin getByAccountId(UUID accountId);
-
-  /**
-   * Lists all Admin entities.
-   *
-   * @return a list of all Admin entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any Admin entity found is
-   *     corrupted in the database.
-   */
-  List<Admin> listAll();
 }
 
 
@@ -3093,7 +3099,7 @@ import com.pug.shared.domain.enums.AccountType;
  * @param emailString the email address of the account as a string.
  * @param type the account type.
  * @param passwordHash the hashed password.
- * @param userCommand the command for the associated user.
+ * @param userCommand the command for the associated account.
  */
 public record AccountCreateCommand(
     String emailString, AccountType type, String passwordHash, UserCreateCommand userCommand) {}
@@ -3109,7 +3115,7 @@ package com.pug.identity.service.dtos;
  *
  * @param emailString the new email address as a string (optional).
  * @param passwordHash the new hashed password (optional).
- * @param userCommand the command for updating the associated user (optional).
+ * @param userCommand the command for updating the associated account (optional).
  */
 public record AccountUpdateCommand(
     String emailString, String passwordHash, UserUpdateCommand userCommand) {}
@@ -3120,12 +3126,15 @@ FILE: service/dtos/AdminCreateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
 
+import com.pug.shared.domain.enums.Campi;
+
 /**
- * Command to create a new admin user.
+ * Command to create a new admin account.
  *
  * @param accountCommand the command containing the data to create the underlying account.
+ * @param campus the campus associated with the admin account.
  */
-public record AdminCreateCommand(AccountCreateCommand accountCommand) {}
+public record AdminCreateCommand(AccountCreateCommand accountCommand, Campi campus) {}
 
 
 ================================================================================
@@ -3136,7 +3145,7 @@ package com.pug.identity.service.dtos;
 import com.pug.shared.domain.enums.Campi;
 
 /**
- * Command to update an existing admin user.
+ * Command to update an existing admin account.
  *
  * @param accountCommand the command containing the data to update the underlying account.
  * @param campus the new campus to which the admin comes from.
@@ -3152,8 +3161,8 @@ package com.pug.identity.service.dtos;
 /**
  * Command DTO for creating or updating a User.
  *
- * @param cpfString the CPF of the user as a string.
- * @param name the name of the user.
+ * @param cpfString the CPF of the account as a string.
+ * @param name the name of the account.
  */
 public record UserCreateCommand(String cpfString, String name) {}
 
@@ -3166,8 +3175,8 @@ package com.pug.identity.service.dtos;
 /**
  * Command DTO for creating or updating a User.
  *
- * @param cpfString the CPF of the user as a string.
- * @param name the name of the user.
+ * @param cpfString the CPF of the account as a string.
+ * @param name the name of the account.
  */
 public record UserUpdateCommand(String cpfString, String name) {}
 
@@ -3425,8 +3434,15 @@ public class AccountServiceImpl implements AccountService {
     return account;
   }
 
-  @Override
-  public boolean existsByEmail(String email) {
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Checks if an Account with the given email already exists.
+   *
+   * @param email the email to check for existence.
+   * @return true if an Account with the email exists, false otherwise.
+   */
+  private boolean existsByEmail(String email) {
     if (email == null) {
       return false;
     }
@@ -3528,19 +3544,23 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for managing admins. */
+import java.util.UUID;
+
+/**
+ * Service for managing admins.
+ */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject AdminRepository repo;
+  @Inject
+  AdminRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject
+  AccountService accountService;
 
   @Transactional
   @Override
@@ -3548,7 +3568,7 @@ public class AdminServiceImpl implements AdminService {
     LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
     Account account = accountService.save(cmd.accountCommand());
 
-    Admin admin = AdminProcessor.processCreateInput(account.getId());
+    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
     if (admin.hasErrors()) {
       throw new AppValidationException(admin.getProblems());
     }
@@ -3598,43 +3618,24 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-        repo
-            .findOptionalByAccountId(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
-                  return new ResourceNotFoundException(
-                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
-                });
+            repo
+                    .findOptionalByAccountId(accountId)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                              return new ResourceNotFoundException(
+                                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+                            });
 
     if (admin.hasErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-          accountId, admin.getProblemsSummary());
+              "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+              accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+              IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return admin;
-  }
-
-  @Override
-  public List<Admin> listAll() {
-    LOG.debug("Listing all admins");
-    List<Admin> admins = repo.listAllAdmins();
-
-    return admins.stream()
-        .filter(
-            admin -> {
-              if (admin.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-                    admin.getAccountId(), admin.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
   }
 }
 
@@ -3698,9 +3699,9 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserReadService} interface for retrieving user-related information.
+ * Implementation of the {@link UserReadService} interface for retrieving account-related information.
  *
- * <p>This service provides methods to get user views by ID or CPF, list all user views, and search
+ * <p>This service provides methods to get account views by ID or CPF, list all account views, and search
  * for users based on a query string. It handles scenarios where users are not found and ensures
  * that appropriate exceptions are thrown with relevant error codes.
  */
@@ -3776,7 +3777,7 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserService} interface for managing user-related operations.
+ * Implementation of the {@link UserService} interface for managing account-related operations.
  *
  * <p>This service provides methods to create, update, delete, list, and retrieve users. It ensures
  * that all operations adhere to the domain rules and handles validation and error scenarios
@@ -3970,15 +3971,15 @@ import com.pug.identity.infra.read.dtos.UserView;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading user views. */
+/** Interface for reading account views. */
 public interface UserReadService {
 
   /**
    * Retrieves a UserView by its unique identifier.
    *
-   * @param id the UUID of the user
+   * @param id the UUID of the account
    * @return the UserView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user with the given ID is
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given ID is
    *     found
    */
   UserView getViewById(UUID id);
@@ -3986,9 +3987,9 @@ public interface UserReadService {
   /**
    * Retrieves a UserView by its CPF.
    *
-   * @param cpf the CPF of the user
+   * @param cpf the CPF of the account
    * @return the UserView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user with the given CPF is
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given CPF is
    *     found
    */
   UserView getViewByCpf(String cpf);
@@ -4022,7 +4023,7 @@ import com.pug.identity.service.dtos.UserUpdateCommand;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for managing user entities. */
+/** Interface for managing account entities. */
 public interface UserService {
 
   /**
@@ -4030,7 +4031,7 @@ public interface UserService {
    *
    * @param cmd the command containing the data to create the new User
    * @return the saved User entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the same CPF
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the same CPF
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
    *     name, invalid CPF).
@@ -4040,14 +4041,14 @@ public interface UserService {
   /**
    * Updates an existing User with the given ID using the provided data.
    *
-   * @param id the UUID of the user to update
+   * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
    * @return the updated User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the updated CPF
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
    *     already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for user
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
    *     data.
    */
   User update(UUID id, UserUpdateCommand cmd);
@@ -4055,9 +4056,9 @@ public interface UserService {
   /**
    * Deletes a User by its ID.
    *
-   * @param id the UUID of the user to delete
-   * @return true if the user was successfully deleted, false if the user was not found
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @param id the UUID of the account to delete
+   * @return true if the account was successfully deleted, false if the account was not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
    */
   boolean delete(UUID id);
@@ -4067,7 +4068,7 @@ public interface UserService {
    *
    * @param ids a list of UUIDs of the users to delete
    * @return the number of users successfully deleted
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any user with the given IDs does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs does
    *     not exist (or data is corrupted in DB).
    */
   long deleteAll(List<UUID> ids);
@@ -4084,9 +4085,9 @@ public interface UserService {
   /**
    * Retrieves a User by its ID.
    *
-   * @param id the UUID of the user
+   * @param id the UUID of the account
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
    */
   User getById(UUID id);
@@ -4094,18 +4095,18 @@ public interface UserService {
   /**
    * Retrieves a User by its CPF.
    *
-   * @param cpf the CPF of the user (already a validated Value Object).
+   * @param cpf the CPF of the account (already a validated Value Object).
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given CPF does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF does
    *     not exist (or data is corrupted in DB).
    */
   User getByCpf(Cpf cpf);
 
   /**
-   * Checks if a user exists by CPF.
+   * Checks if a account exists by CPF.
    *
    * @param cpf the CPF to check (already a validated Value Object).
-   * @return true if a user with the given CPF exists, false otherwise.
+   * @return true if a account with the given CPF exists, false otherwise.
    */
   boolean existsByCpf(Cpf cpf);
 }
@@ -4128,7 +4129,7 @@ public class AccountProcessor {
   /**
    * Helper method to process DTO input and build a new Account domain object.
    *
-   * @param userId The ID of the user owner.
+   * @param userId The ID of the account owner.
    * @param emailString The email string from DTO.
    * @param accountTypeStr The account type string (e.g., "INDIVIDUAL", "COMPANY").
    * @param passwordHash The hashed password.
@@ -4190,8 +4191,8 @@ public class AdminProcessor {
    * @param accountId The ID of the account being granted admin rights.
    * @return The constructed Admin domain object.
    */
-  public static Admin processCreateInput(UUID accountId) {
-    return Admin.factory(accountId);
+  public static Admin processCreateInput(UUID accountId, Campi campus) {
+    return Admin.factory(accountId, campus);
   }
 
   /**
@@ -4229,7 +4230,7 @@ public class UserProcessor {
    * Helper method to process DTO input and build a new User domain object.
    *
    * @param cpfString The CPF string from DTO.
-   * @param name The user's name.
+   * @param name The account's name.
    * @return The constructed User domain object.
    */
   public static User processCreateInput(String cpfString, String name) {
@@ -4240,7 +4241,7 @@ public class UserProcessor {
   /**
    * Helper method to process DTO input and update an existing User domain object.
    *
-   * @param existingUser The existing user to be updated.
+   * @param existingUser The existing account to be updated.
    * @param cpfString The CPF string from DTO (can be null for no change).
    * @param name The name from DTO (can be null for no change).
    * @return The updated User domain object.

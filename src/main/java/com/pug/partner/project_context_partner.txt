@@ -1301,7 +1301,7 @@ public interface StaffQueries {
   /**
    * Searches for StaffView records by name.
    *
-   * @param key the search key (typically a user's name).
+   * @param key the search key (typically a account's name).
    * @return a list of StaffView records matching the search key.
    */
   List<StaffView> searchByName(String key);
@@ -1433,27 +1433,24 @@ FILE: presenter/dtos/EntityResponse.java
 package com.pug.partner.presenter.dtos;
 
 import com.pug.geo.presenter.dtos.CityResponse;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
 
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
  * DTO representing the response for an entity. It contains all the necessary information about an
  *
- * @param id                 the unique identifier of the entity
- * @param cnpj               the CNPJ number of the entity
- * @param cnpjFormatted      the formatted CNPJ number of the entity
- * @param name               the name of the entity
- * @param address            the address of the entity
- * @param city               the city information of the entity
- * @param createdAt          the timestamp when the entity was created
- * @param formattedCreatedAt the formatted timestamp when the entity was created
- * @param updatedAt          the timestamp when the entity was last updated
- * @param formattedUpdatedAt the formatted timestamp when the entity was last updated
+ * @param id            the unique identifier of the entity
+ * @param cnpj          the CNPJ number of the entity
+ * @param cnpjFormatted the formatted CNPJ number of the entity
+ * @param name          the name of the entity
+ * @param address       the address of the entity
+ * @param city          the city information of the entity
+ * @param auditInfo     the audit information of the entity, including creation and update timestamps
  */
 public record EntityResponse(
         UUID id, String cnpj, String cnpjFormatted, String name, String address, CityResponse city,
-        OffsetDateTime createdAt, String formattedCreatedAt, OffsetDateTime updatedAt, String formattedUpdatedAt) {
+        AuditInfoResponse auditInfo) {
 }
 
 
@@ -1715,7 +1712,8 @@ import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityResponse;
-import com.pug.shared.utils.StringUtils;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import com.pug.shared.presenter.mappers.SharedDataPresenter;
 
 import java.util.Locale;
 
@@ -1741,11 +1739,10 @@ public final class EntityPresenter {
     }
 
     String formattedCnpj = toFormattedString(v.cnpj());
-    String formattedCreatedAt = StringUtils.toStringFormatted(v.createdAt(), locale);
-    String formattedUpdatedAt = StringUtils.toStringFormatted(v.updatedAt(), locale);
     CityResponse cityResponse = CityPresenter.toResponse(v.city());
+    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new EntityResponse(v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, v.createdAt(), formattedCreatedAt, v.updatedAt(), formattedUpdatedAt);
+    return new EntityResponse(v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
   }
 
   /**
@@ -1802,7 +1799,7 @@ public final class StaffPresenter {
    * @return the StaffResponse.
    */
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {
-    if (v == null) {
+    if (v == null || locale == null || i18n == null) {
       return null;
     }
     return new StaffResponse(
@@ -2141,14 +2138,15 @@ FILE: service/EntityService.java
 package com.pug.partner.service;
 
 import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/** Interface for managing partner entities. */
+/**
+ * Interface for managing partner entities.
+ */
 public interface EntityService {
 
   /**
@@ -2157,23 +2155,23 @@ public interface EntityService {
    * @param cmd the command containing the data to create the Entity
    * @return the saved Entity
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
-   *     name, invalid CNPJ).
+   *                                                              already exists
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails (e.g., blank
+   *                                                              name, invalid CNPJ).
    */
   Entity save(EntityCreateCommand cmd);
 
   /**
    * Updates an existing Entity.
    *
-   * @param id the UUID of the Entity to update
+   * @param id  the UUID of the Entity to update
    * @param cmd the command containing the updated data for the Entity
    * @return the updated Entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     corrupted) or city is not found.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the Entity is not found (or data
+   *                                                              corrupted) or city is not found.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
-   *     already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   *                                                              already exists.
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails.
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
 
@@ -2182,7 +2180,7 @@ public interface EntityService {
    *
    * @param id the UUID of the Entity to delete
    * @return true if the Entity was successfully deleted, false if the Entity was not found or is
-   *     still referenced by any Staff.
+   * still referenced by any Staff.
    */
   boolean delete(UUID id);
 
@@ -2192,7 +2190,7 @@ public interface EntityService {
    * @param id the UUID of the Entity
    * @return the Entity with the specified ID
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     is corrupted in DB).
+   *                                                             is corrupted in DB).
    */
   Entity getById(UUID id);
 
@@ -2201,17 +2199,9 @@ public interface EntityService {
    *
    * @return a list of all Entities
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if any Entity entity found is
-   *     corrupted in the database.
+   *                                                             corrupted in the database.
    */
   List<Entity> listAll();
-
-  /**
-   * Checks if an Entity exists by its CNPJ.
-   *
-   * @param cnpj the CNPJ to check (already a validated Value Object).
-   * @return true if an Entity with the given CNPJ exists, false otherwise.
-   */
-  boolean existsByCnpj(Cnpj cnpj);
 }
 
 
@@ -2473,8 +2463,15 @@ public class EntityServiceImpl implements EntityService {
             .toList();
   }
 
-  @Override
-  public boolean existsByCnpj(Cnpj cnpj) {
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Checks if an Entity with the given CNPJ already exists.
+   *
+   * @param cnpj the CNPJ to check for existence
+   * @return true if an Entity with the given CNPJ exists, false otherwise
+   */
+  private boolean existsByCnpj(Cnpj cnpj) {
     if (cnpj == null) {
       return false;
     }
@@ -2721,34 +2718,6 @@ public class StaffServiceImpl implements StaffService {
             })
             .toList();
   }
-
-  @Override
-  public List<Staff> listByEntityId(UUID entityId) {
-    if (entityId == null) {
-      return List.of();
-    }
-    LOG.debugf("Listing staff for Entity ID: %s", entityId);
-    List<Staff> staffList = repo.listAllByEntityId(entityId);
-
-    return staffList.stream()
-            .filter(staff -> {
-              if (staff.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-                        staff.getAccountId(), staff.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-            .toList();
-  }
-
-  @Override
-  public boolean existsByAccountId(UUID accountId) {
-    if (accountId == null) {
-      return false;
-    }
-    return repo.existsByAccountId(accountId);
-  }
 }
 
 ================================================================================
@@ -2809,7 +2778,7 @@ public interface StaffReadService {
   /**
    * Searches for StaffViews by name.
    *
-   * @param term the search term (typically a user's name).
+   * @param term the search term (typically a account's name).
    * @return a list of StaffViews matching the search term.
    */
   List<StaffView> search(String term);
@@ -2848,7 +2817,7 @@ public interface StaffService {
   /**
    * Deletes a staff member by their account ID, removing their association with any entity.
    *
-   * @param accountId the ID of the staff user (Account ID) to delete.
+   * @param accountId the ID of the staff account (Account ID) to delete.
    * @return true if deletion was successful, false if the staff member was not found.
    */
   boolean delete(UUID accountId);
@@ -2877,22 +2846,6 @@ public interface StaffService {
    * @return a list of all Staff objects.
    */
   List<Staff> listAll();
-
-  /**
-   * Lists all staff members associated with a specific entity.
-   *
-   * @param entityId the ID of the entity.
-   * @return a list of Staff objects.
-   */
-  List<Staff> listByEntityId(UUID entityId);
-
-  /**
-   * Checks if a staff member exists by their account ID.
-   *
-   * @param accountId the ID of the staff account.
-   * @return true if exists.
-   */
-  boolean existsByAccountId(UUID accountId);
 }
 
 

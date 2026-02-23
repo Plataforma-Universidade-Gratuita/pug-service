@@ -189,7 +189,7 @@ package com.pug.shared.domain.enums;
 
 import lombok.Getter;
 
-/** Enumeration representing different types of user accounts. */
+/** Enumeration representing different types of account accounts. */
 @Getter
 public enum AccountType {
   ADMIN("shared.account.type.admin"),
@@ -214,26 +214,48 @@ FILE: domain/enums/Campi.java
 ================================================================================
 package com.pug.shared.domain.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** Enum representing the different campus locations. */
-@Getter
-public enum Campi {
-  JARAGUA("academic.campus.jaragua"),
-  JOINVILLE("academic.campus.joinville");
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Enumeration representing the University Campuses and their corresponding geographic data.
+ * <p>
+ * This enum serves a dual purpose:
+ * <ol>
+ *   <li><strong>Business Domain:</strong> Identifies the available campuses (Jaraguá do Sul and Joinville)
+ *       and provides their internationalization keys.</li>
+ *   <li><strong>System Integrity:</strong> Defines the specific IBGE codes that are considered "Default Cities".
+ *       These records are immutable and protected from updates or deletions to ensure system stability.</li>
+ * </ol>
+ */
+@Getter
+@AllArgsConstructor
+public enum Campi {
+
+  JARAGUA_DO_SUL("4205407", "academic.campus.jaragua"),
+  JOINVILLE("4209106", "academic.campus.joinville");
+
+  private final String ibgeCode;
   private final String bundleKey;
 
   /**
-   * Constructor for Campi enum.
+   * Retrieves the IBGE codes for all Campuses, which are treated as immutable system records.
+   * <p>
+   * This list is utilized by business rules to prevent the modification or deletion
+   * of these specific cities in the database.
    *
-   * @param bundleKey The internationalization resource key for the campus description.
+   * @return a {@link List} of strings containing the IBGE codes of all campuses.
    */
-  Campi(String bundleKey) {
-    this.bundleKey = bundleKey;
+  public static List<String> getImmutableIbgeCodes() {
+    return Arrays.stream(Campi.values())
+            .map(Campi::getIbgeCode)
+            .collect(Collectors.toList());
   }
 }
-
 
 ================================================================================
 FILE: domain/enums/GenericErrorCodes.java
@@ -286,6 +308,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
   INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
   INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
   /* Resource Errors */
+  BUSINESS_RULE_ERROR("error.business.rule.violation", null),
   DATA_INTEGRITY_ERROR("error.data.integrity", null),
   DUPLICATED_RESOURCE_ERROR("error.duplicated.resource", null),
   INTERNAL_ERROR("error.internal", null),
@@ -500,6 +523,42 @@ public final class AppValidationException extends RuntimeException {
   }
 }
 
+
+================================================================================
+FILE: exceptions/BusinessRuleException.java
+================================================================================
+package com.pug.shared.exceptions;
+
+import com.pug.shared.domain.enums.GenericErrorCodes;
+import lombok.Getter;
+
+/**
+ * Exception thrown when a valid request (syntactically correct) violates a specific business rule
+ * or policy of the application (e.g., "Cannot delete default city", "Date must be in future").
+ * <p>
+ * Maps to HTTP 422 (Unprocessable Entity).
+ */
+@Getter
+public class BusinessRuleException extends RuntimeException {
+
+  private final GenericErrorCodes code;
+  private final String field;
+  private final String value;
+
+  /**
+   * Constructs a new BusinessRuleException.
+   *
+   * @param code  The specific error code (e.g. CITY_IS_DEFAULT).
+   * @param field The name of the field related to the rule (e.g. "id" or "ibgeCode").
+   * @param value The value that caused the violation (e.g. "4205407").
+   */
+  public BusinessRuleException(GenericErrorCodes code, String field, String value) {
+    super(code.getBundleKey());
+    this.code = code;
+    this.field = field;
+    this.value = value;
+  }
+}
 
 ================================================================================
 FILE: exceptions/DuplicateResourceException.java
@@ -854,6 +913,49 @@ public final class HibernateSearchUtils {
 
 
 ================================================================================
+FILE: presenter/dtos/AuditInfoResponse.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import java.time.OffsetDateTime;
+
+/**
+ * AuditInfoResponse is a record that represents the audit information for an entity, including creation and update timestamps.
+ *
+ * @param createdAt          the date and time when the entity was created.
+ * @param createdAtFormatted the formatted text for the creation date and time (localized).
+ * @param updatedAt          the date and time when the entity was last updated.
+ * @param updatedAtFormatted the formatted text for the last update date and time (localized).
+ */
+public record AuditInfoResponse(
+        OffsetDateTime createdAt,
+        String createdAtFormatted,
+        OffsetDateTime updatedAt,
+        String updatedAtFormatted
+) {
+}
+
+
+================================================================================
+FILE: presenter/dtos/CampusResponse.java
+================================================================================
+package com.pug.shared.presenter.dtos;
+
+import com.pug.shared.domain.enums.Campi;
+
+/**
+ * CampusResponse is a record that represents the response data for a campus.
+ *
+ * @param campus          The enum value representing the campus.
+ * @param campusFormatted A formatted string representation of the campus (localized).
+ */
+public record CampusResponse(
+        Campi campus, String campusFormatted
+) {
+}
+
+
+================================================================================
 FILE: presenter/dtos/UuidsRequest.java
 ================================================================================
 package com.pug.shared.presenter.dtos;
@@ -891,6 +993,80 @@ public record UuidsRequest(@NotEmpty List<@NotNull @UuidV7 UUID> ids) {
   }
 }
 
+
+================================================================================
+FILE: presenter/mappers/SharedDataPresenter.java
+================================================================================
+package com.pug.shared.presenter.mappers;
+
+import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import com.pug.shared.presenter.dtos.CampusResponse;
+import com.pug.shared.utils.StringUtils;
+
+import java.time.OffsetDateTime;
+import java.util.Locale;
+
+/**
+ * Utility class responsible for transforming shared domain data into standardized API Response DTOs.
+ * <p>
+ * This presenter handles common mapping scenarios used across multiple domains, such as:
+ * <ul>
+ *   <li>Formatting Audit timestamps (created/updated at) based on the account's locale.</li>
+ *   <li>Converting Campus enums into localized response objects.</li>
+ * </ul>
+ * <p>
+ * This class is stateless and cannot be instantiated.
+ */
+public final class SharedDataPresenter {
+
+    /**
+     * Private constructor to prevent instantiation of the utility class.
+     */
+    private SharedDataPresenter() {
+        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+    }
+
+    /**
+     * Constructs an {@link AuditInfoResponse} with localized date formatting.
+     * <p>
+     * <b>Note:</b> {@code updatedAt} is optional (nullable), but {@code createdAt} and {@code locale} are mandatory.
+     *
+     * @param createdAt the timestamp when the entity was created (cannot be null).
+     * @param updatedAt the timestamp when the entity was last updated (can be null).
+     * @param locale    the account's locale for date formatting (cannot be null).
+     * @return an {@link AuditInfoResponse} containing raw timestamps and their string representations.
+     */
+    public static AuditInfoResponse createAuditInfoResponse(OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
+        if (createdAt == null || updatedAt == null || locale == null) {
+            return null;
+        }
+
+        String createdAtFormatted = StringUtils.toStringFormatted(createdAt, locale);
+        String updatedAtFormatted = StringUtils.toStringFormatted(updatedAt, locale);
+
+        return new AuditInfoResponse(createdAt, createdAtFormatted, updatedAt, updatedAtFormatted);
+    }
+
+    /**
+     * Constructs a {@link CampusResponse} by translating the Campi enum.
+     *
+     * @param campus the specific {@link Campi} enum to convert (cannot be null).
+     * @param locale the account's locale for translation (cannot be null).
+     * @param i18n   the internationalization service (cannot be null).
+     * @return a {@link CampusResponse} containing the enum key and the localized display name.
+     */
+    public static CampusResponse createCampusResponse(Campi campus, Locale locale, I18n i18n) {
+        if (campus == null || locale == null || i18n == null) {
+            return null;
+        }
+
+        String campusFormatted = i18n.translation(campus.getBundleKey(), locale);
+
+        return new CampusResponse(campus, campusFormatted);
+    }
+}
 
 ================================================================================
 FILE: presenter/rest/ApiEnvelope.java
@@ -967,7 +1143,7 @@ package com.pug.shared.presenter.rest;
  * Represents an error returned by the REST API.
  *
  * @param code The error code (untranslated, for machine/developer consumption).
- * @param message The error message (already translated and formatted for the end user).
+ * @param message The error message (already translated and formatted for the end account).
  * @param details An optional map of additional details about the error.
  */
 public record ApiError(String code, String message, Details details) {
@@ -975,7 +1151,7 @@ public record ApiError(String code, String message, Details details) {
    * Factory method to create an ApiError instance.
    *
    * @param code The error code (untranslated, for machine/developer consumption).
-   * @param message The error message (already translated and formatted for the end user).
+   * @param message The error message (already translated and formatted for the end account).
    * @param details An optional map of additional details (can be null).
    * @return An ApiError instance.
    */
@@ -1082,6 +1258,61 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
   }
 }
 
+
+================================================================================
+FILE: presenter/rest/mappers/BusinessRuleExceptionMapper.java
+================================================================================
+package com.pug.shared.presenter.rest.mappers;
+
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.exceptions.BusinessRuleException;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.presenter.rest.ApiError;
+import com.pug.shared.presenter.rest.Details;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/**
+ * Maps BusinessRuleException to an HTTP 422 (Unprocessable Entity) response.
+ */
+@Provider
+public class BusinessRuleExceptionMapper
+        implements ExceptionMapper<BusinessRuleException> {
+
+  @Inject
+  I18n i18n;
+
+  @Override
+  public Response toResponse(BusinessRuleException ex) {
+    String mainMessage =
+            i18n.translation(SharedErrorCodes.BUSINESS_RULE_ERROR.getBundleKey());
+
+    String specificReason = i18n.translation(ex.getCode().getBundleKey());
+
+    Map<String, Object> ruleDetails = new LinkedHashMap<>();
+    ruleDetails.put("field", ex.getField());
+    ruleDetails.put("value", ex.getValue());
+    ruleDetails.put("reason", specificReason);
+
+    ApiError error =
+            ApiError.of(
+                    SharedErrorCodes.BUSINESS_RULE_ERROR.name(),
+                    mainMessage,
+                    new Details(ruleDetails));
+
+    return Response.status(422)
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(error))
+            .build();
+  }
+}
 
 ================================================================================
 FILE: presenter/rest/mappers/ConstraintViolationExceptionMapper.java

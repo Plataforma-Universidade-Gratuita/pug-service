@@ -55,7 +55,8 @@
 │   │   │           │   │       │   ├── CourseView.java
 │   │   │           │   │       │   ├── SchoolView.java
 │   │   │           │   │       │   ├── StudentAcc.java
-│   │   │           │   │       │   └── StudentView.java
+│   │   │           │   │       │   ├── StudentView.java
+│   │   │           │   │       │   └── StudentViewWithCompletedHours.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── CourseQueriesImpl.java
 │   │   │           │   │           ├── SchoolQueriesImpl.java
@@ -335,6 +336,7 @@
 │   │   │               │       └── AuditInfo.java
 │   │   │               ├── exceptions/
 │   │   │               │   ├── AppValidationException.java
+│   │   │               │   ├── BusinessRuleException.java
 │   │   │               │   ├── DuplicateResourceException.java
 │   │   │               │   └── ResourceNotFoundException.java
 │   │   │               ├── generate-context.sh
@@ -351,7 +353,11 @@
 │   │   │               │       └── HibernateSearchUtils.java
 │   │   │               ├── presenter/
 │   │   │               │   ├── dtos/
+│   │   │               │   │   ├── AuditInfoResponse.java
+│   │   │               │   │   ├── CampusResponse.java
 │   │   │               │   │   └── UuidsRequest.java
+│   │   │               │   ├── mappers/
+│   │   │               │   │   └── SharedDataPresenter.java
 │   │   │               │   └── rest/
 │   │   │               │       ├── ApiEnvelope.java
 │   │   │               │       ├── ApiError.java
@@ -359,6 +365,7 @@
 │   │   │               │       ├── FieldError.java
 │   │   │               │       └── mappers/
 │   │   │               │           ├── AppValidationExceptionMapper.java
+│   │   │               │           ├── BusinessRuleExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
 │   │   │               │           ├── DuplicateResourceExceptionMapper.java
 │   │   │               │           ├── PersistenceExceptionMapper.java
@@ -382,6 +389,7 @@
 │   │       ├── application.properties
 │   │       ├── db/
 │   │       │   └── migration/
+│   │       │       ├── V000__generate_uuid_v7_from_db.sql
 │   │       │       ├── V001__create_users_table.sql
 │   │       │       ├── V002__create_accounts_table.sql
 │   │       │       ├── V003__create_cities_table.sql
