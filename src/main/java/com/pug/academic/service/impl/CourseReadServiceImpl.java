@@ -8,38 +8,34 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
-/** Service for reading course information. */
+/**
+ * Service for reading course information.
+ */
 @ApplicationScoped
 public class CourseReadServiceImpl implements CourseReadService {
 
-  @Inject CourseQueries queries;
+  private static final Logger LOG = Logger.getLogger(CourseReadServiceImpl.class);
+
+  @Inject
+  CourseQueries queries;
 
   @Override
   public CourseView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
-  }
-
-  @Override
-  public CourseView getByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", name));
-    }
-    return queries
-        .findOptionalByName(name)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", name)));
+            .findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("Course lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.COURSE_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
   }
 
   @Override
@@ -49,6 +45,9 @@ public class CourseReadServiceImpl implements CourseReadService {
 
   @Override
   public List<CourseView> listViewsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return List.of();
+    }
     return queries.listAllBySchoolId(schoolId);
   }
 

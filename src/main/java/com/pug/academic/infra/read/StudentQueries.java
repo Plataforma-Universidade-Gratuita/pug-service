@@ -24,12 +24,20 @@ public interface StudentQueries {
   Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration);
 
   /**
-   * Lists all Students by their Account IDs.
+   * Finds a Student by the email of their associated account.
    *
-   * @param accountIds the IDs of the Students' accounts to list
-   * @return a list of Students with the specified Account IDs
+   * @param email the email of the Student's account to find
+   * @return an Optional containing the Student if found, or empty if not found
    */
-  List<StudentView> listAllByIds(Iterable<UUID> accountIds);
+  Optional<StudentView> findOptionalByEmail(String email);
+
+  /**
+   * Finds a Student by the CPF of their associated account.
+   *
+   * @param cpf the CPF of the Student's account to find
+   * @return an Optional containing the Student if found, or empty if not found
+   */
+  Optional<StudentView> findOptionalByCpf(String cpf);
 
   /**
    * Lists all Students.

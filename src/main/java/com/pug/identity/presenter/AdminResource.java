@@ -184,10 +184,10 @@ public class AdminResource {
     AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
 
     Admin updatedAdmin = writeService.update(id, adminCmd);
-
     AdminResponse body =
         AdminPresenter.toResponse(
             readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

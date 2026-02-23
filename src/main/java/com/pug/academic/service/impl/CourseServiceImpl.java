@@ -2,7 +2,6 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
-import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
@@ -13,36 +12,35 @@ import com.pug.academic.service.utils.CourseProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Course entities. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Service class for managing Course entities.
+ */
 @ApplicationScoped
 public class CourseServiceImpl implements CourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
 
-  @Inject CourseRepository repo;
-  @Inject SchoolService schoolService;
-  @Inject StudentService studentService;
+  @Inject
+  CourseRepository repo;
+  @Inject
+  SchoolService schoolService;
+  @Inject
+  StudentService studentService;
 
   @Transactional
   @Override
   public Course save(CourseCreateCommand cmd) {
-    // Validate school existence first (fail-fast)
+    LOG.debugf("Attempting to create Course: %s", cmd.name());
     schoolService.getById(cmd.schoolId());
-
     Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
     if (courseToPersist.hasErrors()) {
@@ -50,73 +48,23 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (existsByName(courseToPersist.getName())) {
+      LOG.warnf("Creation failed: Course with name %s already exists", courseToPersist.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
-    }
-    return repo.persist(courseToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<Course> saveAll(Iterable<CourseCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+              AcademicErrorCodes.COURSE_ALREADY_EXISTS,
+              "name",
+              courseToPersist.getName()
+      );
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<Course> coursesToPersist = new ArrayList<>();
-    Set<String> processedNames = new HashSet<>();
-    Set<UUID> uniqueSchoolIds = new HashSet<>();
-
-    CollectionUtils.toStream(cmds).forEach(cmd -> uniqueSchoolIds.add(cmd.schoolId()));
-
-    for (UUID schoolId : uniqueSchoolIds) {
-      try {
-        schoolService.getById(schoolId);
-      } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(
-            new Problem(
-                AcademicErrorCodes
-                    .INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly
-        // mappable here easily without context
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    for (CourseCreateCommand cmd : cmds) {
-      Course course = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
-
-      if (course.hasErrors()) {
-        allCollectedProblems.addAll(course.getProblems());
-      } else {
-        String courseName = course.getName();
-        if (!processedNames.add(courseName)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
-        } else {
-          coursesToPersist.add(course);
-        }
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> namesToPersist = coursesToPersist.stream().map(Course::getName).toList();
-
-    if (repo.existsAnyByNameIn(namesToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(coursesToPersist);
+    Course savedCourse = repo.persist(courseToPersist);
+    LOG.infof("Course created successfully. ID: %s", savedCourse.getId());
+    return savedCourse;
   }
 
   @Transactional
   @Override
   public Course update(UUID id, CourseUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Course ID: %s", id);
     Course current = getById(id);
 
     if (cmd.schoolId() != null && !cmd.schoolId().equals(current.getSchoolId())) {
@@ -130,132 +78,92 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (!updatedCourse.getName().equals(current.getName())
-        && existsByName(updatedCourse.getName())) {
+            && existsByName(updatedCourse.getName())) {
+      LOG.warnf("Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", updatedCourse.getName()));
+              AcademicErrorCodes.COURSE_ALREADY_EXISTS,
+              "name",
+              updatedCourse.getName()
+      );
     }
 
     repo.update(updatedCourse);
+    LOG.infof("Course updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(
-          DeleteKeys.COURSES, 0L,
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Course ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    if (studentService.existsAnyByCourseIdIn(ids)) {
-      throw new DataIntegrityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Course deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
     }
 
-    Set<UUID> studentAccountIdsToDelete = new HashSet<>();
-    for (UUID courseId : ids) {
-      studentAccountIdsToDelete.addAll(
-          studentService.listAllByCourseId(courseId).stream()
-              .map(Student::getAccountId)
-              .collect(Collectors.toSet()));
-    }
-
-    Map<DeleteKeys, Long> deletedStudentsAndDependents =
-        studentService.deleteAll(studentAccountIdsToDelete);
-
-    long coursesDeleted = repo.deleteByIds(ids);
-
-    return Map.of(
-        DeleteKeys.COURSES, coursesDeleted,
-        DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-        DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
+    return deleted;
   }
 
   @Override
   public List<Course> listAll() {
+    LOG.debug("Listing all courses");
     List<Course> courses = repo.listAllCourses();
-    for (Course c : courses) {
-      if (c.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Course entity found in DB. Problems: %s",
-            c.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
-      }
-    }
-    return courses;
-  }
 
-  @Override
-  public List<Course> listAllBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
-      return List.of();
-    }
-    List<Course> courses = repo.listAllBySchoolId(schoolId);
-    for (Course c : courses) {
-      if (c.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: "
-                + "Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
-            schoolId, c.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
-      }
-    }
-    return courses;
+    return courses.stream()
+            .filter(course -> {
+              if (course.hasErrors()) {
+                LOG.errorf("DATA CORRUPTION DETECTED: Course %s violates domain rules: %s",
+                        course.getId(), course.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+            .toList();
   }
 
   @Override
   public Course getById(UUID id) {
-    Course course =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+    Course course = repo.findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("Course lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.COURSE_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
 
     if (course.hasErrors()) {
       LOG.errorf(
-          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-          id, course.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id));
+              "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+              id, course.getProblemsSummary());
+      throw new ResourceNotFoundException(
+              AcademicErrorCodes.COURSE_NOT_FOUND,
+              "id",
+              id.toString()
+      );
     }
     return course;
   }
 
-  @Override
-  public Course getByName(String name) {
-    String n = StringUtils.trim(name);
-    Course course =
-        repo.findOptionalByName(n)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-    if (course.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
-          n, course.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n));
-    }
-    return course;
-  }
-
-  @Override
-  public boolean existsByName(String name) {
+  /**
+   * Checks if a Course with the given name already exists.
+   *
+   * @param name the name to check for existence.
+   * @return true if a Course with the given name exists, false otherwise.
+   */
+  private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
     }
     return repo.existsByName(name);
-  }
-
-  @Override
-  public boolean existsAnyByNameIn(Iterable<String> names) {
-    if (CollectionUtils.isEmpty(names)) {
-      return false;
-    }
-    return repo.existsAnyByNameIn(names);
   }
 }

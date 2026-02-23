@@ -10,8 +10,8 @@ import com.pug.academic.service.CourseReadService;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,66 +27,63 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing courses. */
+/**
+ * REST resource for managing courses.
+ */
 @ApplicationScoped
 @Path("/academic/courses")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject CourseService writeService;
-  @Inject CourseReadService readService;
+  @Inject
+  CourseService writeService;
+  @Inject
+  CourseReadService readService;
 
-  @Context UriInfo uri;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Get course by id.
+   * Retrieves a course by its ID.
    *
    * @param id the course id
-   * @return the response
+   * @return the response containing the course
    */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    CourseView v = readService.getViewById(id);
-    CourseResponse body = CoursePresenter.toResponse(v);
+    CourseView view = readService.getViewById(id);
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Get course by name.
+   * Lists courses or searches by name.
    *
-   * @param name the course name
-   * @return the response
-   */
-  @GET
-  @Path("/by-name/{name}")
-  public Response getByName(@PathParam("name") String name) {
-    CourseView v = readService.getByName(name);
-    CourseResponse body = CoursePresenter.toResponse(v);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * List or search courses.
-   *
-   * @param q the search query
+   * @param q        the search query
    * @param schoolId the school id to filter by
-   * @return the response
+   * @return the response containing the list of courses
    */
   @GET
   public Response listOrSearch(
-      @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+          @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+
     List<CourseView> views;
+
     if (schoolId != null) {
       views = readService.listViewsBySchoolId(schoolId);
     } else if (StringUtils.isNotEmpty(q)) {
@@ -94,67 +91,68 @@ public class CourseResource {
     } else {
       views = readService.listViews();
     }
-    List<CourseResponse> body = views.stream().map(CoursePresenter::toResponse).toList();
+
+    List<CourseResponse> body = views.stream()
+            .map(v -> CoursePresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Create a new course.
+   * Creates a new course.
    *
    * @param req the CourseCreateRequest DTO
-   * @return the response
+   * @return the response containing the created course
    */
   @POST
   public Response create(@Valid CourseCreateRequest req) {
-    Course created = writeService.save(new CourseCreateCommand(req.name(), req.schoolId()));
-    CourseResponse body = CoursePresenter.toResponse(readService.getViewById(created.getId()));
+    CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
+    Course created = writeService.save(cmd);
+
+    CourseView view = readService.getViewById(created.getId());
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
+
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
-   * Create courses in bulk.
+   * Updates an existing course.
    *
-   * @param reqs the list of CourseCreateRequest DTOs for bulk creation
-   * @return the response
-   */
-  @POST
-  @Path("/bulk")
-  public Response createBulk(@Valid List<CourseCreateRequest> reqs) {
-    var cmds =
-        reqs.stream()
-            .map(r -> new CourseCreateCommand(r.name(), r.schoolId()))
-            .collect(Collectors.toList());
-    var saved = writeService.saveAll(cmds);
-    return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-        .build();
-  }
-
-  /**
-   * Update an existing course.
-   *
-   * @param id the course id to update
+   * @param id  the course id to update
    * @param req the CourseUpdateRequest DTO
-   * @return the response
+   * @return the response containing the updated course
    */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
-    Course updated = writeService.update(id, new CourseUpdateCommand(req.name(), req.schoolId()));
-    CourseResponse body = CoursePresenter.toResponse(readService.getViewById(updated.getId()));
+    CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
+    writeService.update(id, cmd);
+
+    CourseView view = readService.getViewById(id);
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Delete courses by ids.
+   * Deletes a course by its ID.
    *
-   * @param req the uuids request
-   * @return the response
+   * @param id the course id to delete
+   * @return the response indicating success
    */
   @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+  @Path("/{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /**
+   * Picks the best locale from the Accept-Language header.
+   */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }

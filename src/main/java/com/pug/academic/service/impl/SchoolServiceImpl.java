@@ -1,10 +1,8 @@
 package com.pug.academic.service.impl;
 
-import com.pug.academic.domain.Course;
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
@@ -12,32 +10,30 @@ import com.pug.academic.service.utils.SchoolProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
-/** Service class for managing School entities. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Service class for managing School entities.
+ */
 @ApplicationScoped
 public class SchoolServiceImpl implements SchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
-  @Inject SchoolRepository repo;
-  @Inject CourseService courseService;
+  @Inject
+  SchoolRepository repo;
 
   @Transactional
   @Override
   public School save(SchoolCreateCommand cmd) {
+    LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
 
     if (schoolToPersist.hasErrors()) {
@@ -45,56 +41,24 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (existsByName(schoolToPersist.getName())) {
+      LOG.warnf("Creation failed: School with name %s already exists", schoolToPersist.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", schoolToPersist.getName()));
-    }
-    return repo.persist(schoolToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<School> saveAll(Iterable<SchoolCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+              AcademicErrorCodes.SCHOOL_ALREADY_EXISTS,
+              "name",
+              schoolToPersist.getName()
+      );
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<School> schoolsToPersist = new ArrayList<>();
-    Set<String> processedNames = new HashSet<>();
-
-    for (SchoolCreateCommand cmd : cmds) {
-      School school = SchoolProcessor.processCreateInput(cmd.name());
-
-      if (school.hasErrors()) {
-        allCollectedProblems.addAll(school.getProblems());
-      } else {
-        String schoolName = school.getName();
-        if (!processedNames.add(schoolName)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
-        } else {
-          schoolsToPersist.add(school);
-        }
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> namesToPersist = schoolsToPersist.stream().map(School::getName).toList();
-
-    if (repo.existsAnyByNameIn(namesToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(schoolsToPersist);
+    School savedSchool = repo.persist(schoolToPersist);
+    LOG.infof("School created successfully. ID: %s", savedSchool.getId());
+    return savedSchool;
   }
 
   @Transactional
   @Override
   public School update(UUID id, SchoolUpdateCommand cmd) {
+    LOG.debugf("Attempting to update School ID: %s", id);
     School current = getById(id);
-
     School updatedSchool = SchoolProcessor.processUpdateInput(current, cmd.name());
 
     if (updatedSchool.hasErrors()) {
@@ -102,108 +66,91 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (!updatedSchool.getName().equals(current.getName())
-        && existsByName(updatedSchool.getName())) {
+            && existsByName(updatedSchool.getName())) {
+      LOG.warnf("Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", updatedSchool.getName()));
+              AcademicErrorCodes.SCHOOL_ALREADY_EXISTS,
+              "name",
+              updatedSchool.getName()
+      );
     }
 
     repo.update(updatedSchool);
+    LOG.infof("School updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(
-          DeleteKeys.SCHOOLS, 0L,
-          DeleteKeys.COURSES, 0L,
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete School ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    Set<UUID> courseIdsToDelete = new HashSet<>();
-    for (UUID schoolId : ids) {
-      courseIdsToDelete.addAll(
-          courseService.listAllBySchoolId(schoolId).stream()
-              .map(Course::getId)
-              .collect(Collectors.toSet()));
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("School deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }
 
-    Map<DeleteKeys, Long> deletedCoursesAndDependents = courseService.deleteAll(courseIdsToDelete);
-
-    long schoolsDeleted = repo.deleteByIds(ids);
-
-    return Map.of(
-        DeleteKeys.SCHOOLS, schoolsDeleted,
-        DeleteKeys.COURSES, deletedCoursesAndDependents.getOrDefault(DeleteKeys.COURSES, 0L),
-        DeleteKeys.STUDENTS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-        DeleteKeys.ACCOUNTS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
+    return deleted;
   }
 
   @Override
   public List<School> listAll() {
+    LOG.debug("Listing all schools");
     List<School> schools = repo.listAllSchools();
-    for (School s : schools) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted School entity found in DB. Problems: %s",
-            s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND);
-      }
-    }
-    return schools;
+
+    return schools.stream()
+            .filter(school -> {
+              if (school.hasErrors()) {
+                LOG.errorf("DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+                        school.getId(), school.getProblemsSummary());
+                return false;
+              }
+              return true;
+            })
+            .toList();
   }
 
   @Override
   public School getById(UUID id) {
-    School school =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+    School school = repo.findOptionalById(id)
+            .orElseThrow(() -> {
+              LOG.debugf("School lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.SCHOOL_NOT_FOUND,
+                      "id",
+                      id.toString()
+              );
+            });
 
     if (school.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: School with ID %s in DB violates domain rules. Problems: %s",
-          id, school.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id));
+      LOG.errorf("DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+              id, school.getProblemsSummary());
+      throw new ResourceNotFoundException(
+              AcademicErrorCodes.SCHOOL_NOT_FOUND,
+              "id",
+              id.toString()
+      );
     }
     return school;
   }
 
-  @Override
-  public School getByName(String name) {
-    String n = StringUtils.trim(name);
-    School school =
-        repo.findOptionalByName(n)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n)));
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-    if (school.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: School with name %s in DB violates domain rules. Problems: %s",
-          n, school.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n));
-    }
-    return school;
-  }
-
-  @Override
-  public boolean existsByName(String name) {
+  /**
+   * Checks if a School entity exists by its name.
+   *
+   * @param name the name of the school.
+   * @return true if a school with the given name exists, false otherwise.
+   */
+  private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
     }
     return repo.existsByName(name);
-  }
-
-  @Override
-  public boolean existsAnyByNameIn(Iterable<String> names) {
-    return repo.existsAnyByNameIn(names);
   }
 }

@@ -1,6 +1,6 @@
 package com.pug.academic.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.StudentViewWithCompletedHours;
+import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.shared.i18n.I18n;
@@ -33,41 +33,40 @@ public final class StudentPresenter {
    * @param i18n   the internationalization service
    * @return the converted StudentResponse
    */
-  public static StudentResponse toResponse(StudentViewWithCompletedHours v, Locale locale, I18n i18n) {
+  public static StudentResponse toResponse(StudentView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
     }
-    var vDetails = v.details();
 
-    String startDateFormatted = StringUtils.toStringFormatted(vDetails.startDate(), locale);
-    String dueDateFormatted = StringUtils.toStringFormatted(vDetails.dueDate(), locale);
+    String startDateFormatted = StringUtils.toStringFormatted(v.startDate(), locale);
+    String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (vDetails.requiredHours() != null && v.completedHours() != null) {
-      missingHours = vDetails.requiredHours().subtract(v.completedHours());
+    if (v.requiredHours() != null && !v.concluded()) {
+      missingHours = v.requiredHours().subtract(BigDecimal.ZERO);
     }
 
     long remainingDays = 0;
     String remainingDaysFormatted = "";
-    if (vDetails.dueDate() != null) {
-      remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), vDetails.dueDate());
-      remainingDaysFormatted = PresenterUtils.formatRemainingDays(vDetails.dueDate(), locale, i18n);
+    if (v.dueDate() != null) {
+      remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), v.dueDate());
+      remainingDaysFormatted = PresenterUtils.formatRemainingDays(v.dueDate(), locale, i18n);
     }
 
-    CampusResponse campus = SharedDataPresenter.createCampusResponse(vDetails.campus(), locale, i18n);
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(vDetails.createdAt(), vDetails.updatedAt(), locale);
+    CampusResponse campus = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
+    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new StudentResponse(
-            AccountPresenter.toResponse(vDetails.account(), locale, i18n),
-            vDetails.academicRegistration(),
+            AccountPresenter.toResponse(v.account(), locale, i18n),
+            v.academicRegistration(),
             campus,
-            CoursePresenter.toResponse(vDetails.course(), locale),
-            vDetails.requiredHours(),
+            CoursePresenter.toResponse(v.course(), locale),
+            v.requiredHours(),
             BigDecimal.ZERO,
             missingHours,
-            vDetails.startDate(),
+            v.startDate(),
             startDateFormatted,
-            vDetails.dueDate(),
+            v.dueDate(),
             dueDateFormatted,
             remainingDays,
             remainingDaysFormatted,

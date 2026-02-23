@@ -17,14 +17,6 @@ public interface SchoolQueries {
   Optional<SchoolView> findOptionalById(UUID id);
 
   /**
-   * Finds a school by its name.
-   *
-   * @param name the name of the school to find.
-   * @return an Optional containing the found SchoolView, or empty if not found.
-   */
-  Optional<SchoolView> findOptionalByName(String name);
-
-  /**
    * Lists all schools.
    *
    * @return a list of all SchoolView

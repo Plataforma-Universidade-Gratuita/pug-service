@@ -4,12 +4,11 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.infra.StudentMapper;
 import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,20 +60,10 @@ public class StudentRepositoryImpl
   }
 
   @Override
-  public List<Student> listAllStudents() {
-    var domainList = new ArrayList<Student>();
-    for (StudentEntity entity : listAll()) {
-      domainList.add(StudentMapper.toDomain(entity));
+  public boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
     }
-    return domainList;
-  }
-
-  @Override
-  public List<Student> listAllByCourseId(UUID courseId) {
-    var domainList = new ArrayList<Student>();
-    for (StudentEntity entity : list("courseId", courseId)) {
-      domainList.add(StudentMapper.toDomain(entity));
-    }
-    return domainList;
+    return count("academic_registration", registration) > 0;
   }
 }

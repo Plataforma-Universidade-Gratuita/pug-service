@@ -1,10 +1,11 @@
 package com.pug.academic.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Student entities. */
+/**
+ * Repository interface for managing Student entities.
+ */
 public interface StudentRepository {
   /**
    * Persists a Student entity.
@@ -41,23 +42,10 @@ public interface StudentRepository {
   Optional<Student> findOptionalById(UUID id);
 
   /**
-   * Lists all Students.
+   * Checks whether a Student with the given academic registration already exists.
    *
-   * <p>Note: The returned Students may contain validation errors (check {@code
-   * student.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Students
+   * @param registration the academic registration string to check for existence
+   * @return true if a Student with the given registration exists, false otherwise
    */
-  List<Student> listAllStudents();
-
-  /**
-   * Lists all Students by Course ID.
-   *
-   * <p>Note: The returned Students may contain validation errors (check {@code
-   * student.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @param courseId the Course ID to filter Students
-   * @return a list of Students enrolled in the specified Course
-   */
-  List<Student> listAllByCourseId(UUID courseId);
+  boolean existsByRegistration(String registration);
 }

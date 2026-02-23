@@ -13,305 +13,165 @@ import com.pug.identity.service.AccountService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Student entities. */
+import java.util.UUID;
+
+/**
+ * Service class for managing Student entities.
+ */
 @ApplicationScoped
 public class StudentServiceImpl implements StudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
 
-  @Inject StudentRepository repo;
-  @Inject AccountService accountService;
-  @Inject CourseService courseService;
+  @Inject
+  StudentRepository repo;
+
+  @Inject
+  AccountService accountService;
+
+  @Inject
+  CourseService courseService;
 
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
-    List<Problem> problems = new ArrayList<>();
-    Account account = null;
-
+    LOG.debugf("Attempting to create Student with registration: %s", cmd.academicRegistration());
     courseService.getById(cmd.courseId());
+    Account account = accountService.save(cmd.accountCreateCommand());
 
-    try {
-      account = accountService.save(cmd.accountCreateCommand());
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
-    } catch (DuplicateResourceException e) {
-      problems.add(new Problem(e.getErrorCode()));
-    }
-
-    UUID accountId = (account != null) ? account.getId() : null;
-
-    Student studentToPersist =
-        StudentProcessor.processCreateInput(
-            accountId,
+    Student studentToPersist = StudentProcessor.processCreateInput(
+            account.getId(),
             cmd.academicRegistration(),
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
-            cmd.completedHours(),
             cmd.startDate(),
-            cmd.dueDate());
+            cmd.dueDate()
+    );
 
     if (studentToPersist.hasErrors()) {
-      problems.addAll(studentToPersist.getProblems());
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+      throw new AppValidationException(studentToPersist.getProblems());
     }
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
+      LOG.warnf("Creation failed: Student with registration %s already exists", studentToPersist.getAcademicRegistration());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-          Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
-    }
-    return repo.persist(studentToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<Student> saveAll(Iterable<StudentCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+              "academicRegistration",
+              studentToPersist.getAcademicRegistration().toString()
+      );
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<Student> studentsToPersist = new ArrayList<>();
-    Set<String> processedRegistrations = new HashSet<>();
-    Set<UUID> uniqueCourseIds = new HashSet<>();
-
-    CollectionUtils.toStream(cmds).forEach(cmd -> uniqueCourseIds.add(cmd.courseId()));
-
-    for (UUID courseId : uniqueCourseIds) {
-      try {
-        courseService.getById(courseId);
-      } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<Account> createdAccounts = new ArrayList<>();
-    try {
-      var accountCreateCommands =
-          CollectionUtils.toStream(cmds).map(StudentCreateCommand::accountCreateCommand).toList();
-      createdAccounts = accountService.saveAll(accountCreateCommands);
-    } catch (AppValidationException e) {
-      allCollectedProblems.addAll(e.getProblems());
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    Map<Integer, Account> accountByIndex = new HashMap<>();
-    for (int i = 0; i < createdAccounts.size(); i++) {
-      accountByIndex.put(i, createdAccounts.get(i));
-    }
-
-    int cmdIndex = 0;
-    for (StudentCreateCommand cmd : cmds) {
-      UUID studentAccountId = null;
-      if (accountByIndex.containsKey(cmdIndex)) {
-        studentAccountId = accountByIndex.get(cmdIndex).getId();
-      }
-
-      Student student =
-          StudentProcessor.processCreateInput(
-              studentAccountId,
-              cmd.academicRegistration(),
-              cmd.campus(),
-              cmd.courseId(),
-              cmd.requiredHours(),
-              cmd.completedHours(),
-              cmd.startDate(),
-              cmd.dueDate());
-
-      if (student.hasErrors()) {
-        allCollectedProblems.addAll(student.getProblems());
-      } else {
-        String registration = student.getAcademicRegistration().toString();
-        if (!processedRegistrations.add(registration)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
-        } else {
-          studentsToPersist.add(student);
-        }
-      }
-      cmdIndex++;
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> registrationsToPersist =
-        studentsToPersist.stream().map(s -> s.getAcademicRegistration().toString()).toList();
-
-    if (repo.existsAnyByRegistrationIn(registrationsToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(studentsToPersist);
+    Student savedStudent = repo.persist(studentToPersist);
+    LOG.infof("Student created successfully. Account ID: %s", savedStudent.getAccountId());
+    return savedStudent;
   }
 
   @Transactional
   @Override
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Student Account ID: %s", accountId);
     Student current = getById(accountId);
 
-    List<Problem> problems = new ArrayList<>();
-
     if (cmd.accountUpdateCommand() != null) {
-      try {
-        accountService.update(accountId, cmd.accountUpdateCommand());
-      } catch (AppValidationException e) {
-        problems.addAll(e.getProblems());
-      } catch (DuplicateResourceException e) {
-        problems.add(new Problem(e.getErrorCode()));
-      }
+      accountService.update(accountId, cmd.accountUpdateCommand());
     }
-
     if (cmd.courseId() != null && !cmd.courseId().equals(current.getCourseId())) {
       courseService.getById(cmd.courseId());
     }
 
-    Student studentToUpdate =
-        StudentProcessor.processUpdateInput(
+    Student studentToUpdate = StudentProcessor.processUpdateInput(
             current,
             cmd.academicRegistration(),
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
-            cmd.completedHours(),
             cmd.startDate(),
-            cmd.dueDate());
+            cmd.dueDate()
+    );
 
     if (studentToUpdate.hasErrors()) {
-      problems.addAll(studentToUpdate.getProblems());
+      throw new AppValidationException(studentToUpdate.getProblems());
     }
 
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
-    }
-
-    if (cmd.academicRegistration() != null
-        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
-      if (existsByRegistration(cmd.academicRegistration())) {
-        throw new DuplicateResourceException(
-            AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-            Map.of("academicRegistration", cmd.academicRegistration()));
-      }
+    if (cmd.academicRegistration() != null && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+            && existsByRegistration(cmd.academicRegistration())) {
+      LOG.warnf("Update failed: Student Account ID %s tried to use existing registration %s", accountId, cmd.academicRegistration());
+      throw new DuplicateResourceException(
+              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+              "academicRegistration",
+              cmd.academicRegistration()
+      );
     }
 
     repo.update(studentToUpdate);
+    LOG.infof("Student updated successfully. Account ID: %s", accountId);
     return getById(accountId);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return Map.of(
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
     }
 
-    long studentsDeleted = repo.deleteByIds(accountIds);
+    boolean deleted = repo.deleteById(accountId);
 
-    Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(accountIds);
-
-    return Map.of(
-        DeleteKeys.STUDENTS, studentsDeleted,
-        DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
-  }
-
-  @Override
-  public List<Student> listAll() {
-    List<Student> students = repo.listAllStudents();
-    for (Student s : students) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Student entity found in DB. Problems: %s",
-            s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
-      }
+    if (deleted) {
+      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
     }
-    return students;
-  }
 
-  @Override
-  public List<Student> listAllByCourseId(UUID courseId) {
-    if (courseId == null) {
-      return List.of();
-    }
-    List<Student> students = repo.listAllByCourseId(courseId);
-    for (Student s : students) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: "
-                + "Corrupted Student entity found in DB for Course %s. Problems: %s",
-            courseId, s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
-      }
-    }
-    return students;
+    return deleted;
   }
 
   @Override
   public Student getById(UUID accountId) {
-    Student student =
-        repo.findOptionalById(accountId)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+    Student student = repo.findOptionalById(accountId)
+            .orElseThrow(() -> {
+              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND,
+                      "accountId",
+                      accountId.toString()
+              );
+            });
 
     if (student.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: "
-              + "Student with Account ID %s in DB violates domain rules. Problems: %s",
-          accountId, student.getProblemsSummary());
+      LOG.errorf("DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+              accountId, student.getProblemsSummary());
       throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
+              AcademicErrorCodes.STUDENT_NOT_FOUND,
+              "accountId",
+              accountId.toString()
+      );
     }
+
     return student;
   }
 
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    return repo.existsAnyByAccountIdIn(accountIds);
-  }
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-  @Override
-  public boolean existsAnyByRegistrationIn(Iterable<String> registrations) {
-    return repo.existsAnyByRegistrationIn(registrations);
-  }
-
-  @Override
-  public boolean existsByRegistration(String registration) {
-    return repo.existsAnyByRegistrationIn(List.of(registration));
-  }
-
-  @Override
-  public boolean existsAnyByCourseIdIn(Iterable<UUID> courseIds) {
-    return repo.existsAnyByCourseIdIn(courseIds);
+  /**
+   * Checks if a student with the given academic registration already exists.
+   *
+   * @param registration the academic registration string to check for existence.
+   * @return true if a student with the given registration exists, false otherwise.
+   */
+  private boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
+    }
+    return repo.existsByRegistration(registration);
   }
 }

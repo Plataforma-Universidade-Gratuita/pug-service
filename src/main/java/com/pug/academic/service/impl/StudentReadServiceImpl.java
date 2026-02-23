@@ -8,75 +8,85 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.jboss.logging.Logger;
+
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
-/** Service class for reading Student views. */
+/**
+ * Service class for reading Student views.
+ */
 @ApplicationScoped
 public class StudentReadServiceImpl implements StudentReadService {
 
-  @Inject StudentQueries queries;
+  private static final Logger LOG = Logger.getLogger(StudentReadServiceImpl.class);
+
+  @Inject
+  StudentQueries queries;
 
   @Override
-  public StudentView getView(UUID accountId) {
-    Objects.requireNonNull(accountId, "accountId");
-    return queries
-        .findOptionalById(accountId)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+  public StudentView getViewByAccountId(UUID accountId) {
+    return queries.findOptionalById(accountId)
+            .orElseThrow(() -> {
+              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND,
+                      "accountId",
+                      accountId.toString()
+              );
+            });
   }
 
   @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
-    if (StringUtils.isEmpty(academicRegistration)) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND,
-          Map.of("academicRegistration", academicRegistration));
-    }
-    return queries
-        .findOptionalByAcademicRegistration(academicRegistration)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.STUDENT_NOT_FOUND,
-                    Map.of("academicRegistration", academicRegistration)));
+    return queries.findOptionalByAcademicRegistration(academicRegistration)
+            .orElseThrow(() -> {
+              LOG.debugf("Student lookup failed: Registration %s not found", academicRegistration);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND,
+                      "academicRegistration",
+                      academicRegistration
+              );
+            });
+  }
+
+  @Override
+  public StudentView getViewByEmail(String email) {
+    return queries.findOptionalByEmail(email)
+            .orElseThrow(() -> {
+              LOG.debugf("Student lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND,
+                      "email",
+                      email
+              );
+            });
+  }
+
+  @Override
+  public StudentView getViewByCpf(String cpf) {
+    return queries.findOptionalByCpf(cpf)
+            .orElseThrow(() -> {
+              LOG.debugf("Student lookup failed: CPF %s not found", cpf);
+              return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND,
+                      "cpf",
+                      cpf
+              );
+            });
   }
 
   @Override
   public List<StudentView> listViews() {
-    try {
-      return queries.listAllStudents();
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing all students."));
-    }
+    return queries.listAllStudents();
   }
 
   @Override
   public List<StudentView> listViewsByCourseId(UUID courseId) {
-    Objects.requireNonNull(courseId, "courseId");
-    try {
-      return queries.listAllByCourseId(courseId);
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND,
-          Map.of("courseId", courseId, "detail", "Error listing students by course."));
+    if (courseId == null) {
+      return List.of();
     }
-  }
-
-  @Override
-  public List<StudentView> listViewsByIds(Iterable<UUID> accountIds) {
-    Objects.requireNonNull(accountIds, "accountIds");
-    try {
-      return queries.listAllByIds(accountIds);
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing students by IDs."));
-    }
+    return queries.listAllByCourseId(courseId);
   }
 
   @Override
