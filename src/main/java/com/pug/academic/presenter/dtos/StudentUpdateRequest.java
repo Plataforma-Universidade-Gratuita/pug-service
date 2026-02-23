@@ -14,7 +14,6 @@ import java.util.UUID;
  * @param campus the new campus (optional)
  * @param courseId the new course ID (optional)
  * @param requiredHours the new required hours (optional)
- * @param completedHours the new completed hours (optional)
  * @param startDate the new start date (optional)
  * @param dueDate the new due date (optional)
  */
@@ -26,6 +25,5 @@ public record StudentUpdateRequest(
     String campus,
     UUID courseId,
     BigDecimal requiredHours,
-    BigDecimal completedHours,
     LocalDate startDate,
     LocalDate dueDate) {}

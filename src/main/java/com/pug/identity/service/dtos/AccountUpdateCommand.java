@@ -5,7 +5,7 @@ package com.pug.identity.service.dtos;
  *
  * @param emailString the new email address as a string (optional).
  * @param passwordHash the new hashed password (optional).
- * @param userCommand the command for updating the associated user (optional).
+ * @param userCommand the command for updating the associated account (optional).
  */
 public record AccountUpdateCommand(
     String emailString, String passwordHash, UserUpdateCommand userCommand) {}

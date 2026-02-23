@@ -47,7 +47,7 @@ public interface StudentQueries {
   List<StudentView> listAllByCourseId(UUID courseId);
 
   /**
-   * Searches for StudentView objects by name (of the associated user).
+   * Searches for StudentView objects by name (of the associated account).
    *
    * @param key the name key to search for.
    * @return a list of StudentView objects matching the search key.

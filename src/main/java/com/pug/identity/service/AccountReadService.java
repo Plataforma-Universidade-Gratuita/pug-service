@@ -43,7 +43,7 @@ public interface AccountReadService {
   List<AccountView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AccountViews by name (of the associated user).
+   * Searches for AccountViews by name (of the associated account).
    *
    * @param query the search query
    * @return a list of AccountViews matching the search query

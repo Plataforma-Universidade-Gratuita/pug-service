@@ -1,7 +1,6 @@
 package com.pug.geo.service;
 
 import com.pug.geo.domain.City;
-import com.pug.geo.domain.vos.IbgeCode;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.shared.exceptions.AppValidationException;
@@ -54,12 +53,4 @@ public interface CityService {
    *                                   domain rules (data integrity error).
    */
   City getById(UUID id);
-
-  /**
-   * Check if a city exists by its IBGE code.
-   *
-   * @param ibgeCode the IBGE code (already a validated Value Object).
-   * @return true if the city exists, false otherwise.
-   */
-  boolean existsByIbge(IbgeCode ibgeCode);
 }

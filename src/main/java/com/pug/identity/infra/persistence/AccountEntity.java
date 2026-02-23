@@ -18,7 +18,7 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
-/** Entity representing a user in the system. */
+/** Entity representing a account in the system. */
 @Getter
 @Setter
 @NoArgsConstructor

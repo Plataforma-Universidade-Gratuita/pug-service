@@ -168,8 +168,15 @@ public class EntityServiceImpl implements EntityService {
             .toList();
   }
 
-  @Override
-  public boolean existsByCnpj(Cnpj cnpj) {
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Checks if an Entity with the given CNPJ already exists.
+   *
+   * @param cnpj the CNPJ to check for existence
+   * @return true if an Entity with the given CNPJ exists, false otherwise
+   */
+  private boolean existsByCnpj(Cnpj cnpj) {
     if (cnpj == null) {
       return false;
     }

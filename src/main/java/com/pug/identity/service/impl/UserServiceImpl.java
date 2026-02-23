@@ -20,7 +20,7 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserService} interface for managing user-related operations.
+ * Implementation of the {@link UserService} interface for managing account-related operations.
  *
  * <p>This service provides methods to create, update, delete, list, and retrieve users. It ensures
  * that all operations adhere to the domain rules and handles validation and error scenarios

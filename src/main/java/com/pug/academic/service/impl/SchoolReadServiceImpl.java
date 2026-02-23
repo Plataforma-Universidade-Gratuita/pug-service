@@ -29,20 +29,6 @@ public class SchoolReadServiceImpl implements SchoolReadService {
   }
 
   @Override
-  public SchoolView getByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name));
-    }
-    return queries
-        .findOptionalByName(name)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", name)));
-  }
-
-  @Override
   public List<SchoolView> listAll() {
     return queries.listAllSchools();
   }

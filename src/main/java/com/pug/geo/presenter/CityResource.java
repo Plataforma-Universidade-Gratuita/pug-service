@@ -113,7 +113,6 @@ public class CityResource {
     CityCreateCommand cmd = new CityCreateCommand(req.name(), req.ibgeCodeString());
     City createdCityDomain = writeService.save(cmd);
 
-    // Re-fetch view to ensure consistent response format
     CityView cityView = readService.getViewById(createdCityDomain.getId());
     CityResponse responseBody = CityPresenter.toResponse(cityView);
 

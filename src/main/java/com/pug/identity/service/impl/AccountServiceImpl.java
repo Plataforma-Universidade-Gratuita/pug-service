@@ -174,8 +174,15 @@ public class AccountServiceImpl implements AccountService {
     return account;
   }
 
-  @Override
-  public boolean existsByEmail(String email) {
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Checks if an Account with the given email already exists.
+   *
+   * @param email the email to check for existence.
+   * @return true if an Account with the email exists, false otherwise.
+   */
+  private boolean existsByEmail(String email) {
     if (email == null) {
       return false;
     }

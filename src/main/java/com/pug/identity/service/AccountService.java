@@ -35,7 +35,7 @@ public interface AccountService {
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the updated
    *     email already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
-   *     or user data.
+   *     or account data.
    */
   Account update(UUID id, AccountUpdateCommand cmd);
 
@@ -77,12 +77,4 @@ public interface AccountService {
    *     is corrupted in the database.
    */
   Account getById(UUID id);
-
-  /**
-   * Checks if any account exists with the provided email.
-   *
-   * @param email the email to check (already a validated Value Object).
-   * @return true if any account exists with the email, false otherwise
-   */
-  boolean existsByEmail(String email);
 }

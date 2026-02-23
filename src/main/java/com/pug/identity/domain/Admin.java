@@ -37,19 +37,20 @@ public class Admin extends DomainError {
    * Factory for new Admin.
    *
    * @param accountId the ID of the Account associated with the Admin
+   * @param campus the campus where the admin comes from.
    * @return new Admin instance (may contain errors)
    */
-  public static Admin factory(UUID accountId) {
-    Admin admin = Admin.builder().accountId(accountId).grantedAt(OffsetDateTime.now()).build();
+  public static Admin factory(UUID accountId, Campi campus) {
+    Admin admin = Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
     admin.collectValidationProblems();
     return admin;
   }
 
   /**
-   * Behavior: Change the campus at which the student is enrolled.
+   * Behavior: Change the campus at which the admin works at.
    *
    * @param newCampus the new campus to set
-   * @return a new student instance with the updated campus
+   * @return a new Admin instance with the updated campus
    */
   public Admin changeCampus(Campi newCampus) {
     if (campus == newCampus) {

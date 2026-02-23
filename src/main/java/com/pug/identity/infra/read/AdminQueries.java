@@ -39,7 +39,7 @@ public interface AdminQueries {
   List<AdminView> listByCpf(String cpf);
 
   /**
-   * Searches for AdminViews by name (of the associated user).
+   * Searches for AdminViews by name (of the associated account).
    *
    * @param key the name key to search for.
    * @return a list of AdminViews matching the search key.

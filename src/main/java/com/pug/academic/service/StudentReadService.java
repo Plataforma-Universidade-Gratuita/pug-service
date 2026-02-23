@@ -1,6 +1,6 @@
 package com.pug.academic.service;
 
-import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.academic.infra.read.dtos.StudentViewWithCompletedHours;
 import java.util.List;
 import java.util.UUID;
 
@@ -8,31 +8,31 @@ import java.util.UUID;
 public interface StudentReadService {
 
   /**
-   * Retrieves a StudentView by its unique identifier (Account ID).
+   * Retrieves a StudentViewWithCompletedHours by its unique identifier (Account ID).
    *
    * @param accountId the UUID of the Student's account
-   * @return the StudentView
+   * @return the StudentViewWithCompletedHours
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given ID is
    *     found
    */
-  StudentView getView(UUID accountId);
+  StudentViewWithCompletedHours getView(UUID accountId);
 
   /**
-   * Retrieves a StudentView by its academic registration.
+   * Retrieves a StudentViewWithCompletedHours by its academic registration.
    *
    * @param academicRegistration the academic registration of the Student
-   * @return the StudentView
+   * @return the StudentViewWithCompletedHours
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given
    *     academic registration is found
    */
-  StudentView getViewByAcademicRegistration(String academicRegistration);
+  StudentViewWithCompletedHours getViewByAcademicRegistration(String academicRegistration);
 
   /**
    * Lists all StudentViews.
    *
    * @return a list of all StudentViews
    */
-  List<StudentView> listViews();
+  List<StudentViewWithCompletedHours> listViews();
 
   /**
    * Lists all StudentViews by course ID.
@@ -40,7 +40,7 @@ public interface StudentReadService {
    * @param courseId the UUID of the course
    * @return a list of StudentViews enrolled in the specified course
    */
-  List<StudentView> listViewsByCourseId(UUID courseId);
+  List<StudentViewWithCompletedHours> listViewsByCourseId(UUID courseId);
 
   /**
    * Lists all StudentViews by a collection of account IDs.
@@ -48,13 +48,13 @@ public interface StudentReadService {
    * @param accountIds an iterable of UUIDs representing account IDs
    * @return a list of StudentViews corresponding to the provided account IDs
    */
-  List<StudentView> listViewsByIds(Iterable<UUID> accountIds);
+  List<StudentViewWithCompletedHours> listViewsByIds(Iterable<UUID> accountIds);
 
   /**
-   * Searches for StudentView objects by name (of the associated user).
+   * Searches for StudentViewWithCompletedHours objects by name (of the associated account).
    *
    * @param query the search query.
-   * @return a list of StudentView objects matching the search key.
+   * @return a list of StudentViewWithCompletedHours objects matching the search key.
    */
-  List<StudentView> searchByName(String query);
+  List<StudentViewWithCompletedHours> searchByName(String query);
 }

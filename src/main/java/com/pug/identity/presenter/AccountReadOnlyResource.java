@@ -56,7 +56,7 @@ public class AccountReadOnlyResource {
   /**
    * Lists accounts.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
    * all accounts.
    *
    * @param query optional name query to search for.
@@ -101,7 +101,7 @@ public class AccountReadOnlyResource {
    * @param cpfRaw the raw CPF string of the accounts.
    * @return a list of account responses wrapped in an ApiEnvelope.
    * @throws AppValidationException if the provided CPF is malformed.
-   * @throws ResourceNotFoundException if associated user data is missing for any found account.
+   * @throws ResourceNotFoundException if associated account data is missing for any found account.
    */
   @GET
   @Path("by-cpf/{cpf}")

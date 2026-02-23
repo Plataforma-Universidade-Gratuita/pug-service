@@ -39,7 +39,7 @@ public interface AccountQueries {
   List<AccountView> listByCpf(String cpf);
 
   /**
-   * Searches for AccountView objects by name (of the associated user).
+   * Searches for AccountView objects by name (of the associated account).
    *
    * @param key the name key to search for.
    * @return a list of AccountView objects matching the search key.

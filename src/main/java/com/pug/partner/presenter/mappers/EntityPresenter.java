@@ -4,7 +4,8 @@ import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityResponse;
-import com.pug.shared.utils.StringUtils;
+import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import com.pug.shared.presenter.mappers.SharedDataPresenter;
 
 import java.util.Locale;
 
@@ -30,11 +31,10 @@ public final class EntityPresenter {
     }
 
     String formattedCnpj = toFormattedString(v.cnpj());
-    String formattedCreatedAt = StringUtils.toStringFormatted(v.createdAt(), locale);
-    String formattedUpdatedAt = StringUtils.toStringFormatted(v.updatedAt(), locale);
     CityResponse cityResponse = CityPresenter.toResponse(v.city());
+    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new EntityResponse(v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, v.createdAt(), formattedCreatedAt, v.updatedAt(), formattedUpdatedAt);
+    return new EntityResponse(v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
   }
 
   /**

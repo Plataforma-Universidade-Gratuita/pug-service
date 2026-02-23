@@ -139,32 +139,4 @@ public class StaffServiceImpl implements StaffService {
             })
             .toList();
   }
-
-  @Override
-  public List<Staff> listByEntityId(UUID entityId) {
-    if (entityId == null) {
-      return List.of();
-    }
-    LOG.debugf("Listing staff for Entity ID: %s", entityId);
-    List<Staff> staffList = repo.listAllByEntityId(entityId);
-
-    return staffList.stream()
-            .filter(staff -> {
-              if (staff.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-                        staff.getAccountId(), staff.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-            .toList();
-  }
-
-  @Override
-  public boolean existsByAccountId(UUID accountId) {
-    if (accountId == null) {
-      return false;
-    }
-    return repo.existsByAccountId(accountId);
-  }
 }

@@ -79,7 +79,7 @@ public class AdminResource {
   /**
    * Lists admins.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by user name. Otherwise, returns
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
    * all admins.
    *
    * @param query optional name query to search for.
@@ -152,7 +152,7 @@ public class AdminResource {
     UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
         new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd);
+    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd, req.campus());
 
     Admin admin = writeService.save(adminCmd);
 
@@ -181,7 +181,7 @@ public class AdminResource {
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpfString(), req.name());
     AccountUpdateCommand accountCmd =
         new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd);
+    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
 
     Admin updatedAdmin = writeService.update(id, adminCmd);
 

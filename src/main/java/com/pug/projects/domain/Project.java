@@ -42,7 +42,7 @@ public class Project extends DomainError {
    * @param name the name of the project
    * @param entity the associated entity
    * @param description the project description
-   * @param createdBy the UUID of the user who created the project
+   * @param createdBy the UUID of the account who created the project
    * @param offeredHours the number of hours offered for the project
    * @param maxParticipants the maximum number of participants allowed
    * @param schools the list of associated schools

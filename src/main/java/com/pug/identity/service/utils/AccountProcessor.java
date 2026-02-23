@@ -12,7 +12,7 @@ public class AccountProcessor {
   /**
    * Helper method to process DTO input and build a new Account domain object.
    *
-   * @param userId The ID of the user owner.
+   * @param userId The ID of the account owner.
    * @param emailString The email string from DTO.
    * @param accountTypeStr The account type string (e.g., "INDIVIDUAL", "COMPANY").
    * @param passwordHash The hashed password.

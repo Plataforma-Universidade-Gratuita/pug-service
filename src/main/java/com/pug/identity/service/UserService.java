@@ -7,7 +7,7 @@ import com.pug.identity.service.dtos.UserUpdateCommand;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for managing user entities. */
+/** Interface for managing account entities. */
 public interface UserService {
 
   /**
@@ -15,7 +15,7 @@ public interface UserService {
    *
    * @param cmd the command containing the data to create the new User
    * @return the saved User entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the same CPF
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the same CPF
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
    *     name, invalid CPF).
@@ -25,14 +25,14 @@ public interface UserService {
   /**
    * Updates an existing User with the given ID using the provided data.
    *
-   * @param id the UUID of the user to update
+   * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
    * @return the updated User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the updated CPF
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
    *     already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for user
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
    *     data.
    */
   User update(UUID id, UserUpdateCommand cmd);
@@ -40,9 +40,9 @@ public interface UserService {
   /**
    * Deletes a User by its ID.
    *
-   * @param id the UUID of the user to delete
-   * @return true if the user was successfully deleted, false if the user was not found
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @param id the UUID of the account to delete
+   * @return true if the account was successfully deleted, false if the account was not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
    */
   boolean delete(UUID id);
@@ -52,7 +52,7 @@ public interface UserService {
    *
    * @param ids a list of UUIDs of the users to delete
    * @return the number of users successfully deleted
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any user with the given IDs does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs does
    *     not exist (or data is corrupted in DB).
    */
   long deleteAll(List<UUID> ids);
@@ -69,9 +69,9 @@ public interface UserService {
   /**
    * Retrieves a User by its ID.
    *
-   * @param id the UUID of the user
+   * @param id the UUID of the account
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given ID does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
    *     not exist (or data is corrupted in DB).
    */
   User getById(UUID id);
@@ -79,18 +79,18 @@ public interface UserService {
   /**
    * Retrieves a User by its CPF.
    *
-   * @param cpf the CPF of the user (already a validated Value Object).
+   * @param cpf the CPF of the account (already a validated Value Object).
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user with the given CPF does
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF does
    *     not exist (or data is corrupted in DB).
    */
   User getByCpf(Cpf cpf);
 
   /**
-   * Checks if a user exists by CPF.
+   * Checks if a account exists by CPF.
    *
    * @param cpf the CPF to check (already a validated Value Object).
-   * @return true if a user with the given CPF exists, false otherwise.
+   * @return true if a account with the given CPF exists, false otherwise.
    */
   boolean existsByCpf(Cpf cpf);
 }

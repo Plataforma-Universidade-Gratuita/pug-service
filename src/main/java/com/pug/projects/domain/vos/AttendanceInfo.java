@@ -22,7 +22,7 @@ public class AttendanceInfo extends DomainError {
   /**
    * Private constructor for AttendanceInfo.
    *
-   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedBy UUID of the account who validated the attendance
    * @param validatedAt Date and time when the attendance was validated
    * @param createdAt Date and time when the attendance record was created
    */
@@ -36,7 +36,7 @@ public class AttendanceInfo extends DomainError {
   /**
    * Factory method to create and validate an AttendanceInfo instance.
    *
-   * @param validatedBy UUID of the user who validated the attendance
+   * @param validatedBy UUID of the account who validated the attendance
    * @param validatedAt Date and time when the attendance was validated
    * @param createdAt Date and time when the attendance record was created
    * @return A validated AttendanceInfo instance

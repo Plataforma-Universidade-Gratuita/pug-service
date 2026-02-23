@@ -53,7 +53,7 @@ public interface StaffReadService {
   /**
    * Searches for StaffViews by name.
    *
-   * @param term the search term (typically a user's name).
+   * @param term the search term (typically a account's name).
    * @return a list of StaffViews matching the search term.
    */
   List<StaffView> search(String term);

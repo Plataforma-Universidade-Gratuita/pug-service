@@ -8,7 +8,9 @@ import com.pug.geo.service.CityService;
 import com.pug.geo.service.dtos.CityCreateCommand;
 import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.geo.service.utils.CityProcessor;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -50,7 +52,6 @@ public class CityServiceImpl implements CityService {
 
     City savedCity = repo.persist(cityToPersist);
     LOG.infof("City created successfully. ID: %s", savedCity.getId());
-
     return savedCity;
   }
 
@@ -59,6 +60,8 @@ public class CityServiceImpl implements CityService {
   public City update(UUID id, CityUpdateCommand cmd) {
     LOG.debugf("Attempting to update City ID: %s", id);
     City current = getById(id);
+    ensureCityIsMutable(current);
+
     City updated = CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
 
     if (updated.hasErrors()) {
@@ -86,6 +89,8 @@ public class CityServiceImpl implements CityService {
     if (id == null) {
       return false;
     }
+    var city = getById(id);
+    ensureCityIsMutable(city);
 
     boolean deleted = repo.deleteById(id);
     if (deleted) {
@@ -122,11 +127,40 @@ public class CityServiceImpl implements CityService {
     return city;
   }
 
-  @Override
-  public boolean existsByIbge(IbgeCode ibgeCode) {
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Check if a city exists by its IBGE code.
+   *
+   * @param ibgeCode the IBGE code (already a validated Value Object).
+   * @return true if the city exists, false otherwise.
+   */
+  private boolean existsByIbge(IbgeCode ibgeCode) {
     if (ibgeCode == null) {
       return false;
     }
     return repo.existsByIbgeCode(ibgeCode.toString());
+  }
+
+  /**
+   * Enforces the immutability rule for default system cities.
+   * <p>
+   * Checks if the provided {@link City} corresponds to one of the protected records defined
+   * in {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are
+   * fundamental to system integrity and must not be modified or deleted.
+   *
+   * @param city the {@link City} entity to validate.
+   * @throws BusinessRuleException if the city matches a protected default IBGE code.
+   * @see Campi
+   */
+  private void ensureCityIsMutable(City city) {
+    if (Campi.getImmutableIbgeCodes().contains(city.getIbgeCode().toString())) {
+      LOG.warnf("Modification blocked: City ID %s (IBGE %s) is a default system record.",
+              city.getId(), city.getIbgeCode());
+      throw new BusinessRuleException(
+              GeoErrorCodes.CITY_IS_DEFAULT,
+              "id",
+              city.getId().toString());
+    }
   }
 }

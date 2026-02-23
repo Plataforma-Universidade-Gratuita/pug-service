@@ -1,6 +1,7 @@
 package com.pug.academic.infra.read.dtos;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.shared.domain.enums.Campi;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ import java.time.OffsetDateTime;
 public record StudentView(
         AccountView account,
         String academicRegistration,
-        String campus,
+        Campi campus,
         CourseView course,
         BigDecimal requiredHours,
         Boolean concluded,

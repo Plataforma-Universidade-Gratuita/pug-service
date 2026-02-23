@@ -50,19 +50,19 @@ public interface AccountRepository {
   Optional<Account> findOptionalById(UUID id);
 
   /**
-   * Finds the user IDs associated with a list of Account IDs.
+   * Finds the account IDs associated with a list of Account IDs.
    *
-   * @param ids the list of Account UUIDs to find user IDs for.
-   * @return a list of user UUIDs associated with the given Account IDs.
+   * @param ids the list of Account UUIDs to find account IDs for.
+   * @return a list of account UUIDs associated with the given Account IDs.
    */
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Finds all user IDs that are considered "orphan" (i.e., have no associated Accounts) among a
-   * given list of user IDs.
+   * Finds all account IDs that are considered "orphan" (i.e., have no associated Accounts) among a
+   * given list of account IDs.
    *
-   * @param userIds the list of user UUIDs to check for orphan status.
-   * @return a list of user UUIDs that are orphaned (have no associated Accounts).
+   * @param userIds the list of account UUIDs to check for orphan status.
+   * @return a list of account UUIDs that are orphaned (have no associated Accounts).
    */
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
@@ -77,10 +77,10 @@ public interface AccountRepository {
   List<Account> listAllAccounts();
 
   /**
-   * Counts the total number of Accounts associated with a given user ID.
+   * Counts the total number of Accounts associated with a given account ID.
    *
-   * @param userId the UUID of the user whose accounts are to be counted.
-   * @return the total number of Accounts associated with the specified user ID.
+   * @param userId the UUID of the account whose accounts are to be counted.
+   * @return the total number of Accounts associated with the specified account ID.
    */
   long countAllAccountsByUserId(UUID userId);
 

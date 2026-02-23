@@ -11,6 +11,7 @@ public enum GeoErrorCodes implements GenericErrorCodes {
   INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge.code.invalid", "ibgeCode"),
   /* Resource errors */
   CITY_ALREADY_EXISTS("error.domain.geo.city.already.exists", null),
+  CITY_IS_DEFAULT("error.domain.geo.city.is.default", null),
   CITY_NOT_FOUND("error.domain.geo.city.not.found", null),
   CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced", null);
 

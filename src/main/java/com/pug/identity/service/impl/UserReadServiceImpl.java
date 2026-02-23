@@ -13,9 +13,9 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserReadService} interface for retrieving user-related information.
+ * Implementation of the {@link UserReadService} interface for retrieving account-related information.
  *
- * <p>This service provides methods to get user views by ID or CPF, list all user views, and search
+ * <p>This service provides methods to get account views by ID or CPF, list all account views, and search
  * for users based on a query string. It handles scenarios where users are not found and ensures
  * that appropriate exceptions are thrown with relevant error codes.
  */

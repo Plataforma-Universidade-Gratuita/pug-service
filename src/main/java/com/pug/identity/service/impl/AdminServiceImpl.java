@@ -14,19 +14,23 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for managing admins. */
+import java.util.UUID;
+
+/**
+ * Service for managing admins.
+ */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject AdminRepository repo;
+  @Inject
+  AdminRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject
+  AccountService accountService;
 
   @Transactional
   @Override
@@ -34,7 +38,7 @@ public class AdminServiceImpl implements AdminService {
     LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
     Account account = accountService.save(cmd.accountCommand());
 
-    Admin admin = AdminProcessor.processCreateInput(account.getId());
+    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
     if (admin.hasErrors()) {
       throw new AppValidationException(admin.getProblems());
     }
@@ -84,42 +88,23 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-        repo
-            .findOptionalByAccountId(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
-                  return new ResourceNotFoundException(
-                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
-                });
+            repo
+                    .findOptionalByAccountId(accountId)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                              return new ResourceNotFoundException(
+                                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+                            });
 
     if (admin.hasErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-          accountId, admin.getProblemsSummary());
+              "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+              accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+              IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return admin;
-  }
-
-  @Override
-  public List<Admin> listAll() {
-    LOG.debug("Listing all admins");
-    List<Admin> admins = repo.listAllAdmins();
-
-    return admins.stream()
-        .filter(
-            admin -> {
-              if (admin.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-                    admin.getAccountId(), admin.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
   }
 }

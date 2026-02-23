@@ -106,7 +106,7 @@ public final class StudentMapper {
     return new StudentView(
         accountView,
         s.getAcademicRegistration(),
-        s.getCampus().toString(),
+        s.getCampus(),
         courseView,
         s.getRequiredHours(),
         s.getConcluded(),

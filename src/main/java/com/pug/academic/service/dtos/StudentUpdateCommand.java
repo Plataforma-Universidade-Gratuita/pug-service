@@ -14,7 +14,6 @@ import java.util.UUID;
  * @param campus The new campus where the student is enrolled (optional).
  * @param courseId The new course ID the student is enrolled in (optional).
  * @param requiredHours The new total required counterpart hours (optional).
- * @param completedHours The new total completed counterpart hours (optional).
  * @param startDate The new start date of the academic period (optional).
  * @param dueDate The new due date of the academic period (optional).
  */
@@ -24,6 +23,5 @@ public record StudentUpdateCommand(
     Campi campus,
     UUID courseId,
     BigDecimal requiredHours,
-    BigDecimal completedHours,
     LocalDate startDate,
     LocalDate dueDate) {}

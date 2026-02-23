@@ -20,7 +20,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** UserEntity represents a user in the identity system. */
+/** UserEntity represents a account in the identity system. */
 @Getter
 @Setter
 @NoArgsConstructor

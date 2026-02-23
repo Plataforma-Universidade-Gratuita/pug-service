@@ -23,6 +23,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
   INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
   INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
   /* Resource Errors */
+  BUSINESS_RULE_ERROR("error.business.rule.violation", null),
   DATA_INTEGRITY_ERROR("error.data.integrity", null),
   DUPLICATED_RESOURCE_ERROR("error.duplicated.resource", null),
   INTERNAL_ERROR("error.internal", null),

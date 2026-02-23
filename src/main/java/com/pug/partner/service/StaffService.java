@@ -27,7 +27,7 @@ public interface StaffService {
   /**
    * Deletes a staff member by their account ID, removing their association with any entity.
    *
-   * @param accountId the ID of the staff user (Account ID) to delete.
+   * @param accountId the ID of the staff account (Account ID) to delete.
    * @return true if deletion was successful, false if the staff member was not found.
    */
   boolean delete(UUID accountId);
@@ -56,20 +56,4 @@ public interface StaffService {
    * @return a list of all Staff objects.
    */
   List<Staff> listAll();
-
-  /**
-   * Lists all staff members associated with a specific entity.
-   *
-   * @param entityId the ID of the entity.
-   * @return a list of Staff objects.
-   */
-  List<Staff> listByEntityId(UUID entityId);
-
-  /**
-   * Checks if a staff member exists by their account ID.
-   *
-   * @param accountId the ID of the staff account.
-   * @return true if exists.
-   */
-  boolean existsByAccountId(UUID accountId);
 }

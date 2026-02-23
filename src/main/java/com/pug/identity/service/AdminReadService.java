@@ -43,7 +43,7 @@ public interface AdminReadService {
   List<AdminView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AdminViews by name (of the associated user).
+   * Searches for AdminViews by name (of the associated account).
    *
    * @param query the search query.
    * @return a list of matching AdminViews.

@@ -50,7 +50,7 @@ public interface StaffQueries {
   /**
    * Searches for StaffView records by name.
    *
-   * @param key the search key (typically a user's name).
+   * @param key the search key (typically a account's name).
    * @return a list of StaffView records matching the search key.
    */
   List<StaffView> searchByName(String key);

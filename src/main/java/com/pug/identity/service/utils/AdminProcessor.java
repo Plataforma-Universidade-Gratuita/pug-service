@@ -14,8 +14,8 @@ public class AdminProcessor {
    * @param accountId The ID of the account being granted admin rights.
    * @return The constructed Admin domain object.
    */
-  public static Admin processCreateInput(UUID accountId) {
-    return Admin.factory(accountId);
+  public static Admin processCreateInput(UUID accountId, Campi campus) {
+    return Admin.factory(accountId, campus);
   }
 
   /**

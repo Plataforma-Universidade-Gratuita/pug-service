@@ -1,21 +1,44 @@
 package com.pug.shared.domain.enums;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/** Enum representing the different campus locations. */
-@Getter
-public enum Campi {
-  JARAGUA("academic.campus.jaragua"),
-  JOINVILLE("academic.campus.joinville");
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
+/**
+ * Enumeration representing the University Campuses and their corresponding geographic data.
+ * <p>
+ * This enum serves a dual purpose:
+ * <ol>
+ *   <li><strong>Business Domain:</strong> Identifies the available campuses (Jaraguá do Sul and Joinville)
+ *       and provides their internationalization keys.</li>
+ *   <li><strong>System Integrity:</strong> Defines the specific IBGE codes that are considered "Default Cities".
+ *       These records are immutable and protected from updates or deletions to ensure system stability.</li>
+ * </ol>
+ */
+@Getter
+@AllArgsConstructor
+public enum Campi {
+
+  JARAGUA_DO_SUL("4205407", "academic.campus.jaragua"),
+  JOINVILLE("4209106", "academic.campus.joinville");
+
+  private final String ibgeCode;
   private final String bundleKey;
 
   /**
-   * Constructor for Campi enum.
+   * Retrieves the IBGE codes for all Campuses, which are treated as immutable system records.
+   * <p>
+   * This list is utilized by business rules to prevent the modification or deletion
+   * of these specific cities in the database.
    *
-   * @param bundleKey The internationalization resource key for the campus description.
+   * @return a {@link List} of strings containing the IBGE codes of all campuses.
    */
-  Campi(String bundleKey) {
-    this.bundleKey = bundleKey;
+  public static List<String> getImmutableIbgeCodes() {
+    return Arrays.stream(Campi.values())
+            .map(Campi::getIbgeCode)
+            .collect(Collectors.toList());
   }
 }

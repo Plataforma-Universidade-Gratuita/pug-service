@@ -41,7 +41,7 @@ public interface UserRepository {
   /**
    * Finds a User by its ID.
    *
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned User may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param id the ID of the User to find.
@@ -52,7 +52,7 @@ public interface UserRepository {
   /**
    * Finds a User by its CPF.
    *
-   * <p>Note: The returned User may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned User may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param cpf the CPF of the User to find.
@@ -63,7 +63,7 @@ public interface UserRepository {
   /**
    * Lists all User objects.
    *
-   * <p>Note: The returned Users may contain validation errors (check {@code user.hasErrors()}) if
+   * <p>Note: The returned Users may contain validation errors (check {@code account.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @return a list of all User objects.

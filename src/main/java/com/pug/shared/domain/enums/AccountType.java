@@ -2,7 +2,7 @@ package com.pug.shared.domain.enums;
 
 import lombok.Getter;
 
-/** Enumeration representing different types of user accounts. */
+/** Enumeration representing different types of account accounts. */
 @Getter
 public enum AccountType {
   ADMIN("shared.account.type.admin"),

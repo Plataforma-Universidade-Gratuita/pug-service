@@ -26,7 +26,7 @@ public final class StaffPresenter {
    * @return the StaffResponse.
    */
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {
-    if (v == null) {
+    if (v == null || locale == null || i18n == null) {
       return null;
     }
     return new StaffResponse(

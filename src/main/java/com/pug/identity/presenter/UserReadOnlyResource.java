@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for reading user information. */
+/** REST resource for reading account information. */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,11 +37,11 @@ public class UserReadOnlyResource {
   @Context HttpHeaders headers;
 
   /**
-   * Retrieves a user by their unique identifier.
+   * Retrieves a account by their unique identifier.
    *
-   * @param id the UUID of the user
-   * @return the response containing the user data
-   * @throws ResourceNotFoundException if no user with the given ID is found.
+   * @param id the UUID of the account
+   * @return the response containing the account data
+   * @throws ResourceNotFoundException if no account with the given ID is found.
    */
   @GET
   @Path("{id}")
@@ -76,12 +76,12 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Retrieves a user by their CPF.
+   * Retrieves a account by their CPF.
    *
-   * @param cpfRaw the raw CPF string of the user
-   * @return the response containing the user data
+   * @param cpfRaw the raw CPF string of the account
+   * @return the response containing the account data
    * @throws AppValidationException if the provided CPF is malformed.
-   * @throws ResourceNotFoundException if no user with the given CPF is found.
+   * @throws ResourceNotFoundException if no account with the given CPF is found.
    */
   @GET
   @Path("by-cpf/{cpf}")

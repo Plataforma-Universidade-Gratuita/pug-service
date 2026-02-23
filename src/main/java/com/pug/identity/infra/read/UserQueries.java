@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** UserQueries interface for querying user-related data. */
+/** UserQueries interface for querying account-related data. */
 public interface UserQueries {
 
   /**

@@ -18,16 +18,6 @@ public interface SchoolReadService {
   SchoolView getViewById(UUID id);
 
   /**
-   * Retrieves a SchoolView by its name.
-   *
-   * @param name the name of the school.
-   * @return the SchoolView corresponding to the given name.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no school is found with the
-   *     given name.
-   */
-  SchoolView getByName(String name);
-
-  /**
    * Lists all schools.
    *
    * @return a list of all SchoolView objects
