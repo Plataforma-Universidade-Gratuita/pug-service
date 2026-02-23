@@ -4,23 +4,17 @@ import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting UserView to UserResponse.
- */
+/** Mapper class for converting UserView to UserResponse. */
 public final class UserPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserPresenter() {}
 
   /**
    * Converts a UserView to a UserResponse.
    *
-   * @param v      the UserView to convert
+   * @param v the UserView to convert
    * @param locale the locale for localization
    * @return the converted UserResponse
    */
@@ -29,14 +23,10 @@ public final class UserPresenter {
       return null;
     }
 
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new UserResponse(
-            v.id(),
-            v.cpf(),
-            cpfFormatted(v.cpf()),
-            v.name(),
-            auditInfo);
+    return new UserResponse(v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), auditInfo);
   }
 
   /**
@@ -50,11 +40,11 @@ public final class UserPresenter {
       return cpf;
     }
     return cpf.substring(0, 3)
-            + "."
-            + cpf.substring(3, 6)
-            + "."
-            + cpf.substring(6, 9)
-            + "-"
-            + cpf.substring(9, 11);
+        + "."
+        + cpf.substring(3, 6)
+        + "."
+        + cpf.substring(6, 9)
+        + "-"
+        + cpf.substring(9, 11);
   }
 }

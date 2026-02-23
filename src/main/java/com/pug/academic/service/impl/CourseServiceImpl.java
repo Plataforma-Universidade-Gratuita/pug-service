@@ -16,25 +16,19 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Course entities.
- */
+/** Service class for managing Course entities. */
 @ApplicationScoped
 public class CourseServiceImpl implements CourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
 
-  @Inject
-  CourseRepository repo;
-  @Inject
-  SchoolService schoolService;
-  @Inject
-  StudentService studentService;
+  @Inject CourseRepository repo;
+  @Inject SchoolService schoolService;
+  @Inject StudentService studentService;
 
   @Transactional
   @Override
@@ -50,10 +44,7 @@ public class CourseServiceImpl implements CourseService {
     if (existsByName(courseToPersist.getName())) {
       LOG.warnf("Creation failed: Course with name %s already exists", courseToPersist.getName());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.COURSE_ALREADY_EXISTS,
-              "name",
-              courseToPersist.getName()
-      );
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", courseToPersist.getName());
     }
 
     Course savedCourse = repo.persist(courseToPersist);
@@ -78,13 +69,11 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (!updatedCourse.getName().equals(current.getName())
-            && existsByName(updatedCourse.getName())) {
-      LOG.warnf("Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
+        && existsByName(updatedCourse.getName())) {
+      LOG.warnf(
+          "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.COURSE_ALREADY_EXISTS,
-              "name",
-              updatedCourse.getName()
-      );
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", updatedCourse.getName());
     }
 
     repo.update(updatedCourse);
@@ -116,38 +105,35 @@ public class CourseServiceImpl implements CourseService {
     List<Course> courses = repo.listAllCourses();
 
     return courses.stream()
-            .filter(course -> {
+        .filter(
+            course -> {
               if (course.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Course %s violates domain rules: %s",
-                        course.getId(), course.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Course %s violates domain rules: %s",
+                    course.getId(), course.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 
   @Override
   public Course getById(UUID id) {
-    Course course = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("Course lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                      AcademicErrorCodes.COURSE_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
-            });
+    Course course =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Course lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
+                });
 
     if (course.hasErrors()) {
       LOG.errorf(
-              "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-              id, course.getProblemsSummary());
-      throw new ResourceNotFoundException(
-              AcademicErrorCodes.COURSE_NOT_FOUND,
-              "id",
-              id.toString()
-      );
+          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+          id, course.getProblemsSummary());
+      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
     }
     return course;
   }

@@ -3,9 +3,7 @@ package com.pug.geo.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing City domain objects.
- */
+/** Repository interface for managing City domain objects. */
 public interface CityRepository {
 
   /**

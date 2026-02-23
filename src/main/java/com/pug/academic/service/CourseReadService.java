@@ -1,13 +1,10 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.CourseView;
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Interface for reading course information.
- */
+/** Interface for reading course information. */
 public interface CourseReadService {
 
   /**

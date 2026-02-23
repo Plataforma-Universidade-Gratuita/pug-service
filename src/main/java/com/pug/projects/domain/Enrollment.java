@@ -5,7 +5,7 @@ import com.pug.projects.domain.enums.EnrollmentStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -29,11 +29,10 @@ public class Enrollment extends DomainError {
    *
    * @param student the student enrolling
    * @param project the project to enroll in
-   * @param time the time provider for current time
    * @return a new Enrollment instance
    */
-  public static Enrollment factory(Student student, Project project, TimeProvider time) {
-    var now = OffsetDateTime.now(time.clock());
+  public static Enrollment factory(Student student, Project project) {
+    var now = OffsetDateTime.now();
     Enrollment enrollment =
         Enrollment.builder()
             .student(student)
@@ -50,15 +49,14 @@ public class Enrollment extends DomainError {
    * Change the status of the enrollment, updating relevant timestamps.
    *
    * @param newStatus the new status to set
-   * @param time the time provider for current time
    * @return a new Enrollment instance with updated status
    */
-  public Enrollment changeStatus(EnrollmentStatus newStatus, TimeProvider time) {
+  public Enrollment changeStatus(EnrollmentStatus newStatus) {
     if (this.status == newStatus) {
       return this;
     }
 
-    var now = OffsetDateTime.now(time.clock());
+    var now = OffsetDateTime.now();
     OffsetDateTime accepted = this.enrollmentInfo.getAcceptedAt();
     OffsetDateTime closing = this.enrollmentInfo.getClosingStatusAt();
 

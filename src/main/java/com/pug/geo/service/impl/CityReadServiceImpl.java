@@ -8,55 +8,43 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service for reading city information.
- */
+/** Service for reading city information. */
 @ApplicationScoped
 public class CityReadServiceImpl implements CityReadService {
 
   private static final Logger LOG = Logger.getLogger(CityReadServiceImpl.class);
 
-  @Inject
-  CityQueries queries;
+  @Inject CityQueries queries;
 
   @Override
   public CityView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> {
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
               LOG.debugf("City lookup failed: ID %s not found", id);
               return new ResourceNotFoundException(
-                      GeoErrorCodes.CITY_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
+                  GeoErrorCodes.CITY_NOT_FOUND, "id", id.toString());
             });
   }
 
   @Override
   public CityView getViewByIbgeCode(String ibgeCode) {
     if (StringUtils.isEmpty(ibgeCode)) {
-      throw new ResourceNotFoundException(
-              GeoErrorCodes.CITY_NOT_FOUND,
-              "ibgeCode",
-              "empty"
-      );
+      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, "ibgeCode", "empty");
     }
 
     return queries
-            .findOptionalByIbgeCode(ibgeCode)
-            .orElseThrow(() -> {
+        .findOptionalByIbgeCode(ibgeCode)
+        .orElseThrow(
+            () -> {
               LOG.debugf("City lookup failed: IBGE Code %s not found", ibgeCode);
               return new ResourceNotFoundException(
-                      GeoErrorCodes.CITY_NOT_FOUND,
-                      "ibgeCode",
-                      ibgeCode
-              );
+                  GeoErrorCodes.CITY_NOT_FOUND, "ibgeCode", ibgeCode);
             });
   }
 

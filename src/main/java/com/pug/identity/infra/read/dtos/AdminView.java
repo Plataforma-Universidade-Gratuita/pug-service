@@ -1,7 +1,6 @@
 package com.pug.identity.infra.read.dtos;
 
 import com.pug.shared.domain.enums.Campi;
-
 import java.time.OffsetDateTime;
 
 /**

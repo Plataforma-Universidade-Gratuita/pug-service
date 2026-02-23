@@ -5,7 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -38,7 +37,6 @@ import lombok.ToString;
       @Index(name = "idx_enrollments_status", columnList = "status"),
       @Index(name = "idx_enrollments_project", columnList = "project_id")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class EnrollmentEntity {
 
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")

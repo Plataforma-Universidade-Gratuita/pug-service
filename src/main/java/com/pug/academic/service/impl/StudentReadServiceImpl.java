@@ -8,71 +8,65 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for reading Student views.
- */
+/** Service class for reading Student views. */
 @ApplicationScoped
 public class StudentReadServiceImpl implements StudentReadService {
 
   private static final Logger LOG = Logger.getLogger(StudentReadServiceImpl.class);
 
-  @Inject
-  StudentQueries queries;
+  @Inject StudentQueries queries;
 
   @Override
   public StudentView getViewByAccountId(UUID accountId) {
-    return queries.findOptionalById(accountId)
-            .orElseThrow(() -> {
+    return queries
+        .findOptionalById(accountId)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND,
-                      "accountId",
-                      accountId.toString()
-              );
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
             });
   }
 
   @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
-    return queries.findOptionalByAcademicRegistration(academicRegistration)
-            .orElseThrow(() -> {
+    return queries
+        .findOptionalByAcademicRegistration(academicRegistration)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Student lookup failed: Registration %s not found", academicRegistration);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND,
-                      "academicRegistration",
-                      academicRegistration
-              );
+                  AcademicErrorCodes.STUDENT_NOT_FOUND,
+                  "academicRegistration",
+                  academicRegistration);
             });
   }
 
   @Override
   public StudentView getViewByEmail(String email) {
-    return queries.findOptionalByEmail(email)
-            .orElseThrow(() -> {
+    return queries
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Student lookup failed: Email %s not found", email);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND,
-                      "email",
-                      email
-              );
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "email", email);
             });
   }
 
   @Override
   public StudentView getViewByCpf(String cpf) {
-    return queries.findOptionalByCpf(cpf)
-            .orElseThrow(() -> {
+    return queries
+        .findOptionalByCpf(cpf)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Student lookup failed: CPF %s not found", cpf);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND,
-                      "cpf",
-                      cpf
-              );
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "cpf", cpf);
             });
   }
 

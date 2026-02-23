@@ -4,18 +4,12 @@ import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.presenter.dtos.CourseResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting CourseView to CourseResponse.
- */
+/** Mapper class for converting CourseView to CourseResponse. */
 public final class CoursePresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CoursePresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CoursePresenter() {}
 
   /**
    * Converts a CourseView object to a CourseResponse object.
@@ -28,8 +22,10 @@ public final class CoursePresenter {
       return null;
     }
 
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new CourseResponse(v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
+    return new CourseResponse(
+        v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
   }
 }

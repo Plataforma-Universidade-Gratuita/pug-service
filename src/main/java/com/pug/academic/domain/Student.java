@@ -10,16 +10,13 @@ import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Student entity aggregate.
- */
+/** Student entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -35,13 +32,13 @@ public class Student extends DomainError {
 
   @Builder(toBuilder = true)
   private Student(
-          UUID accountId,
-          AcademicRegistration academicRegistration,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours counterpartHours,
-          Period period,
-          AuditInfo auditInfo) {
+      UUID accountId,
+      AcademicRegistration academicRegistration,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours counterpartHours,
+      Period period,
+      AuditInfo auditInfo) {
     this.accountId = accountId;
     this.academicRegistration = academicRegistration;
     this.campus = campus;
@@ -55,30 +52,30 @@ public class Student extends DomainError {
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg       the academic registration for the student
-   * @param campus    the campus at which the student is enrolled
-   * @param courseId  the course identifier the student is enrolled in
-   * @param hours     the counterpart hours details
-   * @param period    the academic period details
+   * @param reg the academic registration for the student
+   * @param campus the campus at which the student is enrolled
+   * @param courseId the course identifier the student is enrolled in
+   * @param hours the counterpart hours details
+   * @param period the academic period details
    * @return the created student (may contain errors)
    */
   public static Student factory(
-          UUID accountId,
-          AcademicRegistration reg,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours hours,
-          Period period) {
+      UUID accountId,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
     Student student =
-            Student.builder()
-                    .accountId(accountId)
-                    .academicRegistration(reg)
-                    .campus(campus)
-                    .courseId(courseId)
-                    .counterpartHours(hours)
-                    .period(period)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Student.builder()
+            .accountId(accountId)
+            .academicRegistration(reg)
+            .campus(campus)
+            .courseId(courseId)
+            .counterpartHours(hours)
+            .period(period)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     student.collectValidationProblems();
     return student;
@@ -109,7 +106,8 @@ public class Student extends DomainError {
     if (academicRegistration.equals(newReg)) {
       return this;
     }
-    Student updatedStudent = toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -124,7 +122,8 @@ public class Student extends DomainError {
     if (courseId.equals(newCourseId)) {
       return this;
     }
-    Student updatedStudent = toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -139,7 +138,8 @@ public class Student extends DomainError {
     if (counterpartHours.equals(newHours)) {
       return this;
     }
-    Student updatedStudent = toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -159,9 +159,7 @@ public class Student extends DomainError {
     return updatedStudent;
   }
 
-  /**
-   * Collects all validation problems for the Student instance.
-   */
+  /** Collects all validation problems for the Student instance. */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     validateForeignKeyField(courseId, "courseId");

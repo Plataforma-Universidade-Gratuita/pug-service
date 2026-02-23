@@ -14,27 +14,21 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service for managing staff assignments to partner entities.
- */
+/** Service for managing staff assignments to partner entities. */
 @ApplicationScoped
 public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
 
-  @Inject
-  StaffRepository repo;
+  @Inject StaffRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
-  @Inject
-  EntityService entityService;
+  @Inject EntityService entityService;
 
   @Transactional
   @Override
@@ -50,8 +44,9 @@ public class StaffServiceImpl implements StaffService {
     }
 
     Staff savedStaff = repo.persist(staff);
-    LOG.infof("Staff role granted successfully. Account ID: %s, Entity ID: %s",
-            savedStaff.getAccountId(), savedStaff.getEntityId());
+    LOG.infof(
+        "Staff role granted successfully. Account ID: %s, Entity ID: %s",
+        savedStaff.getAccountId(), savedStaff.getEntityId());
     return savedStaff;
   }
 
@@ -87,37 +82,33 @@ public class StaffServiceImpl implements StaffService {
       return 0;
     }
 
-    List<UUID> accountIds = staffList.stream()
-            .map(Staff::getAccountId)
-            .toList();
+    List<UUID> accountIds = staffList.stream().map(Staff::getAccountId).toList();
     long deletedCount = repo.deleteByEntityId(entityId);
 
     accountService.deleteAll(accountIds);
-    LOG.infof("Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
-            deletedCount, entityId);
+    LOG.infof(
+        "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
+        deletedCount, entityId);
     return deletedCount;
   }
 
   @Override
   public Staff getByAccountId(UUID accountId) {
-    Staff staff = repo.findOptionalByAccountId(accountId)
-            .orElseThrow(() -> {
-              LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-              return new ResourceNotFoundException(
-                      PartnerErrorCodes.STAFF_NOT_FOUND,
-                      "accountId",
-                      accountId.toString()
-              );
-            });
+    Staff staff =
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (staff.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-              accountId, staff.getProblemsSummary());
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
+          accountId, staff.getProblemsSummary());
       throw new ResourceNotFoundException(
-              PartnerErrorCodes.STAFF_NOT_FOUND,
-              "accountId",
-              accountId.toString()
-      );
+          PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return staff;
@@ -129,14 +120,16 @@ public class StaffServiceImpl implements StaffService {
     List<Staff> allStaff = repo.listAllStaff();
 
     return allStaff.stream()
-            .filter(staff -> {
+        .filter(
+            staff -> {
               if (staff.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-                        staff.getAccountId(), staff.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
+                    staff.getAccountId(), staff.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 }

@@ -16,20 +16,16 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.jboss.logging.Logger;
 
-import java.util.UUID;
-
-/**
- * Service for managing cities.
- */
+/** Service for managing cities. */
 @ApplicationScoped
 public class CityServiceImpl implements CityService {
 
   private static final Logger LOG = Logger.getLogger(CityServiceImpl.class);
 
-  @Inject
-  CityRepository repo;
+  @Inject CityRepository repo;
 
   @Transactional
   @Override
@@ -42,12 +38,10 @@ public class CityServiceImpl implements CityService {
     }
 
     if (existsByIbge(cityToPersist.getIbgeCode())) {
-      LOG.warnf("Creation failed: City with IBGE Code %s already exists", cityToPersist.getIbgeCode());
+      LOG.warnf(
+          "Creation failed: City with IBGE Code %s already exists", cityToPersist.getIbgeCode());
       throw new DuplicateResourceException(
-              GeoErrorCodes.CITY_ALREADY_EXISTS,
-              "ibgeCode",
-              cityToPersist.getIbgeCode().toString()
-      );
+          GeoErrorCodes.CITY_ALREADY_EXISTS, "ibgeCode", cityToPersist.getIbgeCode().toString());
     }
 
     City savedCity = repo.persist(cityToPersist);
@@ -68,13 +62,12 @@ public class CityServiceImpl implements CityService {
       throw new AppValidationException(updated.getProblems());
     }
 
-    if (!updated.getIbgeCode().equals(current.getIbgeCode()) && existsByIbge(updated.getIbgeCode())) {
-      LOG.warnf("Update failed: City ID %s tried to use existing IBGE %s", id, updated.getIbgeCode());
+    if (!updated.getIbgeCode().equals(current.getIbgeCode())
+        && existsByIbge(updated.getIbgeCode())) {
+      LOG.warnf(
+          "Update failed: City ID %s tried to use existing IBGE %s", id, updated.getIbgeCode());
       throw new DuplicateResourceException(
-              GeoErrorCodes.CITY_ALREADY_EXISTS,
-              "ibgeCode",
-              updated.getIbgeCode().toString()
-      );
+          GeoErrorCodes.CITY_ALREADY_EXISTS, "ibgeCode", updated.getIbgeCode().toString());
     }
 
     repo.update(updated);
@@ -104,24 +97,20 @@ public class CityServiceImpl implements CityService {
 
   @Override
   public City getById(UUID id) {
-    City city = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("City lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                      GeoErrorCodes.CITY_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
-            });
+    City city =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("City lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      GeoErrorCodes.CITY_NOT_FOUND, "id", id.toString());
+                });
 
     if (city.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
-              id, city.getProblemsSummary());
-      throw new ResourceNotFoundException(
-              GeoErrorCodes.CITY_NOT_FOUND,
-              "id",
-              id.toString()
-      );
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
+          id, city.getProblemsSummary());
+      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, "id", id.toString());
     }
 
     return city;
@@ -144,10 +133,10 @@ public class CityServiceImpl implements CityService {
 
   /**
    * Enforces the immutability rule for default system cities.
-   * <p>
-   * Checks if the provided {@link City} corresponds to one of the protected records defined
-   * in {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are
-   * fundamental to system integrity and must not be modified or deleted.
+   *
+   * <p>Checks if the provided {@link City} corresponds to one of the protected records defined in
+   * {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are fundamental to
+   * system integrity and must not be modified or deleted.
    *
    * @param city the {@link City} entity to validate.
    * @throws BusinessRuleException if the city matches a protected default IBGE code.
@@ -155,12 +144,10 @@ public class CityServiceImpl implements CityService {
    */
   private void ensureCityIsMutable(City city) {
     if (Campi.getImmutableIbgeCodes().contains(city.getIbgeCode().toString())) {
-      LOG.warnf("Modification blocked: City ID %s (IBGE %s) is a default system record.",
-              city.getId(), city.getIbgeCode());
-      throw new BusinessRuleException(
-              GeoErrorCodes.CITY_IS_DEFAULT,
-              "id",
-              city.getId().toString());
+      LOG.warnf(
+          "Modification blocked: City ID %s (IBGE %s) is a default system record.",
+          city.getId(), city.getIbgeCode());
+      throw new BusinessRuleException(GeoErrorCodes.CITY_IS_DEFAULT, "id", city.getId().toString());
     }
   }
 }

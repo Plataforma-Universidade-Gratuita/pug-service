@@ -1,7 +1,6 @@
 package com.pug.academic.presenter.dtos;
 
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
 import java.util.UUID;
 
 /**

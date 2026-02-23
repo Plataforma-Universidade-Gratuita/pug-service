@@ -54,12 +54,12 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
 
   @Transactional
   @Override
-    public long deleteAllByIds(List<UUID> ids) {
-      if (CollectionUtils.isEmpty(ids)) {
-        return 0;
-      }
-      return delete("id in ?1",ids);
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
     }
+    return delete("id in ?1", ids);
+  }
 
   @Override
   public Optional<User> findOptionalById(UUID id) {

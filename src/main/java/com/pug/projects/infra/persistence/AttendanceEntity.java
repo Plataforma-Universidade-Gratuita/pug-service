@@ -3,7 +3,6 @@ package com.pug.projects.infra.persistence;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
@@ -41,7 +40,6 @@ import lombok.ToString;
       @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
       @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class AttendanceEntity extends BaseUuidV7Entity {
 
   @NotNull

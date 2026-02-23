@@ -14,23 +14,18 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.jboss.logging.Logger;
 
-import java.util.UUID;
-
-/**
- * Service for managing admins.
- */
+/** Service for managing admins. */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject
-  AdminRepository repo;
+  @Inject AdminRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
   @Transactional
   @Override
@@ -88,21 +83,20 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-            repo
-                    .findOptionalByAccountId(accountId)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
-                              return new ResourceNotFoundException(
-                                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
-                            });
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (admin.hasErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-              accountId, admin.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+          accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-              IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return admin;

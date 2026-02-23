@@ -8,33 +8,27 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Read-only application service for Schools.
- */
+/** Read-only application service for Schools. */
 @ApplicationScoped
 public class SchoolReadServiceImpl implements SchoolReadService {
 
   private static final Logger LOG = Logger.getLogger(SchoolReadServiceImpl.class);
 
-  @Inject
-  SchoolQueries queries;
+  @Inject SchoolQueries queries;
 
   @Override
   public SchoolView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> {
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
               LOG.debugf("School lookup failed: ID %s not found", id);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.SCHOOL_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
+                  AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
             });
   }
 

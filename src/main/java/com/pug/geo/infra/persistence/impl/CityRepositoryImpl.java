@@ -8,13 +8,10 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the CityRepository using Panache and Hibernate Search.
- */
+/** Implementation of the CityRepository using Panache and Hibernate Search. */
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 

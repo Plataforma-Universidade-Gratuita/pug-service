@@ -7,7 +7,7 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -36,11 +36,9 @@ public class Attendance extends DomainError {
    * @param project the associated Project.
    * @param student the associated Student.
    * @param duration the duration of the attendance.
-   * @param time the TimeProvider for current time.
    * @return a validated Attendance instance.
    */
-  public static Attendance factory(
-      Project project, Student student, BigDecimal duration, TimeProvider time) {
+  public static Attendance factory(Project project, Student student, BigDecimal duration) {
 
     Attendance att =
         Attendance.builder()
@@ -48,7 +46,7 @@ public class Attendance extends DomainError {
             .project(project)
             .student(student)
             .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
-            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now(time.clock())))
+            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now()))
             .status(AttendanceStatus.WAITING)
             .build();
 
@@ -63,17 +61,16 @@ public class Attendance extends DomainError {
    * @param lat the latitude of the validation location.
    * @param lon the longitude of the validation location.
    * @param hash the hash of the QR code.
-   * @param time the TimeProvider for current time.
    * @return a validated Attendance instance with updated information.
    */
   public Attendance validateAttendance(
-      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash, TimeProvider time) {
+      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
     QrValidationInfo newQr =
         QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
 
     AttendanceInfo newInfo =
         AttendanceInfo.factory(
-            validatorId, OffsetDateTime.now(time.clock()), this.attendanceInfo.getCreatedAt());
+            validatorId, OffsetDateTime.now(), this.attendanceInfo.getCreatedAt());
 
     Attendance updated =
         this.toBuilder()

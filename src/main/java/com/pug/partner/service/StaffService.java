@@ -2,13 +2,10 @@ package com.pug.partner.service;
 
 import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Interface for managing staff assignments to partner entities.
- */
+/** Interface for managing staff assignments to partner entities. */
 public interface StaffService {
 
   /**
@@ -17,10 +14,10 @@ public interface StaffService {
    * @param cmd the command containing staff creation details.
    * @return the created Staff object.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a staff member with the same
-   *                                                              account ID already exists.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the specified entity does not
-   *                                                              exist.
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails.
+   *     account ID already exists.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not
+   *     exist.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
   Staff save(StaffCreateCommand cmd);
 
@@ -37,7 +34,8 @@ public interface StaffService {
    *
    * @param entityId the ID of the entity whose staff members should be deleted.
    * @return the number of staff members that were deleted.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not exist.
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not
+   *     exist.
    */
   long deleteAllByEntityId(UUID entityId);
 

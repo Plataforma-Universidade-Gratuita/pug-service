@@ -6,17 +6,14 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Admin entity aggregate.
- */
+/** Admin entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -41,7 +38,8 @@ public class Admin extends DomainError {
    * @return new Admin instance (may contain errors)
    */
   public static Admin factory(UUID accountId, Campi campus) {
-    Admin admin = Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
+    Admin admin =
+        Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
     admin.collectValidationProblems();
     return admin;
   }
@@ -61,9 +59,7 @@ public class Admin extends DomainError {
     return updatedAdmin;
   }
 
-  /**
-   * Validates the Admin instance.
-   */
+  /** Validates the Admin instance. */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     if (grantedAt == null) {

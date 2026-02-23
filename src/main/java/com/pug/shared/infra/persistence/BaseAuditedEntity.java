@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+/** Base entity class that includes auditing fields for creation and update timestamps. */
 @Getter
 @Setter
 @SuperBuilder

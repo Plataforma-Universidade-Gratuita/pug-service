@@ -6,25 +6,19 @@ import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting AccountView to AccountResponse.
- */
+/** Mapper class for converting AccountView to AccountResponse. */
 public final class AccountPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountPresenter() {}
 
   /**
    * Converts an AccountView to an AccountResponse.
    *
-   * @param v      the AccountView
+   * @param v the AccountView
    * @param locale the locale for formatting
-   * @param i18n   the internationalization instance
+   * @param i18n the internationalization instance
    * @return the corresponding AccountResponse
    */
   public static AccountResponse toResponse(AccountView v, Locale locale, I18n i18n) {
@@ -34,14 +28,10 @@ public final class AccountPresenter {
 
     UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-            v.id(),
-            userResponse,
-            v.email(),
-            v.accountType(),
-            typeFormatted,
-            auditInfo);
+        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
   }
 }

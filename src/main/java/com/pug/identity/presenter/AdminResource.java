@@ -79,8 +79,8 @@ public class AdminResource {
   /**
    * Lists admins.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
-   * all admins.
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise,
+   * returns all admins.
    *
    * @param query optional name query to search for.
    * @return the list of admin responses.

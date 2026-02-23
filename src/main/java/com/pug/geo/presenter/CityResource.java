@@ -29,28 +29,22 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing cities.
- */
+/** REST resource for managing cities. */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject
-  CityService writeService;
-  @Inject
-  CityReadService readService;
+  @Inject CityService writeService;
+  @Inject CityReadService readService;
 
-  @Context
-  UriInfo uri;
+  @Context UriInfo uri;
 
   /**
    * Retrieves a city by its ID.
@@ -83,7 +77,7 @@ public class CityResource {
     }
 
     List<CityResponse> responseBody =
-            views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+        views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
@@ -123,7 +117,7 @@ public class CityResource {
   /**
    * Updates an existing city.
    *
-   * @param id  the ID of the city to update.
+   * @param id the ID of the city to update.
    * @param req the city update request.
    * @return a Response containing the updated city.
    */

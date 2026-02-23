@@ -16,27 +16,21 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing Entity entities.
- */
+/** Service class for managing Entity entities. */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
 
   private static final Logger LOG = Logger.getLogger(EntityServiceImpl.class);
 
-  @Inject
-  EntityRepository repo;
+  @Inject EntityRepository repo;
 
-  @Inject
-  CityService cityService;
+  @Inject CityService cityService;
 
-  @Inject
-  StaffService staffService;
+  @Inject StaffService staffService;
 
   @Transactional
   @Override
@@ -46,12 +40,9 @@ public class EntityServiceImpl implements EntityService {
       cityService.getById(cmd.cityId());
     }
 
-    Entity entityToPersist = EntityProcessor.processCreateInput(
-            cmd.cnpjString(),
-            cmd.name(),
-            cmd.cityId(),
-            cmd.address()
-    );
+    Entity entityToPersist =
+        EntityProcessor.processCreateInput(
+            cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (entityToPersist.hasErrors()) {
       throw new AppValidationException(entityToPersist.getProblems());
@@ -60,10 +51,7 @@ public class EntityServiceImpl implements EntityService {
     if (existsByCnpj(entityToPersist.getCnpj())) {
       LOG.warnf("Creation failed: Entity with CNPJ %s already exists", entityToPersist.getCnpj());
       throw new DuplicateResourceException(
-              PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
-              "cnpj",
-              entityToPersist.getCnpj().toString()
-      );
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, "cnpj", entityToPersist.getCnpj().toString());
     }
 
     Entity savedEntity = repo.persist(entityToPersist);
@@ -80,26 +68,20 @@ public class EntityServiceImpl implements EntityService {
       cityService.getById(cmd.cityId());
     }
 
-    Entity updatedEntity = EntityProcessor.processUpdateInput(
-            current,
-            cmd.cnpjString(),
-            cmd.name(),
-            cmd.cityId(),
-            cmd.address()
-    );
+    Entity updatedEntity =
+        EntityProcessor.processUpdateInput(
+            current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (updatedEntity.hasErrors()) {
       throw new AppValidationException(updatedEntity.getProblems());
     }
 
     if (!updatedEntity.getCnpj().equals(current.getCnpj())
-            && existsByCnpj(updatedEntity.getCnpj())) {
-      LOG.warnf("Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
+        && existsByCnpj(updatedEntity.getCnpj())) {
+      LOG.warnf(
+          "Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
       throw new DuplicateResourceException(
-              PartnerErrorCodes.ENTITY_ALREADY_EXISTS,
-              "cnpj",
-              updatedEntity.getCnpj().toString()
-      );
+          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, "cnpj", updatedEntity.getCnpj().toString());
     }
 
     repo.update(updatedEntity);
@@ -128,24 +110,20 @@ public class EntityServiceImpl implements EntityService {
 
   @Override
   public Entity getById(UUID id) {
-    Entity entity = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("Entity lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                      PartnerErrorCodes.ENTITY_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
-            });
+    Entity entity =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Entity lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
+                });
 
     if (entity.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
-              id, entity.getProblemsSummary());
-      throw new ResourceNotFoundException(
-              PartnerErrorCodes.ENTITY_NOT_FOUND,
-              "id",
-              id.toString()
-      );
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
+          id, entity.getProblemsSummary());
+      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
     }
 
     return entity;
@@ -157,15 +135,17 @@ public class EntityServiceImpl implements EntityService {
     List<Entity> entities = repo.listAllEntities();
 
     return entities.stream()
-            .filter(entity -> {
+        .filter(
+            entity -> {
               if (entity.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
-                        entity.getId(), entity.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
+                    entity.getId(), entity.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

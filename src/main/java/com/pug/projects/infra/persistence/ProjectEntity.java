@@ -3,7 +3,6 @@ package com.pug.projects.infra.persistence;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -47,7 +46,6 @@ import lombok.ToString;
       @Index(name = "idx_projects_created_at", columnList = "created_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class ProjectEntity extends BaseUuidV7Entity {
 
   @NotBlank

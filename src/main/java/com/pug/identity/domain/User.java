@@ -9,16 +9,13 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * User entity aggregate.
- */
+/** User entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -40,18 +37,18 @@ public class User extends DomainError {
   /**
    * Factory for new users.
    *
-   * @param cpf  person's CPF
+   * @param cpf person's CPF
    * @param name person's name
    * @return new User instance (may contain errors)
    */
   public static User factory(Cpf cpf, String name) {
     User user =
-            User.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cpf(cpf)
-                    .name(StringUtils.trim(name))
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        User.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cpf(cpf)
+            .name(StringUtils.trim(name))
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     user.collectValidationProblems();
     return user;
@@ -88,9 +85,7 @@ public class User extends DomainError {
     return updated;
   }
 
-  /**
-   * Validates the User instance.
-   */
+  /** Validates the User instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");

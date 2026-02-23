@@ -1,5 +1,7 @@
 package com.pug.academic.infra.read.impl;
 
+import static com.pug.academic.infra.CourseMapper.toView;
+
 import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.CourseQueries;
@@ -10,7 +12,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -18,23 +19,19 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.pug.academic.infra.CourseMapper.toView;
-
-/**
- * Implementation of CourseQueries using JPA and Hibernate Search.
- */
+/** Implementation of CourseQueries using JPA and Hibernate Search. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CourseQueriesImpl implements CourseQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
   private static final String SELECT_BASE =
-          """
+      """
                   select new com.pug.academic.infra.read.dtos.CourseView(
                     c.id, c.name,
-                    new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name, s.createdAt, s.updatedAt)
+                    new com.pug.academic.infra.read.dtos.SchoolView(
+                    s.id, s.name, s.createdAt, s.updatedAt)
                   )
                   from CourseEntity c
                   left join SchoolEntity s on s.id = c.schoolId
@@ -65,8 +62,8 @@ public class CourseQueriesImpl implements CourseQueries {
   @Override
   public List<CourseView> listAllCourses() {
     return entityManager
-            .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
-            .getResultList();
+        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
+        .getResultList();
   }
 
   @Override
@@ -75,8 +72,8 @@ public class CourseQueriesImpl implements CourseQueries {
       return List.of();
     }
     var q =
-            entityManager.createQuery(
-                    SELECT_BASE + " where c.schoolId = :schoolId" + ORDER_BY_NAME_ASC, CourseView.class);
+        entityManager.createQuery(
+            SELECT_BASE + " where c.schoolId = :schoolId" + ORDER_BY_NAME_ASC, CourseView.class);
     q.setParameter("schoolId", schoolId);
     return q.getResultList();
   }
@@ -84,7 +81,7 @@ public class CourseQueriesImpl implements CourseQueries {
   @Override
   public List<CourseView> searchByName(String key) {
     List<CourseEntity> hits =
-            HibernateSearchUtils.searchByName(entityManager, CourseEntity.class, key);
+        HibernateSearchUtils.searchByName(entityManager, CourseEntity.class, key);
 
     if (hits.isEmpty()) {
       return List.of();
@@ -93,13 +90,13 @@ public class CourseQueriesImpl implements CourseQueries {
     List<UUID> schoolIds = hits.stream().map(CourseEntity::getSchoolId).distinct().toList();
 
     List<SchoolEntity> schools =
-            entityManager
-                    .createQuery("from SchoolEntity where id in :ids", SchoolEntity.class)
-                    .setParameter("ids", schoolIds)
-                    .getResultList();
+        entityManager
+            .createQuery("from SchoolEntity where id in :ids", SchoolEntity.class)
+            .setParameter("ids", schoolIds)
+            .getResultList();
 
     Map<UUID, SchoolEntity> schoolMap =
-            schools.stream().collect(Collectors.toMap(SchoolEntity::getId, s -> s));
+        schools.stream().collect(Collectors.toMap(SchoolEntity::getId, s -> s));
 
     List<CourseView> out = new ArrayList<>(hits.size());
     for (CourseEntity c : hits) {

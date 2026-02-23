@@ -39,35 +39,26 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing students.
- */
+/** REST resource for managing students. */
 @ApplicationScoped
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject
-  StudentService writeService;
-  @Inject
-  StudentReadService readService;
-  @Inject
-  PasswordService passwordService;
-  @Inject
-  I18n i18n;
+  @Inject StudentService writeService;
+  @Inject StudentReadService readService;
+  @Inject PasswordService passwordService;
+  @Inject I18n i18n;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a student by their Account ID.
@@ -86,14 +77,12 @@ public class StudentResource {
   /**
    * Lists students, optionally filtering by name search or course.
    *
-   * @param q        the search query (name).
+   * @param q the search query (name).
    * @param courseId the course ID to filter by.
    * @return the response containing the list of students.
    */
   @GET
-  public Response list(
-          @QueryParam("q") String q,
-          @QueryParam("courseId") @UuidV7 UUID courseId) {
+  public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
 
     List<StudentView> views;
 
@@ -105,7 +94,8 @@ public class StudentResource {
       views = readService.listViews();
     }
 
-    List<StudentResponse> body = views.stream()
+    List<StudentResponse> body =
+        views.stream()
             .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
 
@@ -166,8 +156,9 @@ public class StudentResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
-            new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
-    StudentCreateCommand studentCmd = new StudentCreateCommand(
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+    StudentCreateCommand studentCmd =
+        new StudentCreateCommand(
             accountCmd,
             req.academicRegistration(),
             req.campus(),
@@ -187,7 +178,7 @@ public class StudentResource {
   /**
    * Updates an existing student.
    *
-   * @param id  the UUID of the student's account.
+   * @param id the UUID of the student's account.
    * @param req the student update request.
    * @return the response containing the updated student.
    */
@@ -198,7 +189,8 @@ public class StudentResource {
 
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
     AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
-    StudentUpdateCommand studentCmd = new StudentUpdateCommand(
+    StudentUpdateCommand studentCmd =
+        new StudentUpdateCommand(
             accountCmd,
             req.academicRegistration(),
             req.campus(),
@@ -227,9 +219,7 @@ public class StudentResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Picks the best locale from the Accept-Language header.
-   */
+  /** Picks the best locale from the Accept-Language header. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

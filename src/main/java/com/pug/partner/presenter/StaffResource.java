@@ -37,35 +37,26 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing partner staff.
- */
+/** REST resource for managing partner staff. */
 @ApplicationScoped
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StaffResource {
 
-  @Inject
-  StaffService writeService;
-  @Inject
-  StaffReadService readService;
-  @Inject
-  PasswordService passwordService;
-  @Inject
-  I18n i18n;
+  @Inject StaffService writeService;
+  @Inject StaffReadService readService;
+  @Inject PasswordService passwordService;
+  @Inject I18n i18n;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a staff member by their unique identifier.
@@ -83,10 +74,9 @@ public class StaffResource {
 
   /**
    * Lists staff members.
-   * <p>
-   * If the 'q' query parameter is provided, performs a search by name.
-   * Otherwise, returns all staff.
-   * </p>
+   *
+   * <p>If the 'q' query parameter is provided, performs a search by name. Otherwise, returns all
+   * staff.
    *
    * @param query optional name query to search for.
    * @return a Response containing a list of staff members
@@ -101,7 +91,8 @@ public class StaffResource {
       views = readService.listViews();
     }
 
-    List<StaffResponse> list = views.stream()
+    List<StaffResponse> list =
+        views.stream()
             .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
 
@@ -119,9 +110,9 @@ public class StaffResource {
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") String cpfRaw) {
     List<StaffResponse> list =
-            readService.listViewsByCpf(cpfRaw).stream()
-                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.listViewsByCpf(cpfRaw).stream()
+            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
@@ -131,7 +122,7 @@ public class StaffResource {
    *
    * @param emailRaw the email address of the staff member
    * @return a Response containing the staff member details
-   * @throws AppValidationException    if the provided email is malformed.
+   * @throws AppValidationException if the provided email is malformed.
    * @throws ResourceNotFoundException if no staff member is found.
    */
   @GET
@@ -152,9 +143,9 @@ public class StaffResource {
   @Path("by-entity/{entityId}")
   public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
     List<StaffResponse> list =
-            readService.listViewsByEntityId(entityId).stream()
-                    .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        readService.listViewsByEntityId(entityId).stream()
+            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
@@ -165,8 +156,8 @@ public class StaffResource {
    * @param req the request containing staff member details.
    * @return a Response containing the created staff member details.
    * @throws DuplicateResourceException if a staff member with the same account ID already exists.
-   * @throws AppValidationException     if input validation fails.
-   * @throws ResourceNotFoundException  if the associated entity is not found.
+   * @throws AppValidationException if input validation fails.
+   * @throws ResourceNotFoundException if the associated entity is not found.
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {
@@ -174,7 +165,7 @@ public class StaffResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
     AccountCreateCommand accountCmd =
-            new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
+        new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
     StaffCreateCommand staffCmd = new StaffCreateCommand(req.entityId(), accountCmd);
 
     Staff staff = writeService.save(staffCmd);
@@ -200,9 +191,7 @@ public class StaffResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Picks the best locale from the request headers.
-   */
+  /** Picks the best locale from the request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

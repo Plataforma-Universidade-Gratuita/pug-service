@@ -31,31 +31,24 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing courses.
- */
+/** REST resource for managing courses. */
 @ApplicationScoped
 @Path("/academic/courses")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject
-  CourseService writeService;
-  @Inject
-  CourseReadService readService;
+  @Inject CourseService writeService;
+  @Inject CourseReadService readService;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a course by its ID.
@@ -74,13 +67,13 @@ public class CourseResource {
   /**
    * Lists courses or searches by name.
    *
-   * @param q        the search query
+   * @param q the search query
    * @param schoolId the school id to filter by
    * @return the response containing the list of courses
    */
   @GET
   public Response listOrSearch(
-          @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+      @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
 
     List<CourseView> views;
 
@@ -92,7 +85,8 @@ public class CourseResource {
       views = readService.listViews();
     }
 
-    List<CourseResponse> body = views.stream()
+    List<CourseResponse> body =
+        views.stream()
             .map(v -> CoursePresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
 
@@ -120,7 +114,7 @@ public class CourseResource {
   /**
    * Updates an existing course.
    *
-   * @param id  the course id to update
+   * @param id the course id to update
    * @param req the CourseUpdateRequest DTO
    * @return the response containing the updated course
    */
@@ -149,9 +143,7 @@ public class CourseResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Picks the best locale from the Accept-Language header.
-   */
+  /** Picks the best locale from the Accept-Language header. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

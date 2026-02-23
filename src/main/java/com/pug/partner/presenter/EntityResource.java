@@ -34,31 +34,24 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing partner entities.
- */
+/** REST resource for managing partner entities. */
 @ApplicationScoped
 @Path("/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
 
-  @Inject
-  EntityService writeService;
-  @Inject
-  EntityReadService readService;
+  @Inject EntityService writeService;
+  @Inject EntityReadService readService;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Get entity by ID.
@@ -77,14 +70,12 @@ public class EntityResource {
   /**
    * List or search entities.
    *
-   * @param q      optional search query (by name)
+   * @param q optional search query (by name)
    * @param cityId optional city ID to filter by
    * @return the response containing the list of entity views
    */
   @GET
-  public Response list(
-          @QueryParam("q") String q,
-          @QueryParam("cityId") @UuidV7 UUID cityId) {
+  public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
 
     List<EntityView> views;
 
@@ -97,7 +88,9 @@ public class EntityResource {
     }
 
     List<EntityResponse> body =
-            views.stream().map(v -> EntityPresenter.toResponse(v, locale())).collect(Collectors.toList());
+        views.stream()
+            .map(v -> EntityPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -107,7 +100,7 @@ public class EntityResource {
    *
    * @param cnpjRaw the raw CNPJ string
    * @return the response containing the entity view
-   * @throws AppValidationException    if the provided CNPJ is malformed.
+   * @throws AppValidationException if the provided CNPJ is malformed.
    * @throws ResourceNotFoundException if the Entity is not found.
    */
   @GET
@@ -123,8 +116,8 @@ public class EntityResource {
    * @param req the entity creation request
    * @return the response containing the created entity view
    * @throws DuplicateResourceException if an entity with the same CNPJ already exists.
-   * @throws AppValidationException     if input validation fails.
-   * @throws ResourceNotFoundException  if the specified city does not exist.
+   * @throws AppValidationException if input validation fails.
+   * @throws ResourceNotFoundException if the specified city does not exist.
    */
   @POST
   public Response create(@Valid EntityCreateRequest req) {
@@ -132,10 +125,10 @@ public class EntityResource {
     var createdEntityDomain = writeService.save(cmd);
 
     EntityResponse body =
-            EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()), locale());
+        EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()), locale());
 
     URI location =
-            uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
+        uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
 
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -143,12 +136,12 @@ public class EntityResource {
   /**
    * Update an existing entity.
    *
-   * @param id  the entity ID
+   * @param id the entity ID
    * @param req the entity update request
    * @return the response containing the updated entity view
-   * @throws ResourceNotFoundException  if the Entity is not found.
+   * @throws ResourceNotFoundException if the Entity is not found.
    * @throws DuplicateResourceException if updated details conflict with existing records.
-   * @throws AppValidationException     if input validation fails.
+   * @throws AppValidationException if input validation fails.
    */
   @PUT
   @Path("{id}")
@@ -157,7 +150,7 @@ public class EntityResource {
     var updatedEntityDomain = writeService.update(id, cmd);
 
     EntityResponse body =
-            EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()), locale());
+        EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()), locale());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -175,11 +168,8 @@ public class EntityResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Picks the best locale from the request headers.
-   */
+  /** Picks the best locale from the request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
-
 }

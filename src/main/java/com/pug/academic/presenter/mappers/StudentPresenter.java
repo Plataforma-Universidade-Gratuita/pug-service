@@ -9,28 +9,22 @@ import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-/**
- * Mapper class for converting StudentView to StudentResponse.
- */
+/** Mapper class for converting StudentView to StudentResponse. */
 public final class StudentPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private StudentPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private StudentPresenter() {}
 
   /**
    * Converts a StudentView to a StudentResponse.
    *
-   * @param v      the StudentView to convert
+   * @param v the StudentView to convert
    * @param locale the locale for localization
-   * @param i18n   the internationalization service
+   * @param i18n the internationalization service
    * @return the converted StudentResponse
    */
   public static StudentResponse toResponse(StudentView v, Locale locale, I18n i18n) {
@@ -54,22 +48,23 @@ public final class StudentPresenter {
     }
 
     CampusResponse campus = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new StudentResponse(
-            AccountPresenter.toResponse(v.account(), locale, i18n),
-            v.academicRegistration(),
-            campus,
-            CoursePresenter.toResponse(v.course(), locale),
-            v.requiredHours(),
-            BigDecimal.ZERO,
-            missingHours,
-            v.startDate(),
-            startDateFormatted,
-            v.dueDate(),
-            dueDateFormatted,
-            remainingDays,
-            remainingDaysFormatted,
-            auditInfo);
+        AccountPresenter.toResponse(v.account(), locale, i18n),
+        v.academicRegistration(),
+        campus,
+        CoursePresenter.toResponse(v.course(), locale),
+        v.requiredHours(),
+        BigDecimal.ZERO,
+        missingHours,
+        v.startDate(),
+        startDateFormatted,
+        v.dueDate(),
+        dueDateFormatted,
+        remainingDays,
+        remainingDaysFormatted,
+        auditInfo);
   }
 }

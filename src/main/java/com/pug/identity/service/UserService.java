@@ -28,8 +28,8 @@ public interface UserService {
    * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
    * @return the updated User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
@@ -42,8 +42,8 @@ public interface UserService {
    *
    * @param id the UUID of the account to delete
    * @return true if the account was successfully deleted, false if the account was not found
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    */
   boolean delete(UUID id);
 
@@ -52,8 +52,8 @@ public interface UserService {
    *
    * @param ids a list of UUIDs of the users to delete
    * @return the number of users successfully deleted
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs
+   *     does not exist (or data is corrupted in DB).
    */
   long deleteAll(List<UUID> ids);
 
@@ -71,8 +71,8 @@ public interface UserService {
    *
    * @param id the UUID of the account
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    */
   User getById(UUID id);
 
@@ -81,8 +81,8 @@ public interface UserService {
    *
    * @param cpf the CPF of the account (already a validated Value Object).
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF
+   *     does not exist (or data is corrupted in DB).
    */
   User getByCpf(Cpf cpf);
 

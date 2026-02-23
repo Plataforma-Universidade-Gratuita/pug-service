@@ -7,18 +7,15 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the SchoolRepository interface using PanacheRepositoryBase.
- */
+/** Implementation of the SchoolRepository interface using PanacheRepositoryBase. */
 @ApplicationScoped
 public class SchoolRepositoryImpl
-        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
   @Transactional
   @Override

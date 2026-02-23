@@ -63,8 +63,8 @@ public interface UserRepository {
   /**
    * Lists all User objects.
    *
-   * <p>Note: The returned Users may contain validation errors (check {@code account.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
+   * <p>Note: The returned Users may contain validation errors (check {@code account.hasErrors()})
+   * if the stored data is inconsistent with current domain rules.
    *
    * @return a list of all User objects.
    */

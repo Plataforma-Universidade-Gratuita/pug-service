@@ -8,55 +8,43 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Read-only service for entity views.
- */
+/** Read-only service for entity views. */
 @ApplicationScoped
 public class EntityReadServiceImpl implements EntityReadService {
 
   private static final Logger LOG = Logger.getLogger(EntityReadServiceImpl.class);
 
-  @Inject
-  EntityQueries queries;
+  @Inject EntityQueries queries;
 
   @Override
   public EntityView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> {
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Entity lookup failed: ID %s not found", id);
               return new ResourceNotFoundException(
-                      PartnerErrorCodes.ENTITY_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
+                  PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
             });
   }
 
   @Override
   public EntityView getViewByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
-      throw new ResourceNotFoundException(
-              PartnerErrorCodes.ENTITY_NOT_FOUND,
-              "cnpj",
-              "empty"
-      );
+      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, "cnpj", "empty");
     }
 
     return queries
-            .findOptionalByCnpj(cnpj)
-            .orElseThrow(() -> {
+        .findOptionalByCnpj(cnpj)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
               return new ResourceNotFoundException(
-                      PartnerErrorCodes.ENTITY_NOT_FOUND,
-                      "cnpj",
-                      cnpj
-              );
+                  PartnerErrorCodes.ENTITY_NOT_FOUND, "cnpj", cnpj);
             });
   }
 

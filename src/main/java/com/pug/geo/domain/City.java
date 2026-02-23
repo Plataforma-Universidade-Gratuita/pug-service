@@ -7,16 +7,13 @@ import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * City entity aggregate.
- */
+/** City entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -37,17 +34,17 @@ public class City extends DomainError {
   /**
    * Factory for new cities.
    *
-   * @param name     the name of the city
+   * @param name the name of the city
    * @param ibgeCode the IBGE code of the city
    * @return the created City instance
    */
   public static City factory(String name, IbgeCode ibgeCode) {
     City c =
-            City.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .name(StringUtils.trim(name))
-                    .ibgeCode(ibgeCode)
-                    .build();
+        City.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(StringUtils.trim(name))
+            .ibgeCode(ibgeCode)
+            .build();
 
     c.collectValidationProblems();
     return c;
@@ -86,9 +83,7 @@ public class City extends DomainError {
     return c;
   }
 
-  /**
-   * Validates the City instance and collects all validation problems.
-   */
+  /** Validates the City instance and collects all validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 100L, "name");

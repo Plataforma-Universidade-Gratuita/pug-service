@@ -22,7 +22,6 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
 
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
-    String mainMessage = i18n.translation(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.getBundleKey());
     String specificReason = i18n.translation(ex.getCode().getBundleKey());
 
     Map<String, Object> notFoundDetails = new LinkedHashMap<>();
@@ -33,6 +32,8 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
       notFoundDetails.put("rejectedValue", ex.getSearchValue());
     }
     notFoundDetails.put("reason", specificReason);
+
+    String mainMessage = i18n.translation(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.getBundleKey());
 
     ApiError error =
         ApiError.of(

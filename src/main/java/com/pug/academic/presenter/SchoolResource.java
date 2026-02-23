@@ -31,31 +31,24 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * REST resource for managing schools.
- */
+/** REST resource for managing schools. */
 @ApplicationScoped
 @Path("/academic/schools")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class SchoolResource {
 
-  @Inject
-  SchoolService writeService;
-  @Inject
-  SchoolReadService readService;
+  @Inject SchoolService writeService;
+  @Inject SchoolReadService readService;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a school by its ID.
@@ -87,7 +80,8 @@ public class SchoolResource {
       views = readService.listAll();
     }
 
-    List<SchoolResponse> body = views.stream()
+    List<SchoolResponse> body =
+        views.stream()
             .map(v -> SchoolPresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
 
@@ -115,7 +109,7 @@ public class SchoolResource {
   /**
    * Updates an existing school.
    *
-   * @param id  the ID of the school to update
+   * @param id the ID of the school to update
    * @param req the school update request
    * @return the response containing the updated school
    */
@@ -144,9 +138,7 @@ public class SchoolResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Picks the best locale from the Accept-Language header.
-   */
+  /** Picks the best locale from the Accept-Language header. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

@@ -8,7 +8,6 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
@@ -77,9 +76,9 @@ public class AccountRepositoryImpl
       return List.of();
     }
     return getEntityManager()
-            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
-            .setParameter("ids", ids)
-            .getResultList();
+        .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
+        .setParameter("ids", ids)
+        .getResultList();
   }
 
   @Override
@@ -88,7 +87,8 @@ public class AccountRepositoryImpl
       return List.of();
     }
 
-    List<UUID> usedUserIds = getEntityManager()
+    List<UUID> usedUserIds =
+        getEntityManager()
             .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
             .setParameter("ids", userIds)
             .getResultList();

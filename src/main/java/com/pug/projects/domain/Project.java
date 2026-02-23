@@ -8,7 +8,7 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectHours;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -46,7 +46,6 @@ public class Project extends DomainError {
    * @param offeredHours the number of hours offered for the project
    * @param maxParticipants the maximum number of participants allowed
    * @param schools the list of associated schools
-   * @param time the TimeProvider for current time
    * @return a validated Project instance
    */
   public static Project factory(
@@ -56,11 +55,9 @@ public class Project extends DomainError {
       UUID createdBy,
       BigDecimal offeredHours,
       Integer maxParticipants,
-      List<School> schools,
-      TimeProvider time) {
+      List<School> schools) {
 
-    var now = time.now();
-    OffsetDateTime createdAt = OffsetDateTime.ofInstant(now, time.clock().getZone());
+    OffsetDateTime createdAt = OffsetDateTime.now();
 
     ProjectHours hoursVo = ProjectHours.factory(offeredHours, BigDecimal.ZERO);
     ProjectInfo infoVo = ProjectInfo.factory(createdBy, createdAt, null, maxParticipants);
@@ -123,12 +120,12 @@ public class Project extends DomainError {
     return updated;
   }
 
-  public Project changeStatus(ProjectStatus newStatus, TimeProvider time) {
+  public Project changeStatus(ProjectStatus newStatus) {
     if (this.projectStatus == newStatus) return this;
 
     OffsetDateTime closedAt = this.projectInfo.getClosedAt();
     if (newStatus == ProjectStatus.COMPLETED || newStatus == ProjectStatus.CANCELLED) {
-      closedAt = OffsetDateTime.now(time.clock());
+      closedAt = OffsetDateTime.now();
     } else if (newStatus == ProjectStatus.IN_PROGRESS || newStatus == ProjectStatus.PLANNED) {
       closedAt = null;
     }

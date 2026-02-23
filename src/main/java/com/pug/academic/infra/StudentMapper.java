@@ -93,15 +93,28 @@ public final class StudentMapper {
     }
 
     UserView userView =
-        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt()) : null;
+        (u != null)
+            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
+            : null;
     AccountView accountView =
         (acc != null)
             ? new AccountView(
-                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt(), acc.getUpdatedAt())
+                acc.getId(),
+                userView,
+                acc.getEmail(),
+                acc.getAccountType(),
+                acc.getCreatedAt(),
+                acc.getUpdatedAt())
             : null;
 
-    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
-    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt()) : null;
+    SchoolView schoolView =
+        (sch != null)
+            ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            : null;
+    CourseView courseView =
+        (c != null)
+            ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt())
+            : null;
 
     return new StudentView(
         accountView,

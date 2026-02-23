@@ -10,16 +10,13 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -34,12 +31,12 @@ public class Account extends DomainError {
 
   @Builder(toBuilder = true)
   private Account(
-          UUID id,
-          UUID userId,
-          Email email,
-          AccountType accountType,
-          String passwordHash,
-          AuditInfo auditInfo) {
+      UUID id,
+      UUID userId,
+      Email email,
+      AccountType accountType,
+      String passwordHash,
+      AuditInfo auditInfo) {
     this.id = id;
     this.userId = userId;
     this.email = email;
@@ -51,22 +48,22 @@ public class Account extends DomainError {
   /**
    * Factory for new Account.
    *
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param type         the account type for the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
    * @return new Account instance (may contain errors)
    */
   public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
     Account account =
-            Account.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .userId(userId)
-                    .email(email)
-                    .accountType(type)
-                    .passwordHash(passwordHash)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Account.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .userId(userId)
+            .email(email)
+            .accountType(type)
+            .passwordHash(passwordHash)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     account.collectValidationProblems();
     return account;
@@ -105,9 +102,7 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Behavior: Activate/Deactivate logic could go here if needed. For now, just validation.
-   */
+  /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(userId, "userId");

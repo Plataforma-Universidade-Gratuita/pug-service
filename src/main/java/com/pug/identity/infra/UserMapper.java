@@ -6,15 +6,10 @@ import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Maps between User domain and UserEntity persistence.
- */
+/** Maps between User domain and UserEntity persistence. */
 public final class UserMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserMapper() {}
 
   /**
    * Maps a UserEntity to a User domain object.
@@ -27,11 +22,11 @@ public final class UserMapper {
       return null;
     }
     return User.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .cpf(Cpf.factory(e.getCpf()))
-            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .cpf(Cpf.factory(e.getCpf()))
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -45,12 +40,12 @@ public final class UserMapper {
       return null;
     }
     return UserEntity.builder()
-            .id(d.getId())
-            .cpf(d.getCpf().toString())
-            .name(d.getName())
-            .createdAt(d.getAuditInfo().getCreatedAt())
-            .updatedAt(d.getAuditInfo().getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .cpf(d.getCpf().toString())
+        .name(d.getName())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**

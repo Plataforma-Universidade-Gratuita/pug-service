@@ -8,33 +8,27 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service for reading course information.
- */
+/** Service for reading course information. */
 @ApplicationScoped
 public class CourseReadServiceImpl implements CourseReadService {
 
   private static final Logger LOG = Logger.getLogger(CourseReadServiceImpl.class);
 
-  @Inject
-  CourseQueries queries;
+  @Inject CourseQueries queries;
 
   @Override
   public CourseView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(() -> {
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
               LOG.debugf("Course lookup failed: ID %s not found", id);
               return new ResourceNotFoundException(
-                      AcademicErrorCodes.COURSE_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
+                  AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
             });
   }
 

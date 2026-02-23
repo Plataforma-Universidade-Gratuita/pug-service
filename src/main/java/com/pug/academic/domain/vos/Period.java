@@ -1,13 +1,12 @@
 package com.pug.academic.domain.vos;
 
 import com.pug.shared.domain.DomainError;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 /**
  * Value Object representing a Period with start and due dates. Extends DomainError to allow
@@ -31,7 +30,7 @@ public class Period extends DomainError {
    * Factory method to create a new Period.
    *
    * @param startDate the start date
-   * @param dueDate   the due date
+   * @param dueDate the due date
    * @return The Period instance (which may contain errors)
    */
   public static Period factory(LocalDate startDate, LocalDate dueDate) {
@@ -40,9 +39,7 @@ public class Period extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the period dates.
-   */
+  /** Validates the period dates. */
   private void collectValidationProblems() {
     validateDateFields(startDate, dueDate);
   }
@@ -56,7 +53,7 @@ public class Period extends DomainError {
   public long getPeriodInDays() {
     if (startDate == null || dueDate == null) {
       throw new IllegalStateException(
-              "Cannot calculate period in days when start date or due date is null.");
+          "Cannot calculate period in days when start date or due date is null.");
     }
     return ChronoUnit.DAYS.between(startDate, dueDate);
   }
@@ -71,7 +68,7 @@ public class Period extends DomainError {
   public long getRemainingDays(LocalDate referenceDate) {
     if (referenceDate == null) {
       throw new IllegalArgumentException(
-              "Reference date cannot be null for remaining days calculation.");
+          "Reference date cannot be null for remaining days calculation.");
     }
     return ChronoUnit.DAYS.between(referenceDate, dueDate);
   }

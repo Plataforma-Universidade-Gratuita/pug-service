@@ -12,4 +12,4 @@ import com.pug.shared.domain.enums.Campi;
  * @param campus the campus where the account is associated with.
  */
 public record AdminUpdateRequest(
-        String cpfString, String name, String emailString, String password, Campi campus) {}
+    String cpfString, String name, String emailString, String password, Campi campus) {}

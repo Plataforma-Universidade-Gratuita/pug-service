@@ -6,18 +6,12 @@ import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Maps read-side EntityView to presenter EntityResponse.
- */
+/** Maps read-side EntityView to presenter EntityResponse. */
 public final class EntityPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private EntityPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private EntityPresenter() {}
 
   /**
    * Maps EntityView to EntityResponse.
@@ -32,9 +26,11 @@ public final class EntityPresenter {
 
     String formattedCnpj = toFormattedString(v.cnpj());
     CityResponse cityResponse = CityPresenter.toResponse(v.city());
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new EntityResponse(v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
+    return new EntityResponse(
+        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
   }
 
   /**
@@ -48,13 +44,13 @@ public final class EntityPresenter {
       return value;
     }
     return value.substring(0, 2)
-            + "."
-            + value.substring(2, 5)
-            + "."
-            + value.substring(5, 8)
-            + "/"
-            + value.substring(8, 12)
-            + "-"
-            + value.substring(12, 14);
+        + "."
+        + value.substring(2, 5)
+        + "."
+        + value.substring(5, 8)
+        + "/"
+        + value.substring(8, 12)
+        + "-"
+        + value.substring(12, 14);
   }
 }

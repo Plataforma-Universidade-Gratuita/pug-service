@@ -35,7 +35,7 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *                  field-specific.
+   *     field-specific.
    */
   AcademicErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;

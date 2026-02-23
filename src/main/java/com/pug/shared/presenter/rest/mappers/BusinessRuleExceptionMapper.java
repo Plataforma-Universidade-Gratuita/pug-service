@@ -11,24 +11,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Maps BusinessRuleException to an HTTP 422 (Unprocessable Entity) response.
- */
+/** Maps BusinessRuleException to an HTTP 422 (Unprocessable Entity) response. */
 @Provider
-public class BusinessRuleExceptionMapper
-        implements ExceptionMapper<BusinessRuleException> {
+public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRuleException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   @Override
   public Response toResponse(BusinessRuleException ex) {
-    String mainMessage =
-            i18n.translation(SharedErrorCodes.BUSINESS_RULE_ERROR.getBundleKey());
+    String mainMessage = i18n.translation(SharedErrorCodes.BUSINESS_RULE_ERROR.getBundleKey());
 
     String specificReason = i18n.translation(ex.getCode().getBundleKey());
 
@@ -38,14 +32,12 @@ public class BusinessRuleExceptionMapper
     ruleDetails.put("reason", specificReason);
 
     ApiError error =
-            ApiError.of(
-                    SharedErrorCodes.BUSINESS_RULE_ERROR.name(),
-                    mainMessage,
-                    new Details(ruleDetails));
+        ApiError.of(
+            SharedErrorCodes.BUSINESS_RULE_ERROR.name(), mainMessage, new Details(ruleDetails));
 
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }

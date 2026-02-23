@@ -8,17 +8,14 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the EntityRepository using Panache.
- */
+/** Implementation of the EntityRepository using Panache. */
 @ApplicationScoped
 public class EntityRepositoryImpl
-        implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
+    implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
   @Transactional
   @Override
@@ -29,9 +26,9 @@ public class EntityRepositoryImpl
     EntityEntity e = EntityMapper.toEntity(entity);
     persistAndFlush(e);
     EntityEntity loaded =
-            find("select e from EntityEntity e where e.id = ?1", e.getId())
-                    .firstResultOptional()
-                    .orElse(e);
+        find("select e from EntityEntity e where e.id = ?1", e.getId())
+            .firstResultOptional()
+            .orElse(e);
     return EntityMapper.toDomain(loaded);
   }
 
@@ -62,15 +59,15 @@ public class EntityRepositoryImpl
   @Override
   public Optional<Entity> findOptionalById(UUID id) {
     return find("select e from EntityEntity e where e.id = ?1", id)
-            .firstResultOptional()
-            .map(EntityMapper::toDomain);
+        .firstResultOptional()
+        .map(EntityMapper::toDomain);
   }
 
   @Override
   public Optional<Entity> findOptionalByCnpj(String cnpj) {
     return find("select e from EntityEntity e where e.cnpj = ?1", cnpj)
-            .firstResultOptional()
-            .map(EntityMapper::toDomain);
+        .firstResultOptional()
+        .map(EntityMapper::toDomain);
   }
 
   @Override

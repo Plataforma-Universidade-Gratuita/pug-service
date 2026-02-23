@@ -7,18 +7,15 @@ import com.pug.academic.infra.persistence.CourseEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository implementation for Course aggregate.
- */
+/** Repository implementation for Course aggregate. */
 @ApplicationScoped
 public class CourseRepositoryImpl
-        implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
+    implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   @Transactional
   @Override

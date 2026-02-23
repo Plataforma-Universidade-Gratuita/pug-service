@@ -6,16 +6,13 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Course entity aggregate.
- */
+/** Course entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -36,19 +33,19 @@ public class Course extends DomainError {
   /**
    * Factory for new courses.
    *
-   * @param name     the name of the course
+   * @param name the name of the course
    * @param schoolId the ID of the school
    * @return the created course (may contain errors)
    */
   public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-            Course.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .name(trimmedName)
-                    .schoolId(schoolId)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Course.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(trimmedName)
+            .schoolId(schoolId)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     course.collectValidationProblems();
     return course;
@@ -85,9 +82,7 @@ public class Course extends DomainError {
     return updatedCourse;
   }
 
-  /**
-   * Collects all validation problems for the Course instance.
-   */
+  /** Collects all validation problems for the Course instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 120L, "name");

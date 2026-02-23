@@ -2,8 +2,6 @@ package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -17,9 +15,9 @@ import java.util.UUID;
  * @param auditInfo The creation and update info.
  */
 public record AccountResponse(
-        UUID id,
-        UserResponse user,
-        String email,
-        AccountType accountType,
-        String accountTypeFormatted,
-        AuditInfoResponse auditInfo) {}
+    UUID id,
+    UserResponse user,
+    String email,
+    AccountType accountType,
+    String accountTypeFormatted,
+    AuditInfoResponse auditInfo) {}

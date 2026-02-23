@@ -2,6 +2,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

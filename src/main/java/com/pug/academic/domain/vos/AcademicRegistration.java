@@ -36,9 +36,7 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the registration format and length.
-   */
+  /** Validates the registration format and length. */
   private void collectValidationProblems() {
     validateStringField(value, 15L, "academicRegistration");
   }

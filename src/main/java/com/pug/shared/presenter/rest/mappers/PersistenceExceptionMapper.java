@@ -20,6 +20,16 @@ import org.hibernate.exception.DataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Exception mapper for handling PersistenceException and its common causes, such as constraint
+ * violations and data exceptions. This mapper translates database-related exceptions into
+ * meaningful API error responses with appropriate HTTP status codes and error details.
+ *
+ * <p>It inspects the underlying cause of the PersistenceException to determine if it's a known
+ * constraint violation (like unique constraints) or other data-related issues, and constructs a
+ * standardized API error response accordingly. If the exception does not match known patterns, it
+ * falls back to a generic internal server error response.
+ */
 @Provider
 public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {
 
@@ -132,7 +142,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 
   /**
    * Validates if the given constraint name matches either the raw Postgres constraint name or the
-   * custom
+   * custom.
    *
    * @param rawName The raw constraint name as defined in the database (e.g., "users_cpf_key").
    * @param postgresName The expected Postgres constraint name to compare against.
@@ -181,9 +191,6 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
    */
   private Response buildConflictResponse(
       GenericErrorCodes code, String fieldName, String fallbackMessage) {
-    String mainMessage =
-        i18n.translation(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.getBundleKey());
-
     String specificReason = i18n.translation(code.getBundleKey());
     if (specificReason.equals(code.getBundleKey()) && fallbackMessage != null) {
       specificReason = fallbackMessage;
@@ -193,6 +200,9 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     details.put("field", fieldName);
     details.put("rejectedValue", "unknown");
     details.put("reason", specificReason);
+
+    String mainMessage =
+        i18n.translation(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.getBundleKey());
 
     ApiError error =
         ApiError.of(

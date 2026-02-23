@@ -6,16 +6,13 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * School entity aggregate.
- */
+/** School entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -40,7 +37,11 @@ public class School extends DomainError {
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
     School school =
-            School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).auditInfo(AuditInfo.factory()).build();
+        School.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(trimmedName)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     school.collectValidationProblems();
     return school;
@@ -62,9 +63,7 @@ public class School extends DomainError {
     return updatedSchool;
   }
 
-  /**
-   * Collects all validation problems for the School instance.
-   */
+  /** Collects all validation problems for the School instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 100L, "name");

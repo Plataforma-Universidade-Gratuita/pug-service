@@ -7,15 +7,10 @@ import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Mapper for Course and CourseEntity.
- */
+/** Mapper for Course and CourseEntity. */
 public final class CourseMapper {
-  /**
-   * Private constructor.
-   */
-  private CourseMapper() {
-  }
+  /** Private constructor. */
+  private CourseMapper() {}
 
   /**
    * Convert CourseEntity to Course domain object.
@@ -27,7 +22,12 @@ public final class CourseMapper {
     if (e == null) {
       return null;
     }
-    return Course.builder().id(e.getId()).name(e.getName()).schoolId(e.getSchoolId()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
+    return Course.builder()
+        .id(e.getId())
+        .name(e.getName())
+        .schoolId(e.getSchoolId())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -40,7 +40,13 @@ public final class CourseMapper {
     if (d == null) {
       return null;
     }
-    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
+    return CourseEntity.builder()
+        .id(d.getId())
+        .name(d.getName())
+        .schoolId(d.getSchoolId())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
@@ -68,7 +74,10 @@ public final class CourseMapper {
     if (c == null) {
       return null;
     }
-    SchoolView schoolView = (s != null) ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
+    SchoolView schoolView =
+        (s != null)
+            ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            : null;
     return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }

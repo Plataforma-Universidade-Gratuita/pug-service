@@ -1,13 +1,10 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.SchoolView;
-
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Interface for reading School data.
- */
+/** Interface for reading School data. */
 public interface SchoolReadService {
 
   /**
@@ -16,7 +13,7 @@ public interface SchoolReadService {
    * @param id the UUID of the school
    * @return the SchoolView corresponding to the given id
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no school is found with the
-   *                                                             given id
+   *     given id
    */
   SchoolView getViewById(UUID id);
 

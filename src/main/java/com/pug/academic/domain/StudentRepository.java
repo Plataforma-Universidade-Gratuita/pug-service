@@ -3,9 +3,7 @@ package com.pug.academic.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository interface for managing Student entities.
- */
+/** Repository interface for managing Student entities. */
 public interface StudentRepository {
   /**
    * Persists a Student entity.

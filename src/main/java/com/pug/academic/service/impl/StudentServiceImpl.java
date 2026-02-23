@@ -17,26 +17,20 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.jboss.logging.Logger;
 
-import java.util.UUID;
-
-/**
- * Service class for managing Student entities.
- */
+/** Service class for managing Student entities. */
 @ApplicationScoped
 public class StudentServiceImpl implements StudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
 
-  @Inject
-  StudentRepository repo;
+  @Inject StudentRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
-  @Inject
-  CourseService courseService;
+  @Inject CourseService courseService;
 
   @Transactional
   @Override
@@ -45,27 +39,28 @@ public class StudentServiceImpl implements StudentService {
     courseService.getById(cmd.courseId());
     Account account = accountService.save(cmd.accountCreateCommand());
 
-    Student studentToPersist = StudentProcessor.processCreateInput(
+    Student studentToPersist =
+        StudentProcessor.processCreateInput(
             account.getId(),
             cmd.academicRegistration(),
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
             cmd.startDate(),
-            cmd.dueDate()
-    );
+            cmd.dueDate());
 
     if (studentToPersist.hasErrors()) {
       throw new AppValidationException(studentToPersist.getProblems());
     }
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
-      LOG.warnf("Creation failed: Student with registration %s already exists", studentToPersist.getAcademicRegistration());
+      LOG.warnf(
+          "Creation failed: Student with registration %s already exists",
+          studentToPersist.getAcademicRegistration());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-              "academicRegistration",
-              studentToPersist.getAcademicRegistration().toString()
-      );
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+          "academicRegistration",
+          studentToPersist.getAcademicRegistration().toString());
     }
 
     Student savedStudent = repo.persist(studentToPersist);
@@ -86,28 +81,30 @@ public class StudentServiceImpl implements StudentService {
       courseService.getById(cmd.courseId());
     }
 
-    Student studentToUpdate = StudentProcessor.processUpdateInput(
+    Student studentToUpdate =
+        StudentProcessor.processUpdateInput(
             current,
             cmd.academicRegistration(),
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
             cmd.startDate(),
-            cmd.dueDate()
-    );
+            cmd.dueDate());
 
     if (studentToUpdate.hasErrors()) {
       throw new AppValidationException(studentToUpdate.getProblems());
     }
 
-    if (cmd.academicRegistration() != null && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
-            && existsByRegistration(cmd.academicRegistration())) {
-      LOG.warnf("Update failed: Student Account ID %s tried to use existing registration %s", accountId, cmd.academicRegistration());
+    if (cmd.academicRegistration() != null
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+        && existsByRegistration(cmd.academicRegistration())) {
+      LOG.warnf(
+          "Update failed: Student Account ID %s tried to use existing registration %s",
+          accountId, cmd.academicRegistration());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-              "academicRegistration",
-              cmd.academicRegistration()
-      );
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+          "academicRegistration",
+          cmd.academicRegistration());
     }
 
     repo.update(studentToUpdate);
@@ -137,24 +134,21 @@ public class StudentServiceImpl implements StudentService {
 
   @Override
   public Student getById(UUID accountId) {
-    Student student = repo.findOptionalById(accountId)
-            .orElseThrow(() -> {
-              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-              return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND,
-                      "accountId",
-                      accountId.toString()
-              );
-            });
+    Student student =
+        repo.findOptionalById(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (student.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
-              accountId, student.getProblemsSummary());
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+          accountId, student.getProblemsSummary());
       throw new ResourceNotFoundException(
-              AcademicErrorCodes.STUDENT_NOT_FOUND,
-              "accountId",
-              accountId.toString()
-      );
+          AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return student;

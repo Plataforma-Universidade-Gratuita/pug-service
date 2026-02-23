@@ -14,21 +14,17 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
-/**
- * Service class for managing School entities.
- */
+/** Service class for managing School entities. */
 @ApplicationScoped
 public class SchoolServiceImpl implements SchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
-  @Inject
-  SchoolRepository repo;
+  @Inject SchoolRepository repo;
 
   @Transactional
   @Override
@@ -43,10 +39,7 @@ public class SchoolServiceImpl implements SchoolService {
     if (existsByName(schoolToPersist.getName())) {
       LOG.warnf("Creation failed: School with name %s already exists", schoolToPersist.getName());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.SCHOOL_ALREADY_EXISTS,
-              "name",
-              schoolToPersist.getName()
-      );
+          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", schoolToPersist.getName());
     }
 
     School savedSchool = repo.persist(schoolToPersist);
@@ -66,13 +59,11 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (!updatedSchool.getName().equals(current.getName())
-            && existsByName(updatedSchool.getName())) {
-      LOG.warnf("Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
+        && existsByName(updatedSchool.getName())) {
+      LOG.warnf(
+          "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
       throw new DuplicateResourceException(
-              AcademicErrorCodes.SCHOOL_ALREADY_EXISTS,
-              "name",
-              updatedSchool.getName()
-      );
+          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", updatedSchool.getName());
     }
 
     repo.update(updatedSchool);
@@ -104,37 +95,35 @@ public class SchoolServiceImpl implements SchoolService {
     List<School> schools = repo.listAllSchools();
 
     return schools.stream()
-            .filter(school -> {
+        .filter(
+            school -> {
               if (school.hasErrors()) {
-                LOG.errorf("DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-                        school.getId(), school.getProblemsSummary());
+                LOG.errorf(
+                    "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+                    school.getId(), school.getProblemsSummary());
                 return false;
               }
               return true;
             })
-            .toList();
+        .toList();
   }
 
   @Override
   public School getById(UUID id) {
-    School school = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("School lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                      AcademicErrorCodes.SCHOOL_NOT_FOUND,
-                      "id",
-                      id.toString()
-              );
-            });
+    School school =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("School lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
+                });
 
     if (school.hasErrors()) {
-      LOG.errorf("DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-              id, school.getProblemsSummary());
-      throw new ResourceNotFoundException(
-              AcademicErrorCodes.SCHOOL_NOT_FOUND,
-              "id",
-              id.toString()
-      );
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+          id, school.getProblemsSummary());
+      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
     }
     return school;
   }

@@ -56,8 +56,8 @@ public class AccountReadOnlyResource {
   /**
    * Lists accounts.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
-   * all accounts.
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise,
+   * returns all accounts.
    *
    * @param query optional name query to search for.
    * @return the response containing the list of accounts.

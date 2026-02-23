@@ -2,10 +2,6 @@ package com.pug.shared.domain;
 
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.utils.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -13,15 +9,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-/**
- * Abstract base class for domain errors that can accumulate validation problems.
- */
+/** Abstract base class for domain errors that can accumulate validation problems. */
 @Getter
 public abstract class DomainError {
 
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
+  @ToString.Exclude @EqualsAndHashCode.Exclude
   private final List<Problem> problems = new ArrayList<>();
 
   /**
@@ -74,7 +70,7 @@ public abstract class DomainError {
   /**
    * Validates that the given UUID foreign key id is not null.
    *
-   * @param id        the UUID to validate
+   * @param id the UUID to validate
    * @param fieldName the name of the foreign key field being validated (used for error messages)
    */
   protected void validateForeignKeyField(UUID id, String fieldName) {
@@ -86,8 +82,8 @@ public abstract class DomainError {
   /**
    * Validates that the given string field is not null or empty, and optionally checks its length.
    *
-   * @param value     the string value to validate
-   * @param length    the maximum allowed length of the string (null if no length check)
+   * @param value the string value to validate
+   * @param length the maximum allowed length of the string (null if no length check)
    * @param fieldName the name of the field being validated (used for error messages)
    */
   protected void validateStringField(String value, Long length, String fieldName) {
@@ -99,14 +95,16 @@ public abstract class DomainError {
   }
 
   /**
-   * Validates that the given BigDecimal field is not null and optionally checks if it is negative or zero.
+   * Validates that the given BigDecimal field is not null and optionally checks if it is negative
+   * or zero.
    *
-   * @param value           the BigDecimal value to validate
-   * @param fieldName       the name of the field being validated (used for error messages)
+   * @param value the BigDecimal value to validate
+   * @param fieldName the name of the field being validated (used for error messages)
    * @param negativeAllowed whether negative values are allowed
-   * @param zeroAllowed     whether zero values are allowed
+   * @param zeroAllowed whether zero values are allowed
    */
-  protected void validateBigDecimalField(BigDecimal value, String fieldName, boolean negativeAllowed, boolean zeroAllowed) {
+  protected void validateBigDecimalField(
+      BigDecimal value, String fieldName, boolean negativeAllowed, boolean zeroAllowed) {
     if (value == null) {
       addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
     } else if (!negativeAllowed && value.signum() < 0) {
@@ -117,10 +115,11 @@ public abstract class DomainError {
   }
 
   /**
-   * Validates that the given LocalDate fields are not null and that the due date is not before the start date.
+   * Validates that the given LocalDate fields are not null and that the due date is not before the
+   * start date.
    *
    * @param startDate the start date to validate
-   * @param dueDate   the due date to validate
+   * @param dueDate the due date to validate
    */
   protected void validateDateFields(LocalDate startDate, LocalDate dueDate) {
     if (startDate == null) {
@@ -162,12 +161,12 @@ public abstract class DomainError {
       return "No errors";
     }
     return problems.stream()
-            .map(
-                    p -> {
-                      String key = p.code().getBundleKey();
-                      String field = p.code().getFieldName();
-                      return field != null ? key + "(" + field + ")" : key;
-                    })
-            .collect(Collectors.joining(", "));
+        .map(
+            p -> {
+              String key = p.code().getBundleKey();
+              String field = p.code().getFieldName();
+              return field != null ? key + "(" + field + ")" : key;
+            })
+        .collect(Collectors.joining(", "));
   }
 }

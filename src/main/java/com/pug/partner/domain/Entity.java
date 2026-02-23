@@ -9,16 +9,13 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Entity entity aggregate.
- */
+/** Entity entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -32,7 +29,8 @@ public class Entity extends DomainError {
   AuditInfo auditInfo;
 
   @Builder(toBuilder = true)
-  private Entity(UUID id, Cnpj cnpj, String name, UUID cityId, String address, AuditInfo auditInfo) {
+  private Entity(
+      UUID id, Cnpj cnpj, String name, UUID cityId, String address, AuditInfo auditInfo) {
     this.id = id;
     this.cnpj = cnpj;
     this.name = name;
@@ -44,22 +42,22 @@ public class Entity extends DomainError {
   /**
    * Factory for new entities.
    *
-   * @param cnpj    the CNPJ of the entity
-   * @param name    the name of the entity.
-   * @param cityId  the ID of the city where the entity is located
+   * @param cnpj the CNPJ of the entity
+   * @param name the name of the entity.
+   * @param cityId the ID of the city where the entity is located
    * @param address the address where the entity is located
    * @return the created entity (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
-            Entity.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cnpj(cnpj)
-                    .name(StringUtils.trim(name))
-                    .cityId(cityId)
-                    .address(StringUtils.trim(address))
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Entity.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cnpj(cnpj)
+            .name(StringUtils.trim(name))
+            .cityId(cityId)
+            .address(StringUtils.trim(address))
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     entity.collectValidationProblems();
     return entity;
@@ -127,9 +125,7 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /**
-   * Collects all validation problems for the entity's attributes.
-   */
+  /** Collects all validation problems for the entity's attributes. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(cityId, "cityId");

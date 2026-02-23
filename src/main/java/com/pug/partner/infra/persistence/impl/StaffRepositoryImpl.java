@@ -7,17 +7,14 @@ import com.pug.partner.infra.persistence.StaffEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the StaffRepository using Panache.
- */
+/** Implementation of the StaffRepository using Panache. */
 @ApplicationScoped
 public class StaffRepositoryImpl
-        implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
+    implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
   @Transactional
   @Override
