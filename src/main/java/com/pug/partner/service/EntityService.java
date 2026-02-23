@@ -3,7 +3,6 @@ package com.pug.partner.service;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
-import java.util.List;
 import java.util.UUID;
 
 /** Interface for managing partner entities. */
@@ -53,13 +52,4 @@ public interface EntityService {
    *     is corrupted in DB).
    */
   Entity getById(UUID id);
-
-  /**
-   * Lists all Entities.
-   *
-   * @return a list of all Entities
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any Entity entity found is
-   *     corrupted in the database.
-   */
-  List<Entity> listAll();
 }

@@ -8,7 +8,6 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -61,18 +60,6 @@ public class EntityRepositoryImpl
     return find("select e from EntityEntity e where e.id = ?1", id)
         .firstResultOptional()
         .map(EntityMapper::toDomain);
-  }
-
-  @Override
-  public Optional<Entity> findOptionalByCnpj(String cnpj) {
-    return find("select e from EntityEntity e where e.cnpj = ?1", cnpj)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
-  }
-
-  @Override
-  public List<Entity> listAllEntities() {
-    return listAll().stream().map(EntityMapper::toDomain).toList();
   }
 
   @Override

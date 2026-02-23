@@ -58,15 +58,6 @@ public interface AccountService {
   long deleteAll(List<UUID> ids);
 
   /**
-   * Lists all Account entities.
-   *
-   * @return a list of all Account entities.
-   * @throws com.pug.shared.exceptions.AppValidationException if any Account entity found is
-   *     corrupted in the database.
-   */
-  List<Account> listAll();
-
-  /**
    * Retrieves an Account by its ID.
    *
    * @param id the UUID of the Account.

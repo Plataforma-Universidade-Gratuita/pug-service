@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import java.util.List;
 import java.util.UUID;
 
 /** Interface for managing School entities. */
@@ -42,15 +41,6 @@ public interface SchoolService {
    *     not exist.
    */
   boolean delete(UUID id);
-
-  /**
-   * Lists all School entities.
-   *
-   * @return a list of all School entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no school is found (or data is
-   *     corrupted in DB).
-   */
-  List<School> listAll();
 
   /**
    * Retrieves a School entity by its ID.

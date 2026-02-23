@@ -56,17 +56,7 @@ public class StaffRepositoryImpl
   }
 
   @Override
-  public List<Staff> listAllStaff() {
-    return listAll().stream().map(StaffMapper::toDomain).toList();
-  }
-
-  @Override
   public List<Staff> listAllByEntityId(UUID entityId) {
     return find("entityId = ?1", entityId).list().stream().map(StaffMapper::toDomain).toList();
-  }
-
-  @Override
-  public boolean existsByAccountId(UUID accountId) {
-    return find("accountId", accountId).firstResultOptional().isPresent();
   }
 }

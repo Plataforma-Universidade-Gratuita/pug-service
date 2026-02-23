@@ -16,7 +16,6 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -127,25 +126,6 @@ public class EntityServiceImpl implements EntityService {
     }
 
     return entity;
-  }
-
-  @Override
-  public List<Entity> listAll() {
-    LOG.debug("Listing all entities");
-    List<Entity> entities = repo.listAllEntities();
-
-    return entities.stream()
-        .filter(
-            entity -> {
-              if (entity.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
-                    entity.getId(), entity.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

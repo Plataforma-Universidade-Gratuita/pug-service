@@ -99,11 +99,6 @@ public class AccountRepositoryImpl
   }
 
   @Override
-  public List<Account> listAllAccounts() {
-    return listAll().stream().map(AccountMapper::toDomain).toList();
-  }
-
-  @Override
   public long countAllAccountsByUserId(UUID userId) {
     if (userId == null) {
       return 0;

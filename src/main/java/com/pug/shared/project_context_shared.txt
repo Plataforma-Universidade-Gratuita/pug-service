@@ -11,10 +11,6 @@ package com.pug.shared.domain;
 
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.utils.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -22,15 +18,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
-/**
- * Abstract base class for domain errors that can accumulate validation problems.
- */
+/** Abstract base class for domain errors that can accumulate validation problems. */
 @Getter
 public abstract class DomainError {
 
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
+  @ToString.Exclude @EqualsAndHashCode.Exclude
   private final List<Problem> problems = new ArrayList<>();
 
   /**
@@ -83,7 +79,7 @@ public abstract class DomainError {
   /**
    * Validates that the given UUID foreign key id is not null.
    *
-   * @param id        the UUID to validate
+   * @param id the UUID to validate
    * @param fieldName the name of the foreign key field being validated (used for error messages)
    */
   protected void validateForeignKeyField(UUID id, String fieldName) {
@@ -95,8 +91,8 @@ public abstract class DomainError {
   /**
    * Validates that the given string field is not null or empty, and optionally checks its length.
    *
-   * @param value     the string value to validate
-   * @param length    the maximum allowed length of the string (null if no length check)
+   * @param value the string value to validate
+   * @param length the maximum allowed length of the string (null if no length check)
    * @param fieldName the name of the field being validated (used for error messages)
    */
   protected void validateStringField(String value, Long length, String fieldName) {
@@ -108,14 +104,16 @@ public abstract class DomainError {
   }
 
   /**
-   * Validates that the given BigDecimal field is not null and optionally checks if it is negative or zero.
+   * Validates that the given BigDecimal field is not null and optionally checks if it is negative
+   * or zero.
    *
-   * @param value           the BigDecimal value to validate
-   * @param fieldName       the name of the field being validated (used for error messages)
+   * @param value the BigDecimal value to validate
+   * @param fieldName the name of the field being validated (used for error messages)
    * @param negativeAllowed whether negative values are allowed
-   * @param zeroAllowed     whether zero values are allowed
+   * @param zeroAllowed whether zero values are allowed
    */
-  protected void validateBigDecimalField(BigDecimal value, String fieldName, boolean negativeAllowed, boolean zeroAllowed) {
+  protected void validateBigDecimalField(
+      BigDecimal value, String fieldName, boolean negativeAllowed, boolean zeroAllowed) {
     if (value == null) {
       addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
     } else if (!negativeAllowed && value.signum() < 0) {
@@ -126,10 +124,11 @@ public abstract class DomainError {
   }
 
   /**
-   * Validates that the given LocalDate fields are not null and that the due date is not before the start date.
+   * Validates that the given LocalDate fields are not null and that the due date is not before the
+   * start date.
    *
    * @param startDate the start date to validate
-   * @param dueDate   the due date to validate
+   * @param dueDate the due date to validate
    */
   protected void validateDateFields(LocalDate startDate, LocalDate dueDate) {
     if (startDate == null) {
@@ -171,13 +170,13 @@ public abstract class DomainError {
       return "No errors";
     }
     return problems.stream()
-            .map(
-                    p -> {
-                      String key = p.code().getBundleKey();
-                      String field = p.code().getFieldName();
-                      return field != null ? key + "(" + field + ")" : key;
-                    })
-            .collect(Collectors.joining(", "));
+        .map(
+            p -> {
+              String key = p.code().getBundleKey();
+              String field = p.code().getFieldName();
+              return field != null ? key + "(" + field + ")" : key;
+            })
+        .collect(Collectors.joining(", "));
   }
 }
 
@@ -214,28 +213,28 @@ FILE: domain/enums/Campi.java
 ================================================================================
 package com.pug.shared.domain.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * Enumeration representing the University Campuses and their corresponding geographic data.
- * <p>
- * This enum serves a dual purpose:
+ *
+ * <p>This enum serves a dual purpose:
+ *
  * <ol>
- *   <li><strong>Business Domain:</strong> Identifies the available campuses (Jaraguá do Sul and Joinville)
- *       and provides their internationalization keys.</li>
- *   <li><strong>System Integrity:</strong> Defines the specific IBGE codes that are considered "Default Cities".
- *       These records are immutable and protected from updates or deletions to ensure system stability.</li>
+ *   <li><strong>Business Domain:</strong> Identifies the available campuses (Jaraguá do Sul and
+ *       Joinville) and provides their internationalization keys.
+ *   <li><strong>System Integrity:</strong> Defines the specific IBGE codes that are considered
+ *       "Default Cities". These records are immutable and protected from updates or deletions to
+ *       ensure system stability.
  * </ol>
  */
 @Getter
 @AllArgsConstructor
 public enum Campi {
-
   JARAGUA_DO_SUL("4205407", "academic.campus.jaragua"),
   JOINVILLE("4209106", "academic.campus.joinville");
 
@@ -244,18 +243,17 @@ public enum Campi {
 
   /**
    * Retrieves the IBGE codes for all Campuses, which are treated as immutable system records.
-   * <p>
-   * This list is utilized by business rules to prevent the modification or deletion
-   * of these specific cities in the database.
+   *
+   * <p>This list is utilized by business rules to prevent the modification or deletion of these
+   * specific cities in the database.
    *
    * @return a {@link List} of strings containing the IBGE codes of all campuses.
    */
   public static List<String> getImmutableIbgeCodes() {
-    return Arrays.stream(Campi.values())
-            .map(Campi::getIbgeCode)
-            .collect(Collectors.toList());
+    return Arrays.stream(Campi.values()).map(Campi::getIbgeCode).collect(Collectors.toList());
   }
 }
+
 
 ================================================================================
 FILE: domain/enums/GenericErrorCodes.java
@@ -323,7 +321,7 @@ public enum SharedErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *                  field-specific.
+   *     field-specific.
    */
   SharedErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
@@ -409,71 +407,71 @@ FILE: domain/vos/AuditInfo.java
 package com.pug.shared.domain.vos;
 
 import com.pug.shared.domain.DomainError;
+import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-
 /**
- * Value Object representing audit information (created and updated timestamps). Extends DomainError to allow deferred validation.
+ * Value Object representing audit information (created and updated timestamps). Extends DomainError
+ * to allow deferred validation.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AuditInfo extends DomainError {
-    OffsetDateTime createdAt;
-    OffsetDateTime updatedAt;
+  OffsetDateTime createdAt;
+  OffsetDateTime updatedAt;
 
-    @Builder(toBuilder = true)
-    private AuditInfo(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-    }
+  @Builder(toBuilder = true)
+  private AuditInfo(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    this.createdAt = createdAt;
+    this.updatedAt = updatedAt;
+  }
 
-    /**
-     * Factory method to create a new AuditInfo with the current timestamp for both createdAt and updatedAt.
-     *
-     * @return The AuditInfo instance (which may contain errors)
-     */
-    public static AuditInfo factory() {
-        OffsetDateTime now = OffsetDateTime.now();
-        return factory(now, now);
-    }
+  /**
+   * Factory method to create a new AuditInfo with the current timestamp for both createdAt and
+   * updatedAt.
+   *
+   * @return The AuditInfo instance (which may contain errors)
+   */
+  public static AuditInfo factory() {
+    OffsetDateTime now = OffsetDateTime.now();
+    return factory(now, now);
+  }
 
-    /**
-     * Factory method to create an AuditInfo with specified timestamps. Useful for testing or when timestamps are provided externally.
-     *
-     * @param createdAt the creation timestamp
-     * @param updatedAt the last update timestamp
-     * @return The AuditInfo instance (which may contain errors)
-     */
-    public static AuditInfo factory(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-        AuditInfo vo = AuditInfo.builder().createdAt(createdAt).updatedAt(updatedAt).build();
-        vo.collectValidationProblems();
-        return vo;
-    }
+  /**
+   * Factory method to create an AuditInfo with specified timestamps. Useful for testing or when
+   * timestamps are provided externally.
+   *
+   * @param createdAt the creation timestamp
+   * @param updatedAt the last update timestamp
+   * @return The AuditInfo instance (which may contain errors)
+   */
+  public static AuditInfo factory(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    AuditInfo vo = AuditInfo.builder().createdAt(createdAt).updatedAt(updatedAt).build();
+    vo.collectValidationProblems();
+    return vo;
+  }
 
-    /**
-     * Behavior: updates the updatedAt timestamp to the current time.
-     * The original createdAt is preserved automatically by toBuilder().
-     *
-     * @return the updated AuditInfo instance
-     */
-    public AuditInfo update() {
-        var vo = toBuilder()
-                .updatedAt(OffsetDateTime.now())
-                .build();
+  /**
+   * Behavior: updates the updatedAt timestamp to the current time. The original createdAt is
+   * preserved automatically by toBuilder().
+   *
+   * @return the updated AuditInfo instance
+   */
+  public AuditInfo update() {
+    var vo = toBuilder().updatedAt(OffsetDateTime.now()).build();
 
-        vo.collectValidationProblems();
-        return vo;
-    }
+    vo.collectValidationProblems();
+    return vo;
+  }
 
-    /** Validates the period dates. */
-    private void collectValidationProblems() {
-        validateAuditedFields(createdAt, updatedAt);
-    }
+  /** Validates the period dates. */
+  private void collectValidationProblems() {
+    validateAuditedFields(createdAt, updatedAt);
+  }
 }
 
 
@@ -535,8 +533,8 @@ import lombok.Getter;
 /**
  * Exception thrown when a valid request (syntactically correct) violates a specific business rule
  * or policy of the application (e.g., "Cannot delete default city", "Date must be in future").
- * <p>
- * Maps to HTTP 422 (Unprocessable Entity).
+ *
+ * <p>Maps to HTTP 422 (Unprocessable Entity).
  */
 @Getter
 public class BusinessRuleException extends RuntimeException {
@@ -548,7 +546,7 @@ public class BusinessRuleException extends RuntimeException {
   /**
    * Constructs a new BusinessRuleException.
    *
-   * @param code  The specific error code (e.g. CITY_IS_DEFAULT).
+   * @param code The specific error code (e.g. CITY_IS_DEFAULT).
    * @param field The name of the field related to the rule (e.g. "id" or "ibgeCode").
    * @param value The value that caused the violation (e.g. "4205407").
    */
@@ -559,6 +557,7 @@ public class BusinessRuleException extends RuntimeException {
     this.value = value;
   }
 }
+
 
 ================================================================================
 FILE: exceptions/DuplicateResourceException.java
@@ -742,6 +741,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
+/** Base entity class that includes auditing fields for creation and update timestamps. */
 @Getter
 @Setter
 @SuperBuilder
@@ -920,20 +920,19 @@ package com.pug.shared.presenter.dtos;
 import java.time.OffsetDateTime;
 
 /**
- * AuditInfoResponse is a record that represents the audit information for an entity, including creation and update timestamps.
+ * AuditInfoResponse is a record that represents the audit information for an entity, including
+ * creation and update timestamps.
  *
- * @param createdAt          the date and time when the entity was created.
+ * @param createdAt the date and time when the entity was created.
  * @param createdAtFormatted the formatted text for the creation date and time (localized).
- * @param updatedAt          the date and time when the entity was last updated.
+ * @param updatedAt the date and time when the entity was last updated.
  * @param updatedAtFormatted the formatted text for the last update date and time (localized).
  */
 public record AuditInfoResponse(
-        OffsetDateTime createdAt,
-        String createdAtFormatted,
-        OffsetDateTime updatedAt,
-        String updatedAtFormatted
-) {
-}
+    OffsetDateTime createdAt,
+    String createdAtFormatted,
+    OffsetDateTime updatedAt,
+    String updatedAtFormatted) {}
 
 
 ================================================================================
@@ -946,13 +945,10 @@ import com.pug.shared.domain.enums.Campi;
 /**
  * CampusResponse is a record that represents the response data for a campus.
  *
- * @param campus          The enum value representing the campus.
+ * @param campus The enum value representing the campus.
  * @param campusFormatted A formatted string representation of the campus (localized).
  */
-public record CampusResponse(
-        Campi campus, String campusFormatted
-) {
-}
+public record CampusResponse(Campi campus, String campusFormatted) {}
 
 
 ================================================================================
@@ -1004,69 +1000,72 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.utils.StringUtils;
-
 import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
- * Utility class responsible for transforming shared domain data into standardized API Response DTOs.
- * <p>
- * This presenter handles common mapping scenarios used across multiple domains, such as:
+ * Utility class responsible for transforming shared domain data into standardized API Response
+ * DTOs.
+ *
+ * <p>This presenter handles common mapping scenarios used across multiple domains, such as:
+ *
  * <ul>
- *   <li>Formatting Audit timestamps (created/updated at) based on the account's locale.</li>
- *   <li>Converting Campus enums into localized response objects.</li>
+ *   <li>Formatting Audit timestamps (created/updated at) based on the account's locale.
+ *   <li>Converting Campus enums into localized response objects.
  * </ul>
- * <p>
- * This class is stateless and cannot be instantiated.
+ *
+ * <p>This class is stateless and cannot be instantiated.
  */
 public final class SharedDataPresenter {
 
-    /**
-     * Private constructor to prevent instantiation of the utility class.
-     */
-    private SharedDataPresenter() {
-        throw new UnsupportedOperationException("Utility class cannot be instantiated");
+  /** Private constructor to prevent instantiation of the utility class. */
+  private SharedDataPresenter() {
+    throw new UnsupportedOperationException("Utility class cannot be instantiated");
+  }
+
+  /**
+   * Constructs an {@link AuditInfoResponse} with localized date formatting.
+   *
+   * <p><b>Note:</b> {@code updatedAt} is optional (nullable), but {@code createdAt} and {@code
+   * locale} are mandatory.
+   *
+   * @param createdAt the timestamp when the entity was created (cannot be null).
+   * @param updatedAt the timestamp when the entity was last updated (can be null).
+   * @param locale the account's locale for date formatting (cannot be null).
+   * @return an {@link AuditInfoResponse} containing raw timestamps and their string
+   *     representations.
+   */
+  public static AuditInfoResponse createAuditInfoResponse(
+      OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
+    if (createdAt == null || updatedAt == null || locale == null) {
+      return null;
     }
 
-    /**
-     * Constructs an {@link AuditInfoResponse} with localized date formatting.
-     * <p>
-     * <b>Note:</b> {@code updatedAt} is optional (nullable), but {@code createdAt} and {@code locale} are mandatory.
-     *
-     * @param createdAt the timestamp when the entity was created (cannot be null).
-     * @param updatedAt the timestamp when the entity was last updated (can be null).
-     * @param locale    the account's locale for date formatting (cannot be null).
-     * @return an {@link AuditInfoResponse} containing raw timestamps and their string representations.
-     */
-    public static AuditInfoResponse createAuditInfoResponse(OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
-        if (createdAt == null || updatedAt == null || locale == null) {
-            return null;
-        }
+    String createdAtFormatted = StringUtils.toStringFormatted(createdAt, locale);
+    String updatedAtFormatted = StringUtils.toStringFormatted(updatedAt, locale);
 
-        String createdAtFormatted = StringUtils.toStringFormatted(createdAt, locale);
-        String updatedAtFormatted = StringUtils.toStringFormatted(updatedAt, locale);
+    return new AuditInfoResponse(createdAt, createdAtFormatted, updatedAt, updatedAtFormatted);
+  }
 
-        return new AuditInfoResponse(createdAt, createdAtFormatted, updatedAt, updatedAtFormatted);
+  /**
+   * Constructs a {@link CampusResponse} by translating the Campi enum.
+   *
+   * @param campus the specific {@link Campi} enum to convert (cannot be null).
+   * @param locale the account's locale for translation (cannot be null).
+   * @param i18n the internationalization service (cannot be null).
+   * @return a {@link CampusResponse} containing the enum key and the localized display name.
+   */
+  public static CampusResponse createCampusResponse(Campi campus, Locale locale, I18n i18n) {
+    if (campus == null || locale == null || i18n == null) {
+      return null;
     }
 
-    /**
-     * Constructs a {@link CampusResponse} by translating the Campi enum.
-     *
-     * @param campus the specific {@link Campi} enum to convert (cannot be null).
-     * @param locale the account's locale for translation (cannot be null).
-     * @param i18n   the internationalization service (cannot be null).
-     * @return a {@link CampusResponse} containing the enum key and the localized display name.
-     */
-    public static CampusResponse createCampusResponse(Campi campus, Locale locale, I18n i18n) {
-        if (campus == null || locale == null || i18n == null) {
-            return null;
-        }
+    String campusFormatted = i18n.translation(campus.getBundleKey(), locale);
 
-        String campusFormatted = i18n.translation(campus.getBundleKey(), locale);
-
-        return new CampusResponse(campus, campusFormatted);
-    }
+    return new CampusResponse(campus, campusFormatted);
+  }
 }
+
 
 ================================================================================
 FILE: presenter/rest/ApiEnvelope.java
@@ -1275,24 +1274,18 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Maps BusinessRuleException to an HTTP 422 (Unprocessable Entity) response.
- */
+/** Maps BusinessRuleException to an HTTP 422 (Unprocessable Entity) response. */
 @Provider
-public class BusinessRuleExceptionMapper
-        implements ExceptionMapper<BusinessRuleException> {
+public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRuleException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   @Override
   public Response toResponse(BusinessRuleException ex) {
-    String mainMessage =
-            i18n.translation(SharedErrorCodes.BUSINESS_RULE_ERROR.getBundleKey());
+    String mainMessage = i18n.translation(SharedErrorCodes.BUSINESS_RULE_ERROR.getBundleKey());
 
     String specificReason = i18n.translation(ex.getCode().getBundleKey());
 
@@ -1302,17 +1295,16 @@ public class BusinessRuleExceptionMapper
     ruleDetails.put("reason", specificReason);
 
     ApiError error =
-            ApiError.of(
-                    SharedErrorCodes.BUSINESS_RULE_ERROR.name(),
-                    mainMessage,
-                    new Details(ruleDetails));
+        ApiError.of(
+            SharedErrorCodes.BUSINESS_RULE_ERROR.name(), mainMessage, new Details(ruleDetails));
 
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/ConstraintViolationExceptionMapper.java
@@ -1463,6 +1455,16 @@ import org.hibernate.exception.DataException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Exception mapper for handling PersistenceException and its common causes, such as constraint
+ * violations and data exceptions. This mapper translates database-related exceptions into
+ * meaningful API error responses with appropriate HTTP status codes and error details.
+ *
+ * <p>It inspects the underlying cause of the PersistenceException to determine if it's a known
+ * constraint violation (like unique constraints) or other data-related issues, and constructs a
+ * standardized API error response accordingly. If the exception does not match known patterns, it
+ * falls back to a generic internal server error response.
+ */
 @Provider
 public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {
 
@@ -1575,7 +1577,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 
   /**
    * Validates if the given constraint name matches either the raw Postgres constraint name or the
-   * custom
+   * custom.
    *
    * @param rawName The raw constraint name as defined in the database (e.g., "users_cpf_key").
    * @param postgresName The expected Postgres constraint name to compare against.
@@ -1624,9 +1626,6 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
    */
   private Response buildConflictResponse(
       GenericErrorCodes code, String fieldName, String fallbackMessage) {
-    String mainMessage =
-        i18n.translation(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.getBundleKey());
-
     String specificReason = i18n.translation(code.getBundleKey());
     if (specificReason.equals(code.getBundleKey()) && fallbackMessage != null) {
       specificReason = fallbackMessage;
@@ -1636,6 +1635,9 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     details.put("field", fieldName);
     details.put("rejectedValue", "unknown");
     details.put("reason", specificReason);
+
+    String mainMessage =
+        i18n.translation(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR.getBundleKey());
 
     ApiError error =
         ApiError.of(
@@ -1755,7 +1757,6 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
 
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
-    String mainMessage = i18n.translation(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.getBundleKey());
     String specificReason = i18n.translation(ex.getCode().getBundleKey());
 
     Map<String, Object> notFoundDetails = new LinkedHashMap<>();
@@ -1766,6 +1767,8 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
       notFoundDetails.put("rejectedValue", ex.getSearchValue());
     }
     notFoundDetails.put("reason", specificReason);
+
+    String mainMessage = i18n.translation(SharedErrorCodes.RESOURCE_NOT_FOUND_ERROR.getBundleKey());
 
     ApiError error =
         ApiError.of(

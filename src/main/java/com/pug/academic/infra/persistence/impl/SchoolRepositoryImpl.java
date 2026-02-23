@@ -7,8 +7,6 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,15 +53,6 @@ public class SchoolRepositoryImpl
   public Optional<School> findOptionalById(UUID id) {
     Optional<SchoolEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(SchoolMapper::toDomain);
-  }
-
-  @Override
-  public List<School> listAllSchools() {
-    var domainList = new ArrayList<School>();
-    for (SchoolEntity entity : listAll()) {
-      domainList.add(SchoolMapper.toDomain(entity));
-    }
-    return domainList;
   }
 
   @Override

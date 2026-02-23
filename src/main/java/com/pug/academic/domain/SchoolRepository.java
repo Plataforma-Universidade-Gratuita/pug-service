@@ -1,6 +1,5 @@
 package com.pug.academic.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,16 +38,6 @@ public interface SchoolRepository {
    * @return an Optional containing the found school or empty if not found
    */
   Optional<School> findOptionalById(UUID id);
-
-  /**
-   * List all schools.
-   *
-   * <p>Note: The returned Schools may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all schools
-   */
-  List<School> listAllSchools();
 
   /**
    * Check if a school exists by its name.

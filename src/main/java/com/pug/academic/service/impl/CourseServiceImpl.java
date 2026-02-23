@@ -16,7 +16,6 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -97,25 +96,6 @@ public class CourseServiceImpl implements CourseService {
     }
 
     return deleted;
-  }
-
-  @Override
-  public List<Course> listAll() {
-    LOG.debug("Listing all courses");
-    List<Course> courses = repo.listAllCourses();
-
-    return courses.stream()
-        .filter(
-            course -> {
-              if (course.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Course %s violates domain rules: %s",
-                    course.getId(), course.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
   }
 
   @Override

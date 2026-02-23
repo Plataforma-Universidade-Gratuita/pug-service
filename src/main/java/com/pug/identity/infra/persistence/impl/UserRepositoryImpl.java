@@ -75,11 +75,6 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   @Override
-  public List<User> listAllUsers() {
-    return listAll().stream().map(UserMapper::toDomain).toList();
-  }
-
-  @Override
   public boolean existsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       return false;

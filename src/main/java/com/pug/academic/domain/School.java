@@ -6,6 +6,7 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -16,6 +17,7 @@ import lombok.Value;
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class School extends DomainError {
   UUID id;
   String name;

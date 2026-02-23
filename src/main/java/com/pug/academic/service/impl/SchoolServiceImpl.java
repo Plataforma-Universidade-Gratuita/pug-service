@@ -14,7 +14,6 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -87,25 +86,6 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     return deleted;
-  }
-
-  @Override
-  public List<School> listAll() {
-    LOG.debug("Listing all schools");
-    List<School> schools = repo.listAllSchools();
-
-    return schools.stream()
-        .filter(
-            school -> {
-              if (school.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-                    school.getId(), school.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
   }
 
   @Override

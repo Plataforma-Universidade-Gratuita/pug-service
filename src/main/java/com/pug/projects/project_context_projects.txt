@@ -16,7 +16,7 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -45,11 +45,9 @@ public class Attendance extends DomainError {
    * @param project the associated Project.
    * @param student the associated Student.
    * @param duration the duration of the attendance.
-   * @param time the TimeProvider for current time.
    * @return a validated Attendance instance.
    */
-  public static Attendance factory(
-      Project project, Student student, BigDecimal duration, TimeProvider time) {
+  public static Attendance factory(Project project, Student student, BigDecimal duration) {
 
     Attendance att =
         Attendance.builder()
@@ -57,7 +55,7 @@ public class Attendance extends DomainError {
             .project(project)
             .student(student)
             .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
-            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now(time.clock())))
+            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now()))
             .status(AttendanceStatus.WAITING)
             .build();
 
@@ -72,17 +70,16 @@ public class Attendance extends DomainError {
    * @param lat the latitude of the validation location.
    * @param lon the longitude of the validation location.
    * @param hash the hash of the QR code.
-   * @param time the TimeProvider for current time.
    * @return a validated Attendance instance with updated information.
    */
   public Attendance validateAttendance(
-      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash, TimeProvider time) {
+      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
     QrValidationInfo newQr =
         QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
 
     AttendanceInfo newInfo =
         AttendanceInfo.factory(
-            validatorId, OffsetDateTime.now(time.clock()), this.attendanceInfo.getCreatedAt());
+            validatorId, OffsetDateTime.now(), this.attendanceInfo.getCreatedAt());
 
     Attendance updated =
         this.toBuilder()
@@ -153,7 +150,7 @@ import com.pug.projects.domain.enums.EnrollmentStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -177,11 +174,10 @@ public class Enrollment extends DomainError {
    *
    * @param student the student enrolling
    * @param project the project to enroll in
-   * @param time the time provider for current time
    * @return a new Enrollment instance
    */
-  public static Enrollment factory(Student student, Project project, TimeProvider time) {
-    var now = OffsetDateTime.now(time.clock());
+  public static Enrollment factory(Student student, Project project) {
+    var now = OffsetDateTime.now();
     Enrollment enrollment =
         Enrollment.builder()
             .student(student)
@@ -198,15 +194,14 @@ public class Enrollment extends DomainError {
    * Change the status of the enrollment, updating relevant timestamps.
    *
    * @param newStatus the new status to set
-   * @param time the time provider for current time
    * @return a new Enrollment instance with updated status
    */
-  public Enrollment changeStatus(EnrollmentStatus newStatus, TimeProvider time) {
+  public Enrollment changeStatus(EnrollmentStatus newStatus) {
     if (this.status == newStatus) {
       return this;
     }
 
-    var now = OffsetDateTime.now(time.clock());
+    var now = OffsetDateTime.now();
     OffsetDateTime accepted = this.enrollmentInfo.getAcceptedAt();
     OffsetDateTime closing = this.enrollmentInfo.getClosingStatusAt();
 
@@ -421,7 +416,7 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectHours;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.time.TimeProvider;
+import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -459,7 +454,6 @@ public class Project extends DomainError {
    * @param offeredHours the number of hours offered for the project
    * @param maxParticipants the maximum number of participants allowed
    * @param schools the list of associated schools
-   * @param time the TimeProvider for current time
    * @return a validated Project instance
    */
   public static Project factory(
@@ -469,11 +463,9 @@ public class Project extends DomainError {
       UUID createdBy,
       BigDecimal offeredHours,
       Integer maxParticipants,
-      List<School> schools,
-      TimeProvider time) {
+      List<School> schools) {
 
-    var now = time.now();
-    OffsetDateTime createdAt = OffsetDateTime.ofInstant(now, time.clock().getZone());
+    OffsetDateTime createdAt = OffsetDateTime.now();
 
     ProjectHours hoursVo = ProjectHours.factory(offeredHours, BigDecimal.ZERO);
     ProjectInfo infoVo = ProjectInfo.factory(createdBy, createdAt, null, maxParticipants);
@@ -536,12 +528,12 @@ public class Project extends DomainError {
     return updated;
   }
 
-  public Project changeStatus(ProjectStatus newStatus, TimeProvider time) {
+  public Project changeStatus(ProjectStatus newStatus) {
     if (this.projectStatus == newStatus) return this;
 
     OffsetDateTime closedAt = this.projectInfo.getClosedAt();
     if (newStatus == ProjectStatus.COMPLETED || newStatus == ProjectStatus.CANCELLED) {
-      closedAt = OffsetDateTime.now(time.clock());
+      closedAt = OffsetDateTime.now();
     } else if (newStatus == ProjectStatus.IN_PROGRESS || newStatus == ProjectStatus.PLANNED) {
       closedAt = null;
     }
@@ -618,6 +610,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -698,6 +691,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -769,6 +763,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -836,6 +831,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -915,6 +911,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.Problem;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1018,7 +1015,6 @@ package com.pug.projects.infra.persistence;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
@@ -1056,7 +1052,6 @@ import lombok.ToString;
       @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
       @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class AttendanceEntity extends BaseUuidV7Entity {
 
   @NotNull
@@ -1132,7 +1127,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
@@ -1165,7 +1159,6 @@ import lombok.ToString;
       @Index(name = "idx_enrollments_status", columnList = "status"),
       @Index(name = "idx_enrollments_project", columnList = "project_id")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class EnrollmentEntity {
 
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
@@ -1230,7 +1223,6 @@ package com.pug.projects.infra.persistence;
 import com.pug.shared.infra.persistence.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -1274,7 +1266,6 @@ import lombok.ToString;
       @Index(name = "idx_projects_created_at", columnList = "created_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
-@EntityListeners(TimestampTechnicalColumns.class)
 public class ProjectEntity extends BaseUuidV7Entity {
 
   @NotBlank

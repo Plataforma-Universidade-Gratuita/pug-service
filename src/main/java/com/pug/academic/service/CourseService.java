@@ -3,7 +3,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Course;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import java.util.List;
 import java.util.UUID;
 
 /** Interface for managing Course entities. */
@@ -44,17 +43,6 @@ public interface CourseService {
    *     not exist.
    */
   boolean delete(UUID id);
-
-  /**
-   * Lists all Course entities.
-   *
-   * @return a list of all Course entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course is found (or data is
-   *     corrupted in DB).
-   * @throws com.pug.shared.exceptions.AppValidationException if any Course entity found is
-   *     corrupted in the database.
-   */
-  List<Course> listAll();
 
   /**
    * Retrieves a Course entity by its ID.

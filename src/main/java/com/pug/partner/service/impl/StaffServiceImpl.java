@@ -113,23 +113,4 @@ public class StaffServiceImpl implements StaffService {
 
     return staff;
   }
-
-  @Override
-  public List<Staff> listAll() {
-    LOG.debug("Listing all staff");
-    List<Staff> allStaff = repo.listAllStaff();
-
-    return allStaff.stream()
-        .filter(
-            staff -> {
-              if (staff.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-                    staff.getAccountId(), staff.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
-  }
 }

@@ -2,7 +2,6 @@ package com.pug.partner.service;
 
 import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
-import java.util.List;
 import java.util.UUID;
 
 /** Interface for managing staff assignments to partner entities. */
@@ -47,11 +46,4 @@ public interface StaffService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found or corrupted.
    */
   Staff getByAccountId(UUID accountId);
-
-  /**
-   * Lists all staff members.
-   *
-   * @return a list of all Staff objects.
-   */
-  List<Staff> listAll();
 }

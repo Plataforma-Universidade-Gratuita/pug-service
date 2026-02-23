@@ -15,19 +15,18 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Course entity aggregate.
- */
+/** Course entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Course extends DomainError {
   UUID id;
   String name;
@@ -45,19 +44,19 @@ public class Course extends DomainError {
   /**
    * Factory for new courses.
    *
-   * @param name     the name of the course
+   * @param name the name of the course
    * @param schoolId the ID of the school
    * @return the created course (may contain errors)
    */
   public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-            Course.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .name(trimmedName)
-                    .schoolId(schoolId)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Course.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(trimmedName)
+            .schoolId(schoolId)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     course.collectValidationProblems();
     return course;
@@ -94,9 +93,7 @@ public class Course extends DomainError {
     return updatedCourse;
   }
 
-  /**
-   * Collects all validation problems for the Course instance.
-   */
+  /** Collects all validation problems for the Course instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 120L, "name");
@@ -115,7 +112,6 @@ FILE: domain/CourseRepository.java
 ================================================================================
 package com.pug.academic.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -154,27 +150,6 @@ public interface CourseRepository {
    * @return the found course.
    */
   Optional<Course> findOptionalById(UUID id);
-
-  /**
-   * List all courses.
-   *
-   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @return the list of all courses.
-   */
-  List<Course> listAllCourses();
-
-  /**
-   * List all courses by school ID.
-   *
-   * <p>Note: The returned Courses may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param schoolId the school ID.
-   * @return the list of courses for the given school ID.
-   */
-  List<Course> listAllBySchoolId(UUID schoolId);
 
   /**
    * Check if a course exists by name.
@@ -226,7 +201,7 @@ public enum AcademicErrorCodes implements GenericErrorCodes {
    *
    * @param bundleKey The internationalization resource key associated with the error.
    * @param fieldName The name of the field associated with the error, or null if not
-   *                  field-specific.
+   *     field-specific.
    */
   AcademicErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
@@ -246,19 +221,18 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * School entity aggregate.
- */
+/** School entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class School extends DomainError {
   UUID id;
   String name;
@@ -280,7 +254,11 @@ public class School extends DomainError {
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
     School school =
-            School.builder().id(UuidCreator.getTimeOrderedEpoch()).name(trimmedName).auditInfo(AuditInfo.factory()).build();
+        School.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(trimmedName)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     school.collectValidationProblems();
     return school;
@@ -302,9 +280,7 @@ public class School extends DomainError {
     return updatedSchool;
   }
 
-  /**
-   * Collects all validation problems for the School instance.
-   */
+  /** Collects all validation problems for the School instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 100L, "name");
@@ -322,7 +298,6 @@ FILE: domain/SchoolRepository.java
 ================================================================================
 package com.pug.academic.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -363,16 +338,6 @@ public interface SchoolRepository {
   Optional<School> findOptionalById(UUID id);
 
   /**
-   * List all schools.
-   *
-   * <p>Note: The returned Schools may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all schools
-   */
-  List<School> listAllSchools();
-
-  /**
    * Check if a school exists by its name.
    *
    * @param name the name of the school to check
@@ -397,16 +362,13 @@ import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Student entity aggregate.
- */
+/** Student entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -422,13 +384,13 @@ public class Student extends DomainError {
 
   @Builder(toBuilder = true)
   private Student(
-          UUID accountId,
-          AcademicRegistration academicRegistration,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours counterpartHours,
-          Period period,
-          AuditInfo auditInfo) {
+      UUID accountId,
+      AcademicRegistration academicRegistration,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours counterpartHours,
+      Period period,
+      AuditInfo auditInfo) {
     this.accountId = accountId;
     this.academicRegistration = academicRegistration;
     this.campus = campus;
@@ -442,30 +404,30 @@ public class Student extends DomainError {
    * Factory for new students.
    *
    * @param accountId the unique identifier of the account
-   * @param reg       the academic registration for the student
-   * @param campus    the campus at which the student is enrolled
-   * @param courseId  the course identifier the student is enrolled in
-   * @param hours     the counterpart hours details
-   * @param period    the academic period details
+   * @param reg the academic registration for the student
+   * @param campus the campus at which the student is enrolled
+   * @param courseId the course identifier the student is enrolled in
+   * @param hours the counterpart hours details
+   * @param period the academic period details
    * @return the created student (may contain errors)
    */
   public static Student factory(
-          UUID accountId,
-          AcademicRegistration reg,
-          Campi campus,
-          UUID courseId,
-          CounterpartHours hours,
-          Period period) {
+      UUID accountId,
+      AcademicRegistration reg,
+      Campi campus,
+      UUID courseId,
+      CounterpartHours hours,
+      Period period) {
     Student student =
-            Student.builder()
-                    .accountId(accountId)
-                    .academicRegistration(reg)
-                    .campus(campus)
-                    .courseId(courseId)
-                    .counterpartHours(hours)
-                    .period(period)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Student.builder()
+            .accountId(accountId)
+            .academicRegistration(reg)
+            .campus(campus)
+            .courseId(courseId)
+            .counterpartHours(hours)
+            .period(period)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     student.collectValidationProblems();
     return student;
@@ -496,7 +458,8 @@ public class Student extends DomainError {
     if (academicRegistration.equals(newReg)) {
       return this;
     }
-    Student updatedStudent = toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().academicRegistration(newReg).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -511,7 +474,8 @@ public class Student extends DomainError {
     if (courseId.equals(newCourseId)) {
       return this;
     }
-    Student updatedStudent = toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().courseId(newCourseId).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -526,7 +490,8 @@ public class Student extends DomainError {
     if (counterpartHours.equals(newHours)) {
       return this;
     }
-    Student updatedStudent = toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
+    Student updatedStudent =
+        toBuilder().counterpartHours(newHours).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -546,9 +511,7 @@ public class Student extends DomainError {
     return updatedStudent;
   }
 
-  /**
-   * Collects all validation problems for the Student instance.
-   */
+  /** Collects all validation problems for the Student instance. */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     validateForeignKeyField(courseId, "courseId");
@@ -579,7 +542,6 @@ FILE: domain/StudentRepository.java
 ================================================================================
 package com.pug.academic.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -620,25 +582,12 @@ public interface StudentRepository {
   Optional<Student> findOptionalById(UUID id);
 
   /**
-   * Lists all Students.
+   * Checks whether a Student with the given academic registration already exists.
    *
-   * <p>Note: The returned Students may contain validation errors (check {@code
-   * student.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Students
+   * @param registration the academic registration string to check for existence
+   * @return true if a Student with the given registration exists, false otherwise
    */
-  List<Student> listAllStudents();
-
-  /**
-   * Lists all Students by Course ID.
-   *
-   * <p>Note: The returned Students may contain validation errors (check {@code
-   * student.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @param courseId the Course ID to filter Students
-   * @return a list of Students enrolled in the specified Course
-   */
-  List<Student> listAllByCourseId(UUID courseId);
+  boolean existsByRegistration(String registration);
 }
 
 
@@ -683,9 +632,7 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the registration format and length.
-   */
+  /** Validates the registration format and length. */
   private void collectValidationProblems() {
     validateStringField(value, 15L, "academicRegistration");
   }
@@ -698,12 +645,11 @@ FILE: domain/vos/CounterpartHours.java
 package com.pug.academic.domain.vos;
 
 import com.pug.shared.domain.DomainError;
+import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
-
-import java.math.BigDecimal;
 
 /**
  * Value Object representing Counterpart Hours. Extends DomainError to allow deferred validation.
@@ -729,17 +675,15 @@ public class CounterpartHours extends DomainError {
    */
   public static CounterpartHours factory(BigDecimal requiredHours, Boolean concluded) {
     CounterpartHours vo =
-            CounterpartHours.builder()
-                    .requiredHours(requiredHours)
-                    .concluded(concluded != null ? concluded : Boolean.FALSE)
-                    .build();
+        CounterpartHours.builder()
+            .requiredHours(requiredHours)
+            .concluded(concluded != null ? concluded : Boolean.FALSE)
+            .build();
     vo.collectValidationProblems();
     return vo;
   }
 
-  /**
-   * Validates the hours.
-   */
+  /** Validates the hours. */
   private void collectValidationProblems() {
     validateBigDecimalField(requiredHours, "requiredHours", false, false);
   }
@@ -752,13 +696,12 @@ FILE: domain/vos/Period.java
 package com.pug.academic.domain.vos;
 
 import com.pug.shared.domain.DomainError;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 /**
  * Value Object representing a Period with start and due dates. Extends DomainError to allow
@@ -782,7 +725,7 @@ public class Period extends DomainError {
    * Factory method to create a new Period.
    *
    * @param startDate the start date
-   * @param dueDate   the due date
+   * @param dueDate the due date
    * @return The Period instance (which may contain errors)
    */
   public static Period factory(LocalDate startDate, LocalDate dueDate) {
@@ -791,9 +734,7 @@ public class Period extends DomainError {
     return vo;
   }
 
-  /**
-   * Validates the period dates.
-   */
+  /** Validates the period dates. */
   private void collectValidationProblems() {
     validateDateFields(startDate, dueDate);
   }
@@ -807,7 +748,7 @@ public class Period extends DomainError {
   public long getPeriodInDays() {
     if (startDate == null || dueDate == null) {
       throw new IllegalStateException(
-              "Cannot calculate period in days when start date or due date is null.");
+          "Cannot calculate period in days when start date or due date is null.");
     }
     return ChronoUnit.DAYS.between(startDate, dueDate);
   }
@@ -822,7 +763,7 @@ public class Period extends DomainError {
   public long getRemainingDays(LocalDate referenceDate) {
     if (referenceDate == null) {
       throw new IllegalArgumentException(
-              "Reference date cannot be null for remaining days calculation.");
+          "Reference date cannot be null for remaining days calculation.");
     }
     return ChronoUnit.DAYS.between(referenceDate, dueDate);
   }
@@ -841,15 +782,10 @@ import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Mapper for Course and CourseEntity.
- */
+/** Mapper for Course and CourseEntity. */
 public final class CourseMapper {
-  /**
-   * Private constructor.
-   */
-  private CourseMapper() {
-  }
+  /** Private constructor. */
+  private CourseMapper() {}
 
   /**
    * Convert CourseEntity to Course domain object.
@@ -861,7 +797,12 @@ public final class CourseMapper {
     if (e == null) {
       return null;
     }
-    return Course.builder().id(e.getId()).name(e.getName()).schoolId(e.getSchoolId()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
+    return Course.builder()
+        .id(e.getId())
+        .name(e.getName())
+        .schoolId(e.getSchoolId())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -874,7 +815,13 @@ public final class CourseMapper {
     if (d == null) {
       return null;
     }
-    return CourseEntity.builder().id(d.getId()).name(d.getName()).schoolId(d.getSchoolId()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
+    return CourseEntity.builder()
+        .id(d.getId())
+        .name(d.getName())
+        .schoolId(d.getSchoolId())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
@@ -902,7 +849,10 @@ public final class CourseMapper {
     if (c == null) {
       return null;
     }
-    SchoolView schoolView = (s != null) ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
+    SchoolView schoolView =
+        (s != null)
+            ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            : null;
     return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }
@@ -972,18 +922,13 @@ import com.pug.academic.infra.persistence.CourseEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Repository implementation for Course aggregate.
- */
+/** Repository implementation for Course aggregate. */
 @ApplicationScoped
 public class CourseRepositoryImpl
-        implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
+    implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   @Transactional
   @Override
@@ -1026,24 +971,6 @@ public class CourseRepositoryImpl
   }
 
   @Override
-  public List<Course> listAllCourses() {
-    var domainList = new ArrayList<Course>();
-    for (CourseEntity entity : listAll()) {
-      domainList.add(CourseMapper.toDomain(entity));
-    }
-    return domainList;
-  }
-
-  @Override
-  public List<Course> listAllBySchoolId(UUID schoolId) {
-    var domainList = new ArrayList<Course>();
-    for (CourseEntity entity : find("schoolId", schoolId).list()) {
-      domainList.add(CourseMapper.toDomain(entity));
-    }
-    return domainList;
-  }
-
-  @Override
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;
   }
@@ -1062,18 +989,13 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the SchoolRepository interface using PanacheRepositoryBase.
- */
+/** Implementation of the SchoolRepository interface using PanacheRepositoryBase. */
 @ApplicationScoped
 public class SchoolRepositoryImpl
-        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
   @Transactional
   @Override
@@ -1116,15 +1038,6 @@ public class SchoolRepositoryImpl
   }
 
   @Override
-  public List<School> listAllSchools() {
-    var domainList = new ArrayList<School>();
-    for (SchoolEntity entity : listAll()) {
-      domainList.add(SchoolMapper.toDomain(entity));
-    }
-    return domainList;
-  }
-
-  @Override
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;
   }
@@ -1140,21 +1053,17 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.infra.StudentMapper;
 import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of StudentRepository using Panache for persistence operations.
- */
+/** Implementation of StudentRepository using Panache for persistence operations. */
 @ApplicationScoped
 public class StudentRepositoryImpl
-        implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+    implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
   @Transactional
   @Override
@@ -1197,21 +1106,11 @@ public class StudentRepositoryImpl
   }
 
   @Override
-  public List<Student> listAllStudents() {
-    var domainList = new ArrayList<Student>();
-    for (StudentEntity entity : listAll()) {
-      domainList.add(StudentMapper.toDomain(entity));
+  public boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
     }
-    return domainList;
-  }
-
-  @Override
-  public List<Student> listAllByCourseId(UUID courseId) {
-    var domainList = new ArrayList<Student>();
-    for (StudentEntity entity : list("courseId", courseId)) {
-      domainList.add(StudentMapper.toDomain(entity));
-    }
-    return domainList;
+    return count("academic_registration", registration) > 0;
   }
 }
 
@@ -1412,14 +1311,14 @@ import java.util.UUID;
 /**
  * DTO for Course read operations.
  *
- * @param id        the course id
- * @param name      the course name
- * @param school    the school of the course
+ * @param id the course id
+ * @param name the course name
+ * @param school the school of the course
  * @param createdAt the course creation time
  * @param updatedAt the course update time
  */
-public record CourseView(UUID id, String name, SchoolView school, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-}
+public record CourseView(
+    UUID id, String name, SchoolView school, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
 
 
 ================================================================================
@@ -1433,13 +1332,13 @@ import java.util.UUID;
 /**
  * DTO for School read operations.
  *
- * @param id        the school id
- * @param name      the school name
+ * @param id the school id
+ * @param name the school name
  * @param createdAt the school creation time
  * @param updatedAt the school update time
  */
-public record SchoolView(UUID id, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-}
+public record SchoolView(
+    UUID id, String name, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
 
 
 ================================================================================
@@ -1473,7 +1372,6 @@ package com.pug.academic.infra.read.dtos;
 
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.shared.domain.enums.Campi;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -1481,29 +1379,28 @@ import java.time.OffsetDateTime;
 /**
  * DTO for Student read operations.
  *
- * @param account              the account of the student
+ * @param account the account of the student
  * @param academicRegistration the academic registration of the student
- * @param campus               the campus of the student
- * @param course               the course of the student
- * @param requiredHours        the required hours for the student
- * @param concluded            the status telling if the required hours were concluded or not
- * @param startDate            the start date of the student
- * @param dueDate              the due date of the student
- * @param createdAt            the creation time of the student
- * @param updatedAt            the update time of the student
+ * @param campus the campus of the student
+ * @param course the course of the student
+ * @param requiredHours the required hours for the student
+ * @param concluded the status telling if the required hours were concluded or not
+ * @param startDate the start date of the student
+ * @param dueDate the due date of the student
+ * @param createdAt the creation time of the student
+ * @param updatedAt the update time of the student
  */
 public record StudentView(
-        AccountView account,
-        String academicRegistration,
-        Campi campus,
-        CourseView course,
-        BigDecimal requiredHours,
-        Boolean concluded,
-        LocalDate startDate,
-        LocalDate dueDate,
-        OffsetDateTime createdAt,
-        OffsetDateTime updatedAt) {
-}
+    AccountView account,
+    String academicRegistration,
+    Campi campus,
+    CourseView course,
+    BigDecimal requiredHours,
+    Boolean concluded,
+    LocalDate startDate,
+    LocalDate dueDate,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt) {}
 
 
 ================================================================================
@@ -1512,15 +1409,12 @@ FILE: infra/read/dtos/StudentViewWithCompletedHours.java
 package com.pug.academic.infra.read.dtos;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
-
 import java.math.BigDecimal;
 
+/** DTO representing a student view along with their completed hours. */
 public record StudentViewWithCompletedHours(
-        @JsonUnwrapped
-        StudentView details,
-        BigDecimal completedHours
-) {
-}
+    @JsonUnwrapped StudentView details, BigDecimal completedHours) {}
+
 
 ================================================================================
 FILE: infra/read/impl/CourseQueriesImpl.java
@@ -1557,7 +1451,8 @@ public class CourseQueriesImpl implements CourseQueries {
       """
                   select new com.pug.academic.infra.read.dtos.CourseView(
                     c.id, c.name,
-                    new com.pug.academic.infra.read.dtos.SchoolView(s.id, s.name)
+                    new com.pug.academic.infra.read.dtos.SchoolView(
+                    s.id, s.name, s.createdAt, s.updatedAt)
                   )
                   from CourseEntity c
                   left join SchoolEntity s on s.id = c.schoolId
@@ -1645,7 +1540,6 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -1670,25 +1564,10 @@ public class SchoolQueriesImpl implements SchoolQueries {
     var q =
         entityManager.createQuery(
             "select new com.pug.academic.infra.read.dtos.SchoolView("
-                + "s.id, s.name) "
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id = :id",
             SchoolView.class);
     q.setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  @Override
-  public Optional<SchoolView> findOptionalByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      return Optional.empty();
-    }
-    var q =
-        entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
-                + "s.id, s.name) "
-                + "from SchoolEntity s where s.name = :name",
-            SchoolView.class);
-    q.setParameter("name", name);
     return q.getResultStream().findFirst();
   }
 
@@ -1697,7 +1576,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
     var q =
         entityManager.createQuery(
             "select new com.pug.academic.infra.read.dtos.SchoolView("
-                + "s.id, s.name) "
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
             SchoolView.class);
     return q.getResultList();
@@ -1733,7 +1612,6 @@ import com.pug.academic.infra.read.dtos.StudentAcc;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -1759,16 +1637,17 @@ public class StudentQueriesImpl implements StudentQueries {
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
                       new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt),
+                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
                       acc.email, acc.accountType, acc.createdAt
                     ),
                     s.academicRegistration,
                     s.campus,
                     new com.pug.academic.infra.read.dtos.CourseView(
                       c.id, c.name,
-                      new com.pug.academic.infra.read.dtos.SchoolView(sch.id, sch.name)
+                      new com.pug.academic.infra.read.dtos.SchoolView(
+                      sch.id, sch.name, sch.createdAt, sch.updatedAt)
                     ),
-                    s.requiredHours, s.completedHours,
+                    s.requiredHours, s.concluded,
                     s.startDate, s.dueDate
                   )
                   from StudentEntity s
@@ -1801,16 +1680,23 @@ public class StudentQueriesImpl implements StudentQueries {
   }
 
   @Override
-  public List<StudentView> listAllByIds(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return List.of();
+  public Optional<StudentView> findOptionalByEmail(String email) {
+    if (StringUtils.isEmpty(email)) {
+      return Optional.empty();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC,
-            StudentView.class);
-    q.setParameter("ids", accountIds);
-    return q.getResultList();
+    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
+    q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  @Override
+  public Optional<StudentView> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where u.cpf = :cpf", StudentView.class);
+    q.setParameter("cpf", cpf);
+    return q.getResultStream().findFirst();
   }
 
   @Override
@@ -1843,13 +1729,14 @@ public class StudentQueriesImpl implements StudentQueries {
     var rows =
         em.createQuery(
                 """
-                  select new com.pug.academic.infra.read.dtos.StudentAcc(s, acc, c, sch)
-                  from StudentEntity s
-                  join AccountEntity acc on acc.id = s.accountId
-                  join CourseEntity c on c.id = s.courseId
-                  left join SchoolEntity sch on sch.id = c.schoolId
-                  where acc.userId in :ids
-                  """,
+                                    select new com.pug.academic.infra.read.dtos.StudentAcc(
+                                    s, acc, c, sch)
+                                    from StudentEntity s
+                                    join AccountEntity acc on acc.id = s.accountId
+                                    join CourseEntity c on c.id = s.courseId
+                                    left join SchoolEntity sch on sch.id = c.schoolId
+                                    where acc.userId in :ids
+                                    """,
                 StudentAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
@@ -1900,14 +1787,6 @@ public interface SchoolQueries {
   Optional<SchoolView> findOptionalById(UUID id);
 
   /**
-   * Finds a school by its name.
-   *
-   * @param name the name of the school to find.
-   * @return an Optional containing the found SchoolView, or empty if not found.
-   */
-  Optional<SchoolView> findOptionalByName(String name);
-
-  /**
    * Lists all schools.
    *
    * @return a list of all SchoolView
@@ -1953,12 +1832,20 @@ public interface StudentQueries {
   Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration);
 
   /**
-   * Lists all Students by their Account IDs.
+   * Finds a Student by the email of their associated account.
    *
-   * @param accountIds the IDs of the Students' accounts to list
-   * @return a list of Students with the specified Account IDs
+   * @param email the email of the Student's account to find
+   * @return an Optional containing the Student if found, or empty if not found
    */
-  List<StudentView> listAllByIds(Iterable<UUID> accountIds);
+  Optional<StudentView> findOptionalByEmail(String email);
+
+  /**
+   * Finds a Student by the CPF of their associated account.
+   *
+   * @param cpf the CPF of the Student's account to find
+   * @return an Optional containing the Student if found, or empty if not found
+   */
+  Optional<StudentView> findOptionalByCpf(String cpf);
 
   /**
    * Lists all Students.
@@ -1995,15 +1882,10 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Mapper for School and SchoolEntity.
- */
+/** Mapper for School and SchoolEntity. */
 public final class SchoolMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private SchoolMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private SchoolMapper() {}
 
   /**
    * Convert SchoolEntity to School domain object.
@@ -2015,7 +1897,11 @@ public final class SchoolMapper {
     if (e == null) {
       return null;
     }
-    return School.builder().id(e.getId()).name(e.getName()).auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt())).build();
+    return School.builder()
+        .id(e.getId())
+        .name(e.getName())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -2028,7 +1914,12 @@ public final class SchoolMapper {
     if (d == null) {
       return null;
     }
-    return SchoolEntity.builder().id(d.getId()).name(d.getName()).createdAt(d.getAuditInfo().getCreatedAt()).updatedAt(d.getAuditInfo().getUpdatedAt()).build();
+    return SchoolEntity.builder()
+        .id(d.getId())
+        .name(d.getName())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
@@ -2157,15 +2048,28 @@ public final class StudentMapper {
     }
 
     UserView userView =
-        (u != null) ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt()) : null;
+        (u != null)
+            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
+            : null;
     AccountView accountView =
         (acc != null)
             ? new AccountView(
-                acc.getId(), userView, acc.getEmail(), acc.getAccountType(), acc.getCreatedAt(), acc.getUpdatedAt())
+                acc.getId(),
+                userView,
+                acc.getEmail(),
+                acc.getAccountType(),
+                acc.getCreatedAt(),
+                acc.getUpdatedAt())
             : null;
 
-    SchoolView schoolView = (sch != null) ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt()) : null;
-    CourseView courseView = (c != null) ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt()) : null;
+    SchoolView schoolView =
+        (sch != null)
+            ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            : null;
+    CourseView courseView =
+        (c != null)
+            ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt())
+            : null;
 
     return new StudentView(
         accountView,
@@ -2197,8 +2101,8 @@ import com.pug.academic.service.CourseReadService;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2214,12 +2118,13 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -2234,46 +2139,35 @@ public class CourseResource {
   @Inject CourseReadService readService;
 
   @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
-   * Get course by id.
+   * Retrieves a course by its ID.
    *
    * @param id the course id
-   * @return the response
+   * @return the response containing the course
    */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    CourseView v = readService.getViewById(id);
-    CourseResponse body = CoursePresenter.toResponse(v);
+    CourseView view = readService.getViewById(id);
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Get course by name.
-   *
-   * @param name the course name
-   * @return the response
-   */
-  @GET
-  @Path("/by-name/{name}")
-  public Response getByName(@PathParam("name") String name) {
-    CourseView v = readService.getByName(name);
-    CourseResponse body = CoursePresenter.toResponse(v);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * List or search courses.
+   * Lists courses or searches by name.
    *
    * @param q the search query
    * @param schoolId the school id to filter by
-   * @return the response
+   * @return the response containing the list of courses
    */
   @GET
   public Response listOrSearch(
       @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+
     List<CourseView> views;
+
     if (schoolId != null) {
       views = readService.listViewsBySchoolId(schoolId);
     } else if (StringUtils.isNotEmpty(q)) {
@@ -2281,68 +2175,68 @@ public class CourseResource {
     } else {
       views = readService.listViews();
     }
-    List<CourseResponse> body = views.stream().map(CoursePresenter::toResponse).toList();
+
+    List<CourseResponse> body =
+        views.stream()
+            .map(v -> CoursePresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Create a new course.
+   * Creates a new course.
    *
    * @param req the CourseCreateRequest DTO
-   * @return the response
+   * @return the response containing the created course
    */
   @POST
   public Response create(@Valid CourseCreateRequest req) {
-    Course created = writeService.save(new CourseCreateCommand(req.name(), req.schoolId()));
-    CourseResponse body = CoursePresenter.toResponse(readService.getViewById(created.getId()));
+    CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
+    Course created = writeService.save(cmd);
+
+    CourseView view = readService.getViewById(created.getId());
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
+
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
-   * Create courses in bulk.
-   *
-   * @param reqs the list of CourseCreateRequest DTOs for bulk creation
-   * @return the response
-   */
-  @POST
-  @Path("/bulk")
-  public Response createBulk(@Valid List<CourseCreateRequest> reqs) {
-    var cmds =
-        reqs.stream()
-            .map(r -> new CourseCreateCommand(r.name(), r.schoolId()))
-            .collect(Collectors.toList());
-    var saved = writeService.saveAll(cmds);
-    return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-        .build();
-  }
-
-  /**
-   * Update an existing course.
+   * Updates an existing course.
    *
    * @param id the course id to update
    * @param req the CourseUpdateRequest DTO
-   * @return the response
+   * @return the response containing the updated course
    */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
-    Course updated = writeService.update(id, new CourseUpdateCommand(req.name(), req.schoolId()));
-    CourseResponse body = CoursePresenter.toResponse(readService.getViewById(updated.getId()));
+    CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
+    writeService.update(id, cmd);
+
+    CourseView view = readService.getViewById(id);
+    CourseResponse body = CoursePresenter.toResponse(view, locale());
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Delete courses by ids.
+   * Deletes a course by its ID.
    *
-   * @param req the uuids request
-   * @return the response
+   * @param id the course id to delete
+   * @return the response indicating success
    */
   @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
+  @Path("/{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /** Picks the best locale from the Accept-Language header. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -2372,7 +2266,6 @@ FILE: presenter/dtos/CourseResponse.java
 package com.pug.academic.presenter.dtos;
 
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
 import java.util.UUID;
 
 /**
@@ -2383,7 +2276,8 @@ import java.util.UUID;
  * @param school the school response
  * @param auditInfo the audit info for the course
  */
-public record CourseResponse(UUID id, String name, SchoolResponse school, AuditInfoResponse auditInfo) {}
+public record CourseResponse(
+    UUID id, String name, SchoolResponse school, AuditInfoResponse auditInfo) {}
 
 
 ================================================================================
@@ -2424,7 +2318,6 @@ FILE: presenter/dtos/SchoolResponse.java
 package com.pug.academic.presenter.dtos;
 
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
 import java.util.UUID;
 
 /**
@@ -2455,6 +2348,7 @@ FILE: presenter/dtos/StudentCreateRequest.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
+import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.validation.UuidV7;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
@@ -2485,7 +2379,7 @@ public record StudentCreateRequest(
     @NotBlank @Email @Size(max = 254) String email,
     @NotBlank @Size(min = 8, max = 255) String password,
     @NotBlank @Size(max = 15) String academicRegistration,
-    @NotBlank @Size(max = 150) String campus,
+    @NotBlank Campi campus,
     @NotNull @UuidV7 UUID courseId,
     @NotNull @DecimalMin("0.00") BigDecimal requiredHours,
     @NotNull LocalDate startDate,
@@ -2500,7 +2394,6 @@ package com.pug.academic.presenter.dtos;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -2523,20 +2416,20 @@ import java.time.LocalDate;
  * @param auditInfo the audit info for the student
  */
 public record StudentResponse(
-        AccountResponse account,
-        String academicRegistration,
-        CampusResponse campus,
-        CourseResponse course,
-        BigDecimal requiredHours,
-        BigDecimal completedHours,
-        BigDecimal missingHours,
-        LocalDate startDate,
-        String startDateFormatted,
-        LocalDate dueDate,
-        String dueDateFormatted,
-        long remainingDays,
-        String remainingDaysFormatted,
-        AuditInfoResponse auditInfo) {}
+    AccountResponse account,
+    String academicRegistration,
+    CampusResponse campus,
+    CourseResponse course,
+    BigDecimal requiredHours,
+    BigDecimal completedHours,
+    BigDecimal missingHours,
+    LocalDate startDate,
+    String startDateFormatted,
+    LocalDate dueDate,
+    String dueDateFormatted,
+    long remainingDays,
+    String remainingDaysFormatted,
+    AuditInfoResponse auditInfo) {}
 
 
 ================================================================================
@@ -2544,6 +2437,7 @@ FILE: presenter/dtos/StudentUpdateRequest.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
+import com.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -2552,6 +2446,7 @@ import java.util.UUID;
  * DTO for updating an existing Student. All fields are optional, as they may not be changed.
  *
  * @param name the student's new name (optional)
+ * @param cpf the student's new CPF (optional)
  * @param email the student's new email (optional)
  * @param password the student's new password (optional)
  * @param academicRegistration the new academic registration (optional)
@@ -2563,10 +2458,11 @@ import java.util.UUID;
  */
 public record StudentUpdateRequest(
     String name,
+    String cpf,
     String email,
     String password,
     String academicRegistration,
-    String campus,
+    Campi campus,
     UUID courseId,
     BigDecimal requiredHours,
     LocalDate startDate,
@@ -2582,18 +2478,12 @@ import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.presenter.dtos.CourseResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting CourseView to CourseResponse.
- */
+/** Mapper class for converting CourseView to CourseResponse. */
 public final class CoursePresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CoursePresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CoursePresenter() {}
 
   /**
    * Converts a CourseView object to a CourseResponse object.
@@ -2606,9 +2496,11 @@ public final class CoursePresenter {
       return null;
     }
 
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new CourseResponse(v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
+    return new CourseResponse(
+        v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
   }
 }
 
@@ -2622,18 +2514,12 @@ import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.presenter.dtos.SchoolResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper for SchoolView to SchoolResponse.
- */
+/** Mapper for SchoolView to SchoolResponse. */
 public final class SchoolPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private SchoolPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private SchoolPresenter() {}
 
   /**
    * Maps a SchoolView to a SchoolResponse.
@@ -2646,7 +2532,8 @@ public final class SchoolPresenter {
       return null;
     }
 
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new SchoolResponse(v.id(), v.name(), auditInfo);
   }
@@ -2658,7 +2545,7 @@ FILE: presenter/mappers/StudentPresenter.java
 ================================================================================
 package com.pug.academic.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.StudentViewWithCompletedHours;
+import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.academic.presenter.dtos.StudentResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.shared.i18n.I18n;
@@ -2667,69 +2554,63 @@ import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-/**
- * Mapper class for converting StudentView to StudentResponse.
- */
+/** Mapper class for converting StudentView to StudentResponse. */
 public final class StudentPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private StudentPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private StudentPresenter() {}
 
   /**
    * Converts a StudentView to a StudentResponse.
    *
-   * @param v      the StudentView to convert
+   * @param v the StudentView to convert
    * @param locale the locale for localization
-   * @param i18n   the internationalization service
+   * @param i18n the internationalization service
    * @return the converted StudentResponse
    */
-  public static StudentResponse toResponse(StudentViewWithCompletedHours v, Locale locale, I18n i18n) {
+  public static StudentResponse toResponse(StudentView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
     }
-    var vDetails = v.details();
 
-    String startDateFormatted = StringUtils.toStringFormatted(vDetails.startDate(), locale);
-    String dueDateFormatted = StringUtils.toStringFormatted(vDetails.dueDate(), locale);
+    String startDateFormatted = StringUtils.toStringFormatted(v.startDate(), locale);
+    String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (vDetails.requiredHours() != null && v.completedHours() != null) {
-      missingHours = vDetails.requiredHours().subtract(v.completedHours());
+    if (v.requiredHours() != null && !v.concluded()) {
+      missingHours = v.requiredHours().subtract(BigDecimal.ZERO);
     }
 
     long remainingDays = 0;
     String remainingDaysFormatted = "";
-    if (vDetails.dueDate() != null) {
-      remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), vDetails.dueDate());
-      remainingDaysFormatted = PresenterUtils.formatRemainingDays(vDetails.dueDate(), locale, i18n);
+    if (v.dueDate() != null) {
+      remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), v.dueDate());
+      remainingDaysFormatted = PresenterUtils.formatRemainingDays(v.dueDate(), locale, i18n);
     }
 
-    CampusResponse campus = SharedDataPresenter.createCampusResponse(vDetails.campus(), locale, i18n);
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(vDetails.createdAt(), vDetails.updatedAt(), locale);
+    CampusResponse campus = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new StudentResponse(
-            AccountPresenter.toResponse(vDetails.account(), locale, i18n),
-            vDetails.academicRegistration(),
-            campus,
-            CoursePresenter.toResponse(vDetails.course(), locale),
-            vDetails.requiredHours(),
-            BigDecimal.ZERO,
-            missingHours,
-            vDetails.startDate(),
-            startDateFormatted,
-            vDetails.dueDate(),
-            dueDateFormatted,
-            remainingDays,
-            remainingDaysFormatted,
-            auditInfo);
+        AccountPresenter.toResponse(v.account(), locale, i18n),
+        v.academicRegistration(),
+        campus,
+        CoursePresenter.toResponse(v.course(), locale),
+        v.requiredHours(),
+        BigDecimal.ZERO,
+        missingHours,
+        v.startDate(),
+        startDateFormatted,
+        v.dueDate(),
+        dueDateFormatted,
+        remainingDays,
+        remainingDaysFormatted,
+        auditInfo);
   }
 }
 
@@ -2740,6 +2621,7 @@ FILE: presenter/SchoolResource.java
 package com.pug.academic.presenter;
 
 import com.pug.academic.domain.School;
+import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.presenter.dtos.SchoolCreateRequest;
 import com.pug.academic.presenter.dtos.SchoolResponse;
 import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
@@ -2748,169 +2630,6 @@ import com.pug.academic.service.SchoolReadService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.shared.presenter.dtos.UuidsRequest;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-/** REST resource for managing schools. */
-@ApplicationScoped
-@Path("/academic/schools")
-@Consumes(MediaType.APPLICATION_JSON)
-@Produces(MediaType.APPLICATION_JSON)
-public class SchoolResource {
-
-  @Inject SchoolService writeService;
-  @Inject SchoolReadService readService;
-  @Context UriInfo uri;
-
-  /**
-   * Creates a new school.
-   *
-   * @param req the school creation request
-   * @return the response containing the created school
-   */
-  @POST
-  public Response create(@Valid SchoolCreateRequest req) {
-    School created = writeService.save(new SchoolCreateCommand(req.name()));
-    var view = readService.getViewById(created.getId());
-    URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
-    return Response.created(location)
-        .entity(ApiEnvelope.created(SchoolPresenter.toResponse(view)))
-        .build();
-  }
-
-  /**
-   * Creates multiple schools in bulk.
-   *
-   * @param reqs the bulk creation request (lista de SchoolCreateOrUpdateRequest)
-   * @return the response containing the result of the bulk creation
-   */
-  @POST
-  @Path("/bulk")
-  public Response createBulk(@Valid List<SchoolCreateRequest> reqs) {
-    List<SchoolCreateCommand> commands =
-        reqs.stream().map(r -> new SchoolCreateCommand(r.name())).collect(Collectors.toList());
-
-    List<School> saved = writeService.saveAll(commands);
-    return Response.status(Response.Status.CREATED)
-        .entity(ApiEnvelope.created(BulkCreateResult.sizeOnly(saved.size())))
-        .build();
-  }
-
-  /**
-   * Updates an existing school.
-   *
-   * @param id the ID of the school to update
-   * @param req the school update request
-   * @return the response containing the updated school
-   */
-  @PUT
-  @Path("/{id}")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
-    writeService.update(id, new SchoolUpdateCommand(req.name()));
-    var view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(SchoolPresenter.toResponse(view))).build();
-  }
-
-  /**
-   * Lists all schools or searches schools by name.
-   *
-   * @param q the optional search query
-   * @return the response containing the list of schools
-   */
-  @GET
-  public Response listOrSearch(@QueryParam("q") String q) {
-    var views = (StringUtils.isEmpty(q)) ? readService.listAll() : readService.searchByName(q);
-    List<SchoolResponse> body = views.stream().map(SchoolPresenter::toResponse).toList();
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a school by its ID.
-   *
-   * @param id the ID of the school
-   * @return the response containing the school
-   */
-  @GET
-  @Path("/{id}")
-  public Response get(@PathParam("id") @UuidV7 UUID id) {
-    var view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(SchoolPresenter.toResponse(view))).build();
-  }
-
-  /**
-   * Retrieves a school by its name.
-   *
-   * @param name the name of the school
-   * @return the response containing the school
-   */
-  @GET
-  @Path("/by-name/{name}")
-  public Response getByName(@PathParam("name") String name) {
-    var view = readService.getByName(name);
-    return Response.ok(ApiEnvelope.ok(SchoolPresenter.toResponse(view))).build();
-  }
-
-  /**
-   * Deletes schools by their IDs.
-   *
-   * @param req the request containing the IDs of schools to delete
-   * @return the response containing the result of the deletion
-   */
-  @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Map<DeleteKeys, Long> deleted = writeService.deleteAll(req.ids());
-    return Response.ok(ApiEnvelope.ok(new DeleteResult(deleted))).build();
-  }
-}
-
-
-================================================================================
-FILE: presenter/StudentResource.java
-================================================================================
-package com.pug.academic.presenter;
-
-import com.pug.academic.domain.Student;
-import com.pug.academic.infra.read.dtos.StudentViewWithCompletedHours;
-import com.pug.academic.presenter.dtos.StudentCreateRequest;
-import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.academic.presenter.dtos.StudentUpdateRequest;
-import com.pug.academic.presenter.mappers.StudentPresenter;
-import com.pug.academic.service.StudentReadService;
-import com.pug.academic.service.StudentService;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.UuidsRequest;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
@@ -2932,185 +2651,347 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-/**
- * REST resource for managing students in the academic system.
- */
+/** REST resource for managing schools. */
+@ApplicationScoped
+@Path("/academic/schools")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class SchoolResource {
+
+  @Inject SchoolService writeService;
+  @Inject SchoolReadService readService;
+
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
+
+  /**
+   * Retrieves a school by its ID.
+   *
+   * @param id the ID of the school
+   * @return the response containing the school
+   */
+  @GET
+  @Path("/{id}")
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
+    SchoolView view = readService.getViewById(id);
+    SchoolResponse body = SchoolPresenter.toResponse(view, locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Lists all schools or searches schools by name.
+   *
+   * @param q the optional search query
+   * @return the response containing the list of schools
+   */
+  @GET
+  public Response list(@QueryParam("q") String q) {
+    List<SchoolView> views;
+
+    if (StringUtils.isNotEmpty(q)) {
+      views = readService.searchByName(q);
+    } else {
+      views = readService.listAll();
+    }
+
+    List<SchoolResponse> body =
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Creates a new school.
+   *
+   * @param req the school creation request
+   * @return the response containing the created school
+   */
+  @POST
+  public Response create(@Valid SchoolCreateRequest req) {
+    SchoolCreateCommand cmd = new SchoolCreateCommand(req.name());
+    School created = writeService.save(cmd);
+
+    SchoolView view = readService.getViewById(created.getId());
+    SchoolResponse body = SchoolPresenter.toResponse(view, locale());
+
+    URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
+   * Updates an existing school.
+   *
+   * @param id the ID of the school to update
+   * @param req the school update request
+   * @return the response containing the updated school
+   */
+  @PUT
+  @Path("/{id}")
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
+    SchoolUpdateCommand cmd = new SchoolUpdateCommand(req.name());
+    writeService.update(id, cmd);
+
+    SchoolView view = readService.getViewById(id);
+    SchoolResponse body = SchoolPresenter.toResponse(view, locale());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Deletes a school by its ID.
+   *
+   * @param id the ID of the school to delete
+   * @return the response containing the result of the deletion
+   */
+  @DELETE
+  @Path("/{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /** Picks the best locale from the Accept-Language header. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
+  }
+}
+
+
+================================================================================
+FILE: presenter/StudentResource.java
+================================================================================
+package com.pug.academic.presenter;
+
+import com.pug.academic.domain.Student;
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.academic.presenter.dtos.StudentCreateRequest;
+import com.pug.academic.presenter.dtos.StudentResponse;
+import com.pug.academic.presenter.dtos.StudentUpdateRequest;
+import com.pug.academic.presenter.mappers.StudentPresenter;
+import com.pug.academic.service.StudentReadService;
+import com.pug.academic.service.StudentService;
+import com.pug.academic.service.dtos.StudentCreateCommand;
+import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.identity.service.PasswordService;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
+import com.pug.shared.utils.StringUtils;
+import com.pug.shared.validation.UuidV7;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/** REST resource for managing students. */
 @ApplicationScoped
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject
-  StudentService writeService;
-  @Inject
-  StudentReadService readService;
-  @Inject
-  I18n i18n;
+  @Inject StudentService writeService;
+  @Inject StudentReadService readService;
+  @Inject PasswordService passwordService;
+  @Inject I18n i18n;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
-   * Picks the best locale from the Accept-Language header.
+   * Retrieves a student by their Account ID.
    *
-   * @return the selected Locale.
+   * @param id the UUID of the student's account.
+   * @return the response containing the student details.
    */
-  private Locale locale() {
-    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
-  }
-
-  /**
-   * Creates a new student in the academic system.
-   *
-   * @param req the request containing student details
-   * @return a Response with the created student details
-   */
-  @POST
-  public Response create(@Valid StudentCreateRequest req) {
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
-    AccountCreateCommand accountCmd =
-            new AccountCreateCommand(req.email(), AccountType.STUDENT, req.password(), userCmd);
-    Campi campusEnum = Campi.valueOf(req.campus().trim().toUpperCase(Locale.ROOT));
-
-    StudentCreateCommand studentCmd =
-            new StudentCreateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    campusEnum,
-                    req.courseId(),
-                    req.requiredHours(),
-                    req.startDate(),
-                    req.dueDate());
-
-    Student created = writeService.save(studentCmd);
-
-    StudentViewWithCompletedHours view = readService.getView(created.getAccountId());
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    URI location = uri.getAbsolutePathBuilder().path(created.getAccountId().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(body)).build();
-  }
-
-  /**
-   * Updates an existing student's details.
-   *
-   * @param id  the UUID of the student's account to update
-   * @param req the request containing updated student details
-   * @return a Response with the updated student details
-   */
-  @PUT
+  @GET
   @Path("/{id}")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
-    UserUpdateCommand userCmd = null;
-    if (req.name() != null) {
-      userCmd = new UserUpdateCommand(null, req.name());
-    }
-
-    AccountUpdateCommand accountCmd = null;
-    if (req.email() != null || req.password() != null || userCmd != null) {
-      accountCmd = new AccountUpdateCommand(req.email(), req.password(), userCmd);
-    }
-
-    Campi campusEnum = null;
-    if (req.campus() != null) {
-      campusEnum = Campi.valueOf(req.campus().trim().toUpperCase(Locale.ROOT));
-    }
-
-    StudentUpdateCommand studentCmd =
-            new StudentUpdateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    campusEnum,
-                    req.courseId(),
-                    req.requiredHours(),
-                    req.startDate(),
-                    req.dueDate());
-
-    writeService.update(id, studentCmd);
-
-    var view = readService.getView(id);
-    var body = StudentPresenter.toResponse(view, locale(), i18n);
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
+    StudentView view = readService.getViewByAccountId(id);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Lists all students or searches for students based on a query.
+   * Lists students, optionally filtering by name search or course.
    *
-   * @param q                    the search query (optional)
-   * @param academicRegistration the academic registration to filter by (optional, busca exata)
-   * @return a Response with the list of students
+   * @param q the search query (name).
+   * @param courseId the course ID to filter by.
+   * @return the response containing the list of students.
    */
   @GET
-  public Response listOrSearch(
-          @QueryParam("q") String q, @QueryParam("ar") String academicRegistration) {
+  public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
 
-    List<StudentViewWithCompletedHours> views;
-    if (StringUtils.isNotEmpty(academicRegistration)) {
-      try {
-        StudentViewWithCompletedHours studentView = readService.getViewByAcademicRegistration(academicRegistration);
-        views = List.of(studentView);
-      } catch (ResourceNotFoundException e) {
-        views = List.of();
-      }
+    List<StudentView> views;
+
+    if (courseId != null) {
+      views = readService.listViewsByCourseId(courseId);
     } else if (StringUtils.isNotEmpty(q)) {
       views = readService.searchByName(q);
     } else {
       views = readService.listViews();
     }
+
     List<StudentResponse> body =
-            views.stream().map(v -> StudentPresenter.toResponse(v, locale(), i18n)).toList();
+        views.stream()
+            .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Retrieves a specific student's details by ID (Account ID).
+   * Retrieves a student by their academic registration.
    *
-   * @param id the UUID of the student's account
-   * @return a Response with the student's details
+   * @param registration the academic registration string.
+   * @return the response containing the student details.
    */
   @GET
+  @Path("/by-registration/{registration}")
+  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
+    StudentView view = readService.getViewByAcademicRegistration(registration);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a student by their email.
+   *
+   * @param email the email string.
+   * @return the response containing the student details.
+   */
+  @GET
+  @Path("/by-email/{email}")
+  public Response getByEmail(@PathParam("email") @NotNull String email) {
+    StudentView view = readService.getViewByEmail(email);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a student by their CPF.
+   *
+   * @param cpf the CPF string.
+   * @return the response containing the student details.
+   */
+  @GET
+  @Path("/by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
+    StudentView view = readService.getViewByCpf(cpf);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Creates a new student.
+   *
+   * @param req the student creation request.
+   * @return the response containing the created student.
+   */
+  @POST
+  public Response create(@Valid StudentCreateRequest req) {
+    String hashedPassword = passwordService.hash(req.password());
+
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+    AccountCreateCommand accountCmd =
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+    StudentCreateCommand studentCmd =
+        new StudentCreateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            req.campus(),
+            req.courseId(),
+            req.requiredHours(),
+            req.startDate(),
+            req.dueDate());
+
+    Student created = writeService.save(studentCmd);
+    StudentView view = readService.getViewByAccountId(created.getAccountId());
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+
+    URI location = uri.getAbsolutePathBuilder().path(created.getAccountId().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
+   * Updates an existing student.
+   *
+   * @param id the UUID of the student's account.
+   * @param req the student update request.
+   * @return the response containing the updated student.
+   */
+  @PUT
   @Path("/{id}")
-  public Response get(@PathParam("id") @UuidV7 UUID id) {
-    Objects.requireNonNull(id, "id");
-    var view = readService.getView(id);
-    return Response.ok(ApiEnvelope.ok(StudentPresenter.toResponse(view, locale(), i18n))).build();
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
+    String passwordHash = passwordService.hash(req.password());
+
+    UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
+    AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
+    StudentUpdateCommand studentCmd =
+        new StudentUpdateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            req.campus(),
+            req.courseId(),
+            req.requiredHours(),
+            req.startDate(),
+            req.dueDate());
+
+    writeService.update(id, studentCmd);
+    StudentView view = readService.getViewByAccountId(id);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Retrieves a specific student's details by Academic Registration.
+   * Deletes a student by their Account ID.
    *
-   * @param academicRegistration the academic registration of the student
-   * @return a Response with the student's details
-   */
-  @GET
-  @Path("/by-registration/{academicRegistration}")
-  public Response getByAcademicRegistration(
-          @PathParam("academicRegistration") String academicRegistration) {
-    Objects.requireNonNull(academicRegistration, "academicRegistration");
-    var view = readService.getViewByAcademicRegistration(academicRegistration);
-    return Response.ok(ApiEnvelope.ok(StudentPresenter.toResponse(view, locale(), i18n))).build();
-  }
-
-  /**
-   * Deletes multiple students by their Account IDs.
-   *
-   * @param req the request containing student account IDs to delete
-   * @return a Response with the result of the deletion
+   * @param id the UUID of the student's account.
+   * @return the response indicating success.
    */
   @DELETE
-  public Response delete(@Valid UuidsRequest req) {
-    Objects.requireNonNull(req, "req");
-    var deleted = writeService.deleteAll(req.ids());
+  @Path("/{id}")
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /** Picks the best locale from the Accept-Language header. */
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -3135,16 +3016,6 @@ public interface CourseReadService {
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course is not found
    */
   CourseView getViewById(UUID id);
-
-  /**
-   * Retrieves a CourseView by its name.
-   *
-   * @param name the name of the course.
-   * @return the CourseView corresponding to the given name.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course is found with the
-   *     given name.
-   */
-  CourseView getByName(String name);
 
   /**
    * Lists all CourseViews.
@@ -3179,8 +3050,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Course;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing Course entities. */
@@ -3200,20 +3069,6 @@ public interface CourseService {
   Course save(CourseCreateCommand cmd);
 
   /**
-   * Saves multiple new Course entities.
-   *
-   * @param cmds an iterable of commands for course creation.
-   * @return a list of saved Course entities.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any course with the same name
-   *     already exists, or if there are duplicate names in the input commands.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated school does not
-   *     exist.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     course in the bulk.
-   */
-  List<Course> saveAll(Iterable<CourseCreateCommand> cmds);
-
-  /**
    * Updates an existing Course entity.
    *
    * @param id the UUID of the course to update.
@@ -3228,36 +3083,13 @@ public interface CourseService {
   Course update(UUID id, CourseUpdateCommand cmd);
 
   /**
-   * Deletes Course entities by their IDs.
+   * Deletes a Course entity by its ID.
    *
-   * @param ids an iterable of UUIDs representing the course IDs to delete.
-   * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any course is still referenced by students.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
-   *     during cascade deletion.
+   * @param id the UUID of the course to delete.
+   * @return true if the course was successfully deleted, false if the course with the given ID does
+   *     not exist.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
-
-  /**
-   * Lists all Course entities.
-   *
-   * @return a list of all Course entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course is found (or data is
-   *     corrupted in DB).
-   * @throws com.pug.shared.exceptions.AppValidationException if any Course entity found is
-   *     corrupted in the database.
-   */
-  List<Course> listAll();
-
-  /**
-   * Lists all Course entities associated with a specific school ID.
-   *
-   * @param schoolId the UUID of the school.
-   * @return a list of Course entities associated with the given school ID.
-   * @throws com.pug.shared.exceptions.AppValidationException if any Course entity found is
-   *     corrupted in the database.
-   */
-  List<Course> listAllBySchoolId(UUID schoolId);
+  boolean delete(UUID id);
 
   /**
    * Retrieves a Course entity by its ID.
@@ -3270,34 +3102,6 @@ public interface CourseService {
    *     corrupted in the database.
    */
   Course getById(UUID id);
-
-  /**
-   * Retrieves a Course entity by its name.
-   *
-   * @param name the name of the course.
-   * @return the Course entity.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course with the given name
-   *     does not exist (or data is corrupted in DB).
-   * @throws com.pug.shared.exceptions.AppValidationException if the course is found but its data is
-   *     corrupted in the database.
-   */
-  Course getByName(String name);
-
-  /**
-   * Checks if a Course entity exists with the given name.
-   *
-   * @param name the name of the course to check.
-   * @return true if a Course entity exists with the given name, false otherwise.
-   */
-  boolean existsByName(String name);
-
-  /**
-   * Checks if any Course entities exist with names in the provided iterable.
-   *
-   * @param names an iterable of course names to check.
-   * @return true if any Course entities exist with the given names, false otherwise.
-   */
-  boolean existsAnyByNameIn(Iterable<String> names);
 }
 
 
@@ -3364,8 +3168,8 @@ FILE: service/dtos/StudentCreateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.shared.domain.enums.Campi;
 import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -3396,8 +3200,8 @@ FILE: service/dtos/StudentUpdateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.shared.domain.enums.Campi;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -3437,12 +3241,14 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /** Service for reading course information. */
 @ApplicationScoped
 public class CourseReadServiceImpl implements CourseReadService {
+
+  private static final Logger LOG = Logger.getLogger(CourseReadServiceImpl.class);
 
   @Inject CourseQueries queries;
 
@@ -3451,23 +3257,11 @@ public class CourseReadServiceImpl implements CourseReadService {
     return queries
         .findOptionalById(id)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
-  }
-
-  @Override
-  public CourseView getByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", name));
-    }
-    return queries
-        .findOptionalByName(name)
-        .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", name)));
+            () -> {
+              LOG.debugf("Course lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
+            });
   }
 
   @Override
@@ -3477,6 +3271,9 @@ public class CourseReadServiceImpl implements CourseReadService {
 
   @Override
   public List<CourseView> listViewsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return List.of();
+    }
     return queries.listAllBySchoolId(schoolId);
   }
 
@@ -3495,7 +3292,6 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
-import com.pug.academic.domain.Student;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
@@ -3506,18 +3302,11 @@ import com.pug.academic.service.utils.CourseProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /** Service class for managing Course entities. */
@@ -3533,9 +3322,8 @@ public class CourseServiceImpl implements CourseService {
   @Transactional
   @Override
   public Course save(CourseCreateCommand cmd) {
-    // Validate school existence first (fail-fast)
+    LOG.debugf("Attempting to create Course: %s", cmd.name());
     schoolService.getById(cmd.schoolId());
-
     Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
     if (courseToPersist.hasErrors()) {
@@ -3543,73 +3331,20 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (existsByName(courseToPersist.getName())) {
+      LOG.warnf("Creation failed: Course with name %s already exists", courseToPersist.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", courseToPersist.getName()));
-    }
-    return repo.persist(courseToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<Course> saveAll(Iterable<CourseCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", courseToPersist.getName());
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<Course> coursesToPersist = new ArrayList<>();
-    Set<String> processedNames = new HashSet<>();
-    Set<UUID> uniqueSchoolIds = new HashSet<>();
-
-    CollectionUtils.toStream(cmds).forEach(cmd -> uniqueSchoolIds.add(cmd.schoolId()));
-
-    for (UUID schoolId : uniqueSchoolIds) {
-      try {
-        schoolService.getById(schoolId);
-      } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(
-            new Problem(
-                AcademicErrorCodes
-                    .INVALID_SCHOOL_BLANK)); // Using generic key as field name isn't directly
-        // mappable here easily without context
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    for (CourseCreateCommand cmd : cmds) {
-      Course course = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
-
-      if (course.hasErrors()) {
-        allCollectedProblems.addAll(course.getProblems());
-      } else {
-        String courseName = course.getName();
-        if (!processedNames.add(courseName)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.COURSE_ALREADY_EXISTS));
-        } else {
-          coursesToPersist.add(course);
-        }
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> namesToPersist = coursesToPersist.stream().map(Course::getName).toList();
-
-    if (repo.existsAnyByNameIn(namesToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(coursesToPersist);
+    Course savedCourse = repo.persist(courseToPersist);
+    LOG.infof("Course created successfully. ID: %s", savedCourse.getId());
+    return savedCourse;
   }
 
   @Transactional
   @Override
   public Course update(UUID id, CourseUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Course ID: %s", id);
     Course current = getById(id);
 
     if (cmd.schoolId() != null && !cmd.schoolId().equals(current.getSchoolId())) {
@@ -3624,79 +3359,33 @@ public class CourseServiceImpl implements CourseService {
 
     if (!updatedCourse.getName().equals(current.getName())
         && existsByName(updatedCourse.getName())) {
+      LOG.warnf(
+          "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, Map.of("name", updatedCourse.getName()));
+          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", updatedCourse.getName());
     }
 
     repo.update(updatedCourse);
+    LOG.infof("Course updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(
-          DeleteKeys.COURSES, 0L,
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Course ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    if (studentService.existsAnyByCourseIdIn(ids)) {
-      throw new DataIntegrityException(AcademicErrorCodes.COURSE_STILL_REFERENCED);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Course deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
     }
 
-    Set<UUID> studentAccountIdsToDelete = new HashSet<>();
-    for (UUID courseId : ids) {
-      studentAccountIdsToDelete.addAll(
-          studentService.listAllByCourseId(courseId).stream()
-              .map(Student::getAccountId)
-              .collect(Collectors.toSet()));
-    }
-
-    Map<DeleteKeys, Long> deletedStudentsAndDependents =
-        studentService.deleteAll(studentAccountIdsToDelete);
-
-    long coursesDeleted = repo.deleteByIds(ids);
-
-    return Map.of(
-        DeleteKeys.COURSES, coursesDeleted,
-        DeleteKeys.STUDENTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-        DeleteKeys.ACCOUNTS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedStudentsAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
-  }
-
-  @Override
-  public List<Course> listAll() {
-    List<Course> courses = repo.listAllCourses();
-    for (Course c : courses) {
-      if (c.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Course entity found in DB. Problems: %s",
-            c.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
-      }
-    }
-    return courses;
-  }
-
-  @Override
-  public List<Course> listAllBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
-      return List.of();
-    }
-    List<Course> courses = repo.listAllBySchoolId(schoolId);
-    for (Course c : courses) {
-      if (c.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: "
-                + "Corrupted Course entity found in DB while listing by school ID %s. Problems: %s",
-            schoolId, c.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND);
-      }
-    }
-    return courses;
+    return deleted;
   }
 
   @Override
@@ -3704,52 +3393,34 @@ public class CourseServiceImpl implements CourseService {
     Course course =
         repo.findOptionalById(id)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id)));
+                () -> {
+                  LOG.debugf("Course lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
+                });
 
     if (course.hasErrors()) {
       LOG.errorf(
           "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
           id, course.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("id", id));
+      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
     }
     return course;
   }
 
-  @Override
-  public Course getByName(String name) {
-    String n = StringUtils.trim(name);
-    Course course =
-        repo.findOptionalByName(n)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n)));
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-    if (course.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: Course with name %s in DB violates domain rules. Problems: %s",
-          n, course.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, Map.of("name", n));
-    }
-    return course;
-  }
-
-  @Override
-  public boolean existsByName(String name) {
+  /**
+   * Checks if a Course with the given name already exists.
+   *
+   * @param name the name to check for existence.
+   * @return true if a Course with the given name exists, false otherwise.
+   */
+  private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
     }
     return repo.existsByName(name);
-  }
-
-  @Override
-  public boolean existsAnyByNameIn(Iterable<String> names) {
-    if (CollectionUtils.isEmpty(names)) {
-      return false;
-    }
-    return repo.existsAnyByNameIn(names);
   }
 }
 
@@ -3768,12 +3439,14 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /** Read-only application service for Schools. */
 @ApplicationScoped
 public class SchoolReadServiceImpl implements SchoolReadService {
+
+  private static final Logger LOG = Logger.getLogger(SchoolReadServiceImpl.class);
 
   @Inject SchoolQueries queries;
 
@@ -3782,9 +3455,11 @@ public class SchoolReadServiceImpl implements SchoolReadService {
     return queries
         .findOptionalById(id)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+            () -> {
+              LOG.debugf("School lookup failed: ID %s not found", id);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
+            });
   }
 
   @Override
@@ -3804,11 +3479,9 @@ FILE: service/impl/SchoolServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.domain.Course;
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
 import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
@@ -3816,18 +3489,11 @@ import com.pug.academic.service.utils.SchoolProcessor;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /** Service class for managing School entities. */
@@ -3837,11 +3503,11 @@ public class SchoolServiceImpl implements SchoolService {
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
   @Inject SchoolRepository repo;
-  @Inject CourseService courseService;
 
   @Transactional
   @Override
   public School save(SchoolCreateCommand cmd) {
+    LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
 
     if (schoolToPersist.hasErrors()) {
@@ -3849,56 +3515,21 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (existsByName(schoolToPersist.getName())) {
+      LOG.warnf("Creation failed: School with name %s already exists", schoolToPersist.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", schoolToPersist.getName()));
-    }
-    return repo.persist(schoolToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<School> saveAll(Iterable<SchoolCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", schoolToPersist.getName());
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<School> schoolsToPersist = new ArrayList<>();
-    Set<String> processedNames = new HashSet<>();
-
-    for (SchoolCreateCommand cmd : cmds) {
-      School school = SchoolProcessor.processCreateInput(cmd.name());
-
-      if (school.hasErrors()) {
-        allCollectedProblems.addAll(school.getProblems());
-      } else {
-        String schoolName = school.getName();
-        if (!processedNames.add(schoolName)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS));
-        } else {
-          schoolsToPersist.add(school);
-        }
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> namesToPersist = schoolsToPersist.stream().map(School::getName).toList();
-
-    if (repo.existsAnyByNameIn(namesToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(schoolsToPersist);
+    School savedSchool = repo.persist(schoolToPersist);
+    LOG.infof("School created successfully. ID: %s", savedSchool.getId());
+    return savedSchool;
   }
 
   @Transactional
   @Override
   public School update(UUID id, SchoolUpdateCommand cmd) {
+    LOG.debugf("Attempting to update School ID: %s", id);
     School current = getById(id);
-
     School updatedSchool = SchoolProcessor.processUpdateInput(current, cmd.name());
 
     if (updatedSchool.hasErrors()) {
@@ -3907,58 +3538,33 @@ public class SchoolServiceImpl implements SchoolService {
 
     if (!updatedSchool.getName().equals(current.getName())
         && existsByName(updatedSchool.getName())) {
+      LOG.warnf(
+          "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
       throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, Map.of("name", updatedSchool.getName()));
+          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", updatedSchool.getName());
     }
 
     repo.update(updatedSchool);
+    LOG.infof("School updated successfully. ID: %s", id);
     return getById(id);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Map.of(
-          DeleteKeys.SCHOOLS, 0L,
-          DeleteKeys.COURSES, 0L,
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete School ID: %s", id);
+    if (id == null) {
+      return false;
     }
 
-    Set<UUID> courseIdsToDelete = new HashSet<>();
-    for (UUID schoolId : ids) {
-      courseIdsToDelete.addAll(
-          courseService.listAllBySchoolId(schoolId).stream()
-              .map(Course::getId)
-              .collect(Collectors.toSet()));
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("School deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }
 
-    Map<DeleteKeys, Long> deletedCoursesAndDependents = courseService.deleteAll(courseIdsToDelete);
-
-    long schoolsDeleted = repo.deleteByIds(ids);
-
-    return Map.of(
-        DeleteKeys.SCHOOLS, schoolsDeleted,
-        DeleteKeys.COURSES, deletedCoursesAndDependents.getOrDefault(DeleteKeys.COURSES, 0L),
-        DeleteKeys.STUDENTS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.STUDENTS, 0L),
-        DeleteKeys.ACCOUNTS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedCoursesAndDependents.getOrDefault(DeleteKeys.USERS, 0L));
-  }
-
-  @Override
-  public List<School> listAll() {
-    List<School> schools = repo.listAllSchools();
-    for (School s : schools) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted School entity found in DB. Problems: %s",
-            s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND);
-      }
-    }
-    return schools;
+    return deleted;
   }
 
   @Override
@@ -3966,49 +3572,34 @@ public class SchoolServiceImpl implements SchoolService {
     School school =
         repo.findOptionalById(id)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id)));
+                () -> {
+                  LOG.debugf("School lookup failed: ID %s not found", id);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
+                });
 
     if (school.hasErrors()) {
       LOG.errorf(
-          "Data integrity error: School with ID %s in DB violates domain rules. Problems: %s",
+          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
           id, school.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("id", id));
+      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
     }
     return school;
   }
 
-  @Override
-  public School getByName(String name) {
-    String n = StringUtils.trim(name);
-    School school =
-        repo.findOptionalByName(n)
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n)));
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-    if (school.hasErrors()) {
-      LOG.errorf(
-          "Data integrity error: School with name %s in DB violates domain rules. Problems: %s",
-          n, school.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, Map.of("name", n));
-    }
-    return school;
-  }
-
-  @Override
-  public boolean existsByName(String name) {
+  /**
+   * Checks if a School entity exists by its name.
+   *
+   * @param name the name of the school.
+   * @return true if a school with the given name exists, false otherwise.
+   */
+  private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;
     }
     return repo.existsByName(name);
-  }
-
-  @Override
-  public boolean existsAnyByNameIn(Iterable<String> names) {
-    return repo.existsAnyByNameIn(names);
   }
 }
 
@@ -4027,74 +3618,78 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /** Service class for reading Student views. */
 @ApplicationScoped
 public class StudentReadServiceImpl implements StudentReadService {
 
+  private static final Logger LOG = Logger.getLogger(StudentReadServiceImpl.class);
+
   @Inject StudentQueries queries;
 
   @Override
-  public StudentView getView(UUID accountId) {
-    Objects.requireNonNull(accountId, "accountId");
+  public StudentView getViewByAccountId(UUID accountId) {
     return queries
         .findOptionalById(accountId)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+            () -> {
+              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
+            });
   }
 
   @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
-    if (StringUtils.isEmpty(academicRegistration)) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND,
-          Map.of("academicRegistration", academicRegistration));
-    }
     return queries
         .findOptionalByAcademicRegistration(academicRegistration)
         .orElseThrow(
-            () ->
-                new ResourceNotFoundException(
-                    AcademicErrorCodes.STUDENT_NOT_FOUND,
-                    Map.of("academicRegistration", academicRegistration)));
+            () -> {
+              LOG.debugf("Student lookup failed: Registration %s not found", academicRegistration);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.STUDENT_NOT_FOUND,
+                  "academicRegistration",
+                  academicRegistration);
+            });
+  }
+
+  @Override
+  public StudentView getViewByEmail(String email) {
+    return queries
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Student lookup failed: Email %s not found", email);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "email", email);
+            });
+  }
+
+  @Override
+  public StudentView getViewByCpf(String cpf) {
+    return queries
+        .findOptionalByCpf(cpf)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Student lookup failed: CPF %s not found", cpf);
+              return new ResourceNotFoundException(
+                  AcademicErrorCodes.STUDENT_NOT_FOUND, "cpf", cpf);
+            });
   }
 
   @Override
   public List<StudentView> listViews() {
-    try {
-      return queries.listAllStudents();
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing all students."));
-    }
+    return queries.listAllStudents();
   }
 
   @Override
   public List<StudentView> listViewsByCourseId(UUID courseId) {
-    Objects.requireNonNull(courseId, "courseId");
-    try {
-      return queries.listAllByCourseId(courseId);
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND,
-          Map.of("courseId", courseId, "detail", "Error listing students by course."));
+    if (courseId == null) {
+      return List.of();
     }
-  }
-
-  @Override
-  public List<StudentView> listViewsByIds(Iterable<UUID> accountIds) {
-    Objects.requireNonNull(accountIds, "accountIds");
-    try {
-      return queries.listAllByIds(accountIds);
-    } catch (Exception e) {
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("detail", "Error listing students by IDs."));
-    }
+    return queries.listAllByCourseId(courseId);
   }
 
   @Override
@@ -4126,16 +3721,10 @@ import com.pug.identity.service.AccountService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.utils.CollectionUtils;
+import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -4146,160 +3735,56 @@ public class StudentServiceImpl implements StudentService {
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
 
   @Inject StudentRepository repo;
+
   @Inject AccountService accountService;
+
   @Inject CourseService courseService;
 
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
-    List<Problem> problems = new ArrayList<>();
-    Account account = null;
-
+    LOG.debugf("Attempting to create Student with registration: %s", cmd.academicRegistration());
     courseService.getById(cmd.courseId());
-
-    try {
-      account = accountService.save(cmd.accountCreateCommand());
-    } catch (AppValidationException e) {
-      problems.addAll(e.getProblems());
-    } catch (DuplicateResourceException e) {
-      problems.add(new Problem(e.getErrorCode()));
-    }
-
-    UUID accountId = (account != null) ? account.getId() : null;
+    Account account = accountService.save(cmd.accountCreateCommand());
 
     Student studentToPersist =
         StudentProcessor.processCreateInput(
-            accountId,
+            account.getId(),
             cmd.academicRegistration(),
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
-            cmd.completedHours(),
             cmd.startDate(),
             cmd.dueDate());
 
     if (studentToPersist.hasErrors()) {
-      problems.addAll(studentToPersist.getProblems());
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+      throw new AppValidationException(studentToPersist.getProblems());
     }
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
+      LOG.warnf(
+          "Creation failed: Student with registration %s already exists",
+          studentToPersist.getAcademicRegistration());
       throw new DuplicateResourceException(
           AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-          Map.of("academicRegistration", studentToPersist.getAcademicRegistration().toString()));
-    }
-    return repo.persist(studentToPersist);
-  }
-
-  @Transactional
-  @Override
-  public List<Student> saveAll(Iterable<StudentCreateCommand> cmds) {
-    if (CollectionUtils.isEmpty(cmds)) {
-      return List.of();
+          "academicRegistration",
+          studentToPersist.getAcademicRegistration().toString());
     }
 
-    List<Problem> allCollectedProblems = new ArrayList<>();
-    List<Student> studentsToPersist = new ArrayList<>();
-    Set<String> processedRegistrations = new HashSet<>();
-    Set<UUID> uniqueCourseIds = new HashSet<>();
-
-    CollectionUtils.toStream(cmds).forEach(cmd -> uniqueCourseIds.add(cmd.courseId()));
-
-    for (UUID courseId : uniqueCourseIds) {
-      try {
-        courseService.getById(courseId);
-      } catch (ResourceNotFoundException e) {
-        allCollectedProblems.add(new Problem(AcademicErrorCodes.INVALID_COURSE_BLANK));
-      }
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<Account> createdAccounts = new ArrayList<>();
-    try {
-      var accountCreateCommands =
-          CollectionUtils.toStream(cmds).map(StudentCreateCommand::accountCreateCommand).toList();
-      createdAccounts = accountService.saveAll(accountCreateCommands);
-    } catch (AppValidationException e) {
-      allCollectedProblems.addAll(e.getProblems());
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    Map<Integer, Account> accountByIndex = new HashMap<>();
-    for (int i = 0; i < createdAccounts.size(); i++) {
-      accountByIndex.put(i, createdAccounts.get(i));
-    }
-
-    int cmdIndex = 0;
-    for (StudentCreateCommand cmd : cmds) {
-      UUID studentAccountId = null;
-      if (accountByIndex.containsKey(cmdIndex)) {
-        studentAccountId = accountByIndex.get(cmdIndex).getId();
-      }
-
-      Student student =
-          StudentProcessor.processCreateInput(
-              studentAccountId,
-              cmd.academicRegistration(),
-              cmd.campus(),
-              cmd.courseId(),
-              cmd.requiredHours(),
-              cmd.completedHours(),
-              cmd.startDate(),
-              cmd.dueDate());
-
-      if (student.hasErrors()) {
-        allCollectedProblems.addAll(student.getProblems());
-      } else {
-        String registration = student.getAcademicRegistration().toString();
-        if (!processedRegistrations.add(registration)) {
-          allCollectedProblems.add(new Problem(AcademicErrorCodes.STUDENT_ALREADY_EXISTS));
-        } else {
-          studentsToPersist.add(student);
-        }
-      }
-      cmdIndex++;
-    }
-
-    if (!allCollectedProblems.isEmpty()) {
-      throw new AppValidationException(allCollectedProblems);
-    }
-
-    List<String> registrationsToPersist =
-        studentsToPersist.stream().map(s -> s.getAcademicRegistration().toString()).toList();
-
-    if (repo.existsAnyByRegistrationIn(registrationsToPersist)) {
-      throw new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
-    }
-
-    return repo.persistAll(studentsToPersist);
+    Student savedStudent = repo.persist(studentToPersist);
+    LOG.infof("Student created successfully. Account ID: %s", savedStudent.getAccountId());
+    return savedStudent;
   }
 
   @Transactional
   @Override
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Student Account ID: %s", accountId);
     Student current = getById(accountId);
 
-    List<Problem> problems = new ArrayList<>();
-
     if (cmd.accountUpdateCommand() != null) {
-      try {
-        accountService.update(accountId, cmd.accountUpdateCommand());
-      } catch (AppValidationException e) {
-        problems.addAll(e.getProblems());
-      } catch (DuplicateResourceException e) {
-        problems.add(new Problem(e.getErrorCode()));
-      }
+      accountService.update(accountId, cmd.accountUpdateCommand());
     }
-
     if (cmd.courseId() != null && !cmd.courseId().equals(current.getCourseId())) {
       courseService.getById(cmd.courseId());
     }
@@ -4311,81 +3796,48 @@ public class StudentServiceImpl implements StudentService {
             cmd.campus(),
             cmd.courseId(),
             cmd.requiredHours(),
-            cmd.completedHours(),
             cmd.startDate(),
             cmd.dueDate());
 
     if (studentToUpdate.hasErrors()) {
-      problems.addAll(studentToUpdate.getProblems());
-    }
-
-    if (!problems.isEmpty()) {
-      throw new AppValidationException(problems);
+      throw new AppValidationException(studentToUpdate.getProblems());
     }
 
     if (cmd.academicRegistration() != null
-        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())) {
-      if (existsByRegistration(cmd.academicRegistration())) {
-        throw new DuplicateResourceException(
-            AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-            Map.of("academicRegistration", cmd.academicRegistration()));
-      }
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+        && existsByRegistration(cmd.academicRegistration())) {
+      LOG.warnf(
+          "Update failed: Student Account ID %s tried to use existing registration %s",
+          accountId, cmd.academicRegistration());
+      throw new DuplicateResourceException(
+          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
+          "academicRegistration",
+          cmd.academicRegistration());
     }
 
     repo.update(studentToUpdate);
+    LOG.infof("Student updated successfully. Account ID: %s", accountId);
     return getById(accountId);
   }
 
   @Transactional
   @Override
-  public Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds) {
-    if (CollectionUtils.isEmpty(accountIds)) {
-      return Map.of(
-          DeleteKeys.STUDENTS, 0L,
-          DeleteKeys.ACCOUNTS, 0L,
-          DeleteKeys.USERS, 0L);
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
     }
 
-    long studentsDeleted = repo.deleteByIds(accountIds);
+    boolean deleted = repo.deleteById(accountId);
 
-    Map<DeleteKeys, Long> deletedAccountsAndUsers = accountService.deleteAll(accountIds);
-
-    return Map.of(
-        DeleteKeys.STUDENTS, studentsDeleted,
-        DeleteKeys.ACCOUNTS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.ACCOUNTS, 0L),
-        DeleteKeys.USERS, deletedAccountsAndUsers.getOrDefault(DeleteKeys.USERS, 0L));
-  }
-
-  @Override
-  public List<Student> listAll() {
-    List<Student> students = repo.listAllStudents();
-    for (Student s : students) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: Corrupted Student entity found in DB. Problems: %s",
-            s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
-      }
+    if (deleted) {
+      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
     }
-    return students;
-  }
 
-  @Override
-  public List<Student> listAllByCourseId(UUID courseId) {
-    if (courseId == null) {
-      return List.of();
-    }
-    List<Student> students = repo.listAllByCourseId(courseId);
-    for (Student s : students) {
-      if (s.hasErrors()) {
-        LOG.errorf(
-            "Data integrity error: "
-                + "Corrupted Student entity found in DB for Course %s. Problems: %s",
-            courseId, s.getProblemsSummary());
-        throw new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
-      }
-    }
-    return students;
+    return deleted;
   }
 
   @Override
@@ -4393,39 +3845,36 @@ public class StudentServiceImpl implements StudentService {
     Student student =
         repo.findOptionalById(accountId)
             .orElseThrow(
-                () ->
-                    new ResourceNotFoundException(
-                        AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId)));
+                () -> {
+                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (student.hasErrors()) {
       LOG.errorf(
-          "Data integrity error: "
-              + "Student with Account ID %s in DB violates domain rules. Problems: %s",
+          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
           accountId, student.getProblemsSummary());
       throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, Map.of("accountId", accountId));
+          AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
     }
+
     return student;
   }
 
-  @Override
-  public boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds) {
-    return repo.existsAnyByAccountIdIn(accountIds);
-  }
+  /* --------------- INTERNAL HELPER METHODS --------------- */
 
-  @Override
-  public boolean existsAnyByRegistrationIn(Iterable<String> registrations) {
-    return repo.existsAnyByRegistrationIn(registrations);
-  }
-
-  @Override
-  public boolean existsByRegistration(String registration) {
-    return repo.existsAnyByRegistrationIn(List.of(registration));
-  }
-
-  @Override
-  public boolean existsAnyByCourseIdIn(Iterable<UUID> courseIds) {
-    return repo.existsAnyByCourseIdIn(courseIds);
+  /**
+   * Checks if a student with the given academic registration already exists.
+   *
+   * @param registration the academic registration string to check for existence.
+   * @return true if a student with the given registration exists, false otherwise.
+   */
+  private boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
+    }
+    return repo.existsByRegistration(registration);
   }
 }
 
@@ -4477,8 +3926,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing School entities. */
@@ -4496,18 +3943,6 @@ public interface SchoolService {
   School save(SchoolCreateCommand cmd);
 
   /**
-   * Saves multiple new School entities.
-   *
-   * @param cmds an iterable of commands for school creation.
-   * @return a list of saved School entities.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any school with the same name
-   *     already exists, or if there are duplicate names in the input commands.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     school in the bulk.
-   */
-  List<School> saveAll(Iterable<SchoolCreateCommand> cmds);
-
-  /**
    * Updates an existing School entity.
    *
    * @param id the UUID of the school to update.
@@ -4522,22 +3957,13 @@ public interface SchoolService {
   School update(UUID id, SchoolUpdateCommand cmd);
 
   /**
-   * Deletes School entities by their IDs.
+   * Deletes a School entity by its ID.
    *
-   * @param ids an iterable of UUIDs of the schools to delete.
-   * @return a map containing the number of deleted schools and related entities.
-   * @throws DataIntegrityException if any school is still referenced by other modules.
+   * @param id the UUID of the school to delete.
+   * @return true if the school was successfully deleted, false if the school with the given ID does
+   *     not exist.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> ids);
-
-  /**
-   * Lists all School entities.
-   *
-   * @return a list of all School entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no school is found (or data is
-   *     corrupted in DB).
-   */
-  List<School> listAll();
+  boolean delete(UUID id);
 
   /**
    * Retrieves a School entity by its ID.
@@ -4548,32 +3974,6 @@ public interface SchoolService {
    *     does not exist (or data is corrupted in DB).
    */
   School getById(UUID id);
-
-  /**
-   * Retrieves a School entity by its name.
-   *
-   * @param name the name of the school.
-   * @return the School entity.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school with the given name
-   *     does not exist (or data is corrupted in DB).
-   */
-  School getByName(String name);
-
-  /**
-   * Checks if a School entity exists by its name.
-   *
-   * @param name the name of the school.
-   * @return true if a school with the given name exists, false otherwise.
-   */
-  boolean existsByName(String name);
-
-  /**
-   * Checks if any School entities exist by their names.
-   *
-   * @param names an iterable of school names.
-   * @return true if any school with the given names exists, false otherwise.
-   */
-  boolean existsAnyByNameIn(Iterable<String> names);
 }
 
 
@@ -4582,7 +3982,7 @@ FILE: service/StudentReadService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.infra.read.dtos.StudentViewWithCompletedHours;
+import com.pug.academic.infra.read.dtos.StudentView;
 import java.util.List;
 import java.util.UUID;
 
@@ -4590,31 +3990,51 @@ import java.util.UUID;
 public interface StudentReadService {
 
   /**
-   * Retrieves a StudentViewWithCompletedHours by its unique identifier (Account ID).
+   * Retrieves a StudentView by its unique identifier (Account ID).
    *
    * @param accountId the UUID of the Student's account
-   * @return the StudentViewWithCompletedHours
+   * @return the StudentView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given ID is
    *     found
    */
-  StudentViewWithCompletedHours getView(UUID accountId);
+  StudentView getViewByAccountId(UUID accountId);
 
   /**
-   * Retrieves a StudentViewWithCompletedHours by its academic registration.
+   * Retrieves a StudentView by its academic registration.
    *
    * @param academicRegistration the academic registration of the Student
-   * @return the StudentViewWithCompletedHours
+   * @return the StudentView
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given
    *     academic registration is found
    */
-  StudentViewWithCompletedHours getViewByAcademicRegistration(String academicRegistration);
+  StudentView getViewByAcademicRegistration(String academicRegistration);
+
+  /**
+   * Retrieves a StudentView by the email of the associated account.
+   *
+   * @param email the email of the Student's account
+   * @return the StudentView
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given email
+   *     is found
+   */
+  StudentView getViewByEmail(String email);
+
+  /**
+   * Retrieves a StudentView by the CPF of the associated account.
+   *
+   * @param cpf the CPF of the Student's account
+   * @return the StudentView
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given CPF is
+   *     found
+   */
+  StudentView getViewByCpf(String cpf);
 
   /**
    * Lists all StudentViews.
    *
    * @return a list of all StudentViews
    */
-  List<StudentViewWithCompletedHours> listViews();
+  List<StudentView> listViews();
 
   /**
    * Lists all StudentViews by course ID.
@@ -4622,23 +4042,15 @@ public interface StudentReadService {
    * @param courseId the UUID of the course
    * @return a list of StudentViews enrolled in the specified course
    */
-  List<StudentViewWithCompletedHours> listViewsByCourseId(UUID courseId);
+  List<StudentView> listViewsByCourseId(UUID courseId);
 
   /**
-   * Lists all StudentViews by a collection of account IDs.
-   *
-   * @param accountIds an iterable of UUIDs representing account IDs
-   * @return a list of StudentViews corresponding to the provided account IDs
-   */
-  List<StudentViewWithCompletedHours> listViewsByIds(Iterable<UUID> accountIds);
-
-  /**
-   * Searches for StudentViewWithCompletedHours objects by name (of the associated account).
+   * Searches for StudentView objects by name (of the associated account).
    *
    * @param query the search query.
-   * @return a list of StudentViewWithCompletedHours objects matching the search key.
+   * @return a list of StudentView objects matching the search key.
    */
-  List<StudentViewWithCompletedHours> searchByName(String query);
+  List<StudentView> searchByName(String query);
 }
 
 
@@ -4650,8 +4062,6 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /** Interface for managing Student entities. */
@@ -4673,23 +4083,6 @@ public interface StudentService {
   Student save(StudentCreateCommand cmd);
 
   /**
-   * Saves multiple new Student entities.
-   *
-   * <p>This method also creates and saves the associated Accounts for each student.
-   *
-   * @param cmds an iterable of commands for student creation.
-   * @return a list of saved Student entities.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any student with the same
-   *     academic registration already exists, or if there are duplicate registrations or emails in
-   *     the input commands.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated course does not
-   *     exist.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
-   *     student in the bulk.
-   */
-  List<Student> saveAll(Iterable<StudentCreateCommand> cmds);
-
-  /**
    * Updates an existing Student entity.
    *
    * <p>This method also updates the associated Account.
@@ -4706,37 +4099,12 @@ public interface StudentService {
   Student update(UUID accountId, StudentUpdateCommand cmd);
 
   /**
-   * Deletes Student entities by their account IDs.
+   * Deletes a Student entity by its account ID.
    *
-   * @param accountIds an iterable of UUIDs representing the student's account IDs to delete.
-   * @return a map containing the count of deleted entities for each DeleteKeys.
-   * @throws DataIntegrityException if any student is still referenced by other modules (e.g.
-   *     Enrollments).
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if a student's account is not found
-   *     during cascade deletion.
+   * @param accountId the UUID of the student's account to delete.
+   * @return true if the student was successfully deleted, false if the student was not found.
    */
-  Map<DeleteKeys, Long> deleteAll(Iterable<UUID> accountIds);
-
-  /**
-   * Lists all Student entities.
-   *
-   * @return a list of all Student entities.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student is found (or data is
-   *     corrupted in DB).
-   * @throws com.pug.shared.exceptions.AppValidationException if any Student entity found is
-   *     corrupted in the database.
-   */
-  List<Student> listAll();
-
-  /**
-   * Lists all Student entities associated with a specific course ID.
-   *
-   * @param courseId the UUID of the course.
-   * @return a list of Student entities associated with the given course ID.
-   * @throws com.pug.shared.exceptions.AppValidationException if any Student entity found is
-   *     corrupted in the database.
-   */
-  List<Student> listAllByCourseId(UUID courseId);
+  boolean delete(UUID accountId);
 
   /**
    * Retrieves a Student entity by its account ID.
@@ -4749,39 +4117,6 @@ public interface StudentService {
    *     is corrupted in the database.
    */
   Student getById(UUID accountId);
-
-  /**
-   * Checks if any Student entities exist with account IDs in the provided iterable.
-   *
-   * @param accountIds an iterable of account IDs to check.
-   * @return true if any Student entities exist with the given account IDs, false otherwise.
-   */
-  boolean existsAnyByAccountIdIn(Iterable<UUID> accountIds);
-
-  /**
-   * Checks if any Student entities exist with academic registrations in the provided iterable.
-   *
-   * @param registrations an iterable of academic registrations to check.
-   * @return true if any Student entities exist with the given registrations, false otherwise.
-   */
-  boolean existsAnyByRegistrationIn(Iterable<String> registrations);
-
-  /**
-   * Checks if any Student entity exists with the given academic registration.
-   *
-   * @param registration the academic registration to check.
-   * @return true if any Student entity exists with the given registration, false otherwise.
-   */
-  boolean existsByRegistration(String registration);
-
-  /**
-   * Checks if any Student entities exist for the given course IDs. This is used by
-   * CourseService.deleteAll to prevent deleting referenced courses.
-   *
-   * @param courseIds an iterable of course IDs to check.
-   * @return true if any student is associated with any of the given course IDs, false otherwise.
-   */
-  boolean existsAnyByCourseIdIn(Iterable<UUID> courseIds);
 }
 
 
@@ -4878,10 +4213,10 @@ FILE: service/utils/StudentProcessor.java
 package com.pug.academic.service.utils;
 
 import com.pug.academic.domain.Student;
-import com.pug.shared.domain.enums.Campi;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
+import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -4898,7 +4233,6 @@ public class StudentProcessor {
    * @param campus The campus.
    * @param courseId The course ID.
    * @param requiredHours The required hours.
-   * @param completedHours The completed hours.
    * @param startDate The start date.
    * @param dueDate The due date.
    * @return The constructed Student domain object (may contain errors).
@@ -4909,12 +4243,11 @@ public class StudentProcessor {
       Campi campus,
       UUID courseId,
       BigDecimal requiredHours,
-      BigDecimal completedHours,
       LocalDate startDate,
       LocalDate dueDate) {
 
     AcademicRegistration regVo = AcademicRegistration.factory(regString);
-    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, completedHours);
+    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, null);
     Period periodVo = Period.factory(startDate, dueDate);
 
     return Student.factory(accountId, regVo, campus, courseId, hoursVo, periodVo);
@@ -4928,7 +4261,6 @@ public class StudentProcessor {
    * @param campus The campus (can be null).
    * @param courseId The course ID (can be null).
    * @param requiredHours The required hours (can be null).
-   * @param completedHours The completed hours (can be null).
    * @param startDate The start date (can be null).
    * @param dueDate The due date (can be null).
    * @return The updated Student domain object (may contain errors).
@@ -4939,7 +4271,6 @@ public class StudentProcessor {
       Campi campus,
       UUID courseId,
       BigDecimal requiredHours,
-      BigDecimal completedHours,
       LocalDate startDate,
       LocalDate dueDate) {
 
@@ -4958,20 +4289,9 @@ public class StudentProcessor {
       updated = updated.changeCourse(courseId);
     }
 
-    // Logic for partial updates on composite VOs (Hours and Period):
-    // We reconstruct the VO using existing values if the new value is null to support partial
-    // updates
-    boolean hoursChanged = requiredHours != null || completedHours != null;
-    if (hoursChanged) {
-      BigDecimal newReq =
-          requiredHours != null
-              ? requiredHours
-              : existingStudent.getCounterpartHours().getRequiredHours();
-      BigDecimal newComp =
-          completedHours != null
-              ? completedHours
-              : existingStudent.getCounterpartHours().getCompletedHours();
-      CounterpartHours newHours = CounterpartHours.factory(newReq, newComp);
+    if (requiredHours != null) {
+      CounterpartHours newHours =
+          CounterpartHours.factory(requiredHours, updated.getCounterpartHours().getConcluded());
       updated = updated.changeCounterpartHours(newHours);
     }
 

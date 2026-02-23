@@ -1,6 +1,5 @@
 package com.pug.identity.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,14 +38,4 @@ public interface AdminRepository {
    * @return an Optional containing the found Admin, or empty if not found.
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
-
-  /**
-   * Lists all Admin instances.
-   *
-   * <p>Note: The returned Admins may contain validation errors (check {@code admin.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Admin instances.
-   */
-  List<Admin> listAllAdmins();
 }

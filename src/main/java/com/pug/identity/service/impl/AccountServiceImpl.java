@@ -135,25 +135,6 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public List<Account> listAll() {
-    LOG.debug("Listing all accounts");
-    List<Account> accounts = repo.listAllAccounts();
-
-    return accounts.stream()
-        .filter(
-            account -> {
-              if (account.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-                    account.getId(), account.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
-  }
-
-  @Override
   public Account getById(UUID id) {
     Account account =
         repo.findOptionalById(id)

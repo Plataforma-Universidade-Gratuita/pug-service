@@ -58,15 +58,6 @@ public interface UserService {
   long deleteAll(List<UUID> ids);
 
   /**
-   * Lists all users.
-   *
-   * @return a list of all User entities
-   * @throws com.pug.shared.exceptions.AppValidationException if any User entity found is corrupted
-   *     in the database.
-   */
-  List<User> listAll();
-
-  /**
    * Retrieves a User by its ID.
    *
    * @param id the UUID of the account

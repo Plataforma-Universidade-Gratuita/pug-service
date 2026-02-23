@@ -7,7 +7,6 @@ import com.pug.identity.infra.persistence.AdminEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,10 +53,5 @@ public class AdminRepositoryImpl
   @Override
   public Optional<Admin> findOptionalByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
-  }
-
-  @Override
-  public List<Admin> listAllAdmins() {
-    return findAll().list().stream().map(AdminMapper::toDomain).toList();
   }
 }

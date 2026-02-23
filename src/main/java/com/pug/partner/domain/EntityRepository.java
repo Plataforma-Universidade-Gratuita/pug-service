@@ -1,6 +1,5 @@
 package com.pug.partner.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,27 +39,6 @@ public interface EntityRepository {
    * @return an Optional containing the found Entity, or empty if not found.
    */
   Optional<Entity> findOptionalById(UUID id);
-
-  /**
-   * Finds an Entity by its CNPJ.
-   *
-   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param cnpj the CNPJ of the Entity to find.
-   * @return an Optional containing the found Entity, or empty if not found.
-   */
-  Optional<Entity> findOptionalByCnpj(String cnpj);
-
-  /**
-   * Lists all Entity objects.
-   *
-   * <p>Note: The returned Entities may contain validation errors (check {@code entity.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Entity objects.
-   */
-  List<Entity> listAllEntities();
 
   /**
    * Checks if an Entity exists by its CNPJ.

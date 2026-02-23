@@ -67,16 +67,6 @@ public interface AccountRepository {
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
-   * Lists all Accounts objects.
-   *
-   * <p>Note: The returned Accounts may contain validation errors (check {@code
-   * account.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Accounts objects.
-   */
-  List<Account> listAllAccounts();
-
-  /**
    * Counts the total number of Accounts associated with a given account ID.
    *
    * @param userId the UUID of the account whose accounts are to be counted.

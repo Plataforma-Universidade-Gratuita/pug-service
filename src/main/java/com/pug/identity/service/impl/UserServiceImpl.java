@@ -109,25 +109,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public List<User> listAll() {
-    LOG.debug("Listing all users");
-    List<User> users = repo.listAllUsers();
-
-    return users.stream()
-        .filter(
-            user -> {
-              if (user.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-                    user.getId(), user.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
-  }
-
-  @Override
   public User getById(UUID id) {
     User user =
         repo.findOptionalById(id)

@@ -19,16 +19,13 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * Account entity aggregate.
- */
+/** Account entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -43,12 +40,12 @@ public class Account extends DomainError {
 
   @Builder(toBuilder = true)
   private Account(
-          UUID id,
-          UUID userId,
-          Email email,
-          AccountType accountType,
-          String passwordHash,
-          AuditInfo auditInfo) {
+      UUID id,
+      UUID userId,
+      Email email,
+      AccountType accountType,
+      String passwordHash,
+      AuditInfo auditInfo) {
     this.id = id;
     this.userId = userId;
     this.email = email;
@@ -60,22 +57,22 @@ public class Account extends DomainError {
   /**
    * Factory for new Account.
    *
-   * @param userId       the ID of the person associated with the Account
-   * @param email        Account's email
-   * @param type         the account type for the Account
+   * @param userId the ID of the person associated with the Account
+   * @param email Account's email
+   * @param type the account type for the Account
    * @param passwordHash the password of the Account hashed
    * @return new Account instance (may contain errors)
    */
   public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
     Account account =
-            Account.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .userId(userId)
-                    .email(email)
-                    .accountType(type)
-                    .passwordHash(passwordHash)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        Account.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .userId(userId)
+            .email(email)
+            .accountType(type)
+            .passwordHash(passwordHash)
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     account.collectValidationProblems();
     return account;
@@ -114,9 +111,7 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Behavior: Activate/Deactivate logic could go here if needed. For now, just validation.
-   */
+  /** Behavior: Activate/Deactivate logic could go here if needed. For now, just validation. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(userId, "userId");
@@ -210,16 +205,6 @@ public interface AccountRepository {
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
-   * Lists all Accounts objects.
-   *
-   * <p>Note: The returned Accounts may contain validation errors (check {@code
-   * account.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Accounts objects.
-   */
-  List<Account> listAllAccounts();
-
-  /**
    * Counts the total number of Accounts associated with a given account ID.
    *
    * @param userId the UUID of the account whose accounts are to be counted.
@@ -248,17 +233,14 @@ import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
-/**
- * Admin entity aggregate.
- */
+/** Admin entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -283,7 +265,8 @@ public class Admin extends DomainError {
    * @return new Admin instance (may contain errors)
    */
   public static Admin factory(UUID accountId, Campi campus) {
-    Admin admin = Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
+    Admin admin =
+        Admin.builder().accountId(accountId).campus(campus).grantedAt(OffsetDateTime.now()).build();
     admin.collectValidationProblems();
     return admin;
   }
@@ -303,9 +286,7 @@ public class Admin extends DomainError {
     return updatedAdmin;
   }
 
-  /**
-   * Validates the Admin instance.
-   */
+  /** Validates the Admin instance. */
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     if (grantedAt == null) {
@@ -323,7 +304,6 @@ FILE: domain/AdminRepository.java
 ================================================================================
 package com.pug.identity.domain;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -362,16 +342,6 @@ public interface AdminRepository {
    * @return an Optional containing the found Admin, or empty if not found.
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
-
-  /**
-   * Lists all Admin instances.
-   *
-   * <p>Note: The returned Admins may contain validation errors (check {@code admin.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Admin instances.
-   */
-  List<Admin> listAllAdmins();
 }
 
 
@@ -437,16 +407,13 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.util.UUID;
-
-/**
- * User entity aggregate.
- */
+/** User entity aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -468,18 +435,18 @@ public class User extends DomainError {
   /**
    * Factory for new users.
    *
-   * @param cpf  person's CPF
+   * @param cpf person's CPF
    * @param name person's name
    * @return new User instance (may contain errors)
    */
   public static User factory(Cpf cpf, String name) {
     User user =
-            User.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .cpf(cpf)
-                    .name(StringUtils.trim(name))
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        User.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .cpf(cpf)
+            .name(StringUtils.trim(name))
+            .auditInfo(AuditInfo.factory())
+            .build();
 
     user.collectValidationProblems();
     return user;
@@ -516,9 +483,7 @@ public class User extends DomainError {
     return updated;
   }
 
-  /**
-   * Validates the User instance.
-   */
+  /** Validates the User instance. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateStringField(name, 150L, "name");
@@ -600,16 +565,6 @@ public interface UserRepository {
    * @return an Optional containing the User if found, or empty if not found.
    */
   Optional<User> findOptionalByCpf(String cpf);
-
-  /**
-   * Lists all User objects.
-   *
-   * <p>Note: The returned Users may contain validation errors (check {@code account.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all User objects.
-   */
-  List<User> listAllUsers();
 
   /**
    * Checks if a User exists with the given CPF.
@@ -915,7 +870,11 @@ public final class AdminMapper {
     if (e == null) {
       return null;
     }
-    return Admin.builder().accountId(e.getAccountId()).grantedAt(e.getGrantedAt()).campus(e.getCampus()).build();
+    return Admin.builder()
+        .accountId(e.getAccountId())
+        .grantedAt(e.getGrantedAt())
+        .campus(e.getCampus())
+        .build();
   }
 
   /**
@@ -928,7 +887,11 @@ public final class AdminMapper {
     if (d == null) {
       return null;
     }
-    return AdminEntity.builder().accountId(d.getAccountId()).grantedAt(d.getGrantedAt()).campus(d.getCampus()).build();
+    return AdminEntity.builder()
+        .accountId(d.getAccountId())
+        .grantedAt(d.getGrantedAt())
+        .campus(d.getCampus())
+        .build();
   }
 
   /**
@@ -1095,7 +1058,6 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -1107,7 +1069,7 @@ import java.util.UUID;
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   @Transactional
   @Override
@@ -1164,9 +1126,9 @@ public class AccountRepositoryImpl
       return List.of();
     }
     return getEntityManager()
-            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
-            .setParameter("ids", ids)
-            .getResultList();
+        .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
+        .setParameter("ids", ids)
+        .getResultList();
   }
 
   @Override
@@ -1175,7 +1137,8 @@ public class AccountRepositoryImpl
       return List.of();
     }
 
-    List<UUID> usedUserIds = getEntityManager()
+    List<UUID> usedUserIds =
+        getEntityManager()
             .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
             .setParameter("ids", userIds)
             .getResultList();
@@ -1183,11 +1146,6 @@ public class AccountRepositoryImpl
     List<UUID> orphans = new ArrayList<>(userIds);
     orphans.removeAll(usedUserIds);
     return orphans;
-  }
-
-  @Override
-  public List<Account> listAllAccounts() {
-    return listAll().stream().map(AccountMapper::toDomain).toList();
   }
 
   @Override
@@ -1217,7 +1175,6 @@ import com.pug.identity.infra.persistence.AdminEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -1264,11 +1221,6 @@ public class AdminRepositoryImpl
   @Override
   public Optional<Admin> findOptionalByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
-  }
-
-  @Override
-  public List<Admin> listAllAdmins() {
-    return findAll().list().stream().map(AdminMapper::toDomain).toList();
   }
 }
 
@@ -1332,12 +1284,12 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
 
   @Transactional
   @Override
-    public long deleteAllByIds(List<UUID> ids) {
-      if (CollectionUtils.isEmpty(ids)) {
-        return 0;
-      }
-      return delete("id in ?1",ids);
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
     }
+    return delete("id in ?1", ids);
+  }
 
   @Override
   public Optional<User> findOptionalById(UUID id) {
@@ -1350,11 +1302,6 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
       return Optional.empty();
     }
     return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
-  }
-
-  @Override
-  public List<User> listAllUsers() {
-    return listAll().stream().map(UserMapper::toDomain).toList();
   }
 
   @Override
@@ -1590,7 +1537,6 @@ FILE: infra/read/dtos/AdminView.java
 package com.pug.identity.infra.read.dtos;
 
 import com.pug.shared.domain.enums.Campi;
-
 import java.time.OffsetDateTime;
 
 /**
@@ -2010,15 +1956,10 @@ import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/**
- * Maps between User domain and UserEntity persistence.
- */
+/** Maps between User domain and UserEntity persistence. */
 public final class UserMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserMapper() {}
 
   /**
    * Maps a UserEntity to a User domain object.
@@ -2031,11 +1972,11 @@ public final class UserMapper {
       return null;
     }
     return User.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .cpf(Cpf.factory(e.getCpf()))
-            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .cpf(Cpf.factory(e.getCpf()))
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
@@ -2049,12 +1990,12 @@ public final class UserMapper {
       return null;
     }
     return UserEntity.builder()
-            .id(d.getId())
-            .cpf(d.getCpf().toString())
-            .name(d.getName())
-            .createdAt(d.getAuditInfo().getCreatedAt())
-            .updatedAt(d.getAuditInfo().getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .cpf(d.getCpf().toString())
+        .name(d.getName())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
@@ -2147,8 +2088,8 @@ public class AccountReadOnlyResource {
   /**
    * Lists accounts.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
-   * all accounts.
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise,
+   * returns all accounts.
    *
    * @param query optional name query to search for.
    * @return the response containing the list of accounts.
@@ -2295,8 +2236,8 @@ public class AdminResource {
   /**
    * Lists admins.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise, returns
-   * all admins.
+   * <p>If the 'q' query parameter is provided, performs a search by account name. Otherwise,
+   * returns all admins.
    *
    * @param query optional name query to search for.
    * @return the list of admin responses.
@@ -2400,10 +2341,10 @@ public class AdminResource {
     AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
 
     Admin updatedAdmin = writeService.update(id, adminCmd);
-
     AdminResponse body =
         AdminPresenter.toResponse(
             readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -2435,8 +2376,6 @@ package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
-import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
@@ -2450,12 +2389,12 @@ import java.util.UUID;
  * @param auditInfo The creation and update info.
  */
 public record AccountResponse(
-        UUID id,
-        UserResponse user,
-        String email,
-        AccountType accountType,
-        String accountTypeFormatted,
-        AuditInfoResponse auditInfo) {}
+    UUID id,
+    UserResponse user,
+    String email,
+    AccountType accountType,
+    String accountTypeFormatted,
+    AuditInfoResponse auditInfo) {}
 
 
 ================================================================================
@@ -2490,21 +2429,21 @@ FILE: presenter/dtos/AdminResponse.java
 package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.presenter.dtos.CampusResponse;
-
 import java.time.OffsetDateTime;
 
 /**
  * AdminResponse record.
  *
- * @param accountResponse    the account details associated with the admin (as an AccountResponse).
- * @param campus             the campus associated with the admin (as a CampusResponse).
- * @param grantedAt          the date and time when admin privileges were granted.
+ * @param accountResponse the account details associated with the admin (as an AccountResponse).
+ * @param campus the campus associated with the admin (as a CampusResponse).
+ * @param grantedAt the date and time when admin privileges were granted.
  * @param grantedAtFormatted the formatted text for the granted date and time (localized).
  */
 public record AdminResponse(
-        AccountResponse accountResponse, CampusResponse campus, OffsetDateTime grantedAt,
-        String grantedAtFormatted) {
-}
+    AccountResponse accountResponse,
+    CampusResponse campus,
+    OffsetDateTime grantedAt,
+    String grantedAtFormatted) {}
 
 
 ================================================================================
@@ -2524,7 +2463,7 @@ import com.pug.shared.domain.enums.Campi;
  * @param campus the campus where the account is associated with.
  */
 public record AdminUpdateRequest(
-        String cpfString, String name, String emailString, String password, Campi campus) {}
+    String cpfString, String name, String emailString, String password, Campi campus) {}
 
 
 ================================================================================
@@ -2533,7 +2472,6 @@ FILE: presenter/dtos/UserResponse.java
 package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
-
 import java.util.UUID;
 
 /**
@@ -2544,19 +2482,15 @@ import java.util.UUID;
  * creation and last update. The formatted versions of the CPF and timestamps are also included for
  * easier presentation in the API responses.
  *
- * @param id           the unique identifier of the account
- * @param cpf          the CPF number of the account
+ * @param id the unique identifier of the account
+ * @param cpf the CPF number of the account
  * @param cpfFormatted the formatted CPF number for display purposes
- * @param name         the name of the account
- * @param auditInfo    the audit information containing creation and update timestamps, along with their formatted string representations
+ * @param name the name of the account
+ * @param auditInfo the audit information containing creation and update timestamps, along with
+ *     their formatted string representations
  */
 public record UserResponse(
-        UUID id,
-        String cpf,
-        String cpfFormatted,
-        String name,
-        AuditInfoResponse auditInfo) {
-}
+    UUID id, String cpf, String cpfFormatted, String name, AuditInfoResponse auditInfo) {}
 
 
 ================================================================================
@@ -2570,25 +2504,19 @@ import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting AccountView to AccountResponse.
- */
+/** Mapper class for converting AccountView to AccountResponse. */
 public final class AccountPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AccountPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AccountPresenter() {}
 
   /**
    * Converts an AccountView to an AccountResponse.
    *
-   * @param v      the AccountView
+   * @param v the AccountView
    * @param locale the locale for formatting
-   * @param i18n   the internationalization instance
+   * @param i18n the internationalization instance
    * @return the corresponding AccountResponse
    */
   public static AccountResponse toResponse(AccountView v, Locale locale, I18n i18n) {
@@ -2598,15 +2526,11 @@ public final class AccountPresenter {
 
     UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-            v.id(),
-            userResponse,
-            v.email(),
-            v.accountType(),
-            typeFormatted,
-            auditInfo);
+        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
   }
 }
 
@@ -2623,25 +2547,19 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.StringUtils;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting AdminView to AdminResponse.
- */
+/** Mapper class for converting AdminView to AdminResponse. */
 public final class AdminPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private AdminPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private AdminPresenter() {}
 
   /**
    * Converts an AdminView to an AdminResponse.
    *
-   * @param a      the AdminView.
+   * @param a the AdminView.
    * @param locale the locale for formatting.
-   * @param i18n   the internationalization instance.
+   * @param i18n the internationalization instance.
    * @return the corresponding AdminResponse.
    */
   public static AdminResponse toResponse(AdminView a, Locale locale, I18n i18n) {
@@ -2667,23 +2585,17 @@ import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
-
 import java.util.Locale;
 
-/**
- * Mapper class for converting UserView to UserResponse.
- */
+/** Mapper class for converting UserView to UserResponse. */
 public final class UserPresenter {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private UserPresenter() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private UserPresenter() {}
 
   /**
    * Converts a UserView to a UserResponse.
    *
-   * @param v      the UserView to convert
+   * @param v the UserView to convert
    * @param locale the locale for localization
    * @return the converted UserResponse
    */
@@ -2692,14 +2604,10 @@ public final class UserPresenter {
       return null;
     }
 
-    AuditInfoResponse auditInfo = SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new UserResponse(
-            v.id(),
-            v.cpf(),
-            cpfFormatted(v.cpf()),
-            v.name(),
-            auditInfo);
+    return new UserResponse(v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), auditInfo);
   }
 
   /**
@@ -2713,12 +2621,12 @@ public final class UserPresenter {
       return cpf;
     }
     return cpf.substring(0, 3)
-            + "."
-            + cpf.substring(3, 6)
-            + "."
-            + cpf.substring(6, 9)
-            + "-"
-            + cpf.substring(9, 11);
+        + "."
+        + cpf.substring(3, 6)
+        + "."
+        + cpf.substring(6, 9)
+        + "-"
+        + cpf.substring(9, 11);
   }
 }
 
@@ -2945,15 +2853,6 @@ public interface AccountService {
   long deleteAll(List<UUID> ids);
 
   /**
-   * Lists all Account entities.
-   *
-   * @return a list of all Account entities.
-   * @throws com.pug.shared.exceptions.AppValidationException if any Account entity found is
-   *     corrupted in the database.
-   */
-  List<Account> listAll();
-
-  /**
    * Retrieves an Account by its ID.
    *
    * @param id the UUID of the Account.
@@ -3032,12 +2931,9 @@ package com.pug.identity.service;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.service.dtos.AdminCreateCommand;
 import com.pug.identity.service.dtos.AdminUpdateCommand;
-
 import java.util.UUID;
 
-/**
- * Interface for managing admins.
- */
+/** Interface for managing admins. */
 public interface AdminService {
 
   /**
@@ -3047,10 +2943,10 @@ public interface AdminService {
    *
    * @param cmd the command containing the data to create the new Admin.
    * @return the saved Admin.
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails for account
-   *                                                              or admin data.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
+   *     or admin data.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
-   *                                                              exists.
+   *     exists.
    */
   Admin save(AdminCreateCommand cmd);
 
@@ -3058,11 +2954,11 @@ public interface AdminService {
    * Updates an existing Admin's underlying Account.
    *
    * @param accountId the ID of the Admin (which corresponds to the Account ID).
-   * @param cmd       the command containing the data to update the Account.
+   * @param cmd the command containing the data to update the Account.
    * @return the updated Admin.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin/Account does not
-   *                                                             exist.
-   * @throws com.pug.shared.exceptions.AppValidationException    if input validation fails.
+   *     exist.
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
 
@@ -3080,7 +2976,7 @@ public interface AdminService {
    * @param accountId the UUID of the account.
    * @return the Admin entity.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
-   *                                                             ID does not exist (or data is corrupted in DB).
+   *     ID does not exist (or data is corrupted in DB).
    */
   Admin getByAccountId(UUID accountId);
 }
@@ -3395,25 +3291,6 @@ public class AccountServiceImpl implements AccountService {
   }
 
   @Override
-  public List<Account> listAll() {
-    LOG.debug("Listing all accounts");
-    List<Account> accounts = repo.listAllAccounts();
-
-    return accounts.stream()
-        .filter(
-            account -> {
-              if (account.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-                    account.getId(), account.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
-  }
-
-  @Override
   public Account getById(UUID id) {
     Account account =
         repo.findOptionalById(id)
@@ -3544,23 +3421,18 @@ import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.jboss.logging.Logger;
 
-import java.util.UUID;
-
-/**
- * Service for managing admins.
- */
+/** Service for managing admins. */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject
-  AdminRepository repo;
+  @Inject AdminRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
   @Transactional
   @Override
@@ -3618,21 +3490,20 @@ public class AdminServiceImpl implements AdminService {
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-            repo
-                    .findOptionalByAccountId(accountId)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
-                              return new ResourceNotFoundException(
-                                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
-                            });
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                  return new ResourceNotFoundException(
+                      IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+                });
 
     if (admin.hasErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-              accountId, admin.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+          accountId, admin.getProblemsSummary());
       throw new ResourceNotFoundException(
-              IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
+          IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
     }
 
     return admin;
@@ -3699,11 +3570,12 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserReadService} interface for retrieving account-related information.
+ * Implementation of the {@link UserReadService} interface for retrieving account-related
+ * information.
  *
- * <p>This service provides methods to get account views by ID or CPF, list all account views, and search
- * for users based on a query string. It handles scenarios where users are not found and ensures
- * that appropriate exceptions are thrown with relevant error codes.
+ * <p>This service provides methods to get account views by ID or CPF, list all account views, and
+ * search for users based on a query string. It handles scenarios where users are not found and
+ * ensures that appropriate exceptions are thrown with relevant error codes.
  */
 @ApplicationScoped
 public class UserReadServiceImpl implements UserReadService {
@@ -3866,25 +3738,6 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public List<User> listAll() {
-    LOG.debug("Listing all users");
-    List<User> users = repo.listAllUsers();
-
-    return users.stream()
-        .filter(
-            user -> {
-              if (user.hasErrors()) {
-                LOG.errorf(
-                    "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-                    user.getId(), user.getProblemsSummary());
-                return false;
-              }
-              return true;
-            })
-        .toList();
-  }
-
-  @Override
   public User getById(UUID id) {
     User user =
         repo.findOptionalById(id)
@@ -4044,8 +3897,8 @@ public interface UserService {
    * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
    * @return the updated User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
@@ -4058,8 +3911,8 @@ public interface UserService {
    *
    * @param id the UUID of the account to delete
    * @return true if the account was successfully deleted, false if the account was not found
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    */
   boolean delete(UUID id);
 
@@ -4068,27 +3921,18 @@ public interface UserService {
    *
    * @param ids a list of UUIDs of the users to delete
    * @return the number of users successfully deleted
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any account with the given IDs
+   *     does not exist (or data is corrupted in DB).
    */
   long deleteAll(List<UUID> ids);
-
-  /**
-   * Lists all users.
-   *
-   * @return a list of all User entities
-   * @throws com.pug.shared.exceptions.AppValidationException if any User entity found is corrupted
-   *     in the database.
-   */
-  List<User> listAll();
 
   /**
    * Retrieves a User by its ID.
    *
    * @param id the UUID of the account
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
+   *     does not exist (or data is corrupted in DB).
    */
   User getById(UUID id);
 
@@ -4097,8 +3941,8 @@ public interface UserService {
    *
    * @param cpf the CPF of the account (already a validated Value Object).
    * @return the User entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF does
-   *     not exist (or data is corrupted in DB).
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF
+   *     does not exist (or data is corrupted in DB).
    */
   User getByCpf(Cpf cpf);
 
@@ -4179,7 +4023,6 @@ package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.Admin;
 import com.pug.shared.domain.enums.Campi;
-
 import java.util.UUID;
 
 /** Utility class for processing Admin DTO inputs. */

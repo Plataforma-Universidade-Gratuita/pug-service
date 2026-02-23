@@ -43,16 +43,6 @@ public interface StaffRepository {
   Optional<Staff> findOptionalByAccountId(UUID accountId);
 
   /**
-   * Lists all Staff entities.
-   *
-   * <p>Note: The returned Staff objects may contain validation errors (check {@code
-   * staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @return a list of all Staff entities.
-   */
-  List<Staff> listAllStaff();
-
-  /**
    * Lists all Staff entities associated with a specific entity ID.
    *
    * <p>Note: The returned Staff objects may contain validation errors (check {@code
@@ -62,12 +52,4 @@ public interface StaffRepository {
    * @return a list of Staff entities associated with the given entity ID.
    */
   List<Staff> listAllByEntityId(UUID entityId);
-
-  /**
-   * Checks if a Staff entity exists for a given account ID.
-   *
-   * @param accountId the account ID to check.
-   * @return true if a Staff entity exists for the given account ID, false otherwise.
-   */
-  boolean existsByAccountId(UUID accountId);
 }
