@@ -1,6 +1,7 @@
-package com.pug.projects.infra.persistence;
+package com.pug.projects.infra.persistence.impl;
 
 import com.pug.projects.domain.ProjectRepository;
+import com.pug.projects.infra.persistence.ProjectEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.UUID;

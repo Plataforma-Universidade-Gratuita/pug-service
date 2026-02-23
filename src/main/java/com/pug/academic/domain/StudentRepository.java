@@ -6,7 +6,7 @@ import java.util.UUID;
 /** Repository interface for managing Student entities. */
 public interface StudentRepository {
   /**
-   * Persists a Student entity.
+   * Persists a Student entityId.
    *
    * @param entity the Student to persist
    * @return the persisted Student
@@ -14,7 +14,7 @@ public interface StudentRepository {
   Student persist(Student entity);
 
   /**
-   * Updates a Student entity.
+   * Updates a Student entityId.
    *
    * @param entity the Student to update
    */

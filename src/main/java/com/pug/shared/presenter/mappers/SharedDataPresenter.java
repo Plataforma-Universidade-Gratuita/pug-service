@@ -34,8 +34,8 @@ public final class SharedDataPresenter {
    * <p><b>Note:</b> {@code updatedAt} is optional (nullable), but {@code createdAt} and {@code
    * locale} are mandatory.
    *
-   * @param createdAt the timestamp when the entity was created (cannot be null).
-   * @param updatedAt the timestamp when the entity was last updated (can be null).
+   * @param createdAt the timestamp when the entityId was created (cannot be null).
+   * @param updatedAt the timestamp when the entityId was last updated (can be null).
    * @param locale the account's locale for date formatting (cannot be null).
    * @return an {@link AuditInfoResponse} containing raw timestamps and their string
    *     representations.

@@ -24,7 +24,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Entity entity aggregate. */
+/** Entity entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -51,11 +51,11 @@ public class Entity extends DomainError {
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity.
-   * @param cityId the ID of the city where the entity is located
-   * @param address the address where the entity is located
-   * @return the created entity (may contain errors)
+   * @param cnpj the CNPJ of the entityId
+   * @param name the name of the entityId.
+   * @param cityId the ID of the city where the entityId is located
+   * @param address the address where the entityId is located
+   * @return the created entityId (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
@@ -73,10 +73,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the name of the entity.
+   * Behavior: change the name of the entityId.
    *
-   * @param newName the new name of the entity
-   * @return the updated entity with the new name
+   * @param newName the new name of the entityId
+   * @return the updated entityId with the new name
    */
   public Entity changeName(String newName) {
     String trimmed = StringUtils.trim(newName);
@@ -89,10 +89,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the address where the entity is located.
+   * Behavior: change the address where the entityId is located.
    *
-   * @param newAddress the new address of the entity
-   * @return the updated entity with the new address
+   * @param newAddress the new address of the entityId
+   * @return the updated entityId with the new address
    */
   public Entity changeAddress(String newAddress) {
     String trimmed = StringUtils.trim(newAddress);
@@ -105,10 +105,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the CNPJ of the entity.
+   * Behavior: change the CNPJ of the entityId.
    *
-   * @param newCnpj the new CNPJ for the entity
-   * @return the updated entity with the new CNPJ
+   * @param newCnpj the new CNPJ for the entityId
+   * @return the updated entityId with the new CNPJ
    */
   public Entity changeCnpj(Cnpj newCnpj) {
     if (cnpj.equals(newCnpj)) {
@@ -120,10 +120,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: move entity to another city.
+   * Behavior: move entityId to another city.
    *
-   * @param newCityId the new city ID where the entity will be located
-   * @return the updated entity with the new city ID
+   * @param newCityId the new city ID where the entityId will be located
+   * @return the updated entityId with the new city ID
    */
   public Entity moveToCity(UUID newCityId) {
     if (cityId.equals(newCityId)) {
@@ -134,7 +134,7 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /** Collects all validation problems for the entity's attributes. */
+  /** Collects all validation problems for the entityId's attributes. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(cityId, "cityId");
@@ -191,7 +191,7 @@ public interface EntityRepository {
   /**
    * Finds an Entity by its ID.
    *
-   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
+   * <p>Note: The returned Entity may contain validation errors (check {@code entityId.hasErrors()})
    * if the stored data is inconsistent with current domain rules.
    *
    * @param id the UUID of the Entity to find.
@@ -264,7 +264,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Staff entity aggregate. */
+/** Staff entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -282,7 +282,7 @@ public class Staff extends DomainError {
    * Factory method to create a new Staff instance.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the entity
+   * @param entityId the unique identifier of the entityId
    * @return a Staff instance (may contain errors)
    */
   public static Staff factory(UUID accountId, UUID entityId) {
@@ -313,48 +313,48 @@ import java.util.UUID;
 public interface StaffRepository {
 
   /**
-   * Persists a Staff entity.
+   * Persists a Staff entityId.
    *
-   * @param staff the Staff entity to persist.
-   * @return the persisted Staff entity.
+   * @param staff the Staff entityId to persist.
+   * @return the persisted Staff entityId.
    */
   Staff persist(Staff staff);
 
   /**
-   * Deletes a Staff entity by its account ID.
+   * Deletes a Staff entityId by its account ID.
    *
-   * @param accountId the account ID of the Staff entity to delete.
-   * @return true if the entity was deleted, false otherwise.
+   * @param accountId the account ID of the Staff entityId to delete.
+   * @return true if the entityId was deleted, false otherwise.
    */
   boolean deleteByAccountId(UUID accountId);
 
   /**
-   * Deletes all Staff entities associated with a specific entity ID.
+   * Deletes all Staff entities associated with a specific entityId ID.
    *
-   * @param entityId the entity ID whose associated Staff entities should be deleted.
+   * @param entityId the entityId ID whose associated Staff entities should be deleted.
    * @return the number of Staff entities deleted.
    */
   long deleteByEntityId(UUID entityId);
 
   /**
-   * Finds a Staff entity by its associated account ID.
+   * Finds a Staff entityId by its associated account ID.
    *
    * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param accountId the account ID to search for.
-   * @return an Optional containing the found Staff entity, or empty if not found.
+   * @return an Optional containing the found Staff entityId, or empty if not found.
    */
   Optional<Staff> findOptionalByAccountId(UUID accountId);
 
   /**
-   * Lists all Staff entities associated with a specific entity ID.
+   * Lists all Staff entities associated with a specific entityId ID.
    *
    * <p>Note: The returned Staff objects may contain validation errors (check {@code
    * staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
    *
-   * @param entityId the entity ID to filter by.
-   * @return a list of Staff entities associated with the given entity ID.
+   * @param entityId the entityId ID to filter by.
+   * @return a list of Staff entities associated with the given entityId ID.
    */
   List<Staff> listAllByEntityId(UUID entityId);
 }
@@ -455,8 +455,8 @@ public final class EntityMapper {
   /**
    * Maps an EntityEntity to an Entity domain object.
    *
-   * @param e the persistence entity.
-   * @return the domain object, or null if entity is null.
+   * @param e the persistence entityId.
+   * @return the domain object, or null if entityId is null.
    */
   public static Entity toDomain(EntityEntity e) {
     if (e == null) {
@@ -476,7 +476,7 @@ public final class EntityMapper {
    * Maps an Entity domain object to an EntityEntity for persistence.
    *
    * @param d the domain object.
-   * @return the persistence entity, or null if domain is null.
+   * @return the persistence entityId, or null if domain is null.
    */
   public static EntityEntity toEntity(Entity d) {
     if (d == null) {
@@ -497,7 +497,7 @@ public final class EntityMapper {
    * Copies domain fields into an existing EntityEntity (for update).
    *
    * @param d the domain object.
-   * @param e the persistence entity.
+   * @param e the persistence entityId.
    */
   public static void copy(Entity d, EntityEntity e) {
     if (d == null || e == null) {
@@ -536,7 +536,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** Persistence entity representing an Entity in the partner domain. */
+/** Persistence entityId representing an Entity in the partner domain. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -739,7 +739,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Persistence entity representing a Staff member associated with an Entity. */
+/** Persistence entityId representing a Staff member associated with an Entity. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -828,7 +828,7 @@ import com.pug.identity.infra.read.dtos.AccountView;
  * View representation of a Staff member.
  *
  * @param account the account view associated with the staff member.
- * @param entity the entity view associated with the staff member.
+ * @param entity the entityId view associated with the staff member.
  */
 public record StaffView(AccountView account, EntityView entity) {}
 
@@ -1214,10 +1214,10 @@ public interface StaffQueries {
   List<StaffView> listByCpf(String cpf);
 
   /**
-   * Lists all StaffView records by entity ID.
+   * Lists all StaffView records by entityId ID.
    *
-   * @param entityId the entity ID.
-   * @return a list of StaffView records associated with the given entity ID.
+   * @param entityId the entityId ID.
+   * @return a list of StaffView records associated with the given entityId ID.
    */
   List<StaffView> listAllByEntityId(UUID entityId);
 
@@ -1258,8 +1258,8 @@ public final class StaffMapper {
    * Maps a StaffEntity to a Staff domain object.
    *
    * @param e the StaffEntity.
-   * @return the Staff domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., accountId or entityId) is
+   * @return the Staff domain object, or null if entityId is null.
+   * @throws AppValidationException if the data in the entityId (e.g., accountId or entityId) is
    *     invalid according to domain rules, indicating corrupted data in persistence.
    */
   public static Staff toDomain(StaffEntity e) throws AppValidationException {
@@ -1333,10 +1333,10 @@ import java.util.UUID;
 /**
  * Request DTO for creating an Entity.
  *
- * @param cnpjString the CNPJ of the entity as a string.
- * @param name the name of the entity.
- * @param cityId the ID of the city associated with the entity, as a UUID.
- * @param address the address of the entity.
+ * @param cnpjString the CNPJ of the entityId as a string.
+ * @param name the name of the entityId.
+ * @param cityId the ID of the city associated with the entityId, as a UUID.
+ * @param address the address of the entityId.
  */
 public record EntityCreateRequest(
     @NotBlank String cnpjString,
@@ -1355,15 +1355,15 @@ import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.util.UUID;
 
 /**
- * DTO representing the response for an entity. It contains all the necessary information about an
+ * DTO representing the response for an entityId. It contains all the necessary information about an
  *
- * @param id the unique identifier of the entity
- * @param cnpj the CNPJ number of the entity
- * @param cnpjFormatted the formatted CNPJ number of the entity
- * @param name the name of the entity
- * @param address the address of the entity
- * @param city the city information of the entity
- * @param auditInfo the audit information of the entity, including creation and update timestamps
+ * @param id the unique identifier of the entityId
+ * @param cnpj the CNPJ number of the entityId
+ * @param cnpjFormatted the formatted CNPJ number of the entityId
+ * @param name the name of the entityId
+ * @param address the address of the entityId
+ * @param city the city information of the entityId
+ * @param auditInfo the audit information of the entityId, including creation and update timestamps
  */
 public record EntityResponse(
     UUID id,
@@ -1385,10 +1385,10 @@ import java.util.UUID;
 /**
  * Request DTO for updating an Entity.
  *
- * @param cnpjString the CNPJ of the entity as a string.
- * @param name the name of the entity.
- * @param cityId the ID of the city associated with the entity, as a UUID.
- * @param address the address of the entity.
+ * @param cnpjString the CNPJ of the entityId as a string.
+ * @param name the name of the entityId.
+ * @param cityId the ID of the city associated with the entityId, as a UUID.
+ * @param address the address of the entityId.
  */
 public record EntityUpdateRequest(String cnpjString, String name, UUID cityId, String address) {}
 
@@ -1409,7 +1409,7 @@ import java.util.UUID;
  * @param name the name of the staff member.
  * @param emailString the email of the staff member as a string.
  * @param password the password for the staff member's account.
- * @param entityId the CNPJ of the entity the staff is part of, as a UUID.
+ * @param entityId the CNPJ of the entityId the staff is part of, as a UUID.
  */
 public record StaffCreateRequest(
     @NotBlank String cpfString,
@@ -1430,7 +1430,7 @@ import com.pug.identity.presenter.dtos.AccountResponse;
  * Response representation of a Staff member.
  *
  * @param account the account response associated with the staff member.
- * @param entity the entity response associated with the staff member.
+ * @param entity the entityId response associated with the staff member.
  */
 public record StaffResponse(AccountResponse account, EntityResponse entity) {}
 
@@ -1494,10 +1494,10 @@ public class EntityResource {
   @Context HttpHeaders headers;
 
   /**
-   * Get entity by ID.
+   * Get entityId by ID.
    *
-   * @param id the entity ID
-   * @return the response containing the entity view
+   * @param id the entityId ID
+   * @return the response containing the entityId view
    * @throws ResourceNotFoundException if the Entity is not found.
    */
   @GET
@@ -1512,7 +1512,7 @@ public class EntityResource {
    *
    * @param q optional search query (by name)
    * @param cityId optional city ID to filter by
-   * @return the response containing the list of entity views
+   * @return the response containing the list of entityId views
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
@@ -1536,10 +1536,10 @@ public class EntityResource {
   }
 
   /**
-   * Get entity by CNPJ.
+   * Get entityId by CNPJ.
    *
    * @param cnpjRaw the raw CNPJ string
-   * @return the response containing the entity view
+   * @return the response containing the entityId view
    * @throws AppValidationException if the provided CNPJ is malformed.
    * @throws ResourceNotFoundException if the Entity is not found.
    */
@@ -1551,11 +1551,11 @@ public class EntityResource {
   }
 
   /**
-   * Create a new entity.
+   * Create a new entityId.
    *
-   * @param req the entity creation request
-   * @return the response containing the created entity view
-   * @throws DuplicateResourceException if an entity with the same CNPJ already exists.
+   * @param req the entityId creation request
+   * @return the response containing the created entityId view
+   * @throws DuplicateResourceException if an entityId with the same CNPJ already exists.
    * @throws AppValidationException if input validation fails.
    * @throws ResourceNotFoundException if the specified city does not exist.
    */
@@ -1574,11 +1574,11 @@ public class EntityResource {
   }
 
   /**
-   * Update an existing entity.
+   * Update an existing entityId.
    *
-   * @param id the entity ID
-   * @param req the entity update request
-   * @return the response containing the updated entity view
+   * @param id the entityId ID
+   * @param req the entityId update request
+   * @return the response containing the updated entityId view
    * @throws ResourceNotFoundException if the Entity is not found.
    * @throws DuplicateResourceException if updated details conflict with existing records.
    * @throws AppValidationException if input validation fails.
@@ -1596,9 +1596,9 @@ public class EntityResource {
   }
 
   /**
-   * Delete an entity by ID.
+   * Delete an entityId by ID.
    *
-   * @param id the ID of the entity to delete
+   * @param id the ID of the entityId to delete
    * @return 200 OK with empty data (idempotent).
    */
   @DELETE
@@ -1850,10 +1850,10 @@ public class StaffResource {
   }
 
   /**
-   * Lists staff members associated with a specific entity.
+   * Lists staff members associated with a specific entityId.
    *
-   * @param entityId the UUID of the entity
-   * @return a Response containing a list of staff members for the entity
+   * @param entityId the UUID of the entityId
+   * @return a Response containing a list of staff members for the entityId
    */
   @GET
   @Path("by-entity/{entityId}")
@@ -1873,7 +1873,7 @@ public class StaffResource {
    * @return a Response containing the created staff member details.
    * @throws DuplicateResourceException if a staff member with the same account ID already exists.
    * @throws AppValidationException if input validation fails.
-   * @throws ResourceNotFoundException if the associated entity is not found.
+   * @throws ResourceNotFoundException if the associated entityId is not found.
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {
@@ -1924,10 +1924,10 @@ import java.util.UUID;
 /**
  * Command DTO for creating an Entity.
  *
- * @param cnpjString the CNPJ of the entity as a string.
- * @param name the name of the entity.
- * @param cityId the ID of the city where the entity is located.
- * @param address the address where the entity is located.
+ * @param cnpjString the CNPJ of the entityId as a string.
+ * @param name the name of the entityId.
+ * @param cityId the ID of the city where the entityId is located.
+ * @param address the address where the entityId is located.
  */
 public record EntityCreateCommand(String cnpjString, String name, UUID cityId, String address) {}
 
@@ -1942,10 +1942,10 @@ import java.util.UUID;
 /**
  * Command DTO for updating an Entity.
  *
- * @param cnpjString the CNPJ of the entity as a string (optional).
- * @param name the name of the entity (optional).
- * @param cityId the ID of the city where the entity is located (optional).
- * @param address the address where the entity is located (optional).
+ * @param cnpjString the CNPJ of the entityId as a string (optional).
+ * @param name the name of the entityId (optional).
+ * @param cityId the ID of the city where the entityId is located (optional).
+ * @param address the address where the entityId is located (optional).
  */
 public record EntityUpdateCommand(String cnpjString, String name, UUID cityId, String address) {}
 
@@ -1961,7 +1961,7 @@ import java.util.UUID;
 /**
  * Command DTO for creating a new Staff member.
  *
- * @param entityId the ID of the entity the staff belongs to.
+ * @param entityId the ID of the entityId the staff belongs to.
  * @param accountCommand the command for creating the associated account.
  */
 public record StaffCreateCommand(UUID entityId, AccountCreateCommand accountCommand) {}
@@ -1976,15 +1976,15 @@ import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading entity information. */
+/** Interface for reading entityId information. */
 public interface EntityReadService {
 
   /**
    * Retrieves an EntityView by its ID.
    *
-   * @param id the UUID of the entity
+   * @param id the UUID of the entityId
    * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity with the given ID is
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given ID is
    *     found
    */
   EntityView getViewById(UUID id);
@@ -1992,10 +1992,10 @@ public interface EntityReadService {
   /**
    * Retrieves an EntityView by its CNPJ.
    *
-   * @param cnpj the CNPJ of the entity
+   * @param cnpj the CNPJ of the entityId
    * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity with the given CNPJ is
-   *     found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given CNPJ
+   *     is found
    */
   EntityView getViewByCnpj(String cnpj);
 
@@ -2042,7 +2042,7 @@ public interface EntityService {
    *
    * @param cmd the command containing the data to create the Entity
    * @return the saved Entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
    *     name, invalid CNPJ).
@@ -2057,7 +2057,7 @@ public interface EntityService {
    * @return the updated Entity
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
    *     corrupted) or city is not found.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
@@ -2101,7 +2101,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for entity views. */
+/** Read-only service for entityId views. */
 @ApplicationScoped
 public class EntityReadServiceImpl implements EntityReadService {
 
@@ -2561,10 +2561,10 @@ public interface StaffReadService {
   List<StaffView> listViewsByCpf(String cpf);
 
   /**
-   * Lists all StaffViews associated with a specific entity ID.
+   * Lists all StaffViews associated with a specific entityId ID.
    *
-   * @param entityId the entity ID.
-   * @return a list of StaffViews linked to the specified entity.
+   * @param entityId the entityId ID.
+   * @return a list of StaffViews linked to the specified entityId.
    */
   List<StaffView> listViewsByEntityId(UUID entityId);
 
@@ -2591,20 +2591,20 @@ import java.util.UUID;
 public interface StaffService {
 
   /**
-   * Save a new staff member by creating an account and linking them to an entity.
+   * Save a new staff member by creating an account and linking them to an entityId.
    *
    * @param cmd the command containing staff creation details.
    * @return the created Staff object.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a staff member with the same
    *     account ID already exists.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entityId does not
    *     exist.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */
   Staff save(StaffCreateCommand cmd);
 
   /**
-   * Deletes a staff member by their account ID, removing their association with any entity.
+   * Deletes a staff member by their account ID, removing their association with any entityId.
    *
    * @param accountId the ID of the staff account (Account ID) to delete.
    * @return true if deletion was successful, false if the staff member was not found.
@@ -2612,11 +2612,11 @@ public interface StaffService {
   boolean delete(UUID accountId);
 
   /**
-   * Deletes all staff members associated with a specific entity ID.
+   * Deletes all staff members associated with a specific entityId ID.
    *
-   * @param entityId the ID of the entity whose staff members should be deleted.
+   * @param entityId the ID of the entityId whose staff members should be deleted.
    * @return the number of staff members that were deleted.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entity does not
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entityId does not
    *     exist.
    */
   long deleteAllByEntityId(UUID entityId);
@@ -2649,7 +2649,7 @@ public class EntityProcessor {
    * Helper method to process DTO input and build a new Entity domain object.
    *
    * @param cnpjString The CNPJ string from DTO.
-   * @param name The entity name from DTO.
+   * @param name The entityId name from DTO.
    * @param cityId The resolved city ID.
    * @param address The address from DTO.
    * @return The constructed Entity domain object (may contain validation errors).
@@ -2665,7 +2665,7 @@ public class EntityProcessor {
   /**
    * Helper method to process DTO input and update an existing Entity domain object.
    *
-   * @param existingEntity The existing entity to be updated.
+   * @param existingEntity The existing entityId to be updated.
    * @param cnpjString The CNPJ string from DTO (can be null for no change).
    * @param name The name from DTO (can be null for no change).
    * @param cityId The resolved city ID (can be null for no change).
@@ -2714,7 +2714,7 @@ public class StaffProcessor {
    * Helper method to process input and build a new Staff domain object.
    *
    * @param accountId The ID of the associated account.
-   * @param entityId The ID of the associated entity.
+   * @param entityId The ID of the associated entityId.
    * @return The constructed Staff domain object.
    */
   public static Staff processCreateInput(UUID accountId, UUID entityId) {

@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** User entity aggregate. */
+/** User entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)

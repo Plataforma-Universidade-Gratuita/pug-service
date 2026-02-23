@@ -43,10 +43,10 @@ public interface StaffReadService {
   List<StaffView> listViewsByCpf(String cpf);
 
   /**
-   * Lists all StaffViews associated with a specific entity ID.
+   * Lists all StaffViews associated with a specific entityId ID.
    *
-   * @param entityId the entity ID.
-   * @return a list of StaffViews linked to the specified entity.
+   * @param entityId the entityId ID.
+   * @return a list of StaffViews linked to the specified entityId.
    */
   List<StaffView> listViewsByEntityId(UUID entityId);
 

@@ -384,9 +384,24 @@ CREATE INDEX idx_attendances_student_stat ON attendances (student_id, status);
 ================================================================================
 FILE: messages_en_US.properties
 ================================================================================
-# --- SHARED MESSAGES ---
+# --- MESSAGES ---
 academic.campus.jaragua=Jaragua do Sul
 academic.campus.joinville=Joinville
+attendance.status.waiting=Waiting
+attendance.status.present=Present
+attendance.status.absent=Absent
+enrollment.status.approved=Approved
+enrollment.status.canceled=Canceled
+enrollment.status.completed=Completed
+enrollment.status.exited=Exited
+enrollment.status.pending=Pending
+enrollment.status.rejected=Rejected
+enrollment.status.removed=Removed
+project.status.canceled=Canceled
+project.status.completed=Completed
+project.status.in.progress=In Progress
+project.status.on.hold=On Hold
+project.status.planned=Planned
 
 # --- SHARED ERRORS ---
 error.business.rule.violation=Business rule violation.
@@ -447,9 +462,24 @@ error.domain.partner.staff.not.found=Staff member not found.
 ================================================================================
 FILE: messages_pt_BR.properties
 ================================================================================
-# --- SHARED MESSAGES ---
+# --- MESSAGES ---
 academic.campus.jaragua=Jaraguá do Sul
 academic.campus.joinville=Joinville
+attendance.status.waiting=Aguardando
+attendance.status.present=Presente
+attendance.status.absent=Ausente
+enrollment.status.approved=Aprovado
+enrollment.status.canceled=Cancelado
+enrollment.status.completed=Concluído
+enrollment.status.exited=Desistente
+enrollment.status.pending=Pendente
+enrollment.status.rejected=Rejeitado
+enrollment.status.removed=Removido
+project.status.canceled=Cancelado
+project.status.completed=Concluído
+project.status.in.progress=Em andamento
+project.status.on.hold=Em espera
+project.status.planned=Planejado
 
 # --- SHARED ERRORS ---
 error.business.rule.violation=Violação de regra de negócio.

@@ -9,10 +9,10 @@ import java.util.UUID;
 public interface CourseService {
 
   /**
-   * Saves a new Course entity.
+   * Saves a new Course entityId.
    *
    * @param cmd the command containing the data to create the new Course.
-   * @return the saved Course entity.
+   * @return the saved Course entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name
    *     already exists.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated school does not
@@ -22,11 +22,11 @@ public interface CourseService {
   Course save(CourseCreateCommand cmd);
 
   /**
-   * Updates an existing Course entity.
+   * Updates an existing Course entityId.
    *
    * @param id the UUID of the course to update.
    * @param cmd the command containing the new data for the course.
-   * @return the updated Course entity.
+   * @return the updated Course entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course with the given ID
    *     does not exist, or if the new school does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the new name
@@ -36,7 +36,7 @@ public interface CourseService {
   Course update(UUID id, CourseUpdateCommand cmd);
 
   /**
-   * Deletes a Course entity by its ID.
+   * Deletes a Course entityId by its ID.
    *
    * @param id the UUID of the course to delete.
    * @return true if the course was successfully deleted, false if the course with the given ID does
@@ -45,10 +45,10 @@ public interface CourseService {
   boolean delete(UUID id);
 
   /**
-   * Retrieves a Course entity by its ID.
+   * Retrieves a Course entityId by its ID.
    *
    * @param id the UUID of the course.
-   * @return the Course entity.
+   * @return the Course entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the course is found but its data is

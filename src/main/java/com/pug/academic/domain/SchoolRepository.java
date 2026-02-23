@@ -6,17 +6,17 @@ import java.util.UUID;
 /** Repository interface for Schools. */
 public interface SchoolRepository {
   /**
-   * Persist a school entity.
+   * Persist a school entityId.
    *
-   * @param entity the school entity to persist
-   * @return the persisted school entity
+   * @param entity the school entityId to persist
+   * @return the persisted school entityId
    */
   School persist(School entity);
 
   /**
-   * Update a school entity.
+   * Update a school entityId.
    *
-   * @param entity the school entity with updated information
+   * @param entity the school entityId with updated information
    */
   void update(School entity);
 

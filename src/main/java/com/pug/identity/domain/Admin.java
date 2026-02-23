@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Admin entity aggregate. */
+/** Admin entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)

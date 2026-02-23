@@ -12,7 +12,7 @@ public class EntityProcessor {
    * Helper method to process DTO input and build a new Entity domain object.
    *
    * @param cnpjString The CNPJ string from DTO.
-   * @param name The entity name from DTO.
+   * @param name The entityId name from DTO.
    * @param cityId The resolved city ID.
    * @param address The address from DTO.
    * @return The constructed Entity domain object (may contain validation errors).
@@ -28,7 +28,7 @@ public class EntityProcessor {
   /**
    * Helper method to process DTO input and update an existing Entity domain object.
    *
-   * @param existingEntity The existing entity to be updated.
+   * @param existingEntity The existing entityId to be updated.
    * @param cnpjString The CNPJ string from DTO (can be null for no change).
    * @param name The name from DTO (can be null for no change).
    * @param cityId The resolved city ID (can be null for no change).

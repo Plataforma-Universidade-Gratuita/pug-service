@@ -111,7 +111,7 @@ public class SchoolServiceImpl implements SchoolService {
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**
-   * Checks if a School entity exists by its name.
+   * Checks if a School entityId exists by its name.
    *
    * @param name the name of the school.
    * @return true if a school with the given name exists, false otherwise.

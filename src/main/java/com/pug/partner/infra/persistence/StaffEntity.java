@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Persistence entity representing a Staff member associated with an Entity. */
+/** Persistence entityId representing a Staff member associated with an Entity. */
 @Getter
 @Setter
 @NoArgsConstructor

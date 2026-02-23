@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Entity entity aggregate. */
+/** Entity entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -42,11 +42,11 @@ public class Entity extends DomainError {
   /**
    * Factory for new entities.
    *
-   * @param cnpj the CNPJ of the entity
-   * @param name the name of the entity.
-   * @param cityId the ID of the city where the entity is located
-   * @param address the address where the entity is located
-   * @return the created entity (may contain errors)
+   * @param cnpj the CNPJ of the entityId
+   * @param name the name of the entityId.
+   * @param cityId the ID of the city where the entityId is located
+   * @param address the address where the entityId is located
+   * @return the created entityId (may contain errors)
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
@@ -64,10 +64,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the name of the entity.
+   * Behavior: change the name of the entityId.
    *
-   * @param newName the new name of the entity
-   * @return the updated entity with the new name
+   * @param newName the new name of the entityId
+   * @return the updated entityId with the new name
    */
   public Entity changeName(String newName) {
     String trimmed = StringUtils.trim(newName);
@@ -80,10 +80,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the address where the entity is located.
+   * Behavior: change the address where the entityId is located.
    *
-   * @param newAddress the new address of the entity
-   * @return the updated entity with the new address
+   * @param newAddress the new address of the entityId
+   * @return the updated entityId with the new address
    */
   public Entity changeAddress(String newAddress) {
     String trimmed = StringUtils.trim(newAddress);
@@ -96,10 +96,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the CNPJ of the entity.
+   * Behavior: change the CNPJ of the entityId.
    *
-   * @param newCnpj the new CNPJ for the entity
-   * @return the updated entity with the new CNPJ
+   * @param newCnpj the new CNPJ for the entityId
+   * @return the updated entityId with the new CNPJ
    */
   public Entity changeCnpj(Cnpj newCnpj) {
     if (cnpj.equals(newCnpj)) {
@@ -111,10 +111,10 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: move entity to another city.
+   * Behavior: move entityId to another city.
    *
-   * @param newCityId the new city ID where the entity will be located
-   * @return the updated entity with the new city ID
+   * @param newCityId the new city ID where the entityId will be located
+   * @return the updated entityId with the new city ID
    */
   public Entity moveToCity(UUID newCityId) {
     if (cityId.equals(newCityId)) {
@@ -125,7 +125,7 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /** Collects all validation problems for the entity's attributes. */
+  /** Collects all validation problems for the entityId's attributes. */
   private void collectValidationProblems() {
     validateIdField(id);
     validateForeignKeyField(cityId, "cityId");

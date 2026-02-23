@@ -9,12 +9,12 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
-   * Saves a new Student entity.
+   * Saves a new Student entityId.
    *
    * <p>This method also creates and saves the associated Account.
    *
    * @param cmd the command containing the data to create the new Student.
-   * @return the saved Student entity.
+   * @return the saved Student entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the same
    *     academic registration already exists, or if an account with the given email already exists.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated course does not
@@ -24,13 +24,13 @@ public interface StudentService {
   Student save(StudentCreateCommand cmd);
 
   /**
-   * Updates an existing Student entity.
+   * Updates an existing Student entityId.
    *
    * <p>This method also updates the associated Account.
    *
    * @param accountId the UUID of the student's account to update.
    * @param cmd the command containing the new data for the student.
-   * @return the updated Student entity.
+   * @return the updated Student entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
    *     account ID does not exist, or if the new course does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the new academic
@@ -40,7 +40,7 @@ public interface StudentService {
   Student update(UUID accountId, StudentUpdateCommand cmd);
 
   /**
-   * Deletes a Student entity by its account ID.
+   * Deletes a Student entityId by its account ID.
    *
    * @param accountId the UUID of the student's account to delete.
    * @return true if the student was successfully deleted, false if the student was not found.
@@ -48,10 +48,10 @@ public interface StudentService {
   boolean delete(UUID accountId);
 
   /**
-   * Retrieves a Student entity by its account ID.
+   * Retrieves a Student entityId by its account ID.
    *
    * @param accountId the UUID of the student's account.
-   * @return the Student entity.
+   * @return the Student entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
    *     account ID does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the student is found but its data

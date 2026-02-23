@@ -40,10 +40,10 @@ public interface StaffQueries {
   List<StaffView> listByCpf(String cpf);
 
   /**
-   * Lists all StaffView records by entity ID.
+   * Lists all StaffView records by entityId ID.
    *
-   * @param entityId the entity ID.
-   * @return a list of StaffView records associated with the given entity ID.
+   * @param entityId the entityId ID.
+   * @return a list of StaffView records associated with the given entityId ID.
    */
   List<StaffView> listAllByEntityId(UUID entityId);
 

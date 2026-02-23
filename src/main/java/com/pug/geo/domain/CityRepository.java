@@ -7,22 +7,22 @@ import java.util.UUID;
 public interface CityRepository {
 
   /**
-   * Persists a city entity.
+   * Persists a city entityId.
    *
-   * @param city the city entity to persist.
-   * @return the persisted city entity.
+   * @param city the city entityId to persist.
+   * @return the persisted city entityId.
    */
   City persist(City city);
 
   /**
-   * Updates an existing city entity.
+   * Updates an existing city entityId.
    *
-   * @param updated the city entity with updated information.
+   * @param updated the city entityId with updated information.
    */
   void update(City updated);
 
   /**
-   * Deletes a city entity by its unique identifier.
+   * Deletes a city entityId by its unique identifier.
    *
    * @param id the unique identifier of the city to delete.
    * @return true if the city was successfully deleted, false if the city was not found.
@@ -30,13 +30,13 @@ public interface CityRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Finds a city entity by its unique identifier.
+   * Finds a city entityId by its unique identifier.
    *
    * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param id the unique identifier of the city.
-   * @return an Optional containing the city entity if found.
+   * @return an Optional containing the city entityId if found.
    */
   Optional<City> findOptionalById(UUID id);
 

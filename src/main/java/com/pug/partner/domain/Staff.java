@@ -7,7 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Staff entity aggregate. */
+/** Staff entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -25,7 +25,7 @@ public class Staff extends DomainError {
    * Factory method to create a new Staff instance.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the entity
+   * @param entityId the unique identifier of the entityId
    * @return a Staff instance (may contain errors)
    */
   public static Staff factory(UUID accountId, UUID entityId) {

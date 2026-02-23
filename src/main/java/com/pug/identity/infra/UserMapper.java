@@ -15,7 +15,7 @@ public final class UserMapper {
    * Maps a UserEntity to a User domain object.
    *
    * @param e the UserEntity.
-   * @return the User domain object, or null if entity is null.
+   * @return the User domain object, or null if entityId is null.
    */
   public static User toDomain(UserEntity e) {
     if (e == null) {

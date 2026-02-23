@@ -302,8 +302,8 @@
 │   │   │           │   │   │   └── ProjectsErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── AttendanceInfo.java
+│   │   │           │   │       ├── EnrollmentIdentifier.java
 │   │   │           │   │       ├── EnrollmentInfo.java
-│   │   │           │   │       ├── ProjectHours.java
 │   │   │           │   │       ├── ProjectInfo.java
 │   │   │           │   │       └── QrValidationInfo.java
 │   │   │           │   ├── generate-context.sh
@@ -311,18 +311,25 @@
 │   │   │           │   │   ├── AttendanceMapper.java
 │   │   │           │   │   ├── EnrollmentMapper.java
 │   │   │           │   │   ├── ProjectMapper.java
-│   │   │           │   │   └── persistence/
-│   │   │           │   │       ├── AttendanceEntity.java
-│   │   │           │   │       ├── AttendanceRepositoryImpl.java
-│   │   │           │   │       ├── EnrollmentEntity.java
-│   │   │           │   │       ├── EnrollmentRepositoryImpl.java
-│   │   │           │   │       ├── ProjectEntity.java
-│   │   │           │   │       └── ProjectRepositoryImpl.java
+│   │   │           │   │   ├── persistence/
+│   │   │           │   │   │   ├── AttendanceEntity.java
+│   │   │           │   │   │   ├── EnrollmentEntity.java
+│   │   │           │   │   │   ├── ProjectEntity.java
+│   │   │           │   │   │   └── impl/
+│   │   │           │   │   │       ├── AttendanceRepositoryImpl.java
+│   │   │           │   │   │       ├── EnrollmentRepositoryImpl.java
+│   │   │           │   │   │       └── ProjectRepositoryImpl.java
+│   │   │           │   │   └── read/
+│   │   │           │   │       ├── dtos/
+│   │   │           │   │       └── impl/
+│   │   │           │   ├── presenter/
+│   │   │           │   │   ├── dtos/
+│   │   │           │   │   └── mappers/
 │   │   │           │   ├── project_context_projects.txt
 │   │   │           │   └── service/
-│   │   │           │       ├── AttendanceService.java
-│   │   │           │       ├── EnrollmentService.java
-│   │   │           │       └── ProjectService.java
+│   │   │           │       ├── dtos/
+│   │   │           │       ├── impl/
+│   │   │           │       └── utils/
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java

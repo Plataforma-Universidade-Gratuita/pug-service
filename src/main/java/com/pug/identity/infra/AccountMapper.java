@@ -17,7 +17,7 @@ public final class AccountMapper {
    * Maps an AccountEntity to an Account domain object.
    *
    * @param e the AccountEntity.
-   * @return the Account domain object, or null if entity is null.
+   * @return the Account domain object, or null if entityId is null.
    */
   public static Account toDomain(AccountEntity e) {
     if (e == null) {

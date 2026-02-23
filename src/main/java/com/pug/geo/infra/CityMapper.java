@@ -13,8 +13,8 @@ public final class CityMapper {
   /**
    * Entity -> Domain.
    *
-   * @param e entity.
-   * @return domain object or null if entity is null.
+   * @param e entityId.
+   * @return domain object or null if entityId is null.
    */
   public static City toDomain(CityEntity e) {
     if (e == null) {
@@ -31,7 +31,7 @@ public final class CityMapper {
    * Domain -> Entity (for persist).
    *
    * @param d domain object.
-   * @return entity or null if domain is null.
+   * @return entityId or null if domain is null.
    */
   public static CityEntity toEntity(City d) {
     if (d == null) {
@@ -45,10 +45,10 @@ public final class CityMapper {
   }
 
   /**
-   * Copy domain fields into an existing entity (for update).
+   * Copy domain fields into an existing entityId (for update).
    *
    * @param d domain object.
-   * @param e entity to copy into.
+   * @param e entityId to copy into.
    */
   public static void copy(City d, CityEntity e) {
     if (d == null || e == null) {

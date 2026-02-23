@@ -5,15 +5,15 @@ import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.util.UUID;
 
 /**
- * DTO representing the response for an entity. It contains all the necessary information about an
+ * DTO representing the response for an entityId. It contains all the necessary information about an
  *
- * @param id the unique identifier of the entity
- * @param cnpj the CNPJ number of the entity
- * @param cnpjFormatted the formatted CNPJ number of the entity
- * @param name the name of the entity
- * @param address the address of the entity
- * @param city the city information of the entity
- * @param auditInfo the audit information of the entity, including creation and update timestamps
+ * @param id the unique identifier of the entityId
+ * @param cnpj the CNPJ number of the entityId
+ * @param cnpjFormatted the formatted CNPJ number of the entityId
+ * @param name the name of the entityId
+ * @param address the address of the entityId
+ * @param city the city information of the entityId
+ * @param auditInfo the audit information of the entityId, including creation and update timestamps
  */
 public record EntityResponse(
     UUID id,

@@ -32,7 +32,7 @@ public interface EntityRepository {
   /**
    * Finds an Entity by its ID.
    *
-   * <p>Note: The returned Entity may contain validation errors (check {@code entity.hasErrors()})
+   * <p>Note: The returned Entity may contain validation errors (check {@code entityId.hasErrors()})
    * if the stored data is inconsistent with current domain rules.
    *
    * @param id the UUID of the Entity to find.

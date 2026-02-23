@@ -10,7 +10,7 @@ public class StaffProcessor {
    * Helper method to process input and build a new Staff domain object.
    *
    * @param accountId The ID of the associated account.
-   * @param entityId The ID of the associated entity.
+   * @param entityId The ID of the associated entityId.
    * @return The constructed Staff domain object.
    */
   public static Staff processCreateInput(UUID accountId, UUID entityId) {

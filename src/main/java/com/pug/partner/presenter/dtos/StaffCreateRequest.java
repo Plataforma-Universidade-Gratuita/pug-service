@@ -11,7 +11,7 @@ import java.util.UUID;
  * @param name the name of the staff member.
  * @param emailString the email of the staff member as a string.
  * @param password the password for the staff member's account.
- * @param entityId the CNPJ of the entity the staff is part of, as a UUID.
+ * @param entityId the CNPJ of the entityId the staff is part of, as a UUID.
  */
 public record StaffCreateRequest(
     @NotBlank String cpfString,

@@ -3,26 +3,26 @@ package com.pug.projects.domain;
 import com.pug.academic.domain.Student;
 import com.pug.projects.domain.enums.EnrollmentStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
-import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-/** Domain entity representing an Enrollment. */
+/** Domain entityId representing an Enrollment. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 public class Enrollment extends DomainError {
-  private final Student student;
-  private final Project project;
-  private final EnrollmentStatus status;
-  private final EnrollmentInfo enrollmentInfo;
+
+  EnrollmentIdentifier identifier;
+  EnrollmentStatus status;
+  EnrollmentInfo enrollmentInfo;
 
   /**
    * Factory method to create a new Enrollment with PENDING status.
@@ -32,13 +32,11 @@ public class Enrollment extends DomainError {
    * @return a new Enrollment instance
    */
   public static Enrollment factory(Student student, Project project) {
-    var now = OffsetDateTime.now();
     Enrollment enrollment =
         Enrollment.builder()
-            .student(student)
-            .project(project)
+            .identifier(EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
             .status(EnrollmentStatus.PENDING)
-            .enrollmentInfo(EnrollmentInfo.factory(now, null, null))
+            .enrollmentInfo(EnrollmentInfo.factory())
             .build();
 
     enrollment.collectValidationProblems();
@@ -46,7 +44,7 @@ public class Enrollment extends DomainError {
   }
 
   /**
-   * Change the status of the enrollment, updating relevant timestamps.
+   * Change the status of the enrollment, updating relevant timestamps via EnrollmentInfo.
    *
    * @param newStatus the new status to set
    * @return a new Enrollment instance with updated status
@@ -56,23 +54,17 @@ public class Enrollment extends DomainError {
       return this;
     }
 
-    var now = OffsetDateTime.now();
-    OffsetDateTime accepted = this.enrollmentInfo.getAcceptedAt();
-    OffsetDateTime closing = this.enrollmentInfo.getClosingStatusAt();
+    EnrollmentInfo newInfo;
 
     if (newStatus == EnrollmentStatus.APPROVED) {
-      accepted = now;
-      closing = null;
+      newInfo = this.enrollmentInfo.accept();
     } else if (isClosingStatus(newStatus)) {
-      closing = now;
+      newInfo = this.enrollmentInfo.closeStatus();
+    } else {
+      newInfo = this.enrollmentInfo.update();
     }
 
-    Enrollment updated =
-        this.toBuilder()
-            .status(newStatus)
-            .enrollmentInfo(
-                EnrollmentInfo.factory(enrollmentInfo.getRequestAt(), accepted, closing))
-            .build();
+    Enrollment updated = this.toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
 
     updated.collectValidationProblems();
     return updated;
@@ -87,25 +79,21 @@ public class Enrollment extends DomainError {
         || s == EnrollmentStatus.COMPLETED;
   }
 
-  /** Validates the Enrollment entity and accumulates errors if any. */
+  /** Validates the Enrollment entityId and accumulates errors if any. */
   private void collectValidationProblems() {
-    if (student == null) {
+    if (identifier == null) {
       addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
-    }
-    if (project == null) {
       addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+    } else if (identifier.hasErrors()) {
+      addErrors(identifier.getProblems());
     }
+
     if (status == null) {
       addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
-    if (enrollmentInfo != null) {
-      if (enrollmentInfo.getRequestAt() == null) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
-      }
-      if (enrollmentInfo.getAcceptedAt() != null
-          && enrollmentInfo.getAcceptedAt().isBefore(enrollmentInfo.getRequestAt())) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
-      }
+
+    if (enrollmentInfo != null && enrollmentInfo.hasErrors()) {
+      addErrors(enrollmentInfo.getProblems());
     }
   }
 }

@@ -7,10 +7,10 @@ import java.util.UUID;
 /**
  * Request DTO for creating an Entity.
  *
- * @param cnpjString the CNPJ of the entity as a string.
- * @param name the name of the entity.
- * @param cityId the ID of the city associated with the entity, as a UUID.
- * @param address the address of the entity.
+ * @param cnpjString the CNPJ of the entityId as a string.
+ * @param name the name of the entityId.
+ * @param cityId the ID of the city associated with the entityId, as a UUID.
+ * @param address the address of the entityId.
  */
 public record EntityCreateRequest(
     @NotBlank String cnpjString,

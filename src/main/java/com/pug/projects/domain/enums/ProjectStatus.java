@@ -6,10 +6,10 @@ import lombok.Getter;
 @Getter
 public enum ProjectStatus {
   PLANNED("project.status.planned"),
-  IN_PROGRESS("project.status.in_progress"),
+  IN_PROGRESS("project.status.in.progress"),
   COMPLETED("project.status.completed"),
-  ON_HOLD("project.status.on_hold"),
-  CANCELLED("project.status.cancelled");
+  ON_HOLD("project.status.on.hold"),
+  CANCELED("project.status.canceled");
 
   private final String bundleKey;
 

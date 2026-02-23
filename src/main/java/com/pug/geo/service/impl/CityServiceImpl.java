@@ -138,7 +138,7 @@ public class CityServiceImpl implements CityService {
    * {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are fundamental to
    * system integrity and must not be modified or deleted.
    *
-   * @param city the {@link City} entity to validate.
+   * @param city the {@link City} entityId to validate.
    * @throws BusinessRuleException if the city matches a protected default IBGE code.
    * @see Campi
    */

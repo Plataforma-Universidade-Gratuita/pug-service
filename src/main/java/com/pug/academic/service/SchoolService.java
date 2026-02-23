@@ -9,10 +9,10 @@ import java.util.UUID;
 public interface SchoolService {
 
   /**
-   * Saves a new School entity.
+   * Saves a new School entityId.
    *
    * @param cmd the command containing the data to create the new School.
-   * @return the saved School entity.
+   * @return the saved School entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the same name
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
@@ -20,11 +20,11 @@ public interface SchoolService {
   School save(SchoolCreateCommand cmd);
 
   /**
-   * Updates an existing School entity.
+   * Updates an existing School entityId.
    *
    * @param id the UUID of the school to update.
    * @param cmd the command containing the new data for the school.
-   * @return the updated School entity.
+   * @return the updated School entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school with the given ID
    *     does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the same name
@@ -34,7 +34,7 @@ public interface SchoolService {
   School update(UUID id, SchoolUpdateCommand cmd);
 
   /**
-   * Deletes a School entity by its ID.
+   * Deletes a School entityId by its ID.
    *
    * @param id the UUID of the school to delete.
    * @return true if the school was successfully deleted, false if the school with the given ID does
@@ -43,10 +43,10 @@ public interface SchoolService {
   boolean delete(UUID id);
 
   /**
-   * Retrieves a School entity by its ID.
+   * Retrieves a School entityId by its ID.
    *
    * @param id the UUID of the school.
-   * @return the School entity.
+   * @return the School entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school with the given ID
    *     does not exist (or data is corrupted in DB).
    */

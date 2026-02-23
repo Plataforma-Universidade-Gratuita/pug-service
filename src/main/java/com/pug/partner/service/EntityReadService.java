@@ -4,15 +4,15 @@ import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading entity information. */
+/** Interface for reading entityId information. */
 public interface EntityReadService {
 
   /**
    * Retrieves an EntityView by its ID.
    *
-   * @param id the UUID of the entity
+   * @param id the UUID of the entityId
    * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity with the given ID is
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given ID is
    *     found
    */
   EntityView getViewById(UUID id);
@@ -20,10 +20,10 @@ public interface EntityReadService {
   /**
    * Retrieves an EntityView by its CNPJ.
    *
-   * @param cnpj the CNPJ of the entity
+   * @param cnpj the CNPJ of the entityId
    * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity with the given CNPJ is
-   *     found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given CNPJ
+   *     is found
    */
   EntityView getViewByCnpj(String cnpj);
 

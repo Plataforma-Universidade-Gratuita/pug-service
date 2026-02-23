@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Admin entity representing admin users in the system. */
+/** Admin entityId representing admin users in the system. */
 @Getter
 @Setter
 @NoArgsConstructor

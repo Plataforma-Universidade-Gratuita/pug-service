@@ -17,7 +17,7 @@ public final class AdminMapper {
    * Maps an AdminEntity to an Admin domain object.
    *
    * @param e the AdminEntity to convert.
-   * @return the corresponding Admin domain object, or null if entity is null.
+   * @return the corresponding Admin domain object, or null if entityId is null.
    */
   public static Admin toDomain(AdminEntity e) {
     if (e == null) {

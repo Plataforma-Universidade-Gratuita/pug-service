@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** School entity aggregate. */
+/** School entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)

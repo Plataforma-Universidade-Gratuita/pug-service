@@ -134,10 +134,10 @@ public class StaffResource {
   }
 
   /**
-   * Lists staff members associated with a specific entity.
+   * Lists staff members associated with a specific entityId.
    *
-   * @param entityId the UUID of the entity
-   * @return a Response containing a list of staff members for the entity
+   * @param entityId the UUID of the entityId
+   * @return a Response containing a list of staff members for the entityId
    */
   @GET
   @Path("by-entity/{entityId}")
@@ -157,7 +157,7 @@ public class StaffResource {
    * @return a Response containing the created staff member details.
    * @throws DuplicateResourceException if a staff member with the same account ID already exists.
    * @throws AppValidationException if input validation fails.
-   * @throws ResourceNotFoundException if the associated entity is not found.
+   * @throws ResourceNotFoundException if the associated entityId is not found.
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {

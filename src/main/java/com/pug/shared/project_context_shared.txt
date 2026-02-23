@@ -741,7 +741,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-/** Base entity class that includes auditing fields for creation and update timestamps. */
+/** Base entityId class that includes auditing fields for creation and update timestamps. */
 @Getter
 @Setter
 @SuperBuilder
@@ -772,7 +772,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-/** Base entity class with a UUIDv7 identifier. */
+/** Base entityId class with a UUIDv7 identifier. */
 @Getter
 @Setter
 @SuperBuilder
@@ -845,9 +845,9 @@ public final class HibernateSearchUtils {
    * length.
    *
    * @param em the EntityManager
-   * @param type the entity class type
+   * @param type the entityId class type
    * @param key the search key
-   * @param <T> the entity type
+   * @param <T> the entityId type
    * @return a list of matching entities
    */
   public static <T> List<T> searchByName(EntityManager em, Class<T> type, String key) {
@@ -858,14 +858,14 @@ public final class HibernateSearchUtils {
    * Search entities by name using Hibernate Search.
    *
    * @param em the EntityManager
-   * @param type the entity class type
+   * @param type the entityId class type
    * @param key the search key
    * @param nameField the name field for fuzzy matching
    * @param nameExactField the exact name field for wildcard matching
    * @param nameAutoField the auto-complete name field
    * @param nameSortField the field to sort results by
    * @param minTokenLength the minimum token length for partial matches
-   * @param <T> the entity type
+   * @param <T> the entityId type
    * @return a list of matching entities
    */
   public static <T> List<T> searchByName(
@@ -920,12 +920,12 @@ package com.pug.shared.presenter.dtos;
 import java.time.OffsetDateTime;
 
 /**
- * AuditInfoResponse is a record that represents the audit information for an entity, including
+ * AuditInfoResponse is a record that represents the audit information for an entityId, including
  * creation and update timestamps.
  *
- * @param createdAt the date and time when the entity was created.
+ * @param createdAt the date and time when the entityId was created.
  * @param createdAtFormatted the formatted text for the creation date and time (localized).
- * @param updatedAt the date and time when the entity was last updated.
+ * @param updatedAt the date and time when the entityId was last updated.
  * @param updatedAtFormatted the formatted text for the last update date and time (localized).
  */
 public record AuditInfoResponse(
@@ -1029,8 +1029,8 @@ public final class SharedDataPresenter {
    * <p><b>Note:</b> {@code updatedAt} is optional (nullable), but {@code createdAt} and {@code
    * locale} are mandatory.
    *
-   * @param createdAt the timestamp when the entity was created (cannot be null).
-   * @param updatedAt the timestamp when the entity was last updated (can be null).
+   * @param createdAt the timestamp when the entityId was created (cannot be null).
+   * @param updatedAt the timestamp when the entityId was last updated (can be null).
    * @param locale the account's locale for date formatting (cannot be null).
    * @return an {@link AuditInfoResponse} containing raw timestamps and their string
    *     representations.

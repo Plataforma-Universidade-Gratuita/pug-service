@@ -29,7 +29,7 @@ public interface AccountService {
    *
    * @param id the UUID of the Account to be updated.
    * @param cmd the command containing the data to update the Account.
-   * @return the updated Account entity
+   * @return the updated Account entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the updated
@@ -61,7 +61,7 @@ public interface AccountService {
    * Retrieves an Account by its ID.
    *
    * @param id the UUID of the Account.
-   * @return the Account entity.
+   * @return the Account entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the account is found but its data

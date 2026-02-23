@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** City entity aggregate. */
+/** City entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -117,22 +117,22 @@ import java.util.UUID;
 public interface CityRepository {
 
   /**
-   * Persists a city entity.
+   * Persists a city entityId.
    *
-   * @param city the city entity to persist.
-   * @return the persisted city entity.
+   * @param city the city entityId to persist.
+   * @return the persisted city entityId.
    */
   City persist(City city);
 
   /**
-   * Updates an existing city entity.
+   * Updates an existing city entityId.
    *
-   * @param updated the city entity with updated information.
+   * @param updated the city entityId with updated information.
    */
   void update(City updated);
 
   /**
-   * Deletes a city entity by its unique identifier.
+   * Deletes a city entityId by its unique identifier.
    *
    * @param id the unique identifier of the city to delete.
    * @return true if the city was successfully deleted, false if the city was not found.
@@ -140,13 +140,13 @@ public interface CityRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Finds a city entity by its unique identifier.
+   * Finds a city entityId by its unique identifier.
    *
    * <p>Note: The returned City may contain validation errors (check {@code city.hasErrors()}) if
    * the stored data is inconsistent with current domain rules.
    *
    * @param id the unique identifier of the city.
-   * @return an Optional containing the city entity if found.
+   * @return an Optional containing the city entityId if found.
    */
   Optional<City> findOptionalById(UUID id);
 
@@ -264,8 +264,8 @@ public final class CityMapper {
   /**
    * Entity -> Domain.
    *
-   * @param e entity.
-   * @return domain object or null if entity is null.
+   * @param e entityId.
+   * @return domain object or null if entityId is null.
    */
   public static City toDomain(CityEntity e) {
     if (e == null) {
@@ -282,7 +282,7 @@ public final class CityMapper {
    * Domain -> Entity (for persist).
    *
    * @param d domain object.
-   * @return entity or null if domain is null.
+   * @return entityId or null if domain is null.
    */
   public static CityEntity toEntity(City d) {
     if (d == null) {
@@ -296,10 +296,10 @@ public final class CityMapper {
   }
 
   /**
-   * Copy domain fields into an existing entity (for update).
+   * Copy domain fields into an existing entityId (for update).
    *
    * @param d domain object.
-   * @param e entity to copy into.
+   * @param e entityId to copy into.
    */
   public static void copy(City d, CityEntity e) {
     if (d == null || e == null) {
@@ -1158,7 +1158,7 @@ public class CityServiceImpl implements CityService {
    * {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are fundamental to
    * system integrity and must not be modified or deleted.
    *
-   * @param city the {@link City} entity to validate.
+   * @param city the {@link City} entityId to validate.
    * @throws BusinessRuleException if the city matches a protected default IBGE code.
    * @see Campi
    */

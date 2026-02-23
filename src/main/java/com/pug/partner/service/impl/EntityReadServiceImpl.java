@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for entity views. */
+/** Read-only service for entityId views. */
 @ApplicationScoped
 public class EntityReadServiceImpl implements EntityReadService {
 

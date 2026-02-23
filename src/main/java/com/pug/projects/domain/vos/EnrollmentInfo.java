@@ -3,6 +3,8 @@ package com.pug.projects.domain.vos;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
+import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -15,53 +17,83 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class EnrollmentInfo extends DomainError {
 
-  OffsetDateTime requestAt;
   OffsetDateTime acceptedAt;
   OffsetDateTime closingStatusAt;
+  AuditInfo auditInfo;
 
   /** Private constructor to enforce the use of the factory method. */
   @Builder(toBuilder = true)
   private EnrollmentInfo(
-      OffsetDateTime requestAt, OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt) {
-    this.requestAt = requestAt;
+      OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt, AuditInfo auditInfo) {
     this.acceptedAt = acceptedAt;
     this.closingStatusAt = closingStatusAt;
+    this.auditInfo = auditInfo;
   }
 
   /**
    * Factory method to create and validate an EnrollmentInfo instance.
    *
-   * @param requestAt The date and time when the enrollment request was made.
-   * @param acceptedAt The date and time when the enrollment was accepted.
-   * @param closingStatusAt The date and time when the enrollment status was closed.
    * @return A validated EnrollmentInfo instance.
    */
-  public static EnrollmentInfo factory(
-      OffsetDateTime requestAt, OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt) {
-
+  public static EnrollmentInfo factory() {
     EnrollmentInfo vo =
         EnrollmentInfo.builder()
-            .requestAt(requestAt)
-            .acceptedAt(acceptedAt)
-            .closingStatusAt(closingStatusAt)
+            .acceptedAt(null)
+            .closingStatusAt(null)
+            .auditInfo(AuditInfo.factory())
             .build();
     vo.collectValidationProblems();
     return vo;
   }
 
+  /**
+   * Creates an updated EnrollmentInfo instance with refreshed audit information.
+   *
+   * @return A new EnrollmentInfo instance with updated audit info.
+   */
+  public EnrollmentInfo update() {
+    EnrollmentInfo updated = toBuilder().auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Creates an updated EnrollmentInfo instance with the acceptedAt timestamp set to now.
+   *
+   * @return A new EnrollmentInfo instance with acceptedAt set to the current time.
+   */
+  public EnrollmentInfo accept() {
+    EnrollmentInfo accepted =
+        toBuilder().acceptedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+    accepted.collectValidationProblems();
+    return accepted;
+  }
+
+  /**
+   * Creates an updated EnrollmentInfo instance with the closingStatusAt timestamp set to now.
+   *
+   * @return A new EnrollmentInfo instance with closingStatusAt set to the current time.
+   */
+  public EnrollmentInfo closeStatus() {
+    EnrollmentInfo closed =
+        toBuilder().closingStatusAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+    closed.collectValidationProblems();
+    return closed;
+  }
+
   /** Validates the EnrollmentInfo instance. */
   private void collectValidationProblems() {
-    if (requestAt == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_REQUEST_AT_BLANK));
-      return;
-    }
+    if (auditInfo == null) {
+      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else {
+      addErrors(auditInfo.getProblems());
+      if (acceptedAt != null && acceptedAt.isBefore(auditInfo.getCreatedAt())) {
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      }
 
-    if (acceptedAt != null && acceptedAt.isBefore(requestAt)) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
-    }
-
-    if (closingStatusAt != null && closingStatusAt.isBefore(requestAt)) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      if (closingStatusAt != null && closingStatusAt.isBefore(auditInfo.getCreatedAt())) {
+        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+      }
     }
   }
 }

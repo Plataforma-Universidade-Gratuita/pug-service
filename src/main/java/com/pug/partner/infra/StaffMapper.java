@@ -22,8 +22,8 @@ public final class StaffMapper {
    * Maps a StaffEntity to a Staff domain object.
    *
    * @param e the StaffEntity.
-   * @return the Staff domain object, or null if entity is null.
-   * @throws AppValidationException if the data in the entity (e.g., accountId or entityId) is
+   * @return the Staff domain object, or null if entityId is null.
+   * @throws AppValidationException if the data in the entityId (e.g., accountId or entityId) is
    *     invalid according to domain rules, indicating corrupted data in persistence.
    */
   public static Staff toDomain(StaffEntity e) throws AppValidationException {

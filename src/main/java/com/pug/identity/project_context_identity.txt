@@ -25,7 +25,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Account entity aggregate. */
+/** Account entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -240,7 +240,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Admin entity aggregate. */
+/** Admin entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -413,7 +413,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** User entity aggregate. */
+/** User entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -763,7 +763,7 @@ public final class AccountMapper {
    * Maps an AccountEntity to an Account domain object.
    *
    * @param e the AccountEntity.
-   * @return the Account domain object, or null if entity is null.
+   * @return the Account domain object, or null if entityId is null.
    */
   public static Account toDomain(AccountEntity e) {
     if (e == null) {
@@ -864,7 +864,7 @@ public final class AdminMapper {
    * Maps an AdminEntity to an Admin domain object.
    *
    * @param e the AdminEntity to convert.
-   * @return the corresponding Admin domain object, or null if entity is null.
+   * @return the corresponding Admin domain object, or null if entityId is null.
    */
   public static Admin toDomain(AdminEntity e) {
     if (e == null) {
@@ -1020,7 +1020,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Admin entity representing admin users in the system. */
+/** Admin entityId representing admin users in the system. */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -1965,7 +1965,7 @@ public final class UserMapper {
    * Maps a UserEntity to a User domain object.
    *
    * @param e the UserEntity.
-   * @return the User domain object, or null if entity is null.
+   * @return the User domain object, or null if entityId is null.
    */
   public static User toDomain(UserEntity e) {
     if (e == null) {
@@ -2824,7 +2824,7 @@ public interface AccountService {
    *
    * @param id the UUID of the Account to be updated.
    * @param cmd the command containing the data to update the Account.
-   * @return the updated Account entity
+   * @return the updated Account entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the updated
@@ -2856,7 +2856,7 @@ public interface AccountService {
    * Retrieves an Account by its ID.
    *
    * @param id the UUID of the Account.
-   * @return the Account entity.
+   * @return the Account entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the account is found but its data
@@ -2974,7 +2974,7 @@ public interface AdminService {
    * Retrieves an Admin by account ID.
    *
    * @param accountId the UUID of the account.
-   * @return the Admin entity.
+   * @return the Admin entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
    *     ID does not exist (or data is corrupted in DB).
    */
@@ -3883,7 +3883,7 @@ public interface UserService {
    * Creates and saves a new User with the given CPF and name.
    *
    * @param cmd the command containing the data to create the new User
-   * @return the saved User entity
+   * @return the saved User entityId
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the same CPF
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
@@ -3896,7 +3896,7 @@ public interface UserService {
    *
    * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
-   * @return the updated User entity
+   * @return the updated User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
@@ -3930,7 +3930,7 @@ public interface UserService {
    * Retrieves a User by its ID.
    *
    * @param id the UUID of the account
-   * @return the User entity
+   * @return the User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    */
@@ -3940,7 +3940,7 @@ public interface UserService {
    * Retrieves a User by its CPF.
    *
    * @param cpf the CPF of the account (already a validated Value Object).
-   * @return the User entity
+   * @return the User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF
    *     does not exist (or data is corrupted in DB).
    */

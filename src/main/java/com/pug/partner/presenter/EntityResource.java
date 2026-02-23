@@ -54,10 +54,10 @@ public class EntityResource {
   @Context HttpHeaders headers;
 
   /**
-   * Get entity by ID.
+   * Get entityId by ID.
    *
-   * @param id the entity ID
-   * @return the response containing the entity view
+   * @param id the entityId ID
+   * @return the response containing the entityId view
    * @throws ResourceNotFoundException if the Entity is not found.
    */
   @GET
@@ -72,7 +72,7 @@ public class EntityResource {
    *
    * @param q optional search query (by name)
    * @param cityId optional city ID to filter by
-   * @return the response containing the list of entity views
+   * @return the response containing the list of entityId views
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
@@ -96,10 +96,10 @@ public class EntityResource {
   }
 
   /**
-   * Get entity by CNPJ.
+   * Get entityId by CNPJ.
    *
    * @param cnpjRaw the raw CNPJ string
-   * @return the response containing the entity view
+   * @return the response containing the entityId view
    * @throws AppValidationException if the provided CNPJ is malformed.
    * @throws ResourceNotFoundException if the Entity is not found.
    */
@@ -111,11 +111,11 @@ public class EntityResource {
   }
 
   /**
-   * Create a new entity.
+   * Create a new entityId.
    *
-   * @param req the entity creation request
-   * @return the response containing the created entity view
-   * @throws DuplicateResourceException if an entity with the same CNPJ already exists.
+   * @param req the entityId creation request
+   * @return the response containing the created entityId view
+   * @throws DuplicateResourceException if an entityId with the same CNPJ already exists.
    * @throws AppValidationException if input validation fails.
    * @throws ResourceNotFoundException if the specified city does not exist.
    */
@@ -134,11 +134,11 @@ public class EntityResource {
   }
 
   /**
-   * Update an existing entity.
+   * Update an existing entityId.
    *
-   * @param id the entity ID
-   * @param req the entity update request
-   * @return the response containing the updated entity view
+   * @param id the entityId ID
+   * @param req the entityId update request
+   * @return the response containing the updated entityId view
    * @throws ResourceNotFoundException if the Entity is not found.
    * @throws DuplicateResourceException if updated details conflict with existing records.
    * @throws AppValidationException if input validation fails.
@@ -156,9 +156,9 @@ public class EntityResource {
   }
 
   /**
-   * Delete an entity by ID.
+   * Delete an entityId by ID.
    *
-   * @param id the ID of the entity to delete
+   * @param id the ID of the entityId to delete
    * @return 200 OK with empty data (idempotent).
    */
   @DELETE

@@ -16,9 +16,9 @@ public final class HibernateSearchUtils {
    * length.
    *
    * @param em the EntityManager
-   * @param type the entity class type
+   * @param type the entityId class type
    * @param key the search key
-   * @param <T> the entity type
+   * @param <T> the entityId type
    * @return a list of matching entities
    */
   public static <T> List<T> searchByName(EntityManager em, Class<T> type, String key) {
@@ -29,14 +29,14 @@ public final class HibernateSearchUtils {
    * Search entities by name using Hibernate Search.
    *
    * @param em the EntityManager
-   * @param type the entity class type
+   * @param type the entityId class type
    * @param key the search key
    * @param nameField the name field for fuzzy matching
    * @param nameExactField the exact name field for wildcard matching
    * @param nameAutoField the auto-complete name field
    * @param nameSortField the field to sort results by
    * @param minTokenLength the minimum token length for partial matches
-   * @param <T> the entity type
+   * @param <T> the entityId type
    * @return a list of matching entities
    */
   public static <T> List<T> searchByName(

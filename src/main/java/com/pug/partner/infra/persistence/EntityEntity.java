@@ -20,7 +20,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** Persistence entity representing an Entity in the partner domain. */
+/** Persistence entityId representing an Entity in the partner domain. */
 @Getter
 @Setter
 @NoArgsConstructor

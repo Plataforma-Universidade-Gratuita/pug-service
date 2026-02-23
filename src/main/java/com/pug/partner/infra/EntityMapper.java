@@ -13,8 +13,8 @@ public final class EntityMapper {
   /**
    * Maps an EntityEntity to an Entity domain object.
    *
-   * @param e the persistence entity.
-   * @return the domain object, or null if entity is null.
+   * @param e the persistence entityId.
+   * @return the domain object, or null if entityId is null.
    */
   public static Entity toDomain(EntityEntity e) {
     if (e == null) {
@@ -34,7 +34,7 @@ public final class EntityMapper {
    * Maps an Entity domain object to an EntityEntity for persistence.
    *
    * @param d the domain object.
-   * @return the persistence entity, or null if domain is null.
+   * @return the persistence entityId, or null if domain is null.
    */
   public static EntityEntity toEntity(Entity d) {
     if (d == null) {
@@ -55,7 +55,7 @@ public final class EntityMapper {
    * Copies domain fields into an existing EntityEntity (for update).
    *
    * @param d the domain object.
-   * @param e the persistence entity.
+   * @param e the persistence entityId.
    */
   public static void copy(Entity d, EntityEntity e) {
     if (d == null || e == null) {

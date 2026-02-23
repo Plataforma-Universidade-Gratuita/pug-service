@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** City entity aggregate. */
+/** City entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)

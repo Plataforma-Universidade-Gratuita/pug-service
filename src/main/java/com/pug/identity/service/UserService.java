@@ -14,7 +14,7 @@ public interface UserService {
    * Creates and saves a new User with the given CPF and name.
    *
    * @param cmd the command containing the data to create the new User
-   * @return the saved User entity
+   * @return the saved User entityId
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the same CPF
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
@@ -27,7 +27,7 @@ public interface UserService {
    *
    * @param id the UUID of the account to update
    * @param cmd the command containing the data to update the User
-   * @return the updated User entity
+   * @return the updated User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a account with the updated CPF
@@ -61,7 +61,7 @@ public interface UserService {
    * Retrieves a User by its ID.
    *
    * @param id the UUID of the account
-   * @return the User entity
+   * @return the User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given ID
    *     does not exist (or data is corrupted in DB).
    */
@@ -71,7 +71,7 @@ public interface UserService {
    * Retrieves a User by its CPF.
    *
    * @param cpf the CPF of the account (already a validated Value Object).
-   * @return the User entity
+   * @return the User entityId
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account with the given CPF
    *     does not exist (or data is corrupted in DB).
    */

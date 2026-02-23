@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-/** Base entity class with a UUIDv7 identifier. */
+/** Base entityId class with a UUIDv7 identifier. */
 @Getter
 @Setter
 @SuperBuilder

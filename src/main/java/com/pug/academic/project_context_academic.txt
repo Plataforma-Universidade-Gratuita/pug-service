@@ -22,7 +22,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Course entity aggregate. */
+/** Course entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -228,7 +228,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** School entity aggregate. */
+/** School entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -304,17 +304,17 @@ import java.util.UUID;
 /** Repository interface for Schools. */
 public interface SchoolRepository {
   /**
-   * Persist a school entity.
+   * Persist a school entityId.
    *
-   * @param entity the school entity to persist
-   * @return the persisted school entity
+   * @param entity the school entityId to persist
+   * @return the persisted school entityId
    */
   School persist(School entity);
 
   /**
-   * Update a school entity.
+   * Update a school entityId.
    *
-   * @param entity the school entity with updated information
+   * @param entity the school entityId with updated information
    */
   void update(School entity);
 
@@ -368,7 +368,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Student entity aggregate. */
+/** Student entityId aggregate. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
@@ -548,7 +548,7 @@ import java.util.UUID;
 /** Repository interface for managing Student entities. */
 public interface StudentRepository {
   /**
-   * Persists a Student entity.
+   * Persists a Student entityId.
    *
    * @param entity the Student to persist
    * @return the persisted Student
@@ -556,7 +556,7 @@ public interface StudentRepository {
   Student persist(Student entity);
 
   /**
-   * Updates a Student entity.
+   * Updates a Student entityId.
    *
    * @param entity the Student to update
    */
@@ -881,7 +881,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-/** Course persistence entity. */
+/** Course persistence entityId. */
 @Getter
 @Setter
 @SuperBuilder
@@ -3056,10 +3056,10 @@ import java.util.UUID;
 public interface CourseService {
 
   /**
-   * Saves a new Course entity.
+   * Saves a new Course entityId.
    *
    * @param cmd the command containing the data to create the new Course.
-   * @return the saved Course entity.
+   * @return the saved Course entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name
    *     already exists.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated school does not
@@ -3069,11 +3069,11 @@ public interface CourseService {
   Course save(CourseCreateCommand cmd);
 
   /**
-   * Updates an existing Course entity.
+   * Updates an existing Course entityId.
    *
    * @param id the UUID of the course to update.
    * @param cmd the command containing the new data for the course.
-   * @return the updated Course entity.
+   * @return the updated Course entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course with the given ID
    *     does not exist, or if the new school does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the new name
@@ -3083,7 +3083,7 @@ public interface CourseService {
   Course update(UUID id, CourseUpdateCommand cmd);
 
   /**
-   * Deletes a Course entity by its ID.
+   * Deletes a Course entityId by its ID.
    *
    * @param id the UUID of the course to delete.
    * @return true if the course was successfully deleted, false if the course with the given ID does
@@ -3092,10 +3092,10 @@ public interface CourseService {
   boolean delete(UUID id);
 
   /**
-   * Retrieves a Course entity by its ID.
+   * Retrieves a Course entityId by its ID.
    *
    * @param id the UUID of the course.
-   * @return the Course entity.
+   * @return the Course entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course with the given ID
    *     does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the course is found but its data is
@@ -3590,7 +3590,7 @@ public class SchoolServiceImpl implements SchoolService {
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**
-   * Checks if a School entity exists by its name.
+   * Checks if a School entityId exists by its name.
    *
    * @param name the name of the school.
    * @return true if a school with the given name exists, false otherwise.
@@ -3932,10 +3932,10 @@ import java.util.UUID;
 public interface SchoolService {
 
   /**
-   * Saves a new School entity.
+   * Saves a new School entityId.
    *
    * @param cmd the command containing the data to create the new School.
-   * @return the saved School entity.
+   * @return the saved School entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the same name
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
@@ -3943,11 +3943,11 @@ public interface SchoolService {
   School save(SchoolCreateCommand cmd);
 
   /**
-   * Updates an existing School entity.
+   * Updates an existing School entityId.
    *
    * @param id the UUID of the school to update.
    * @param cmd the command containing the new data for the school.
-   * @return the updated School entity.
+   * @return the updated School entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school with the given ID
    *     does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the same name
@@ -3957,7 +3957,7 @@ public interface SchoolService {
   School update(UUID id, SchoolUpdateCommand cmd);
 
   /**
-   * Deletes a School entity by its ID.
+   * Deletes a School entityId by its ID.
    *
    * @param id the UUID of the school to delete.
    * @return true if the school was successfully deleted, false if the school with the given ID does
@@ -3966,10 +3966,10 @@ public interface SchoolService {
   boolean delete(UUID id);
 
   /**
-   * Retrieves a School entity by its ID.
+   * Retrieves a School entityId by its ID.
    *
    * @param id the UUID of the school.
-   * @return the School entity.
+   * @return the School entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school with the given ID
    *     does not exist (or data is corrupted in DB).
    */
@@ -4068,12 +4068,12 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
-   * Saves a new Student entity.
+   * Saves a new Student entityId.
    *
    * <p>This method also creates and saves the associated Account.
    *
    * @param cmd the command containing the data to create the new Student.
-   * @return the saved Student entity.
+   * @return the saved Student entityId.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the same
    *     academic registration already exists, or if an account with the given email already exists.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated course does not
@@ -4083,13 +4083,13 @@ public interface StudentService {
   Student save(StudentCreateCommand cmd);
 
   /**
-   * Updates an existing Student entity.
+   * Updates an existing Student entityId.
    *
    * <p>This method also updates the associated Account.
    *
    * @param accountId the UUID of the student's account to update.
    * @param cmd the command containing the new data for the student.
-   * @return the updated Student entity.
+   * @return the updated Student entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
    *     account ID does not exist, or if the new course does not exist.
    * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the new academic
@@ -4099,7 +4099,7 @@ public interface StudentService {
   Student update(UUID accountId, StudentUpdateCommand cmd);
 
   /**
-   * Deletes a Student entity by its account ID.
+   * Deletes a Student entityId by its account ID.
    *
    * @param accountId the UUID of the student's account to delete.
    * @return true if the student was successfully deleted, false if the student was not found.
@@ -4107,10 +4107,10 @@ public interface StudentService {
   boolean delete(UUID accountId);
 
   /**
-   * Retrieves a Student entity by its account ID.
+   * Retrieves a Student entityId by its account ID.
    *
    * @param accountId the UUID of the student's account.
-   * @return the Student entity.
+   * @return the Student entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
    *     account ID does not exist (or data is corrupted in DB).
    * @throws com.pug.shared.exceptions.AppValidationException if the student is found but its data

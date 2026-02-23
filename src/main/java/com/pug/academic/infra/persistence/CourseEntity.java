@@ -18,7 +18,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-/** Course persistence entity. */
+/** Course persistence entityId. */
 @Getter
 @Setter
 @SuperBuilder

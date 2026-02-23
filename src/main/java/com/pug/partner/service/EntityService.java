@@ -13,7 +13,7 @@ public interface EntityService {
    *
    * @param cmd the command containing the data to create the Entity
    * @return the saved Entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
    *     name, invalid CNPJ).
@@ -28,7 +28,7 @@ public interface EntityService {
    * @return the updated Entity
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
    *     corrupted) or city is not found.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the same CNPJ
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
    *     already exists.
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
    */

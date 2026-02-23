@@ -5,6 +5,7 @@ import com.pug.academic.domain.Student;
 import com.pug.projects.domain.enums.AttendanceStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.AttendanceInfo;
+import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.Problem;
@@ -17,18 +18,17 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-/** Domain entity representing an Attendance. */
+/** Domain entityId representing an Attendance. */
 @Getter
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 public class Attendance extends DomainError {
-  private final UUID id;
-  private final Student student;
-  private final Project project;
-  private final QrValidationInfo qrValidationInfo;
-  private final AttendanceInfo attendanceInfo;
-  private final AttendanceStatus status;
+  UUID id;
+  EnrollmentIdentifier enrollmentIdentifier;
+  QrValidationInfo qrValidationInfo;
+  AttendanceInfo attendanceInfo;
+  AttendanceStatus status;
 
   /**
    * Factory method to create a new Attendance instance.
@@ -43,10 +43,10 @@ public class Attendance extends DomainError {
     Attendance att =
         Attendance.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
-            .project(project)
-            .student(student)
+            .enrollmentIdentifier(
+                EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
             .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
-            .attendanceInfo(AttendanceInfo.factory(null, null, OffsetDateTime.now()))
+            .attendanceInfo(AttendanceInfo.factory(null, null))
             .status(AttendanceStatus.WAITING)
             .build();
 
@@ -65,12 +65,27 @@ public class Attendance extends DomainError {
    */
   public Attendance validateAttendance(
       UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
+
+    // We update QR Info with geo data
     QrValidationInfo newQr =
         QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
 
+    // We create a new AttendanceInfo with validation details, preserving the original createdAt
+    // (via factory/builder pattern in VO if supported, or here we are creating fresh but using
+    // 'factory' which resets createdAt to NOW inside VO usually.
+    // Ideally we should use toBuilder on existing attendanceInfo if we want to preserve createdAt.
+    // Assuming AttendanceInfo.factory resets time, we should use toBuilder manually here or update
+    // the VO to support 'validate' transition.
+    // For now, doing manual rebuild to preserve createdAt from original object:
+
     AttendanceInfo newInfo =
-        AttendanceInfo.factory(
-            validatorId, OffsetDateTime.now(), this.attendanceInfo.getCreatedAt());
+        this.attendanceInfo.toBuilder()
+            .validatedBy(validatorId)
+            .validatedAt(OffsetDateTime.now())
+            .auditInfo(this.attendanceInfo.getAuditInfo().update()) // Update updatedAt
+            .build();
+    // Re-validate the VO manually or rely on entity validation below
+    // (Ideally VO methods should handle this internal consistency)
 
     Attendance updated =
         this.toBuilder()
@@ -83,37 +98,28 @@ public class Attendance extends DomainError {
     return updated;
   }
 
-  /** Validates the Attendance entity's fields and state. */
+  /** Validates the Attendance entityId's fields and state. */
   private void collectValidationProblems() {
-    if (project == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK));
-    }
-    if (student == null) {
+    validateIdField(id);
+
+    if (enrollmentIdentifier == null) {
+      addError(
+          new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK)); // Generic fallback
       addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+    } else if (enrollmentIdentifier.hasErrors()) {
+      addErrors(enrollmentIdentifier.getProblems());
     }
+
     if (status == null) {
       addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
-    if (qrValidationInfo != null) {
-      if (qrValidationInfo.getDuration() == null || qrValidationInfo.getDuration().signum() <= 0) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
-      }
-      BigDecimal lat = qrValidationInfo.getLatitude();
-      BigDecimal lon = qrValidationInfo.getLongitude();
+    if (qrValidationInfo != null && qrValidationInfo.hasErrors()) {
+      addErrors(qrValidationInfo.getProblems());
+    }
 
-      boolean invalidLat =
-          lat != null
-              && (lat.compareTo(BigDecimal.valueOf(90)) > 0
-                  || lat.compareTo(BigDecimal.valueOf(-90)) < 0);
-      boolean invalidLon =
-          lon != null
-              && (lon.compareTo(BigDecimal.valueOf(180)) > 0
-                  || lon.compareTo(BigDecimal.valueOf(-180)) < 0);
-
-      if (invalidLat || invalidLon) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
-      }
+    if (attendanceInfo != null && attendanceInfo.hasErrors()) {
+      addErrors(attendanceInfo.getProblems());
     }
   }
 }

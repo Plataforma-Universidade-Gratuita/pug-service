@@ -46,7 +46,7 @@ public interface AdminService {
    * Retrieves an Admin by account ID.
    *
    * @param accountId the UUID of the account.
-   * @return the Admin entity.
+   * @return the Admin entityId.
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin with the given account
    *     ID does not exist (or data is corrupted in DB).
    */
