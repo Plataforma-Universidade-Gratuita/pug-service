@@ -29,28 +29,40 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing cities. */
+/**
+ * REST API Resource controller for managing geographic Cities.
+ * <p>
+ * This class exposes endpoints to create, retrieve, update, and delete cities.
+ * It acts as the HTTP entry point, orchestrating requests by delegating commands to the
+ * {@link CityService} (writes) and queries to the {@link CityReadService} (reads),
+ * strictly adhering to CQRS architectural principles. All responses are wrapped in a
+ * standard {@link ApiEnvelope}.
+ */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject CityService writeService;
-  @Inject CityReadService readService;
+  @Inject
+  CityService writeService;
+  @Inject
+  CityReadService readService;
 
-  @Context UriInfo uri;
+  @Context
+  UriInfo uri;
 
   /**
-   * Retrieves a city by its ID.
+   * Retrieves a specific city by its unique UUID identifier.
    *
-   * @param id the ID of the city.
-   * @return a Response containing the city.
+   * @param id the unique identifier (UUIDv7) of the requested city
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CityResponse}
    */
   @GET
   @Path("{id}")
@@ -61,10 +73,27 @@ public class CityResource {
   }
 
   /**
-   * Lists or searches for cities.
+   * Retrieves a specific city using its natural key (IBGE code).
    *
-   * @param q the optional search query.
-   * @return a Response containing the list of cities.
+   * @param ibgeCode the exact 7-digit IBGE code of the city
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CityResponse}
+   */
+  @GET
+  @Path("by-ibge/{ibgeCode}")
+  public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
+    CityView cityView = readService.getViewByIbgeCode(ibgeCode);
+    CityResponse responseBody = CityPresenter.toResponse(cityView);
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
+  }
+
+  /**
+   * Retrieves a collection of cities.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the cities' names. If omitted, it returns an unfiltered list of all available cities.
+   *
+   * @param q the optional search query string used to filter cities by name
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link CityResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q) {
@@ -77,30 +106,18 @@ public class CityResource {
     }
 
     List<CityResponse> responseBody =
-        views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+            views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
   /**
-   * Retrieves a city by its IBGE code.
+   * Registers a new geographic city within the platform.
+   * <p>
+   * Applies Bean Validation to the incoming payload before delegating to the application service.
    *
-   * @param ibgeCode the IBGE code of the city.
-   * @return a Response containing the city.
-   */
-  @GET
-  @Path("by-ibge/{ibgeCode}")
-  public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
-    CityView cityView = readService.getViewByIbgeCode(ibgeCode);
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-    return Response.ok(ApiEnvelope.ok(responseBody)).build();
-  }
-
-  /**
-   * Creates a new city.
-   *
-   * @param req the city creation request.
-   * @return a Response containing the created city.
+   * @param req the validated {@link CityCreateRequest} containing the city's details
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link CityResponse}
    */
   @POST
   public Response create(@Valid CityCreateRequest req) {
@@ -115,11 +132,14 @@ public class CityResource {
   }
 
   /**
-   * Updates an existing city.
+   * Partially updates an existing city's details.
+   * <p>
+   * Omitting fields in the request payload will result in those fields retaining their
+   * current state in the database.
    *
-   * @param id the ID of the city to update.
-   * @param req the city update request.
-   * @return a Response containing the updated city.
+   * @param id  the unique identifier (UUIDv7) of the city to update
+   * @param req the validated {@link CityUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link CityResponse}
    */
   @PUT
   @Path("{id}")
@@ -134,10 +154,12 @@ public class CityResource {
   }
 
   /**
-   * Deletes a city by its ID.
+   * Permanently removes a city from the system.
+   * <p>
+   * <i>Note:</i> Protected default cities cannot be deleted and will trigger a 422 Unprocessable Entity.
    *
-   * @param id the ID of the city to delete.
-   * @return a Response indicating the result of the deletion.
+   * @param id the unique identifier (UUIDv7) of the city to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("{id}")

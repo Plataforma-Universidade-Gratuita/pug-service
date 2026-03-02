@@ -2,7 +2,6 @@ package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -63,10 +62,10 @@ public class Admin extends DomainError {
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     if (grantedAt == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
     }
     if (campus == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
   }
 }

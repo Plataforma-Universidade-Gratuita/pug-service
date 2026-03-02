@@ -11,6 +11,7 @@ CREATE TABLE attendances
     validated_by       uuid,
     validated_at       TIMESTAMP WITH TIME ZONE,
     created_at         TIMESTAMP WITH TIME ZONE,
+    updated_at         TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (id),
     FOREIGN KEY (project_id, student_id) REFERENCES enrollments (project_id, student_id),
     FOREIGN KEY (validated_by) REFERENCES staff (account_id),

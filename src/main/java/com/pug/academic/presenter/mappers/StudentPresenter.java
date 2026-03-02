@@ -44,7 +44,7 @@ public final class StudentPresenter {
     String remainingDaysFormatted = "";
     if (v.dueDate() != null) {
       remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), v.dueDate());
-      remainingDaysFormatted = PresenterUtils.formatRemainingDays(v.dueDate(), locale, i18n);
+      remainingDaysFormatted = formatRemainingDays(v.dueDate(), locale, i18n);
     }
 
     CampusResponse campus = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
@@ -66,5 +66,35 @@ public final class StudentPresenter {
         remainingDays,
         remainingDaysFormatted,
         auditInfo);
+  }
+
+  /**
+   * Formats the number of remaining days until a due date into a human-readable, localized string.
+   *
+   * @param dueDate the due date.
+   * @param locale the target locale.
+   * @param i18n the internationalization service.
+   * @return a localized string representing the remaining days (e.g., "Hoje", "Amanhã", "X dias
+   *     restantes", "Atrasado").
+   */
+  private static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
+    if (dueDate == null) {
+      return "";
+    }
+
+    long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+
+    String formattedString;
+    if (remainingDays < 0) {
+      formattedString =
+              i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
+    } else if (remainingDays == 0) {
+      formattedString = i18n.translation("academic.student.days.today", locale);
+    } else if (remainingDays == 1) {
+      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
+    } else {
+      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
+    }
+    return formattedString;
   }
 }

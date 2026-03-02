@@ -34,8 +34,8 @@ public class AdminServiceImpl implements AdminService {
     Account account = accountService.save(cmd.accountCommand());
 
     Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
-    if (admin.hasErrors()) {
-      throw new AppValidationException(admin.getProblems());
+    if (admin.hasFieldErrors()) {
+      throw new AppValidationException(admin.getFieldErrors());
     }
 
     Admin savedAdmin = repo.persist(admin);
@@ -55,8 +55,8 @@ public class AdminServiceImpl implements AdminService {
 
     Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
 
-    if (updatedAdmin.hasErrors()) {
-      throw new AppValidationException(updatedAdmin.getProblems());
+    if (updatedAdmin.hasFieldErrors()) {
+      throw new AppValidationException(updatedAdmin.getFieldErrors());
     }
 
     repo.update(updatedAdmin);
@@ -91,7 +91,7 @@ public class AdminServiceImpl implements AdminService {
                       IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (admin.hasErrors()) {
+    if (admin.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
           accountId, admin.getProblemsSummary());

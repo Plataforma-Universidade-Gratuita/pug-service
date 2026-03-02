@@ -50,8 +50,8 @@ public class AccountServiceImpl implements AccountService {
         AccountProcessor.processCreateInput(
             userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
-    if (account.hasErrors()) {
-      throw new AppValidationException(account.getProblems());
+    if (account.hasFieldErrors()) {
+      throw new AppValidationException(account.getFieldErrors());
     }
 
     if (existsByEmail(account.getEmail().toString())) {
@@ -78,8 +78,8 @@ public class AccountServiceImpl implements AccountService {
     Account updated =
         AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
-    if (updated.hasErrors()) {
-      throw new AppValidationException(updated.getProblems());
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
     }
 
     if (!updated.getEmail().equals(current.getEmail())
@@ -145,7 +145,7 @@ public class AccountServiceImpl implements AccountService {
                       IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
                 });
 
-    if (account.hasErrors()) {
+    if (account.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
           id, account.getProblemsSummary());

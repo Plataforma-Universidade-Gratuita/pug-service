@@ -2,7 +2,7 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
+
 import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -48,7 +48,7 @@ public class Email extends DomainError {
     validateStringField(value, 254L, "email");
 
     if (!EMAIL_VALIDATOR.isValid(value)) {
-      addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
     }
   }
 }

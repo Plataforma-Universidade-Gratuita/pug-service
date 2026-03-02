@@ -4,7 +4,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -132,14 +131,14 @@ public class Entity extends DomainError {
     validateStringField(name, 150L, "name");
     validateStringField(address, 254L, "address");
     if (cnpj == null) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
-    } else if (cnpj.hasErrors()) {
-      addErrors(cnpj.getProblems());
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+    } else if (cnpj.hasFieldErrors()) {
+      addFieldErrors(cnpj.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }

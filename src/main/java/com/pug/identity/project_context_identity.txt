@@ -13,7 +13,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
@@ -117,17 +116,17 @@ public class Account extends DomainError {
     validateForeignKeyField(userId, "userId");
     validateStringField(passwordHash, 255L, "passwordHash");
     if (accountType == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
     }
     if (email == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
-    } else if (email.hasErrors()) {
-      addErrors(email.getProblems());
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
+    } else if (email.hasFieldErrors()) {
+      addFieldErrors(email.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -229,7 +228,6 @@ package com.pug.identity.domain;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -290,10 +288,10 @@ public class Admin extends DomainError {
   private void collectValidationProblems() {
     validateForeignKeyField(accountId, "accountId");
     if (grantedAt == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_GRANTED_AT_BLANK));
     }
     if (campus == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
   }
 }
@@ -402,7 +400,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -488,14 +485,14 @@ public class User extends DomainError {
     validateIdField(id);
     validateStringField(name, 150L, "name");
     if (cpf == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
-    } else if (cpf.hasErrors()) {
-      addErrors(cpf.getProblems());
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
+    } else if (cpf.hasFieldErrors()) {
+      addFieldErrors(cpf.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -583,7 +580,6 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -626,7 +622,7 @@ public class Cpf extends DomainError {
     validateStringField(value, 11L, "cpf");
 
     if (allSameDigit(value) || !validCheckDigits(value)) {
-      addError(new Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
     }
   }
 
@@ -689,7 +685,7 @@ package com.pug.identity.domain.vos;
 
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
+
 import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -735,7 +731,7 @@ public class Email extends DomainError {
     validateStringField(value, 254L, "email");
 
     if (!EMAIL_VALIDATOR.isValid(value)) {
-      addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_EMAIL_FORMAT));
     }
   }
 }
@@ -3206,8 +3202,8 @@ public class AccountServiceImpl implements AccountService {
         AccountProcessor.processCreateInput(
             userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
-    if (account.hasErrors()) {
-      throw new AppValidationException(account.getProblems());
+    if (account.hasFieldErrors()) {
+      throw new AppValidationException(account.getFieldErrors());
     }
 
     if (existsByEmail(account.getEmail().toString())) {
@@ -3234,8 +3230,8 @@ public class AccountServiceImpl implements AccountService {
     Account updated =
         AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
-    if (updated.hasErrors()) {
-      throw new AppValidationException(updated.getProblems());
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
     }
 
     if (!updated.getEmail().equals(current.getEmail())
@@ -3301,7 +3297,7 @@ public class AccountServiceImpl implements AccountService {
                       IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
                 });
 
-    if (account.hasErrors()) {
+    if (account.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
           id, account.getProblemsSummary());
@@ -3441,8 +3437,8 @@ public class AdminServiceImpl implements AdminService {
     Account account = accountService.save(cmd.accountCommand());
 
     Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
-    if (admin.hasErrors()) {
-      throw new AppValidationException(admin.getProblems());
+    if (admin.hasFieldErrors()) {
+      throw new AppValidationException(admin.getFieldErrors());
     }
 
     Admin savedAdmin = repo.persist(admin);
@@ -3462,8 +3458,8 @@ public class AdminServiceImpl implements AdminService {
 
     Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
 
-    if (updatedAdmin.hasErrors()) {
-      throw new AppValidationException(updatedAdmin.getProblems());
+    if (updatedAdmin.hasFieldErrors()) {
+      throw new AppValidationException(updatedAdmin.getFieldErrors());
     }
 
     repo.update(updatedAdmin);
@@ -3498,7 +3494,7 @@ public class AdminServiceImpl implements AdminService {
                       IdentityErrorCodes.ADMIN_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (admin.hasErrors()) {
+    if (admin.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
           accountId, admin.getProblemsSummary());
@@ -3668,8 +3664,8 @@ public class UserServiceImpl implements UserService {
     LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
     User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
 
-    if (userToPersist.hasErrors()) {
-      throw new AppValidationException(userToPersist.getProblems());
+    if (userToPersist.hasFieldErrors()) {
+      throw new AppValidationException(userToPersist.getFieldErrors());
     }
 
     if (existsByCpf(userToPersist.getCpf())) {
@@ -3692,8 +3688,8 @@ public class UserServiceImpl implements UserService {
     User current = getById(id);
     User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
 
-    if (updated.hasErrors()) {
-      throw new AppValidationException(updated.getProblems());
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
     }
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
@@ -3748,7 +3744,7 @@ public class UserServiceImpl implements UserService {
                       IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
                 });
 
-    if (user.hasErrors()) {
+    if (user.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
           id, user.getProblemsSummary());
@@ -3769,7 +3765,7 @@ public class UserServiceImpl implements UserService {
                       IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
                 });
 
-    if (user.hasErrors()) {
+    if (user.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
           cpf, user.getProblemsSummary());

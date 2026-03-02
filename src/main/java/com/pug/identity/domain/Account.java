@@ -4,7 +4,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Email;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
@@ -108,17 +107,17 @@ public class Account extends DomainError {
     validateForeignKeyField(userId, "userId");
     validateStringField(passwordHash, 255L, "passwordHash");
     if (accountType == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_ACCOUNT_TYPE_BLANK));
     }
     if (email == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
-    } else if (email.hasErrors()) {
-      addErrors(email.getProblems());
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_EMAIL_BLANK));
+    } else if (email.hasFieldErrors()) {
+      addFieldErrors(email.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }

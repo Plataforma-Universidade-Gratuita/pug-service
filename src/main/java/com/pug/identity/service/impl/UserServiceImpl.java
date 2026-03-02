@@ -39,8 +39,8 @@ public class UserServiceImpl implements UserService {
     LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
     User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
 
-    if (userToPersist.hasErrors()) {
-      throw new AppValidationException(userToPersist.getProblems());
+    if (userToPersist.hasFieldErrors()) {
+      throw new AppValidationException(userToPersist.getFieldErrors());
     }
 
     if (existsByCpf(userToPersist.getCpf())) {
@@ -63,8 +63,8 @@ public class UserServiceImpl implements UserService {
     User current = getById(id);
     User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
 
-    if (updated.hasErrors()) {
-      throw new AppValidationException(updated.getProblems());
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
     }
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
@@ -119,7 +119,7 @@ public class UserServiceImpl implements UserService {
                       IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
                 });
 
-    if (user.hasErrors()) {
+    if (user.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
           id, user.getProblemsSummary());
@@ -140,7 +140,7 @@ public class UserServiceImpl implements UserService {
                       IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
                 });
 
-    if (user.hasErrors()) {
+    if (user.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
           cpf, user.getProblemsSummary());

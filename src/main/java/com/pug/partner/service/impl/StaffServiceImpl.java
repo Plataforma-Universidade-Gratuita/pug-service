@@ -39,8 +39,8 @@ public class StaffServiceImpl implements StaffService {
     Account account = accountService.save(cmd.accountCommand());
     Staff staff = StaffProcessor.processCreateInput(account.getId(), cmd.entityId());
 
-    if (staff.hasErrors()) {
-      throw new AppValidationException(staff.getProblems());
+    if (staff.hasFieldErrors()) {
+      throw new AppValidationException(staff.getFieldErrors());
     }
 
     Staff savedStaff = repo.persist(staff);
@@ -103,7 +103,7 @@ public class StaffServiceImpl implements StaffService {
                       PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (staff.hasErrors()) {
+    if (staff.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
           accountId, staff.getProblemsSummary());

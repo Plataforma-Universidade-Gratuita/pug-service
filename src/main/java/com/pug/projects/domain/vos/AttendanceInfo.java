@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.time.OffsetDateTime;
@@ -67,23 +66,23 @@ public class AttendanceInfo extends DomainError {
    */
   private void collectValidationProblems() {
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
 
     boolean hasValidator = validatedBy != null;
     boolean hasDate = validatedAt != null;
 
     if (hasValidator != hasDate) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (hasDate
         && auditInfo != null
         && auditInfo.getCreatedAt() != null
         && validatedAt.isBefore(auditInfo.getCreatedAt())) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }

@@ -55,8 +55,7 @@
 │   │   │           │   │       │   ├── CourseView.java
 │   │   │           │   │       │   ├── SchoolView.java
 │   │   │           │   │       │   ├── StudentAcc.java
-│   │   │           │   │       │   ├── StudentView.java
-│   │   │           │   │       │   └── StudentViewWithCompletedHours.java
+│   │   │           │   │       │   └── StudentView.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── CourseQueriesImpl.java
 │   │   │           │   │           ├── SchoolQueriesImpl.java
@@ -110,7 +109,8 @@
 │   │   │           │   │   ├── City.java
 │   │   │           │   │   ├── CityRepository.java
 │   │   │           │   │   ├── enums/
-│   │   │           │   │   │   └── GeoErrorCodes.java
+│   │   │           │   │   │   ├── GeoErrorCodes.java
+│   │   │           │   │   │   └── GeoFieldErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       └── IbgeCode.java
 │   │   │           │   ├── generate-context.sh
@@ -145,7 +145,8 @@
 │   │   │           │       │   ├── CityReadServiceImpl.java
 │   │   │           │       │   └── CityServiceImpl.java
 │   │   │           │       └── utils/
-│   │   │           │           └── CityProcessor.java
+│   │   │           │           ├── CityProcessor.java
+│   │   │           │           └── ExceptionHelper.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Account.java
@@ -333,12 +334,13 @@
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java
-│   │   │               │   ├── Problem.java
 │   │   │               │   ├── enums/
 │   │   │               │   │   ├── AccountType.java
 │   │   │               │   │   ├── Campi.java
-│   │   │               │   │   ├── GenericErrorCodes.java
-│   │   │               │   │   └── SharedErrorCodes.java
+│   │   │               │   │   ├── GenericCodes.java
+│   │   │               │   │   ├── GenericFieldErrorCodes.java
+│   │   │               │   │   ├── SharedErrorCodes.java
+│   │   │               │   │   └── SharedFieldErrorCodes.java
 │   │   │               │   └── vos/
 │   │   │               │       └── AuditInfo.java
 │   │   │               ├── exceptions/
@@ -361,15 +363,14 @@
 │   │   │               ├── presenter/
 │   │   │               │   ├── dtos/
 │   │   │               │   │   ├── AuditInfoResponse.java
-│   │   │               │   │   ├── CampusResponse.java
-│   │   │               │   │   └── UuidsRequest.java
+│   │   │               │   │   └── CampusResponse.java
 │   │   │               │   ├── mappers/
 │   │   │               │   │   └── SharedDataPresenter.java
 │   │   │               │   └── rest/
 │   │   │               │       ├── ApiEnvelope.java
 │   │   │               │       ├── ApiError.java
 │   │   │               │       ├── Details.java
-│   │   │               │       ├── FieldError.java
+│   │   │               │       ├── FieldErrorsResponse.java
 │   │   │               │       └── mappers/
 │   │   │               │           ├── AppValidationExceptionMapper.java
 │   │   │               │           ├── BusinessRuleExceptionMapper.java

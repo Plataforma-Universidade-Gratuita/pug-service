@@ -3,12 +3,15 @@ package com.pug.shared.presenter.rest;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
- * Represents the details of an error response.
+ * A polymorphic wrapper for granular error details in REST API responses.
+ * <p>
+ * This record acts as a flexible container capable of holding any structured data
+ * (such as a {@link java.util.List} of {@link FieldErrorsResponse}, a specific Map, or a custom POJO).
+ * The {@link JsonValue} annotation ensures that Jackson serializes the underlying {@code payload}
+ * directly into the {@code details} field of the parent {@link ApiError}, preventing unnecessary
+ * JSON object nesting.
  *
- * <p>This wrapper can hold any structure (List of FieldError, a Map, a custom POJO, etc.).
- * The @JsonValue annotation ensures that the underlying object is serialized directly as the value
- * of the 'details' key in the ApiError, avoiding extra nesting.
- *
- * @param payload The actual error detail data.
+ * @param payload The underlying structured data representing the error details.
  */
-public record Details(@JsonValue Object payload) {}
+public record Details(@JsonValue Object payload) {
+}

@@ -17,7 +17,7 @@ import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -112,23 +112,23 @@ public class Attendance extends DomainError {
     validateIdField(id);
 
     if (enrollmentIdentifier == null) {
-      addError(
+      addFieldError(
           new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK)); // Generic fallback
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
-    } else if (enrollmentIdentifier.hasErrors()) {
-      addErrors(enrollmentIdentifier.getProblems());
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+    } else if (enrollmentIdentifier.hasFieldErrors()) {
+      addFieldErrors(enrollmentIdentifier.getFieldErrors());
     }
 
     if (status == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
-    if (qrValidationInfo != null && qrValidationInfo.hasErrors()) {
-      addErrors(qrValidationInfo.getProblems());
+    if (qrValidationInfo != null && qrValidationInfo.hasFieldErrors()) {
+      addFieldErrors(qrValidationInfo.getFieldErrors());
     }
 
-    if (attendanceInfo != null && attendanceInfo.hasErrors()) {
-      addErrors(attendanceInfo.getProblems());
+    if (attendanceInfo != null && attendanceInfo.hasFieldErrors()) {
+      addFieldErrors(attendanceInfo.getFieldErrors());
     }
   }
 }
@@ -157,7 +157,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -233,18 +232,18 @@ public class Enrollment extends DomainError {
   /** Validates the Enrollment entityId and accumulates errors if any. */
   private void collectValidationProblems() {
     if (identifier == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
-    } else if (identifier.hasErrors()) {
-      addErrors(identifier.getProblems());
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+    } else if (identifier.hasFieldErrors()) {
+      addFieldErrors(identifier.getFieldErrors());
     }
 
     if (status == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
 
-    if (enrollmentInfo != null && enrollmentInfo.hasErrors()) {
-      addErrors(enrollmentInfo.getProblems());
+    if (enrollmentInfo != null && enrollmentInfo.hasFieldErrors()) {
+      addFieldErrors(enrollmentInfo.getFieldErrors());
     }
   }
 }
@@ -398,7 +397,6 @@ import com.pug.projects.domain.enums.ProjectStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.utils.StringUtils;
@@ -641,13 +639,13 @@ public class Project extends DomainError {
     validateStringField(description, 4000L, "description");
 
     if (projectInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (projectInfo.hasErrors()) {
-      addErrors(projectInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (projectInfo.hasFieldErrors()) {
+      addFieldErrors(projectInfo.getFieldErrors());
     }
 
     if (projectStatus == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
     }
   }
 }
@@ -672,7 +670,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.time.OffsetDateTime;
@@ -737,23 +734,23 @@ public class AttendanceInfo extends DomainError {
    */
   private void collectValidationProblems() {
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
 
     boolean hasValidator = validatedBy != null;
     boolean hasDate = validatedAt != null;
 
     if (hasValidator != hasDate) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
     if (hasDate
         && auditInfo != null
         && auditInfo.getCreatedAt() != null
         && validatedAt.isBefore(auditInfo.getCreatedAt())) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_CREATED_AT_FUTURE));
     }
   }
 }
@@ -815,7 +812,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.time.OffsetDateTime;
@@ -897,15 +893,15 @@ public class EnrollmentInfo extends DomainError {
   /** Validates the EnrollmentInfo instance. */
   private void collectValidationProblems() {
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
       if (acceptedAt != null && acceptedAt.isBefore(auditInfo.getCreatedAt())) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
 
       if (closingStatusAt != null && closingStatusAt.isBefore(auditInfo.getCreatedAt())) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }
   }
@@ -919,7 +915,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.math.BigDecimal;
@@ -1052,13 +1047,13 @@ public class ProjectInfo extends DomainError {
     validateBigDecimalField(offeredHours, "offeredHours", false, false);
 
     if (maxParticipants != null && maxParticipants < 0) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -1071,7 +1066,7 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
+
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1124,27 +1119,27 @@ public class QrValidationInfo extends DomainError {
   /** Validates the QrValidationInfo fields and accumulates errors if any. */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
     }
 
     boolean hasLat = latitude != null;
     boolean hasLon = longitude != null;
 
     if (hasLat != hasLon) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
     }
 
     if (hasLat) {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
           || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
       }
     }
 
     if (hasLon) {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
           || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
       }
     }
   }

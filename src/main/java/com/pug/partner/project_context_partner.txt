@@ -13,7 +13,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -141,14 +140,14 @@ public class Entity extends DomainError {
     validateStringField(name, 150L, "name");
     validateStringField(address, 254L, "address");
     if (cnpj == null) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
-    } else if (cnpj.hasErrors()) {
-      addErrors(cnpj.getProblems());
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+    } else if (cnpj.hasFieldErrors()) {
+      addFieldErrors(cnpj.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -367,7 +366,6 @@ package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -409,11 +407,11 @@ public class Cnpj extends DomainError {
   private void collectValidationProblems() {
     validateStringField(value, 14L, "cnpj");
     if (value.chars().distinct().count() == 1) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
       return;
     }
     if (!isValidChecksum(value)) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
     }
   }
 
@@ -2081,6 +2079,14 @@ public interface EntityService {
    *     is corrupted in DB).
    */
   Entity getById(UUID id);
+
+  /**
+   * Checks if any Entity exists with the specified city ID.
+   *
+   * @param cityId the UUID of the city to check for references
+   * @return true if any Entity references the specified city ID, false otherwise
+   */
+  boolean existsAnyByCityId(UUID cityId);
 }
 
 
@@ -2206,8 +2212,8 @@ public class EntityServiceImpl implements EntityService {
         EntityProcessor.processCreateInput(
             cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
-    if (entityToPersist.hasErrors()) {
-      throw new AppValidationException(entityToPersist.getProblems());
+    if (entityToPersist.hasFieldErrors()) {
+      throw new AppValidationException(entityToPersist.getFieldErrors());
     }
 
     if (existsByCnpj(entityToPersist.getCnpj())) {
@@ -2234,8 +2240,8 @@ public class EntityServiceImpl implements EntityService {
         EntityProcessor.processUpdateInput(
             current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
-    if (updatedEntity.hasErrors()) {
-      throw new AppValidationException(updatedEntity.getProblems());
+    if (updatedEntity.hasFieldErrors()) {
+      throw new AppValidationException(updatedEntity.getFieldErrors());
     }
 
     if (!updatedEntity.getCnpj().equals(current.getCnpj())
@@ -2281,7 +2287,7 @@ public class EntityServiceImpl implements EntityService {
                       PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
                 });
 
-    if (entity.hasErrors()) {
+    if (entity.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
           id, entity.getProblemsSummary());
@@ -2289,6 +2295,14 @@ public class EntityServiceImpl implements EntityService {
     }
 
     return entity;
+  }
+
+  @Override
+  public boolean existsAnyByCityId(UUID cityId) {
+    if (cityId == null) {
+      return false;
+    }
+    return true;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -2436,8 +2450,8 @@ public class StaffServiceImpl implements StaffService {
     Account account = accountService.save(cmd.accountCommand());
     Staff staff = StaffProcessor.processCreateInput(account.getId(), cmd.entityId());
 
-    if (staff.hasErrors()) {
-      throw new AppValidationException(staff.getProblems());
+    if (staff.hasFieldErrors()) {
+      throw new AppValidationException(staff.getFieldErrors());
     }
 
     Staff savedStaff = repo.persist(staff);
@@ -2500,7 +2514,7 @@ public class StaffServiceImpl implements StaffService {
                       PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (staff.hasErrors()) {
+    if (staff.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
           accountId, staff.getProblemsSummary());

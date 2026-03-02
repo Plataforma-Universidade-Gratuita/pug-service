@@ -141,7 +141,7 @@ FILE: db/migration/V003__create_cities_table.sql
 CREATE TABLE cities
 (
     id        uuid,
-    name      varchar(100) NOT NULL,
+    name      varchar(150) NOT NULL,
     ibge_code char(7)      NOT NULL,
     PRIMARY KEY (id),
     UNIQUE (ibge_code)
@@ -226,7 +226,7 @@ FILE: db/migration/V007__create_schools_table.sql
 CREATE TABLE schools
 (
     id         uuid,
-    name       varchar(100)             NOT NULL,
+    name       varchar(150)             NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
     PRIMARY KEY (id),
@@ -240,7 +240,7 @@ FILE: db/migration/V008__create_courses_table.sql
 CREATE TABLE courses
 (
     id         uuid,
-    name       varchar(120)             NOT NULL,
+    name       varchar(150)             NOT NULL,
     school_id  uuid                     NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -365,6 +365,7 @@ CREATE TABLE attendances
     validated_by       uuid,
     validated_at       TIMESTAMP WITH TIME ZONE,
     created_at         TIMESTAMP WITH TIME ZONE,
+    updated_at         TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (id),
     FOREIGN KEY (project_id, student_id) REFERENCES enrollments (project_id, student_id),
     FOREIGN KEY (validated_by) REFERENCES staff (account_id),
@@ -422,7 +423,7 @@ error.domain.number.zero=Number cannot be zero.
 error.domain.id.blank=ID cannot be null.
 error.domain.period.range=Invalid period range.
 error.domain.updated.at.blank=Update date cannot be null.
-error.domain.updated.at.before.created=Update date cannot be before creation date.
+error.domain.updated.at.before.created.at=Update date cannot be before creation date.
 
 # --- IDENTITY DOMAIN ERRORS ---
 # Validation
@@ -500,7 +501,7 @@ error.domain.number.zero=Valor deve ser maior que zero.
 error.domain.id.blank=O ID não pode ser nulo.
 error.domain.period.range=Intervalo de período inválido.
 error.domain.updated.at.blank=Data de atualização não pode ser nula.
-error.domain.updated.at.before.created=Data de atualização não pode ser anterior à data de criação.
+error.domain.updated.at.before.created.at=Data de atualização não pode ser anterior à data de criação.
 
 # --- IDENTITY DOMAIN ERRORS ---
 # Validation

@@ -43,8 +43,8 @@ public class EntityServiceImpl implements EntityService {
         EntityProcessor.processCreateInput(
             cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
-    if (entityToPersist.hasErrors()) {
-      throw new AppValidationException(entityToPersist.getProblems());
+    if (entityToPersist.hasFieldErrors()) {
+      throw new AppValidationException(entityToPersist.getFieldErrors());
     }
 
     if (existsByCnpj(entityToPersist.getCnpj())) {
@@ -71,8 +71,8 @@ public class EntityServiceImpl implements EntityService {
         EntityProcessor.processUpdateInput(
             current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
-    if (updatedEntity.hasErrors()) {
-      throw new AppValidationException(updatedEntity.getProblems());
+    if (updatedEntity.hasFieldErrors()) {
+      throw new AppValidationException(updatedEntity.getFieldErrors());
     }
 
     if (!updatedEntity.getCnpj().equals(current.getCnpj())
@@ -118,7 +118,7 @@ public class EntityServiceImpl implements EntityService {
                       PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
                 });
 
-    if (entity.hasErrors()) {
+    if (entity.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
           id, entity.getProblemsSummary());
@@ -126,6 +126,14 @@ public class EntityServiceImpl implements EntityService {
     }
 
     return entity;
+  }
+
+  @Override
+  public boolean existsAnyByCityId(UUID cityId) {
+    if (cityId == null) {
+      return false;
+    }
+    return true;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

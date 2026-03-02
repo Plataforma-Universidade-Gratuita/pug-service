@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.math.BigDecimal;
@@ -135,13 +134,13 @@ public class ProjectInfo extends DomainError {
     validateBigDecimalField(offeredHours, "offeredHours", false, false);
 
     if (maxParticipants != null && maxParticipants < 0) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE));
     }
 
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }

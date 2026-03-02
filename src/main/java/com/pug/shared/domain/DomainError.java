@@ -1,172 +1,118 @@
 package com.pug.shared.domain;
 
-import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.utils.StringUtils;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-/** Abstract base class for domain errors that can accumulate validation problems. */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * Abstract base class for domain entities or objects that require self-validation.
+ * It provides mechanisms to accumulate, check, and retrieve field-specific domain errors
+ * without throwing exceptions immediately, allowing for the collection of multiple validation failures.
+ */
 @Getter
 public abstract class DomainError {
 
-  @ToString.Exclude @EqualsAndHashCode.Exclude
-  private final List<Problem> problems = new ArrayList<>();
+  @ToString.Exclude
+  @EqualsAndHashCode.Exclude
+  private final List<GenericFieldErrorCodes> fieldErrors = new ArrayList<>();
 
   /**
-   * Returns a defensive copy of the validation problems.
+   * Retrieves a defensive copy of the accumulated validation field errors.
    *
-   * @return a list of problems
+   * @return a new {@link List} containing the current {@link GenericFieldErrorCodes}
    */
-  public List<Problem> getProblems() {
-    return new ArrayList<>(problems);
+  public List<GenericFieldErrorCodes> getFieldErrors() {
+    return new ArrayList<>(fieldErrors);
   }
 
   /**
-   * Checks if there are any validation errors.
+   * Checks if there are any validation field errors accumulated in this domain object.
    *
-   * @return true if there are errors, false otherwise
+   * @return {@code true} if there is at least one validation error, {@code false} otherwise
    */
-  public boolean hasErrors() {
-    return !problems.isEmpty();
+  public boolean hasFieldErrors() {
+    return !fieldErrors.isEmpty();
   }
 
   /**
-   * Adds a validation problem to the list of problems.
+   * Adds a single validation field error to the internal list of errors.
    *
-   * @param problem the validation problem to add
+   * @param fieldError the {@link GenericFieldErrorCodes} representing the validation failure to add
    */
-  protected void addError(Problem problem) {
-    problems.add(problem);
+  protected void addFieldError(GenericFieldErrorCodes fieldError) {
+    fieldErrors.add(fieldError);
   }
 
   /**
-   * Adds multiple validation problems to the list of problems.
+   * Adds a collection of validation field errors to the internal list of errors.
    *
-   * @param newProblems the list of validation problems to add
+   * @param fieldErrors a {@link List} of {@link GenericFieldErrorCodes} to append to the current errors
    */
-  protected void addErrors(List<Problem> newProblems) {
-    problems.addAll(newProblems);
+  protected void addFieldErrors(List<GenericFieldErrorCodes> fieldErrors) {
+    this.fieldErrors.addAll(fieldErrors);
   }
 
   /**
-   * Validates that the given UUID id is not null.
+   * Validates that the provided UUID identifier is not null.
+   * <p>
+   * If the validation fails, a {@link SharedFieldErrorCodes#INVALID_ID_BLANK} error is appended.
    *
-   * @param id the UUID to validate
+   * @param id the {@link UUID} to validate
    */
   protected void validateIdField(UUID id) {
     if (id == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_ID_BLANK));
+      addFieldError(SharedFieldErrorCodes.INVALID_ID_BLANK);
     }
   }
 
   /**
-   * Validates that the given UUID foreign key id is not null.
+   * Validates that the provided name string meets the standard domain constraints.
+   * <p>
+   * Rules applied:
+   * <ul>
+   *   <li>Must not be null or empty (appends {@link SharedFieldErrorCodes#INVALID_NAME_BLANK})</li>
+   *   <li>Must not exceed 150 characters (appends {@link SharedFieldErrorCodes#INVALID_NAME_TOO_LONG})</li>
+   * </ul>
    *
-   * @param id the UUID to validate
-   * @param fieldName the name of the foreign key field being validated (used for error messages)
+   * @param name the string name to validate
    */
-  protected void validateForeignKeyField(UUID id, String fieldName) {
-    if (id == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_FOREIGN_KEY_BLANK, fieldName));
+  protected void validateNameField(String name) {
+    if (StringUtils.isEmpty(name)) {
+      addFieldError(SharedFieldErrorCodes.INVALID_NAME_BLANK);
+      return;
+    }
+    if (name.length() > 150) {
+      addFieldError(SharedFieldErrorCodes.INVALID_NAME_TOO_LONG);
     }
   }
 
   /**
-   * Validates that the given string field is not null or empty, and optionally checks its length.
+   * Returns a human-readable string summary of all accumulated validation field errors.
+   * <p>
+   * The summary is formatted as a comma-separated list in the pattern {@code "bundleKey(fieldName)"}.
+   * This method is particularly useful for logging data integrity issues and debugging.
    *
-   * @param value the string value to validate
-   * @param length the maximum allowed length of the string (null if no length check)
-   * @param fieldName the name of the field being validated (used for error messages)
-   */
-  protected void validateStringField(String value, Long length, String fieldName) {
-    if (StringUtils.isEmpty(value)) {
-      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
-    } else if (length != null && value.length() > length.intValue()) {
-      addError(new Problem(SharedErrorCodes.INVALID_FIELD_LENGTH, fieldName));
-    }
-  }
-
-  /**
-   * Validates that the given BigDecimal field is not null and optionally checks if it is negative
-   * or zero.
-   *
-   * @param value the BigDecimal value to validate
-   * @param fieldName the name of the field being validated (used for error messages)
-   * @param negativeAllowed whether negative values are allowed
-   * @param zeroAllowed whether zero values are allowed
-   */
-  protected void validateBigDecimalField(
-      BigDecimal value, String fieldName, boolean negativeAllowed, boolean zeroAllowed) {
-    if (value == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, fieldName));
-    } else if (!negativeAllowed && value.signum() < 0) {
-      addError(new Problem(SharedErrorCodes.INVALID_NUMBER_NEGATIVE, fieldName));
-    } else if (!zeroAllowed && value.signum() == 0) {
-      addError(new Problem(SharedErrorCodes.INVALID_NUMBER_ZERO, fieldName));
-    }
-  }
-
-  /**
-   * Validates that the given LocalDate fields are not null and that the due date is not before the
-   * start date.
-   *
-   * @param startDate the start date to validate
-   * @param dueDate the due date to validate
-   */
-  protected void validateDateFields(LocalDate startDate, LocalDate dueDate) {
-    if (startDate == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, "startDate"));
-    }
-    if (dueDate == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_FIELD_BLANK, "dueDate"));
-    }
-    if (startDate != null && dueDate != null && dueDate.isBefore(startDate)) {
-      addError(new Problem(SharedErrorCodes.INVALID_PERIOD_RANGE, "period"));
-    }
-  }
-
-  /**
-   * Validates the audited fields (createdAt and updatedAt) for null values and logical consistency.
-   *
-   * @param createdAt the creation timestamp to validate
-   * @param updatedAt the update timestamp to validate
-   */
-  protected void validateAuditedFields(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
-    if (createdAt == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_CREATED_AT_BLANK));
-    }
-    if (updatedAt == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BLANK));
-    }
-    if (createdAt != null && updatedAt != null && updatedAt.isBefore(createdAt)) {
-      addError(new Problem(SharedErrorCodes.INVALID_UPDATED_AT_BEFORE_CREATED));
-    }
-  }
-
-  /**
-   * Returns a readable string summary of all validation problems.
-   *
-   * <p>Useful for logging data integrity issues.
+   * @return a formatted summary string of the errors, or {@code "No errors"} if the list is empty
    */
   public String getProblemsSummary() {
-    if (problems.isEmpty()) {
+    if (fieldErrors.isEmpty()) {
       return "No errors";
     }
-    return problems.stream()
-        .map(
-            p -> {
-              String key = p.code().getBundleKey();
-              String field = p.code().getFieldName();
-              return field != null ? key + "(" + field + ")" : key;
-            })
-        .collect(Collectors.joining(", "));
+    return fieldErrors.stream()
+            .map(
+                    gfec -> {
+                      String key = gfec.getBundleKey();
+                      String field = gfec.getFieldName();
+                      return key + "(" + field + ")";
+                    })
+            .collect(Collectors.joining(", "));
   }
 }

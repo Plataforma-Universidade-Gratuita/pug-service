@@ -1,61 +1,82 @@
 package com.pug.geo.service.impl;
 
-import com.pug.geo.domain.enums.GeoErrorCodes;
 import com.pug.geo.infra.read.CityQueries;
 import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.geo.service.CityReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.geo.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for reading city information. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link CityReadService}.
+ * <p>
+ * This application-scoped bean delegates read-only operations to the underlying
+ * {@link CityQueries} infrastructure component. It handles basic input validation
+ * and translates "not found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class CityReadServiceImpl implements CityReadService {
 
-  private static final Logger LOG = Logger.getLogger(CityReadServiceImpl.class);
+    private static final Logger LOG = Logger.getLogger(CityReadServiceImpl.class);
 
-  @Inject CityQueries queries;
+    @Inject
+    CityQueries queries;
 
-  @Override
-  public CityView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("City lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                  GeoErrorCodes.CITY_NOT_FOUND, "id", id.toString());
-            });
-  }
-
-  @Override
-  public CityView getViewByIbgeCode(String ibgeCode) {
-    if (StringUtils.isEmpty(ibgeCode)) {
-      throw new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND, "ibgeCode", "empty");
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CityView getViewById(UUID id) {
+        return queries
+                .findOptionalById(id)
+                .orElseThrow(
+                        () -> {
+                            LOG.debugf("City lookup failed: ID %s not found", id);
+                            return ExceptionHelper.cityNotFound();
+                        });
     }
 
-    return queries
-        .findOptionalByIbgeCode(ibgeCode)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("City lookup failed: IBGE Code %s not found", ibgeCode);
-              return new ResourceNotFoundException(
-                  GeoErrorCodes.CITY_NOT_FOUND, "ibgeCode", ibgeCode);
-            });
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CityView getViewByIbgeCode(String ibgeCode) {
+        if (StringUtils.isEmpty(ibgeCode)) {
+            throw ExceptionHelper.cityNotFound();
+        }
 
-  @Override
-  public List<CityView> listViews() {
-    return queries.listAllCities();
-  }
+        return queries
+                .findOptionalByIbgeCode(ibgeCode)
+                .orElseThrow(
+                        () -> {
+                            LOG.debugf("City lookup failed: IBGE Code %s not found", ibgeCode);
+                            return ExceptionHelper.cityNotFound();
+                        });
+    }
 
-  @Override
-  public List<CityView> search(String q) {
-    String key = StringUtils.fold(q);
-    return queries.searchByName(key);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<CityView> listViews() {
+        return queries.listAllCities();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Prior to execution, the input query is "folded" (lowercased and accents removed via
+     * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
+     * underlying search indexing rules.
+     */
+    @Override
+    public List<CityView> search(String q) {
+        String key = StringUtils.fold(q);
+        return queries.searchByName(key);
+    }
 }

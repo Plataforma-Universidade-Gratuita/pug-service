@@ -1,33 +1,47 @@
 package com.pug.geo.domain.vos;
 
-import com.pug.geo.domain.enums.GeoErrorCodes;
+import com.pug.geo.domain.enums.GeoFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Value object representing a city's IBGE code. Converted to class to extend DomainError. */
+/**
+ * Immutable Value Object (VO) representing a Brazilian city's IBGE (Brazilian Institute of Geography and Statistics) code.
+ * <p>
+ * Extends {@link DomainError} to encapsulate and accumulate domain validation rules
+ * specific to IBGE codes without throwing immediate exceptions.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class IbgeCode extends DomainError {
 
+  /**
+   * The raw 7-digit string representing the IBGE code.
+   */
   String code;
 
+  /**
+   * Constructs an {@code IbgeCode} instance.
+   *
+   * @param code the raw IBGE code string
+   */
   @Builder(toBuilder = true)
   private IbgeCode(String code) {
     this.code = code;
   }
 
   /**
-   * Factory method to create a new IbgeCode. It does not throw exceptions immediately but collects
-   * them in the problems list.
+   * Factory method to create a new {@code IbgeCode} instance.
+   * <p>
+   * The instance is created and immediately self-validated. Any validation failures
+   * are accumulated internally and can be retrieved via {@link #getFieldErrors()}.
    *
-   * @param code The IBGE code string
-   * @return The IbgeCode instance (which may contain errors)
+   * @param code the raw IBGE code string
+   * @return a self-validated {@link IbgeCode} instance
    */
   public static IbgeCode factory(String code) {
     IbgeCode vo = IbgeCode.builder().code(code).build();
@@ -35,11 +49,22 @@ public class IbgeCode extends DomainError {
     return vo;
   }
 
-  /** Validates the IBGE code format and populates the problems list if invalid. */
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   * <p>
+   * Business rules applied:
+   * <ul>
+   *   <li>Must not be null or empty (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_BLANK})</li>
+   *   <li>Must be exactly 7 characters long and contain only numeric digits (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_FORMAT})</li>
+   * </ul>
+   */
   private void collectValidationProblems() {
-    validateStringField(code, 7L, "ibgeCode");
-    if (StringUtils.isNotEmpty(code) && !code.chars().allMatch(Character::isDigit)) {
-      getProblems().add(new Problem(GeoErrorCodes.INVALID_IBGE_CODE_FORMAT));
+    if (StringUtils.isEmpty(code)) {
+      addFieldError(GeoFieldErrorCodes.INVALID_IBGE_CODE_BLANK);
+      return;
+    }
+    if (code.length() != 7 || !code.chars().allMatch(Character::isDigit)) {
+      addFieldError(GeoFieldErrorCodes.INVALID_IBGE_CODE_FORMAT);
     }
   }
 }

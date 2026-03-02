@@ -1,56 +1,36 @@
 package com.pug.shared.utils;
 
-import com.pug.shared.i18n.I18n;
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
-/** Utility class for presenter-related functions. */
+/**
+ * Utility class containing helper methods for the presentation layer (e.g., REST controllers or presenters).
+ * <p>
+ * Provides standardized, stateless logic for handling UI/API-related tasks such as
+ * client locale resolution, ensuring consistent behavior across different API endpoints.
+ */
 public final class PresenterUtils {
-  /** Private constructor to prevent instantiation. */
-  private PresenterUtils() {}
 
   /**
-   * Picks the most suitable locale from a list of acceptable locales. If the list is null or empty,
-   * defaults to "pt-BR".
-   *
-   * @param acceptable List of acceptable locales.
-   * @return The selected locale.
+   * Private constructor to prevent instantiation of this utility class.
    */
-  public static Locale pickLocale(List<Locale> acceptable) {
-    return CollectionUtils.isEmpty(acceptable)
-        ? Locale.forLanguageTag("pt-BR")
-        : acceptable.getFirst();
+  private PresenterUtils() {
   }
 
   /**
-   * Formats the number of remaining days until a due date into a human-readable, localized string.
+   * Resolves the most suitable client locale from a provided list of acceptable options.
+   * <p>
+   * This method is typically used in conjunction with the HTTP {@code Accept-Language} header
+   * to determine the client's preferred language. If the client does not specify any acceptable
+   * locales, or if the provided list is null/empty, the system strictly defaults to
+   * Brazilian Portuguese ({@code pt-BR}).
    *
-   * @param dueDate the due date.
-   * @param locale the target locale.
-   * @param i18n the internationalization service.
-   * @return a localized string representing the remaining days (e.g., "Hoje", "Amanhã", "X dias
-   *     restantes", "Atrasado").
+   * @param acceptable a prioritized {@link List} of acceptable {@link Locale}s requested by the client
+   * @return the most preferred {@link Locale} from the list, or the {@code pt-BR} fallback if the list is empty
    */
-  public static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
-    if (dueDate == null) {
-      return "";
-    }
-
-    long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
-
-    String formattedString;
-    if (remainingDays < 0) {
-      formattedString =
-          i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
-    } else if (remainingDays == 0) {
-      formattedString = i18n.translation("academic.student.days.today", locale);
-    } else if (remainingDays == 1) {
-      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
-    } else {
-      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
-    }
-    return formattedString;
+  public static Locale pickLocale(List<Locale> acceptable) {
+    return CollectionUtils.isEmpty(acceptable)
+            ? Locale.forLanguageTag("pt-BR")
+            : acceptable.getFirst();
   }
 }

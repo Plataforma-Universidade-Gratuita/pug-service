@@ -4,49 +4,46 @@ import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.presenter.rest.ApiError;
-import com.pug.shared.presenter.rest.Details;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Mapper to catch uncaught exceptions and return a generic error response. */
+/**
+ * Mapper to catch unexpected or unhandled exceptions and return a secure, generic 500 response.
+ */
 @Provider
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
-  @Inject I18n i18n;
+  @Inject
+  I18n i18n;
 
   /**
-   * Converts an uncaught exception into a standardized error response.
+   * Converts an uncaught exception into a standardized HTTP 500 error response.
    *
-   * <p>Logs the exception and returns a generic error message to the client, without exposing
-   * sensitive details.
+   * <p>Logs the full stack trace for internal debugging but strictly returns a generic,
+   * localized error message to the client. This prevents information disclosure vulnerabilities
+   * by ensuring that internal class names, SQL statements, or underlying error messages are never
+   * exposed in the API response.
    *
-   * @param ex The uncaught exception that was thrown.
-   * @return A Response object containing the error details and an appropriate HTTP status code.
+   * @param ex The unexpected exception that was thrown.
+   * @return A Response object containing a safe error code and HTTP 500 status.
    */
   @Override
   public Response toResponse(Throwable ex) {
     LOG.error("An uncaught exception occurred:", ex);
+
     String msg = i18n.translation(SharedErrorCodes.INTERNAL_ERROR.getBundleKey());
-
-    Map<String, Object> errorDetails = new LinkedHashMap<>();
-    errorDetails.put("exception", ex.getClass().getSimpleName());
-    errorDetails.put("reason", ex.getLocalizedMessage());
-
-    ApiError apiError =
-        ApiError.of(SharedErrorCodes.INTERNAL_ERROR.name(), msg, new Details(errorDetails));
+    ApiError apiError = ApiError.of(SharedErrorCodes.INTERNAL_ERROR.getCode(), msg);
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity(ApiEnvelope.error(apiError))
-        .build();
+            .type(MediaType.APPLICATION_JSON_TYPE)
+            .entity(ApiEnvelope.error(apiError))
+            .build();
   }
 }

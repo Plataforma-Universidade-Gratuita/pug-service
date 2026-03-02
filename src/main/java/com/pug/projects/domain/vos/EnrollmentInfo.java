@@ -2,7 +2,6 @@ package com.pug.projects.domain.vos;
 
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import java.time.OffsetDateTime;
@@ -84,15 +83,15 @@ public class EnrollmentInfo extends DomainError {
   /** Validates the EnrollmentInfo instance. */
   private void collectValidationProblems() {
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
       if (acceptedAt != null && acceptedAt.isBefore(auditInfo.getCreatedAt())) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
 
       if (closingStatusAt != null && closingStatusAt.isBefore(auditInfo.getCreatedAt())) {
-        addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
+        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_DATES_INVALID));
       }
     }
   }

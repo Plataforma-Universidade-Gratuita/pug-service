@@ -2,7 +2,6 @@ package com.pug.partner.domain.vos;
 
 import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -44,11 +43,11 @@ public class Cnpj extends DomainError {
   private void collectValidationProblems() {
     validateStringField(value, 14L, "cnpj");
     if (value.chars().distinct().count() == 1) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
       return;
     }
     if (!isValidChecksum(value)) {
-      addError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
     }
   }
 

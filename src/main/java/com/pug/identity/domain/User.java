@@ -4,7 +4,6 @@ import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -90,14 +89,14 @@ public class User extends DomainError {
     validateIdField(id);
     validateStringField(name, 150L, "name");
     if (cpf == null) {
-      addError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
-    } else if (cpf.hasErrors()) {
-      addErrors(cpf.getProblems());
+      addFieldError(new Problem(IdentityErrorCodes.INVALID_CPF_BLANK));
+    } else if (cpf.hasFieldErrors()) {
+      addFieldErrors(cpf.getFieldErrors());
     }
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }

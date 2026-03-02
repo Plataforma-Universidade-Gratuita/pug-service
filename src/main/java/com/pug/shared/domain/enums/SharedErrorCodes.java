@@ -3,45 +3,56 @@ package com.pug.shared.domain.enums;
 import lombok.Getter;
 
 /**
- * Enum representing common, shared error codes for the entire application. These codes are
- * typically used for general validation failures, internal server errors, or generic constraint
- * violations that are not specific to a particular domain.
+ * Enumeration of common, high-level shared error codes used across the entire application.
+ * <p>
+ * These codes implement {@link GenericCodes} and map to the generic, cross-cutting error
+ * states of the system (e.g., internal errors, data integrity issues, or global validation failures).
+ * They are not tied to any specific domain and do not contain granular field-level details.
  */
 @Getter
-public enum SharedErrorCodes implements GenericErrorCodes {
-  /* Validation Errors */
-  INVALID_AUDIT_INFO_BLANK("error.domain.audit.info.blank", null),
-  INVALID_CAMPUS_BLANK("error.domain.academic.campus.blank", "campus"),
-  INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
-  INVALID_FIELD_BLANK("error.domain.field.blank", null),
-  INVALID_FIELD_LENGTH("error.domain.field.length", null),
-  INVALID_FOREIGN_KEY_BLANK("error.domain.foreign.key.blank", null),
-  INVALID_NUMBER_NEGATIVE("error.domain.number.negative", null),
-  INVALID_NUMBER_ZERO("error.domain.number.zero", null),
-  INVALID_ID_BLANK("error.domain.id.blank", "id"),
-  INVALID_PERIOD_RANGE("error.domain.period.range", "period"),
-  INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
-  INVALID_UPDATED_AT_BEFORE_CREATED("error.domain.updated.at.before.created", "updatedAt"),
-  /* Resource Errors */
-  BUSINESS_RULE_ERROR("error.business.rule.violation", null),
-  DATA_INTEGRITY_ERROR("error.data.integrity", null),
-  DUPLICATED_RESOURCE_ERROR("error.duplicated.resource", null),
-  INTERNAL_ERROR("error.internal", null),
-  RESOURCE_NOT_FOUND_ERROR("error.resource.not.found", null),
-  VALIDATION_ERROR("error.validation", null);
-
-  private final String bundleKey;
-  private final String fieldName;
+public enum SharedErrorCodes implements GenericCodes {
 
   /**
-   * Constructor for the SharedErrorCodes enum.
-   *
-   * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   * Indicates a generic violation of a high-level business rule.
    */
-  SharedErrorCodes(String bundleKey, String fieldName) {
+  BUSINESS_RULE_ERROR("error.business.rule.violation"),
+
+  /**
+   * Indicates a structural database violation, such as a foreign key constraint failure.
+   */
+  DATA_INTEGRITY_ERROR("error.data.integrity"),
+
+  /**
+   * Indicates an attempt to create or update a resource that violates a unique constraint.
+   */
+  DUPLICATED_RESOURCE_ERROR("error.duplicated.resource"),
+
+  /**
+   * Indicates an unexpected or unhandled exception within the system (HTTP 500).
+   */
+  INTERNAL_ERROR("error.internal"),
+
+  /**
+   * Indicates that a requested entity or aggregate root could not be found.
+   */
+  RESOURCE_NOT_FOUND_ERROR("error.resource.not.found"),
+
+  /**
+   * Indicates a general request payload validation failure.
+   */
+  VALIDATION_ERROR("error.validation");
+
+  /**
+   * The property key used to resolve the localized error message in the resource bundles.
+   */
+  private final String bundleKey;
+
+  /**
+   * Constructs the {@code SharedErrorCodes} enum.
+   *
+   * @param bundleKey the unique i18n key mapping to the application's resource bundles
+   */
+  SharedErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
-    this.fieldName = fieldName;
   }
 }

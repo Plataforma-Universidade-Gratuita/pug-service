@@ -3,16 +3,19 @@ package com.pug.shared.presenter.dtos;
 import java.time.OffsetDateTime;
 
 /**
- * AuditInfoResponse is a record that represents the audit information for an entityId, including
- * creation and update timestamps.
+ * Data Transfer Object (DTO) representing the standard audit trail of a domain entity.
+ * <p>
+ * This record provides both the raw ISO-8601 timestamps (useful for programmatic parsing
+ * by the client) and pre-formatted, localized strings (ready for direct UI display).
  *
- * @param createdAt the date and time when the entityId was created.
- * @param createdAtFormatted the formatted text for the creation date and time (localized).
- * @param updatedAt the date and time when the entityId was last updated.
- * @param updatedAtFormatted the formatted text for the last update date and time (localized).
+ * @param createdAt          the exact date and time the entity was initially persisted
+ * @param createdAtFormatted the human-readable, localized string representation of the creation date
+ * @param updatedAt          the exact date and time the entity was last modified
+ * @param updatedAtFormatted the human-readable, localized string representation of the update date
  */
 public record AuditInfoResponse(
-    OffsetDateTime createdAt,
-    String createdAtFormatted,
-    OffsetDateTime updatedAt,
-    String updatedAtFormatted) {}
+        OffsetDateTime createdAt,
+        String createdAtFormatted,
+        OffsetDateTime updatedAt,
+        String updatedAtFormatted) {
+}

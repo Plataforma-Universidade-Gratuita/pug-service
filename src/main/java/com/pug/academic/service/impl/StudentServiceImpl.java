@@ -49,8 +49,8 @@ public class StudentServiceImpl implements StudentService {
             cmd.startDate(),
             cmd.dueDate());
 
-    if (studentToPersist.hasErrors()) {
-      throw new AppValidationException(studentToPersist.getProblems());
+    if (studentToPersist.hasFieldErrors()) {
+      throw new AppValidationException(studentToPersist.getFieldErrors());
     }
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
@@ -91,8 +91,8 @@ public class StudentServiceImpl implements StudentService {
             cmd.startDate(),
             cmd.dueDate());
 
-    if (studentToUpdate.hasErrors()) {
-      throw new AppValidationException(studentToUpdate.getProblems());
+    if (studentToUpdate.hasFieldErrors()) {
+      throw new AppValidationException(studentToUpdate.getFieldErrors());
     }
 
     if (cmd.academicRegistration() != null
@@ -143,7 +143,7 @@ public class StudentServiceImpl implements StudentService {
                       AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (student.hasErrors()) {
+    if (student.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
           accountId, student.getProblemsSummary());

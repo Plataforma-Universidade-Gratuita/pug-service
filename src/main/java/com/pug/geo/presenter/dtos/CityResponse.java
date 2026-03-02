@@ -3,10 +3,17 @@ package com.pug.geo.presenter.dtos;
 import java.util.UUID;
 
 /**
- * Response DTO for a city.
+ * Data Transfer Object (DTO) used as the standardized API JSON response for City data.
+ * <p>
+ * This record provides the client with the essential details of a city, including a
+ * computed flag indicating whether the city is a protected system default (which affects
+ * whether the UI should allow the user to edit or delete it).
  *
- * @param id the unique identifier of the city
- * @param name the name of the city
- * @param ibgeCode the IBGE code of the city
+ * @param id        the unique identifier (UUIDv7) of the city
+ * @param name      the name of the city
+ * @param ibgeCode  the 7-digit IBGE code of the city
+ * @param isDefault {@code true} if this city is a protected system record (e.g., a university campus),
+ *                  meaning it cannot be modified or deleted; {@code false} otherwise
  */
-public record CityResponse(UUID id, String name, String ibgeCode) {}
+public record CityResponse(UUID id, String name, String ibgeCode, boolean isDefault) {
+}

@@ -2,7 +2,6 @@ package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -90,9 +89,9 @@ public class Course extends DomainError {
     validateStringField(name, 120L, "name");
     validateForeignKeyField(schoolId, "schoolId");
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }

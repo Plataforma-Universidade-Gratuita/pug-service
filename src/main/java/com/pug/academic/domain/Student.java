@@ -5,7 +5,6 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
@@ -164,22 +163,22 @@ public class Student extends DomainError {
     validateForeignKeyField(accountId, "accountId");
     validateForeignKeyField(courseId, "courseId");
     if (campus == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
     if (academicRegistration == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
-    } else if (academicRegistration.hasErrors()) {
-      addErrors(academicRegistration.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+    } else if (academicRegistration.hasFieldErrors()) {
+      addFieldErrors(academicRegistration.getFieldErrors());
     }
     if (counterpartHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    } else if (counterpartHours.hasErrors()) {
-      addErrors(counterpartHours.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+    } else if (counterpartHours.hasFieldErrors()) {
+      addFieldErrors(counterpartHours.getFieldErrors());
     }
     if (period == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
-    } else if (period.hasErrors()) {
-      addErrors(period.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+    } else if (period.hasFieldErrors()) {
+      addFieldErrors(period.getFieldErrors());
     }
   }
 }

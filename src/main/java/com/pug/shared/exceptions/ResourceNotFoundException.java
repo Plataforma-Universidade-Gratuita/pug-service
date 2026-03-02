@@ -1,30 +1,32 @@
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when a requested resource is not found. Does not use the 'Problem' domain
- * pattern, as this is a specific lookup failure.
+ * Exception thrown when a requested domain resource or aggregate root cannot be found
+ * in the underlying data store or external system.
+ * <p>
+ * This exception abstracts away the underlying persistence mechanism (e.g., database lookup failure)
+ * and translates it into a standard domain-level error. It typically maps to an HTTP 404 (Not Found)
+ * response, delivering a localized message indicating which entity type was not found.
  */
 @Getter
 public class ResourceNotFoundException extends RuntimeException {
 
-  private final GenericErrorCodes code;
-  private final String searchField;
-  private final String searchValue;
+  /**
+   * The specific domain code representing the missing resource.
+   */
+  private final GenericCodes code;
 
   /**
-   * Constructs a new ResourceNotFoundException.
+   * Constructs a new {@code ResourceNotFoundException}.
    *
-   * @param code The specific error code (e.g. USER_NOT_FOUND).
-   * @param searchField The name of the field used for the search (e.g. "id", "email").
-   * @param searchValue The value that was not found (e.g. "uuid-123").
+   * @param code The specific {@link GenericCodes} indicating the type of resource that was not found
+   *             (e.g., {@code GeoErrorCodes.CITY_NOT_FOUND}).
    */
-  public ResourceNotFoundException(GenericErrorCodes code, String searchField, String searchValue) {
+  public ResourceNotFoundException(GenericCodes code) {
     super(code.getBundleKey());
     this.code = code;
-    this.searchField = searchField;
-    this.searchValue = searchValue;
   }
 }

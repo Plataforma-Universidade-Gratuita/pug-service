@@ -11,7 +11,6 @@ package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -99,9 +98,9 @@ public class Course extends DomainError {
     validateStringField(name, 120L, "name");
     validateForeignKeyField(schoolId, "schoolId");
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
     } else {
-      addErrors(auditInfo.getProblems());
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -217,7 +216,6 @@ package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
@@ -285,9 +283,9 @@ public class School extends DomainError {
     validateIdField(id);
     validateStringField(name, 100L, "name");
     if (auditInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (auditInfo.hasErrors()) {
-      addErrors(auditInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (auditInfo.hasFieldErrors()) {
+      addFieldErrors(auditInfo.getFieldErrors());
     }
   }
 }
@@ -357,7 +355,6 @@ import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
@@ -516,22 +513,22 @@ public class Student extends DomainError {
     validateForeignKeyField(accountId, "accountId");
     validateForeignKeyField(courseId, "courseId");
     if (campus == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
+      addFieldError(new Problem(SharedErrorCodes.INVALID_CAMPUS_BLANK));
     }
     if (academicRegistration == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
-    } else if (academicRegistration.hasErrors()) {
-      addErrors(academicRegistration.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_REGISTRATION_BLANK));
+    } else if (academicRegistration.hasFieldErrors()) {
+      addFieldErrors(academicRegistration.getFieldErrors());
     }
     if (counterpartHours == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
-    } else if (counterpartHours.hasErrors()) {
-      addErrors(counterpartHours.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_HOURS_BLANK));
+    } else if (counterpartHours.hasFieldErrors()) {
+      addFieldErrors(counterpartHours.getFieldErrors());
     }
     if (period == null) {
-      addError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
-    } else if (period.hasErrors()) {
-      addErrors(period.getProblems());
+      addFieldError(new Problem(AcademicErrorCodes.INVALID_PERIOD_BLANK));
+    } else if (period.hasFieldErrors()) {
+      addFieldErrors(period.getFieldErrors());
     }
   }
 }
@@ -1401,19 +1398,6 @@ public record StudentView(
     LocalDate dueDate,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
-
-
-================================================================================
-FILE: infra/read/dtos/StudentViewWithCompletedHours.java
-================================================================================
-package com.pug.academic.infra.read.dtos;
-
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import java.math.BigDecimal;
-
-/** DTO representing a student view along with their completed hours. */
-public record StudentViewWithCompletedHours(
-    @JsonUnwrapped StudentView details, BigDecimal completedHours) {}
 
 
 ================================================================================
@@ -2589,7 +2573,7 @@ public final class StudentPresenter {
     String remainingDaysFormatted = "";
     if (v.dueDate() != null) {
       remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), v.dueDate());
-      remainingDaysFormatted = PresenterUtils.formatRemainingDays(v.dueDate(), locale, i18n);
+      remainingDaysFormatted = formatRemainingDays(v.dueDate(), locale, i18n);
     }
 
     CampusResponse campus = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
@@ -2611,6 +2595,36 @@ public final class StudentPresenter {
         remainingDays,
         remainingDaysFormatted,
         auditInfo);
+  }
+
+  /**
+   * Formats the number of remaining days until a due date into a human-readable, localized string.
+   *
+   * @param dueDate the due date.
+   * @param locale the target locale.
+   * @param i18n the internationalization service.
+   * @return a localized string representing the remaining days (e.g., "Hoje", "Amanhã", "X dias
+   *     restantes", "Atrasado").
+   */
+  private static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
+    if (dueDate == null) {
+      return "";
+    }
+
+    long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+
+    String formattedString;
+    if (remainingDays < 0) {
+      formattedString =
+              i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
+    } else if (remainingDays == 0) {
+      formattedString = i18n.translation("academic.student.days.today", locale);
+    } else if (remainingDays == 1) {
+      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
+    } else {
+      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
+    }
+    return formattedString;
   }
 }
 
@@ -3326,8 +3340,8 @@ public class CourseServiceImpl implements CourseService {
     schoolService.getById(cmd.schoolId());
     Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
-    if (courseToPersist.hasErrors()) {
-      throw new AppValidationException(courseToPersist.getProblems());
+    if (courseToPersist.hasFieldErrors()) {
+      throw new AppValidationException(courseToPersist.getFieldErrors());
     }
 
     if (existsByName(courseToPersist.getName())) {
@@ -3353,8 +3367,8 @@ public class CourseServiceImpl implements CourseService {
 
     Course updatedCourse = CourseProcessor.processUpdateInput(current, cmd.name(), cmd.schoolId());
 
-    if (updatedCourse.hasErrors()) {
-      throw new AppValidationException(updatedCourse.getProblems());
+    if (updatedCourse.hasFieldErrors()) {
+      throw new AppValidationException(updatedCourse.getFieldErrors());
     }
 
     if (!updatedCourse.getName().equals(current.getName())
@@ -3399,7 +3413,7 @@ public class CourseServiceImpl implements CourseService {
                       AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
                 });
 
-    if (course.hasErrors()) {
+    if (course.hasFieldErrors()) {
       LOG.errorf(
           "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
           id, course.getProblemsSummary());
@@ -3510,8 +3524,8 @@ public class SchoolServiceImpl implements SchoolService {
     LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
 
-    if (schoolToPersist.hasErrors()) {
-      throw new AppValidationException(schoolToPersist.getProblems());
+    if (schoolToPersist.hasFieldErrors()) {
+      throw new AppValidationException(schoolToPersist.getFieldErrors());
     }
 
     if (existsByName(schoolToPersist.getName())) {
@@ -3532,8 +3546,8 @@ public class SchoolServiceImpl implements SchoolService {
     School current = getById(id);
     School updatedSchool = SchoolProcessor.processUpdateInput(current, cmd.name());
 
-    if (updatedSchool.hasErrors()) {
-      throw new AppValidationException(updatedSchool.getProblems());
+    if (updatedSchool.hasFieldErrors()) {
+      throw new AppValidationException(updatedSchool.getFieldErrors());
     }
 
     if (!updatedSchool.getName().equals(current.getName())
@@ -3578,7 +3592,7 @@ public class SchoolServiceImpl implements SchoolService {
                       AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
                 });
 
-    if (school.hasErrors()) {
+    if (school.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
           id, school.getProblemsSummary());
@@ -3757,8 +3771,8 @@ public class StudentServiceImpl implements StudentService {
             cmd.startDate(),
             cmd.dueDate());
 
-    if (studentToPersist.hasErrors()) {
-      throw new AppValidationException(studentToPersist.getProblems());
+    if (studentToPersist.hasFieldErrors()) {
+      throw new AppValidationException(studentToPersist.getFieldErrors());
     }
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
@@ -3799,8 +3813,8 @@ public class StudentServiceImpl implements StudentService {
             cmd.startDate(),
             cmd.dueDate());
 
-    if (studentToUpdate.hasErrors()) {
-      throw new AppValidationException(studentToUpdate.getProblems());
+    if (studentToUpdate.hasFieldErrors()) {
+      throw new AppValidationException(studentToUpdate.getFieldErrors());
     }
 
     if (cmd.academicRegistration() != null
@@ -3851,7 +3865,7 @@ public class StudentServiceImpl implements StudentService {
                       AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
                 });
 
-    if (student.hasErrors()) {
+    if (student.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
           accountId, student.getProblemsSummary());

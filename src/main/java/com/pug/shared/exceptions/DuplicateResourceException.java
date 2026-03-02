@@ -1,31 +1,32 @@
 package com.pug.shared.exceptions;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when attempting to create or add a resource that already exists. Does not use
- * the 'Problem' domain pattern, as this is a resource-level conflict.
+ * Exception thrown when attempting to create or update a resource that violates a
+ * unique constraint or business uniqueness rule (e.g., "A user with this CPF already exists").
+ * <p>
+ * This represents a state conflict within the system rather than a syntactic validation error.
+ * It typically maps to an HTTP 409 (Conflict) response, returning a localized message
+ * to the client indicating the nature of the duplication.
  */
 @Getter
 public class DuplicateResourceException extends RuntimeException {
 
-  private final GenericErrorCodes code;
-  private final String conflictingField;
-  private final String conflictingValue;
+  /**
+   * The specific domain code representing the duplication error.
+   */
+  private final GenericCodes code;
 
   /**
-   * Constructs a new DuplicateResourceException.
+   * Constructs a new {@code DuplicateResourceException}.
    *
-   * @param code The specific error code (e.g. USER_ALREADY_EXISTS).
-   * @param conflictingField The name of the field that caused the conflict (e.g. "cpf").
-   * @param conflictingValue The value that already exists (e.g. "123.456.789-00").
+   * @param code The specific {@link GenericCodes} indicating which resource already exists
+   *             (e.g., {@code IdentityErrorCodes.USER_ALREADY_EXISTS}).
    */
-  public DuplicateResourceException(
-      GenericErrorCodes code, String conflictingField, String conflictingValue) {
+  public DuplicateResourceException(GenericCodes code) {
     super(code.getBundleKey());
     this.code = code;
-    this.conflictingField = conflictingField;
-    this.conflictingValue = conflictingValue;
   }
 }

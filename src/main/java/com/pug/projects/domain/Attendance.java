@@ -8,7 +8,7 @@ import com.pug.projects.domain.vos.AttendanceInfo;
 import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -103,23 +103,23 @@ public class Attendance extends DomainError {
     validateIdField(id);
 
     if (enrollmentIdentifier == null) {
-      addError(
+      addFieldError(
           new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK)); // Generic fallback
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
-    } else if (enrollmentIdentifier.hasErrors()) {
-      addErrors(enrollmentIdentifier.getProblems());
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK));
+    } else if (enrollmentIdentifier.hasFieldErrors()) {
+      addFieldErrors(enrollmentIdentifier.getFieldErrors());
     }
 
     if (status == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK));
     }
 
-    if (qrValidationInfo != null && qrValidationInfo.hasErrors()) {
-      addErrors(qrValidationInfo.getProblems());
+    if (qrValidationInfo != null && qrValidationInfo.hasFieldErrors()) {
+      addFieldErrors(qrValidationInfo.getFieldErrors());
     }
 
-    if (attendanceInfo != null && attendanceInfo.hasErrors()) {
-      addErrors(attendanceInfo.getProblems());
+    if (attendanceInfo != null && attendanceInfo.hasFieldErrors()) {
+      addFieldErrors(attendanceInfo.getFieldErrors());
     }
   }
 }

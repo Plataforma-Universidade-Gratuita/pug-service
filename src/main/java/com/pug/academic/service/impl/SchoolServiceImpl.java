@@ -31,8 +31,8 @@ public class SchoolServiceImpl implements SchoolService {
     LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
 
-    if (schoolToPersist.hasErrors()) {
-      throw new AppValidationException(schoolToPersist.getProblems());
+    if (schoolToPersist.hasFieldErrors()) {
+      throw new AppValidationException(schoolToPersist.getFieldErrors());
     }
 
     if (existsByName(schoolToPersist.getName())) {
@@ -53,8 +53,8 @@ public class SchoolServiceImpl implements SchoolService {
     School current = getById(id);
     School updatedSchool = SchoolProcessor.processUpdateInput(current, cmd.name());
 
-    if (updatedSchool.hasErrors()) {
-      throw new AppValidationException(updatedSchool.getProblems());
+    if (updatedSchool.hasFieldErrors()) {
+      throw new AppValidationException(updatedSchool.getFieldErrors());
     }
 
     if (!updatedSchool.getName().equals(current.getName())
@@ -99,7 +99,7 @@ public class SchoolServiceImpl implements SchoolService {
                       AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
                 });
 
-    if (school.hasErrors()) {
+    if (school.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
           id, school.getProblemsSummary());

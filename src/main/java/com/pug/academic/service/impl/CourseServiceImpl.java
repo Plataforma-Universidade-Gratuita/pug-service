@@ -36,8 +36,8 @@ public class CourseServiceImpl implements CourseService {
     schoolService.getById(cmd.schoolId());
     Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
-    if (courseToPersist.hasErrors()) {
-      throw new AppValidationException(courseToPersist.getProblems());
+    if (courseToPersist.hasFieldErrors()) {
+      throw new AppValidationException(courseToPersist.getFieldErrors());
     }
 
     if (existsByName(courseToPersist.getName())) {
@@ -63,8 +63,8 @@ public class CourseServiceImpl implements CourseService {
 
     Course updatedCourse = CourseProcessor.processUpdateInput(current, cmd.name(), cmd.schoolId());
 
-    if (updatedCourse.hasErrors()) {
-      throw new AppValidationException(updatedCourse.getProblems());
+    if (updatedCourse.hasFieldErrors()) {
+      throw new AppValidationException(updatedCourse.getFieldErrors());
     }
 
     if (!updatedCourse.getName().equals(current.getName())
@@ -109,7 +109,7 @@ public class CourseServiceImpl implements CourseService {
                       AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
                 });
 
-    if (course.hasErrors()) {
+    if (course.hasFieldErrors()) {
       LOG.errorf(
           "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
           id, course.getProblemsSummary());

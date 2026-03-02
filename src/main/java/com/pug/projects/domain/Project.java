@@ -5,7 +5,6 @@ import com.pug.projects.domain.enums.ProjectStatus;
 import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.ProjectInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import com.pug.shared.domain.enums.SharedErrorCodes;
 import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.utils.StringUtils;
@@ -248,13 +247,13 @@ public class Project extends DomainError {
     validateStringField(description, 4000L, "description");
 
     if (projectInfo == null) {
-      addError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
-    } else if (projectInfo.hasErrors()) {
-      addErrors(projectInfo.getProblems());
+      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+    } else if (projectInfo.hasFieldErrors()) {
+      addFieldErrors(projectInfo.getFieldErrors());
     }
 
     if (projectStatus == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_STATUS_BLANK));
     }
   }
 }

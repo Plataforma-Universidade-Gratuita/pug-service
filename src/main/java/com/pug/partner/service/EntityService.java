@@ -52,4 +52,12 @@ public interface EntityService {
    *     is corrupted in DB).
    */
   Entity getById(UUID id);
+
+  /**
+   * Checks if any Entity exists with the specified city ID.
+   *
+   * @param cityId the UUID of the city to check for references
+   * @return true if any Entity references the specified city ID, false otherwise
+   */
+  boolean existsAnyByCityId(UUID cityId);
 }

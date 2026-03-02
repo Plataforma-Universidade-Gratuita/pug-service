@@ -6,7 +6,6 @@ import com.pug.projects.domain.enums.ProjectsErrorCodes;
 import com.pug.projects.domain.vos.EnrollmentIdentifier;
 import com.pug.projects.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.Problem;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -82,18 +81,18 @@ public class Enrollment extends DomainError {
   /** Validates the Enrollment entityId and accumulates errors if any. */
   private void collectValidationProblems() {
     if (identifier == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
-    } else if (identifier.hasErrors()) {
-      addErrors(identifier.getProblems());
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK));
+    } else if (identifier.hasFieldErrors()) {
+      addFieldErrors(identifier.getFieldErrors());
     }
 
     if (status == null) {
-      addError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
+      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK));
     }
 
-    if (enrollmentInfo != null && enrollmentInfo.hasErrors()) {
-      addErrors(enrollmentInfo.getProblems());
+    if (enrollmentInfo != null && enrollmentInfo.hasFieldErrors()) {
+      addFieldErrors(enrollmentInfo.getFieldErrors());
     }
   }
 }
