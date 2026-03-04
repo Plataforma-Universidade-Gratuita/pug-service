@@ -1,48 +1,62 @@
 package com.pug.partner.infra.read;
 
 import com.pug.partner.infra.read.dtos.EntityView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Entities. */
+/**
+ * Read-only interface for executing queries against Partner Entities.
+ * <p>
+ * This interface represents the "Query" side of a CQRS architecture. It defines
+ * operations for retrieving partner organization data directly into lightweight
+ * {@link EntityView} projections, bypassing the overhead of instantiating full
+ * JPA entities or domain aggregates.
+ */
 public interface EntityQueries {
+
   /**
-   * Finds an EntityView by its ID.
+   * Retrieves a read-only view of a partner entity based on its unique identifier.
    *
-   * @param id the UUID of the EntityView to find.
-   * @return an Optional containing the found EntityView, or empty if not found.
+   * @param id the unique identifier (UUID) of the entity to find
+   * @return an {@link Optional} containing the found {@link EntityView}, or {@link Optional#empty()} if not found
    */
   Optional<EntityView> findOptionalById(UUID id);
 
   /**
-   * Finds an EntityView by its CNPJ.
+   * Retrieves a read-only view of a partner entity based on its exact CNPJ.
    *
-   * @param cnpj the CNPJ of the EntityView to find.
-   * @return an Optional containing the found EntityView, or empty if not found.
+   * @param cnpj the exact 14-digit numeric CNPJ string to find
+   * @return an {@link Optional} containing the found {@link EntityView}, or {@link Optional#empty()} if not found
    */
   Optional<EntityView> findOptionalByCnpj(String cnpj);
 
   /**
-   * Lists all EntityView objects.
+   * Retrieves a comprehensive list of all partner entities registered in the system.
+   * <p>
+   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
+   * does not implement pagination.
    *
-   * @return a list of all EntityView objects.
+   * @return a {@link List} of all {@link EntityView} objects
    */
   List<EntityView> listAllEntities();
 
   /**
-   * Lists all EntityView objects by city ID.
+   * Retrieves a list of partner entities located in a specific city.
    *
-   * @param cityId the UUID of the city.
-   * @return a list of EntityView objects in the specified city.
+   * @param cityId the unique identifier (UUID) of the city
+   * @return a {@link List} of {@link EntityView} objects located in the specified city
    */
   List<EntityView> listAllByCityId(UUID cityId);
 
   /**
-   * Searches for entities by name.
+   * Executes a robust full-text search against the names of partner entities.
+   * <p>
+   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
    *
-   * @param query the name query string.
-   * @return a list of entities matching the name query.
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of {@link EntityView} entries matching the search criteria
    */
   List<EntityView> searchByName(String query);
 }

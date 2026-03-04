@@ -1,52 +1,61 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.AdminView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading admin data. */
+/**
+ * Application service interface dedicated exclusively to querying Administrator data.
+ * <p>
+ * Following CQRS principles, this service handles the "Query" operations. It bypasses
+ * complex domain logic and retrieves lightweight, fully resolved {@link AdminView} Data
+ * Transfer Objects directly from the underlying data store or search indices.
+ */
 public interface AdminReadService {
 
   /**
-   * Retrieves an AdminView by its account ID.
+   * Retrieves a read-only projection of an administrator based on their linked account ID.
    *
-   * @param accountId the account ID of the admin.
-   * @return the AdminView.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given account
-   *     ID is found.
+   * @param accountId the unique identifier (UUID) of the admin's account
+   * @return the populated {@link AdminView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin matches the provided account ID
    */
   AdminView getViewByAccountId(UUID accountId);
 
   /**
-   * Retrieves an AdminView by its email.
+   * Retrieves a read-only projection of an administrator based on their registered email address.
    *
-   * @param email the email of the admin.
-   * @return the AdminView.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin with the given email is
-   *     found.
+   * @param email the exact email address string of the requested admin
+   * @return the populated {@link AdminView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin matches the provided email
    */
   AdminView getViewByEmail(String email);
 
   /**
-   * Lists all AdminViews.
+   * Retrieves a comprehensive list of all administrators registered in the system.
+   * <p>
+   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
+   * in contexts where the dataset size is known to be safely bounded.
    *
-   * @return a list of all AdminViews.
+   * @return a {@link List} containing all available {@link AdminView} entries
    */
   List<AdminView> listViews();
 
   /**
-   * Lists AdminViews by CPF.
+   * Retrieves a list of administrators filtered by the exact CPF of their associated user.
    *
-   * @param cpf the CPF to filter by.
-   * @return a list of AdminViews matching the given CPF.
+   * @param cpf the raw 11-digit numeric CPF string
+   * @return a {@link List} of matching {@link AdminView} entries
    */
   List<AdminView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AdminViews by name (of the associated account).
+   * Executes a robust full-text search against the names of the associated users,
+   * returning their corresponding administrator profiles.
    *
-   * @param query the search query.
-   * @return a list of matching AdminViews.
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link AdminView} entries
    */
   List<AdminView> search(String query);
 }

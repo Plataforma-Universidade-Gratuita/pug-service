@@ -11,22 +11,28 @@ import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.persistence.StaffEntity;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between Staff domain and StaffEntity persistence. */
+/**
+ * Stateless utility class responsible for mapping between Staff boundary layers.
+ * <p>
+ * This mapper handles both the translation between pure domain and JPA entities,
+ * as well as the assembly of deeply nested CQRS read views that cross module boundaries
+ * (Identity, Geo, Partner).
+ */
 public final class StaffMapper {
-  /** Private constructor to prevent instantiation. */
-  private StaffMapper() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private StaffMapper() {
+  }
 
   /**
-   * Maps a StaffEntity to a Staff domain object.
+   * Reconstitutes a pure Domain {@link Staff} aggregate from a JPA {@link StaffEntity}.
    *
-   * @param e the StaffEntity.
-   * @return the Staff domain object, or null if entityId is null.
-   * @throws AppValidationException if the data in the entityId (e.g., accountId or entityId) is
-   *     invalid according to domain rules, indicating corrupted data in persistence.
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Staff}, or {@code null} if the input entity is null
    */
-  public static Staff toDomain(StaffEntity e) throws AppValidationException {
+  public static Staff toDomain(StaffEntity e) {
     if (e == null) {
       return null;
     }
@@ -34,10 +40,10 @@ public final class StaffMapper {
   }
 
   /**
-   * Maps a Staff domain object to a StaffEntity for persistence.
+   * Translates a pure Domain {@link Staff} aggregate into a newly instantiated JPA {@link StaffEntity}.
    *
-   * @param d the Staff domain object.
-   * @return the StaffEntity, or null if domain is null.
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link StaffEntity}, or {@code null} if the input domain is null
    */
   public static StaffEntity toEntity(Staff d) {
     if (d == null) {
@@ -47,39 +53,44 @@ public final class StaffMapper {
   }
 
   /**
-   * Converts an AccountEntity, EntityEntity, CityEntity, and UserEntity into a StaffView.
+   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
+   * {@link StaffView} DTO.
+   * <p>
+   * Used heavily by the CQRS query layer to construct fully resolved data structures
+   * that encapsulate the staff member's profile, credentials, organization, and location
+   * in a single, flattened response ready for JSON serialization.
    *
-   * @param accountEntity the associated AccountEntity.
-   * @param entityEntity the associated EntityEntity.
-   * @param cityEntity the associated CityEntity.
-   * @param userEntity the associated UserEntity.
-   * @return the StaffView.
+   * @param accountEntity the JPA entity representing the linked authentication account
+   * @param entityEntity  the JPA entity representing the partner organization
+   * @param cityEntity    the JPA entity representing the city where the partner operates
+   * @param userEntity    the JPA entity representing the personal identity of the staff member
+   * @return a fully populated {@link StaffView} DTO
    */
   public static StaffView toView(
-      AccountEntity accountEntity,
-      EntityEntity entityEntity,
-      CityEntity cityEntity,
-      UserEntity userEntity) {
+          AccountEntity accountEntity,
+          EntityEntity entityEntity,
+          CityEntity cityEntity,
+          UserEntity userEntity) {
     return new StaffView(
-        new AccountView(
-            accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt(),
-                userEntity.getUpdatedAt()),
-            accountEntity.getEmail(),
-            accountEntity.getAccountType(),
-            accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt()),
-        new EntityView(
-            entityEntity.getId(),
-            entityEntity.getCnpj(),
-            entityEntity.getName(),
-            entityEntity.getAddress(),
-            new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode()),
-            entityEntity.getCreatedAt(),
-            entityEntity.getUpdatedAt()));
+            new AccountView(
+                    accountEntity.getId(),
+                    new UserView(
+                            userEntity.getId(),
+                            userEntity.getCpf(),
+                            userEntity.getName(),
+                            userEntity.getCreatedAt(),
+                            userEntity.getUpdatedAt()),
+                    accountEntity.getEmail(),
+                    accountEntity.getAccountType(),
+                    accountEntity.getCreatedAt(),
+                    accountEntity.getUpdatedAt()),
+            new EntityView(
+                    entityEntity.getId(),
+                    entityEntity.getCnpj(),
+                    entityEntity.getName(),
+                    entityEntity.getAddress(),
+                    new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode()),
+                    entityEntity.getCreatedAt(),
+                    entityEntity.getUpdatedAt()));
   }
 }

@@ -1,13 +1,24 @@
 package com.pug.partner.presenter.dtos;
 
+import jakarta.validation.constraints.Size;
+
 import java.util.UUID;
 
 /**
- * Request DTO for updating an Entity.
+ * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing Partner Entity.
+ * <p>
+ * Because updates can be partial, all fields in this record are inherently optional.
+ * If a field is provided as {@code null} or omitted from the JSON payload, the application
+ * service will ignore it and retain the existing value for that specific attribute.
  *
- * @param cnpjString the CNPJ of the entityId as a string.
- * @param name the name of the entityId.
- * @param cityId the ID of the city associated with the entityId, as a UUID.
- * @param address the address of the entityId.
+ * @param cnpjString the new 14-digit numeric CNPJ string, or {@code null} to leave unchanged
+ * @param name       the new name of the organization, or {@code null} to leave unchanged (if provided, max 150 characters)
+ * @param cityId     the new city UUID, or {@code null} to leave unchanged
+ * @param address    the new physical street address, or {@code null} to leave unchanged (if provided, max 254 characters)
  */
-public record EntityUpdateRequest(String cnpjString, String name, UUID cityId, String address) {}
+public record EntityUpdateRequest(
+        String cnpjString,
+        @Size(max = 150) String name,
+        UUID cityId,
+        @Size(max = 254) String address) {
+}

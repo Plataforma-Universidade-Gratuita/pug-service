@@ -6,20 +6,37 @@ import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
+
 import java.util.Locale;
 
-/** Mapper class for converting AccountView to AccountResponse. */
+/**
+ * Stateless utility class responsible for mapping internal identity projections
+ * to external API responses.
+ * <p>
+ * This presenter acts as a translation layer, converting raw CQRS query views ({@link AccountView})
+ * into client-ready representations ({@link AccountResponse}). It is responsible for injecting
+ * presentation-specific formatting, such as resolving the localized string for the account
+ * type enum based on the client's {@link Locale}.
+ */
 public final class AccountPresenter {
-  /** Private constructor to prevent instantiation. */
-  private AccountPresenter() {}
 
   /**
-   * Converts an AccountView to an AccountResponse.
+   * Private constructor to prevent instantiation of utility class.
+   */
+  private AccountPresenter() {
+  }
+
+  /**
+   * Projects a read-only {@link AccountView} into a client-facing {@link AccountResponse}.
+   * <p>
+   * This mapping cascades down to format the nested {@link UserResponse} and calculates
+   * localized strings for Enums and timestamps.
    *
-   * @param v the AccountView
-   * @param locale the locale for formatting
-   * @param i18n the internationalization instance
-   * @return the corresponding AccountResponse
+   * @param v      the internal read-model projection of the account
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n   the internationalization service for resolving bundle keys
+   * @return a fully populated {@link AccountResponse} ready for JSON serialization,
+   * or {@code null} if any required input is null
    */
   public static AccountResponse toResponse(AccountView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
@@ -29,9 +46,9 @@ public final class AccountPresenter {
     UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
     AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+            SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
+            v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
   }
 }

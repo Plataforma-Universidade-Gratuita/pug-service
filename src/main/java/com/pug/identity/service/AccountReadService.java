@@ -1,52 +1,61 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading account views. */
+/**
+ * Application service interface dedicated exclusively to querying Account data.
+ * <p>
+ * Following CQRS principles, this service handles the "Query" operations. It bypasses
+ * complex domain logic and retrieves lightweight, fully resolved {@link AccountView} Data
+ * Transfer Objects directly from the underlying data store or search indices.
+ */
 public interface AccountReadService {
 
   /**
-   * Retrieves an AccountView by its unique identifier.
+   * Retrieves a read-only projection of an account based on its unique identifier.
    *
-   * @param id the UUID of the account
-   * @return the AccountView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given ID is
-   *     found
+   * @param id the unique identifier (UUID) of the requested account
+   * @return the populated {@link AccountView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided ID
    */
   AccountView getViewById(UUID id);
 
   /**
-   * Retrieves an AccountView by its email.
+   * Retrieves a read-only projection of an account based on its registered email address.
    *
-   * @param email the email of the account
-   * @return the AccountView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account with the given email
-   *     is found
+   * @param email the exact email address string of the requested account
+   * @return the populated {@link AccountView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided email
    */
   AccountView getViewByEmail(String email);
 
   /**
-   * Lists all AccountViews.
+   * Retrieves a comprehensive list of all accounts registered in the system.
+   * <p>
+   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
+   * in contexts where the dataset size is known to be safely bounded.
    *
-   * @return a list of all AccountViews
+   * @return a {@link List} containing all available {@link AccountView} entries
    */
   List<AccountView> listViews();
 
   /**
-   * Lists AccountViews by CPF.
+   * Retrieves a list of accounts filtered by the exact CPF of their associated user.
    *
-   * @param cpf the CPF to filter accounts
-   * @return the list of AccountViews matching the given CPF
+   * @param cpf the raw 11-digit numeric CPF string
+   * @return a {@link List} of matching {@link AccountView} entries
    */
   List<AccountView> listViewsByCpf(String cpf);
 
   /**
-   * Searches for AccountViews by name (of the associated account).
+   * Executes a robust full-text search against the names of the associated users,
+   * returning their corresponding accounts.
    *
-   * @param query the search query
-   * @return a list of AccountViews matching the search query
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link AccountView} entries
    */
   List<AccountView> search(String query);
 }

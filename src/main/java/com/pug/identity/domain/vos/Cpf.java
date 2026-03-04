@@ -1,6 +1,6 @@
 package com.pug.identity.domain.vos;
 
-import com.pug.identity.domain.enums.IdentityErrorCodes;
+import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
@@ -9,27 +9,41 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Value object representing a Brazilian CPF (Cadastro de Pessoas Físicas). Converted to class to
- * extend DomainError, allowing deferred validation.
+ * Immutable Value Object (VO) representing a Brazilian CPF (Cadastro de Pessoas Físicas).
+ * <p>
+ * Extends {@link DomainError} to encapsulate and accumulate domain validation rules
+ * specific to Brazilian individual taxpayer registry numbers without throwing immediate exceptions.
+ * This class inherently handles formatting variations by sanitizing the input prior to validation.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Cpf extends DomainError {
 
+  /**
+   * The raw, numeric-only 11-digit string representing the CPF.
+   */
   String value;
 
+  /**
+   * Constructs a {@code Cpf} instance.
+   *
+   * @param value the sanitized, numeric-only CPF string
+   */
   @Builder(toBuilder = true)
   private Cpf(String value) {
     this.value = value;
   }
 
   /**
-   * Factory method to create a new CPF. It cleans the input (removes non-digits) and runs
-   * validation. It does not throw exceptions immediately but collects them in the problems list.
+   * Factory method to create a new {@code Cpf} instance.
+   * <p>
+   * The provided raw value is automatically sanitized (all non-numeric characters stripped)
+   * before instantiation. The instance is immediately self-validated. Any validation failures
+   * are accumulated internally and can be retrieved via {@link #getFieldErrors()}.
    *
-   * @param rawValue The raw CPF string (formatted or unformatted)
-   * @return The Cpf instance (which may contain errors)
+   * @param rawValue the raw CPF string (formatted with punctuation or unformatted)
+   * @return a self-validated {@link Cpf} instance
    */
   public static Cpf factory(String rawValue) {
     String cleaned = StringUtils.isEmpty(rawValue) ? null : rawValue.replaceAll("\\D", "");
@@ -39,25 +53,40 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /** Validates the CPF format and digits, populating the problems list if invalid. */
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   * <p>
+   * Business rules applied:
+   * <ul>
+   *   <li>Must not be null or empty (appends {@link IdentityFieldErrorCodes#INVALID_CPF_BLANK})</li>
+   *   <li>Must be exactly 11 digits long, cannot consist of the same repeated digit,
+   *       and must pass the standard modulo-11 checksum algorithm for both verification digits
+   *       (appends {@link IdentityFieldErrorCodes#INVALID_CPF_FORMAT})</li>
+   * </ul>
+   */
   private void collectValidationProblems() {
-    validateStringField(value, 11L, "cpf");
-
-    if (allSameDigit(value) || !validCheckDigits(value)) {
-      addFieldError(new Problem(IdentityErrorCodes.INVALID_CPF_FORMAT));
+    if (StringUtils.isEmpty(value)) {
+      addFieldError(IdentityFieldErrorCodes.INVALID_CPF_BLANK);
+      return;
+    }
+    if (value.length() != 11 || allSameDigit(value) || !validCheckDigits(value)) {
+      addFieldError(IdentityFieldErrorCodes.INVALID_CPF_FORMAT);
     }
   }
 
   // --- Internal Validation Logic ---
 
   /**
-   * Checks if all characters in the string are the same digit.
+   * Evaluates if all characters within the provided string are identical.
+   * <p>
+   * This is a requirement for CPF validation, as strings like "11111111111" pass
+   * the mathematical checksum but are structurally invalid CPFs.
    *
-   * @param s the string to check
-   * @return true if all characters are the same, false otherwise
+   * @param s the numeric string to evaluate
+   * @return {@code true} if all characters are the same repeated digit, {@code false} otherwise
    */
   private static boolean allSameDigit(String s) {
-    if (s == null || s.isEmpty()) {
+    if (StringUtils.isEmpty(s)) {
       return false;
     }
     char c = s.charAt(0);
@@ -70,10 +99,11 @@ public class Cpf extends DomainError {
   }
 
   /**
-   * Validates the CPF check digits.
+   * Executes the standard Brazilian modulo-11 checksum algorithm to validate
+   * the last two digits (Verification Digits) of the CPF.
    *
-   * @param s the string with 11 digits
-   * @return true if check digits are valid, false otherwise
+   * @param s the 11-digit numeric string representing the CPF
+   * @return {@code true} if the calculated check digits match the provided string, {@code false} otherwise
    */
   private static boolean validCheckDigits(String s) {
     int d1 = calcDigit(s, 9);
@@ -82,11 +112,11 @@ public class Cpf extends DomainError {
   }
 
   /**
-   * Calculates a CPF check digit.
+   * Calculates a single CPF verification digit based on the modulo-11 algorithm.
    *
-   * @param s the string with digits
-   * @param len number of digits to use for calculation (9 or 10)
-   * @return the calculated check digit
+   * @param s   the numeric string containing the base digits for calculation
+   * @param len the number of digits to consider (9 for the first verification digit, 10 for the second)
+   * @return the mathematically calculated verification digit (0-9)
    */
   private static int calcDigit(String s, int len) {
     int sum = 0;

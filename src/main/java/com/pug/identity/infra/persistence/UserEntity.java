@@ -20,35 +20,65 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** UserEntity represents a account in the identity system. */
+/**
+ * JPA entity representing a User within the persistence layer.
+ * <p>
+ * This class acts as the database-mapped counterpart to the {@link com.pug.identity.domain.User}
+ * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit tracking
+ * fields from {@link BaseAuditedEntity}. It enforces strict uniqueness on the CPF at the
+ * database level.
+ * <p>
+ * Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
+ * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices
+ * to support advanced full-text queries on the user's name.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-    callSuper = true,
-    of = {"name"})
+        callSuper = true,
+        of = {"name"})
 @Entity
 @Table(
-    name = "users",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uq_users_cpf",
-          columnNames = {"cpf"}),
-    },
-    indexes = {
-      @Index(name = "idx_users_name", columnList = "name"),
-      @Index(name = "idx_users_cpf", columnList = "cpf")
-    })
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_users_cpf",
+                        columnNames = {"cpf"}),
+        },
+        indexes = {
+                @Index(name = "idx_users_name", columnList = "name"),
+                @Index(name = "idx_users_cpf", columnList = "cpf")
+        })
 @Indexed
 @SuperBuilder
 public class UserEntity extends BaseAuditedEntity {
 
+  /**
+   * The unique 11-digit Brazilian CPF of the user.
+   * <p>
+   * Mapped as a fixed-length {@code CHAR(11)} at the database level for optimal storage
+   * and indexing. This serves as a natural key for the user, enforced by the
+   * {@code uq_users_cpf} unique constraint.
+   */
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cpf", nullable = false, length = 11)
   private String cpf;
 
+  /**
+   * The full name of the user.
+   * <p>
+   * This field is heavily indexed for optimized searching using custom analyzers defined
+   * in {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   * <ul>
+   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).</li>
+   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").</li>
+   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.</li>
+   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.</li>
+   * </ul>
+   */
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
   @KeywordField(name = "name_exact", normalizer = "folding_lowercase")

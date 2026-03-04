@@ -1,58 +1,75 @@
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.AccountQueries;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.service.AccountReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for account views. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link AccountReadService}.
+ * <p>
+ * This application-scoped bean delegates read-only operations to the underlying
+ * {@link AccountQueries} infrastructure component. It handles basic input validation
+ * and translates "not found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class AccountReadServiceImpl implements AccountReadService {
 
   private static final Logger LOG = Logger.getLogger(AccountReadServiceImpl.class);
 
-  @Inject AccountQueries queries;
+  @Inject
+  AccountQueries queries;
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AccountView getViewById(UUID id) {
     return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Account lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                  IdentityErrorCodes.ACCOUNT_NOT_FOUND, "id", id.toString());
-            });
+            .findOptionalById(id)
+            .orElseThrow(
+                    () -> {
+                      LOG.debugf("Account lookup failed: ID %s not found", id);
+                      return ExceptionHelper.accountNotFound();
+                    });
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public AccountView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND, "email", "empty");
+      throw ExceptionHelper.accountNotFound();
     }
 
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Account lookup failed: Email %s not found", email);
-              return new ResourceNotFoundException(
-                  IdentityErrorCodes.ACCOUNT_NOT_FOUND, "email", email);
-            });
+            .findOptionalByEmail(email)
+            .orElseThrow(
+                    () -> {
+                      LOG.debugf("Account lookup failed: Email %s not found", email);
+                      return ExceptionHelper.accountNotFound();
+                    });
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<AccountView> listViews() {
     return queries.listAllAccounts();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<AccountView> listViewsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -61,6 +78,13 @@ public class AccountReadServiceImpl implements AccountReadService {
     return queries.listByCpf(cpf);
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * Prior to execution, the input query is "folded" (lowercased and accents removed via
+   * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
+   * underlying search indexing rules.
+   */
   @Override
   public List<AccountView> search(String query) {
     String key = StringUtils.fold(query);

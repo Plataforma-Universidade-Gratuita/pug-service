@@ -5,17 +5,25 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
-/** Service for hashing and verifying passwords using bcrypt with an added pepper. */
+/**
+ * Implementation of the {@link PasswordService} utilizing Elytron's Bcrypt utility.
+ * <p>
+ * This application-scoped bean reads a secret pepper from the application's configuration
+ * properties (via MicroProfile Config). The pepper is kept strictly in memory/configuration
+ * and is never stored alongside the hashes in the database.
+ */
 @ApplicationScoped
 public class PasswordServiceImpl implements PasswordService {
+
+  /**
+   * The secret pepper string injected from the application configuration.
+   * Defaults to an empty string if not explicitly configured (e.g., in some test environments).
+   */
   @ConfigProperty(name = "security.password.pepper", defaultValue = "")
   String pepper;
 
   /**
-   * Hashes the raw password combined with a pepper using bcrypt.
-   *
-   * @param raw the raw password
-   * @return the bcrypt hash of the password with pepper
+   * {@inheritDoc}
    */
   @Override
   public String hash(String raw) {
@@ -23,11 +31,7 @@ public class PasswordServiceImpl implements PasswordService {
   }
 
   /**
-   * Verifies a raw password against a stored bcrypt hash, considering the pepper.
-   *
-   * @param storedHash the stored bcrypt hash
-   * @param raw the raw password to verify
-   * @return true if the password matches the hash, false otherwise
+   * {@inheritDoc}
    */
   @Override
   public boolean verify(String storedHash, String raw) {

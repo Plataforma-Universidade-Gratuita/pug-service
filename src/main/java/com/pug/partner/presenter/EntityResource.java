@@ -34,31 +34,42 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing partner entities. */
+/**
+ * REST API Resource controller for managing Partner Entities.
+ * <p>
+ * This class exposes endpoints to create, retrieve, update, and delete partner organizations.
+ * It delegates commands to the {@link EntityService} (writes) and queries to the
+ * {@link EntityReadService} (reads), strictly adhering to CQRS architectural principles.
+ */
 @ApplicationScoped
 @Path("/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
 
-  @Inject EntityService writeService;
-  @Inject EntityReadService readService;
+  @Inject
+  EntityService writeService;
+  @Inject
+  EntityReadService readService;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Get entityId by ID.
+   * Retrieves a specific partner entity by its unique UUID identifier.
    *
-   * @param id the entityId ID
-   * @return the response containing the entityId view
-   * @throws ResourceNotFoundException if the Entity is not found.
+   * @param id the unique identifier (UUIDv7) of the partner entity
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link EntityResponse}
+   * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
   @Path("{id}")
@@ -68,11 +79,30 @@ public class EntityResource {
   }
 
   /**
-   * List or search entities.
+   * Retrieves a specific partner entity by its unique corporate identification (CNPJ).
    *
-   * @param q optional search query (by name)
-   * @param cityId optional city ID to filter by
-   * @return the response containing the list of entityId views
+   * @param cnpjRaw the exact 14-digit numeric CNPJ string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link EntityResponse}
+   * @throws AppValidationException    if the provided CNPJ is malformed
+   * @throws ResourceNotFoundException if the entity is not found
+   */
+  @GET
+  @Path("by-cnpj/{cnpj}")
+  public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of partner entities.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the entities' names. If the {@code cityId} parameter is provided, it filters the results
+   * geographically. If both are omitted, it returns all entities.
+   *
+   * @param q      the optional search query string
+   * @param cityId the optional geographic filter
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link EntityResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
@@ -88,36 +118,21 @@ public class EntityResource {
     }
 
     List<EntityResponse> body =
-        views.stream()
-            .map(v -> EntityPresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
+            views.stream()
+                    .map(v -> EntityPresenter.toResponse(v, locale()))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Get entityId by CNPJ.
+   * Registers a new partner entity within the platform.
    *
-   * @param cnpjRaw the raw CNPJ string
-   * @return the response containing the entityId view
-   * @throws AppValidationException if the provided CNPJ is malformed.
-   * @throws ResourceNotFoundException if the Entity is not found.
-   */
-  @GET
-  @Path("by-cnpj/{cnpj}")
-  public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Create a new entityId.
-   *
-   * @param req the entityId creation request
-   * @return the response containing the created entityId view
-   * @throws DuplicateResourceException if an entityId with the same CNPJ already exists.
-   * @throws AppValidationException if input validation fails.
-   * @throws ResourceNotFoundException if the specified city does not exist.
+   * @param req the validated {@link EntityCreateRequest} containing the organization's details
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link EntityResponse}
+   * @throws DuplicateResourceException if an entity with the same CNPJ already exists
+   * @throws AppValidationException     if input validation fails at the domain level
+   * @throws ResourceNotFoundException  if the specified city does not exist
    */
   @POST
   public Response create(@Valid EntityCreateRequest req) {
@@ -125,23 +140,26 @@ public class EntityResource {
     var createdEntityDomain = writeService.save(cmd);
 
     EntityResponse body =
-        EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()), locale());
+            EntityPresenter.toResponse(readService.getViewById(createdEntityDomain.getId()), locale());
 
     URI location =
-        uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
+            uri.getAbsolutePathBuilder().path(createdEntityDomain.getId().toString()).build();
 
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
   /**
-   * Update an existing entityId.
+   * Partially updates an existing partner entity's details.
+   * <p>
+   * Omitting fields in the request payload will result in those fields retaining their
+   * current state in the database.
    *
-   * @param id the entityId ID
-   * @param req the entityId update request
-   * @return the response containing the updated entityId view
-   * @throws ResourceNotFoundException if the Entity is not found.
-   * @throws DuplicateResourceException if updated details conflict with existing records.
-   * @throws AppValidationException if input validation fails.
+   * @param id  the unique identifier (UUIDv7) of the entity to update
+   * @param req the validated {@link EntityUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link EntityResponse}
+   * @throws ResourceNotFoundException  if the entity or referenced city does not exist
+   * @throws DuplicateResourceException if the updated CNPJ conflicts with an existing record
+   * @throws AppValidationException     if input validation fails
    */
   @PUT
   @Path("{id}")
@@ -150,16 +168,16 @@ public class EntityResource {
     var updatedEntityDomain = writeService.update(id, cmd);
 
     EntityResponse body =
-        EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()), locale());
+            EntityPresenter.toResponse(readService.getViewById(updatedEntityDomain.getId()), locale());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Delete an entityId by ID.
+   * Permanently removes a partner entity from the system.
    *
-   * @param id the ID of the entityId to delete
-   * @return 200 OK with empty data (idempotent).
+   * @param id the unique identifier (UUIDv7) of the entity to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("{id}")
@@ -168,7 +186,9 @@ public class EntityResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

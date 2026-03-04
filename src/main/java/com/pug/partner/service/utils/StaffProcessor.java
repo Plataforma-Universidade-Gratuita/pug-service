@@ -1,17 +1,24 @@
 package com.pug.partner.service.utils;
 
 import com.pug.partner.domain.Staff;
+
 import java.util.UUID;
 
-/** Utility class for processing Staff DTO inputs. */
+/**
+ * Stateless utility class responsible for mapping raw DTO command data into
+ * pure {@link Staff} Domain Aggregates.
+ */
 public class StaffProcessor {
 
   /**
-   * Helper method to process input and build a new Staff domain object.
+   * Processes raw creation inputs and constructs a new {@link Staff} domain aggregate.
+   * <p>
+   * <b>Note:</b> The caller is responsible for checking {@link Staff#hasFieldErrors()}
+   * on the returned object and throwing standard validation exceptions if necessary.
    *
-   * @param accountId The ID of the associated account.
-   * @param entityId The ID of the associated entityId.
-   * @return The constructed Staff domain object.
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId  the unique identifier of the linked partner organization
+   * @return a fully instantiated {@link Staff} domain aggregate, potentially containing validation errors
    */
   public static Staff processCreateInput(UUID accountId, UUID entityId) {
     return Staff.factory(accountId, entityId);

@@ -1,58 +1,75 @@
 package com.pug.partner.service.impl;
 
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.infra.read.StaffQueries;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.service.StaffReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for staff views. */
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link StaffReadService}.
+ * <p>
+ * This application-scoped bean delegates read-only operations to the underlying
+ * {@link StaffQueries} infrastructure component. It handles basic input validation
+ * and translates "not found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class StaffReadServiceImpl implements StaffReadService {
 
   private static final Logger LOG = Logger.getLogger(StaffReadServiceImpl.class);
 
-  @Inject StaffQueries queries;
+  @Inject
+  StaffQueries queries;
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public StaffView getViewByAccountId(UUID accountId) {
     return queries
-        .findOptionalById(accountId)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
-            });
+            .findOptionalById(accountId)
+            .orElseThrow(
+                    () -> {
+                      LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
+                      return ExceptionHelper.staffNotFound();
+                    });
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public StaffView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, "email", "empty");
+      throw ExceptionHelper.staffNotFound();
     }
 
     return queries
-        .findOptionalByEmail(email)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Staff lookup failed: Email %s not found", email);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.STAFF_NOT_FOUND, "email", email);
-            });
+            .findOptionalByEmail(email)
+            .orElseThrow(
+                    () -> {
+                      LOG.debugf("Staff lookup failed: Email %s not found", email);
+                      return ExceptionHelper.staffNotFound();
+                    });
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<StaffView> listViews() {
     return queries.listAllStaff();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<StaffView> listViewsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -61,6 +78,9 @@ public class StaffReadServiceImpl implements StaffReadService {
     return queries.listByCpf(cpf);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<StaffView> listViewsByEntityId(UUID entityId) {
     if (entityId == null) {
@@ -69,6 +89,13 @@ public class StaffReadServiceImpl implements StaffReadService {
     return queries.listAllByEntityId(entityId);
   }
 
+  /**
+   * {@inheritDoc}
+   * <p>
+   * Prior to execution, the input query is "folded" (lowercased and accents removed via
+   * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
+   * underlying search indexing rules.
+   */
   @Override
   public List<StaffView> search(String term) {
     if (StringUtils.isEmpty(term)) {

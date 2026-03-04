@@ -1,57 +1,70 @@
 package com.pug.partner.infra.read;
 
 import com.pug.partner.infra.read.dtos.StaffView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Staff. */
+/**
+ * Read-only interface for executing Staff profile queries.
+ * <p>
+ * This interface represents the "Query" side of a CQRS architecture. It defines
+ * operations for retrieving consolidated staff profiles directly into lightweight
+ * {@link StaffView} projections. These views aggregate data across the Identity,
+ * Geo, and Partner contexts for optimized API delivery.
+ */
 public interface StaffQueries {
 
   /**
-   * Finds a StaffView by its account ID.
+   * Retrieves a read-only view of a staff member based on their linked account ID.
    *
-   * @param id the account ID of the staff member.
-   * @return an Optional containing the StaffView if found, otherwise empty.
+   * @param id the unique identifier (UUID) of the staff member's account
+   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
    */
   Optional<StaffView> findOptionalById(UUID id);
 
   /**
-   * Finds a StaffView by its email.
+   * Retrieves a read-only view of a staff member based on their registered email address.
    *
-   * @param email the email address of the staff member.
-   * @return an Optional containing the StaffView if found, otherwise empty.
+   * @param email the exact email address of the staff member
+   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
    */
   Optional<StaffView> findOptionalByEmail(String email);
 
   /**
-   * Lists all StaffView records.
+   * Retrieves a comprehensive list of all staff members registered in the system.
+   * <p>
+   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
+   * does not implement pagination.
    *
-   * @return a list of all StaffView records.
+   * @return a {@link List} of all {@link StaffView} records
    */
   List<StaffView> listAllStaff();
 
   /**
-   * Lists StaffView records by CPF.
+   * Retrieves a list of staff members filtered by their linked user's CPF.
    *
-   * @param cpf the CPF of the staff member.
-   * @return a list of StaffView records matching the given CPF.
+   * @param cpf the exact 11-digit numeric CPF string
+   * @return a {@link List} of {@link StaffView} records matching the given CPF
    */
   List<StaffView> listByCpf(String cpf);
 
   /**
-   * Lists all StaffView records by entityId ID.
+   * Retrieves a list of all staff members linked to a specific partner organization.
    *
-   * @param entityId the entityId ID.
-   * @return a list of StaffView records associated with the given entityId ID.
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return a {@link List} of {@link StaffView} records associated with the given entity
    */
   List<StaffView> listAllByEntityId(UUID entityId);
 
   /**
-   * Searches for StaffView records by name.
+   * Executes a robust full-text search against the names of the associated staff users.
+   * <p>
+   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
    *
-   * @param key the search key (typically a account's name).
-   * @return a list of StaffView records matching the search key.
+   * @param key the raw search string or partial name of the staff member
+   * @return a sorted {@link List} of matching {@link StaffView} records
    */
   List<StaffView> searchByName(String key);
 }

@@ -7,14 +7,24 @@ import com.pug.identity.infra.persistence.AdminEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.Optional;
 import java.util.UUID;
 
-/** Panache implementation for Admins persistence. */
+/**
+ * Implementation of the {@link AdminRepository} utilizing Hibernate ORM with Panache.
+ * <p>
+ * This application-scoped bean bridges the pure domain repository interface with
+ * the underlying database infrastructure. It handles the persistence and retrieval
+ * of administrative privileges strictly tied to user accounts.
+ */
 @ApplicationScoped
 public class AdminRepositoryImpl
-    implements AdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
+        implements AdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Admin persist(Admin entity) {
@@ -26,6 +36,9 @@ public class AdminRepositoryImpl
     return AdminMapper.toDomain(e);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public void update(Admin entity) {
@@ -39,6 +52,9 @@ public class AdminRepositoryImpl
     AdminMapper.copy(entity, e);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean deleteByAccountId(UUID accountId) {
@@ -50,6 +66,9 @@ public class AdminRepositoryImpl
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<Admin> findOptionalByAccountId(UUID accountId) {
     return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);

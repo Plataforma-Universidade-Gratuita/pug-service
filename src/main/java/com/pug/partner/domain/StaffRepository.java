@@ -4,52 +4,77 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Staff entities. */
+/**
+ * Domain repository interface for managing {@link Staff} aggregate roots.
+ * <p>
+ * This interface defines the contract for assigning and revoking staff privileges
+ * that link an authentication account directly to a partner organization (Entity).
+ * It abstracts the underlying data storage mechanism to maintain a pure domain model.
+ */
 public interface StaffRepository {
 
   /**
-   * Persists a Staff entityId.
+   * Persists a newly created {@link Staff} aggregate into the repository.
    *
-   * @param staff the Staff entityId to persist.
-   * @return the persisted Staff entityId.
+   * @param staff the {@link Staff} aggregate to persist
+   * @return the fully persisted {@link Staff} instance
    */
   Staff persist(Staff staff);
 
   /**
-   * Deletes a Staff entityId by its account ID.
+   * Removes a {@link Staff} privilege record from the repository based on its
+   * linked account identifier.
    *
-   * @param accountId the account ID of the Staff entityId to delete.
-   * @return true if the entityId was deleted, false otherwise.
+   * @param accountId the unique identifier of the account whose staff privileges should be revoked
+   * @return {@code true} if the staff record was successfully deleted, {@code false} if it was not found
    */
   boolean deleteByAccountId(UUID accountId);
 
   /**
-   * Deletes all Staff entities associated with a specific entityId ID.
+   * Removes all {@link Staff} records associated with a specific partner entity.
+   * <p>
+   * This is typically used during cascading deletes when a partner entity is removed
+   * from the system, ensuring no orphaned staff privileges remain.
    *
-   * @param entityId the entityId ID whose associated Staff entities should be deleted.
-   * @return the number of Staff entities deleted.
+   * @param entityId the unique identifier of the partner entity
+   * @return the total number of staff records successfully deleted
    */
   long deleteByEntityId(UUID entityId);
 
   /**
-   * Finds a Staff entityId by its associated account ID.
+   * Retrieves a {@link Staff} aggregate by its linked account identifier.
+   * <p>
+   * When a staff record is reconstituted from the persistence layer, it might contain
+   * validation errors (verifiable via {@link Staff#hasFieldErrors()}) if the stored data
+   * is inconsistent with current domain rules.
    *
-   * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @param accountId the account ID to search for.
-   * @return an Optional containing the found Staff entityId, or empty if not found.
+   * @param accountId the unique identifier of the linked account
+   * @return an {@link Optional} containing the {@link Staff} if found, or {@link Optional#empty()} if not
    */
   Optional<Staff> findOptionalByAccountId(UUID accountId);
 
   /**
-   * Lists all Staff entities associated with a specific entityId ID.
+   * Retrieves a list of all {@link Staff} aggregates currently linked to a specific
+   * partner entity.
+   * <p>
+   * Note: The returned objects may contain validation errors (verifiable via
+   * {@link Staff#hasFieldErrors()}) if the stored data violates current domain rules.
    *
-   * <p>Note: The returned Staff objects may contain validation errors (check {@code
-   * staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
-   *
-   * @param entityId the entityId ID to filter by.
-   * @return a list of Staff entities associated with the given entityId ID.
+   * @param entityId the unique identifier of the partner entity to filter by
+   * @return a {@link List} of {@link Staff} entities associated with the given partner entity
    */
   List<Staff> listAllByEntityId(UUID entityId);
+
+  /**
+   * Checks whether a specific {@link Staff} assignment already exists linking
+   * the given account to the given partner entity.
+   * <p>
+   * This is primarily used by domain services to enforce uniqueness constraints
+   * before persisting a new staff assignment.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId  the unique identifier of the partner entity
+   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   */
+  boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId);
 }

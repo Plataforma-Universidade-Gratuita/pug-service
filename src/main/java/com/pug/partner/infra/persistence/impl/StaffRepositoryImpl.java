@@ -7,15 +7,24 @@ import com.pug.partner.infra.persistence.StaffEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the StaffRepository using Panache. */
+/**
+ * Implementation of the {@link StaffRepository} utilizing Hibernate ORM with Panache.
+ * <p>
+ * This application-scoped bean handles the persistence and retrieval of Staff privileges,
+ * linking authentication accounts to partner organizations.
+ */
 @ApplicationScoped
 public class StaffRepositoryImpl
-    implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
+        implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Staff persist(Staff entity) {
@@ -28,6 +37,9 @@ public class StaffRepositoryImpl
     return StaffMapper.toDomain(loaded);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean deleteByAccountId(UUID accountId) {
@@ -39,6 +51,9 @@ public class StaffRepositoryImpl
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public long deleteByEntityId(UUID entityId) {
@@ -50,13 +65,30 @@ public class StaffRepositoryImpl
     return deletedCount;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<Staff> findOptionalByAccountId(UUID accountId) {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<Staff> listAllByEntityId(UUID entityId) {
     return find("entityId = ?1", entityId).list().stream().map(StaffMapper::toDomain).toList();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
+    if (accountId == null || entityId == null) {
+      return false;
+    }
+    return count("accountId = ?1 and entityId = ?2", accountId, entityId) > 0;
   }
 }

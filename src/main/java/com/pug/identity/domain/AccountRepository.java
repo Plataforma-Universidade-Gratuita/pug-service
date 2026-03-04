@@ -4,81 +4,94 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Account objects. */
+/**
+ * Domain repository interface for managing {@link Account} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * account entities. It abstracts the underlying data storage mechanism to maintain
+ * a pure, infrastructure-agnostic domain model within the Identity context.
+ */
 public interface AccountRepository {
 
   /**
-   * Persists an Account object.
+   * Persists a newly created {@link Account} aggregate into the repository.
    *
-   * @param entity the Account to persist.
-   * @return the persisted Account.
+   * @param entity the {@link Account} aggregate to persist
+   * @return the fully persisted {@link Account} instance
    */
   Account persist(Account entity);
 
   /**
-   * Updates an Accounts object.
+   * Updates the state of an existing {@link Account} aggregate in the repository.
    *
-   * @param entity the Accounts to update.
+   * @param entity the {@link Account} instance containing the updated state
    */
   void update(Account entity);
 
   /**
-   * Deletes an Accounts by its ID.
+   * Removes an {@link Account} from the repository based on its unique identifier.
    *
-   * @param id the UUID of the Accounts to delete.
-   * @return true if the Accounts was deleted, false if it was not found.
+   * @param id the unique identifier (UUIDv7) of the account to delete
+   * @return {@code true} if the account was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Deletes all Accounts with the given list of IDs.
+   * Removes multiple {@link Account} entities from the repository based on their unique identifiers.
    *
-   * @param ids the list of UUIDs of the Accounts to delete.
-   * @return the number of Accounts that were deleted.
+   * @param ids a list of UUIDs representing the accounts to delete
+   * @return the total number of accounts that were successfully deleted
    */
   long deleteAllByIds(List<UUID> ids);
 
   /**
-   * Finds an Accounts by its ID.
+   * Retrieves an {@link Account} by its unique identifier.
+   * <p>
+   * When an account is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created entity. Therefore, the returned {@link Account}
+   * might contain validation errors (verifiable via {@link Account#hasFieldErrors()})
+   * if the stored data violates current domain rules.
    *
-   * <p>Note: The returned Account may contain validation errors (check {@code account.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param id the UUID of the Accounts to find.
-   * @return an Optional containing the found Account, or empty if not found.
+   * @param id the unique identifier (UUID) of the account
+   * @return an {@link Optional} containing the {@link Account} if found, or {@link Optional#empty()} if not
    */
   Optional<Account> findOptionalById(UUID id);
 
   /**
-   * Finds the account IDs associated with a list of Account IDs.
+   * Retrieves the linked user identifiers for a given list of account IDs.
+   * <p>
+   * This is primarily used to map backward from accounts to their owning users.
    *
-   * @param ids the list of Account UUIDs to find account IDs for.
-   * @return a list of account UUIDs associated with the given Account IDs.
+   * @param ids a list of account UUIDs
+   * @return a list of user UUIDs associated with the provided account IDs
    */
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Finds all account IDs that are considered "orphan" (i.e., have no associated Accounts) among a
-   * given list of account IDs.
+   * Identifies and returns all user IDs from the provided list that are considered
+   * "orphaned" (i.e., they have no associated {@link Account} records attached to them).
    *
-   * @param userIds the list of account UUIDs to check for orphan status.
-   * @return a list of account UUIDs that are orphaned (have no associated Accounts).
+   * @param userIds a list of user UUIDs to check for orphan status
+   * @return a list of user UUIDs that currently have zero associated accounts
    */
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
-   * Counts the total number of Accounts associated with a given account ID.
+   * Calculates the total number of {@link Account} records associated with a specific user identifier.
    *
-   * @param userId the UUID of the account whose accounts are to be counted.
-   * @return the total number of Accounts associated with the specified account ID.
+   * @param userId the unique identifier of the user
+   * @return the total count of accounts owned by the specified user
    */
   long countAllAccountsByUserId(UUID userId);
 
   /**
-   * Checks if an Accounts exists by email.
+   * Checks whether an {@link Account} with the specified email address already exists in the repository.
+   * <p>
+   * This is used by domain services to enforce natural key uniqueness constraints
+   * (e.g., preventing duplicate account registrations with the same email).
    *
-   * @param email the email to check for existence.
-   * @return true if an Accounts with the given email exists, false otherwise.
+   * @param email the email address string to check
+   * @return {@code true} if an account with the given email exists, {@code false} otherwise
    */
   boolean existsByEmail(String email);
 }

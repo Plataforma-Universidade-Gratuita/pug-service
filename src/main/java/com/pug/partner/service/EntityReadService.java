@@ -1,52 +1,63 @@
 package com.pug.partner.service;
 
 import com.pug.partner.infra.read.dtos.EntityView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading entityId information. */
+/**
+ * Application service interface dedicated exclusively to querying Partner Entity data.
+ * <p>
+ * Following CQRS principles, this service handles the "Query" operations. It bypasses
+ * complex domain logic and retrieves lightweight, fully resolved {@link EntityView} Data
+ * Transfer Objects directly from the underlying data store or search indices.
+ */
 public interface EntityReadService {
 
   /**
-   * Retrieves an EntityView by its ID.
+   * Retrieves a read-only projection of a partner entity based on its unique identifier.
    *
-   * @param id the UUID of the entityId
-   * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given ID is
-   *     found
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return the populated {@link EntityView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided ID
    */
   EntityView getViewById(UUID id);
 
   /**
-   * Retrieves an EntityView by its CNPJ.
+   * Retrieves a read-only projection of a partner entity based on its exact CNPJ.
    *
-   * @param cnpj the CNPJ of the entityId
-   * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given CNPJ
-   *     is found
+   * @param cnpj the raw 14-digit numeric CNPJ string
+   * @return the populated {@link EntityView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
 
   /**
-   * Lists all EntityViews.
+   * Retrieves a comprehensive list of all partner entities registered in the system.
+   * <p>
+   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
+   * in contexts where the dataset size is known to be safely bounded.
    *
-   * @return a list of all EntityViews
+   * @return a {@link List} containing all available {@link EntityView} entries
    */
   List<EntityView> listViews();
 
   /**
-   * Lists EntityViews by city ID.
+   * Retrieves a list of partner entities geographically located within a specific city.
    *
-   * @param cityId the UUID of the city
-   * @return a list of EntityViews in the specified city
+   * @param cityId the unique identifier (UUID) of the city
+   * @return a {@link List} of matching {@link EntityView} entries
    */
   List<EntityView> listViewsByCityId(UUID cityId);
 
   /**
-   * Searches for EntityViews by name.
+   * Executes a robust full-text search against the names of partner organizations.
+   * <p>
+   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
+   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
-   * @param query the search query
-   * @return a list of matching EntityViews
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link EntityView} entries
    */
   List<EntityView> searchViews(String query);
 }

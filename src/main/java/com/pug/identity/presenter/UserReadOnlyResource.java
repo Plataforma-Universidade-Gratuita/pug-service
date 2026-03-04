@@ -22,26 +22,37 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource for reading account information. */
+/**
+ * REST API Resource controller for read-only operations on Users.
+ * <p>
+ * This class exposes endpoints to retrieve existing user identities (names and CPFs).
+ * It acts as the HTTP entry point, delegating queries to the {@link UserReadService}
+ * and adhering to CQRS principles. Direct write operations for users are typically
+ * orchestrated through account-creation endpoints (like Admins or Students) rather than
+ * standalone user endpoints.
+ */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject UserReadService readService;
+  @Inject
+  UserReadService readService;
 
-  @Context HttpHeaders headers;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Retrieves a account by their unique identifier.
+   * Retrieves a specific user by their unique UUID identifier.
    *
-   * @param id the UUID of the account
-   * @return the response containing the account data
-   * @throws ResourceNotFoundException if no account with the given ID is found.
+   * @param id the unique identifier (UUIDv7) of the user
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
+   * @throws ResourceNotFoundException if no user with the given ID is found
    */
   @GET
   @Path("{id}")
@@ -51,13 +62,28 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Lists users.
+   * Retrieves a specific user by their exact CPF.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by name. Otherwise, returns all
-   * users.
+   * @param cpfRaw the raw 11-digit numeric CPF string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
+   * @throws AppValidationException    if the provided CPF is malformed
+   * @throws ResourceNotFoundException if no user with the given CPF is found
+   */
+  @GET
+  @Path("by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
+    UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of users.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the users' names. If omitted, it returns an unfiltered list of all users.
    *
-   * @param query optional name query to search for.
-   * @return the response containing the list of users.
+   * @param query the optional search query string used to filter by name
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link UserResponse}
    */
   @GET
   public Response list(@QueryParam("q") String query) {
@@ -70,27 +96,14 @@ public class UserReadOnlyResource {
     }
 
     List<UserResponse> list =
-        views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+            views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
 
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
   /**
-   * Retrieves a account by their CPF.
-   *
-   * @param cpfRaw the raw CPF string of the account
-   * @return the response containing the account data
-   * @throws AppValidationException if the provided CPF is malformed.
-   * @throws ResourceNotFoundException if no account with the given CPF is found.
+   * Helper method to determine the preferred locale from the incoming request headers.
    */
-  @GET
-  @Path("by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
-    UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /** Picks the best locale from the request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

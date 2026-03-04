@@ -1,21 +1,37 @@
 package com.pug.identity.service;
 
-/** Interface for hashing and verifying passwords using bcrypt with an added pepper. */
+/**
+ * Utility service interface for cryptographic password operations.
+ * <p>
+ * This service abstracts the underlying hashing algorithms (e.g., bcrypt) and
+ * manages the application of system-wide security enhancements (like peppering)
+ * to ensure credentials are safely stored and verified.
+ */
 public interface PasswordService {
+
   /**
-   * Hashes the raw password combined with a pepper using bcrypt.
+   * Generates a secure hash for a raw, plaintext password.
+   * <p>
+   * Prior to hashing, a system-configured pepper is appended to the raw password
+   * to protect against pre-computed dictionary attacks (rainbow tables) in the
+   * event of a database compromise.
    *
-   * @param raw the raw password
-   * @return the bcrypt hash of the password with pepper
+   * @param raw the raw, plaintext password provided by the user
+   * @return the securely hashed representation of the password (including the pepper)
    */
   String hash(String raw);
 
   /**
-   * Verifies a raw password against a stored bcrypt hash, considering the pepper.
+   * Evaluates whether a raw, plaintext password matches a previously stored hash.
+   * <p>
+   * This method applies the same system pepper to the raw input before performing
+   * the cryptographic comparison against the stored hash. It intentionally returns a boolean
+   * so higher-level authentication services can dictate the business flow (e.g., throwing
+   * unauthorized exceptions or tracking failed attempts).
    *
-   * @param storedHash the stored bcrypt hash
-   * @param raw the raw password to verify
-   * @return true if the password matches the hash, false otherwise
+   * @param storedHash the securely stored hash retrieved from the database
+   * @param raw        the raw, plaintext password provided by the user attempting to authenticate
+   * @return {@code true} if the provided password (plus pepper) matches the stored hash, {@code false} otherwise
    */
   boolean verify(String storedHash, String raw);
 }

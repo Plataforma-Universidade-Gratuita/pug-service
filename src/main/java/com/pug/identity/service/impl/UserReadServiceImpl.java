@@ -1,67 +1,82 @@
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.infra.read.UserQueries;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.service.UserReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Implementation of the {@link UserReadService} interface for retrieving account-related
- * information.
- *
- * <p>This service provides methods to get account views by ID or CPF, list all account views, and
- * search for users based on a query string. It handles scenarios where users are not found and
- * ensures that appropriate exceptions are thrown with relevant error codes.
+ * Implementation of the {@link UserReadService}.
+ * <p>
+ * This application-scoped bean delegates read-only operations to the underlying
+ * {@link UserQueries} infrastructure component. It handles basic input validation
+ * and translates "not found" states into standardized domain exceptions.
  */
 @ApplicationScoped
 public class UserReadServiceImpl implements UserReadService {
 
-  private static final Logger LOG = Logger.getLogger(UserReadServiceImpl.class);
+    private static final Logger LOG = Logger.getLogger(UserReadServiceImpl.class);
 
-  @Inject UserQueries queries;
+    @Inject
+    UserQueries queries;
 
-  @Override
-  public UserView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("User lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                  IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
-            });
-  }
-
-  @Override
-  public UserView getViewByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", "empty");
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UserView getViewById(UUID id) {
+        return queries
+                .findOptionalById(id)
+                .orElseThrow(
+                        () -> {
+                            LOG.debugf("User lookup failed: ID %s not found", id);
+                            return ExceptionHelper.userNotFound();
+                        });
     }
 
-    return queries
-        .findOptionalByCpf(cpf)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("User lookup failed: CPF %s not found", cpf);
-              return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf);
-            });
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public UserView getViewByCpf(String cpf) {
+        if (StringUtils.isEmpty(cpf)) {
+            throw ExceptionHelper.userNotFound();
+        }
 
-  @Override
-  public List<UserView> listViews() {
-    return queries.listAllUsers();
-  }
+        return queries
+                .findOptionalByCpf(cpf)
+                .orElseThrow(
+                        () -> {
+                            LOG.debugf("User lookup failed: CPF %s not found", cpf);
+                            return ExceptionHelper.userNotFound();
+                        });
+    }
 
-  @Override
-  public List<UserView> search(String query) {
-    String key = StringUtils.fold(query);
-    return queries.searchByName(key);
-  }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<UserView> listViews() {
+        return queries.listAllUsers();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Prior to execution, the input query is "folded" (lowercased and accents removed via
+     * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
+     * underlying search indexing rules.
+     */
+    @Override
+    public List<UserView> search(String query) {
+        String key = StringUtils.fold(query);
+        return queries.searchByName(key);
+    }
 }

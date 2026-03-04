@@ -3,61 +3,79 @@ package com.pug.partner.service;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
+
 import java.util.UUID;
 
-/** Interface for managing partner entities. */
+/**
+ * Application service interface for managing the state of Partner {@link Entity} domain aggregates.
+ * <p>
+ * Following CQRS principles, this service handles the "Command" operations (Create, Update, Delete)
+ * and strict domain-level retrievals. It enforces cross-cutting business rules (e.g., CNPJ uniqueness)
+ * and coordinates with the {@link com.pug.geo.service.CityService} to ensure geographical references are valid.
+ */
 public interface EntityService {
 
   /**
-   * Saves a new Entity.
+   * Instantiates and persists a new Partner {@link Entity} aggregate based on the provided command.
+   * <p>
+   * This method ensures that the referenced City exists before attempting to persist the new partner organization.
    *
-   * @param cmd the command containing the data to create the Entity
-   * @return the saved Entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
-   *     name, invalid CNPJ).
+   * @param cmd the structured command containing the data to create the new partner entity
+   * @return the fully instantiated and persisted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the given CNPJ already exists
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails (e.g., blank name, malformed CNPJ)
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the referenced City ID does not exist
    */
   Entity save(EntityCreateCommand cmd);
 
   /**
-   * Updates an existing Entity.
+   * Updates an existing Partner {@link Entity} using the provided data.
+   * <p>
+   * This method applies partial updates. If a new City ID is provided, it validates the city's
+   * existence before applying the change.
    *
-   * @param id the UUID of the Entity to update
-   * @param cmd the command containing the updated data for the Entity
-   * @return the updated Entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     corrupted) or city is not found.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
-   *     already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   * @param id  the unique identifier (UUIDv7) of the partner entity to be updated
+   * @param cmd the structured command containing the data to update the entity
+   * @return the mutated and persisted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the entity or referenced City does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CNPJ conflicts with an existing entity
+   * @throws com.pug.shared.exceptions.AppValidationException     if the updated input data violates domain constraints
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
 
   /**
-   * Deletes an Entity by its ID.
+   * Removes a Partner {@link Entity} from the system by its unique identifier.
+   * <p>
+   * This operation enforces data hygiene. Before the partner entity is deleted,
+   * the service cascades the deletion down to revoke all associated {@link com.pug.partner.domain.Staff} privileges.
    *
-   * @param id the UUID of the Entity to delete
-   * @return true if the Entity was successfully deleted, false if the Entity was not found or is
-   *     still referenced by any Staff.
+   * @param id the unique identifier (UUID) of the partner entity to delete
+   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
    */
   boolean delete(UUID id);
 
   /**
-   * Gets an Entity by its ID.
+   * Retrieves a full Partner {@link Entity} domain aggregate by its unique identifier.
+   * <p>
+   * <b>Note:</b> This method is intended strictly for internal domain orchestration.
+   * For API responses, use {@link EntityReadService#getViewById(UUID)} instead.
    *
-   * @param id the UUID of the Entity
-   * @return the Entity with the specified ID
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     is corrupted in DB).
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return the fully reconstituted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException    if the entity exists but its stored state
+   *                                                             violates strict domain invariants (data corruption)
    */
   Entity getById(UUID id);
 
   /**
-   * Checks if any Entity exists with the specified city ID.
+   * Determines if any Partner Entities are currently associated with a specific City.
+   * <p>
+   * This is typically used by the Geo domain to prevent the deletion of a City that is
+   * still actively referenced by partner organizations.
    *
-   * @param cityId the UUID of the city to check for references
-   * @return true if any Entity references the specified city ID, false otherwise
+   * @param cityId the unique identifier of the city to check
+   * @return {@code true} if the city is referenced by any entity, {@code false} otherwise
    */
   boolean existsAnyByCityId(UUID cityId);
 }

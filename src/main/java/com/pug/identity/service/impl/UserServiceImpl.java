@@ -2,37 +2,41 @@ package com.pug.identity.service.impl;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.UserRepository;
-import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.identity.service.utils.UserProcessor;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Implementation of the {@link UserService} interface for managing account-related operations.
- *
- * <p>This service provides methods to create, update, delete, list, and retrieve users. It ensures
- * that all operations adhere to the domain rules and handles validation and error scenarios
- * appropriately.
+ * Implementation of the {@link UserService} command interface.
+ * <p>
+ * This application-scoped service acts as the orchestrator for user state mutations.
+ * It manages transaction boundaries, invokes pure domain logic via {@link UserProcessor},
+ * enforces cross-cutting business rules (e.g., CPF uniqueness), and coordinates
+ * with the underlying {@link UserRepository}.
  */
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
 
   private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
-  @Inject UserRepository repo;
+  @Inject
+  UserRepository repo;
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
@@ -45,8 +49,7 @@ public class UserServiceImpl implements UserService {
 
     if (existsByCpf(userToPersist.getCpf())) {
       LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
-      throw new DuplicateResourceException(
-          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", userToPersist.getCpf().toString());
+      throw ExceptionHelper.userAlreadyExists();
     }
 
     User savedUser = repo.persist(userToPersist);
@@ -55,6 +58,9 @@ public class UserServiceImpl implements UserService {
     return savedUser;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public User update(UUID id, UserUpdateCommand cmd) {
@@ -69,8 +75,7 @@ public class UserServiceImpl implements UserService {
 
     if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
       LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
-      throw new DuplicateResourceException(
-          IdentityErrorCodes.USER_ALREADY_EXISTS, "cpf", updated.getCpf().toString());
+      throw ExceptionHelper.userAlreadyExists();
     }
 
     repo.update(updated);
@@ -79,6 +84,9 @@ public class UserServiceImpl implements UserService {
     return getById(id);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -95,6 +103,9 @@ public class UserServiceImpl implements UserService {
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public long deleteAll(List<UUID> ids) {
@@ -108,48 +119,55 @@ public class UserServiceImpl implements UserService {
     return deletedCount;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public User getById(UUID id) {
     User user =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("User lookup failed: ID %s not found", id);
-                  return new ResourceNotFoundException(
-                      IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
-                });
+            repo.findOptionalById(id)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("User lookup failed: ID %s not found", id);
+                              return ExceptionHelper.userNotFound();
+                            });
 
     if (user.hasFieldErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-          id, user.getProblemsSummary());
-      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "id", id.toString());
+              "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+              id, user.getProblemsSummary());
+      throw ExceptionHelper.userNotFound();
     }
 
     return user;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public User getByCpf(Cpf cpf) {
     User user =
-        repo.findOptionalByCpf(cpf.toString())
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("User lookup failed: CPF %s not found", cpf);
-                  return new ResourceNotFoundException(
-                      IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
-                });
+            repo.findOptionalByCpf(cpf.toString())
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("User lookup failed: CPF %s not found", cpf);
+                              return ExceptionHelper.userNotFound();
+                            });
 
     if (user.hasFieldErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
-          cpf, user.getProblemsSummary());
-      throw new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND, "cpf", cpf.toString());
+              "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
+              cpf, user.getProblemsSummary());
+      throw ExceptionHelper.userNotFound();
     }
 
     return user;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public boolean existsByCpf(Cpf cpf) {
     if (cpf == null) {

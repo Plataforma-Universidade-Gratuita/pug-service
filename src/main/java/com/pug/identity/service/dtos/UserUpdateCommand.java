@@ -1,9 +1,13 @@
 package com.pug.identity.service.dtos;
 
 /**
- * Command DTO for creating or updating a User.
+ * Data Transfer Object (DTO) acting as an application command to update an existing User identity.
+ * <p>
+ * This record encapsulates the requested state changes for a user. The fields are treated
+ * as optional for partial updates; omitting a value will retain the current state in the database.
  *
- * @param cpfString the CPF of the account as a string.
- * @param name the name of the account.
+ * @param cpfString the new 11-digit Brazilian CPF string, or {@code null} to leave unchanged
+ * @param name      the new name of the person, or {@code null} to leave unchanged
  */
-public record UserUpdateCommand(String cpfString, String name) {}
+public record UserUpdateCommand(String cpfString, String name) {
+}

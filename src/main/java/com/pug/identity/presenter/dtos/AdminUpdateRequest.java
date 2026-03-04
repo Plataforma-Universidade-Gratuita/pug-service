@@ -1,15 +1,25 @@
 package com.pug.identity.presenter.dtos;
 
 import com.pug.shared.domain.enums.Campi;
+import jakarta.validation.constraints.Size;
 
 /**
- * Request DTO for creating or updating an Admin.
+ * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing Administrator.
+ * <p>
+ * Because updates can be partial, all fields in this record are inherently optional.
+ * If a field is provided as {@code null} or omitted from the JSON payload, the application
+ * service will ignore it and retain the existing value for that specific attribute.
  *
- * @param cpfString the CPF number as a string.
- * @param name the name of the account.
- * @param emailString the email of the account as a string.
- * @param password the password of the account.
- * @param campus the campus where the account is associated with.
+ * @param cpfString   the new CPF string, or {@code null} to leave unchanged
+ * @param name        the new full name, or {@code null} to leave unchanged (if provided, max 150 characters)
+ * @param emailString the new email address string, or {@code null} to leave unchanged
+ * @param password    the new password, or {@code null} to leave unchanged (if provided, between 8 and 255 characters)
+ * @param campus      the new university campus assignment, or {@code null} to leave unchanged
  */
 public record AdminUpdateRequest(
-    String cpfString, String name, String emailString, String password, Campi campus) {}
+        String cpfString,
+        @Size(max = 150) String name,
+        String emailString,
+        @Size(min = 8, max = 255) String password,
+        Campi campus) {
+}

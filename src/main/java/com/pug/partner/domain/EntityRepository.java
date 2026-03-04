@@ -3,48 +3,71 @@ package com.pug.partner.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository port for partner entities. Works with domain models. */
+/**
+ * Domain repository interface for managing Partner {@link Entity} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * partner organization entities. It abstracts the underlying data storage mechanism
+ * to maintain a pure, infrastructure-agnostic domain model.
+ */
 public interface EntityRepository {
 
   /**
-   * Persists an Entity object.
+   * Persists a newly created Partner {@link Entity} aggregate into the repository.
    *
-   * @param entity the Entity to persist.
-   * @return the persisted Entity.
+   * @param entity the {@link Entity} aggregate to persist
+   * @return the fully persisted {@link Entity} instance
    */
   Entity persist(Entity entity);
 
   /**
-   * Updates an existing Entity object.
+   * Updates the state of an existing Partner {@link Entity} aggregate in the repository.
    *
-   * @param entity the Entity to update.
+   * @param entity the {@link Entity} instance containing the updated state
    */
   void update(Entity entity);
 
   /**
-   * Deletes an Entity by its ID.
+   * Removes a Partner {@link Entity} from the repository based on its unique identifier.
    *
-   * @param id the UUID of the Entity to delete.
-   * @return true if the Entity was successfully deleted, false if it was not found.
+   * @param id the unique identifier (UUIDv7) of the partner entity to delete
+   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Finds an Entity by its ID.
+   * Retrieves a Partner {@link Entity} by its unique identifier.
+   * <p>
+   * When an entity is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created aggregate. Therefore, the returned
+   * {@link Entity} might contain validation errors (verifiable via {@link Entity#hasFieldErrors()})
+   * if the stored data violates current domain rules.
    *
-   * <p>Note: The returned Entity may contain validation errors (check {@code entityId.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param id the UUID of the Entity to find.
-   * @return an Optional containing the found Entity, or empty if not found.
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return an {@link Optional} containing the {@link Entity} if found, or {@link Optional#empty()} if not
    */
   Optional<Entity> findOptionalById(UUID id);
 
   /**
-   * Checks if an Entity exists by its CNPJ.
+   * Checks whether a Partner {@link Entity} with the specified CNPJ already exists in the repository.
+   * <p>
+   * This is primarily used by domain services to enforce natural key uniqueness constraints
+   * before persisting a new partner entity or updating an existing one's corporate ID.
    *
-   * @param cnpj the CNPJ to check.
-   * @return true if an Entity with the given CNPJ exists, false otherwise.
+   * @param cnpj the raw numeric CNPJ string to check
+   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
    */
   boolean existsByCnpj(String cnpj);
+
+  /**
+   * Checks whether any Partner {@link Entity} exists that is associated with a specific city ID.
+   * <p>
+   * This is used to enforce referential integrity across bounded contexts, such as preventing
+   * the deletion of a {@link com.pug.geo.domain.City} that is currently assigned to one or more
+   * partner organizations.
+   *
+   * @param cityId the unique identifier of the city to check
+   * @return {@code true} if at least one entity is located in the given city, {@code false} otherwise
+   */
+  boolean existsByCityId(UUID cityId);
 }

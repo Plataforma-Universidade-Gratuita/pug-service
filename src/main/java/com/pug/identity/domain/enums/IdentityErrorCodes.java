@@ -1,43 +1,61 @@
 package com.pug.identity.domain.enums;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Enum representing error codes specific to the identity domain.
- *
- * <p>Each error code is associated with a specific validation failure scenario and has a {@code
- * bundleKey} that results into a located error message. It also includes a {@code fieldName}
- * property to identify the specific field related to the error, if applicable.
+ * Enumeration of high-level domain error codes specific to the Identity context.
+ * <p>
+ * This enum implements {@link GenericCodes} to map business rule violations and
+ * resource state conflicts directly to localized messages in the application's resource bundles.
+ * Unlike field-level validations, these codes represent aggregate-level or cross-cutting
+ * system states (e.g., duplication, structural integrity, or missing records).
  */
 @Getter
-public enum IdentityErrorCodes implements GenericErrorCodes {
-  /* Validation Errors */
-  INVALID_ACCOUNT_TYPE_BLANK("error.domain.identity.account.type.blank", "accountType"),
-  INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
-  INVALID_CPF_FORMAT("error.domain.identity.cpf.format", "cpf"),
-  INVALID_EMAIL_BLANK("error.domain.identity.email.blank", "email"),
-  INVALID_EMAIL_FORMAT("error.domain.identity.email.format", "email"),
-  INVALID_GRANTED_AT_BLANK("error.domain.identity.granted.at.blank", "grantedAt"),
-  /* Resource Errors */
-  ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists", null),
-  ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found", null),
-  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found", null),
-  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists", null),
-  USER_NOT_FOUND("error.domain.identity.user.not.found", null);
-
-  private final String bundleKey;
-  private final String fieldName;
+public enum IdentityErrorCodes implements GenericCodes {
 
   /**
-   * Constructor for the IdentityErrorCodes enum.
-   *
-   * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   * Indicates an attempt to create an account using an email address
+   * that is already registered to another account in the system.
    */
-  IdentityErrorCodes(String bundleKey, String fieldName) {
+  ACCOUNT_ALREADY_EXISTS("error.domain.identity.account.already.exists"),
+
+  /**
+   * Indicates that a requested account could not be located in the underlying
+   * data store by its unique identifier or email.
+   */
+  ACCOUNT_NOT_FOUND("error.domain.identity.account.not.found"),
+
+  /**
+   * Indicates that a requested administrator profile could not be located in the underlying
+   * data store.
+   */
+  ADMIN_NOT_FOUND("error.domain.identity.admin.not.found"),
+
+  /**
+   * Indicates an attempt to register a user using a CPF
+   * that is already present in the system.
+   */
+  USER_ALREADY_EXISTS("error.domain.identity.user.already.exists"),
+
+  /**
+   * Indicates that a requested user could not be located in the underlying
+   * data store by their unique identifier or CPF.
+   */
+  USER_NOT_FOUND("error.domain.identity.user.not.found");
+
+  /**
+   * The property key used to resolve the localized error message in the resource bundles.
+   */
+  private final String bundleKey;
+
+  /**
+   * Constructs the {@code IdentityErrorCodes} enum.
+   *
+   * @param bundleKey the unique i18n key mapping to the application's resource bundles
+   *                  (e.g., {@code messages_en_US.properties})
+   */
+  IdentityErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
-    this.fieldName = fieldName;
   }
 }

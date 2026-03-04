@@ -52,12 +52,26 @@ public class AuditInfo extends DomainError {
    */
   public static AuditInfo factory() {
     OffsetDateTime now = OffsetDateTime.now();
-    AuditInfo vo = AuditInfo.builder().createdAt(now).updatedAt(now).build();
+    return factory(now, now);
+  }
+
+  /**
+   * Factory method to create an {@code AuditInfo} instance with specified timestamps.
+   * <p>
+   * This method is useful for reconstructing existing entities from persistence or external sources,
+   * where the creation and update times are already known. The created instance automatically collects any inherent validation problems.
+   *
+   * @param createdAt the creation timestamp to set
+   * @param updatedAt the update timestamp to set
+   * @return a new, self-validated {@link AuditInfo} instance with specified timestamps
+   */
+  public static AuditInfo factory(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    AuditInfo vo = AuditInfo.builder().createdAt(createdAt).updatedAt(updatedAt).build();
     vo.collectValidationProblems();
     return vo;
   }
 
-  /**
+    /**
    * Generates a new {@code AuditInfo} instance reflecting a state update.
    * <p>
    * Because Value Objects are immutable, this method leverages the builder to return a

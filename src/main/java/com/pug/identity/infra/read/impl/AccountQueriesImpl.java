@@ -1,7 +1,5 @@
 package com.pug.identity.infra.read.impl;
 
-import static com.pug.identity.infra.AccountMapper.toView;
-
 import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.AccountQueries;
@@ -12,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,21 +18,32 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Implementation of AccountQueries using JPA and Hibernate Search. */
+import static com.pug.identity.infra.AccountMapper.toView;
+
+/**
+ * Implementation of the {@link AccountQueries} interface using JPA and Hibernate Search.
+ * <p>
+ * This application-scoped bean handles read-only queries for accounts. Because an
+ * account inherently belongs to a user, the JPQL queries utilize constructor expressions
+ * that implicitly join the {@link AccountEntity} and {@link UserEntity} tables to assemble
+ * a fully populated {@link AccountView} in a single database round-trip.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AccountQueriesImpl implements AccountQueries {
 
-  @Inject EntityManager entityManager;
+  @Inject
+  EntityManager entityManager;
 
   private static final String SELECT_BASE =
-      """
+          """
                   select new com.pug.identity.infra.read.dtos.AccountView(
                     a.id,
-                    new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt),
+                    new com.pug.identity.infra.read.dtos.UserView(u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
                     a.email,
                     a.accountType,
-                    a.createdAt
+                    a.createdAt,
+                    a.updatedAt
                   )
                   from AccountEntity a, UserEntity u
                   where u.id = a.userId
@@ -41,6 +51,9 @@ public class AccountQueriesImpl implements AccountQueries {
 
   private static final String ORDER_BY_NAME_ASC = " order by u.name asc";
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<AccountView> findOptionalById(UUID id) {
     if (id == null) {
@@ -51,6 +64,9 @@ public class AccountQueriesImpl implements AccountQueries {
     return q.getResultStream().findFirst();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<AccountView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
@@ -61,13 +77,19 @@ public class AccountQueriesImpl implements AccountQueries {
     return q.getResultStream().findFirst();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<AccountView> listAllAccounts() {
     return entityManager
-        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
-        .getResultList();
+            .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, AccountView.class)
+            .getResultList();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<AccountView> listByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -78,10 +100,13 @@ public class AccountQueriesImpl implements AccountQueries {
     return q.getResultList();
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public List<AccountView> searchByName(String key) {
     List<UserEntity> userHits =
-        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
+            HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
 
     if (userHits.isEmpty()) {
       return List.of();
@@ -90,13 +115,13 @@ public class AccountQueriesImpl implements AccountQueries {
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
     List<AccountEntity> accountEntities =
-        entityManager
-            .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
-            .setParameter("userIds", userIds)
-            .getResultList();
+            entityManager
+                    .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
+                    .setParameter("userIds", userIds)
+                    .getResultList();
 
     Map<UUID, UserEntity> userEntityMap =
-        userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
+            userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
 
     List<AccountView> out = new ArrayList<>();
     for (AccountEntity accountEntity : accountEntities) {

@@ -3,39 +3,49 @@ package com.pug.identity.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Admin domain objects. */
+/**
+ * Domain repository interface for managing {@link Admin} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * administrator privileges. It abstracts the underlying data storage mechanism to maintain
+ * a pure, infrastructure-agnostic domain model.
+ */
 public interface AdminRepository {
+
   /**
-   * Persists the given Admin domain object.
+   * Persists a newly created {@link Admin} aggregate into the repository.
    *
-   * @param entity the Admin to persist.
-   * @return the persisted Admin.
+   * @param entity the {@link Admin} aggregate to persist
+   * @return the fully persisted {@link Admin} instance
    */
   Admin persist(Admin entity);
 
   /**
-   * Updates the given Admin domain object.
+   * Updates the state of an existing {@link Admin} aggregate in the repository.
    *
-   * @param entity the Admin to update.
+   * @param entity the {@link Admin} instance containing the updated state
    */
   void update(Admin entity);
 
   /**
-   * Deletes the Admin with the given account ID.
+   * Removes an {@link Admin} privilege record from the repository based on its
+   * linked account identifier.
    *
-   * @param accountId the account ID of the Admin to delete.
-   * @return true if the Admin was deleted, false if no Admin with the given ID was found.
+   * @param accountId the unique identifier of the account whose admin privileges should be revoked
+   * @return {@code true} if the admin record was successfully deleted, {@code false} if it was not found
    */
   boolean deleteByAccountId(UUID accountId);
 
   /**
-   * Finds an Admin by its account ID.
+   * Retrieves an {@link Admin} by its linked account identifier.
+   * <p>
+   * When an admin record is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created entity. Therefore, the returned {@link Admin}
+   * might contain validation errors (verifiable via {@link Admin#hasFieldErrors()})
+   * if the stored data violates current domain rules.
    *
-   * <p>Note: The returned Admin may contain validation errors (check {@code admin.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
-   *
-   * @param accountId the account ID of the Admin to find.
-   * @return an Optional containing the found Admin, or empty if not found.
+   * @param accountId the unique identifier of the linked account
+   * @return an {@link Optional} containing the {@link Admin} if found, or {@link Optional#empty()} if not
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
 }

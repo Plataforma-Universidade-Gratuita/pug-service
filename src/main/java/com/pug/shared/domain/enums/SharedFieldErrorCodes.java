@@ -12,6 +12,15 @@ import lombok.Getter;
  */
 @Getter
 public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
+  /**
+   * Indicates that the audit information (auditInfo) was null or unassigned.
+   */
+  INVALID_AUDIT_INFO_BLANK("error.domain.audit.info.blank", "auditInfo"),
+
+  /**
+   * Indicates that the campus field was null or unassigned.
+   */
+  INVALID_CAMPUS_BLANK("error.domain.campus.blank", "campus"),
 
   /**
    * Indicates that the creation timestamp (createdAt) was null or unassigned.
