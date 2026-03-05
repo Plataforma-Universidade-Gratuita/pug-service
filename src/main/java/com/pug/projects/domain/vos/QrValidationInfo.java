@@ -1,29 +1,57 @@
 package com.pug.projects.domain.vos;
 
-import com.pug.projects.domain.enums.ProjectsErrorCodes;
+import com.pug.projects.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
-
-import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Value object representing QR code validation information. */
+import java.math.BigDecimal;
+
+/**
+ * Immutable Value Object (VO) representing geographic and temporal QR code validation data.
+ * <p>
+ * Extends {@link DomainError} to encapsulate and accumulate validations ensuring that
+ * geographic coordinates strictly adhere to valid global boundaries, and that
+ * recorded time durations are logically positive.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class QrValidationInfo extends DomainError {
 
+  /**
+   * The duration of time spent on this attendance.
+   */
   BigDecimal duration;
+
+  /**
+   * The geographic latitude where the attendance was recorded.
+   */
   BigDecimal latitude;
+
+  /**
+   * The geographic longitude where the attendance was recorded.
+   */
   BigDecimal longitude;
+
+  /**
+   * The unique cryptographic hash of the QR code used for validation.
+   */
   String qrValidationHash;
 
-  /** Private constructor to enforce the use of the factory method. */
+  /**
+   * Constructs a {@code QrValidationInfo} instance.
+   *
+   * @param duration         the time duration recorded
+   * @param latitude         the geographic latitude
+   * @param longitude        the geographic longitude
+   * @param qrValidationHash the unique QR hash
+   */
   @Builder(toBuilder = true)
   private QrValidationInfo(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+          BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
     this.duration = duration;
     this.latitude = latitude;
     this.longitude = longitude;
@@ -31,51 +59,63 @@ public class QrValidationInfo extends DomainError {
   }
 
   /**
-   * Factory method to create and validate a QrValidationInfo instance.
+   * Factory method to create a new {@code QrValidationInfo} instance.
+   * <p>
+   * The instance is created and immediately self-validated.
    *
-   * @param duration The duration of the spent time on this attendance.
-   * @param latitude The latitude where the attendance was recorded.
-   * @param longitude The longitude where the attendance was recorded.
-   * @param qrValidationHash The hash of the QR code used for validation.
-   * @return A validated QrValidationInfo instance.
+   * @param duration         the time duration recorded
+   * @param latitude         the geographic latitude
+   * @param longitude        the geographic longitude
+   * @param qrValidationHash the hash of the QR code used
+   * @return a self-validated {@link QrValidationInfo} instance
    */
   public static QrValidationInfo factory(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+          BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
     QrValidationInfo vo =
-        QrValidationInfo.builder()
-            .duration(duration)
-            .latitude(latitude)
-            .longitude(longitude)
-            .qrValidationHash(qrValidationHash)
-            .build();
+            QrValidationInfo.builder()
+                    .duration(duration)
+                    .latitude(latitude)
+                    .longitude(longitude)
+                    .qrValidationHash(qrValidationHash)
+                    .build();
     vo.collectValidationProblems();
     return vo;
   }
 
-  /** Validates the QrValidationInfo fields and accumulates errors if any. */
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   * <p>
+   * Business rules applied:
+   * <ul>
+   *   <li>The duration must not be null and must be strictly greater than zero
+   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_DURATION_INVALID}).</li>
+   *   <li>Both latitude and longitude must be provided together or completely omitted
+   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_MISSING} if mismatched).</li>
+   *   <li>The latitude, if provided, must fall strictly between -90 and 90 degrees
+   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LAT}).</li>
+   *   <li>The longitude, if provided, must fall strictly between -180 and 180 degrees
+   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LONG}).</li>
+   * </ul>
+   */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
-      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID));
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID);
     }
-
     boolean hasLat = latitude != null;
     boolean hasLon = longitude != null;
-
     if (hasLat != hasLon) {
-      addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING));
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING);
     }
-
     if (hasLat) {
       if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
-          || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT));
+              || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT);
       }
     }
-
     if (hasLon) {
       if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
-          || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addFieldError(new Problem(ProjectsErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG));
+              || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG);
       }
     }
   }

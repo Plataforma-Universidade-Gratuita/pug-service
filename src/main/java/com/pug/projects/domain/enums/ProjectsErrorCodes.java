@@ -1,49 +1,87 @@
 package com.pug.projects.domain.enums;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
-/** Enumeration of error codes related to Projects domain. */
+/**
+ * Enumeration of high-level domain error codes specific to the Projects context.
+ * <p>
+ * This enum implements {@link GenericCodes} to map business rule violations,
+ * invalid state transitions, and resource state conflicts directly to localized messages.
+ */
 @Getter
-public enum ProjectsErrorCodes implements GenericErrorCodes {
-  INVALID_PROJECT_STATUS_UPDATE_CANCEL(
-      "error.domain.projects.status.update.cancel", "projectStatus"),
-  INVALID_PROJECT_STATUS_UPDATE_COMPLETE(
-      "error.domain.projects.status.update.complete", "projectStatus"),
-  INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD(
-      "error.domain.projects.status.update.put.on.hold", "projectStatus"),
-  INVALID_PROJECT_STATUS_UPDATE_RETAKE(
-      "error.domain.projects.status.update.retake", "projectStatus"),
-  INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start", "projectStatus"),
-  INVALID_CREATED_AT_BLANK("error.domain.projects.createdat.blank", "createdAt"),
-  INVALID_CREATED_AT_FUTURE("error.domain.projects.createdat.future", "createdAt"),
-  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
-  INVALID_MAX_PARTICIPANTS_NEGATIVE(
-      "error.domain.projects.maxparticipants.negative", "maxParticipants"),
-  INVALID_ENROLLMENT_STUDENT_BLANK("error.domain.projects.enrollment.student.blank", "studentId"),
-  INVALID_ENROLLMENT_PROJECT_BLANK("error.domain.projects.enrollment.project.blank", "projectId"),
-  INVALID_ENROLLMENT_STATUS_BLANK("error.domain.projects.enrollment.status.blank", "status"),
-  INVALID_ENROLLMENT_REQUEST_AT_BLANK(
-      "error.domain.projects.enrollment.requestat.blank", "requestAt"),
-  INVALID_ENROLLMENT_DATES_INVALID("error.domain.projects.enrollment.dates.invalid", "acceptedAt"),
+public enum ProjectsErrorCodes implements GenericCodes {
 
-  INVALID_ATTENDANCE_PROJECT_BLANK("error.domain.projects.attendance.project.blank", "projectId"),
-  INVALID_ATTENDANCE_STUDENT_BLANK("error.domain.projects.attendance.student.blank", "studentId"),
-  INVALID_ATTENDANCE_DURATION_INVALID(
-      "error.domain.projects.attendance.duration.invalid", "duration"),
-  INVALID_ATTENDANCE_GEO_INVALID_MISSING(
-      "error.domain.projects.attendance.geo.invalid.missing", null),
-  INVALID_ATTENDANCE_GEO_INVALID_LAT(
-      "error.domain.projects.attendance.geo.invalid.lat", "latitude"),
-  INVALID_ATTENDANCE_GEO_INVALID_LONG(
-      "error.domain.projects.attendance.geo.invalid.long", "longitude"),
-  INVALID_ATTENDANCE_STATUS_BLANK("error.domain.projects.attendance.status.blank", "status");
+  /**
+   * Indicates an attempt to record an attendance that already exists.
+   */
+  ATTENDANCE_ALREADY_EXISTS("error.domain.projects.attendance.already.exists"),
 
+  /**
+   * Indicates that a requested attendance record could not be found.
+   */
+  ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.not.found"),
+
+  /**
+   * Indicates an attempt to create an enrollment that already exists.
+   */
+  ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.already.exists"),
+
+  /**
+   * Indicates that a requested enrollment record could not be found.
+   */
+  ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.not.found"),
+
+  /* --- State Transition Business Rules --- */
+
+  /**
+   * Indicates an invalid state transition attempting to cancel a project.
+   */
+  INVALID_PROJECT_STATUS_UPDATE_CANCEL("error.domain.projects.status.update.cancel"),
+
+  /**
+   * Indicates an invalid state transition attempting to complete a project.
+   */
+  INVALID_PROJECT_STATUS_UPDATE_COMPLETE("error.domain.projects.status.update.complete"),
+
+  /**
+   * Indicates an invalid state transition attempting to put a project on hold.
+   */
+  INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD("error.domain.projects.status.update.put.on.hold"),
+
+  /**
+   * Indicates an invalid state transition attempting to resume a project.
+   */
+  INVALID_PROJECT_STATUS_UPDATE_RETAKE("error.domain.projects.status.update.retake"),
+
+  /**
+   * Indicates an invalid state transition attempting to start a project.
+   */
+  INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start"),
+
+  /* --- Resource Conflicts --- */
+
+  /**
+   * Indicates an attempt to create a project with a name that is already in use.
+   */
+  PROJECT_ALREADY_EXISTS("error.domain.projects.already.exists"),
+
+  /**
+   * Indicates that a requested project could not be found.
+   */
+  PROJECT_NOT_FOUND("error.domain.projects.not.found");
+
+  /**
+   * The property key used to resolve the localized error message in the resource bundles.
+   */
   private final String bundleKey;
-  private final String fieldName;
 
-  ProjectsErrorCodes(String bundleKey, String fieldName) {
+  /**
+   * Constructs the {@code ProjectsErrorCodes} enum.
+   *
+   * @param bundleKey the unique i18n key mapping to the application's resource bundles
+   */
+  ProjectsErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
-    this.fieldName = fieldName;
   }
 }
