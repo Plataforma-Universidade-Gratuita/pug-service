@@ -22,9 +22,7 @@ public class CityQueriesImpl implements CityQueries {
 
   @Inject EntityManager entityManager;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<CityView> findOptionalById(UUID id) {
     if (id == null) {
@@ -35,9 +33,7 @@ public class CityQueriesImpl implements CityQueries {
     return q.getResultStream().findFirst().map(CityMapper::toView);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<CityView> findOptionalByIbgeCode(String ibgeCode) {
     if (StringUtils.isEmpty(ibgeCode)) {
@@ -49,18 +45,14 @@ public class CityQueriesImpl implements CityQueries {
     return q.getResultStream().findFirst().map(CityMapper::toView);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<CityView> listAllCities() {
     var q = entityManager.createQuery("from CityEntity c order by c.name asc", CityEntity.class);
     return q.getResultList().stream().map(CityMapper::toView).toList();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<CityView> searchByName(String key) {
     List<CityEntity> hits = HibernateSearchUtils.searchByName(entityManager, CityEntity.class, key);

@@ -8,25 +8,21 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of the {@link StudentRepository} utilizing Hibernate ORM with Panache.
- * <p>
- * This application-scoped bean bridges the pure domain repository interface with
- * the underlying database infrastructure. It manages transaction boundaries,
- * entity state transitions, and the mapping of complex nested Value Objects
- * into the flattened {@link StudentEntity}.
+ *
+ * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
+ * database infrastructure. It manages transaction boundaries, entity state transitions, and the
+ * mapping of complex nested Value Objects into the flattened {@link StudentEntity}.
  */
 @ApplicationScoped
 public class StudentRepositoryImpl
-        implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+    implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Student persist(Student student) {
@@ -38,9 +34,7 @@ public class StudentRepositoryImpl
     return StudentMapper.toDomain(e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Student student) {
@@ -53,9 +47,7 @@ public class StudentRepositoryImpl
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -67,18 +59,14 @@ public class StudentRepositoryImpl
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<Student> findOptionalById(UUID id) {
     Optional<StudentEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(StudentMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByRegistration(String registration) {
     if (StringUtils.isEmpty(registration)) {

@@ -7,43 +7,37 @@ import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link EntityReadService}.
- * <p>
- * This application-scoped bean delegates read-only operations to the underlying
- * {@link EntityQueries} infrastructure component. It handles basic input validation
- * and translates "not found" states into standardized domain exceptions.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * EntityQueries} infrastructure component. It handles basic input validation and translates "not
+ * found" states into standardized domain exceptions.
  */
 @ApplicationScoped
 public class EntityReadServiceImpl implements EntityReadService {
 
   private static final Logger LOG = Logger.getLogger(EntityReadServiceImpl.class);
 
-  @Inject
-  EntityQueries queries;
+  @Inject EntityQueries queries;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public EntityView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () -> {
-                      LOG.debugf("Entity lookup failed: ID %s not found", id);
-                      return ExceptionHelper.entityNotFound();
-                    });
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Entity lookup failed: ID %s not found", id);
+              return ExceptionHelper.entityNotFound();
+            });
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public EntityView getViewByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
@@ -51,25 +45,21 @@ public class EntityReadServiceImpl implements EntityReadService {
     }
 
     return queries
-            .findOptionalByCnpj(cnpj)
-            .orElseThrow(
-                    () -> {
-                      LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
-                      return ExceptionHelper.entityNotFound();
-                    });
+        .findOptionalByCnpj(cnpj)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
+              return ExceptionHelper.entityNotFound();
+            });
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listViews() {
     return queries.listAllEntities();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listViewsByCityId(UUID cityId) {
     if (cityId == null) {
@@ -80,10 +70,10 @@ public class EntityReadServiceImpl implements EntityReadService {
 
   /**
    * {@inheritDoc}
-   * <p>
-   * Prior to execution, the input query is "folded" (lowercased and accents removed via
-   * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
-   * underlying search indexing rules.
+   *
+   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * rules.
    */
   @Override
   public List<EntityView> searchViews(String query) {

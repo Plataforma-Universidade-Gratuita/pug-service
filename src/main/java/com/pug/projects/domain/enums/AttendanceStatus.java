@@ -5,26 +5,20 @@ import lombok.Getter;
 
 /**
  * Enumeration representing the valid lifecycle states of an Attendance record.
- * <p>
- * Implements {@link GenericCodes} to allow the presentation layer to easily
- * translate these statuses into localized, human-readable strings.
+ *
+ * <p>Implements {@link GenericCodes} to allow the presentation layer to easily translate these
+ * statuses into localized, human-readable strings.
  */
 @Getter
 public enum AttendanceStatus implements GenericCodes {
 
-  /**
-   * Indicates the student was absent or the attendance was rejected.
-   */
+  /** Indicates the student was absent or the attendance was rejected. */
   ABSENT("attendance.status.absent"),
 
-  /**
-   * Indicates the attendance has been successfully validated and the student was present.
-   */
+  /** Indicates the attendance has been successfully validated and the student was present. */
   PRESENT("attendance.status.present"),
 
-  /**
-   * Indicates the attendance has been recorded but is pending staff validation.
-   */
+  /** Indicates the attendance has been recorded but is pending staff validation. */
   WAITING("attendance.status.waiting");
 
   private final String bundleKey;

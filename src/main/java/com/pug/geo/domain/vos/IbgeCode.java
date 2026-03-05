@@ -9,19 +9,18 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Value Object (VO) representing a Brazilian city's IBGE (Brazilian Institute of Geography and Statistics) code.
- * <p>
- * Extends {@link DomainError} to encapsulate and accumulate domain validation rules
- * specific to IBGE codes without throwing immediate exceptions.
+ * Immutable Value Object (VO) representing a Brazilian city's IBGE (Brazilian Institute of
+ * Geography and Statistics) code.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules specific to
+ * IBGE codes without throwing immediate exceptions.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class IbgeCode extends DomainError {
 
-  /**
-   * The raw 7-digit string representing the IBGE code.
-   */
+  /** The raw 7-digit string representing the IBGE code. */
   String code;
 
   /**
@@ -36,9 +35,9 @@ public class IbgeCode extends DomainError {
 
   /**
    * Factory method to create a new {@code IbgeCode} instance.
-   * <p>
-   * The instance is created and immediately self-validated. Any validation failures
-   * are accumulated internally and can be retrieved via {@link #getFieldErrors()}.
+   *
+   * <p>The instance is created and immediately self-validated. Any validation failures are
+   * accumulated internally and can be retrieved via {@link #getFieldErrors()}.
    *
    * @param code the raw IBGE code string
    * @return a self-validated {@link IbgeCode} instance
@@ -51,11 +50,13 @@ public class IbgeCode extends DomainError {
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Business rules applied:
+   *
+   * <p>Business rules applied:
+   *
    * <ul>
-   *   <li>Must not be null or empty (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_BLANK})</li>
-   *   <li>Must be exactly 7 characters long and contain only numeric digits (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_FORMAT})</li>
+   *   <li>Must not be null or empty (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_BLANK})
+   *   <li>Must be exactly 7 characters long and contain only numeric digits (appends {@link
+   *       GeoFieldErrorCodes#INVALID_IBGE_CODE_FORMAT})
    * </ul>
    */
   private void collectValidationProblems() {

@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -40,10 +39,10 @@ import java.util.stream.Collectors;
 
 /**
  * REST API Resource controller for managing Academic Courses.
- * <p>
- * This class exposes endpoints to create, retrieve, update, and delete courses.
- * It delegates commands to the {@link CourseService} (writes) and queries to the
- * {@link CourseReadService} (reads), strictly adhering to CQRS principles.
+ *
+ * <p>This class exposes endpoints to create, retrieve, update, and delete courses. It delegates
+ * commands to the {@link CourseService} (writes) and queries to the {@link CourseReadService}
+ * (reads), strictly adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path("/academic/courses")
@@ -51,21 +50,18 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject
-  CourseService writeService;
-  @Inject
-  CourseReadService readService;
+  @Inject CourseService writeService;
+  @Inject CourseReadService readService;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a specific course by its unique UUID identifier.
    *
    * @param id the unique identifier (UUIDv7) of the course
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CourseResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     CourseResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course is not found
    */
   @GET
@@ -78,18 +74,19 @@ public class CourseResource {
 
   /**
    * Retrieves a collection of courses.
-   * <p>
-   * If the optional {@code q} parameter is provided, it executes a full-text search against
-   * the courses' names. If the {@code schoolId} is provided, it filters the courses by that school.
-   * If omitted, it returns an unfiltered list of all courses.
    *
-   * @param q        the optional search query string
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * courses' names. If the {@code schoolId} is provided, it filters the courses by that school. If
+   * omitted, it returns an unfiltered list of all courses.
+   *
+   * @param q the optional search query string
    * @param schoolId the optional school identifier to filter by
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link CourseResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     CourseResponse}
    */
   @GET
   public Response listOrSearch(
-          @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+      @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
 
     List<CourseView> views;
 
@@ -102,9 +99,9 @@ public class CourseResource {
     }
 
     List<CourseResponse> body =
-            views.stream()
-                    .map(v -> CoursePresenter.toResponse(v, locale()))
-                    .collect(Collectors.toList());
+        views.stream()
+            .map(v -> CoursePresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -113,8 +110,10 @@ public class CourseResource {
    * Registers a new academic course within the platform.
    *
    * @param req the validated {@link CourseCreateRequest} payload
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link CourseResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name already exists
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link CourseResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name
+   *     already exists
    */
   @POST
   public Response create(@Valid CourseCreateRequest req) {
@@ -131,7 +130,7 @@ public class CourseResource {
   /**
    * Partially updates an existing course's details.
    *
-   * @param id  the unique identifier (UUIDv7) of the course to update
+   * @param id the unique identifier (UUIDv7) of the course to update
    * @param req the validated {@link CourseUpdateRequest} containing the modified data
    * @return an HTTP 200 OK response containing the updated {@link CourseResponse}
    */
@@ -160,9 +159,7 @@ public class CourseResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

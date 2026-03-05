@@ -12,15 +12,14 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link BusinessRuleException} to an HTTP 422 (Unprocessable Entity) response.
- * <p>
- * Translates the specific domain business rule violation directly into a localized
- * API error response without exposing internal field names or values.
+ *
+ * <p>Translates the specific domain business rule violation directly into a localized API error
+ * response without exposing internal field names or values.
  */
 @Provider
 public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRuleException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a BusinessRuleException into a structured HTTP 422 response.
@@ -36,8 +35,8 @@ public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRule
     ApiError error = ApiError.of(code, message);
 
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }

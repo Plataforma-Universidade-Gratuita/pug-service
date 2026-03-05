@@ -10,18 +10,16 @@ import lombok.Value;
 
 /**
  * Immutable Value Object (VO) representing a student's Academic Registration identifier.
- * <p>
- * Extends {@link DomainError} to encapsulate and accumulate domain validation rules
- * specific to university registration formats without throwing immediate exceptions.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules specific to
+ * university registration formats without throwing immediate exceptions.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AcademicRegistration extends DomainError {
 
-  /**
-   * The raw string representing the student's registration identifier.
-   */
+  /** The raw string representing the student's registration identifier. */
   String value;
 
   /**
@@ -36,8 +34,8 @@ public class AcademicRegistration extends DomainError {
 
   /**
    * Factory method to create a new {@code AcademicRegistration} instance.
-   * <p>
-   * Automatically trims whitespace from the input and executes validation logic.
+   *
+   * <p>Automatically trims whitespace from the input and executes validation logic.
    *
    * @param registration the raw registration string
    * @return a self-validated {@link AcademicRegistration} instance
@@ -51,11 +49,14 @@ public class AcademicRegistration extends DomainError {
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Business rules applied:
+   *
+   * <p>Business rules applied:
+   *
    * <ul>
-   *   <li>Must not be null or empty (appends {@link AcademicFieldErrorCodes#INVALID_REGISTRATION_BLANK})</li>
-   *   <li>Must not exceed 15 characters in length (appends {@link AcademicFieldErrorCodes#INVALID_REGISTRATION_TOO_LONG})</li>
+   *   <li>Must not be null or empty (appends {@link
+   *       AcademicFieldErrorCodes#INVALID_REGISTRATION_BLANK})
+   *   <li>Must not exceed 15 characters in length (appends {@link
+   *       AcademicFieldErrorCodes#INVALID_REGISTRATION_TOO_LONG})
    * </ul>
    */
   private void collectValidationProblems() {

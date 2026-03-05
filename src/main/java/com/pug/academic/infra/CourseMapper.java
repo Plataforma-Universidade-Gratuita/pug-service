@@ -9,17 +9,14 @@ import com.pug.shared.domain.vos.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Course boundary layers.
- * <p>
- * This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link Course})
- * does not leak into or depend upon the JPA Persistence model ({@link CourseEntity}) or the
- * Read/Query model ({@link CourseView}).
+ *
+ * <p>This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link
+ * Course}) does not leak into or depend upon the JPA Persistence model ({@link CourseEntity}) or
+ * the Read/Query model ({@link CourseView}).
  */
 public final class CourseMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private CourseMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private CourseMapper() {}
 
   /**
    * Reconstitutes a pure Domain {@link Course} aggregate from a JPA {@link CourseEntity}.
@@ -32,34 +29,37 @@ public final class CourseMapper {
       return null;
     }
     return Course.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .schoolId(e.getSchoolId())
-            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .schoolId(e.getSchoolId())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
-   * Translates a pure Domain {@link Course} aggregate into a newly instantiated JPA {@link CourseEntity}.
+   * Translates a pure Domain {@link Course} aggregate into a newly instantiated JPA {@link
+   * CourseEntity}.
    *
    * @param d the Domain aggregate to convert
-   * @return a newly constructed JPA {@link CourseEntity}, or {@code null} if the input domain is null
+   * @return a newly constructed JPA {@link CourseEntity}, or {@code null} if the input domain is
+   *     null
    */
   public static CourseEntity toEntity(Course d) {
     if (d == null) {
       return null;
     }
     return CourseEntity.builder()
-            .id(d.getId())
-            .name(d.getName())
-            .schoolId(d.getSchoolId())
-            .createdAt(d.getAuditInfo().getCreatedAt())
-            .updatedAt(d.getAuditInfo().getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .name(d.getName())
+        .schoolId(d.getSchoolId())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
-   * Updates an existing, attached JPA {@link CourseEntity} with the current state of a Domain {@link Course}.
+   * Updates an existing, attached JPA {@link CourseEntity} with the current state of a Domain
+   * {@link Course}.
    *
    * @param d the Domain aggregate containing the updated state
    * @param e the existing, attached JPA entity to update in-place
@@ -73,7 +73,8 @@ public final class CourseMapper {
   }
 
   /**
-   * Projects a {@link CourseEntity} and its parent {@link SchoolEntity} into a consolidated {@link CourseView} DTO.
+   * Projects a {@link CourseEntity} and its parent {@link SchoolEntity} into a consolidated {@link
+   * CourseView} DTO.
    *
    * @param c the JPA persistence entity representing the course
    * @param s the JPA persistence entity representing the linked school
@@ -84,9 +85,9 @@ public final class CourseMapper {
       return null;
     }
     SchoolView schoolView =
-            (s != null)
-                    ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
-                    : null;
+        (s != null)
+            ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            : null;
     return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }

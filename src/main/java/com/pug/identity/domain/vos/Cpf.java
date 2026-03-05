@@ -10,19 +10,17 @@ import lombok.Value;
 
 /**
  * Immutable Value Object (VO) representing a Brazilian CPF (Cadastro de Pessoas Físicas).
- * <p>
- * Extends {@link DomainError} to encapsulate and accumulate domain validation rules
- * specific to Brazilian individual taxpayer registry numbers without throwing immediate exceptions.
- * This class inherently handles formatting variations by sanitizing the input prior to validation.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules specific to
+ * Brazilian individual taxpayer registry numbers without throwing immediate exceptions. This class
+ * inherently handles formatting variations by sanitizing the input prior to validation.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Cpf extends DomainError {
 
-  /**
-   * The raw, numeric-only 11-digit string representing the CPF.
-   */
+  /** The raw, numeric-only 11-digit string representing the CPF. */
   String value;
 
   /**
@@ -37,10 +35,10 @@ public class Cpf extends DomainError {
 
   /**
    * Factory method to create a new {@code Cpf} instance.
-   * <p>
-   * The provided raw value is automatically sanitized (all non-numeric characters stripped)
-   * before instantiation. The instance is immediately self-validated. Any validation failures
-   * are accumulated internally and can be retrieved via {@link #getFieldErrors()}.
+   *
+   * <p>The provided raw value is automatically sanitized (all non-numeric characters stripped)
+   * before instantiation. The instance is immediately self-validated. Any validation failures are
+   * accumulated internally and can be retrieved via {@link #getFieldErrors()}.
    *
    * @param rawValue the raw CPF string (formatted with punctuation or unformatted)
    * @return a self-validated {@link Cpf} instance
@@ -55,13 +53,14 @@ public class Cpf extends DomainError {
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Business rules applied:
+   *
+   * <p>Business rules applied:
+   *
    * <ul>
-   *   <li>Must not be null or empty (appends {@link IdentityFieldErrorCodes#INVALID_CPF_BLANK})</li>
-   *   <li>Must be exactly 11 digits long, cannot consist of the same repeated digit,
-   *       and must pass the standard modulo-11 checksum algorithm for both verification digits
-   *       (appends {@link IdentityFieldErrorCodes#INVALID_CPF_FORMAT})</li>
+   *   <li>Must not be null or empty (appends {@link IdentityFieldErrorCodes#INVALID_CPF_BLANK})
+   *   <li>Must be exactly 11 digits long, cannot consist of the same repeated digit, and must pass
+   *       the standard modulo-11 checksum algorithm for both verification digits (appends {@link
+   *       IdentityFieldErrorCodes#INVALID_CPF_FORMAT})
    * </ul>
    */
   private void collectValidationProblems() {
@@ -78,9 +77,9 @@ public class Cpf extends DomainError {
 
   /**
    * Evaluates if all characters within the provided string are identical.
-   * <p>
-   * This is a requirement for CPF validation, as strings like "11111111111" pass
-   * the mathematical checksum but are structurally invalid CPFs.
+   *
+   * <p>This is a requirement for CPF validation, as strings like "11111111111" pass the
+   * mathematical checksum but are structurally invalid CPFs.
    *
    * @param s the numeric string to evaluate
    * @return {@code true} if all characters are the same repeated digit, {@code false} otherwise
@@ -99,11 +98,12 @@ public class Cpf extends DomainError {
   }
 
   /**
-   * Executes the standard Brazilian modulo-11 checksum algorithm to validate
-   * the last two digits (Verification Digits) of the CPF.
+   * Executes the standard Brazilian modulo-11 checksum algorithm to validate the last two digits
+   * (Verification Digits) of the CPF.
    *
    * @param s the 11-digit numeric string representing the CPF
-   * @return {@code true} if the calculated check digits match the provided string, {@code false} otherwise
+   * @return {@code true} if the calculated check digits match the provided string, {@code false}
+   *     otherwise
    */
   private static boolean validCheckDigits(String s) {
     int d1 = calcDigit(s, 9);
@@ -114,8 +114,9 @@ public class Cpf extends DomainError {
   /**
    * Calculates a single CPF verification digit based on the modulo-11 algorithm.
    *
-   * @param s   the numeric string containing the base digits for calculation
-   * @param len the number of digits to consider (9 for the first verification digit, 10 for the second)
+   * @param s the numeric string containing the base digits for calculation
+   * @param len the number of digits to consider (9 for the first verification digit, 10 for the
+   *     second)
    * @return the mathematically calculated verification digit (0-9)
    */
   private static int calcDigit(String s, int len) {

@@ -7,24 +7,21 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of the {@link SchoolRepository} utilizing Hibernate ORM with Panache.
- * <p>
- * This application-scoped bean bridges the pure domain repository interface with
- * the underlying database infrastructure. It handles standard CRUD operations and ensures
- * proper mapping between {@link School} domain aggregates and their JPA counterparts.
+ *
+ * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
+ * database infrastructure. It handles standard CRUD operations and ensures proper mapping between
+ * {@link School} domain aggregates and their JPA counterparts.
  */
 @ApplicationScoped
 public class SchoolRepositoryImpl
-        implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public School persist(School school) {
@@ -36,9 +33,7 @@ public class SchoolRepositoryImpl
     return SchoolMapper.toDomain(e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(School school) {
@@ -51,9 +46,7 @@ public class SchoolRepositoryImpl
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -65,18 +58,14 @@ public class SchoolRepositoryImpl
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<School> findOptionalById(UUID id) {
     Optional<SchoolEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(SchoolMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;

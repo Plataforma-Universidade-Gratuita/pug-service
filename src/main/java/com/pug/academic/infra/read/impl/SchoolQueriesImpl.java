@@ -1,5 +1,7 @@
 package com.pug.academic.infra.read.impl;
 
+import static com.pug.academic.infra.SchoolMapper.toView;
+
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
@@ -8,67 +10,57 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.pug.academic.infra.SchoolMapper.toView;
-
 /**
  * Implementation of the {@link SchoolQueries} interface using JPA and Hibernate Search.
- * <p>
- * This application-scoped bean handles the execution of read-only queries. It uses
- * JPQL constructor expressions to directly project database rows into lightweight
- * {@link SchoolView} DTOs.
+ *
+ * <p>This application-scoped bean handles the execution of read-only queries. It uses JPQL
+ * constructor expressions to directly project database rows into lightweight {@link SchoolView}
+ * DTOs.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class SchoolQueriesImpl implements SchoolQueries {
 
-  @Inject
-  EntityManager entityManager;
+  @Inject EntityManager entityManager;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<SchoolView> findOptionalById(UUID id) {
     if (id == null) {
       return Optional.empty();
     }
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.SchoolView("
-                            + "s.id, s.name, s.createdAt, s.updatedAt) "
-                            + "from SchoolEntity s where s.id = :id",
-                    SchoolView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
+                + "from SchoolEntity s where s.id = :id",
+            SchoolView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<SchoolView> listAllSchools() {
     var q =
-            entityManager.createQuery(
-                    "select new com.pug.academic.infra.read.dtos.SchoolView("
-                            + "s.id, s.name, s.createdAt, s.updatedAt) "
-                            + "from SchoolEntity s order by s.name asc",
-                    SchoolView.class);
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
+                + "from SchoolEntity s order by s.name asc",
+            SchoolView.class);
     return q.getResultList();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<SchoolView> searchByName(String key) {
     List<SchoolEntity> hits =
-            HibernateSearchUtils.searchByName(entityManager, SchoolEntity.class, key);
+        HibernateSearchUtils.searchByName(entityManager, SchoolEntity.class, key);
 
     if (hits.isEmpty()) {
       return List.of();

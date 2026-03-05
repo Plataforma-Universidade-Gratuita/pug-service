@@ -4,68 +4,57 @@ import com.pug.projects.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
 /**
  * Immutable Value Object (VO) representing the comprehensive logistical details of a Project.
- * <p>
- * Extends {@link DomainError} to encapsulate and accumulate validations relating to
- * project constraints, ensuring values like participant capacity and offered hours
- * remain within logically valid bounds.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to project
+ * constraints, ensuring values like participant capacity and offered hours remain within logically
+ * valid bounds.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class ProjectInfo extends DomainError {
 
-  /**
-   * The unique identifier (Account ID) of the staff member who created the project.
-   */
+  /** The unique identifier (Account ID) of the staff member who created the project. */
   UUID createdBy;
 
-  /**
-   * The maximum number of students allowed to enroll in the project.
-   */
+  /** The maximum number of students allowed to enroll in the project. */
   Integer maxParticipants;
 
-  /**
-   * The total amount of counterpart hours the project offers to its participants.
-   */
+  /** The total amount of counterpart hours the project offers to its participants. */
   BigDecimal offeredHours;
 
-  /**
-   * The exact timestamp when the project was officially closed.
-   */
+  /** The exact timestamp when the project was officially closed. */
   OffsetDateTime closedAt;
 
-  /**
-   * The audit tracking information (creation and update timestamps).
-   */
+  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
   /**
    * Constructs a {@code ProjectInfo} instance.
    *
-   * @param createdBy       the unique identifier of the creator
+   * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
-   * @param offeredHours    the hours offered by the project
-   * @param closedAt        the timestamp when the project was closed
-   * @param auditInfo       the audit tracking VO
+   * @param offeredHours the hours offered by the project
+   * @param closedAt the timestamp when the project was closed
+   * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
   private ProjectInfo(
-          UUID createdBy,
-          Integer maxParticipants,
-          BigDecimal offeredHours,
-          OffsetDateTime closedAt,
-          AuditInfo auditInfo) {
+      UUID createdBy,
+      Integer maxParticipants,
+      BigDecimal offeredHours,
+      OffsetDateTime closedAt,
+      AuditInfo auditInfo) {
     this.createdBy = createdBy;
     this.maxParticipants = maxParticipants;
     this.offeredHours = offeredHours;
@@ -75,25 +64,25 @@ public class ProjectInfo extends DomainError {
 
   /**
    * Factory method to create a new {@code ProjectInfo} instance.
-   * <p>
-   * The instance is initialized as open (closedAt is null) with standard audit
-   * tracking information. It is immediately self-validated.
    *
-   * @param createdBy       the unique identifier of the creator
+   * <p>The instance is initialized as open (closedAt is null) with standard audit tracking
+   * information. It is immediately self-validated.
+   *
+   * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
-   * @param offeredHours    the hours offered for the project
+   * @param offeredHours the hours offered for the project
    * @return a self-validated {@link ProjectInfo} instance
    */
   public static ProjectInfo factory(
-          UUID createdBy, Integer maxParticipants, BigDecimal offeredHours) {
+      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours) {
     ProjectInfo vo =
-            ProjectInfo.builder()
-                    .createdBy(createdBy)
-                    .maxParticipants(maxParticipants)
-                    .offeredHours(offeredHours)
-                    .closedAt(null)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        ProjectInfo.builder()
+            .createdBy(createdBy)
+            .maxParticipants(maxParticipants)
+            .offeredHours(offeredHours)
+            .closedAt(null)
+            .auditInfo(AuditInfo.factory())
+            .build();
     vo.collectValidationProblems();
     return vo;
   }
@@ -101,14 +90,15 @@ public class ProjectInfo extends DomainError {
   /**
    * Updates the project info to reflect a closed status by setting the {@code closedAt} timestamp.
    *
-   * @return a new {@link ProjectInfo} instance with {@code closedAt} set, or the same instance if already closed
+   * @return a new {@link ProjectInfo} instance with {@code closedAt} set, or the same instance if
+   *     already closed
    */
   public ProjectInfo closeProject() {
     if (closedAt != null) {
       return this;
     }
     ProjectInfo updated =
-            toBuilder().closedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+        toBuilder().closedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -117,14 +107,15 @@ public class ProjectInfo extends DomainError {
    * Updates the offered hours for the project.
    *
    * @param newOfferedHours the new offered hours to set
-   * @return a new {@link ProjectInfo} instance with updated hours, or the same instance if unchanged
+   * @return a new {@link ProjectInfo} instance with updated hours, or the same instance if
+   *     unchanged
    */
   public ProjectInfo changeOfferedHours(BigDecimal newOfferedHours) {
     if (offeredHours != null && offeredHours.equals(newOfferedHours)) {
       return this;
     }
     ProjectInfo updated =
-            toBuilder().offeredHours(newOfferedHours).auditInfo(auditInfo.update()).build();
+        toBuilder().offeredHours(newOfferedHours).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -133,14 +124,15 @@ public class ProjectInfo extends DomainError {
    * Updates the maximum number of participants allowed to enroll in the project.
    *
    * @param newMaxParticipants the new participant capacity limit
-   * @return a new {@link ProjectInfo} instance with updated capacity, or the same instance if unchanged
+   * @return a new {@link ProjectInfo} instance with updated capacity, or the same instance if
+   *     unchanged
    */
   public ProjectInfo changeMaxParticipantsAllowed(Integer newMaxParticipants) {
     if (maxParticipants != null && maxParticipants.equals(newMaxParticipants)) {
       return this;
     }
     ProjectInfo updated =
-            toBuilder().maxParticipants(newMaxParticipants).auditInfo(auditInfo.update()).build();
+        toBuilder().maxParticipants(newMaxParticipants).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -158,14 +150,17 @@ public class ProjectInfo extends DomainError {
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Business rules applied:
+   *
+   * <p>Business rules applied:
+   *
    * <ul>
-   *   <li>The creator ID must not be null (appends {@link ProjectsFieldErrorCodes#INVALID_PROJECT_CREATED_BY_BLANK}).</li>
-   *   <li>The participant capacity, if provided, must not be negative
-   *       (appends {@link ProjectsFieldErrorCodes#INVALID_MAX_PARTICIPANTS_NEGATIVE}).</li>
-   *   <li>The offered hours must not be negative (appends {@link ProjectsFieldErrorCodes#INVALID_PROJECT_OFFERED_HOURS_NEGATIVE}).</li>
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.</li>
+   *   <li>The creator ID must not be null (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_PROJECT_CREATED_BY_BLANK}).
+   *   <li>The participant capacity, if provided, must not be negative (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_MAX_PARTICIPANTS_NEGATIVE}).
+   *   <li>The offered hours must not be negative (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_PROJECT_OFFERED_HOURS_NEGATIVE}).
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
    * </ul>
    */
   private void collectValidationProblems() {

@@ -13,30 +13,26 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link UserService} command interface.
- * <p>
- * This application-scoped service acts as the orchestrator for user state mutations.
- * It manages transaction boundaries, invokes pure domain logic via {@link UserProcessor},
- * enforces cross-cutting business rules (e.g., CPF uniqueness), and coordinates
- * with the underlying {@link UserRepository}.
+ *
+ * <p>This application-scoped service acts as the orchestrator for user state mutations. It manages
+ * transaction boundaries, invokes pure domain logic via {@link UserProcessor}, enforces
+ * cross-cutting business rules (e.g., CPF uniqueness), and coordinates with the underlying {@link
+ * UserRepository}.
  */
 @ApplicationScoped
 public class UserServiceImpl implements UserService {
 
   private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
-  @Inject
-  UserRepository repo;
+  @Inject UserRepository repo;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
@@ -58,9 +54,7 @@ public class UserServiceImpl implements UserService {
     return savedUser;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User update(UUID id, UserUpdateCommand cmd) {
@@ -84,9 +78,7 @@ public class UserServiceImpl implements UserService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -103,9 +95,7 @@ public class UserServiceImpl implements UserService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAll(List<UUID> ids) {
@@ -119,55 +109,49 @@ public class UserServiceImpl implements UserService {
     return deletedCount;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public User getById(UUID id) {
     User user =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("User lookup failed: ID %s not found", id);
-                              return ExceptionHelper.userNotFound();
-                            });
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: ID %s not found", id);
+                  return ExceptionHelper.userNotFound();
+                });
 
     if (user.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-              id, user.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+          id, user.getProblemsSummary());
       throw ExceptionHelper.userNotFound();
     }
 
     return user;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public User getByCpf(Cpf cpf) {
     User user =
-            repo.findOptionalByCpf(cpf.toString())
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("User lookup failed: CPF %s not found", cpf);
-                              return ExceptionHelper.userNotFound();
-                            });
+        repo.findOptionalByCpf(cpf.toString())
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: CPF %s not found", cpf);
+                  return ExceptionHelper.userNotFound();
+                });
 
     if (user.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
-              cpf, user.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: User with CPF %s violates domain rules: %s",
+          cpf, user.getProblemsSummary());
       throw ExceptionHelper.userNotFound();
     }
 
     return user;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByCpf(Cpf cpf) {
     if (cpf == null) {

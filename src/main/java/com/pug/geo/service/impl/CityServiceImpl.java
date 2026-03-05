@@ -15,31 +15,26 @@ import com.pug.shared.exceptions.BusinessRuleException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link CityService} command interface.
- * <p>
- * This application-scoped service acts as the orchestrator for geographic state mutations.
- * It manages transaction boundaries, invokes pure domain logic via {@link CityProcessor},
- * enforces cross-cutting business rules (e.g., uniqueness, immutability of default cities),
- * and coordinates with the underlying {@link CityRepository}.
+ *
+ * <p>This application-scoped service acts as the orchestrator for geographic state mutations. It
+ * manages transaction boundaries, invokes pure domain logic via {@link CityProcessor}, enforces
+ * cross-cutting business rules (e.g., uniqueness, immutability of default cities), and coordinates
+ * with the underlying {@link CityRepository}.
  */
 @ApplicationScoped
 public class CityServiceImpl implements CityService {
 
   private static final Logger LOG = Logger.getLogger(CityServiceImpl.class);
 
-  @Inject
-  CityRepository repo;
-  @Inject
-  EntityService entityService;
+  @Inject CityRepository repo;
+  @Inject EntityService entityService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public City save(CityCreateCommand cmd) {
@@ -51,7 +46,9 @@ public class CityServiceImpl implements CityService {
     }
 
     if (existsByIbge(cityToPersist.getIbgeCode())) {
-      LOG.warnf("Creation failed: City with IBGE Code %s already exists", cityToPersist.getIbgeCode().getCode());
+      LOG.warnf(
+          "Creation failed: City with IBGE Code %s already exists",
+          cityToPersist.getIbgeCode().getCode());
       throw ExceptionHelper.cityAlreadyExists();
     }
 
@@ -60,9 +57,7 @@ public class CityServiceImpl implements CityService {
     return savedCity;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public City update(UUID id, CityUpdateCommand cmd) {
@@ -78,8 +73,10 @@ public class CityServiceImpl implements CityService {
     }
 
     if (!updated.getIbgeCode().equals(current.getIbgeCode())
-            && existsByIbge(updated.getIbgeCode())) {
-      LOG.warnf("Update failed: City ID %s tried to use existing IBGE %s", id, updated.getIbgeCode().getCode());
+        && existsByIbge(updated.getIbgeCode())) {
+      LOG.warnf(
+          "Update failed: City ID %s tried to use existing IBGE %s",
+          id, updated.getIbgeCode().getCode());
       throw ExceptionHelper.cityAlreadyExists();
     }
 
@@ -88,9 +85,7 @@ public class CityServiceImpl implements CityService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -116,21 +111,21 @@ public class CityServiceImpl implements CityService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public City getById(UUID id) {
-    City city = repo.findOptionalById(id)
-            .orElseThrow(() -> {
-              LOG.debugf("City lookup failed: ID %s not found", id);
-              return ExceptionHelper.cityNotFound();
-            });
+    City city =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("City lookup failed: ID %s not found", id);
+                  return ExceptionHelper.cityNotFound();
+                });
 
     if (city.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
-              id, city.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
+          id, city.getProblemsSummary());
       throw ExceptionHelper.cityNotFound();
     }
 
@@ -154,8 +149,8 @@ public class CityServiceImpl implements CityService {
 
   /**
    * Enforces the immutability rule for default system cities.
-   * <p>
-   * Checks if the provided {@link City} corresponds to one of the protected records defined in
+   *
+   * <p>Checks if the provided {@link City} corresponds to one of the protected records defined in
    * {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are fundamental to
    * system integrity and must not be modified or deleted.
    *
@@ -166,8 +161,8 @@ public class CityServiceImpl implements CityService {
   private void ensureCityIsMutable(City city) {
     if (Campi.getImmutableIbgeCodes().contains(city.getIbgeCode().getCode())) {
       LOG.warnf(
-              "Modification blocked: City ID %s (IBGE %s) is a default system record.",
-              city.getId(), city.getIbgeCode().getCode());
+          "Modification blocked: City ID %s (IBGE %s) is a default system record.",
+          city.getId(), city.getIbgeCode().getCode());
       throw ExceptionHelper.cityIsDefault();
     }
   }

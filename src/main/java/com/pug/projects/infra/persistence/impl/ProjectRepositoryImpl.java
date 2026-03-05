@@ -8,16 +8,13 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the {@link ProjectRepository} utilizing Hibernate ORM with Panache.
- */
+/** Implementation of the {@link ProjectRepository} utilizing Hibernate ORM with Panache. */
 @ApplicationScoped
 public class ProjectRepositoryImpl
-        implements ProjectRepository, PanacheRepositoryBase<ProjectEntity, UUID> {
+    implements ProjectRepository, PanacheRepositoryBase<ProjectEntity, UUID> {
 
   @Transactional
   @Override

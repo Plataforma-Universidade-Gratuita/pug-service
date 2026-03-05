@@ -9,21 +9,20 @@ import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.utils.StringUtils;
+import java.math.BigDecimal;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.math.BigDecimal;
-import java.util.UUID;
-
 /**
  * Immutable Domain Entity representing a Project offered by a Partner Entity.
- * <p>
- * This class acts as an aggregate root containing the project's unique identifier,
- * descriptive data, physical limitations (max participants, hours offered), and
- * lifecycle state. It extends {@link DomainError} to accumulate structural validation failures.
+ *
+ * <p>This class acts as an aggregate root containing the project's unique identifier, descriptive
+ * data, physical limitations (max participants, hours offered), and lifecycle state. It extends
+ * {@link DomainError} to accumulate structural validation failures.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -31,67 +30,55 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = false)
 public class Project extends DomainError {
 
-  /**
-   * The unique identifier for the project (UUIDv7).
-   */
+  /** The unique identifier for the project (UUIDv7). */
   UUID id;
 
-  /**
-   * The title or name of the project.
-   */
+  /** The title or name of the project. */
   String name;
 
-  /**
-   * The unique identifier of the partner organization offering this project.
-   */
+  /** The unique identifier of the partner organization offering this project. */
   UUID entityId;
 
-  /**
-   * The detailed description of the project's objectives and tasks.
-   */
+  /** The detailed description of the project's objectives and tasks. */
   String description;
 
-  /**
-   * The logistical metadata and audit information of the project.
-   */
+  /** The logistical metadata and audit information of the project. */
   ProjectInfo projectInfo;
 
-  /**
-   * The current execution state of the project (e.g., PLANNED, IN_PROGRESS).
-   */
+  /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   ProjectStatus projectStatus;
 
   /**
    * Factory method to create a new {@code Project} instance.
-   * <p>
-   * The project is initialized in a {@code PLANNED} state with standard tracking information.
    *
-   * @param name            the name of the project
-   * @param entityId        the associated partner entity
-   * @param description     the project description
-   * @param createdBy       the UUID of the staff account who created the project
+   * <p>The project is initialized in a {@code PLANNED} state with standard tracking information.
+   *
+   * @param name the name of the project
+   * @param entityId the associated partner entity
+   * @param description the project description
+   * @param createdBy the UUID of the staff account who created the project
    * @param maxParticipants the maximum number of participants allowed
-   * @param offeredHours    the total hours offered for completing the project
+   * @param offeredHours the total hours offered for completing the project
    * @return a newly created and self-validated {@link Project} instance
    */
   public static Project factory(
-          String name,
-          UUID entityId,
-          String description,
-          UUID createdBy,
-          Integer maxParticipants,
-          BigDecimal offeredHours) {
+      String name,
+      UUID entityId,
+      String description,
+      UUID createdBy,
+      Integer maxParticipants,
+      BigDecimal offeredHours) {
     ProjectInfo infoVo = ProjectInfo.factory(createdBy, maxParticipants, offeredHours);
 
     Project project =
-            Project.builder()
-                    .id(UuidCreator.getTimeOrderedEpoch())
-                    .name(StringUtils.trim(name))
-                    .entityId(entityId)
-                    .description(StringUtils.trim(description))
-                    .projectInfo(infoVo)
-                    .projectStatus(ProjectStatus.PLANNED)
-                    .build();
+        Project.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(StringUtils.trim(name))
+            .entityId(entityId)
+            .description(StringUtils.trim(description))
+            .projectInfo(infoVo)
+            .projectStatus(ProjectStatus.PLANNED)
+            .build();
 
     project.collectValidationProblems();
     return project;
@@ -158,10 +145,10 @@ public class Project extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_START);
     }
     Project updated =
-            toBuilder()
-                    .projectStatus(ProjectStatus.IN_PROGRESS)
-                    .projectInfo(projectInfo.update())
-                    .build();
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -180,10 +167,10 @@ public class Project extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
     }
     Project updated =
-            toBuilder()
-                    .projectStatus(ProjectStatus.COMPLETED)
-                    .projectInfo(projectInfo.closeProject())
-                    .build();
+        toBuilder()
+            .projectStatus(ProjectStatus.COMPLETED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -202,10 +189,10 @@ public class Project extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
     }
     Project updated =
-            toBuilder()
-                    .projectStatus(ProjectStatus.CANCELED)
-                    .projectInfo(projectInfo.closeProject())
-                    .build();
+        toBuilder()
+            .projectStatus(ProjectStatus.CANCELED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -224,7 +211,7 @@ public class Project extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
     }
     Project updated =
-            toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
+        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -240,17 +227,15 @@ public class Project extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
     }
     Project updated =
-            toBuilder()
-                    .projectStatus(ProjectStatus.IN_PROGRESS)
-                    .projectInfo(projectInfo.update())
-                    .build();
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
 
-  /**
-   * Evaluates constraints for the Project aggregate and accumulates any validation problems.
-   */
+  /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
     if (entityId == null) {

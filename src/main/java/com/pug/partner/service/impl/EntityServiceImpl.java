@@ -14,35 +14,29 @@ import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link EntityService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for partner organizations.
- * It manages transaction boundaries, enforces cross-domain constraints (like verifying
- * the city exists via {@link CityService}), and manages the lifecycle cascading to
- * {@link StaffService} during deletion operations.
+ *
+ * <p>This application-scoped service orchestrates state mutations for partner organizations. It
+ * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
+ * via {@link CityService}), and manages the lifecycle cascading to {@link StaffService} during
+ * deletion operations.
  */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
 
   private static final Logger LOG = Logger.getLogger(EntityServiceImpl.class);
 
-  @Inject
-  EntityRepository repo;
+  @Inject EntityRepository repo;
 
-  @Inject
-  CityService cityService;
+  @Inject CityService cityService;
 
-  @Inject
-  StaffService staffService;
+  @Inject StaffService staffService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Entity save(EntityCreateCommand cmd) {
@@ -52,8 +46,8 @@ public class EntityServiceImpl implements EntityService {
     }
 
     Entity entityToPersist =
-            EntityProcessor.processCreateInput(
-                    cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
+        EntityProcessor.processCreateInput(
+            cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (entityToPersist.hasFieldErrors()) {
       throw new AppValidationException(entityToPersist.getFieldErrors());
@@ -69,9 +63,7 @@ public class EntityServiceImpl implements EntityService {
     return savedEntity;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Entity update(UUID id, EntityUpdateCommand cmd) {
@@ -82,17 +74,17 @@ public class EntityServiceImpl implements EntityService {
     }
 
     Entity updatedEntity =
-            EntityProcessor.processUpdateInput(
-                    current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
+        EntityProcessor.processUpdateInput(
+            current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
 
     if (updatedEntity.hasFieldErrors()) {
       throw new AppValidationException(updatedEntity.getFieldErrors());
     }
 
     if (!updatedEntity.getCnpj().equals(current.getCnpj())
-            && existsByCnpj(updatedEntity.getCnpj())) {
+        && existsByCnpj(updatedEntity.getCnpj())) {
       LOG.warnf(
-              "Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
+          "Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
       throw ExceptionHelper.entityAlreadyExists();
     }
 
@@ -101,9 +93,7 @@ public class EntityServiceImpl implements EntityService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -123,32 +113,28 @@ public class EntityServiceImpl implements EntityService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Entity getById(UUID id) {
     Entity entity =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Entity lookup failed: ID %s not found", id);
-                              return ExceptionHelper.entityNotFound();
-                            });
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Entity lookup failed: ID %s not found", id);
+                  return ExceptionHelper.entityNotFound();
+                });
 
     if (entity.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
-              id, entity.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
+          id, entity.getProblemsSummary());
       throw ExceptionHelper.entityNotFound();
     }
 
     return entity;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByCityId(UUID cityId) {
     if (cityId == null) {
@@ -156,6 +142,7 @@ public class EntityServiceImpl implements EntityService {
     }
     return repo.existsByCityId(cityId);
   }
+
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**

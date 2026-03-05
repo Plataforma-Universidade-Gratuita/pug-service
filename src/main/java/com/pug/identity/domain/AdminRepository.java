@@ -5,10 +5,10 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Admin} aggregate roots.
- * <p>
- * This interface defines the contract for persisting, retrieving, updating, and deleting
- * administrator privileges. It abstracts the underlying data storage mechanism to maintain
- * a pure, infrastructure-agnostic domain model.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
+ * administrator privileges. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
  */
 public interface AdminRepository {
 
@@ -28,24 +28,26 @@ public interface AdminRepository {
   void update(Admin entity);
 
   /**
-   * Removes an {@link Admin} privilege record from the repository based on its
-   * linked account identifier.
+   * Removes an {@link Admin} privilege record from the repository based on its linked account
+   * identifier.
    *
    * @param accountId the unique identifier of the account whose admin privileges should be revoked
-   * @return {@code true} if the admin record was successfully deleted, {@code false} if it was not found
+   * @return {@code true} if the admin record was successfully deleted, {@code false} if it was not
+   *     found
    */
   boolean deleteByAccountId(UUID accountId);
 
   /**
    * Retrieves an {@link Admin} by its linked account identifier.
-   * <p>
-   * When an admin record is reconstituted from the persistence layer, it typically undergoes
-   * the same domain validations as a newly created entity. Therefore, the returned {@link Admin}
-   * might contain validation errors (verifiable via {@link Admin#hasFieldErrors()})
-   * if the stored data violates current domain rules.
+   *
+   * <p>When an admin record is reconstituted from the persistence layer, it typically undergoes the
+   * same domain validations as a newly created entity. Therefore, the returned {@link Admin} might
+   * contain validation errors (verifiable via {@link Admin#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
    *
    * @param accountId the unique identifier of the linked account
-   * @return an {@link Optional} containing the {@link Admin} if found, or {@link Optional#empty()} if not
+   * @return an {@link Optional} containing the {@link Admin} if found, or {@link Optional#empty()}
+   *     if not
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
 }

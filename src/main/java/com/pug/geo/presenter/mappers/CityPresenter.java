@@ -5,30 +5,28 @@ import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.shared.domain.enums.Campi;
 
 /**
- * Stateless utility class responsible for mapping internal geographic projections
- * to external API responses.
- * <p>
- * This presenter acts as a translation layer, converting raw CQRS query views ({@link CityView})
+ * Stateless utility class responsible for mapping internal geographic projections to external API
+ * responses.
+ *
+ * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link CityView})
  * into client-ready representations ({@link CityResponse}). It is responsible for injecting
- * presentation-specific computed logic, such as determining if a city is a protected default record.
+ * presentation-specific computed logic, such as determining if a city is a protected default
+ * record.
  */
 public final class CityPresenter {
 
-  /**
-   * Private constructor to prevent instantiation of utility class.
-   */
-  private CityPresenter() {
-  }
+  /** Private constructor to prevent instantiation of utility class. */
+  private CityPresenter() {}
 
   /**
    * Projects a read-only {@link CityView} into a client-facing {@link CityResponse}.
-   * <p>
-   * This mapping explicitly evaluates the city's IBGE code against the system's
-   * protected {@link Campi} defaults to dynamically compute the {@code isDefault} flag.
+   *
+   * <p>This mapping explicitly evaluates the city's IBGE code against the system's protected {@link
+   * Campi} defaults to dynamically compute the {@code isDefault} flag.
    *
    * @param v the internal read-model projection of the city
-   * @return a fully populated {@link CityResponse} ready for JSON serialization,
-   * or {@code null} if the input view is null
+   * @return a fully populated {@link CityResponse} ready for JSON serialization, or {@code null} if
+   *     the input view is null
    */
   public static CityResponse toResponse(CityView v) {
     if (v == null) {

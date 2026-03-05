@@ -6,26 +6,24 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of the {@link AttendanceQueries} interface.
- * <p>
- * Relies on a massive JPQL constructor expression to flatten out the attendance data
- * along with the fully populated Project graph, Student graph, and Validator Account.
+ *
+ * <p>Relies on a massive JPQL constructor expression to flatten out the attendance data along with
+ * the fully populated Project graph, Student graph, and Validator Account.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AttendanceQueriesImpl implements AttendanceQueries {
 
-    @Inject
-    EntityManager em;
+  @Inject EntityManager em;
 
-    private static final String SELECT_BASE =
-            """
+  private static final String SELECT_BASE =
+      """
                     select new com.pug.projects.infra.read.dtos.AttendanceView(
                       a.id,
                       new com.pug.projects.infra.read.dtos.ProjectView(
@@ -88,34 +86,38 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
                     left join UserEntity vu on vu.id = vacc.userId
                     """;
 
-    private static final String ORDER_BY_DATE = " order by a.createdAt desc";
+  private static final String ORDER_BY_DATE = " order by a.createdAt desc";
 
-    @Override
-    public Optional<AttendanceView> findOptionalById(UUID id) {
-        if (id == null) return Optional.empty();
-        var q = em.createQuery(SELECT_BASE + " where a.id = :id", AttendanceView.class);
-        q.setParameter("id", id);
-        return q.getResultStream().findFirst();
-    }
+  @Override
+  public Optional<AttendanceView> findOptionalById(UUID id) {
+    if (id == null) return Optional.empty();
+    var q = em.createQuery(SELECT_BASE + " where a.id = :id", AttendanceView.class);
+    q.setParameter("id", id);
+    return q.getResultStream().findFirst();
+  }
 
-    @Override
-    public List<AttendanceView> listAllAttendances() {
-        return em.createQuery(SELECT_BASE + ORDER_BY_DATE, AttendanceView.class).getResultList();
-    }
+  @Override
+  public List<AttendanceView> listAllAttendances() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, AttendanceView.class).getResultList();
+  }
 
-    @Override
-    public List<AttendanceView> listByProjectId(UUID projectId) {
-        if (projectId == null) return List.of();
-        var q = em.createQuery(SELECT_BASE + " where a.projectId = :pid" + ORDER_BY_DATE, AttendanceView.class);
-        q.setParameter("pid", projectId);
-        return q.getResultList();
-    }
+  @Override
+  public List<AttendanceView> listByProjectId(UUID projectId) {
+    if (projectId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where a.projectId = :pid" + ORDER_BY_DATE, AttendanceView.class);
+    q.setParameter("pid", projectId);
+    return q.getResultList();
+  }
 
-    @Override
-    public List<AttendanceView> listByStudentId(UUID studentId) {
-        if (studentId == null) return List.of();
-        var q = em.createQuery(SELECT_BASE + " where a.studentId = :sid" + ORDER_BY_DATE, AttendanceView.class);
-        q.setParameter("sid", studentId);
-        return q.getResultList();
-    }
+  @Override
+  public List<AttendanceView> listByStudentId(UUID studentId) {
+    if (studentId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where a.studentId = :sid" + ORDER_BY_DATE, AttendanceView.class);
+    q.setParameter("sid", studentId);
+    return q.getResultList();
+  }
 }

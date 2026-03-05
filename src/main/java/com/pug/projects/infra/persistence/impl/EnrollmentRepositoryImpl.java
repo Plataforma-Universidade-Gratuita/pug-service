@@ -7,16 +7,13 @@ import com.pug.projects.infra.persistence.EnrollmentEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Implementation of the {@link EnrollmentRepository} utilizing Hibernate ORM with Panache.
- */
+/** Implementation of the {@link EnrollmentRepository} utilizing Hibernate ORM with Panache. */
 @ApplicationScoped
 public class EnrollmentRepositoryImpl
-        implements EnrollmentRepository,
+    implements EnrollmentRepository,
         PanacheRepositoryBase<EnrollmentEntity, EnrollmentEntity.EnrollmentsId> {
 
   @Transactional
@@ -32,7 +29,8 @@ public class EnrollmentRepositoryImpl
   @Override
   public void update(Enrollment entity) {
     if (entity == null) return;
-    var id = new EnrollmentEntity.EnrollmentsId(
+    var id =
+        new EnrollmentEntity.EnrollmentsId(
             entity.getIdentifier().getProjectId(), entity.getIdentifier().getStudentId());
 
     EnrollmentEntity managed = findById(id);

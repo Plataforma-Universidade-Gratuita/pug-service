@@ -4,17 +4,16 @@ import com.pug.projects.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
+import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-
 /**
  * Immutable Value Object (VO) representing the lifecycle metadata of an Enrollment.
- * <p>
- * Extends {@link DomainError} to encapsulate and accumulate validations relating to
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to
  * chronological integrity, ensuring status change timestamps remain consistent.
  */
 @Getter
@@ -22,9 +21,7 @@ import java.time.OffsetDateTime;
 @EqualsAndHashCode(callSuper = false)
 public class EnrollmentInfo extends DomainError {
 
-  /**
-   * The exact timestamp when the enrollment was formally accepted.
-   */
+  /** The exact timestamp when the enrollment was formally accepted. */
   OffsetDateTime acceptedAt;
 
   /**
@@ -32,21 +29,19 @@ public class EnrollmentInfo extends DomainError {
    */
   OffsetDateTime closingStatusAt;
 
-  /**
-   * The audit tracking information (creation and update timestamps).
-   */
+  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
   /**
    * Constructs an {@code EnrollmentInfo} instance.
    *
-   * @param acceptedAt      the acceptance timestamp
+   * @param acceptedAt the acceptance timestamp
    * @param closingStatusAt the terminal state timestamp
-   * @param auditInfo       the audit tracking VO
+   * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
   private EnrollmentInfo(
-          OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt, AuditInfo auditInfo) {
+      OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt, AuditInfo auditInfo) {
     this.acceptedAt = acceptedAt;
     this.closingStatusAt = closingStatusAt;
     this.auditInfo = auditInfo;
@@ -54,19 +49,19 @@ public class EnrollmentInfo extends DomainError {
 
   /**
    * Factory method to create a new {@code EnrollmentInfo} instance in its initial state.
-   * <p>
-   * Automatically initializes standard audit tracking information with null values
-   * for the acceptance and closing timestamps.
+   *
+   * <p>Automatically initializes standard audit tracking information with null values for the
+   * acceptance and closing timestamps.
    *
    * @return a newly created and self-validated {@link EnrollmentInfo} instance
    */
   public static EnrollmentInfo factory() {
     EnrollmentInfo vo =
-            EnrollmentInfo.builder()
-                    .acceptedAt(null)
-                    .closingStatusAt(null)
-                    .auditInfo(AuditInfo.factory())
-                    .build();
+        EnrollmentInfo.builder()
+            .acceptedAt(null)
+            .closingStatusAt(null)
+            .auditInfo(AuditInfo.factory())
+            .build();
     vo.collectValidationProblems();
     return vo;
   }
@@ -89,7 +84,7 @@ public class EnrollmentInfo extends DomainError {
    */
   public EnrollmentInfo accept() {
     EnrollmentInfo accepted =
-            toBuilder().acceptedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+        toBuilder().acceptedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
     accepted.collectValidationProblems();
     return accepted;
   }
@@ -97,25 +92,27 @@ public class EnrollmentInfo extends DomainError {
   /**
    * Updates the enrollment info to reflect a closed status, marking the timestamp.
    *
-   * @return a new {@link EnrollmentInfo} instance with {@code closingStatusAt} set to the current time
+   * @return a new {@link EnrollmentInfo} instance with {@code closingStatusAt} set to the current
+   *     time
    */
   public EnrollmentInfo closeStatus() {
     EnrollmentInfo closed =
-            toBuilder().closingStatusAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+        toBuilder().closingStatusAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
     closed.collectValidationProblems();
     return closed;
   }
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Business rules applied:
+   *
+   * <p>Business rules applied:
+   *
    * <ul>
-   *   <li>The acceptance timestamp cannot logically precede the creation timestamp
-   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).</li>
-   *   <li>The closing timestamp cannot logically precede the creation timestamp
-   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).</li>
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.</li>
+   *   <li>The acceptance timestamp cannot logically precede the creation timestamp (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
+   *   <li>The closing timestamp cannot logically precede the creation timestamp (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
    * </ul>
    */
   private void collectValidationProblems() {

@@ -9,24 +9,21 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of the {@link UserRepository} utilizing Hibernate ORM with Panache.
- * <p>
- * This application-scoped bean bridges the pure domain repository interface with
- * the underlying database infrastructure. It manages transaction boundaries,
- * entity state transitions, and the mapping between domain aggregates and JPA persistence entities.
+ *
+ * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
+ * database infrastructure. It manages transaction boundaries, entity state transitions, and the
+ * mapping between domain aggregates and JPA persistence entities.
  */
 @ApplicationScoped
 public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User persist(User entity) {
@@ -38,9 +35,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     return UserMapper.toDomain(e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(User entity) {
@@ -54,9 +49,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     UserMapper.copy(entity, e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -68,9 +61,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByIds(List<UUID> ids) {
@@ -80,17 +71,13 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     return delete("id in ?1", ids);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<User> findOptionalById(UUID id) {
     return findByIdOptional(id).map(UserMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<User> findOptionalByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -99,9 +86,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {

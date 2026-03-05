@@ -13,33 +13,27 @@ import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link AdminService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for administrator profiles.
- * Because an admin is inherently an extension of an account, this service delegates
- * authentication and identity concerns down to the {@link AccountService}, ensuring
- * proper transaction boundaries and lifecycle cascading (e.g., deleting the account when
- * admin privileges are revoked).
+ *
+ * <p>This application-scoped service orchestrates state mutations for administrator profiles.
+ * Because an admin is inherently an extension of an account, this service delegates authentication
+ * and identity concerns down to the {@link AccountService}, ensuring proper transaction boundaries
+ * and lifecycle cascading (e.g., deleting the account when admin privileges are revoked).
  */
 @ApplicationScoped
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
 
-  @Inject
-  AdminRepository repo;
+  @Inject AdminRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Admin save(AdminCreateCommand cmd) {
@@ -56,9 +50,7 @@ public class AdminServiceImpl implements AdminService {
     return savedAdmin;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Admin update(UUID accountId, AdminUpdateCommand cmd) {
@@ -80,9 +72,7 @@ public class AdminServiceImpl implements AdminService {
     return getByAccountId(accountId);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID accountId) {
@@ -99,23 +89,21 @@ public class AdminServiceImpl implements AdminService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Admin getByAccountId(UUID accountId) {
     Admin admin =
-            repo.findOptionalByAccountId(accountId)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
-                              return ExceptionHelper.adminNotFound();
-                            });
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Admin lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.adminNotFound();
+                });
 
     if (admin.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
-              accountId, admin.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Admin %s violates domain rules: %s",
+          accountId, admin.getProblemsSummary());
       throw ExceptionHelper.adminNotFound();
     }
 

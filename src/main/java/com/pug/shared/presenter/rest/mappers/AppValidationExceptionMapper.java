@@ -13,46 +13,42 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Mapper to catch AppValidationException and return a detailed, grouped error response.
- */
+/** Mapper to catch AppValidationException and return a detailed, grouped error response. */
 @Provider
 public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
-   * Maps AppValidationException to an HTTP 400 response with validation error details
-   * grouped by their respective field names.
+   * Maps AppValidationException to an HTTP 400 response with validation error details grouped by
+   * their respective field names.
    *
    * @param exception The caught exception containing field validation errors.
    * @return An HTTP 400 response with grouped validation error details.
    */
   @Override
   public Response toResponse(AppValidationException exception) {
-    List<FieldErrorsResponse> groupedErrors = CollectionUtils.toStream(exception.getFieldErrors())
-            .collect(Collectors.groupingBy(
+    List<FieldErrorsResponse> groupedErrors =
+        CollectionUtils.toStream(exception.getFieldErrors())
+            .collect(
+                Collectors.groupingBy(
                     GenericFieldErrorCodes::getFieldName,
-                    Collectors.mapping(this::mapToDetail, Collectors.toList())
-            ))
-            .entrySet().stream()
+                    Collectors.mapping(this::mapToDetail, Collectors.toList())))
+            .entrySet()
+            .stream()
             .map(entry -> new FieldErrorsResponse(entry.getKey(), entry.getValue()))
             .toList();
 
     ApiError apiError =
-            ApiError.of(
-                    SharedErrorCodes.VALIDATION_ERROR.getCode(),
-                    i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
-                    new Details(groupedErrors));
+        ApiError.of(
+            SharedErrorCodes.VALIDATION_ERROR.getCode(),
+            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
+            new Details(groupedErrors));
 
-    return Response.status(Response.Status.BAD_REQUEST)
-            .entity(ApiEnvelope.error(apiError))
-            .build();
+    return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
   }
 
   /**

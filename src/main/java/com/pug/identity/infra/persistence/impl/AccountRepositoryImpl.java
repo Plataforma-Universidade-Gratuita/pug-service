@@ -8,7 +8,6 @@ import com.pug.shared.utils.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,18 +15,16 @@ import java.util.UUID;
 
 /**
  * Implementation of the {@link AccountRepository} utilizing Hibernate ORM with Panache.
- * <p>
- * This application-scoped bean bridges the pure domain repository interface with
- * the underlying database infrastructure. It handles standard CRUD operations as well
- * as custom JPQL queries for evaluating relational states (e.g., identifying orphaned users).
+ *
+ * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
+ * database infrastructure. It handles standard CRUD operations as well as custom JPQL queries for
+ * evaluating relational states (e.g., identifying orphaned users).
  */
 @ApplicationScoped
 public class AccountRepositoryImpl
-        implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
+    implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Account persist(Account entity) {
@@ -39,9 +36,7 @@ public class AccountRepositoryImpl
     return AccountMapper.toDomain(e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Account entity) {
@@ -55,9 +50,7 @@ public class AccountRepositoryImpl
     AccountMapper.copy(entity, managed);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -69,9 +62,7 @@ public class AccountRepositoryImpl
     return result;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByIds(List<UUID> ids) {
@@ -81,31 +72,25 @@ public class AccountRepositoryImpl
     return delete("id in ?1", ids);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<Account> findOptionalById(UUID id) {
     return findByIdOptional(id).map(AccountMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<UUID> findUserIdsByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return List.of();
     }
     return getEntityManager()
-            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
-            .setParameter("ids", ids)
-            .getResultList();
+        .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
+        .setParameter("ids", ids)
+        .getResultList();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds) {
     if (CollectionUtils.isEmpty(userIds)) {
@@ -113,19 +98,17 @@ public class AccountRepositoryImpl
     }
 
     List<UUID> usedUserIds =
-            getEntityManager()
-                    .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
-                    .setParameter("ids", userIds)
-                    .getResultList();
+        getEntityManager()
+            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
+            .setParameter("ids", userIds)
+            .getResultList();
 
     List<UUID> orphans = new ArrayList<>(userIds);
     orphans.removeAll(usedUserIds);
     return orphans;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public long countAllAccountsByUserId(UUID userId) {
     if (userId == null) {
@@ -134,9 +117,7 @@ public class AccountRepositoryImpl
     return count("userId", userId);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();

@@ -15,9 +15,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public City persist(City city) {
@@ -29,9 +27,7 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
     return CityMapper.toDomain(e);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public void update(City city) {
     if (city == null || city.getId() == null) {
@@ -44,9 +40,7 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
     CityMapper.copy(city, managed);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -58,17 +52,13 @@ public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Optional<City> findOptionalById(UUID id) {
     return findByIdOptional(id).map(CityMapper::toDomain);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean existsByIbgeCode(String ibgeCodeDigits) {
     if (StringUtils.isEmpty(ibgeCodeDigits)) {

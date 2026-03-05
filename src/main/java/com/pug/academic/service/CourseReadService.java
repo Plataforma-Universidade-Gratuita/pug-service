@@ -1,16 +1,15 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.CourseView;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying Course data.
- * <p>
- * Following CQRS principles, this service handles the "Query" operations. It bypasses
- * complex domain logic and retrieves lightweight, fully resolved {@link CourseView} Data
- * Transfer Objects directly from the underlying data store or search indices.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link CourseView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
  */
 public interface CourseReadService {
 
@@ -19,15 +18,16 @@ public interface CourseReadService {
    *
    * @param id the unique identifier (UUID) of the course
    * @return the populated {@link CourseView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course matches the provided ID
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course matches the provided
+   *     ID
    */
   CourseView getViewById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all courses registered in the system.
-   * <p>
-   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
-   * in contexts where the dataset size is known to be safely bounded.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
    *
    * @return a {@link List} containing all available {@link CourseView} entries
    */
@@ -43,9 +43,9 @@ public interface CourseReadService {
 
   /**
    * Executes a robust full-text search against the names of registered courses.
-   * <p>
-   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
-   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
+   *
+   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
+   * matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link CourseView} entries

@@ -3,14 +3,13 @@ package com.pug.academic.service;
 import com.pug.academic.domain.School;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
-
 import java.util.UUID;
 
 /**
  * Application service interface for managing the state of {@link School} domain aggregates.
- * <p>
- * Following CQRS principles, this service handles the "Command" operations (Create, Update, Delete)
- * and strict domain-level retrievals. It orchestrates domain logic, enforces cross-cutting
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
+ * Delete) and strict domain-level retrievals. It orchestrates domain logic, enforces cross-cutting
  * business constraints (e.g., ensuring school names are unique), and coordinates with the
  * persistence layer.
  */
@@ -21,23 +20,26 @@ public interface SchoolService {
    *
    * @param cmd the structured command containing the data to create the new school
    * @return the fully instantiated and persisted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact same name already exists
-   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact same
+   *     name already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   School save(SchoolCreateCommand cmd);
 
   /**
    * Updates the state of an existing {@link School} aggregate using the provided data.
-   * <p>
-   * This method applies partial updates and enforces uniqueness constraints on the
-   * updated name before persisting the changes.
    *
-   * @param id  the unique identifier (UUIDv7) of the school to update
+   * <p>This method applies partial updates and enforces uniqueness constraints on the updated name
+   * before persisting the changes.
+   *
+   * @param id the unique identifier (UUIDv7) of the school to update
    * @param cmd the structured command containing the new data for the school
    * @return the mutated and persisted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the school does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated name conflicts with an existing school
-   * @throws com.pug.shared.exceptions.AppValidationException     if the updated input data violates domain constraints
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated name conflicts with
+   *     an existing school
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
    */
   School update(UUID id, SchoolUpdateCommand cmd);
 
@@ -51,16 +53,16 @@ public interface SchoolService {
 
   /**
    * Retrieves a full {@link School} domain aggregate by its unique identifier.
-   * <p>
-   * <b>Note:</b> This method is intended strictly for internal domain orchestration
-   * (e.g., verifying a school exists before linking a Course). For API responses,
-   * use {@link SchoolReadService#getViewById(UUID)} instead.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
+   * verifying a school exists before linking a Course). For API responses, use {@link
+   * SchoolReadService#getViewById(UUID)} instead.
    *
    * @param id the unique identifier (UUID) of the school
    * @return the fully reconstituted {@link School} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException    if the school exists but its stored state
-   *                                                             violates strict domain invariants (data corruption)
+   * @throws com.pug.shared.exceptions.AppValidationException if the school exists but its stored
+   *     state violates strict domain invariants (data corruption)
    */
   School getById(UUID id);
 }

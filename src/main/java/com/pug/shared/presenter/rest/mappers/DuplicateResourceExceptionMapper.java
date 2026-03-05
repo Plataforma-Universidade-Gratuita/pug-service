@@ -12,16 +12,16 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link DuplicateResourceException} to an HTTP 409 (Conflict) response.
- * <p>
- * Secures the application by returning a high-level, localized message indicating a
- * conflict (e.g., "User already exists") without echoing back potentially sensitive
- * conflicting values (like CPFs or emails) in the response body.
+ *
+ * <p>Secures the application by returning a high-level, localized message indicating a conflict
+ * (e.g., "User already exists") without echoing back potentially sensitive conflicting values (like
+ * CPFs or emails) in the response body.
  */
 @Provider
-public class DuplicateResourceExceptionMapper implements ExceptionMapper<DuplicateResourceException> {
+public class DuplicateResourceExceptionMapper
+    implements ExceptionMapper<DuplicateResourceException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a DuplicateResourceException into a structured HTTP 409 response.
@@ -37,8 +37,8 @@ public class DuplicateResourceExceptionMapper implements ExceptionMapper<Duplica
     ApiError error = ApiError.of(code, message);
 
     return Response.status(Response.Status.CONFLICT)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }

@@ -29,7 +29,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
@@ -37,12 +36,11 @@ import java.util.stream.Collectors;
 
 /**
  * REST API Resource controller for managing geographic Cities.
- * <p>
- * This class exposes endpoints to create, retrieve, update, and delete cities.
- * It acts as the HTTP entry point, orchestrating requests by delegating commands to the
- * {@link CityService} (writes) and queries to the {@link CityReadService} (reads),
- * strictly adhering to CQRS architectural principles. All responses are wrapped in a
- * standard {@link ApiEnvelope}.
+ *
+ * <p>This class exposes endpoints to create, retrieve, update, and delete cities. It acts as the
+ * HTTP entry point, orchestrating requests by delegating commands to the {@link CityService}
+ * (writes) and queries to the {@link CityReadService} (reads), strictly adhering to CQRS
+ * architectural principles. All responses are wrapped in a standard {@link ApiEnvelope}.
  */
 @ApplicationScoped
 @Path("/geo/cities")
@@ -50,13 +48,10 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class CityResource {
 
-  @Inject
-  CityService writeService;
-  @Inject
-  CityReadService readService;
+  @Inject CityService writeService;
+  @Inject CityReadService readService;
 
-  @Context
-  UriInfo uri;
+  @Context UriInfo uri;
 
   /**
    * Retrieves a specific city by its unique UUID identifier.
@@ -88,12 +83,13 @@ public class CityResource {
 
   /**
    * Retrieves a collection of cities.
-   * <p>
-   * If the optional {@code q} parameter is provided, it executes a full-text search against
-   * the cities' names. If omitted, it returns an unfiltered list of all available cities.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * cities' names. If omitted, it returns an unfiltered list of all available cities.
    *
    * @param q the optional search query string used to filter cities by name
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link CityResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     CityResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q) {
@@ -106,18 +102,20 @@ public class CityResource {
     }
 
     List<CityResponse> responseBody =
-            views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
+        views.stream().map(CityPresenter::toResponse).collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
   /**
    * Registers a new geographic city within the platform.
-   * <p>
-   * Applies Bean Validation to the incoming payload before delegating to the application service.
+   *
+   * <p>Applies Bean Validation to the incoming payload before delegating to the application
+   * service.
    *
    * @param req the validated {@link CityCreateRequest} containing the city's details
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link CityResponse}
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link CityResponse}
    */
   @POST
   public Response create(@Valid CityCreateRequest req) {
@@ -133,11 +131,11 @@ public class CityResource {
 
   /**
    * Partially updates an existing city's details.
-   * <p>
-   * Omitting fields in the request payload will result in those fields retaining their
-   * current state in the database.
    *
-   * @param id  the unique identifier (UUIDv7) of the city to update
+   * <p>Omitting fields in the request payload will result in those fields retaining their current
+   * state in the database.
+   *
+   * @param id the unique identifier (UUIDv7) of the city to update
    * @param req the validated {@link CityUpdateRequest} containing the modified data
    * @return an HTTP 200 OK response containing the updated {@link CityResponse}
    */
@@ -155,8 +153,9 @@ public class CityResource {
 
   /**
    * Permanently removes a city from the system.
-   * <p>
-   * <i>Note:</i> Protected default cities cannot be deleted and will trigger a 422 Unprocessable Entity.
+   *
+   * <p><i>Note:</i> Protected default cities cannot be deleted and will trigger a 422 Unprocessable
+   * Entity.
    *
    * @param id the unique identifier (UUIDv7) of the city to delete
    * @return an HTTP 200 OK response with an empty data payload indicating successful deletion

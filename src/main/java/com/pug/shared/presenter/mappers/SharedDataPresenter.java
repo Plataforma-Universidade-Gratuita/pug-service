@@ -5,42 +5,41 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.utils.StringUtils;
-
 import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
- * Stateless utility class responsible for transforming shared domain components
- * into standardized API Response DTOs.
+ * Stateless utility class responsible for transforming shared domain components into standardized
+ * API Response DTOs.
  *
  * <p>This presenter handles common presentation logic used across multiple domains, such as:
+ *
  * <ul>
- *   <li>Formatting temporal audit fields (createdAt / updatedAt) based on the user's locale.</li>
- *   <li>Translating {@link Campi} enums into localized UI-ready response objects.</li>
+ *   <li>Formatting temporal audit fields (createdAt / updatedAt) based on the user's locale.
+ *   <li>Translating {@link Campi} enums into localized UI-ready response objects.
  * </ul>
  *
  * <p>Being a pure utility class, it cannot be instantiated.
  */
 public final class SharedDataPresenter {
 
-  /**
-   * Private constructor to prevent instantiation of the utility class.
-   */
+  /** Private constructor to prevent instantiation of the utility class. */
   private SharedDataPresenter() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
   }
 
   /**
-   * Constructs an {@link AuditInfoResponse}, formatting the provided timestamps
-   * according to the specified locale.
+   * Constructs an {@link AuditInfoResponse}, formatting the provided timestamps according to the
+   * specified locale.
    *
    * @param createdAt the exact timestamp when the entity was created
    * @param updatedAt the exact timestamp when the entity was last updated
-   * @param locale    the client's resolved locale used to determine date formatting rules
-   * @return a fully populated {@link AuditInfoResponse}, or {@code null} if any input parameter is null
+   * @param locale the client's resolved locale used to determine date formatting rules
+   * @return a fully populated {@link AuditInfoResponse}, or {@code null} if any input parameter is
+   *     null
    */
   public static AuditInfoResponse createAuditInfoResponse(
-          OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
+      OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
     if (createdAt == null || updatedAt == null || locale == null) {
       return null;
     }
@@ -52,13 +51,14 @@ public final class SharedDataPresenter {
   }
 
   /**
-   * Constructs a {@link CampusResponse} by leveraging the i18n service to translate
-   * the provided {@link Campi} enum.
+   * Constructs a {@link CampusResponse} by leveraging the i18n service to translate the provided
+   * {@link Campi} enum.
    *
    * @param campus the specific {@link Campi} enum to convert
    * @param locale the client's resolved locale used for the translation lookup
-   * @param i18n   the internationalization service component used to resolve the bundle key
-   * @return a fully populated {@link CampusResponse}, or {@code null} if any input parameter is null
+   * @param i18n the internationalization service component used to resolve the bundle key
+   * @return a fully populated {@link CampusResponse}, or {@code null} if any input parameter is
+   *     null
    */
   public static CampusResponse createCampusResponse(Campi campus, Locale locale, I18n i18n) {
     if (campus == null || locale == null || i18n == null) {

@@ -7,51 +7,43 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link CourseReadService}.
- * <p>
- * This application-scoped bean delegates read-only operations to the underlying
- * {@link CourseQueries} infrastructure component. It handles basic input validation
- * and translates "not found" states into standardized domain exceptions.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * CourseQueries} infrastructure component. It handles basic input validation and translates "not
+ * found" states into standardized domain exceptions.
  */
 @ApplicationScoped
 public class CourseReadServiceImpl implements CourseReadService {
 
   private static final Logger LOG = Logger.getLogger(CourseReadServiceImpl.class);
 
-  @Inject
-  CourseQueries queries;
+  @Inject CourseQueries queries;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public CourseView getViewById(UUID id) {
     return queries
-            .findOptionalById(id)
-            .orElseThrow(
-                    () -> {
-                      LOG.debugf("Course lookup failed: ID %s not found", id);
-                      return ExceptionHelper.courseNotFound();
-                    });
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Course lookup failed: ID %s not found", id);
+              return ExceptionHelper.courseNotFound();
+            });
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<CourseView> listViews() {
     return queries.listAllCourses();
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public List<CourseView> listViewsBySchoolId(UUID schoolId) {
     if (schoolId == null) {
@@ -62,10 +54,10 @@ public class CourseReadServiceImpl implements CourseReadService {
 
   /**
    * {@inheritDoc}
-   * <p>
-   * Prior to execution, the input query is "folded" (lowercased and accents removed via
-   * {@link StringUtils#fold(String)}) to ensure maximum compatibility with the
-   * underlying search indexing rules.
+   *
+   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * rules.
    */
   @Override
   public List<CourseView> searchByName(String query) {

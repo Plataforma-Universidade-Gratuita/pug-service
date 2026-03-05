@@ -13,36 +13,30 @@ import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link StaffService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for staff privileges.
- * Because a staff member is inherently an extension of an authentication account tied
- * to a specific partner organization, this service delegates identity concerns down to
- * the {@link AccountService} and structural validations to the {@link EntityService}.
+ *
+ * <p>This application-scoped service orchestrates state mutations for staff privileges. Because a
+ * staff member is inherently an extension of an authentication account tied to a specific partner
+ * organization, this service delegates identity concerns down to the {@link AccountService} and
+ * structural validations to the {@link EntityService}.
  */
 @ApplicationScoped
 public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
 
-  @Inject
-  StaffRepository repo;
+  @Inject StaffRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
-  @Inject
-  EntityService entityService;
+  @Inject EntityService entityService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff save(StaffCreateCommand cmd) {
@@ -51,17 +45,23 @@ public class StaffServiceImpl implements StaffService {
     entityService.getById(cmd.entityId());
     Account account = accountService.save(cmd.accountCommand());
 
-    repo.findOptionalByAccountId(account.getId()).ifPresent(existingStaff -> {
-      if (existingStaff.getEntityId().equals(cmd.entityId())) {
-        LOG.warnf("Creation failed: Staff role already exists for Account ID: %s in Entity ID: %s",
-                account.getId(), cmd.entityId());
-        throw ExceptionHelper.staffAlreadyExists();
-      } else {
-        LOG.warnf("Creation failed: Account ID: %s is already assigned to a different Entity ID: %s",
-                account.getId(), existingStaff.getEntityId());
-        throw ExceptionHelper.staffAssignedToOtherEntity();
-      }
-    });
+    repo.findOptionalByAccountId(account.getId())
+        .ifPresent(
+            existingStaff -> {
+              if (existingStaff.getEntityId().equals(cmd.entityId())) {
+                LOG.warnf(
+                    "Creation failed: "
+                        + "Staff role already exists for Account ID: %s in Entity ID: %s",
+                    account.getId(), cmd.entityId());
+                throw ExceptionHelper.staffAlreadyExists();
+              } else {
+                LOG.warnf(
+                    "Creation failed: "
+                        + "Account ID: %s is already assigned to a different Entity ID: %s",
+                    account.getId(), existingStaff.getEntityId());
+                throw ExceptionHelper.staffAssignedToOtherEntity();
+              }
+            });
 
     Staff staff = StaffProcessor.processCreateInput(account.getId(), cmd.entityId());
 
@@ -71,14 +71,12 @@ public class StaffServiceImpl implements StaffService {
 
     Staff savedStaff = repo.persist(staff);
     LOG.infof(
-            "Staff role granted successfully. Account ID: %s, Entity ID: %s",
-            savedStaff.getAccountId(), savedStaff.getEntityId());
+        "Staff role granted successfully. Account ID: %s, Entity ID: %s",
+        savedStaff.getAccountId(), savedStaff.getEntityId());
     return savedStaff;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID accountId) {
@@ -98,9 +96,7 @@ public class StaffServiceImpl implements StaffService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByEntityId(UUID entityId) {
@@ -119,28 +115,26 @@ public class StaffServiceImpl implements StaffService {
 
     accountService.deleteAll(accountIds);
     LOG.infof(
-            "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
-            deletedCount, entityId);
+        "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
+        deletedCount, entityId);
     return deletedCount;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Staff getByAccountId(UUID accountId) {
     Staff staff =
-            repo.findOptionalByAccountId(accountId)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-                              return ExceptionHelper.staffNotFound();
-                            });
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.staffNotFound();
+                });
 
     if (staff.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-              accountId, staff.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
+          accountId, staff.getProblemsSummary());
       throw ExceptionHelper.staffNotFound();
     }
 
@@ -153,7 +147,7 @@ public class StaffServiceImpl implements StaffService {
    * Checks if a Staff assignment already exists for the given account and entity.
    *
    * @param accountId the unique identifier of the linked authentication account
-   * @param entityId  the unique identifier of the partner entity
+   * @param entityId the unique identifier of the partner entity
    * @return {@code true} if the staff assignment exists, {@code false} otherwise
    */
   private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {

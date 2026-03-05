@@ -39,7 +39,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -48,10 +47,10 @@ import java.util.stream.Collectors;
 
 /**
  * REST API Resource controller for managing Student enrollments.
- * <p>
- * This class exposes endpoints to enroll, retrieve, update, and remove students.
- * It delegates commands to the {@link StudentService} (writes) and queries to the
- * {@link StudentReadService} (reads), adhering to CQRS principles.
+ *
+ * <p>This class exposes endpoints to enroll, retrieve, update, and remove students. It delegates
+ * commands to the {@link StudentService} (writes) and queries to the {@link StudentReadService}
+ * (reads), adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path("/academic/students")
@@ -59,25 +58,20 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject
-  StudentService writeService;
-  @Inject
-  StudentReadService readService;
-  @Inject
-  PasswordService passwordService;
-  @Inject
-  I18n i18n;
+  @Inject StudentService writeService;
+  @Inject StudentReadService readService;
+  @Inject PasswordService passwordService;
+  @Inject I18n i18n;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a specific student by their linked account UUID.
    *
    * @param id the unique identifier (UUIDv7) of the student's account
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
@@ -92,7 +86,8 @@ public class StudentResource {
    * Retrieves a specific student by their exact academic registration number.
    *
    * @param registration the academic registration string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
@@ -107,7 +102,8 @@ public class StudentResource {
    * Retrieves a specific student by their registered email address.
    *
    * @param email the exact email string of the student
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
@@ -122,7 +118,8 @@ public class StudentResource {
    * Retrieves a specific student by their exact CPF.
    *
    * @param cpf the raw 11-digit numeric CPF string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
@@ -135,14 +132,15 @@ public class StudentResource {
 
   /**
    * Retrieves a collection of students.
-   * <p>
-   * If the optional {@code q} parameter is provided, it executes a full-text search against
-   * the students' personal names. If the {@code courseId} is provided, it filters the students
-   * by their enrolled course. If both are omitted, it returns all students.
    *
-   * @param q        the optional search query string
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * students' personal names. If the {@code courseId} is provided, it filters the students by their
+   * enrolled course. If both are omitted, it returns all students.
+   *
+   * @param q the optional search query string
    * @param courseId the optional course identifier to filter by
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link StudentResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     StudentResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
@@ -158,22 +156,25 @@ public class StudentResource {
     }
 
     List<StudentResponse> body =
-            views.stream()
-                    .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
-                    .collect(Collectors.toList());
+        views.stream()
+            .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
    * Registers a new student within the platform.
-   * <p>
-   * This endpoint processes an aggregated payload, automatically handling the
-   * provisioning of the underlying user and authentication account within a single transaction.
    *
-   * @param req the validated {@link StudentCreateRequest} containing identity and enrollment details
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link StudentResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or email already exists
+   * <p>This endpoint processes an aggregated payload, automatically handling the provisioning of
+   * the underlying user and authentication account within a single transaction.
+   *
+   * @param req the validated {@link StudentCreateRequest} containing identity and enrollment
+   *     details
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or
+   *     email already exists
    */
   @POST
   public Response create(@Valid StudentCreateRequest req) {
@@ -181,16 +182,16 @@ public class StudentResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
-            new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
     StudentCreateCommand studentCmd =
-            new StudentCreateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    req.campus(),
-                    req.courseId(),
-                    req.requiredHours(),
-                    req.startDate(),
-                    req.dueDate());
+        new StudentCreateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            req.campus(),
+            req.courseId(),
+            req.requiredHours(),
+            req.startDate(),
+            req.dueDate());
 
     Student created = writeService.save(studentCmd);
     StudentView view = readService.getViewByAccountId(created.getAccountId());
@@ -203,7 +204,7 @@ public class StudentResource {
   /**
    * Partially updates an existing student's enrollment details.
    *
-   * @param id  the unique identifier (UUIDv7) of the student's account
+   * @param id the unique identifier (UUIDv7) of the student's account
    * @param req the validated {@link StudentUpdateRequest} containing the modified data
    * @return an HTTP 200 OK response containing the updated {@link StudentResponse}
    */
@@ -219,14 +220,14 @@ public class StudentResource {
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
     AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
     StudentUpdateCommand studentCmd =
-            new StudentUpdateCommand(
-                    accountCmd,
-                    req.academicRegistration(),
-                    req.campus(),
-                    req.courseId(),
-                    req.requiredHours(),
-                    req.startDate(),
-                    req.dueDate());
+        new StudentUpdateCommand(
+            accountCmd,
+            req.academicRegistration(),
+            req.campus(),
+            req.courseId(),
+            req.requiredHours(),
+            req.startDate(),
+            req.dueDate());
 
     writeService.update(id, studentCmd);
     StudentView view = readService.getViewByAccountId(id);
@@ -248,9 +249,7 @@ public class StudentResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

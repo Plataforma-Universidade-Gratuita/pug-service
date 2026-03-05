@@ -5,9 +5,9 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Enrollment} aggregate roots.
- * <p>
- * This interface defines the contract for persisting and retrieving student
- * enrollments in projects. It utilizes a composite natural key (Project ID + Student ID).
+ *
+ * <p>This interface defines the contract for persisting and retrieving student enrollments in
+ * projects. It utilizes a composite natural key (Project ID + Student ID).
  */
 public interface EnrollmentRepository {
 

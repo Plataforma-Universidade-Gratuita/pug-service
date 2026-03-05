@@ -1,17 +1,16 @@
 package com.pug.identity.service;
 
 import com.pug.identity.infra.read.dtos.UserView;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying User data.
- * <p>
- * Following CQRS principles, this service handles the "Query" operations. It bypasses
- * complex domain logic and retrieves lightweight {@link UserView} Data Transfer Objects
- * directly from the underlying data store or search indices. This is heavily optimized
- * for fast, read-only API responses.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight {@link UserView} Data Transfer Objects directly from the
+ * underlying data store or search indices. This is heavily optimized for fast, read-only API
+ * responses.
  */
 public interface UserReadService {
 
@@ -35,9 +34,9 @@ public interface UserReadService {
 
   /**
    * Retrieves a comprehensive list of all users registered in the system.
-   * <p>
-   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
-   * in contexts where the dataset size is known to be safely bounded.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
    *
    * @return a {@link List} containing all available {@link UserView} entries
    */
@@ -45,9 +44,9 @@ public interface UserReadService {
 
   /**
    * Executes a robust full-text search against the names of registered users.
-   * <p>
-   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
-   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
+   *
+   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
+   * matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link UserView} entries

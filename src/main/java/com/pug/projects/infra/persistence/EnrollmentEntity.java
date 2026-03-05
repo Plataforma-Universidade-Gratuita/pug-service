@@ -10,6 +10,9 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -18,16 +21,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.io.Serializable;
-import java.time.OffsetDateTime;
-import java.util.UUID;
-
 /**
  * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
- * <p>
- * This class is the database-mapped counterpart to the {@link com.pug.projects.domain.Enrollment}
- * domain aggregate. Because an enrollment is uniquely identified by the combination of a
- * student and a project, this entity utilizes a composite primary key ({@link EnrollmentsId}).
+ *
+ * <p>This class is the database-mapped counterpart to the {@link
+ * com.pug.projects.domain.Enrollment} domain aggregate. Because an enrollment is uniquely
+ * identified by the combination of a student and a project, this entity utilizes a composite
+ * primary key ({@link EnrollmentsId}).
  */
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 @Getter
@@ -39,16 +39,14 @@ import java.util.UUID;
 @ToString(of = {"id", "status"})
 @Entity
 @Table(
-        name = "enrollments",
-        indexes = {
-                @Index(name = "idx_enrollments_student", columnList = "student_id"),
-                @Index(name = "idx_enrollments_status", columnList = "status")
-        })
+    name = "enrollments",
+    indexes = {
+      @Index(name = "idx_enrollments_student", columnList = "student_id"),
+      @Index(name = "idx_enrollments_status", columnList = "status")
+    })
 public class EnrollmentEntity {
 
-  /**
-   * Embeddable composite primary key mapping the intersection of a Project and a Student.
-   */
+  /** Embeddable composite primary key mapping the intersection of a Project and a Student. */
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
   @Embeddable
   @Getter
@@ -64,37 +62,26 @@ public class EnrollmentEntity {
     private UUID studentId;
   }
 
-  /**
-   * The composite identifier mapping.
-   */
-  @EmbeddedId
-  private EnrollmentsId id;
+  /** The composite identifier mapping. */
+  @EmbeddedId private EnrollmentsId id;
 
-  /**
-   * The current lifecycle status of the enrollment (e.g., PENDING, APPROVED).
-   */
+  /** The current lifecycle status of the enrollment (e.g., PENDING, APPROVED). */
   @NotBlank
   @Size(max = 16)
   @Column(name = "status", nullable = false, length = 16)
   private String status;
 
-  /**
-   * Timestamp indicating when this enrollment request was initially created.
-   */
+  /** Timestamp indicating when this enrollment request was initially created. */
   @NotNull
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
-  /**
-   * Timestamp indicating when this enrollment record was last modified.
-   */
+  /** Timestamp indicating when this enrollment record was last modified. */
   @NotNull
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 
-  /**
-   * Timestamp indicating when the enrollment request was formally accepted by staff.
-   */
+  /** Timestamp indicating when the enrollment request was formally accepted by staff. */
   @Column(name = "accepted_at")
   private OffsetDateTime acceptedAt;
 

@@ -6,27 +6,25 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Implementation of the {@link EnrollmentQueries} interface.
- * <p>
- * This massive JPQL constructor projection maps an Enrollment alongside the full
- * Project graph (Project -> Entity -> City) and the full Student graph
- * (Student -> Account -> User, Student -> Course -> School) in a single database hit.
+ *
+ * <p>This massive JPQL constructor projection maps an Enrollment alongside the full Project graph
+ * (Project -> Entity -> City) and the full Student graph (Student -> Account -> User, Student ->
+ * Course -> School) in a single database hit.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
-    @Inject
-    EntityManager em;
+  @Inject EntityManager em;
 
-    private static final String SELECT_BASE =
-            """
+  private static final String SELECT_BASE =
+      """
                     select new com.pug.projects.infra.read.dtos.EnrollmentView(
                       new com.pug.projects.infra.read.dtos.ProjectView(
                         p.id, p.name,
@@ -78,35 +76,42 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
                     left join SchoolEntity sch on sch.id = course.schoolId
                     """;
 
-    private static final String ORDER_BY_DATE = " order by en.createdAt desc";
+  private static final String ORDER_BY_DATE = " order by en.createdAt desc";
 
-    @Override
-    public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
-        if (projectId == null || studentId == null) return Optional.empty();
-        var q = em.createQuery(SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid", EnrollmentView.class);
-        q.setParameter("pid", projectId);
-        q.setParameter("sid", studentId);
-        return q.getResultStream().findFirst();
-    }
+  @Override
+  public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) return Optional.empty();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid",
+            EnrollmentView.class);
+    q.setParameter("pid", projectId);
+    q.setParameter("sid", studentId);
+    return q.getResultStream().findFirst();
+  }
 
-    @Override
-    public List<EnrollmentView> listAllEnrollments() {
-        return em.createQuery(SELECT_BASE + ORDER_BY_DATE, EnrollmentView.class).getResultList();
-    }
+  @Override
+  public List<EnrollmentView> listAllEnrollments() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, EnrollmentView.class).getResultList();
+  }
 
-    @Override
-    public List<EnrollmentView> listByProjectId(UUID projectId) {
-        if (projectId == null) return List.of();
-        var q = em.createQuery(SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class);
-        q.setParameter("pid", projectId);
-        return q.getResultList();
-    }
+  @Override
+  public List<EnrollmentView> listByProjectId(UUID projectId) {
+    if (projectId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class);
+    q.setParameter("pid", projectId);
+    return q.getResultList();
+  }
 
-    @Override
-    public List<EnrollmentView> listByStudentId(UUID studentId) {
-        if (studentId == null) return List.of();
-        var q = em.createQuery(SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class);
-        q.setParameter("sid", studentId);
-        return q.getResultList();
-    }
+  @Override
+  public List<EnrollmentView> listByStudentId(UUID studentId) {
+    if (studentId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class);
+    q.setParameter("sid", studentId);
+    return q.getResultList();
+  }
 }

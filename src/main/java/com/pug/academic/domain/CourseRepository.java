@@ -5,10 +5,10 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Course} aggregate roots.
- * <p>
- * This interface defines the contract for persisting, retrieving, updating, and deleting
- * academic courses. It abstracts the underlying data storage mechanism to maintain
- * a pure, infrastructure-agnostic domain model.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
+ * academic courses. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
  */
 public interface CourseRepository {
 
@@ -37,14 +37,15 @@ public interface CourseRepository {
 
   /**
    * Retrieves a {@link Course} by its unique identifier.
-   * <p>
-   * When a course is reconstituted from the persistence layer, it typically undergoes
-   * the same domain validations as a newly created aggregate. Therefore, the returned
-   * {@link Course} might contain validation errors (verifiable via {@link Course#hasFieldErrors()})
-   * if the stored data violates current domain rules.
+   *
+   * <p>When a course is reconstituted from the persistence layer, it typically undergoes the same
+   * domain validations as a newly created aggregate. Therefore, the returned {@link Course} might
+   * contain validation errors (verifiable via {@link Course#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
    *
    * @param id the unique identifier (UUID) of the course
-   * @return an {@link Optional} containing the found {@link Course}, or {@link Optional#empty()} if not found
+   * @return an {@link Optional} containing the found {@link Course}, or {@link Optional#empty()} if
+   *     not found
    */
   Optional<Course> findOptionalById(UUID id);
 

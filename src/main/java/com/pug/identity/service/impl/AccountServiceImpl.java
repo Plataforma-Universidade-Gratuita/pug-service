@@ -14,33 +14,28 @@ import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.List;
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link AccountService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for authentication accounts.
- * It coordinates with the {@link UserService} to ensure that user identity records are
- * properly provisioned or pruned in tandem with account lifecycles, and relies on
- * {@link AccountProcessor} to isolate complex domain instantiation logic.
+ *
+ * <p>This application-scoped service orchestrates state mutations for authentication accounts. It
+ * coordinates with the {@link UserService} to ensure that user identity records are properly
+ * provisioned or pruned in tandem with account lifecycles, and relies on {@link AccountProcessor}
+ * to isolate complex domain instantiation logic.
  */
 @ApplicationScoped
 public class AccountServiceImpl implements AccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
 
-  @Inject
-  AccountRepository repo;
+  @Inject AccountRepository repo;
 
-  @Inject
-  UserService userService;
+  @Inject UserService userService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Account save(AccountCreateCommand cmd) {
@@ -58,8 +53,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     Account account =
-            AccountProcessor.processCreateInput(
-                    userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
+        AccountProcessor.processCreateInput(
+            userId, cmd.emailString(), cmd.type().name(), cmd.passwordHash());
 
     if (account.hasFieldErrors()) {
       throw new AppValidationException(account.getFieldErrors());
@@ -75,9 +70,7 @@ public class AccountServiceImpl implements AccountService {
     return savedAccount;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Account update(UUID id, AccountUpdateCommand cmd) {
@@ -89,16 +82,16 @@ public class AccountServiceImpl implements AccountService {
     }
 
     Account updated =
-            AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
+        AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
 
     if (updated.hasFieldErrors()) {
       throw new AppValidationException(updated.getFieldErrors());
     }
 
     if (!updated.getEmail().equals(current.getEmail())
-            && existsByEmail(updated.getEmail().toString())) {
+        && existsByEmail(updated.getEmail().toString())) {
       LOG.warnf(
-              "Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
+          "Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
       throw ExceptionHelper.accountAlreadyExists();
     }
 
@@ -107,9 +100,7 @@ public class AccountServiceImpl implements AccountService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -130,9 +121,7 @@ public class AccountServiceImpl implements AccountService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAll(List<UUID> ids) {
@@ -152,23 +141,21 @@ public class AccountServiceImpl implements AccountService {
     return deletedCount;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Account getById(UUID id) {
     Account account =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Account lookup failed: ID %s not found", id);
-                              return ExceptionHelper.accountNotFound();
-                            });
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Account lookup failed: ID %s not found", id);
+                  return ExceptionHelper.accountNotFound();
+                });
 
     if (account.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-              id, account.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+          id, account.getProblemsSummary());
       throw ExceptionHelper.accountNotFound();
     }
     return account;

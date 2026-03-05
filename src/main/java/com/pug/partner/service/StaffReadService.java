@@ -1,16 +1,15 @@
 package com.pug.partner.service;
 
 import com.pug.partner.infra.read.dtos.StaffView;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying Staff data.
- * <p>
- * Following CQRS principles, this service handles the "Query" operations. It bypasses
- * complex domain logic and retrieves lightweight, fully resolved {@link StaffView} Data
- * Transfer Objects directly from the underlying data store or search indices.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link StaffView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
  */
 public interface StaffReadService {
 
@@ -28,15 +27,16 @@ public interface StaffReadService {
    *
    * @param email the exact email address string of the requested staff member
    * @return the populated {@link StaffView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided email
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided
+   *     email
    */
   StaffView getViewByEmail(String email);
 
   /**
    * Retrieves a comprehensive list of all staff members registered in the system.
-   * <p>
-   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
-   * in contexts where the dataset size is known to be safely bounded.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
    *
    * @return a {@link List} containing all available {@link StaffView} entries
    */
@@ -59,8 +59,8 @@ public interface StaffReadService {
   List<StaffView> listViewsByEntityId(UUID entityId);
 
   /**
-   * Executes a robust full-text search against the names of the associated staff users,
-   * returning their corresponding staff profiles.
+   * Executes a robust full-text search against the names of the associated staff users, returning
+   * their corresponding staff profiles.
    *
    * @param term the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link StaffView} entries

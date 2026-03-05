@@ -15,35 +15,29 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link StudentService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for student enrollments.
- * Because a student is inherently an extension of an authentication account tied
- * to a specific course, this service delegates identity concerns down to
- * the {@link AccountService} and structural course validations to the {@link CourseService}.
+ *
+ * <p>This application-scoped service orchestrates state mutations for student enrollments. Because
+ * a student is inherently an extension of an authentication account tied to a specific course, this
+ * service delegates identity concerns down to the {@link AccountService} and structural course
+ * validations to the {@link CourseService}.
  */
 @ApplicationScoped
 public class StudentServiceImpl implements StudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
 
-  @Inject
-  StudentRepository repo;
+  @Inject StudentRepository repo;
 
-  @Inject
-  AccountService accountService;
+  @Inject AccountService accountService;
 
-  @Inject
-  CourseService courseService;
+  @Inject CourseService courseService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
@@ -52,14 +46,14 @@ public class StudentServiceImpl implements StudentService {
     Account account = accountService.save(cmd.accountCreateCommand());
 
     Student studentToPersist =
-            StudentProcessor.processCreateInput(
-                    account.getId(),
-                    cmd.academicRegistration(),
-                    cmd.campus(),
-                    cmd.courseId(),
-                    cmd.requiredHours(),
-                    cmd.startDate(),
-                    cmd.dueDate());
+        StudentProcessor.processCreateInput(
+            account.getId(),
+            cmd.academicRegistration(),
+            cmd.campus(),
+            cmd.courseId(),
+            cmd.requiredHours(),
+            cmd.startDate(),
+            cmd.dueDate());
 
     if (studentToPersist.hasFieldErrors()) {
       throw new AppValidationException(studentToPersist.getFieldErrors());
@@ -67,8 +61,8 @@ public class StudentServiceImpl implements StudentService {
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
       LOG.warnf(
-              "Creation failed: Student with registration %s already exists",
-              studentToPersist.getAcademicRegistration());
+          "Creation failed: Student with registration %s already exists",
+          studentToPersist.getAcademicRegistration());
       throw ExceptionHelper.studentAlreadyExists();
     }
 
@@ -77,9 +71,7 @@ public class StudentServiceImpl implements StudentService {
     return savedStudent;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
@@ -94,25 +86,25 @@ public class StudentServiceImpl implements StudentService {
     }
 
     Student studentToUpdate =
-            StudentProcessor.processUpdateInput(
-                    current,
-                    cmd.academicRegistration(),
-                    cmd.campus(),
-                    cmd.courseId(),
-                    cmd.requiredHours(),
-                    cmd.startDate(),
-                    cmd.dueDate());
+        StudentProcessor.processUpdateInput(
+            current,
+            cmd.academicRegistration(),
+            cmd.campus(),
+            cmd.courseId(),
+            cmd.requiredHours(),
+            cmd.startDate(),
+            cmd.dueDate());
 
     if (studentToUpdate.hasFieldErrors()) {
       throw new AppValidationException(studentToUpdate.getFieldErrors());
     }
 
     if (cmd.academicRegistration() != null
-            && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
-            && existsByRegistration(cmd.academicRegistration())) {
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+        && existsByRegistration(cmd.academicRegistration())) {
       LOG.warnf(
-              "Update failed: Student Account ID %s tried to use existing registration %s",
-              accountId, cmd.academicRegistration());
+          "Update failed: Student Account ID %s tried to use existing registration %s",
+          accountId, cmd.academicRegistration());
       throw ExceptionHelper.studentAlreadyExists();
     }
 
@@ -121,9 +113,7 @@ public class StudentServiceImpl implements StudentService {
     return getById(accountId);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID accountId) {
@@ -144,23 +134,21 @@ public class StudentServiceImpl implements StudentService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Student getById(UUID accountId) {
     Student student =
-            repo.findOptionalById(accountId)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-                              return ExceptionHelper.studentNotFound();
-                            });
+        repo.findOptionalById(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.studentNotFound();
+                });
 
     if (student.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
-              accountId, student.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+          accountId, student.getProblemsSummary());
       throw ExceptionHelper.studentNotFound();
     }
 

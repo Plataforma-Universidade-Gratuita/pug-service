@@ -14,10 +14,10 @@ import lombok.Getter;
 
 /**
  * Immutable Domain Entity representing a Student's Enrollment in a Project.
- * <p>
- * This class maps a student directly to a project and tracks the lifecycle state
- * of that relationship (e.g., PENDING, APPROVED, COMPLETED). It extends
- * {@link DomainError} to accumulate structural validation failures.
+ *
+ * <p>This class maps a student directly to a project and tracks the lifecycle state of that
+ * relationship (e.g., PENDING, APPROVED, COMPLETED). It extends {@link DomainError} to accumulate
+ * structural validation failures.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -25,19 +25,13 @@ import lombok.Getter;
 @EqualsAndHashCode(callSuper = false)
 public class Enrollment extends DomainError {
 
-  /**
-   * The composite identifier uniquely linking the student to the project.
-   */
+  /** The composite identifier uniquely linking the student to the project. */
   EnrollmentIdentifier identifier;
 
-  /**
-   * The current lifecycle status of the enrollment.
-   */
+  /** The current lifecycle status of the enrollment. */
   EnrollmentStatus status;
 
-  /**
-   * The metadata tracking critical timestamps (acceptance, closure) of the enrollment.
-   */
+  /** The metadata tracking critical timestamps (acceptance, closure) of the enrollment. */
   EnrollmentInfo enrollmentInfo;
 
   /**
@@ -49,11 +43,11 @@ public class Enrollment extends DomainError {
    */
   public static Enrollment factory(Student student, Project project) {
     Enrollment enrollment =
-            Enrollment.builder()
-                    .identifier(EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
-                    .status(EnrollmentStatus.PENDING)
-                    .enrollmentInfo(EnrollmentInfo.factory())
-                    .build();
+        Enrollment.builder()
+            .identifier(EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
+            .status(EnrollmentStatus.PENDING)
+            .enrollmentInfo(EnrollmentInfo.factory())
+            .build();
 
     enrollment.collectValidationProblems();
     return enrollment;
@@ -63,7 +57,8 @@ public class Enrollment extends DomainError {
    * Transitions the enrollment to a new lifecycle status, updating tracking timestamps accordingly.
    *
    * @param newStatus the target status to transition to
-   * @return a new {@link Enrollment} instance reflecting the updated state, or the same instance if unchanged
+   * @return a new {@link Enrollment} instance reflecting the updated state, or the same instance if
+   *     unchanged
    */
   public Enrollment changeStatus(EnrollmentStatus newStatus) {
     if (this.status == newStatus) {
@@ -87,19 +82,18 @@ public class Enrollment extends DomainError {
   }
 
   /**
-   * Helper method to determine if a status represents a terminal (closing) state for the enrollment.
+   * Helper method to determine if a status represents a terminal (closing) state for the
+   * enrollment.
    */
   private boolean isClosingStatus(EnrollmentStatus s) {
     return s == EnrollmentStatus.REJECTED
-            || s == EnrollmentStatus.EXITED
-            || s == EnrollmentStatus.REMOVED
-            || s == EnrollmentStatus.CANCELED
-            || s == EnrollmentStatus.COMPLETED;
+        || s == EnrollmentStatus.EXITED
+        || s == EnrollmentStatus.REMOVED
+        || s == EnrollmentStatus.CANCELED
+        || s == EnrollmentStatus.COMPLETED;
   }
 
-  /**
-   * Evaluates constraints for the Enrollment aggregate and accumulates any validation problems.
-   */
+  /** Evaluates constraints for the Enrollment aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     if (identifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);

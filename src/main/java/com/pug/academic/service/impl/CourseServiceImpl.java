@@ -4,7 +4,6 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
-import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
@@ -14,32 +13,27 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link CourseService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for academic courses.
- * It manages transaction boundaries, enforces cross-domain constraints (such as verifying
- * school existence via {@link SchoolService}), and relies on the {@link CourseProcessor}
- * to isolate domain initialization logic.
+ *
+ * <p>This application-scoped service orchestrates state mutations for academic courses. It manages
+ * transaction boundaries, enforces cross-domain constraints (such as verifying school existence via
+ * {@link SchoolService}), and relies on the {@link CourseProcessor} to isolate domain
+ * initialization logic.
  */
 @ApplicationScoped
 public class CourseServiceImpl implements CourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
 
-  @Inject
-  CourseRepository repo;
+  @Inject CourseRepository repo;
 
-  @Inject
-  SchoolService schoolService;
+  @Inject SchoolService schoolService;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Course save(CourseCreateCommand cmd) {
@@ -62,9 +56,7 @@ public class CourseServiceImpl implements CourseService {
     return savedCourse;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Course update(UUID id, CourseUpdateCommand cmd) {
@@ -82,9 +74,9 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (!updatedCourse.getName().equals(current.getName())
-            && existsByName(updatedCourse.getName())) {
+        && existsByName(updatedCourse.getName())) {
       LOG.warnf(
-              "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
+          "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
       throw ExceptionHelper.courseAlreadyExists();
     }
 
@@ -93,9 +85,7 @@ public class CourseServiceImpl implements CourseService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -114,23 +104,21 @@ public class CourseServiceImpl implements CourseService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public Course getById(UUID id) {
     Course course =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("Course lookup failed: ID %s not found", id);
-                              return ExceptionHelper.courseNotFound();
-                            });
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Course lookup failed: ID %s not found", id);
+                  return ExceptionHelper.courseNotFound();
+                });
 
     if (course.hasFieldErrors()) {
       LOG.errorf(
-              "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-              id, course.getProblemsSummary());
+          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+          id, course.getProblemsSummary());
       throw ExceptionHelper.courseNotFound();
     }
     return course;

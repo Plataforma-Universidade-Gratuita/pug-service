@@ -31,7 +31,6 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -40,10 +39,10 @@ import java.util.stream.Collectors;
 
 /**
  * REST API Resource controller for managing Academic Schools (or departments).
- * <p>
- * This class exposes endpoints to create, retrieve, update, and delete schools.
- * It delegates commands to the {@link SchoolService} (writes) and queries to the
- * {@link SchoolReadService} (reads), adhering to CQRS principles.
+ *
+ * <p>This class exposes endpoints to create, retrieve, update, and delete schools. It delegates
+ * commands to the {@link SchoolService} (writes) and queries to the {@link SchoolReadService}
+ * (reads), adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path("/academic/schools")
@@ -51,21 +50,18 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class SchoolResource {
 
-  @Inject
-  SchoolService writeService;
-  @Inject
-  SchoolReadService readService;
+  @Inject SchoolService writeService;
+  @Inject SchoolReadService readService;
 
-  @Context
-  UriInfo uri;
-  @Context
-  HttpHeaders headers;
+  @Context UriInfo uri;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a specific school by its unique UUID identifier.
    *
    * @param id the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link SchoolResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     SchoolResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school is not found
    */
   @GET
@@ -78,12 +74,13 @@ public class SchoolResource {
 
   /**
    * Retrieves a collection of schools.
-   * <p>
-   * If the optional {@code q} parameter is provided, it executes a full-text search against
-   * the schools' names. If omitted, it returns an unfiltered list of all schools.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * schools' names. If omitted, it returns an unfiltered list of all schools.
    *
    * @param q the optional search query string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link SchoolResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     SchoolResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q) {
@@ -96,9 +93,9 @@ public class SchoolResource {
     }
 
     List<SchoolResponse> body =
-            views.stream()
-                    .map(v -> SchoolPresenter.toResponse(v, locale()))
-                    .collect(Collectors.toList());
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -107,8 +104,10 @@ public class SchoolResource {
    * Registers a new academic school within the platform.
    *
    * @param req the validated {@link SchoolCreateRequest} payload
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link SchoolResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact name already exists
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link SchoolResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact name
+   *     already exists
    */
   @POST
   public Response create(@Valid SchoolCreateRequest req) {
@@ -125,7 +124,7 @@ public class SchoolResource {
   /**
    * Partially updates an existing school's details.
    *
-   * @param id  the unique identifier (UUIDv7) of the school to update
+   * @param id the unique identifier (UUIDv7) of the school to update
    * @param req the validated {@link SchoolUpdateRequest} containing the modified data
    * @return an HTTP 200 OK response containing the updated {@link SchoolResponse}
    */
@@ -154,9 +153,7 @@ public class SchoolResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

@@ -22,30 +22,26 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
 /**
  * REST API Resource controller for read-only operations on Users.
- * <p>
- * This class exposes endpoints to retrieve existing user identities (names and CPFs).
- * It acts as the HTTP entry point, delegating queries to the {@link UserReadService}
- * and adhering to CQRS principles. Direct write operations for users are typically
- * orchestrated through account-creation endpoints (like Admins or Students) rather than
- * standalone user endpoints.
+ *
+ * <p>This class exposes endpoints to retrieve existing user identities (names and CPFs). It acts as
+ * the HTTP entry point, delegating queries to the {@link UserReadService} and adhering to CQRS
+ * principles. Direct write operations for users are typically orchestrated through account-creation
+ * endpoints (like Admins or Students) rather than standalone user endpoints.
  */
 @Path("/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class UserReadOnlyResource {
 
-  @Inject
-  UserReadService readService;
+  @Inject UserReadService readService;
 
-  @Context
-  HttpHeaders headers;
+  @Context HttpHeaders headers;
 
   /**
    * Retrieves a specific user by their unique UUID identifier.
@@ -66,7 +62,7 @@ public class UserReadOnlyResource {
    *
    * @param cpfRaw the raw 11-digit numeric CPF string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
-   * @throws AppValidationException    if the provided CPF is malformed
+   * @throws AppValidationException if the provided CPF is malformed
    * @throws ResourceNotFoundException if no user with the given CPF is found
    */
   @GET
@@ -78,12 +74,13 @@ public class UserReadOnlyResource {
 
   /**
    * Retrieves a collection of users.
-   * <p>
-   * If the optional {@code q} parameter is provided, it executes a full-text search against
-   * the users' names. If omitted, it returns an unfiltered list of all users.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * users' names. If omitted, it returns an unfiltered list of all users.
    *
    * @param query the optional search query string used to filter by name
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link UserResponse}
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     UserResponse}
    */
   @GET
   public Response list(@QueryParam("q") String query) {
@@ -96,14 +93,12 @@ public class UserReadOnlyResource {
     }
 
     List<UserResponse> list =
-            views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
+        views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
 
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

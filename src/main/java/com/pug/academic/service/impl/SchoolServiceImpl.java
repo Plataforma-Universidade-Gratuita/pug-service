@@ -12,28 +12,24 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import org.jboss.logging.Logger;
-
 import java.util.UUID;
+import org.jboss.logging.Logger;
 
 /**
  * Implementation of the {@link SchoolService} command interface.
- * <p>
- * This application-scoped service orchestrates state mutations for academic schools.
- * It invokes pure domain logic via {@link SchoolProcessor}, enforces uniqueness rules,
- * and coordinates transaction boundaries with the {@link SchoolRepository}.
+ *
+ * <p>This application-scoped service orchestrates state mutations for academic schools. It invokes
+ * pure domain logic via {@link SchoolProcessor}, enforces uniqueness rules, and coordinates
+ * transaction boundaries with the {@link SchoolRepository}.
  */
 @ApplicationScoped
 public class SchoolServiceImpl implements SchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
-  @Inject
-  SchoolRepository repo;
+  @Inject SchoolRepository repo;
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public School save(SchoolCreateCommand cmd) {
@@ -54,9 +50,7 @@ public class SchoolServiceImpl implements SchoolService {
     return savedSchool;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public School update(UUID id, SchoolUpdateCommand cmd) {
@@ -69,9 +63,9 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (!updatedSchool.getName().equals(current.getName())
-            && existsByName(updatedSchool.getName())) {
+        && existsByName(updatedSchool.getName())) {
       LOG.warnf(
-              "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
+          "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
       throw ExceptionHelper.schoolAlreadyExists();
     }
 
@@ -80,9 +74,7 @@ public class SchoolServiceImpl implements SchoolService {
     return getById(id);
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -101,23 +93,21 @@ public class SchoolServiceImpl implements SchoolService {
     return deleted;
   }
 
-  /**
-   * {@inheritDoc}
-   */
+  /** {@inheritDoc} */
   @Override
   public School getById(UUID id) {
     School school =
-            repo.findOptionalById(id)
-                    .orElseThrow(
-                            () -> {
-                              LOG.debugf("School lookup failed: ID %s not found", id);
-                              return ExceptionHelper.schoolNotFound();
-                            });
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("School lookup failed: ID %s not found", id);
+                  return ExceptionHelper.schoolNotFound();
+                });
 
     if (school.hasFieldErrors()) {
       LOG.errorf(
-              "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-              id, school.getProblemsSummary());
+          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+          id, school.getProblemsSummary());
       throw ExceptionHelper.schoolNotFound();
     }
     return school;

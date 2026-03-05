@@ -5,10 +5,10 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Student} aggregate roots.
- * <p>
- * This interface defines the contract for persisting, retrieving, updating, and deleting
- * student enrollments. It abstracts the underlying data storage mechanism to maintain
- * a pure, infrastructure-agnostic domain model.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting student
+ * enrollments. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
  */
 public interface StudentRepository {
 
@@ -37,13 +37,14 @@ public interface StudentRepository {
 
   /**
    * Retrieves a {@link Student} by their linked account identifier.
-   * <p>
-   * When a student is reconstituted from the persistence layer, it might contain
-   * validation errors (verifiable via {@link Student#hasFieldErrors()}) if the stored
-   * data is inconsistent with current domain rules.
+   *
+   * <p>When a student is reconstituted from the persistence layer, it might contain validation
+   * errors (verifiable via {@link Student#hasFieldErrors()}) if the stored data is inconsistent
+   * with current domain rules.
    *
    * @param id the unique identifier (UUID) of the student's linked account
-   * @return an {@link Optional} containing the found {@link Student}, or {@link Optional#empty()} if not found
+   * @return an {@link Optional} containing the found {@link Student}, or {@link Optional#empty()}
+   *     if not found
    */
   Optional<Student> findOptionalById(UUID id);
 

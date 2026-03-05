@@ -1,18 +1,17 @@
 package com.pug.partner.infra.read;
 
 import com.pug.partner.infra.read.dtos.StaffView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Read-only interface for executing Staff profile queries.
- * <p>
- * This interface represents the "Query" side of a CQRS architecture. It defines
- * operations for retrieving consolidated staff profiles directly into lightweight
- * {@link StaffView} projections. These views aggregate data across the Identity,
- * Geo, and Partner contexts for optimized API delivery.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving consolidated staff profiles directly into lightweight {@link StaffView} projections.
+ * These views aggregate data across the Identity, Geo, and Partner contexts for optimized API
+ * delivery.
  */
 public interface StaffQueries {
 
@@ -34,9 +33,9 @@ public interface StaffQueries {
 
   /**
    * Retrieves a comprehensive list of all staff members registered in the system.
-   * <p>
-   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
-   * does not implement pagination.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
    *
    * @return a {@link List} of all {@link StaffView} records
    */
@@ -60,8 +59,9 @@ public interface StaffQueries {
 
   /**
    * Executes a robust full-text search against the names of the associated staff users.
-   * <p>
-   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
+   *
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search).
    *
    * @param key the raw search string or partial name of the staff member
    * @return a sorted {@link List} of matching {@link StaffView} records

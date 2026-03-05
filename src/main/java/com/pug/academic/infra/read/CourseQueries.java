@@ -1,17 +1,16 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.CourseView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Read-only interface for executing queries against Academic Courses.
- * <p>
- * This interface represents the "Query" side of a CQRS architecture. It defines
- * operations for retrieving course data directly into lightweight {@link CourseView}
- * projections, bypassing the overhead of instantiating full JPA entities or domain aggregates.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving course data directly into lightweight {@link CourseView} projections, bypassing the
+ * overhead of instantiating full JPA entities or domain aggregates.
  */
 public interface CourseQueries {
 
@@ -19,7 +18,8 @@ public interface CourseQueries {
    * Retrieves a read-only view of a course based on its unique identifier.
    *
    * @param id the unique identifier (UUID) of the course to find
-   * @return an {@link Optional} containing the found {@link CourseView}, or {@link Optional#empty()} if not found
+   * @return an {@link Optional} containing the found {@link CourseView}, or {@link
+   *     Optional#empty()} if not found
    */
   Optional<CourseView> findOptionalById(UUID id);
 
@@ -27,15 +27,16 @@ public interface CourseQueries {
    * Retrieves a read-only view of a course based on its exact name.
    *
    * @param name the exact name of the course
-   * @return an {@link Optional} containing the found {@link CourseView}, or {@link Optional#empty()} if not found
+   * @return an {@link Optional} containing the found {@link CourseView}, or {@link
+   *     Optional#empty()} if not found
    */
   Optional<CourseView> findOptionalByName(String name);
 
   /**
    * Retrieves a comprehensive list of all academic courses registered in the system.
-   * <p>
-   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
-   * does not implement pagination.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
    *
    * @return a {@link List} of all {@link CourseView} objects
    */
@@ -51,8 +52,9 @@ public interface CourseQueries {
 
   /**
    * Executes a robust full-text search against the names of courses.
-   * <p>
-   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
+   *
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search).
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link CourseView} entries matching the search criteria

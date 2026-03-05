@@ -6,10 +6,10 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Account} aggregate roots.
- * <p>
- * This interface defines the contract for persisting, retrieving, updating, and deleting
- * account entities. It abstracts the underlying data storage mechanism to maintain
- * a pure, infrastructure-agnostic domain model within the Identity context.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting account
+ * entities. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model within the Identity context.
  */
 public interface AccountRepository {
 
@@ -37,7 +37,8 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Removes multiple {@link Account} entities from the repository based on their unique identifiers.
+   * Removes multiple {@link Account} entities from the repository based on their unique
+   * identifiers.
    *
    * @param ids a list of UUIDs representing the accounts to delete
    * @return the total number of accounts that were successfully deleted
@@ -46,21 +47,22 @@ public interface AccountRepository {
 
   /**
    * Retrieves an {@link Account} by its unique identifier.
-   * <p>
-   * When an account is reconstituted from the persistence layer, it typically undergoes
-   * the same domain validations as a newly created entity. Therefore, the returned {@link Account}
-   * might contain validation errors (verifiable via {@link Account#hasFieldErrors()})
-   * if the stored data violates current domain rules.
+   *
+   * <p>When an account is reconstituted from the persistence layer, it typically undergoes the same
+   * domain validations as a newly created entity. Therefore, the returned {@link Account} might
+   * contain validation errors (verifiable via {@link Account#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
    *
    * @param id the unique identifier (UUID) of the account
-   * @return an {@link Optional} containing the {@link Account} if found, or {@link Optional#empty()} if not
+   * @return an {@link Optional} containing the {@link Account} if found, or {@link
+   *     Optional#empty()} if not
    */
   Optional<Account> findOptionalById(UUID id);
 
   /**
    * Retrieves the linked user identifiers for a given list of account IDs.
-   * <p>
-   * This is primarily used to map backward from accounts to their owning users.
+   *
+   * <p>This is primarily used to map backward from accounts to their owning users.
    *
    * @param ids a list of account UUIDs
    * @return a list of user UUIDs associated with the provided account IDs
@@ -68,8 +70,8 @@ public interface AccountRepository {
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Identifies and returns all user IDs from the provided list that are considered
-   * "orphaned" (i.e., they have no associated {@link Account} records attached to them).
+   * Identifies and returns all user IDs from the provided list that are considered "orphaned"
+   * (i.e., they have no associated {@link Account} records attached to them).
    *
    * @param userIds a list of user UUIDs to check for orphan status
    * @return a list of user UUIDs that currently have zero associated accounts
@@ -77,7 +79,8 @@ public interface AccountRepository {
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
-   * Calculates the total number of {@link Account} records associated with a specific user identifier.
+   * Calculates the total number of {@link Account} records associated with a specific user
+   * identifier.
    *
    * @param userId the unique identifier of the user
    * @return the total count of accounts owned by the specified user
@@ -85,10 +88,11 @@ public interface AccountRepository {
   long countAllAccountsByUserId(UUID userId);
 
   /**
-   * Checks whether an {@link Account} with the specified email address already exists in the repository.
-   * <p>
-   * This is used by domain services to enforce natural key uniqueness constraints
-   * (e.g., preventing duplicate account registrations with the same email).
+   * Checks whether an {@link Account} with the specified email address already exists in the
+   * repository.
+   *
+   * <p>This is used by domain services to enforce natural key uniqueness constraints (e.g.,
+   * preventing duplicate account registrations with the same email).
    *
    * @param email the email address string to check
    * @return {@code true} if an account with the given email exists, {@code false} otherwise

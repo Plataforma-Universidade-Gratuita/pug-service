@@ -12,15 +12,14 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link ResourceNotFoundException} to an HTTP 404 (Not Found) response.
- * <p>
- * Provides a clean and standard 404 API error response, supplying the specific domain
- * code (e.g., CITY_NOT_FOUND) to help the client understand exactly what was missing.
+ *
+ * <p>Provides a clean and standard 404 API error response, supplying the specific domain code
+ * (e.g., CITY_NOT_FOUND) to help the client understand exactly what was missing.
  */
 @Provider
 public class ResourceNotFoundExceptionMapper implements ExceptionMapper<ResourceNotFoundException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a ResourceNotFoundException into a structured HTTP 404 response.
@@ -36,8 +35,8 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
     ApiError error = ApiError.of(code, message);
 
     return Response.status(Response.Status.NOT_FOUND)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }

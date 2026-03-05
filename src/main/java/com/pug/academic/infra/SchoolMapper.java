@@ -7,16 +7,13 @@ import com.pug.shared.domain.vos.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between School boundary layers.
- * <p>
- * This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link School})
- * does not leak into or depend upon the JPA Persistence model ({@link SchoolEntity}).
+ *
+ * <p>This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link
+ * School}) does not leak into or depend upon the JPA Persistence model ({@link SchoolEntity}).
  */
 public final class SchoolMapper {
-  /**
-   * Private constructor to prevent instantiation.
-   */
-  private SchoolMapper() {
-  }
+  /** Private constructor to prevent instantiation. */
+  private SchoolMapper() {}
 
   /**
    * Reconstitutes a pure Domain {@link School} aggregate from a JPA {@link SchoolEntity}.
@@ -29,32 +26,35 @@ public final class SchoolMapper {
       return null;
     }
     return School.builder()
-            .id(e.getId())
-            .name(e.getName())
-            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
-            .build();
+        .id(e.getId())
+        .name(e.getName())
+        .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .build();
   }
 
   /**
-   * Translates a pure Domain {@link School} aggregate into a newly instantiated JPA {@link SchoolEntity}.
+   * Translates a pure Domain {@link School} aggregate into a newly instantiated JPA {@link
+   * SchoolEntity}.
    *
    * @param d the Domain aggregate to convert
-   * @return a newly constructed JPA {@link SchoolEntity}, or {@code null} if the input domain is null
+   * @return a newly constructed JPA {@link SchoolEntity}, or {@code null} if the input domain is
+   *     null
    */
   public static SchoolEntity toEntity(School d) {
     if (d == null) {
       return null;
     }
     return SchoolEntity.builder()
-            .id(d.getId())
-            .name(d.getName())
-            .createdAt(d.getAuditInfo().getCreatedAt())
-            .updatedAt(d.getAuditInfo().getUpdatedAt())
-            .build();
+        .id(d.getId())
+        .name(d.getName())
+        .createdAt(d.getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .build();
   }
 
   /**
-   * Updates an existing, attached JPA {@link SchoolEntity} with the current state of a Domain {@link School}.
+   * Updates an existing, attached JPA {@link SchoolEntity} with the current state of a Domain
+   * {@link School}.
    *
    * @param d the Domain aggregate containing the updated state
    * @param e the existing, attached JPA entity to update in-place

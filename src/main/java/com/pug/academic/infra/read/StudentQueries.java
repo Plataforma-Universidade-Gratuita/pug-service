@@ -1,18 +1,17 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.StudentView;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Read-only interface for executing Student profile queries.
- * <p>
- * This interface represents the "Query" side of a CQRS architecture. It defines
- * operations for retrieving consolidated student profiles directly into lightweight
- * {@link StudentView} projections. These views aggregate data across the Identity
- * and Academic contexts for optimized API delivery.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving consolidated student profiles directly into lightweight {@link StudentView}
+ * projections. These views aggregate data across the Identity and Academic contexts for optimized
+ * API delivery.
  */
 public interface StudentQueries {
 
@@ -50,9 +49,9 @@ public interface StudentQueries {
 
   /**
    * Retrieves a comprehensive list of all students registered in the system.
-   * <p>
-   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
-   * does not implement pagination.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
    *
    * @return a {@link List} of all {@link StudentView} records
    */
@@ -68,8 +67,9 @@ public interface StudentQueries {
 
   /**
    * Executes a robust full-text search against the names of the associated student users.
-   * <p>
-   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
+   *
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search).
    *
    * @param key the raw search string or partial name of the student
    * @return a sorted {@link List} of matching {@link StudentView} records

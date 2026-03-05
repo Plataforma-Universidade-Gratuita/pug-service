@@ -5,10 +5,10 @@ import java.util.UUID;
 
 /**
  * Domain repository interface for managing Partner {@link Entity} aggregate roots.
- * <p>
- * This interface defines the contract for persisting, retrieving, updating, and deleting
- * partner organization entities. It abstracts the underlying data storage mechanism
- * to maintain a pure, infrastructure-agnostic domain model.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting partner
+ * organization entities. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
  */
 public interface EntityRepository {
 
@@ -37,21 +37,23 @@ public interface EntityRepository {
 
   /**
    * Retrieves a Partner {@link Entity} by its unique identifier.
-   * <p>
-   * When an entity is reconstituted from the persistence layer, it typically undergoes
-   * the same domain validations as a newly created aggregate. Therefore, the returned
-   * {@link Entity} might contain validation errors (verifiable via {@link Entity#hasFieldErrors()})
-   * if the stored data violates current domain rules.
+   *
+   * <p>When an entity is reconstituted from the persistence layer, it typically undergoes the same
+   * domain validations as a newly created aggregate. Therefore, the returned {@link Entity} might
+   * contain validation errors (verifiable via {@link Entity#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
    *
    * @param id the unique identifier (UUID) of the partner entity
-   * @return an {@link Optional} containing the {@link Entity} if found, or {@link Optional#empty()} if not
+   * @return an {@link Optional} containing the {@link Entity} if found, or {@link Optional#empty()}
+   *     if not
    */
   Optional<Entity> findOptionalById(UUID id);
 
   /**
-   * Checks whether a Partner {@link Entity} with the specified CNPJ already exists in the repository.
-   * <p>
-   * This is primarily used by domain services to enforce natural key uniqueness constraints
+   * Checks whether a Partner {@link Entity} with the specified CNPJ already exists in the
+   * repository.
+   *
+   * <p>This is primarily used by domain services to enforce natural key uniqueness constraints
    * before persisting a new partner entity or updating an existing one's corporate ID.
    *
    * @param cnpj the raw numeric CNPJ string to check
@@ -61,13 +63,14 @@ public interface EntityRepository {
 
   /**
    * Checks whether any Partner {@link Entity} exists that is associated with a specific city ID.
-   * <p>
-   * This is used to enforce referential integrity across bounded contexts, such as preventing
+   *
+   * <p>This is used to enforce referential integrity across bounded contexts, such as preventing
    * the deletion of a {@link com.pug.geo.domain.City} that is currently assigned to one or more
    * partner organizations.
    *
    * @param cityId the unique identifier of the city to check
-   * @return {@code true} if at least one entity is located in the given city, {@code false} otherwise
+   * @return {@code true} if at least one entity is located in the given city, {@code false}
+   *     otherwise
    */
   boolean existsByCityId(UUID cityId);
 }

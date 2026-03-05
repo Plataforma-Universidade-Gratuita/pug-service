@@ -1,16 +1,15 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.StudentView;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying Student data.
- * <p>
- * Following CQRS principles, this service handles the "Query" operations. It bypasses
- * complex domain logic and retrieves lightweight, fully resolved {@link StudentView} Data
- * Transfer Objects directly from the underlying data store or search indices.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link StudentView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
  */
 public interface StudentReadService {
 
@@ -19,16 +18,19 @@ public interface StudentReadService {
    *
    * @param accountId the unique identifier (UUID) of the student's account
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided ID
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     ID
    */
   StudentView getViewByAccountId(UUID accountId);
 
   /**
-   * Retrieves a read-only projection of a student based on their exact academic registration number.
+   * Retrieves a read-only projection of a student based on their exact academic registration
+   * number.
    *
    * @param academicRegistration the exact academic registration string
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided registration
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     registration
    */
   StudentView getViewByAcademicRegistration(String academicRegistration);
 
@@ -37,7 +39,8 @@ public interface StudentReadService {
    *
    * @param email the exact email address of the student
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided email
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     email
    */
   StudentView getViewByEmail(String email);
 
@@ -46,15 +49,16 @@ public interface StudentReadService {
    *
    * @param cpf the exact 11-digit numeric CPF string of the student
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided CPF
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     CPF
    */
   StudentView getViewByCpf(String cpf);
 
   /**
    * Retrieves a comprehensive list of all students registered in the system.
-   * <p>
-   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
-   * in contexts where the dataset size is known to be safely bounded.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
    *
    * @return a {@link List} containing all available {@link StudentView} entries
    */
@@ -70,9 +74,9 @@ public interface StudentReadService {
 
   /**
    * Executes a robust full-text search against the names of the associated student users.
-   * <p>
-   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
-   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
+   *
+   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
+   * matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link StudentView} entries
