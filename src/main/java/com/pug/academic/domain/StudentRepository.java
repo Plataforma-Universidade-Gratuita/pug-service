@@ -3,47 +3,55 @@ package com.pug.academic.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Student entities. */
+/**
+ * Domain repository interface for managing {@link Student} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * student enrollments. It abstracts the underlying data storage mechanism to maintain
+ * a pure, infrastructure-agnostic domain model.
+ */
 public interface StudentRepository {
+
   /**
-   * Persists a Student entityId.
+   * Persists a newly created {@link Student} aggregate into the repository.
    *
-   * @param entity the Student to persist
-   * @return the persisted Student
+   * @param entity the {@link Student} aggregate to persist
+   * @return the fully persisted {@link Student} instance
    */
   Student persist(Student entity);
 
   /**
-   * Updates a Student entityId.
+   * Updates the state of an existing {@link Student} aggregate in the repository.
    *
-   * @param entity the Student to update
+   * @param entity the {@link Student} instance containing the updated state
    */
   void update(Student entity);
 
   /**
-   * Deletes a Student by their account ID.
+   * Removes a {@link Student} from the repository based on their linked account ID.
    *
-   * @param id the account ID of the Student to delete
-   * @return true if the Student was deleted, false if no Student with the given ID was found
+   * @param id the unique identifier (UUID) of the student's linked account
+   * @return {@code true} if the student was successfully deleted, {@code false} if not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Finds a Student by their account ID.
+   * Retrieves a {@link Student} by their linked account identifier.
+   * <p>
+   * When a student is reconstituted from the persistence layer, it might contain
+   * validation errors (verifiable via {@link Student#hasFieldErrors()}) if the stored
+   * data is inconsistent with current domain rules.
    *
-   * <p>Note: The returned Student may contain validation errors (check {@code student.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param id the account ID of the Student to find
-   * @return an Optional containing the Student if found, or empty if not found
+   * @param id the unique identifier (UUID) of the student's linked account
+   * @return an {@link Optional} containing the found {@link Student}, or {@link Optional#empty()} if not found
    */
   Optional<Student> findOptionalById(UUID id);
 
   /**
-   * Checks whether a Student with the given academic registration already exists.
+   * Checks whether a {@link Student} with the specified academic registration already exists.
    *
-   * @param registration the academic registration string to check for existence
-   * @return true if a Student with the given registration exists, false otherwise
+   * @param registration the raw academic registration string to check
+   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
    */
   boolean existsByRegistration(String registration);
 }

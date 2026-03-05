@@ -31,30 +31,42 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing schools. */
+/**
+ * REST API Resource controller for managing Academic Schools (or departments).
+ * <p>
+ * This class exposes endpoints to create, retrieve, update, and delete schools.
+ * It delegates commands to the {@link SchoolService} (writes) and queries to the
+ * {@link SchoolReadService} (reads), adhering to CQRS principles.
+ */
 @ApplicationScoped
 @Path("/academic/schools")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class SchoolResource {
 
-  @Inject SchoolService writeService;
-  @Inject SchoolReadService readService;
+  @Inject
+  SchoolService writeService;
+  @Inject
+  SchoolReadService readService;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Retrieves a school by its ID.
+   * Retrieves a specific school by its unique UUID identifier.
    *
-   * @param id the ID of the school
-   * @return the response containing the school
+   * @param id the unique identifier (UUIDv7) of the school
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link SchoolResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school is not found
    */
   @GET
   @Path("/{id}")
@@ -65,10 +77,13 @@ public class SchoolResource {
   }
 
   /**
-   * Lists all schools or searches schools by name.
+   * Retrieves a collection of schools.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the schools' names. If omitted, it returns an unfiltered list of all schools.
    *
-   * @param q the optional search query
-   * @return the response containing the list of schools
+   * @param q the optional search query string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link SchoolResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q) {
@@ -81,18 +96,19 @@ public class SchoolResource {
     }
 
     List<SchoolResponse> body =
-        views.stream()
-            .map(v -> SchoolPresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
+            views.stream()
+                    .map(v -> SchoolPresenter.toResponse(v, locale()))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Creates a new school.
+   * Registers a new academic school within the platform.
    *
-   * @param req the school creation request
-   * @return the response containing the created school
+   * @param req the validated {@link SchoolCreateRequest} payload
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link SchoolResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact name already exists
    */
   @POST
   public Response create(@Valid SchoolCreateRequest req) {
@@ -107,11 +123,11 @@ public class SchoolResource {
   }
 
   /**
-   * Updates an existing school.
+   * Partially updates an existing school's details.
    *
-   * @param id the ID of the school to update
-   * @param req the school update request
-   * @return the response containing the updated school
+   * @param id  the unique identifier (UUIDv7) of the school to update
+   * @param req the validated {@link SchoolUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link SchoolResponse}
    */
   @PUT
   @Path("/{id}")
@@ -126,10 +142,10 @@ public class SchoolResource {
   }
 
   /**
-   * Deletes a school by its ID.
+   * Permanently removes an academic school from the system.
    *
-   * @param id the ID of the school to delete
-   * @return the response containing the result of the deletion
+   * @param id the unique identifier (UUIDv7) of the school to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("/{id}")
@@ -138,7 +154,9 @@ public class SchoolResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the Accept-Language header. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

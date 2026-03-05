@@ -4,18 +4,31 @@ import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.academic.presenter.dtos.CourseResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
+
 import java.util.Locale;
 
-/** Mapper class for converting CourseView to CourseResponse. */
+/**
+ * Stateless utility class responsible for mapping internal academic course projections
+ * to external API responses.
+ * <p>
+ * This presenter acts as a translation layer, converting raw CQRS query views ({@link CourseView})
+ * into client-ready representations ({@link CourseResponse}). It also delegates the mapping
+ * of the nested academic school data to the {@link SchoolPresenter}.
+ */
 public final class CoursePresenter {
-  /** Private constructor to prevent instantiation. */
-  private CoursePresenter() {}
+  /**
+   * Private constructor to prevent instantiation.
+   */
+  private CoursePresenter() {
+  }
 
   /**
-   * Converts a CourseView object to a CourseResponse object.
+   * Projects a read-only {@link CourseView} into a client-facing {@link CourseResponse}.
    *
-   * @param v the CourseView object to convert
-   * @return the corresponding CourseResponse object
+   * @param v      the internal read-model projection of the course
+   * @param locale the locale extracted from the client's request headers
+   * @return a fully populated {@link CourseResponse} ready for JSON serialization,
+   * or {@code null} if the input view is null
    */
   public static CourseResponse toResponse(CourseView v, Locale locale) {
     if (v == null || locale == null) {
@@ -23,9 +36,9 @@ public final class CoursePresenter {
     }
 
     AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+            SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new CourseResponse(
-        v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
+            v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
   }
 }

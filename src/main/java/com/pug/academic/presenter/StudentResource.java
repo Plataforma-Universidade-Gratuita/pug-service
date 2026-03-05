@@ -39,32 +39,46 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing students. */
+/**
+ * REST API Resource controller for managing Student enrollments.
+ * <p>
+ * This class exposes endpoints to enroll, retrieve, update, and remove students.
+ * It delegates commands to the {@link StudentService} (writes) and queries to the
+ * {@link StudentReadService} (reads), adhering to CQRS principles.
+ */
 @ApplicationScoped
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {
 
-  @Inject StudentService writeService;
-  @Inject StudentReadService readService;
-  @Inject PasswordService passwordService;
-  @Inject I18n i18n;
+  @Inject
+  StudentService writeService;
+  @Inject
+  StudentReadService readService;
+  @Inject
+  PasswordService passwordService;
+  @Inject
+  I18n i18n;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Retrieves a student by their Account ID.
+   * Retrieves a specific student by their linked account UUID.
    *
-   * @param id the UUID of the student's account.
-   * @return the response containing the student details.
+   * @param id the unique identifier (UUIDv7) of the student's account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
   @Path("/{id}")
@@ -75,11 +89,60 @@ public class StudentResource {
   }
 
   /**
-   * Lists students, optionally filtering by name search or course.
+   * Retrieves a specific student by their exact academic registration number.
    *
-   * @param q the search query (name).
-   * @param courseId the course ID to filter by.
-   * @return the response containing the list of students.
+   * @param registration the academic registration string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   */
+  @GET
+  @Path("/by-registration/{registration}")
+  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
+    StudentView view = readService.getViewByAcademicRegistration(registration);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a specific student by their registered email address.
+   *
+   * @param email the exact email string of the student
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   */
+  @GET
+  @Path("/by-email/{email}")
+  public Response getByEmail(@PathParam("email") @NotNull String email) {
+    StudentView view = readService.getViewByEmail(email);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a specific student by their exact CPF.
+   *
+   * @param cpf the raw 11-digit numeric CPF string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   */
+  @GET
+  @Path("/by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
+    StudentView view = readService.getViewByCpf(cpf);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of students.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the students' personal names. If the {@code courseId} is provided, it filters the students
+   * by their enrolled course. If both are omitted, it returns all students.
+   *
+   * @param q        the optional search query string
+   * @param courseId the optional course identifier to filter by
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link StudentResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
@@ -95,60 +158,22 @@ public class StudentResource {
     }
 
     List<StudentResponse> body =
-        views.stream()
-            .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
+            views.stream()
+                    .map(v -> StudentPresenter.toResponse(v, locale(), i18n))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Retrieves a student by their academic registration.
+   * Registers a new student within the platform.
+   * <p>
+   * This endpoint processes an aggregated payload, automatically handling the
+   * provisioning of the underlying user and authentication account within a single transaction.
    *
-   * @param registration the academic registration string.
-   * @return the response containing the student details.
-   */
-  @GET
-  @Path("/by-registration/{registration}")
-  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
-    StudentView view = readService.getViewByAcademicRegistration(registration);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a student by their email.
-   *
-   * @param email the email string.
-   * @return the response containing the student details.
-   */
-  @GET
-  @Path("/by-email/{email}")
-  public Response getByEmail(@PathParam("email") @NotNull String email) {
-    StudentView view = readService.getViewByEmail(email);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a student by their CPF.
-   *
-   * @param cpf the CPF string.
-   * @return the response containing the student details.
-   */
-  @GET
-  @Path("/by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
-    StudentView view = readService.getViewByCpf(cpf);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Creates a new student.
-   *
-   * @param req the student creation request.
-   * @return the response containing the created student.
+   * @param req the validated {@link StudentCreateRequest} containing identity and enrollment details
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link StudentResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or email already exists
    */
   @POST
   public Response create(@Valid StudentCreateRequest req) {
@@ -156,16 +181,16 @@ public class StudentResource {
 
     UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+            new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
     StudentCreateCommand studentCmd =
-        new StudentCreateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+            new StudentCreateCommand(
+                    accountCmd,
+                    req.academicRegistration(),
+                    req.campus(),
+                    req.courseId(),
+                    req.requiredHours(),
+                    req.startDate(),
+                    req.dueDate());
 
     Student created = writeService.save(studentCmd);
     StudentView view = readService.getViewByAccountId(created.getAccountId());
@@ -176,28 +201,32 @@ public class StudentResource {
   }
 
   /**
-   * Updates an existing student.
+   * Partially updates an existing student's enrollment details.
    *
-   * @param id the UUID of the student's account.
-   * @param req the student update request.
-   * @return the response containing the updated student.
+   * @param id  the unique identifier (UUIDv7) of the student's account
+   * @param req the validated {@link StudentUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link StudentResponse}
    */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
-    String passwordHash = passwordService.hash(req.password());
+    // Only hash the password if a new one was provided
+    String passwordHash = null;
+    if (StringUtils.isNotEmpty(req.password())) {
+      passwordHash = passwordService.hash(req.password());
+    }
 
     UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
     AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
     StudentUpdateCommand studentCmd =
-        new StudentUpdateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+            new StudentUpdateCommand(
+                    accountCmd,
+                    req.academicRegistration(),
+                    req.campus(),
+                    req.courseId(),
+                    req.requiredHours(),
+                    req.startDate(),
+                    req.dueDate());
 
     writeService.update(id, studentCmd);
     StudentView view = readService.getViewByAccountId(id);
@@ -207,10 +236,10 @@ public class StudentResource {
   }
 
   /**
-   * Deletes a student by their Account ID.
+   * Permanently removes a student enrollment from the system and revokes their account access.
    *
-   * @param id the UUID of the student's account.
-   * @return the response indicating success.
+   * @param id the unique identifier (UUIDv7) of the student's account to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("/{id}")
@@ -219,7 +248,9 @@ public class StudentResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the Accept-Language header. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

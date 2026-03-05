@@ -1,72 +1,81 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.StudentView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading Student data. */
+/**
+ * Application service interface dedicated exclusively to querying Student data.
+ * <p>
+ * Following CQRS principles, this service handles the "Query" operations. It bypasses
+ * complex domain logic and retrieves lightweight, fully resolved {@link StudentView} Data
+ * Transfer Objects directly from the underlying data store or search indices.
+ */
 public interface StudentReadService {
 
   /**
-   * Retrieves a StudentView by its unique identifier (Account ID).
+   * Retrieves a read-only projection of an enrolled student based on their linked account ID.
    *
-   * @param accountId the UUID of the Student's account
-   * @return the StudentView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given ID is
-   *     found
+   * @param accountId the unique identifier (UUID) of the student's account
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided ID
    */
   StudentView getViewByAccountId(UUID accountId);
 
   /**
-   * Retrieves a StudentView by its academic registration.
+   * Retrieves a read-only projection of a student based on their exact academic registration number.
    *
-   * @param academicRegistration the academic registration of the Student
-   * @return the StudentView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given
-   *     academic registration is found
+   * @param academicRegistration the exact academic registration string
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided registration
    */
   StudentView getViewByAcademicRegistration(String academicRegistration);
 
   /**
-   * Retrieves a StudentView by the email of the associated account.
+   * Retrieves a read-only projection of a student based on their registered email address.
    *
-   * @param email the email of the Student's account
-   * @return the StudentView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given email
-   *     is found
+   * @param email the exact email address of the student
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided email
    */
   StudentView getViewByEmail(String email);
 
   /**
-   * Retrieves a StudentView by the CPF of the associated account.
+   * Retrieves a read-only projection of a student based on their registered CPF.
    *
-   * @param cpf the CPF of the Student's account
-   * @return the StudentView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no Student with the given CPF is
-   *     found
+   * @param cpf the exact 11-digit numeric CPF string of the student
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided CPF
    */
   StudentView getViewByCpf(String cpf);
 
   /**
-   * Lists all StudentViews.
+   * Retrieves a comprehensive list of all students registered in the system.
+   * <p>
+   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
+   * in contexts where the dataset size is known to be safely bounded.
    *
-   * @return a list of all StudentViews
+   * @return a {@link List} containing all available {@link StudentView} entries
    */
   List<StudentView> listViews();
 
   /**
-   * Lists all StudentViews by course ID.
+   * Retrieves a list of all students currently enrolled in a specific course.
    *
-   * @param courseId the UUID of the course
-   * @return a list of StudentViews enrolled in the specified course
+   * @param courseId the unique identifier (UUID) of the course
+   * @return a {@link List} of matching {@link StudentView} entries
    */
   List<StudentView> listViewsByCourseId(UUID courseId);
 
   /**
-   * Searches for StudentView objects by name (of the associated account).
+   * Executes a robust full-text search against the names of the associated student users.
+   * <p>
+   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
+   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
-   * @param query the search query.
-   * @return a list of StudentView objects matching the search key.
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link StudentView} entries
    */
   List<StudentView> searchByName(String query);
 }

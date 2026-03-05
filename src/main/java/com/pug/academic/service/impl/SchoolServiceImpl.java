@@ -2,29 +2,38 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
+import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.SchoolProcessor;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing School entities. */
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link SchoolService} command interface.
+ * <p>
+ * This application-scoped service orchestrates state mutations for academic schools.
+ * It invokes pure domain logic via {@link SchoolProcessor}, enforces uniqueness rules,
+ * and coordinates transaction boundaries with the {@link SchoolRepository}.
+ */
 @ApplicationScoped
 public class SchoolServiceImpl implements SchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
-  @Inject SchoolRepository repo;
+  @Inject
+  SchoolRepository repo;
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public School save(SchoolCreateCommand cmd) {
@@ -37,8 +46,7 @@ public class SchoolServiceImpl implements SchoolService {
 
     if (existsByName(schoolToPersist.getName())) {
       LOG.warnf("Creation failed: School with name %s already exists", schoolToPersist.getName());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", schoolToPersist.getName());
+      throw ExceptionHelper.schoolAlreadyExists();
     }
 
     School savedSchool = repo.persist(schoolToPersist);
@@ -46,6 +54,9 @@ public class SchoolServiceImpl implements SchoolService {
     return savedSchool;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public School update(UUID id, SchoolUpdateCommand cmd) {
@@ -58,11 +69,10 @@ public class SchoolServiceImpl implements SchoolService {
     }
 
     if (!updatedSchool.getName().equals(current.getName())
-        && existsByName(updatedSchool.getName())) {
+            && existsByName(updatedSchool.getName())) {
       LOG.warnf(
-          "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.SCHOOL_ALREADY_EXISTS, "name", updatedSchool.getName());
+              "Update failed: School ID %s tried to use existing name %s", id, updatedSchool.getName());
+      throw ExceptionHelper.schoolAlreadyExists();
     }
 
     repo.update(updatedSchool);
@@ -70,6 +80,9 @@ public class SchoolServiceImpl implements SchoolService {
     return getById(id);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -88,22 +101,24 @@ public class SchoolServiceImpl implements SchoolService {
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public School getById(UUID id) {
     School school =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("School lookup failed: ID %s not found", id);
-                  return new ResourceNotFoundException(
-                      AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
-                });
+            repo.findOptionalById(id)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("School lookup failed: ID %s not found", id);
+                              return ExceptionHelper.schoolNotFound();
+                            });
 
     if (school.hasFieldErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-          id, school.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND, "id", id.toString());
+              "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+              id, school.getProblemsSummary());
+      throw ExceptionHelper.schoolNotFound();
     }
     return school;
   }
@@ -111,10 +126,10 @@ public class SchoolServiceImpl implements SchoolService {
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**
-   * Checks if a School entityId exists by its name.
+   * Checks if a School entity exists by its exact name.
    *
-   * @param name the name of the school.
-   * @return true if a school with the given name exists, false otherwise.
+   * @param name the exact name of the school to check
+   * @return {@code true} if a school with the given name exists, {@code false} otherwise
    */
   private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {

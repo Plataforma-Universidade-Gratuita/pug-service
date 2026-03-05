@@ -2,36 +2,48 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.domain.StudentRepository;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Student entities. */
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link StudentService} command interface.
+ * <p>
+ * This application-scoped service orchestrates state mutations for student enrollments.
+ * Because a student is inherently an extension of an authentication account tied
+ * to a specific course, this service delegates identity concerns down to
+ * the {@link AccountService} and structural course validations to the {@link CourseService}.
+ */
 @ApplicationScoped
 public class StudentServiceImpl implements StudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
 
-  @Inject StudentRepository repo;
+  @Inject
+  StudentRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject
+  AccountService accountService;
 
-  @Inject CourseService courseService;
+  @Inject
+  CourseService courseService;
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Student save(StudentCreateCommand cmd) {
@@ -40,14 +52,14 @@ public class StudentServiceImpl implements StudentService {
     Account account = accountService.save(cmd.accountCreateCommand());
 
     Student studentToPersist =
-        StudentProcessor.processCreateInput(
-            account.getId(),
-            cmd.academicRegistration(),
-            cmd.campus(),
-            cmd.courseId(),
-            cmd.requiredHours(),
-            cmd.startDate(),
-            cmd.dueDate());
+            StudentProcessor.processCreateInput(
+                    account.getId(),
+                    cmd.academicRegistration(),
+                    cmd.campus(),
+                    cmd.courseId(),
+                    cmd.requiredHours(),
+                    cmd.startDate(),
+                    cmd.dueDate());
 
     if (studentToPersist.hasFieldErrors()) {
       throw new AppValidationException(studentToPersist.getFieldErrors());
@@ -55,12 +67,9 @@ public class StudentServiceImpl implements StudentService {
 
     if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
       LOG.warnf(
-          "Creation failed: Student with registration %s already exists",
-          studentToPersist.getAcademicRegistration());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-          "academicRegistration",
-          studentToPersist.getAcademicRegistration().toString());
+              "Creation failed: Student with registration %s already exists",
+              studentToPersist.getAcademicRegistration());
+      throw ExceptionHelper.studentAlreadyExists();
     }
 
     Student savedStudent = repo.persist(studentToPersist);
@@ -68,6 +77,9 @@ public class StudentServiceImpl implements StudentService {
     return savedStudent;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Student update(UUID accountId, StudentUpdateCommand cmd) {
@@ -82,29 +94,26 @@ public class StudentServiceImpl implements StudentService {
     }
 
     Student studentToUpdate =
-        StudentProcessor.processUpdateInput(
-            current,
-            cmd.academicRegistration(),
-            cmd.campus(),
-            cmd.courseId(),
-            cmd.requiredHours(),
-            cmd.startDate(),
-            cmd.dueDate());
+            StudentProcessor.processUpdateInput(
+                    current,
+                    cmd.academicRegistration(),
+                    cmd.campus(),
+                    cmd.courseId(),
+                    cmd.requiredHours(),
+                    cmd.startDate(),
+                    cmd.dueDate());
 
     if (studentToUpdate.hasFieldErrors()) {
       throw new AppValidationException(studentToUpdate.getFieldErrors());
     }
 
     if (cmd.academicRegistration() != null
-        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
-        && existsByRegistration(cmd.academicRegistration())) {
+            && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+            && existsByRegistration(cmd.academicRegistration())) {
       LOG.warnf(
-          "Update failed: Student Account ID %s tried to use existing registration %s",
-          accountId, cmd.academicRegistration());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.STUDENT_ALREADY_EXISTS,
-          "academicRegistration",
-          cmd.academicRegistration());
+              "Update failed: Student Account ID %s tried to use existing registration %s",
+              accountId, cmd.academicRegistration());
+      throw ExceptionHelper.studentAlreadyExists();
     }
 
     repo.update(studentToUpdate);
@@ -112,6 +121,9 @@ public class StudentServiceImpl implements StudentService {
     return getById(accountId);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean delete(UUID accountId) {
@@ -132,23 +144,24 @@ public class StudentServiceImpl implements StudentService {
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Student getById(UUID accountId) {
     Student student =
-        repo.findOptionalById(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-                  return new ResourceNotFoundException(
-                      AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
-                });
+            repo.findOptionalById(accountId)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                              return ExceptionHelper.studentNotFound();
+                            });
 
     if (student.hasFieldErrors()) {
       LOG.errorf(
-          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
-          accountId, student.getProblemsSummary());
-      throw new ResourceNotFoundException(
-          AcademicErrorCodes.STUDENT_NOT_FOUND, "accountId", accountId.toString());
+              "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+              accountId, student.getProblemsSummary());
+      throw ExceptionHelper.studentNotFound();
     }
 
     return student;
@@ -159,8 +172,8 @@ public class StudentServiceImpl implements StudentService {
   /**
    * Checks if a student with the given academic registration already exists.
    *
-   * @param registration the academic registration string to check for existence.
-   * @return true if a student with the given registration exists, false otherwise.
+   * @param registration the academic registration string to check
+   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
    */
   private boolean existsByRegistration(String registration) {
     if (StringUtils.isEmpty(registration)) {

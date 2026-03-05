@@ -2,26 +2,33 @@ package com.pug.academic.service.dtos;
 
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.shared.domain.enums.Campi;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Command DTO for creating a new Student.
+ * Data Transfer Object (DTO) acting as an application command to enroll a new Student.
+ * <p>
+ * This record acts as an aggregated payload that combines identity credentials with
+ * academic enrollment details. It encapsulates the data required to instantiate a
+ * new {@link com.pug.academic.domain.Student} aggregate and cascade the creation
+ * of the underlying authentication account.
  *
- * @param accountCreateCommand The command to create the associated account.
- * @param academicRegistration The academic registration number for the student.
- * @param campus The campus where the student is enrolled.
- * @param courseId The ID of the course the student is enrolled in.
- * @param requiredHours The total required counterpart hours for the student.
- * @param startDate The start date of the academic period.
- * @param dueDate The due date of the academic period.
+ * @param accountCreateCommand the nested command containing data to create the authentication account
+ * @param academicRegistration the raw academic registration string assigned to the student
+ * @param campus               the designated university campus where the student is enrolled
+ * @param courseId             the unique identifier of the enrolled course
+ * @param requiredHours        the required counterpart hours the student must complete
+ * @param startDate            the start date defining the validity of the enrollment period
+ * @param dueDate              the due date (end date) of the enrollment period
  */
 public record StudentCreateCommand(
-    AccountCreateCommand accountCreateCommand,
-    String academicRegistration,
-    Campi campus,
-    UUID courseId,
-    BigDecimal requiredHours,
-    LocalDate startDate,
-    LocalDate dueDate) {}
+        AccountCreateCommand accountCreateCommand,
+        String academicRegistration,
+        Campi campus,
+        UUID courseId,
+        BigDecimal requiredHours,
+        LocalDate startDate,
+        LocalDate dueDate) {
+}

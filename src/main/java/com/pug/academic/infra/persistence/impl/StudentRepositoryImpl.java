@@ -8,14 +8,25 @@ import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of StudentRepository using Panache for persistence operations. */
+/**
+ * Implementation of the {@link StudentRepository} utilizing Hibernate ORM with Panache.
+ * <p>
+ * This application-scoped bean bridges the pure domain repository interface with
+ * the underlying database infrastructure. It manages transaction boundaries,
+ * entity state transitions, and the mapping of complex nested Value Objects
+ * into the flattened {@link StudentEntity}.
+ */
 @ApplicationScoped
 public class StudentRepositoryImpl
-    implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
+        implements StudentRepository, PanacheRepositoryBase<StudentEntity, UUID> {
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Student persist(Student student) {
@@ -27,6 +38,9 @@ public class StudentRepositoryImpl
     return StudentMapper.toDomain(e);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public void update(Student student) {
@@ -39,6 +53,9 @@ public class StudentRepositoryImpl
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -50,17 +67,23 @@ public class StudentRepositoryImpl
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<Student> findOptionalById(UUID id) {
     Optional<StudentEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(StudentMapper::toDomain);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public boolean existsByRegistration(String registration) {
     if (StringUtils.isEmpty(registration)) {
       return false;
     }
-    return count("academic_registration", registration) > 0;
+    return count("academicRegistration", registration) > 0;
   }
 }

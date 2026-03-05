@@ -33,7 +33,6 @@ public final class UuidV7ForString implements ConstraintValidator<UuidV7, String
     try {
       return UUID.fromString(value).version() == 7;
     } catch (IllegalArgumentException e) {
-      // The string is not formatted as a valid UUID
       return false;
     }
   }

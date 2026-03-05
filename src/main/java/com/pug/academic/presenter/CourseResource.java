@@ -31,30 +31,42 @@ import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing courses. */
+/**
+ * REST API Resource controller for managing Academic Courses.
+ * <p>
+ * This class exposes endpoints to create, retrieve, update, and delete courses.
+ * It delegates commands to the {@link CourseService} (writes) and queries to the
+ * {@link CourseReadService} (reads), strictly adhering to CQRS principles.
+ */
 @ApplicationScoped
 @Path("/academic/courses")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {
 
-  @Inject CourseService writeService;
-  @Inject CourseReadService readService;
+  @Inject
+  CourseService writeService;
+  @Inject
+  CourseReadService readService;
 
-  @Context UriInfo uri;
-  @Context HttpHeaders headers;
+  @Context
+  UriInfo uri;
+  @Context
+  HttpHeaders headers;
 
   /**
-   * Retrieves a course by its ID.
+   * Retrieves a specific course by its unique UUID identifier.
    *
-   * @param id the course id
-   * @return the response containing the course
+   * @param id the unique identifier (UUIDv7) of the course
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CourseResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course is not found
    */
   @GET
   @Path("/{id}")
@@ -65,15 +77,19 @@ public class CourseResource {
   }
 
   /**
-   * Lists courses or searches by name.
+   * Retrieves a collection of courses.
+   * <p>
+   * If the optional {@code q} parameter is provided, it executes a full-text search against
+   * the courses' names. If the {@code schoolId} is provided, it filters the courses by that school.
+   * If omitted, it returns an unfiltered list of all courses.
    *
-   * @param q the search query
-   * @param schoolId the school id to filter by
-   * @return the response containing the list of courses
+   * @param q        the optional search query string
+   * @param schoolId the optional school identifier to filter by
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link CourseResponse}
    */
   @GET
   public Response listOrSearch(
-      @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
+          @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
 
     List<CourseView> views;
 
@@ -86,18 +102,19 @@ public class CourseResource {
     }
 
     List<CourseResponse> body =
-        views.stream()
-            .map(v -> CoursePresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
+            views.stream()
+                    .map(v -> CoursePresenter.toResponse(v, locale()))
+                    .collect(Collectors.toList());
 
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Creates a new course.
+   * Registers a new academic course within the platform.
    *
-   * @param req the CourseCreateRequest DTO
-   * @return the response containing the created course
+   * @param req the validated {@link CourseCreateRequest} payload
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created {@link CourseResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name already exists
    */
   @POST
   public Response create(@Valid CourseCreateRequest req) {
@@ -112,11 +129,11 @@ public class CourseResource {
   }
 
   /**
-   * Updates an existing course.
+   * Partially updates an existing course's details.
    *
-   * @param id the course id to update
-   * @param req the CourseUpdateRequest DTO
-   * @return the response containing the updated course
+   * @param id  the unique identifier (UUIDv7) of the course to update
+   * @param req the validated {@link CourseUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link CourseResponse}
    */
   @PUT
   @Path("/{id}")
@@ -131,10 +148,10 @@ public class CourseResource {
   }
 
   /**
-   * Deletes a course by its ID.
+   * Permanently removes an academic course from the system.
    *
-   * @param id the course id to delete
-   * @return the response indicating success
+   * @param id the unique identifier (UUIDv7) of the course to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("/{id}")
@@ -143,7 +160,9 @@ public class CourseResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the Accept-Language header. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

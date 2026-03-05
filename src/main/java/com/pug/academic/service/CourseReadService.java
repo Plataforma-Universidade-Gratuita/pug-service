@@ -1,41 +1,54 @@
 package com.pug.academic.service;
 
 import com.pug.academic.infra.read.dtos.CourseView;
+
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading course information. */
+/**
+ * Application service interface dedicated exclusively to querying Course data.
+ * <p>
+ * Following CQRS principles, this service handles the "Query" operations. It bypasses
+ * complex domain logic and retrieves lightweight, fully resolved {@link CourseView} Data
+ * Transfer Objects directly from the underlying data store or search indices.
+ */
 public interface CourseReadService {
 
   /**
-   * Retrieves a CourseView by its ID.
+   * Retrieves a read-only projection of a course based on its unique identifier.
    *
-   * @param id the UUID of the course
-   * @return the CourseView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course is not found
+   * @param id the unique identifier (UUID) of the course
+   * @return the populated {@link CourseView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course matches the provided ID
    */
   CourseView getViewById(UUID id);
 
   /**
-   * Lists all CourseViews.
+   * Retrieves a comprehensive list of all courses registered in the system.
+   * <p>
+   * <i>Note:</i> This method returns the entire dataset. It should be used judiciously
+   * in contexts where the dataset size is known to be safely bounded.
    *
-   * @return a list of CourseViews
+   * @return a {@link List} containing all available {@link CourseView} entries
    */
   List<CourseView> listViews();
 
   /**
-   * Lists CourseViews by school ID.
+   * Retrieves a list of courses currently offered by a specific school.
    *
-   * @param schoolId the UUID of the school
-   * @return a list of CourseViews
+   * @param schoolId the unique identifier (UUID) of the academic school
+   * @return a {@link List} of matching {@link CourseView} entries
    */
   List<CourseView> listViewsBySchoolId(UUID schoolId);
 
   /**
-   * Searches CourseViews by name.
+   * Executes a robust full-text search against the names of registered courses.
+   * <p>
+   * Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide
+   * fuzzy matching, accent-insensitivity, and predictive autocomplete capabilities.
    *
-   * @param query the search query
-   * @return a list of CourseViews matching the query
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link CourseView} entries
    */
   List<CourseView> searchByName(String query);
 }

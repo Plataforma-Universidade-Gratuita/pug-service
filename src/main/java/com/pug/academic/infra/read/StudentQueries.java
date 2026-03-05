@@ -1,64 +1,78 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.StudentView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Interface for querying Student data. */
+/**
+ * Read-only interface for executing Student profile queries.
+ * <p>
+ * This interface represents the "Query" side of a CQRS architecture. It defines
+ * operations for retrieving consolidated student profiles directly into lightweight
+ * {@link StudentView} projections. These views aggregate data across the Identity
+ * and Academic contexts for optimized API delivery.
+ */
 public interface StudentQueries {
+
   /**
-   * Finds a Student by their Account ID.
+   * Retrieves a read-only view of a student based on their linked account ID.
    *
-   * @param accountId the ID of the Student's account to find
-   * @return an Optional containing the Student if found, or empty if not found
+   * @param accountId the unique identifier (UUID) of the student's account
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalById(UUID accountId);
 
   /**
-   * Finds a Student by their Academic Registration.
+   * Retrieves a read-only view of a student based on their academic registration identifier.
    *
-   * @param academicRegistration the Academic Registration of the Student to find
-   * @return an Optional containing the Student if found, or empty if not found
+   * @param academicRegistration the exact academic registration string of the student
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration);
 
   /**
-   * Finds a Student by the email of their associated account.
+   * Retrieves a read-only view of a student based on their registered email address.
    *
-   * @param email the email of the Student's account to find
-   * @return an Optional containing the Student if found, or empty if not found
+   * @param email the exact email address of the student
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalByEmail(String email);
 
   /**
-   * Finds a Student by the CPF of their associated account.
+   * Retrieves a read-only view of a student based on their registered CPF.
    *
-   * @param cpf the CPF of the Student's account to find
-   * @return an Optional containing the Student if found, or empty if not found
+   * @param cpf the exact 11-digit numeric CPF string of the student
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalByCpf(String cpf);
 
   /**
-   * Lists all Students.
+   * Retrieves a comprehensive list of all students registered in the system.
+   * <p>
+   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
+   * does not implement pagination.
    *
-   * @return a list of all Students
+   * @return a {@link List} of all {@link StudentView} records
    */
   List<StudentView> listAllStudents();
 
   /**
-   * Lists all Students by Course ID.
+   * Retrieves a list of all students enrolled in a specific course.
    *
-   * @param courseId the Course ID to filter Students
-   * @return a list of Students enrolled in the specified Course
+   * @param courseId the unique identifier (UUID) of the course
+   * @return a {@link List} of {@link StudentView} records associated with the given course
    */
   List<StudentView> listAllByCourseId(UUID courseId);
 
   /**
-   * Searches for StudentView objects by name (of the associated account).
+   * Executes a robust full-text search against the names of the associated student users.
+   * <p>
+   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
    *
-   * @param key the name key to search for.
-   * @return a list of StudentView objects matching the search key.
+   * @param key the raw search string or partial name of the student
+   * @return a sorted {@link List} of matching {@link StudentView} records
    */
   List<StudentView> searchByName(String key);
 }

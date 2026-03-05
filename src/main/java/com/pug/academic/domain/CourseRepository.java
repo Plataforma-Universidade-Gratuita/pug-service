@@ -3,47 +3,56 @@ package com.pug.academic.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository for Course aggregate. */
+/**
+ * Domain repository interface for managing {@link Course} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * academic courses. It abstracts the underlying data storage mechanism to maintain
+ * a pure, infrastructure-agnostic domain model.
+ */
 public interface CourseRepository {
+
   /**
-   * Persist a course.
+   * Persists a newly created {@link Course} aggregate into the repository.
    *
-   * @param entity the course to persist.
-   * @return the persisted course.
+   * @param entity the {@link Course} aggregate to persist
+   * @return the fully persisted {@link Course} instance
    */
   Course persist(Course entity);
 
   /**
-   * Update a course.
+   * Updates the state of an existing {@link Course} aggregate in the repository.
    *
-   * @param entity the course with updated data.
+   * @param entity the {@link Course} instance containing the updated state
    */
   void update(Course entity);
 
   /**
-   * Delete a course by its ID.
+   * Removes a {@link Course} from the repository based on its unique identifier.
    *
-   * @param id the ID of the course to delete.
-   * @return true if the course was deleted, false if no course with the given ID was found.
+   * @param id the unique identifier (UUIDv7) of the course to delete
+   * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Find a course by its ID.
+   * Retrieves a {@link Course} by its unique identifier.
+   * <p>
+   * When a course is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created aggregate. Therefore, the returned
+   * {@link Course} might contain validation errors (verifiable via {@link Course#hasFieldErrors()})
+   * if the stored data violates current domain rules.
    *
-   * <p>Note: The returned Course may contain validation errors (check {@code course.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param id the ID of the course.
-   * @return the found course.
+   * @param id the unique identifier (UUID) of the course
+   * @return an {@link Optional} containing the found {@link Course}, or {@link Optional#empty()} if not found
    */
   Optional<Course> findOptionalById(UUID id);
 
   /**
-   * Check if a course exists by name.
+   * Checks whether a {@link Course} with the specified name already exists in the repository.
    *
-   * @param name the name of the course.
-   * @return true if a course with the given name exists, false otherwise.
+   * @param name the exact name of the course
+   * @return {@code true} if a course with the given name exists, {@code false} otherwise
    */
   boolean existsByName(String name);
 }

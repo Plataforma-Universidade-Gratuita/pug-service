@@ -1,48 +1,61 @@
 package com.pug.academic.infra.read;
 
 import com.pug.academic.infra.read.dtos.CourseView;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to courses. */
+/**
+ * Read-only interface for executing queries against Academic Courses.
+ * <p>
+ * This interface represents the "Query" side of a CQRS architecture. It defines
+ * operations for retrieving course data directly into lightweight {@link CourseView}
+ * projections, bypassing the overhead of instantiating full JPA entities or domain aggregates.
+ */
 public interface CourseQueries {
+
   /**
-   * Find a course by its ID.
+   * Retrieves a read-only view of a course based on its unique identifier.
    *
-   * @param id the ID of the course.
-   * @return the found course.
+   * @param id the unique identifier (UUID) of the course to find
+   * @return an {@link Optional} containing the found {@link CourseView}, or {@link Optional#empty()} if not found
    */
   Optional<CourseView> findOptionalById(UUID id);
 
   /**
-   * Find a course by its name.
+   * Retrieves a read-only view of a course based on its exact name.
    *
-   * @param name the name of the course.
-   * @return an Optional containing the found CourseView, or empty if not found.
+   * @param name the exact name of the course
+   * @return an {@link Optional} containing the found {@link CourseView}, or {@link Optional#empty()} if not found
    */
   Optional<CourseView> findOptionalByName(String name);
 
   /**
-   * List all courses.
+   * Retrieves a comprehensive list of all academic courses registered in the system.
+   * <p>
+   * <i>Note:</i> Use with caution if the dataset grows significantly, as this method
+   * does not implement pagination.
    *
-   * @return the list of all courses.
+   * @return a {@link List} of all {@link CourseView} objects
    */
   List<CourseView> listAllCourses();
 
   /**
-   * List all courses by school ID.
+   * Retrieves a list of courses offered by a specific school.
    *
-   * @param schoolId the school ID.
-   * @return the list of courses for the given school ID.
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return a {@link List} of {@link CourseView} objects linked to the specified school
    */
   List<CourseView> listAllBySchoolId(UUID schoolId);
 
   /**
-   * Search courses by name.
+   * Executes a robust full-text search against the names of courses.
+   * <p>
+   * This method typically leverages underlying indexing engines (e.g., Elasticsearch via Hibernate Search).
    *
-   * @param query the search query.
-   * @return the list of matching courses.
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of {@link CourseView} entries matching the search criteria
    */
   List<CourseView> searchByName(String query);
 }

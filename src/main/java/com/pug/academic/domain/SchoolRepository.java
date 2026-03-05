@@ -3,47 +3,56 @@ package com.pug.academic.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for Schools. */
+/**
+ * Domain repository interface for managing {@link School} aggregate roots.
+ * <p>
+ * This interface defines the contract for persisting, retrieving, updating, and deleting
+ * academic schools (or departments). It abstracts the underlying data storage mechanism
+ * to maintain a pure, infrastructure-agnostic domain model.
+ */
 public interface SchoolRepository {
+
   /**
-   * Persist a school entityId.
+   * Persists a newly created {@link School} aggregate into the repository.
    *
-   * @param entity the school entityId to persist
-   * @return the persisted school entityId
+   * @param entity the {@link School} aggregate to persist
+   * @return the fully persisted {@link School} instance
    */
   School persist(School entity);
 
   /**
-   * Update a school entityId.
+   * Updates the state of an existing {@link School} aggregate in the repository.
    *
-   * @param entity the school entityId with updated information
+   * @param entity the {@link School} instance containing the updated state
    */
   void update(School entity);
 
   /**
-   * Delete a school by its ID.
+   * Removes a {@link School} from the repository based on its unique identifier.
    *
-   * @param id the UUID of the school to delete
-   * @return true if the school was successfully deleted, false if it was not found
+   * @param id the unique identifier (UUIDv7) of the school to delete
+   * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Find a school by its ID.
+   * Retrieves a {@link School} by its unique identifier.
+   * <p>
+   * When a school is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created aggregate. Therefore, the returned
+   * {@link School} might contain validation errors (verifiable via {@link School#hasFieldErrors()})
+   * if the stored data violates current domain rules.
    *
-   * <p>Note: The returned School may contain validation errors (check {@code school.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
-   *
-   * @param id the UUID of the school to find
-   * @return an Optional containing the found school or empty if not found
+   * @param id the unique identifier (UUID) of the school
+   * @return an {@link Optional} containing the found {@link School}, or {@link Optional#empty()} if not found
    */
   Optional<School> findOptionalById(UUID id);
 
   /**
-   * Check if a school exists by its name.
+   * Checks whether a {@link School} with the specified name already exists in the repository.
    *
-   * @param name the name of the school to check
-   * @return true if a school with the given name exists, false otherwise
+   * @param name the exact name of the school
+   * @return {@code true} if a school with the given name exists, {@code false} otherwise
    */
   boolean existsByName(String name);
 }

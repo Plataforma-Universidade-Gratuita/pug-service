@@ -3,59 +3,75 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+
 import java.util.UUID;
 
-/** Interface for managing Student entities. */
+/**
+ * Application service interface for managing the state of {@link Student} domain aggregates.
+ * <p>
+ * Following CQRS principles, this service handles the "Command" operations (Create, Update, Delete).
+ * It orchestrates the complex lifecycle relationship between a Student enrollment, their underlying
+ * {@link com.pug.identity.domain.Account}, and the {@link com.pug.academic.domain.Course} they
+ * are enrolled in, ensuring that academic records and authentication credentials cascade correctly.
+ */
 public interface StudentService {
 
   /**
-   * Saves a new Student entityId.
+   * Instantiates and persists a new {@link Student} aggregate based on the provided command.
+   * <p>
+   * This method performs a cascading save. It verifies that the specified course exists,
+   * then delegates the creation of the underlying authentication account (and potentially
+   * the user identity) to the {@link com.pug.identity.service.AccountService} before
+   * saving the student's academic enrollment records.
    *
-   * <p>This method also creates and saves the associated Account.
-   *
-   * @param cmd the command containing the data to create the new Student.
-   * @return the saved Student entityId.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the same
-   *     academic registration already exists, or if an account with the given email already exists.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated course does not
-   *     exist.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   * @param cmd the structured command containing the data to create the student and linked account
+   * @return the fully instantiated and persisted {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or account email already exists
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the associated course does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails at the domain level
    */
   Student save(StudentCreateCommand cmd);
 
   /**
-   * Updates an existing Student entityId.
+   * Updates an existing {@link Student} and optionally its underlying account using the provided data.
+   * <p>
+   * This method applies partial updates. If account data is provided in the command,
+   * the update is cascaded down to the underlying account aggregate. If a new course ID
+   * is provided, the service verifies its existence before changing the student's enrollment.
    *
-   * <p>This method also updates the associated Account.
-   *
-   * @param accountId the UUID of the student's account to update.
-   * @param cmd the command containing the new data for the student.
-   * @return the updated Student entityId.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
-   *     account ID does not exist, or if the new course does not exist.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a student with the new academic
-   *     registration already exists, or if an account with the new email already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   * @param accountId the unique identifier of the Student (which corresponds directly to the Account ID)
+   * @param cmd       the structured command containing the new data for the student and/or account
+   * @return the mutated and persisted {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException  if the student does not exist, or the new course is not found
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated academic registration or email conflicts with existing records
+   * @throws com.pug.shared.exceptions.AppValidationException     if input validation fails
    */
   Student update(UUID accountId, StudentUpdateCommand cmd);
 
   /**
-   * Deletes a Student entityId by its account ID.
+   * Removes a student's enrollment by deleting the {@link Student} record.
+   * <p>
+   * This operation enforces data hygiene. After the academic enrollment is successfully
+   * removed, the service automatically triggers the deletion of the underlying
+   * {@link com.pug.identity.domain.Account} to ensure credentials tied strictly to
+   * student roles are wiped out.
    *
-   * @param accountId the UUID of the student's account to delete.
-   * @return true if the student was successfully deleted, false if the student was not found.
+   * @param accountId the unique identifier of the Student to delete (Account ID)
+   * @return {@code true} if the student was successfully deleted, {@code false} if they were not found
    */
   boolean delete(UUID accountId);
 
   /**
-   * Retrieves a Student entityId by its account ID.
+   * Retrieves a full {@link Student} domain aggregate by its linked account identifier.
+   * <p>
+   * <b>Note:</b> This method is intended strictly for internal domain orchestration.
+   * For API responses, use {@link StudentReadService#getViewByAccountId(UUID)} instead.
    *
-   * @param accountId the UUID of the student's account.
-   * @return the Student entityId.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student with the given
-   *     account ID does not exist (or data is corrupted in DB).
-   * @throws com.pug.shared.exceptions.AppValidationException if the student is found but its data
-   *     is corrupted in the database.
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException    if the student exists but its stored state
+   *                                                             violates strict domain invariants (data corruption)
    */
   Student getById(UUID accountId);
 }

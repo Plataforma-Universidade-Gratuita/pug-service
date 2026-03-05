@@ -17,7 +17,13 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextFi
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
-/** Schools table. */
+/**
+ * JPA entity representing an Academic School within the persistence layer.
+ * <p>
+ * This class acts as the database-mapped counterpart to the {@link com.pug.academic.domain.School}
+ * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit tracking
+ * fields from {@link BaseAuditedEntity}.
+ */
 @Getter
 @Setter
 @SuperBuilder
@@ -25,19 +31,24 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(
-    callSuper = true,
-    of = {"name"})
+        callSuper = true,
+        of = {"name"})
 @Entity
 @Table(
-    name = "schools",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uq_schools_name",
-          columnNames = {"name"})
-    })
+        name = "schools",
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uq_schools_name",
+                        columnNames = {"name"})
+        })
 @Indexed
 public class SchoolEntity extends BaseAuditedEntity {
 
+  /**
+   * The name of the academic school.
+   * <p>
+   * Heavily indexed for optimized searching using custom analyzers.
+   */
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
   @KeywordField(name = "name_exact", normalizer = "folding_lowercase")

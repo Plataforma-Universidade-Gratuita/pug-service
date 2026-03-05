@@ -1,28 +1,60 @@
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
+import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Course entityId aggregate. */
+import java.util.UUID;
+
+/**
+ * Immutable Domain Entity representing an Academic Course.
+ * <p>
+ * This class acts as an aggregate root containing the course's unique identifier,
+ * its name, and its association with a specific {@link School}. It extends
+ * {@link DomainError} to accumulate validation failures.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Course extends DomainError {
+
+  /**
+   * The unique identifier for the course (UUIDv7).
+   */
   UUID id;
+
+  /**
+   * The name of the academic course.
+   */
   String name;
+
+  /**
+   * The unique identifier of the {@link School} that offers this course.
+   */
   UUID schoolId;
+
+  /**
+   * The audit tracking information (creation and update timestamps).
+   */
   AuditInfo auditInfo;
 
+  /**
+   * Constructs a {@code Course} instance.
+   *
+   * @param id        the unique identifier
+   * @param name      the name of the course
+   * @param schoolId  the unique identifier of the associated school
+   * @param auditInfo the audit tracking VO
+   */
   @Builder(toBuilder = true)
   private Course(UUID id, String name, UUID schoolId, AuditInfo auditInfo) {
     this.id = id;
@@ -32,33 +64,40 @@ public class Course extends DomainError {
   }
 
   /**
-   * Factory for new courses.
+   * Factory method to create a new {@code Course} aggregate.
+   * <p>
+   * Automatically generates a time-ordered epoch UUID (UUIDv7) for the identifier,
+   * trims the provided name, initializes standard audit tracking information,
+   * and performs a full validation of the aggregate.
    *
-   * @param name the name of the course
-   * @param schoolId the ID of the school
-   * @return the created course (may contain errors)
+   * @param name     the name of the course
+   * @param schoolId the unique identifier of the school offering the course
+   * @return a newly created and self-validated {@link Course} instance
    */
   public static Course factory(String name, UUID schoolId) {
     String trimmedName = StringUtils.trim(name);
     Course course =
-        Course.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(trimmedName)
-            .schoolId(schoolId)
-            .auditInfo(AuditInfo.factory())
-            .build();
+            Course.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(trimmedName)
+                    .schoolId(schoolId)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     course.collectValidationProblems();
     return course;
   }
 
   /**
-   * Behavior: change the name of the course.
+   * Updates the course's name.
+   * <p>
+   * Since this entity is immutable, this method returns a new {@code Course} instance
+   * with the updated, trimmed name and a refreshed {@link AuditInfo} timestamp.
    *
    * @param newName the new name for the course
-   * @return the updated course with the new name
+   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the name is unchanged
    */
-  public Course changeName(String newName) {
+  public Course rename(String newName) {
     String trimmedName = StringUtils.trim(newName);
     if (name.equals(trimmedName)) {
       return this;
@@ -69,10 +108,10 @@ public class Course extends DomainError {
   }
 
   /**
-   * Behavior: move the course to another school.
+   * Updates the association of the course to a different school.
    *
-   * @param newSchoolId the ID of the new school
-   * @return the updated course with the new school ID
+   * @param newSchoolId the unique identifier of the new school
+   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the school is unchanged
    */
   public Course moveToSchool(UUID newSchoolId) {
     if (schoolId.equals(newSchoolId)) {
@@ -83,13 +122,25 @@ public class Course extends DomainError {
     return updatedCourse;
   }
 
-  /** Collects all validation problems for the Course instance. */
+  /**
+   * Evaluates constraints for the Course aggregate and accumulates any validation problems.
+   * <p>
+   * Rules applied:
+   * <ul>
+   *   <li>Validates the UUID (inherited from {@link DomainError})</li>
+   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})</li>
+   *   <li>Ensures the {@code schoolId} is not null (appends {@link AcademicFieldErrorCodes#INVALID_SCHOOL_BLANK})</li>
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors</li>
+   * </ul>
+   */
   private void collectValidationProblems() {
     validateIdField(id);
-    validateStringField(name, 120L, "name");
-    validateForeignKeyField(schoolId, "schoolId");
+    validateNameField(name);
+    if (schoolId == null) {
+      addFieldError(AcademicFieldErrorCodes.INVALID_SCHOOL_BLANK);
+    }
     if (auditInfo == null) {
-      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
     } else {
       addFieldErrors(auditInfo.getFieldErrors());
     }

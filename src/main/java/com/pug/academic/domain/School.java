@@ -2,26 +2,52 @@ package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** School entityId aggregate. */
+import java.util.UUID;
+
+/**
+ * Immutable Domain Entity representing an Academic School.
+ * <p>
+ * This class acts as an aggregate root representing a university department
+ * or educational institution that groups together various {@link Course} entities.
+ * It extends {@link DomainError} to accumulate validation failures.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class School extends DomainError {
+
+  /**
+   * The unique identifier for the school (UUIDv7).
+   */
   UUID id;
+
+  /**
+   * The name of the academic school.
+   */
   String name;
+
+  /**
+   * The audit tracking information (creation and update timestamps).
+   */
   AuditInfo auditInfo;
 
+  /**
+   * Constructs a {@code School} instance.
+   *
+   * @param id        the unique identifier
+   * @param name      the name of the school
+   * @param auditInfo the audit tracking VO
+   */
   @Builder(toBuilder = true)
   private School(UUID id, String name, AuditInfo auditInfo) {
     this.id = id;
@@ -30,31 +56,38 @@ public class School extends DomainError {
   }
 
   /**
-   * Factory for new schools.
+   * Factory method to create a new {@code School} aggregate.
+   * <p>
+   * Automatically generates a time-ordered epoch UUID (UUIDv7) for the identifier,
+   * trims the provided name, initializes standard audit tracking information,
+   * and performs a full validation of the aggregate.
    *
    * @param name the name of the school
-   * @return the created school (may contain errors)
+   * @return a newly created and self-validated {@link School} instance
    */
   public static School factory(String name) {
     String trimmedName = StringUtils.trim(name);
     School school =
-        School.builder()
-            .id(UuidCreator.getTimeOrderedEpoch())
-            .name(trimmedName)
-            .auditInfo(AuditInfo.factory())
-            .build();
+            School.builder()
+                    .id(UuidCreator.getTimeOrderedEpoch())
+                    .name(trimmedName)
+                    .auditInfo(AuditInfo.factory())
+                    .build();
 
     school.collectValidationProblems();
     return school;
   }
 
   /**
-   * Behavior: change the school name.
+   * Updates the school's name.
+   * <p>
+   * Since this entity is immutable, this method returns a new {@code School} instance
+   * with the updated, trimmed name and a refreshed {@link AuditInfo} timestamp.
    *
-   * @param newName new name for the school
-   * @return new school with updated name
+   * @param newName the new name for the school
+   * @return a new, updated, and validated {@link School} instance, or {@code this} if the name is unchanged
    */
-  public School changeName(String newName) {
+  public School rename(String newName) {
     String trimmedName = StringUtils.trim(newName);
     if (name.equals(trimmedName)) {
       return this;
@@ -64,12 +97,21 @@ public class School extends DomainError {
     return updatedSchool;
   }
 
-  /** Collects all validation problems for the School instance. */
+  /**
+   * Evaluates constraints for the School aggregate and accumulates any validation problems.
+   * <p>
+   * Rules applied:
+   * <ul>
+   *   <li>Validates the UUID (inherited from {@link DomainError})</li>
+   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})</li>
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors</li>
+   * </ul>
+   */
   private void collectValidationProblems() {
     validateIdField(id);
-    validateStringField(name, 100L, "name");
+    validateNameField(name);
     if (auditInfo == null) {
-      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
     } else if (auditInfo.hasFieldErrors()) {
       addFieldErrors(auditInfo.getFieldErrors());
     }

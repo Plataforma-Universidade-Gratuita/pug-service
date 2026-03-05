@@ -7,14 +7,24 @@ import com.pug.academic.infra.persistence.CourseEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository implementation for Course aggregate. */
+/**
+ * Implementation of the {@link CourseRepository} utilizing Hibernate ORM with Panache.
+ * <p>
+ * This application-scoped bean bridges the pure domain repository interface with
+ * the underlying database infrastructure. It manages transaction boundaries,
+ * entity state transitions, and the mapping between domain aggregates and JPA persistence entities.
+ */
 @ApplicationScoped
 public class CourseRepositoryImpl
-    implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
+        implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Course persist(Course entity) {
@@ -26,6 +36,9 @@ public class CourseRepositoryImpl
     return CourseMapper.toDomain(e);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public void update(Course course) {
@@ -38,6 +51,9 @@ public class CourseRepositoryImpl
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -49,12 +65,18 @@ public class CourseRepositoryImpl
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Optional<Course> findOptionalById(UUID id) {
     Optional<CourseEntity> entityOpt = findByIdOptional(id);
     return entityOpt.map(CourseMapper::toDomain);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;

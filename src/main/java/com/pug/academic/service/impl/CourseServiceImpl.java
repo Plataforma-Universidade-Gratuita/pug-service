@@ -2,38 +2,50 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
-import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
+import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Course entities. */
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link CourseService} command interface.
+ * <p>
+ * This application-scoped service orchestrates state mutations for academic courses.
+ * It manages transaction boundaries, enforces cross-domain constraints (such as verifying
+ * school existence via {@link SchoolService}), and relies on the {@link CourseProcessor}
+ * to isolate domain initialization logic.
+ */
 @ApplicationScoped
 public class CourseServiceImpl implements CourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
 
-  @Inject CourseRepository repo;
-  @Inject SchoolService schoolService;
-  @Inject StudentService studentService;
+  @Inject
+  CourseRepository repo;
 
+  @Inject
+  SchoolService schoolService;
+
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Course save(CourseCreateCommand cmd) {
     LOG.debugf("Attempting to create Course: %s", cmd.name());
     schoolService.getById(cmd.schoolId());
+
     Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
 
     if (courseToPersist.hasFieldErrors()) {
@@ -42,8 +54,7 @@ public class CourseServiceImpl implements CourseService {
 
     if (existsByName(courseToPersist.getName())) {
       LOG.warnf("Creation failed: Course with name %s already exists", courseToPersist.getName());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", courseToPersist.getName());
+      throw ExceptionHelper.courseAlreadyExists();
     }
 
     Course savedCourse = repo.persist(courseToPersist);
@@ -51,6 +62,9 @@ public class CourseServiceImpl implements CourseService {
     return savedCourse;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public Course update(UUID id, CourseUpdateCommand cmd) {
@@ -68,11 +82,10 @@ public class CourseServiceImpl implements CourseService {
     }
 
     if (!updatedCourse.getName().equals(current.getName())
-        && existsByName(updatedCourse.getName())) {
+            && existsByName(updatedCourse.getName())) {
       LOG.warnf(
-          "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
-      throw new DuplicateResourceException(
-          AcademicErrorCodes.COURSE_ALREADY_EXISTS, "name", updatedCourse.getName());
+              "Update failed: Course ID %s tried to use existing name %s", id, updatedCourse.getName());
+      throw ExceptionHelper.courseAlreadyExists();
     }
 
     repo.update(updatedCourse);
@@ -80,6 +93,9 @@ public class CourseServiceImpl implements CourseService {
     return getById(id);
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -98,22 +114,24 @@ public class CourseServiceImpl implements CourseService {
     return deleted;
   }
 
+  /**
+   * {@inheritDoc}
+   */
   @Override
   public Course getById(UUID id) {
     Course course =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Course lookup failed: ID %s not found", id);
-                  return new ResourceNotFoundException(
-                      AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
-                });
+            repo.findOptionalById(id)
+                    .orElseThrow(
+                            () -> {
+                              LOG.debugf("Course lookup failed: ID %s not found", id);
+                              return ExceptionHelper.courseNotFound();
+                            });
 
     if (course.hasFieldErrors()) {
       LOG.errorf(
-          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-          id, course.getProblemsSummary());
-      throw new ResourceNotFoundException(AcademicErrorCodes.COURSE_NOT_FOUND, "id", id.toString());
+              "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+              id, course.getProblemsSummary());
+      throw ExceptionHelper.courseNotFound();
     }
     return course;
   }
@@ -121,10 +139,10 @@ public class CourseServiceImpl implements CourseService {
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**
-   * Checks if a Course with the given name already exists.
+   * Checks if a Course entity exists by its exact name.
    *
-   * @param name the name to check for existence.
-   * @return true if a Course with the given name exists, false otherwise.
+   * @param name the exact name of the course to check
+   * @return {@code true} if a course with the given name exists, {@code false} otherwise
    */
   private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {

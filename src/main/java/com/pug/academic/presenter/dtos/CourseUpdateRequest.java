@@ -3,9 +3,14 @@ package com.pug.academic.presenter.dtos;
 import java.util.UUID;
 
 /**
- * Request DTO for updating an existing Course. All fields are optional, as they may not be changed.
+ * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing Course.
+ * <p>
+ * Because updates can be partial, all fields in this record are inherently optional.
+ * If a field is provided as {@code null} or omitted from the JSON payload, the application
+ * service will ignore it and retain the existing value for that specific attribute in the database.
  *
- * @param name the new name of the course (optional).
- * @param schoolId the new ID of the school this course belongs to (optional).
+ * @param name     the new name of the course, or {@code null} to leave unchanged
+ * @param schoolId the new unique identifier of the school offering the course, or {@code null} to leave unchanged
  */
-public record CourseUpdateRequest(String name, UUID schoolId) {}
+public record CourseUpdateRequest(String name, UUID schoolId) {
+}

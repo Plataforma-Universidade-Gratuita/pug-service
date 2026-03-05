@@ -74,7 +74,7 @@ public class Cnpj extends DomainError {
     }
   }
 
-  // --- Internal Validation Logic ---
+  /* --- Internal Validation Logic --- */
 
   /**
    * Executes the standard Brazilian modulo-11 checksum algorithm to validate
