@@ -137,22 +137,6 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Updates the corporate identification (CNPJ) of the partner entity.
-   *
-   * @param newCnpj the new {@link Cnpj} to assign
-   * @return a new, updated, and validated {@link Entity} instance, or {@code this} if the CNPJ is
-   *     unchanged
-   */
-  public Entity changeCnpj(Cnpj newCnpj) {
-    if (cnpj.equals(newCnpj)) {
-      return this;
-    }
-    Entity updated = toBuilder().cnpj(newCnpj).auditInfo(auditInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
    * Updates the geographical location of the partner entity to a new city.
    *
    * @param newCityId the unique identifier of the new city

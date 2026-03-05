@@ -15,6 +15,15 @@ import java.util.UUID;
 public interface EntityQueries {
 
   /**
+   * Retrieves a read-only view of a partner entity based on its exact CNPJ.
+   *
+   * @param cnpj the exact 14-digit numeric CNPJ string to find
+   * @return an {@link Optional} containing the found {@link EntityView}, or {@link
+   *     Optional#empty()} if not found
+   */
+  Optional<EntityView> findOptionalByCnpj(String cnpj);
+
+  /**
    * Retrieves a read-only view of a partner entity based on its unique identifier.
    *
    * @param id the unique identifier (UUID) of the entity to find
@@ -24,13 +33,12 @@ public interface EntityQueries {
   Optional<EntityView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a read-only view of a partner entity based on its exact CNPJ.
+   * Retrieves a list of partner entities located in a specific city.
    *
-   * @param cnpj the exact 14-digit numeric CNPJ string to find
-   * @return an {@link Optional} containing the found {@link EntityView}, or {@link
-   *     Optional#empty()} if not found
+   * @param cityId the unique identifier (UUID) of the city
+   * @return a {@link List} of {@link EntityView} objects located in the specified city
    */
-  Optional<EntityView> findOptionalByCnpj(String cnpj);
+  List<EntityView> listAllByCityId(UUID cityId);
 
   /**
    * Retrieves a comprehensive list of all partner entities registered in the system.
@@ -41,14 +49,6 @@ public interface EntityQueries {
    * @return a {@link List} of all {@link EntityView} objects
    */
   List<EntityView> listAllEntities();
-
-  /**
-   * Retrieves a list of partner entities located in a specific city.
-   *
-   * @param cityId the unique identifier (UUID) of the city
-   * @return a {@link List} of {@link EntityView} objects located in the specified city
-   */
-  List<EntityView> listAllByCityId(UUID cityId);
 
   /**
    * Executes a robust full-text search against the names of partner entities.

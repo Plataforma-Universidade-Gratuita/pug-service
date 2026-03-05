@@ -1,22 +1,66 @@
 package com.pug.partner.presenter.mappers;
 
 import com.pug.identity.presenter.mappers.AccountPresenter;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.partner.infra.read.dtos.StaffView;
+import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
+import com.pug.partner.presenter.dtos.StaffUpdateRequest;
+import com.pug.partner.service.dtos.StaffCreateCommand;
+import com.pug.partner.service.dtos.StaffUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal staff projections to external API
- * responses.
+ * responses and requests to commands.
  *
- * <p>This presenter acts as a translation layer, converting deeply nested CQRS query views ({@link
- * StaffView}) into consolidated, client-ready representations ({@link StaffResponse}).
+ * <p>This presenter acts as a translation layer, converting incoming REST payloads into application
+ * commands, and deeply nested CQRS query views ({@link StaffView}) into consolidated, client-ready
+ * representations ({@link StaffResponse}).
  */
 public final class StaffPresenter {
 
   /** Private constructor to prevent instantiation of utility class. */
   private StaffPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer creation command.
+   *
+   * @param req the validated {@link StaffCreateRequest} payload
+   * @param hashedPassword the securely hashed password string to assign to the new account
+   * @return the corresponding {@link StaffCreateCommand}, or {@code null} if input is null
+   */
+  public static StaffCreateCommand toCommand(StaffCreateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    var userCmd = new UserCreateCommand(req.cpfString(), req.name());
+    var accountCmd =
+        new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
+    return new StaffCreateCommand(req.entityId(), accountCmd);
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer update command.
+   *
+   * @param req the validated {@link StaffUpdateRequest} payload
+   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
+   *     not being updated
+   * @return the corresponding {@link StaffUpdateCommand}, or {@code null} if input is null
+   */
+  public static StaffUpdateCommand toCommand(StaffUpdateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    var userCmd = new UserUpdateCommand(null, req.name());
+    var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+    return new StaffUpdateCommand(accountCmd);
+  }
 
   /**
    * Projects a read-only {@link StaffView} into a client-facing {@link StaffResponse}.

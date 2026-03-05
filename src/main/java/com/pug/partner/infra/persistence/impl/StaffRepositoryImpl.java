@@ -24,19 +24,6 @@ public class StaffRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public Staff persist(Staff entity) {
-    if (entity == null) {
-      return null;
-    }
-    StaffEntity e = StaffMapper.toEntity(entity);
-    persistAndFlush(e);
-    StaffEntity loaded = find("accountId = ?1", e.getAccountId()).firstResultOptional().orElse(e);
-    return StaffMapper.toDomain(loaded);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
   public boolean deleteByAccountId(UUID accountId) {
     if (accountId == null) {
       return false;
@@ -60,6 +47,15 @@ public class StaffRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
+  public boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
+    if (accountId == null || entityId == null) {
+      return false;
+    }
+    return count("accountId = ?1 and entityId = ?2", accountId, entityId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public Optional<Staff> findOptionalByAccountId(UUID accountId) {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
@@ -71,11 +67,15 @@ public class StaffRepositoryImpl
   }
 
   /** {@inheritDoc} */
+  @Transactional
   @Override
-  public boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
-    if (accountId == null || entityId == null) {
-      return false;
+  public Staff persist(Staff entity) {
+    if (entity == null) {
+      return null;
     }
-    return count("accountId = ?1 and entityId = ?2", accountId, entityId) > 0;
+    StaffEntity e = StaffMapper.toEntity(entity);
+    persistAndFlush(e);
+    StaffEntity loaded = find("accountId = ?1", e.getAccountId()).firstResultOptional().orElse(e);
+    return StaffMapper.toDomain(loaded);
   }
 }

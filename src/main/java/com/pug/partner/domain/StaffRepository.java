@@ -14,14 +14,6 @@ import java.util.UUID;
 public interface StaffRepository {
 
   /**
-   * Persists a newly created {@link Staff} aggregate into the repository.
-   *
-   * @param staff the {@link Staff} aggregate to persist
-   * @return the fully persisted {@link Staff} instance
-   */
-  Staff persist(Staff staff);
-
-  /**
    * Removes a {@link Staff} privilege record from the repository based on its linked account
    * identifier.
    *
@@ -41,6 +33,19 @@ public interface StaffRepository {
    * @return the total number of staff records successfully deleted
    */
   long deleteByEntityId(UUID entityId);
+
+  /**
+   * Checks whether a specific {@link Staff} assignment already exists linking the given account to
+   * the given partner entity.
+   *
+   * <p>This is primarily used by domain services to enforce uniqueness constraints before
+   * persisting a new staff assignment.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId the unique identifier of the partner entity
+   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   */
+  boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId);
 
   /**
    * Retrieves a {@link Staff} aggregate by its linked account identifier.
@@ -67,15 +72,10 @@ public interface StaffRepository {
   List<Staff> listAllByEntityId(UUID entityId);
 
   /**
-   * Checks whether a specific {@link Staff} assignment already exists linking the given account to
-   * the given partner entity.
+   * Persists a newly created {@link Staff} aggregate into the repository.
    *
-   * <p>This is primarily used by domain services to enforce uniqueness constraints before
-   * persisting a new staff assignment.
-   *
-   * @param accountId the unique identifier of the linked authentication account
-   * @param entityId the unique identifier of the partner entity
-   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   * @param staff the {@link Staff} aggregate to persist
+   * @return the fully persisted {@link Staff} instance
    */
-  boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId);
+  Staff persist(Staff staff);
 }

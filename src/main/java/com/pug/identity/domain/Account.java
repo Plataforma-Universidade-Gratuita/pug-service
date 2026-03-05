@@ -46,6 +46,9 @@ public class Account extends DomainError {
   /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
+  /** Flag indicating whether the account is active or has been deactivated. */
+  Boolean active;
+
   /**
    * Constructs an {@code Account} instance.
    *
@@ -63,13 +66,15 @@ public class Account extends DomainError {
       Email email,
       AccountType accountType,
       String passwordHash,
-      AuditInfo auditInfo) {
+      AuditInfo auditInfo,
+      Boolean active) {
     this.id = id;
     this.userId = userId;
     this.email = email;
     this.accountType = accountType;
     this.passwordHash = passwordHash;
     this.auditInfo = auditInfo;
+    this.active = active;
   }
 
   /**
@@ -93,10 +98,29 @@ public class Account extends DomainError {
             .accountType(type)
             .passwordHash(passwordHash)
             .auditInfo(AuditInfo.factory())
+            .active(true)
             .build();
 
     account.collectValidationProblems();
     return account;
+  }
+
+  /**
+   * Deactivates the account by setting the {@code active} flag to {@code false}.
+   *
+   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
+   * updated active status and a refreshed {@link AuditInfo} timestamp.
+   *
+   * @return a new, deactivated, and validated {@link Account} instance, or {@code this} if the
+   *     account is already inactive
+   */
+  public Account deactivate() {
+    if (Boolean.FALSE.equals(active)) {
+      return this;
+    }
+    Account updated = toBuilder().active(false).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -178,6 +202,9 @@ public class Account extends DomainError {
       addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
     } else if (auditInfo.hasFieldErrors()) {
       addFieldErrors(auditInfo.getFieldErrors());
+    }
+    if (active == null) {
+      addFieldError(IdentityFieldErrorCodes.INVALID_ACTIVE_FLAG_BLANK);
     }
   }
 }

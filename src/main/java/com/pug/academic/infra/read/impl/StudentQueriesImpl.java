@@ -41,7 +41,7 @@ public class StudentQueriesImpl implements StudentQueries {
                       acc.id,
                       new com.pug.identity.infra.read.dtos.UserView(
                       u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
-                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt
+                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
                     ),
                     s.academicRegistration,
                     s.campus,

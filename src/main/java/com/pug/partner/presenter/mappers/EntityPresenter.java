@@ -3,18 +3,22 @@ package com.pug.partner.presenter.mappers;
 import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
+import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
+import com.pug.partner.presenter.dtos.EntityUpdateRequest;
+import com.pug.partner.service.dtos.EntityCreateCommand;
+import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal partner entity projections to external
- * API responses.
+ * API responses and requests to commands.
  *
- * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
- * EntityView}) into client-ready representations ({@link EntityResponse}). It is responsible for
- * injecting presentation-specific formatting, such as standardizing the Brazilian CNPJ string.
+ * <p>This presenter acts as a translation layer, converting incoming REST payloads into application
+ * commands, and raw CQRS query views ({@link EntityView}) into client-ready representations ({@link
+ * EntityResponse}).
  */
 public final class EntityPresenter {
 
@@ -22,28 +26,29 @@ public final class EntityPresenter {
   private EntityPresenter() {}
 
   /**
-   * Projects a read-only {@link EntityView} into a client-facing {@link EntityResponse}.
+   * Maps an incoming REST creation request into an application layer creation command.
    *
-   * <p>This mapping cascades down to format the nested {@link CityResponse} and resolves localized
-   * formatting for audit timestamps and corporate identification numbers.
-   *
-   * @param v the internal read-model projection of the partner entity
-   * @param locale the locale extracted from the client's request headers
-   * @return a fully populated {@link EntityResponse} ready for JSON serialization, or {@code null}
-   *     if the input view is null
+   * @param req the validated {@link EntityCreateRequest} payload
+   * @return the corresponding {@link EntityCreateCommand}, or {@code null} if input is null
    */
-  public static EntityResponse toResponse(EntityView v, Locale locale) {
-    if (v == null) {
+  public static EntityCreateCommand toCommand(EntityCreateRequest req) {
+    if (req == null) {
       return null;
     }
+    return new EntityCreateCommand(req.cnpjString(), req.name(), req.cityId(), req.address());
+  }
 
-    String formattedCnpj = toFormattedString(v.cnpj());
-    CityResponse cityResponse = CityPresenter.toResponse(v.city());
-    AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
-
-    return new EntityResponse(
-        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
+  /**
+   * Maps an incoming REST update request into an application layer update command.
+   *
+   * @param req the validated {@link EntityUpdateRequest} payload
+   * @return the corresponding {@link EntityUpdateCommand}, or {@code null} if input is null
+   */
+  public static EntityUpdateCommand toCommand(EntityUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new EntityUpdateCommand(req.name(), req.cityId(), req.address());
   }
 
   /**
@@ -69,5 +74,30 @@ public final class EntityPresenter {
         + value.substring(8, 12)
         + "-"
         + value.substring(12, 14);
+  }
+
+  /**
+   * Projects a read-only {@link EntityView} into a client-facing {@link EntityResponse}.
+   *
+   * <p>This mapping cascades down to format the nested {@link CityResponse} and resolves localized
+   * formatting for audit timestamps and corporate identification numbers.
+   *
+   * @param v the internal read-model projection of the partner entity
+   * @param locale the locale extracted from the client's request headers
+   * @return a fully populated {@link EntityResponse} ready for JSON serialization, or {@code null}
+   *     if the input view is null
+   */
+  public static EntityResponse toResponse(EntityView v, Locale locale) {
+    if (v == null) {
+      return null;
+    }
+
+    String formattedCnpj = toFormattedString(v.cnpj());
+    CityResponse cityResponse = CityPresenter.toResponse(v.city());
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+
+    return new EntityResponse(
+        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
   }
 }

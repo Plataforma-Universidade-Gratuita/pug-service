@@ -81,7 +81,8 @@ public final class StaffMapper {
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt()),
+            accountEntity.getUpdatedAt(),
+            accountEntity.getActive()),
         new EntityView(
             entityEntity.getId(),
             entityEntity.getCnpj(),

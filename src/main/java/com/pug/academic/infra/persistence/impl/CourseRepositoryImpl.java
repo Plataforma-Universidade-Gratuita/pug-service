@@ -70,4 +70,12 @@ public class CourseRepositoryImpl
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;
   }
+
+  @Override
+  public boolean existsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return false;
+    }
+    return count("schoolId", schoolId) > 0;
+  }
 }

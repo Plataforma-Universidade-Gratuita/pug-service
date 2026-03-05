@@ -50,7 +50,6 @@ public class EntityProcessor {
    * a <i>new</i> instance of the {@link Entity} reflecting the applied changes.
    *
    * @param existingEntity the current, reconstituted {@link Entity} aggregate from the repository
-   * @param cnpjString the proposed new CNPJ string, or {@code null}/empty to skip updating
    * @param name the proposed new name, or {@code null}/empty to skip updating
    * @param cityId the proposed new city ID, or {@code null} to skip updating
    * @param address the proposed new address, or {@code null}/empty to skip updating
@@ -58,14 +57,9 @@ public class EntityProcessor {
    *     containing validation errors
    */
   public static Entity processUpdateInput(
-      Entity existingEntity, String cnpjString, String name, UUID cityId, String address) {
+      Entity existingEntity, String name, UUID cityId, String address) {
 
     Entity updatedEntity = existingEntity;
-
-    if (StringUtils.isNotEmpty(cnpjString)) {
-      Cnpj newCnpj = Cnpj.factory(cnpjString);
-      updatedEntity = updatedEntity.changeCnpj(newCnpj);
-    }
 
     if (StringUtils.isNotEmpty(name)) {
       updatedEntity = updatedEntity.rename(name);

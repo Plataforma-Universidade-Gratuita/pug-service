@@ -62,4 +62,16 @@ public class EnrollmentRepositoryImpl
     var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
     return count("id", id) > 0;
   }
+
+  @Override
+  public boolean existsByStudentId(UUID studentId) {
+    if (studentId == null) return false;
+    return count("id.studentId", studentId) > 0;
+  }
+
+  @Override
+  public boolean existsByProjectId(UUID projectId) {
+    if (projectId == null) return false;
+    return count("id.projectId", projectId) > 0;
+  }
 }

@@ -40,6 +40,7 @@ public final class AccountMapper {
         .accountType(e.getAccountType())
         .passwordHash(e.getPasswordHash())
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .active(e.getActive())
         .build();
   }
 
@@ -66,6 +67,7 @@ public final class AccountMapper {
         .passwordHash(d.getPasswordHash())
         .createdAt(d.getAuditInfo().getCreatedAt())
         .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .active(d.getActive())
         .build();
   }
 
@@ -86,6 +88,7 @@ public final class AccountMapper {
     e.setEmail(d.getEmail().toString());
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
+    e.setActive(d.getActive());
   }
 
   /**
@@ -114,6 +117,7 @@ public final class AccountMapper {
         accountEntity.getEmail(),
         accountEntity.getAccountType(),
         accountEntity.getCreatedAt(),
-        accountEntity.getUpdatedAt());
+        accountEntity.getUpdatedAt(),
+        accountEntity.getActive());
   }
 }

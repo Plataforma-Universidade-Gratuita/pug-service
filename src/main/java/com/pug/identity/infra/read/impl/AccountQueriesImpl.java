@@ -42,7 +42,8 @@ public class AccountQueriesImpl implements AccountQueries {
                     a.email,
                     a.accountType,
                     a.createdAt,
-                    a.updatedAt
+                    a.updatedAt,
+                    a.active
                   )
                   from AccountEntity a, UserEntity u
                   where u.id = a.userId

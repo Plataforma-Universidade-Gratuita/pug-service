@@ -82,4 +82,6 @@ public interface StudentService {
    *     state violates strict domain invariants (data corruption)
    */
   Student getById(UUID accountId);
+
+  boolean existsAnyByCourseId(UUID courseId);
 }

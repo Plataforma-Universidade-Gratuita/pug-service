@@ -55,4 +55,6 @@ public interface StudentRepository {
    * @return {@code true} if a student with the given registration exists, {@code false} otherwise
    */
   boolean existsByRegistration(String registration);
+
+  boolean existsByCourseId(UUID courseId);
 }

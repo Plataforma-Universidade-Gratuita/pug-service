@@ -45,6 +45,6 @@ public final class AccountPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
+        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
   }
 }

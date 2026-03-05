@@ -21,6 +21,12 @@ public enum PartnerErrorCodes implements GenericCodes {
   ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists"),
 
   /**
+   * Indicates an attempt to physically delete a partner entity that already has registered
+   * projects, violating strict historical data retention policies.
+   */
+  ENTITY_HAS_PROJECTS("error.domain.partner.entity.has.projects"),
+
+  /**
    * Indicates that a requested partner entity could not be located in the underlying data store by
    * its unique identifier or CNPJ.
    */
@@ -38,6 +44,18 @@ public enum PartnerErrorCodes implements GenericCodes {
    * partner entity at a time).
    */
   STAFF_ASSIGNED_TO_OTHER_ENTITY("error.domain.partner.staff.assigned.to.other.entity"),
+
+  /**
+   * Indicates an attempt to physically delete a staff member who has already validated student
+   * attendances, which would compromise the audit trail.
+   */
+  STAFF_HAS_ATTENDANCES("error.domain.partner.staff.has.attendances"),
+
+  /**
+   * Indicates an attempt to physically delete a staff member who is listed as the creator of one or
+   * more projects, which would leave those projects orphaned.
+   */
+  STAFF_HAS_PROJECTS("error.domain.partner.staff.has.projects"),
 
   /**
    * Indicates that a requested staff assignment could not be located in the underlying data store

@@ -56,4 +56,6 @@ public interface CourseRepository {
    * @return {@code true} if a course with the given name exists, {@code false} otherwise
    */
   boolean existsByName(String name);
+
+  boolean existsBySchoolId(UUID schoolId);
 }

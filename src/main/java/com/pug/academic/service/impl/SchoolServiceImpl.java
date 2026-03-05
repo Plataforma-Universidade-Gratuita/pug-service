@@ -2,6 +2,7 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
+import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
@@ -28,6 +29,8 @@ public class SchoolServiceImpl implements SchoolService {
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
   @Inject SchoolRepository repo;
+
+  @Inject CourseService courseService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -83,13 +86,17 @@ public class SchoolServiceImpl implements SchoolService {
       return false;
     }
 
+    if (courseService.existsAnyBySchoolId(id)) {
+      LOG.warnf("Delete failed: School ID %s has active courses", id);
+      throw ExceptionHelper.schoolHasCourses();
+    }
+
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("School deleted successfully. ID: %s", id);
     } else {
       LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }
-
     return deleted;
   }
 

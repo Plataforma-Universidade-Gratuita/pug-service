@@ -25,6 +25,44 @@ public class EntityRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCityId(UUID cityId) {
+    if (cityId == null) {
+      return false;
+    }
+    return count("cityId", cityId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCnpj(String cnpj) {
+    if (StringUtils.isEmpty(cnpj)) {
+      return false;
+    }
+    return find("cnpj", cnpj).firstResultOptional().isPresent();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Entity> findOptionalById(UUID id) {
+    return find("select e from EntityEntity e where e.id = ?1", id)
+        .firstResultOptional()
+        .map(EntityMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Entity persist(Entity entity) {
     if (entity == null) {
       return null;
@@ -50,43 +88,5 @@ public class EntityRepositoryImpl
       return;
     }
     EntityMapper.copy(entity, managed);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Entity> findOptionalById(UUID id) {
-    return find("select e from EntityEntity e where e.id = ?1", id)
-        .firstResultOptional()
-        .map(EntityMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByCnpj(String cnpj) {
-    if (StringUtils.isEmpty(cnpj)) {
-      return false;
-    }
-    return find("cnpj", cnpj).firstResultOptional().isPresent();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByCityId(UUID cityId) {
-    if (cityId == null) {
-      return false;
-    }
-    return count("cityId", cityId) > 0;
   }
 }

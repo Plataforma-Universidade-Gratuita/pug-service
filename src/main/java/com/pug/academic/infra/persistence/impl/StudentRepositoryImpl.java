@@ -74,4 +74,12 @@ public class StudentRepositoryImpl
     }
     return count("academicRegistration", registration) > 0;
   }
+
+  @Override
+  public boolean existsByCourseId(UUID courseId) {
+    if (courseId == null) {
+      return false;
+    }
+    return count("courseId", courseId) > 0;
+  }
 }

@@ -18,16 +18,6 @@ public final class ExceptionHelper {
   private ExceptionHelper() {}
 
   /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
-   * Partner Entity could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
-  public static ResourceNotFoundException entityNotFound() {
-    return new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
-  }
-
-  /**
    * Instantiates a standardized {@link DuplicateResourceException} indicating that a Partner Entity
    * with the specified CNPJ already exists in the system.
    *
@@ -38,13 +28,23 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested Staff
-   * assignment could not be located.
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a Partner Entity
+   * cannot be deleted because it currently has registered projects.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException entityHasProjects() {
+    return new BusinessRuleException(PartnerErrorCodes.ENTITY_HAS_PROJECTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * Partner Entity could not be located.
    *
    * @return a fully configured {@link ResourceNotFoundException} instance
    */
-  public static ResourceNotFoundException staffNotFound() {
-    return new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+  public static ResourceNotFoundException entityNotFound() {
+    return new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
   }
 
   /**
@@ -65,5 +65,35 @@ public final class ExceptionHelper {
    */
   public static BusinessRuleException staffAssignedToOtherEntity() {
     return new BusinessRuleException(PartnerErrorCodes.STAFF_ASSIGNED_TO_OTHER_ENTITY);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a Staff member cannot
+   * be deleted because they have validated attendance records.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException staffHasAttendances() {
+    return new BusinessRuleException(PartnerErrorCodes.STAFF_HAS_ATTENDANCES);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a Staff member cannot
+   * be deleted because they are the creator of one or more projects.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException staffHasProjects() {
+    return new BusinessRuleException(PartnerErrorCodes.STAFF_HAS_PROJECTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested Staff
+   * assignment could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException staffNotFound() {
+    return new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
   }
 }

@@ -54,4 +54,9 @@ public class AttendanceRepositoryImpl
     if (StringUtils.isEmpty(qrHash)) return false;
     return count("qrValidationHash = ?1", qrHash) > 0;
   }
+
+  @Override
+  public boolean existsByValidatedBy(UUID staffAccountId) {
+    return false;
+  }
 }

@@ -26,4 +26,6 @@ public interface AttendanceRepository {
    * @return {@code true} if an attendance with this hash exists, {@code false} otherwise
    */
   boolean existsByQrHash(String qrHash);
+
+  boolean existsByValidatedBy(UUID staffAccountId);
 }

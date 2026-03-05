@@ -13,6 +13,9 @@ import lombok.Getter;
  */
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
+  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
+  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
+  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates an attempt to create or update an academic course using a name that is already

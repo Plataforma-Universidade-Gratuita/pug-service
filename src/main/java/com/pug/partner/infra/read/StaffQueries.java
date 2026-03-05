@@ -16,6 +16,14 @@ import java.util.UUID;
 public interface StaffQueries {
 
   /**
+   * Retrieves a read-only view of a staff member based on their registered email address.
+   *
+   * @param email the exact email address of the staff member
+   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
+   */
+  Optional<StaffView> findOptionalByEmail(String email);
+
+  /**
    * Retrieves a read-only view of a staff member based on their linked account ID.
    *
    * @param id the unique identifier (UUID) of the staff member's account
@@ -24,12 +32,12 @@ public interface StaffQueries {
   Optional<StaffView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a read-only view of a staff member based on their registered email address.
+   * Retrieves a list of all staff members linked to a specific partner organization.
    *
-   * @param email the exact email address of the staff member
-   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return a {@link List} of {@link StaffView} records associated with the given entity
    */
-  Optional<StaffView> findOptionalByEmail(String email);
+  List<StaffView> listAllByEntityId(UUID entityId);
 
   /**
    * Retrieves a comprehensive list of all staff members registered in the system.
@@ -48,14 +56,6 @@ public interface StaffQueries {
    * @return a {@link List} of {@link StaffView} records matching the given CPF
    */
   List<StaffView> listByCpf(String cpf);
-
-  /**
-   * Retrieves a list of all staff members linked to a specific partner organization.
-   *
-   * @param entityId the unique identifier (UUID) of the partner entity
-   * @return a {@link List} of {@link StaffView} records associated with the given entity
-   */
-  List<StaffView> listAllByEntityId(UUID entityId);
 
   /**
    * Executes a robust full-text search against the names of the associated staff users.

@@ -10,6 +10,7 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
+import com.pug.projects.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,6 +37,8 @@ public class StudentServiceImpl implements StudentService {
   @Inject AccountService accountService;
 
   @Inject CourseService courseService;
+
+  @Inject EnrollmentService enrollmentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -122,6 +125,11 @@ public class StudentServiceImpl implements StudentService {
       return false;
     }
 
+    if (enrollmentService.existsAnyByStudentId(accountId)) {
+      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
+      throw ExceptionHelper.studentHasEnrollments();
+    }
+
     boolean deleted = repo.deleteById(accountId);
 
     if (deleted) {
@@ -153,6 +161,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     return student;
+  }
+
+  @Override
+  public boolean existsAnyByCourseId(UUID courseId) {
+    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

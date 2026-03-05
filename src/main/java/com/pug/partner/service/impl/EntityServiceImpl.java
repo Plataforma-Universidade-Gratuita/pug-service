@@ -10,6 +10,7 @@ import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.partner.service.utils.ExceptionHelper;
+import com.pug.projects.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,6 +36,76 @@ public class EntityServiceImpl implements EntityService {
   @Inject CityService cityService;
 
   @Inject StaffService staffService;
+
+  @Inject ProjectService projectService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Entity ID: %s", id);
+    if (id == null) {
+      return false;
+    }
+
+    if (projectService.existsAnyByEntityId(id)) {
+      LOG.warnf("Delete failed: Entity ID %s has registered projects", id);
+      throw ExceptionHelper.entityHasProjects();
+    }
+
+    staffService.deleteAllByEntityId(id);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Entity deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: Entity ID %s not found (idempotent)", id);
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyByCityId(UUID cityId) {
+    if (cityId == null) {
+      return false;
+    }
+    return repo.existsByCityId(cityId);
+  }
+
+  /**
+   * Checks if a Partner Entity with the given CNPJ already exists.
+   *
+   * @param cnpj the validated CNPJ to check for existence
+   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
+   */
+  private boolean existsByCnpj(Cnpj cnpj) {
+    if (cnpj == null) {
+      return false;
+    }
+    return repo.existsByCnpj(cnpj.toString());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Entity getById(UUID id) {
+    Entity entity =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Entity lookup failed: ID %s not found", id);
+                  return ExceptionHelper.entityNotFound();
+                });
+
+    if (entity.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
+          id, entity.getProblemsSummary());
+      throw ExceptionHelper.entityNotFound();
+    }
+
+    return entity;
+  }
 
   /** {@inheritDoc} */
   @Transactional
@@ -74,87 +145,14 @@ public class EntityServiceImpl implements EntityService {
     }
 
     Entity updatedEntity =
-        EntityProcessor.processUpdateInput(
-            current, cmd.cnpjString(), cmd.name(), cmd.cityId(), cmd.address());
+        EntityProcessor.processUpdateInput(current, cmd.name(), cmd.cityId(), cmd.address());
 
     if (updatedEntity.hasFieldErrors()) {
       throw new AppValidationException(updatedEntity.getFieldErrors());
     }
 
-    if (!updatedEntity.getCnpj().equals(current.getCnpj())
-        && existsByCnpj(updatedEntity.getCnpj())) {
-      LOG.warnf(
-          "Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
-      throw ExceptionHelper.entityAlreadyExists();
-    }
-
     repo.update(updatedEntity);
     LOG.infof("Entity updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete Entity ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    staffService.deleteAllByEntityId(id);
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("Entity deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: Entity ID %s not found (idempotent)", id);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Entity getById(UUID id) {
-    Entity entity =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Entity lookup failed: ID %s not found", id);
-                  return ExceptionHelper.entityNotFound();
-                });
-
-    if (entity.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
-          id, entity.getProblemsSummary());
-      throw ExceptionHelper.entityNotFound();
-    }
-
-    return entity;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsAnyByCityId(UUID cityId) {
-    if (cityId == null) {
-      return false;
-    }
-    return repo.existsByCityId(cityId);
-  }
-
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if a Partner Entity with the given CNPJ already exists.
-   *
-   * @param cnpj the validated CNPJ to check for existence
-   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
-   */
-  private boolean existsByCnpj(Cnpj cnpj) {
-    if (cnpj == null) {
-      return false;
-    }
-    return repo.existsByCnpj(cnpj.toString());
   }
 }

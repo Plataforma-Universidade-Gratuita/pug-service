@@ -101,7 +101,8 @@ public final class AdminMapper {
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt()),
+            accountEntity.getUpdatedAt(),
+            accountEntity.getActive()),
         adminEntity.getGrantedAt(),
         adminEntity.getCampus());
   }

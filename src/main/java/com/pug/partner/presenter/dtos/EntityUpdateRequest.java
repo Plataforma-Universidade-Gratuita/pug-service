@@ -11,7 +11,6 @@ import java.util.UUID;
  * is provided as {@code null} or omitted from the JSON payload, the application service will ignore
  * it and retain the existing value for that specific attribute.
  *
- * @param cnpjString the new 14-digit numeric CNPJ string, or {@code null} to leave unchanged
  * @param name the new name of the organization, or {@code null} to leave unchanged (if provided,
  *     max 150 characters)
  * @param cityId the new city UUID, or {@code null} to leave unchanged
@@ -19,7 +18,4 @@ import java.util.UUID;
  *     max 254 characters)
  */
 public record EntityUpdateRequest(
-    String cnpjString,
-    @Size(max = 150) String name,
-    UUID cityId,
-    @Size(max = 254) String address) {}
+    @Size(max = 150) String name, UUID cityId, @Size(max = 254) String address) {}

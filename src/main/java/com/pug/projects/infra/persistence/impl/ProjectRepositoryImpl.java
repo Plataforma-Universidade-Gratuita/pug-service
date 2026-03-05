@@ -54,4 +54,15 @@ public class ProjectRepositoryImpl
     if (StringUtils.isEmpty(name) || entityId == null) return false;
     return count("name = ?1 and entityId = ?2", name, entityId) > 0;
   }
+
+  @Override
+  public boolean existsByEntityId(UUID entityId) {
+    if (entityId == null) return false;
+    return count("entityId", entityId) > 0;
+  }
+
+  @Override
+  public boolean existsByCreatedBy(UUID staffAccountId) {
+    return false;
+  }
 }

@@ -23,4 +23,5 @@ public record AccountResponse(
     String email,
     AccountType accountType,
     String accountTypeFormatted,
-    AuditInfoResponse auditInfo) {}
+    AuditInfoResponse auditInfo,
+    Boolean active) {}

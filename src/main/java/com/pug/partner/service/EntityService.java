@@ -16,6 +16,43 @@ import java.util.UUID;
 public interface EntityService {
 
   /**
+   * Removes a Partner {@link Entity} from the system by its unique identifier.
+   *
+   * <p>This operation enforces data hygiene. Before the partner entity is deleted, the service
+   * cascades the deletion down to revoke all associated {@link com.pug.partner.domain.Staff}
+   * privileges.
+   *
+   * @param id the unique identifier (UUID) of the partner entity to delete
+   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID id);
+
+  /**
+   * Determines if any Partner Entities are currently associated with a specific City.
+   *
+   * <p>This is typically used by the Geo domain to prevent the deletion of a City that is still
+   * actively referenced by partner organizations.
+   *
+   * @param cityId the unique identifier of the city to check
+   * @return {@code true} if the city is referenced by any entity, {@code false} otherwise
+   */
+  boolean existsAnyByCityId(UUID cityId);
+
+  /**
+   * Retrieves a full Partner {@link Entity} domain aggregate by its unique identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link EntityReadService#getViewById(UUID)} instead.
+   *
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return the fully reconstituted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the entity exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Entity getById(UUID id);
+
+  /**
    * Instantiates and persists a new Partner {@link Entity} aggregate based on the provided command.
    *
    * <p>This method ensures that the referenced City exists before attempting to persist the new
@@ -43,47 +80,8 @@ public interface EntityService {
    * @return the mutated and persisted {@link Entity} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity or referenced City
    *     does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CNPJ conflicts with
-   *     an existing entity
    * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
    *     domain constraints
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
-
-  /**
-   * Removes a Partner {@link Entity} from the system by its unique identifier.
-   *
-   * <p>This operation enforces data hygiene. Before the partner entity is deleted, the service
-   * cascades the deletion down to revoke all associated {@link com.pug.partner.domain.Staff}
-   * privileges.
-   *
-   * @param id the unique identifier (UUID) of the partner entity to delete
-   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID id);
-
-  /**
-   * Retrieves a full Partner {@link Entity} domain aggregate by its unique identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link EntityReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the partner entity
-   * @return the fully reconstituted {@link Entity} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the entity exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Entity getById(UUID id);
-
-  /**
-   * Determines if any Partner Entities are currently associated with a specific City.
-   *
-   * <p>This is typically used by the Geo domain to prevent the deletion of a City that is still
-   * actively referenced by partner organizations.
-   *
-   * @param cityId the unique identifier of the city to check
-   * @return {@code true} if the city is referenced by any entity, {@code false} otherwise
-   */
-  boolean existsAnyByCityId(UUID cityId);
 }

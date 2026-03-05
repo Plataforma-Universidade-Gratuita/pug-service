@@ -1,6 +1,7 @@
 package com.pug.academic.service.utils;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 
@@ -74,5 +75,17 @@ public final class ExceptionHelper {
    */
   public static DuplicateResourceException studentAlreadyExists() {
     return new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
+  }
+
+  public static BusinessRuleException schoolHasCourses() {
+    return new BusinessRuleException(AcademicErrorCodes.SCHOOL_HAS_COURSES);
+  }
+
+  public static BusinessRuleException courseHasStudents() {
+    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_STUDENTS);
+  }
+
+  public static BusinessRuleException studentHasEnrollments() {
+    return new BusinessRuleException(AcademicErrorCodes.STUDENT_HAS_ENROLLMENTS);
   }
 }

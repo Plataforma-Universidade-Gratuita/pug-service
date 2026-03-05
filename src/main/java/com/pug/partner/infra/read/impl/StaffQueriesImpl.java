@@ -44,7 +44,8 @@ public class StaffQueriesImpl implements StaffQueries {
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
-                      acc.updatedAt
+                      acc.updatedAt,
+                      acc.active
                     ),
                     new com.pug.partner.infra.read.dtos.EntityView(
                       e.id, e.cnpj, e.name, e.address,
@@ -63,18 +64,6 @@ public class StaffQueriesImpl implements StaffQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<StaffView> findOptionalById(UUID accountId) {
-    if (accountId == null) {
-      return Optional.empty();
-    }
-    var q =
-        em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
-            .setParameter("id", accountId);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<StaffView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
@@ -87,21 +76,14 @@ public class StaffQueriesImpl implements StaffQueries {
 
   /** {@inheritDoc} */
   @Override
-  public List<StaffView> listByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      return List.of();
+  public Optional<StaffView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
     }
     var q =
-        em.createQuery(
-                SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
-            .setParameter("cpf", cpf);
-    return q.getResultList();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<StaffView> listAllStaff() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StaffView.class).getResultList();
+        em.createQuery(SELECT_BASE + " where s.accountId = :id", StaffView.class)
+            .setParameter("id", accountId);
+    return q.getResultStream().findFirst();
   }
 
   /** {@inheritDoc} */
@@ -114,6 +96,25 @@ public class StaffQueriesImpl implements StaffQueries {
         em.createQuery(
                 SELECT_BASE + " where e.id = :eid" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
             .setParameter("eid", entityId);
+    return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StaffView> listAllStaff() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StaffView.class).getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StaffView> listByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return List.of();
+    }
+    var q =
+        em.createQuery(
+                SELECT_BASE + " where u.cpf = :cpf" + ORDER_BY_PERSON_NAME_ASC, StaffView.class)
+            .setParameter("cpf", cpf);
     return q.getResultList();
   }
 
@@ -137,13 +138,13 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                  select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
-                  from StaffEntity s
-                    join AccountEntity acc on acc.id = s.accountId
-                    join EntityEntity e on e.id = s.entityId
-                    join CityEntity c on c.id = e.cityId
-                  where acc.userId in :ids
-                  """,
+                select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
+                from StaffEntity s
+                  join AccountEntity acc on acc.id = s.accountId
+                  join EntityEntity e on e.id = s.entityId
+                  join CityEntity c on c.id = e.cityId
+                where acc.userId in :ids
+                """,
                 StaffAcc.class)
             .setParameter("ids", userIds)
             .getResultList();

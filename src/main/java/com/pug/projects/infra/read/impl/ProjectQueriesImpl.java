@@ -37,7 +37,7 @@ public class ProjectQueriesImpl implements ProjectQueries {
                         new com.pug.identity.infra.read.dtos.UserView(
                           u.id, u.cpf, u.name, u.createdAt, u.updatedAt
                         ),
-                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt
+                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
                       ),
                       p.maxParticipants, p.offeredHours, p.status,
                       p.closedAt, p.createdAt, p.updatedAt

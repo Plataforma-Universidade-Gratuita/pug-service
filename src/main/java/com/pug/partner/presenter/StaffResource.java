@@ -1,17 +1,14 @@
 package com.pug.partner.presenter;
 
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.presenter.dtos.StaffCreateRequest;
 import com.pug.partner.presenter.dtos.StaffResponse;
+import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
-import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -27,7 +24,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 /**
  * REST API Resource controller for managing Partner Staff privileges.
  *
- * <p>This class exposes endpoints to assign, retrieve, and revoke organizational roles for
+ * <p>This class exposes endpoints to assign, retrieve, update, and revoke organizational roles for
  * authentication accounts. It acts as the HTTP entry point, delegating queries to the {@link
  * StaffReadService} and commands to the {@link StaffService}, adhering to CQRS principles.
  */
@@ -109,13 +108,8 @@ public class StaffResource {
    */
   @GET
   public Response list(@QueryParam("q") String query) {
-    List<StaffView> views;
-
-    if (StringUtils.isNotEmpty(query)) {
-      views = readService.search(query);
-    } else {
-      views = readService.listViews();
-    }
+    List<StaffView> views =
+        StringUtils.isNotEmpty(query) ? readService.search(query) : readService.listViews();
 
     List<StaffResponse> list =
         views.stream()
@@ -140,7 +134,6 @@ public class StaffResource {
         readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
@@ -158,7 +151,6 @@ public class StaffResource {
         readService.listViewsByEntityId(entityId).stream()
             .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
-
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
@@ -182,28 +174,66 @@ public class StaffResource {
   @POST
   public Response create(@Valid StaffCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
-
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
-    AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.PARTNER, hashedPassword, userCmd);
-    StaffCreateCommand staffCmd = new StaffCreateCommand(req.entityId(), accountCmd);
-
-    Staff staff = writeService.save(staffCmd);
+    var cmd = StaffPresenter.toCommand(req, hashedPassword);
+    Staff staff = writeService.save(cmd);
 
     StaffView v = readService.getViewByAccountId(staff.getAccountId());
     StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
-
     URI location = uri.getAbsolutePathBuilder().path(staff.getAccountId().toString()).build();
 
     return Response.created(location).entity(ApiEnvelope.created(out)).build();
   }
 
   /**
-   * Permanently revokes staff privileges by deleting the assignment record and its associated
-   * account.
+   * Partially updates a staff member's account and personal details.
    *
-   * @param id the unique identifier (UUIDv7) of the staff's account
+   * <p>Note: The staff member's linked entity ID and account ID remain immutable. Omitting fields
+   * in the request payload will result in those fields retaining their current state in the
+   * database.
+   *
+   * @param id the unique identifier (UUIDv7) of the staff member's account
+   * @param req the validated {@link StaffUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link StaffResponse}
+   * @throws ResourceNotFoundException if the staff member is not found
+   * @throws DuplicateResourceException if the updated email conflicts with an existing account
+   * @throws AppValidationException if input validation fails
+   */
+  @PUT
+  @Path("{id}")
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
+    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
+    var cmd = StaffPresenter.toCommand(req, hashedPassword);
+    writeService.update(id, cmd);
+
+    StaffView v = readService.getViewByAccountId(id);
+    StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Gracefully deactivates a staff member's account.
+   *
+   * <p>This disables login capabilities and system access without destroying the underlying
+   * records, maintaining historical referential integrity.
+   *
+   * @param id the unique identifier (UUIDv7) of the staff member's account
+   * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
+   */
+  @PATCH
+  @Path("{id}/deactivate")
+  public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
+    writeService.deactivate(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /**
+   * Permanently removes a staff member and their underlying account from the system.
+   *
+   * @param id the unique identifier (UUIDv7) of the staff member's account to delete
    * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the staff member has validated
+   *     attendances or created projects
    */
   @DELETE
   @Path("{id}")
@@ -212,7 +242,11 @@ public class StaffResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale} to be used for formatting responses
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

@@ -87,4 +87,6 @@ public interface AccountService {
    *     state violates strict domain invariants (data corruption)
    */
   Account getById(UUID id);
+
+  Account deactivate(UUID id);
 }

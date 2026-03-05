@@ -2,6 +2,7 @@ package com.pug.partner.service;
 
 import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
+import com.pug.partner.service.dtos.StaffUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -15,27 +16,16 @@ import java.util.UUID;
 public interface StaffService {
 
   /**
-   * Instantiates and persists a new {@link Staff} aggregate based on the provided command.
+   * Deactivates a Staff member's account.
    *
-   * <p>This method performs a cascading save. It verifies that the specified partner entity exists,
-   * then delegates the creation of the underlying authentication account (and potentially the user)
-   * to the {@link com.pug.identity.service.AccountService} before appending the staff privileges.
+   * <p>This operation delegates to the underlying {@link com.pug.identity.service.AccountService}
+   * to gracefully disable login and operational capabilities without permanently destroying the
+   * account data, preserving referential integrity for historical records.
    *
-   * <p><b>Business Rule:</b> An authentication account may only be assigned as Staff to a single
-   * partner organization at any given time.
-   *
-   * @param cmd the structured command containing the data to create the staff member and linked
-   *     account
-   * @return the fully instantiated and persisted {@link Staff} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
-   *     exists, or if the account is already assigned to this exact entity
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned as
-   *     Staff to a different entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified partner entity
-   *     does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @param accountId the unique identifier of the Staff to deactivate (Account ID)
+   * @return {@code true} if the deactivation was successful, {@code false} if it was not found
    */
-  Staff save(StaffCreateCommand cmd);
+  boolean deactivate(UUID accountId);
 
   /**
    * Revokes staff privileges by deleting the {@link Staff} record.
@@ -77,4 +67,47 @@ public interface StaffService {
    *     state violates strict domain invariants (data corruption)
    */
   Staff getByAccountId(UUID accountId);
+
+  /**
+   * Instantiates and persists a new {@link Staff} aggregate based on the provided command.
+   *
+   * <p>This method performs a cascading save. It verifies that the specified partner entity exists,
+   * then delegates the creation of the underlying authentication account (and potentially the user)
+   * to the {@link com.pug.identity.service.AccountService} before appending the staff privileges.
+   *
+   * <p><b>Business Rule:</b> An authentication account may only be assigned as Staff to a single
+   * partner organization at any given time.
+   *
+   * @param cmd the structured command containing the data to create the staff member and linked
+   *     account
+   * @return the fully instantiated and persisted {@link Staff} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
+   *     exists, or if the account is already assigned to this exact entity
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned as
+   *     Staff to a different entity
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified partner entity
+   *     does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   */
+  Staff save(StaffCreateCommand cmd);
+
+  /**
+   * Partially updates a Staff member's personal information and authentication credentials.
+   *
+   * <p>Because a Staff member's organizational role is structurally bound to their original account
+   * and partner entity, the core {@link Staff} aggregate properties ({@code accountId} and {@code
+   * entityId}) are entirely immutable. This method safely delegates the mutation of the mutable
+   * fields (such as name, email, or password) directly down to the Identity bounded context.
+   *
+   * @param accountId the unique identifier (Account ID) of the Staff member to update
+   * @param cmd the structured command containing the modified account and user data
+   * @return the structurally unmodified {@link Staff} aggregate, returned for operational
+   *     continuity
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Staff record does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
+   *     with an existing account in the system
+   * @throws com.pug.shared.exceptions.AppValidationException if the provided update data violates
+   *     domain constraints
+   */
+  Staff update(UUID accountId, StaffUpdateCommand cmd);
 }

@@ -13,6 +13,7 @@ import lombok.Getter;
  */
 @Getter
 public enum IdentityFieldErrorCodes implements GenericFieldErrorCodes {
+  INVALID_ACTIVE_FLAG_BLANK("error.domain.identity.account.active.blank", "active"),
 
   /** Indicates that an account ID was provided as null. */
   INVALID_ACCOUNT_ID_BLANK("error.domain.identity.account.id.blank", "accountId"),

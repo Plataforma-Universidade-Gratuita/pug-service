@@ -166,7 +166,8 @@ public final class ProjectMapper {
               acc.getEmail(),
               acc.getAccountType(),
               acc.getCreatedAt(),
-              acc.getUpdatedAt());
+              acc.getUpdatedAt(),
+              acc.getActive());
     }
 
     return new ProjectView(

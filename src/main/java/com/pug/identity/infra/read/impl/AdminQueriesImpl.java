@@ -43,7 +43,8 @@ public class AdminQueriesImpl implements AdminQueries {
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
-                      acc.updatedAt
+                      acc.updatedAt,
+                      acc.active
                     ),
                     a.grantedAt,
                     a.campus

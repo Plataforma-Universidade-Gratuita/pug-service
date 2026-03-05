@@ -28,4 +28,8 @@ public interface ProjectRepository {
    * @return {@code true} if a matching project exists, {@code false} otherwise
    */
   boolean existsByNameAndEntityId(String name, UUID entityId);
+
+  boolean existsByEntityId(UUID entityId);
+
+  boolean existsByCreatedBy(UUID staffAccountId);
 }

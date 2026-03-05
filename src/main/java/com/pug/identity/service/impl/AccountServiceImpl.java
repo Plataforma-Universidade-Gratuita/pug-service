@@ -161,6 +161,19 @@ public class AccountServiceImpl implements AccountService {
     return account;
   }
 
+  @Transactional
+  @Override
+  public Account deactivate(UUID id) {
+    LOG.debugf("Attempting to deactivate Account ID: %s", id);
+    Account account = getById(id);
+
+    Account deactivated = account.deactivate();
+    repo.update(deactivated);
+
+    LOG.infof("Account deactivated successfully. ID: %s", id);
+    return deactivated;
+  }
+
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**

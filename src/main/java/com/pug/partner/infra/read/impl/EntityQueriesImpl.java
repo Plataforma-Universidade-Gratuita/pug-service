@@ -45,18 +45,6 @@ public class EntityQueriesImpl implements EntityQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<EntityView> findOptionalById(UUID id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-
-    var q =
-        em.createQuery(SELECT_BASE + " where e.id = :id", EntityView.class).setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<EntityView> findOptionalByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
       return Optional.empty();
@@ -70,8 +58,14 @@ public class EntityQueriesImpl implements EntityQueries {
 
   /** {@inheritDoc} */
   @Override
-  public List<EntityView> listAllEntities() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, EntityView.class).getResultList();
+  public Optional<EntityView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+
+    var q =
+        em.createQuery(SELECT_BASE + " where e.id = :id", EntityView.class).setParameter("id", id);
+    return q.getResultStream().findFirst();
   }
 
   /** {@inheritDoc} */
@@ -86,6 +80,12 @@ public class EntityQueriesImpl implements EntityQueries {
                 SELECT_BASE + " where e.cityId = :cityId" + ORDER_BY_NAME_ASC, EntityView.class)
             .setParameter("cityId", cityId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<EntityView> listAllEntities() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, EntityView.class).getResultList();
   }
 
   /**

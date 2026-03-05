@@ -7,8 +7,11 @@ import com.pug.partner.domain.StaffRepository;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.StaffCreateCommand;
+import com.pug.partner.service.dtos.StaffUpdateCommand;
 import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.partner.service.utils.StaffProcessor;
+import com.pug.projects.service.AttendanceService;
+import com.pug.projects.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -35,6 +38,110 @@ public class StaffServiceImpl implements StaffService {
   @Inject AccountService accountService;
 
   @Inject EntityService entityService;
+
+  @Inject ProjectService projectService;
+
+  @Inject AttendanceService attendanceService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deactivate(UUID accountId) {
+    LOG.debugf("Attempting to deactivate Staff Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
+    }
+
+    accountService.deactivate(accountId);
+
+    LOG.infof("Staff account deactivated successfully. Account ID: %s", accountId);
+    return true;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to hard-delete Staff Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
+    }
+
+    if (projectService.existsByCreatedBy(accountId)) {
+      LOG.warnf("Hard delete failed: Staff ID %s created projects", accountId);
+      throw ExceptionHelper.staffHasProjects();
+    }
+    if (attendanceService.existsByValidatedBy(accountId)) {
+      LOG.warnf("Hard delete failed: Staff ID %s validated attendances", accountId);
+      throw ExceptionHelper.staffHasAttendances();
+    }
+
+    boolean deleted = repo.deleteByAccountId(accountId);
+    if (deleted) {
+      LOG.infof("Staff deleted successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    }
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByEntityId(UUID entityId) {
+    if (entityId == null) {
+      return 0;
+    }
+    LOG.debugf("Attempting to BATCH delete all Staff for Entity ID: %s", entityId);
+
+    List<Staff> staffList = repo.listAllByEntityId(entityId);
+    if (staffList.isEmpty()) {
+      return 0;
+    }
+
+    List<UUID> accountIds = staffList.stream().map(Staff::getAccountId).toList();
+    long deletedCount = repo.deleteByEntityId(entityId);
+
+    accountService.deleteAll(accountIds);
+    LOG.infof(
+        "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
+        deletedCount, entityId);
+    return deletedCount;
+  }
+
+  /**
+   * Checks if a Staff assignment already exists for the given account and entity.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId the unique identifier of the partner entity
+   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   */
+  private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
+    if (accountId == null || entityId == null) {
+      return false;
+    }
+    return repo.existsByAccountIdAndEntityId(accountId, entityId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Staff getByAccountId(UUID accountId) {
+    Staff staff =
+        repo.findOptionalByAccountId(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.staffNotFound();
+                });
+
+    if (staff.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
+          accountId, staff.getProblemsSummary());
+      throw ExceptionHelper.staffNotFound();
+    }
+
+    return staff;
+  }
 
   /** {@inheritDoc} */
   @Transactional
@@ -79,81 +186,13 @@ public class StaffServiceImpl implements StaffService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean delete(UUID accountId) {
-    LOG.debugf("Attempting to revoke Staff role for Account ID: %s", accountId);
-    if (accountId == null) {
-      return false;
-    }
+  public Staff update(UUID accountId, StaffUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Staff underlying Account ID: %s", accountId);
 
-    boolean deleted = repo.deleteByAccountId(accountId);
-    if (deleted) {
-      LOG.infof("Staff role revoked successfully. Account ID: %s", accountId);
-      accountService.delete(accountId);
-    } else {
-      LOG.debugf("Revoke failed: Staff ID %s not found (idempotent)", accountId);
-    }
+    Staff current = getByAccountId(accountId);
+    accountService.update(accountId, cmd.accountCommand());
 
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAllByEntityId(UUID entityId) {
-    if (entityId == null) {
-      return 0;
-    }
-    LOG.debugf("Attempting to BATCH delete all Staff for Entity ID: %s", entityId);
-
-    List<Staff> staffList = repo.listAllByEntityId(entityId);
-    if (staffList.isEmpty()) {
-      return 0;
-    }
-
-    List<UUID> accountIds = staffList.stream().map(Staff::getAccountId).toList();
-    long deletedCount = repo.deleteByEntityId(entityId);
-
-    accountService.deleteAll(accountIds);
-    LOG.infof(
-        "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
-        deletedCount, entityId);
-    return deletedCount;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Staff getByAccountId(UUID accountId) {
-    Staff staff =
-        repo.findOptionalByAccountId(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-                  return ExceptionHelper.staffNotFound();
-                });
-
-    if (staff.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
-          accountId, staff.getProblemsSummary());
-      throw ExceptionHelper.staffNotFound();
-    }
-
-    return staff;
-  }
-
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if a Staff assignment already exists for the given account and entity.
-   *
-   * @param accountId the unique identifier of the linked authentication account
-   * @param entityId the unique identifier of the partner entity
-   * @return {@code true} if the staff assignment exists, {@code false} otherwise
-   */
-  private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
-    if (accountId == null || entityId == null) {
-      return false;
-    }
-    return repo.existsByAccountIdAndEntityId(accountId, entityId);
+    LOG.infof("Staff account updated successfully. Account ID: %s", accountId);
+    return current;
   }
 }

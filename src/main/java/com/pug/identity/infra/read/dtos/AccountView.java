@@ -24,4 +24,5 @@ public record AccountView(
     String email,
     AccountType accountType,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt) {}
+    OffsetDateTime updatedAt,
+    Boolean active) {}

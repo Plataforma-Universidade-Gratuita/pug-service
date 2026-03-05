@@ -27,4 +27,8 @@ public interface EnrollmentRepository {
    * @return {@code true} if the enrollment exists, {@code false} otherwise
    */
   boolean existsByIds(UUID projectId, UUID studentId);
+
+  boolean existsByStudentId(UUID studentId);
+
+  boolean existsByProjectId(UUID projectId);
 }

@@ -39,7 +39,7 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
                           ),
-                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt
+                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
                         ),
                         p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
                       ),
@@ -49,7 +49,7 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             su.id, su.cpf, su.name, su.createdAt, su.updatedAt
                           ),
-                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt
+                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
                         ),
                         s.academicRegistration, s.campus,
                         new com.pug.academic.infra.read.dtos.CourseView(

@@ -128,7 +128,8 @@ public final class StudentMapper {
                 acc.getEmail(),
                 acc.getAccountType(),
                 acc.getCreatedAt(),
-                acc.getUpdatedAt())
+                acc.getUpdatedAt(),
+                acc.getActive())
             : null;
 
     SchoolView schoolView =

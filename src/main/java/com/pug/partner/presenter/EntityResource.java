@@ -7,8 +7,6 @@ import com.pug.partner.presenter.dtos.EntityUpdateRequest;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.partner.service.EntityReadService;
 import com.pug.partner.service.EntityService;
-import com.pug.partner.service.dtos.EntityCreateCommand;
-import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -48,7 +46,7 @@ import java.util.stream.Collectors;
  * EntityReadService} (reads), strictly adhering to CQRS architectural principles.
  */
 @ApplicationScoped
-@Path("/partners/entities")
+@Path("/partner/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {
@@ -104,7 +102,6 @@ public class EntityResource {
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
-
     List<EntityView> views;
 
     if (cityId != null) {
@@ -135,7 +132,7 @@ public class EntityResource {
    */
   @POST
   public Response create(@Valid EntityCreateRequest req) {
-    var cmd = new EntityCreateCommand(req.cnpjString(), req.name(), req.cityId(), req.address());
+    var cmd = EntityPresenter.toCommand(req);
     var createdEntityDomain = writeService.save(cmd);
 
     EntityResponse body =
@@ -157,13 +154,12 @@ public class EntityResource {
    * @param req the validated {@link EntityUpdateRequest} containing the modified data
    * @return an HTTP 200 OK response containing the updated {@link EntityResponse}
    * @throws ResourceNotFoundException if the entity or referenced city does not exist
-   * @throws DuplicateResourceException if the updated CNPJ conflicts with an existing record
    * @throws AppValidationException if input validation fails
    */
   @PUT
   @Path("{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
-    var cmd = new EntityUpdateCommand(req.cnpjString(), req.name(), req.cityId(), req.address());
+    var cmd = EntityPresenter.toCommand(req);
     var updatedEntityDomain = writeService.update(id, cmd);
 
     EntityResponse body =

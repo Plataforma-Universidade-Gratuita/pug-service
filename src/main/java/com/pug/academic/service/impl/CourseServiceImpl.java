@@ -4,6 +4,7 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
+import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
@@ -32,6 +33,8 @@ public class CourseServiceImpl implements CourseService {
   @Inject CourseRepository repo;
 
   @Inject SchoolService schoolService;
+
+  @Inject StudentService studentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -94,6 +97,11 @@ public class CourseServiceImpl implements CourseService {
       return false;
     }
 
+    if (studentService.existsAnyByCourseId(id)) {
+      LOG.warnf("Delete failed: Course ID %s has active students", id);
+      throw ExceptionHelper.courseHasStudents();
+    }
+
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("Course deleted successfully. ID: %s", id);
@@ -122,6 +130,11 @@ public class CourseServiceImpl implements CourseService {
       throw ExceptionHelper.courseNotFound();
     }
     return course;
+  }
+
+  @Override
+  public boolean existsAnyBySchoolId(UUID schoolId) {
+    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
