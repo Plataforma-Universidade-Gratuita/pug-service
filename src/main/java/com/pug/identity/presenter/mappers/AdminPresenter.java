@@ -2,7 +2,16 @@ package com.pug.identity.presenter.mappers;
 
 import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AccountResponse;
+import com.pug.identity.presenter.dtos.AdminCreateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
+import com.pug.identity.presenter.dtos.AdminUpdateRequest;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.AdminCreateCommand;
+import com.pug.identity.service.dtos.AdminUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -11,15 +20,51 @@ import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal administrator projections to external
- * API responses.
+ * API responses and mapping REST payloads to application commands.
  *
  * <p>This presenter acts as a translation layer, converting deeply nested CQRS query views ({@link
- * AdminView}) into consolidated, client-ready representations ({@link AdminResponse}).
+ * AdminView}) into consolidated, client-ready representations ({@link AdminResponse}), and mapping
+ * incoming data transfers to nested command structures.
  */
 public final class AdminPresenter {
 
   /** Private constructor to prevent instantiation of utility class. */
   private AdminPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer creation command.
+   *
+   * @param req the validated {@link AdminCreateRequest} payload
+   * @param hashedPassword the securely hashed password string to assign to the new account
+   * @return the corresponding {@link AdminCreateCommand}, or {@code null} if input is null
+   */
+  public static AdminCreateCommand toCommand(AdminCreateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    var userCmd = new UserCreateCommand(req.cpfString(), req.name());
+    var accountCmd =
+        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
+    return new AdminCreateCommand(accountCmd, req.campus());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer update command.
+   *
+   * @param req the validated {@link AdminUpdateRequest} payload
+   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
+   *     not being updated
+   * @return the corresponding {@link AdminUpdateCommand}, or {@code null} if input is null
+   */
+  public static AdminUpdateCommand toCommand(AdminUpdateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    // CPF cannot be updated via this flow, so it is omitted from UserUpdateCommand
+    var userCmd = new UserUpdateCommand(req.name());
+    var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+    return new AdminUpdateCommand(accountCmd, req.campus());
+  }
 
   /**
    * Projects a read-only {@link AdminView} into a client-facing {@link AdminResponse}.

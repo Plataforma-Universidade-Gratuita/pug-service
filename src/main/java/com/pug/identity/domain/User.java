@@ -91,31 +91,12 @@ public class User extends DomainError {
    * @return a new, updated, and validated {@link User} instance, or {@code this} if the name is
    *     unchanged
    */
-  public User changeName(String newName) {
+  public User rename(String newName) {
     String trimmed = StringUtils.trim(newName);
     if (name.equals(trimmed)) {
       return this;
     }
     User updated = toBuilder().name(trimmed).auditInfo(auditInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Updates the user's CPF.
-   *
-   * <p>Returns a new, re-validated {@code User} instance with the updated CPF and refreshed {@link
-   * AuditInfo} timestamp, maintaining the immutability of the domain entity.
-   *
-   * @param newCpf the new {@link Cpf} to assign to the user
-   * @return a new, updated, and validated {@link User} instance, or {@code this} if the CPF is
-   *     unchanged
-   */
-  public User changeCpf(Cpf newCpf) {
-    if (cpf.equals(newCpf)) {
-      return this;
-    }
-    User updated = toBuilder().cpf(newCpf).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }

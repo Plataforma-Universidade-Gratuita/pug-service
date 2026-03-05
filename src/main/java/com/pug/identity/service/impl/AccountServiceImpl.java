@@ -38,6 +38,94 @@ public class AccountServiceImpl implements AccountService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public Account deactivate(UUID id) {
+    LOG.debugf("Attempting to deactivate Account ID: %s", id);
+    Account account = getById(id);
+
+    Account deactivated = account.deactivate();
+    repo.update(deactivated);
+
+    LOG.infof("Account deactivated successfully. ID: %s", id);
+    return deactivated;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Account ID: %s", id);
+    Account account = getById(id);
+
+    long count = repo.countAllAccountsByUserId(account.getUserId());
+    boolean deleted = repo.deleteById(account.getId());
+
+    if (deleted) {
+      LOG.infof("Account deleted successfully. ID: %s", id);
+      if (count <= 1) {
+        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
+        userService.delete(account.getUserId());
+      }
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
+    List<UUID> userIds = repo.findUserIdsByIds(ids);
+
+    long deletedCount = repo.deleteAllByIds(ids);
+    if (deletedCount > 0) {
+      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
+      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
+      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
+        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
+        userService.deleteAll(userIdsToDelete);
+      }
+    }
+
+    return deletedCount;
+  }
+
+  /**
+   * Checks if an Account with the given email already exists.
+   *
+   * @param email the email address to check
+   * @return {@code true} if an Account with the email exists, {@code false} otherwise
+   */
+  private boolean existsByEmail(String email) {
+    if (email == null) {
+      return false;
+    }
+    return repo.existsByEmail(email);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Account getById(UUID id) {
+    Account account =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Account lookup failed: ID %s not found", id);
+                  return ExceptionHelper.accountNotFound();
+                });
+
+    if (account.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+          id, account.getProblemsSummary());
+      throw ExceptionHelper.accountNotFound();
+    }
+    return account;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Account save(AccountCreateCommand cmd) {
     LOG.debugf("Attempting to create Account for email: '%s'", cmd.emailString());
 
@@ -98,94 +186,5 @@ public class AccountServiceImpl implements AccountService {
     repo.update(updated);
     LOG.infof("Account updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete Account ID: %s", id);
-    Account account = getById(id);
-
-    long count = repo.countAllAccountsByUserId(account.getUserId());
-    boolean deleted = repo.deleteById(account.getId());
-
-    if (deleted) {
-      LOG.infof("Account deleted successfully. ID: %s", id);
-      if (count <= 1) {
-        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
-        userService.delete(account.getUserId());
-      }
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAll(List<UUID> ids) {
-    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
-    List<UUID> userIds = repo.findUserIdsByIds(ids);
-
-    long deletedCount = repo.deleteAllByIds(ids);
-    if (deletedCount > 0) {
-      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
-      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
-      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
-        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
-        userService.deleteAll(userIdsToDelete);
-      }
-    }
-
-    return deletedCount;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Account getById(UUID id) {
-    Account account =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Account lookup failed: ID %s not found", id);
-                  return ExceptionHelper.accountNotFound();
-                });
-
-    if (account.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-          id, account.getProblemsSummary());
-      throw ExceptionHelper.accountNotFound();
-    }
-    return account;
-  }
-
-  @Transactional
-  @Override
-  public Account deactivate(UUID id) {
-    LOG.debugf("Attempting to deactivate Account ID: %s", id);
-    Account account = getById(id);
-
-    Account deactivated = account.deactivate();
-    repo.update(deactivated);
-
-    LOG.infof("Account deactivated successfully. ID: %s", id);
-    return deactivated;
-  }
-
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if an Account with the given email already exists.
-   *
-   * @param email the email address to check
-   * @return {@code true} if an Account with the email exists, {@code false} otherwise
-   */
-  private boolean existsByEmail(String email) {
-    if (email == null) {
-      return false;
-    }
-    return repo.existsByEmail(email);
   }
 }

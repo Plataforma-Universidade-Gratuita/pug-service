@@ -129,6 +129,7 @@ CREATE TABLE accounts
     password_hash varchar(255)             NOT NULL,
     created_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at    TIMESTAMP WITH TIME ZONE NOT NULL,
+    active        boolean                  NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users (id),
     UNIQUE (email)

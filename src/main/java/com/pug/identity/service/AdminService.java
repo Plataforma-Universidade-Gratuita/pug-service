@@ -16,6 +16,45 @@ import java.util.UUID;
 public interface AdminService {
 
   /**
+   * Gracefully deactivates an Administrator's account.
+   *
+   * <p>This delegates to the underlying {@link AccountService} to disable login capabilities
+   * without destroying the underlying Admin or Account records, preserving historical referential
+   * integrity.
+   *
+   * @param accountId the unique identifier of the Admin to deactivate (Account ID)
+   * @return {@code true} if the deactivation was successful, {@code false} if it was not found
+   */
+  boolean deactivate(UUID accountId);
+
+  /**
+   * Revokes administrative privileges by deleting the {@link Admin} record.
+   *
+   * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
+   * the service automatically triggers the deletion of the underlying {@link
+   * com.pug.identity.domain.Account} to ensure credentials tied strictly to admin roles are wiped
+   * out.
+   *
+   * @param accountId the unique identifier of the Admin to delete (Account ID)
+   * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID accountId);
+
+  /**
+   * Retrieves a full {@link Admin} domain aggregate by its linked account identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link AdminReadService#getViewByAccountId(UUID)} instead.
+   *
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Admin} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the Admin exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Admin getByAccountId(UUID accountId);
+
+  /**
    * Instantiates and persists a new {@link Admin} aggregate based on the provided command.
    *
    * <p>This method performs a cascading save. It delegates the creation of the underlying
@@ -48,31 +87,4 @@ public interface AdminService {
    *     domain constraints
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
-
-  /**
-   * Revokes administrative privileges by deleting the {@link Admin} record.
-   *
-   * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
-   * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to admin roles are wiped
-   * out.
-   *
-   * @param accountId the unique identifier of the Admin to delete (Account ID)
-   * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID accountId);
-
-  /**
-   * Retrieves a full {@link Admin} domain aggregate by its linked account identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link AdminReadService#getViewByAccountId(UUID)} instead.
-   *
-   * @param accountId the unique identifier (UUID) of the linked account
-   * @return the fully reconstituted {@link Admin} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the Admin exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Admin getByAccountId(UUID accountId);
 }

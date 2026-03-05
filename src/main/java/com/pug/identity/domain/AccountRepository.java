@@ -14,19 +14,22 @@ import java.util.UUID;
 public interface AccountRepository {
 
   /**
-   * Persists a newly created {@link Account} aggregate into the repository.
+   * Calculates the total number of {@link Account} records associated with a specific user
+   * identifier.
    *
-   * @param entity the {@link Account} aggregate to persist
-   * @return the fully persisted {@link Account} instance
+   * @param userId the unique identifier of the user
+   * @return the total count of accounts owned by the specified user
    */
-  Account persist(Account entity);
+  long countAllAccountsByUserId(UUID userId);
 
   /**
-   * Updates the state of an existing {@link Account} aggregate in the repository.
+   * Removes multiple {@link Account} entities from the repository based on their unique
+   * identifiers.
    *
-   * @param entity the {@link Account} instance containing the updated state
+   * @param ids a list of UUIDs representing the accounts to delete
+   * @return the total number of accounts that were successfully deleted
    */
-  void update(Account entity);
+  long deleteAllByIds(List<UUID> ids);
 
   /**
    * Removes an {@link Account} from the repository based on its unique identifier.
@@ -37,13 +40,25 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Removes multiple {@link Account} entities from the repository based on their unique
-   * identifiers.
+   * Checks whether an {@link Account} with the specified email address already exists in the
+   * repository.
    *
-   * @param ids a list of UUIDs representing the accounts to delete
-   * @return the total number of accounts that were successfully deleted
+   * <p>This is used by domain services to enforce natural key uniqueness constraints (e.g.,
+   * preventing duplicate account registrations with the same email).
+   *
+   * @param email the email address string to check
+   * @return {@code true} if an account with the given email exists, {@code false} otherwise
    */
-  long deleteAllByIds(List<UUID> ids);
+  boolean existsByEmail(String email);
+
+  /**
+   * Identifies and returns all user IDs from the provided list that are considered "orphaned"
+   * (i.e., they have no associated {@link Account} records attached to them).
+   *
+   * @param userIds a list of user UUIDs to check for orphan status
+   * @return a list of user UUIDs that currently have zero associated accounts
+   */
+  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
    * Retrieves an {@link Account} by its unique identifier.
@@ -70,32 +85,17 @@ public interface AccountRepository {
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Identifies and returns all user IDs from the provided list that are considered "orphaned"
-   * (i.e., they have no associated {@link Account} records attached to them).
+   * Persists a newly created {@link Account} aggregate into the repository.
    *
-   * @param userIds a list of user UUIDs to check for orphan status
-   * @return a list of user UUIDs that currently have zero associated accounts
+   * @param entity the {@link Account} aggregate to persist
+   * @return the fully persisted {@link Account} instance
    */
-  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
+  Account persist(Account entity);
 
   /**
-   * Calculates the total number of {@link Account} records associated with a specific user
-   * identifier.
+   * Updates the state of an existing {@link Account} aggregate in the repository.
    *
-   * @param userId the unique identifier of the user
-   * @return the total count of accounts owned by the specified user
+   * @param entity the {@link Account} instance containing the updated state
    */
-  long countAllAccountsByUserId(UUID userId);
-
-  /**
-   * Checks whether an {@link Account} with the specified email address already exists in the
-   * repository.
-   *
-   * <p>This is used by domain services to enforce natural key uniqueness constraints (e.g.,
-   * preventing duplicate account registrations with the same email).
-   *
-   * @param email the email address string to check
-   * @return {@code true} if an account with the given email exists, {@code false} otherwise
-   */
-  boolean existsByEmail(String email);
+  void update(Account entity);
 }

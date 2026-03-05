@@ -213,6 +213,8 @@ public interface CourseRepository {
    * @return {@code true} if a course with the given name exists, {@code false} otherwise
    */
   boolean existsByName(String name);
+
+  boolean existsBySchoolId(UUID schoolId);
 }
 
 
@@ -234,6 +236,9 @@ import lombok.Getter;
  */
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
+  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
+  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
+  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates an attempt to create or update an academic course using a name that is already
@@ -870,6 +875,8 @@ public interface StudentRepository {
    * @return {@code true} if a student with the given registration exists, {@code false} otherwise
    */
   boolean existsByRegistration(String registration);
+
+  boolean existsByCourseId(UUID courseId);
 }
 
 
@@ -1373,6 +1380,14 @@ public class CourseRepositoryImpl
   public boolean existsByName(String name) {
     return count("name = ?1", name) > 0;
   }
+
+  @Override
+  public boolean existsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return false;
+    }
+    return count("schoolId", schoolId) > 0;
+  }
 }
 
 
@@ -1532,6 +1547,14 @@ public class StudentRepositoryImpl
       return false;
     }
     return count("academicRegistration", registration) > 0;
+  }
+
+  @Override
+  public boolean existsByCourseId(UUID courseId) {
+    if (courseId == null) {
+      return false;
+    }
+    return count("courseId", courseId) > 0;
   }
 }
 
@@ -2145,7 +2168,7 @@ public class StudentQueriesImpl implements StudentQueries {
                       acc.id,
                       new com.pug.identity.infra.read.dtos.UserView(
                       u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
-                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt
+                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
                     ),
                     s.academicRegistration,
                     s.campus,
@@ -2641,7 +2664,8 @@ public final class StudentMapper {
                 acc.getEmail(),
                 acc.getAccountType(),
                 acc.getCreatedAt(),
-                acc.getUpdatedAt())
+                acc.getUpdatedAt(),
+                acc.getActive())
             : null;
 
     SchoolView schoolView =
@@ -3710,7 +3734,7 @@ public class StudentResource {
       passwordHash = passwordService.hash(req.password());
     }
 
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
+    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
     AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
     StudentUpdateCommand studentCmd =
         new StudentUpdateCommand(
@@ -3884,6 +3908,8 @@ public interface CourseService {
    *     state violates strict domain invariants (data corruption)
    */
   Course getById(UUID id);
+
+  boolean existsAnyBySchoolId(UUID schoolId);
 }
 
 
@@ -4114,6 +4140,7 @@ import com.pug.academic.domain.Course;
 import com.pug.academic.domain.CourseRepository;
 import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
+import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.CourseCreateCommand;
 import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
@@ -4142,6 +4169,8 @@ public class CourseServiceImpl implements CourseService {
   @Inject CourseRepository repo;
 
   @Inject SchoolService schoolService;
+
+  @Inject StudentService studentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -4204,6 +4233,11 @@ public class CourseServiceImpl implements CourseService {
       return false;
     }
 
+    if (studentService.existsAnyByCourseId(id)) {
+      LOG.warnf("Delete failed: Course ID %s has active students", id);
+      throw ExceptionHelper.courseHasStudents();
+    }
+
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("Course deleted successfully. ID: %s", id);
@@ -4232,6 +4266,11 @@ public class CourseServiceImpl implements CourseService {
       throw ExceptionHelper.courseNotFound();
     }
     return course;
+  }
+
+  @Override
+  public boolean existsAnyBySchoolId(UUID schoolId) {
+    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -4320,6 +4359,7 @@ package com.pug.academic.service.impl;
 
 import com.pug.academic.domain.School;
 import com.pug.academic.domain.SchoolRepository;
+import com.pug.academic.service.CourseService;
 import com.pug.academic.service.SchoolService;
 import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
@@ -4346,6 +4386,8 @@ public class SchoolServiceImpl implements SchoolService {
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
 
   @Inject SchoolRepository repo;
+
+  @Inject CourseService courseService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -4401,13 +4443,17 @@ public class SchoolServiceImpl implements SchoolService {
       return false;
     }
 
+    if (courseService.existsAnyBySchoolId(id)) {
+      LOG.warnf("Delete failed: School ID %s has active courses", id);
+      throw ExceptionHelper.schoolHasCourses();
+    }
+
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("School deleted successfully. ID: %s", id);
     } else {
       LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }
-
     return deleted;
   }
 
@@ -4574,6 +4620,7 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
+import com.pug.projects.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -4600,6 +4647,8 @@ public class StudentServiceImpl implements StudentService {
   @Inject AccountService accountService;
 
   @Inject CourseService courseService;
+
+  @Inject EnrollmentService enrollmentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -4686,6 +4735,11 @@ public class StudentServiceImpl implements StudentService {
       return false;
     }
 
+    if (enrollmentService.existsAnyByStudentId(accountId)) {
+      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
+      throw ExceptionHelper.studentHasEnrollments();
+    }
+
     boolean deleted = repo.deleteById(accountId);
 
     if (deleted) {
@@ -4717,6 +4771,11 @@ public class StudentServiceImpl implements StudentService {
     }
 
     return student;
+  }
+
+  @Override
+  public boolean existsAnyByCourseId(UUID courseId) {
+    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -5037,6 +5096,8 @@ public interface StudentService {
    *     state violates strict domain invariants (data corruption)
    */
   Student getById(UUID accountId);
+
+  boolean existsAnyByCourseId(UUID courseId);
 }
 
 
@@ -5112,6 +5173,7 @@ FILE: service/utils/ExceptionHelper.java
 package com.pug.academic.service.utils;
 
 import com.pug.academic.domain.enums.AcademicErrorCodes;
+import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 
@@ -5185,6 +5247,18 @@ public final class ExceptionHelper {
    */
   public static DuplicateResourceException studentAlreadyExists() {
     return new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
+  }
+
+  public static BusinessRuleException schoolHasCourses() {
+    return new BusinessRuleException(AcademicErrorCodes.SCHOOL_HAS_COURSES);
+  }
+
+  public static BusinessRuleException courseHasStudents() {
+    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_STUDENTS);
+  }
+
+  public static BusinessRuleException studentHasEnrollments() {
+    return new BusinessRuleException(AcademicErrorCodes.STUDENT_HAS_ENROLLMENTS);
   }
 }
 

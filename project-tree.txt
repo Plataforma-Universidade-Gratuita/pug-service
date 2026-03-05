@@ -271,7 +271,8 @@
 │   │   │           │   │   │   ├── EntityResponse.java
 │   │   │           │   │   │   ├── EntityUpdateRequest.java
 │   │   │           │   │   │   ├── StaffCreateRequest.java
-│   │   │           │   │   │   └── StaffResponse.java
+│   │   │           │   │   │   ├── StaffResponse.java
+│   │   │           │   │   │   └── StaffUpdateRequest.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
@@ -284,7 +285,8 @@
 │   │   │           │       ├── dtos/
 │   │   │           │       │   ├── EntityCreateCommand.java
 │   │   │           │       │   ├── EntityUpdateCommand.java
-│   │   │           │       │   └── StaffCreateCommand.java
+│   │   │           │       │   ├── StaffCreateCommand.java
+│   │   │           │       │   └── StaffUpdateCommand.java
 │   │   │           │       ├── impl/
 │   │   │           │       │   ├── EntityReadServiceImpl.java
 │   │   │           │       │   ├── EntityServiceImpl.java
@@ -347,8 +349,14 @@
 │   │   │           │   │   └── mappers/
 │   │   │           │   ├── project_context_projects.txt
 │   │   │           │   └── service/
+│   │   │           │       ├── AttendanceService.java
+│   │   │           │       ├── EnrollmentService.java
+│   │   │           │       ├── ProjectService.java
 │   │   │           │       ├── dtos/
 │   │   │           │       ├── impl/
+│   │   │           │       │   ├── AttendanceServiceImpl.java
+│   │   │           │       │   ├── EnrollmentServiceImpl.java
+│   │   │           │       │   └── ProjectServiceImpl.java
 │   │   │           │       └── utils/
 │   │   │           └── shared/
 │   │   │               ├── domain/

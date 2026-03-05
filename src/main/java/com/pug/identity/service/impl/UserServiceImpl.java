@@ -35,52 +35,6 @@ public class UserServiceImpl implements UserService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public User save(UserCreateCommand cmd) {
-    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
-    User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
-
-    if (userToPersist.hasFieldErrors()) {
-      throw new AppValidationException(userToPersist.getFieldErrors());
-    }
-
-    if (existsByCpf(userToPersist.getCpf())) {
-      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
-      throw ExceptionHelper.userAlreadyExists();
-    }
-
-    User savedUser = repo.persist(userToPersist);
-    LOG.infof("User created successfully. ID: %s", savedUser.getId());
-
-    return savedUser;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public User update(UUID id, UserUpdateCommand cmd) {
-    LOG.debugf("Attempting to update User ID: %s", id);
-
-    User current = getById(id);
-    User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
-
-    if (updated.hasFieldErrors()) {
-      throw new AppValidationException(updated.getFieldErrors());
-    }
-
-    if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
-      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
-      throw ExceptionHelper.userAlreadyExists();
-    }
-
-    repo.update(updated);
-    LOG.infof("User updated successfully. ID: %s", id);
-
-    return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete User ID: %s", id);
 
@@ -111,23 +65,11 @@ public class UserServiceImpl implements UserService {
 
   /** {@inheritDoc} */
   @Override
-  public User getById(UUID id) {
-    User user =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("User lookup failed: ID %s not found", id);
-                  return ExceptionHelper.userNotFound();
-                });
-
-    if (user.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-          id, user.getProblemsSummary());
-      throw ExceptionHelper.userNotFound();
+  public boolean existsByCpf(Cpf cpf) {
+    if (cpf == null) {
+      return false;
     }
-
-    return user;
+    return repo.existsByCpf(cpf.toString());
   }
 
   /** {@inheritDoc} */
@@ -153,10 +95,68 @@ public class UserServiceImpl implements UserService {
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsByCpf(Cpf cpf) {
-    if (cpf == null) {
-      return false;
+  public User getById(UUID id) {
+    User user =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: ID %s not found", id);
+                  return ExceptionHelper.userNotFound();
+                });
+
+    if (user.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+          id, user.getProblemsSummary());
+      throw ExceptionHelper.userNotFound();
     }
-    return repo.existsByCpf(cpf.toString());
+
+    return user;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public User save(UserCreateCommand cmd) {
+    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
+    User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
+
+    if (userToPersist.hasFieldErrors()) {
+      throw new AppValidationException(userToPersist.getFieldErrors());
+    }
+
+    if (existsByCpf(userToPersist.getCpf())) {
+      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    User savedUser = repo.persist(userToPersist);
+    LOG.infof("User created successfully. ID: %s", savedUser.getId());
+
+    return savedUser;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public User update(UUID id, UserUpdateCommand cmd) {
+    LOG.debugf("Attempting to update User ID: %s", id);
+
+    User current = getById(id);
+    User updated = UserProcessor.processUpdateInput(current, cmd.name());
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
+      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    repo.update(updated);
+    LOG.infof("User updated successfully. ID: %s", id);
+
+    return getById(id);
   }
 }

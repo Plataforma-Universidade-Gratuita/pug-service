@@ -18,38 +18,16 @@ import java.util.UUID;
 public interface AccountService {
 
   /**
-   * Instantiates and persists a new {@link Account} aggregate based on the provided command.
+   * Deactivates an existing {@link Account} without deleting it.
    *
-   * <p>This method performs a cascading save. It checks if a {@link User} already exists for the
-   * provided CPF. If they do, the new account is linked to them. If not, a new user is
-   * automatically provisioned before the account is created.
+   * <p>This disables login capabilities and system access, returning a functionally inactive
+   * account while maintaining historical referential integrity.
    *
-   * @param cmd the structured command containing the data to create the new account and linked user
-   * @return the fully instantiated and persisted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the given email
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
-   *     email, invalid CPF)
-   */
-  Account save(AccountCreateCommand cmd);
-
-  /**
-   * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
-   * data.
-   *
-   * <p>This method applies partial updates. If user data is provided in the command, the update is
-   * cascaded down to the underlying user aggregate.
-   *
-   * @param id the unique identifier (UUIDv7) of the account to be updated
-   * @param cmd the structured command containing the data to update the account
-   * @return the mutated and persisted {@link Account} aggregate
+   * @param id the unique identifier (UUID) of the account to deactivate
+   * @return the deactivated {@link Account} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
-   *     with an existing account
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
-   *     domain constraints
    */
-  Account update(UUID id, AccountUpdateCommand cmd);
+  Account deactivate(UUID id);
 
   /**
    * Removes an {@link Account} from the system by its unique identifier.
@@ -88,5 +66,37 @@ public interface AccountService {
    */
   Account getById(UUID id);
 
-  Account deactivate(UUID id);
+  /**
+   * Instantiates and persists a new {@link Account} aggregate based on the provided command.
+   *
+   * <p>This method performs a cascading save. It checks if a {@link User} already exists for the
+   * provided CPF. If they do, the new account is linked to them. If not, a new user is
+   * automatically provisioned before the account is created.
+   *
+   * @param cmd the structured command containing the data to create the new account and linked user
+   * @return the fully instantiated and persisted {@link Account} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the given email
+   *     already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   *     email, invalid CPF)
+   */
+  Account save(AccountCreateCommand cmd);
+
+  /**
+   * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
+   * data.
+   *
+   * <p>This method applies partial updates. If user data is provided in the command, the update is
+   * cascaded down to the underlying user aggregate.
+   *
+   * @param id the unique identifier (UUIDv7) of the account to be updated
+   * @param cmd the structured command containing the data to update the account
+   * @return the mutated and persisted {@link Account} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
+   *     with an existing account
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
+   */
+  Account update(UUID id, AccountUpdateCommand cmd);
 }

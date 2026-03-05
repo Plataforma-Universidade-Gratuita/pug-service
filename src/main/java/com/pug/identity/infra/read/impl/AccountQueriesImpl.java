@@ -53,23 +53,23 @@ public class AccountQueriesImpl implements AccountQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<AccountView> findOptionalById(UUID id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-    var q = entityManager.createQuery(SELECT_BASE + " and a.id = :id", AccountView.class);
-    q.setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<AccountView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
     var q = entityManager.createQuery(SELECT_BASE + " and a.email = :email", AccountView.class);
     q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<AccountView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    var q = entityManager.createQuery(SELECT_BASE + " and a.id = :id", AccountView.class);
+    q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 

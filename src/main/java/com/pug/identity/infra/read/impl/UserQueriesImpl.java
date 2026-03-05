@@ -32,22 +32,6 @@ public class UserQueriesImpl implements UserQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<UserView> findOptionalById(UUID id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-    var q =
-        em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
-                + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
-                + "from UserEntity p where p.id = :id",
-            UserView.class);
-    q.setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<UserView> findOptionalByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       return Optional.empty();
@@ -59,6 +43,22 @@ public class UserQueriesImpl implements UserQueries {
                 + "from UserEntity p where p.cpf = :cpf",
             UserView.class);
     q.setParameter("cpf", cpf);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<UserView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    var q =
+        em.createQuery(
+            "select new com.pug.identity.infra.read.dtos.UserView("
+                + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
+                + "from UserEntity p where p.id = :id",
+            UserView.class);
+    q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 

@@ -57,7 +57,7 @@ public final class StaffPresenter {
     if (req == null) {
       return null;
     }
-    var userCmd = new UserUpdateCommand(null, req.name());
+    var userCmd = new UserUpdateCommand(req.name());
     var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
     return new StaffUpdateCommand(accountCmd);
   }

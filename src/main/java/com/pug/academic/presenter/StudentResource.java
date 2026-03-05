@@ -217,7 +217,7 @@ public class StudentResource {
       passwordHash = passwordService.hash(req.password());
     }
 
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.cpf(), req.name());
+    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
     AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
     StudentUpdateCommand studentCmd =
         new StudentUpdateCommand(

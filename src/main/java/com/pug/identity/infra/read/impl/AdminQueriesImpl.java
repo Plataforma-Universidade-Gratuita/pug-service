@@ -58,23 +58,23 @@ public class AdminQueriesImpl implements AdminQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<AdminView> findOptionalById(UUID accountId) {
-    if (accountId == null) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where a.accountId = :id", AdminView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<AdminView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
     var q = em.createQuery(SELECT_BASE + " where acc.email = :email", AdminView.class);
     q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<AdminView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where a.accountId = :id", AdminView.class);
+    q.setParameter("id", accountId);
     return q.getResultStream().findFirst();
   }
 
@@ -117,10 +117,10 @@ public class AdminQueriesImpl implements AdminQueries {
     var rows =
         em.createQuery(
                 """
-                  select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                  from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                  where acc.userId in :ids
-                  """,
+                select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                where acc.userId in :ids
+                """,
                 AdminAcc.class)
             .setParameter("ids", userIds)
             .getResultList();

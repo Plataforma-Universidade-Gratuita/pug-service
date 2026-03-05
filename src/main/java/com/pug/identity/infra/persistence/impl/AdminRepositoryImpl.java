@@ -24,6 +24,24 @@ public class AdminRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteByAccountId(UUID accountId) {
+    if (accountId == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
+    return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Admin persist(Admin entity) {
     if (entity == null || entity.getAccountId() == null) {
       return null;
@@ -45,23 +63,5 @@ public class AdminRepositoryImpl
       return;
     }
     AdminMapper.copy(entity, e);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteByAccountId(UUID accountId) {
-    if (accountId == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
-    return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 }

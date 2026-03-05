@@ -55,6 +55,9 @@ public class Account extends DomainError {
   /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
+  /** Flag indicating whether the account is active or has been deactivated. */
+  Boolean active;
+
   /**
    * Constructs an {@code Account} instance.
    *
@@ -72,13 +75,15 @@ public class Account extends DomainError {
       Email email,
       AccountType accountType,
       String passwordHash,
-      AuditInfo auditInfo) {
+      AuditInfo auditInfo,
+      Boolean active) {
     this.id = id;
     this.userId = userId;
     this.email = email;
     this.accountType = accountType;
     this.passwordHash = passwordHash;
     this.auditInfo = auditInfo;
+    this.active = active;
   }
 
   /**
@@ -102,10 +107,29 @@ public class Account extends DomainError {
             .accountType(type)
             .passwordHash(passwordHash)
             .auditInfo(AuditInfo.factory())
+            .active(true)
             .build();
 
     account.collectValidationProblems();
     return account;
+  }
+
+  /**
+   * Deactivates the account by setting the {@code active} flag to {@code false}.
+   *
+   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
+   * updated active status and a refreshed {@link AuditInfo} timestamp.
+   *
+   * @return a new, deactivated, and validated {@link Account} instance, or {@code this} if the
+   *     account is already inactive
+   */
+  public Account deactivate() {
+    if (Boolean.FALSE.equals(active)) {
+      return this;
+    }
+    Account updated = toBuilder().active(false).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -188,6 +212,9 @@ public class Account extends DomainError {
     } else if (auditInfo.hasFieldErrors()) {
       addFieldErrors(auditInfo.getFieldErrors());
     }
+    if (active == null) {
+      addFieldError(IdentityFieldErrorCodes.INVALID_ACTIVE_FLAG_BLANK);
+    }
   }
 }
 
@@ -211,19 +238,22 @@ import java.util.UUID;
 public interface AccountRepository {
 
   /**
-   * Persists a newly created {@link Account} aggregate into the repository.
+   * Calculates the total number of {@link Account} records associated with a specific user
+   * identifier.
    *
-   * @param entity the {@link Account} aggregate to persist
-   * @return the fully persisted {@link Account} instance
+   * @param userId the unique identifier of the user
+   * @return the total count of accounts owned by the specified user
    */
-  Account persist(Account entity);
+  long countAllAccountsByUserId(UUID userId);
 
   /**
-   * Updates the state of an existing {@link Account} aggregate in the repository.
+   * Removes multiple {@link Account} entities from the repository based on their unique
+   * identifiers.
    *
-   * @param entity the {@link Account} instance containing the updated state
+   * @param ids a list of UUIDs representing the accounts to delete
+   * @return the total number of accounts that were successfully deleted
    */
-  void update(Account entity);
+  long deleteAllByIds(List<UUID> ids);
 
   /**
    * Removes an {@link Account} from the repository based on its unique identifier.
@@ -234,13 +264,25 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Removes multiple {@link Account} entities from the repository based on their unique
-   * identifiers.
+   * Checks whether an {@link Account} with the specified email address already exists in the
+   * repository.
    *
-   * @param ids a list of UUIDs representing the accounts to delete
-   * @return the total number of accounts that were successfully deleted
+   * <p>This is used by domain services to enforce natural key uniqueness constraints (e.g.,
+   * preventing duplicate account registrations with the same email).
+   *
+   * @param email the email address string to check
+   * @return {@code true} if an account with the given email exists, {@code false} otherwise
    */
-  long deleteAllByIds(List<UUID> ids);
+  boolean existsByEmail(String email);
+
+  /**
+   * Identifies and returns all user IDs from the provided list that are considered "orphaned"
+   * (i.e., they have no associated {@link Account} records attached to them).
+   *
+   * @param userIds a list of user UUIDs to check for orphan status
+   * @return a list of user UUIDs that currently have zero associated accounts
+   */
+  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
    * Retrieves an {@link Account} by its unique identifier.
@@ -267,34 +309,19 @@ public interface AccountRepository {
   List<UUID> findUserIdsByIds(List<UUID> ids);
 
   /**
-   * Identifies and returns all user IDs from the provided list that are considered "orphaned"
-   * (i.e., they have no associated {@link Account} records attached to them).
+   * Persists a newly created {@link Account} aggregate into the repository.
    *
-   * @param userIds a list of user UUIDs to check for orphan status
-   * @return a list of user UUIDs that currently have zero associated accounts
+   * @param entity the {@link Account} aggregate to persist
+   * @return the fully persisted {@link Account} instance
    */
-  List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
+  Account persist(Account entity);
 
   /**
-   * Calculates the total number of {@link Account} records associated with a specific user
-   * identifier.
+   * Updates the state of an existing {@link Account} aggregate in the repository.
    *
-   * @param userId the unique identifier of the user
-   * @return the total count of accounts owned by the specified user
+   * @param entity the {@link Account} instance containing the updated state
    */
-  long countAllAccountsByUserId(UUID userId);
-
-  /**
-   * Checks whether an {@link Account} with the specified email address already exists in the
-   * repository.
-   *
-   * <p>This is used by domain services to enforce natural key uniqueness constraints (e.g.,
-   * preventing duplicate account registrations with the same email).
-   *
-   * @param email the email address string to check
-   * @return {@code true} if an account with the given email exists, {@code false} otherwise
-   */
-  boolean existsByEmail(String email);
+  void update(Account entity);
 }
 
 
@@ -433,21 +460,6 @@ import java.util.UUID;
 public interface AdminRepository {
 
   /**
-   * Persists a newly created {@link Admin} aggregate into the repository.
-   *
-   * @param entity the {@link Admin} aggregate to persist
-   * @return the fully persisted {@link Admin} instance
-   */
-  Admin persist(Admin entity);
-
-  /**
-   * Updates the state of an existing {@link Admin} aggregate in the repository.
-   *
-   * @param entity the {@link Admin} instance containing the updated state
-   */
-  void update(Admin entity);
-
-  /**
    * Removes an {@link Admin} privilege record from the repository based on its linked account
    * identifier.
    *
@@ -470,6 +482,21 @@ public interface AdminRepository {
    *     if not
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
+
+  /**
+   * Persists a newly created {@link Admin} aggregate into the repository.
+   *
+   * @param entity the {@link Admin} aggregate to persist
+   * @return the fully persisted {@link Admin} instance
+   */
+  Admin persist(Admin entity);
+
+  /**
+   * Updates the state of an existing {@link Admin} aggregate in the repository.
+   *
+   * @param entity the {@link Admin} instance containing the updated state
+   */
+  void update(Admin entity);
 }
 
 
@@ -558,6 +585,9 @@ public enum IdentityFieldErrorCodes implements GenericFieldErrorCodes {
 
   /** Indicates that an account type was provided as null, empty, or whitespace. */
   INVALID_ACCOUNT_TYPE_BLANK("error.domain.identity.account.type.blank", "accountType"),
+
+  /** Indicates that the active status flag for an account was provided as null. */
+  INVALID_ACTIVE_FLAG_BLANK("error.domain.identity.account.active.blank", "active"),
 
   /** Indicates that a CPF string was provided as null, empty, or whitespace. */
   INVALID_CPF_BLANK("error.domain.identity.cpf.blank", "cpf"),
@@ -709,31 +739,12 @@ public class User extends DomainError {
    * @return a new, updated, and validated {@link User} instance, or {@code this} if the name is
    *     unchanged
    */
-  public User changeName(String newName) {
+  public User rename(String newName) {
     String trimmed = StringUtils.trim(newName);
     if (name.equals(trimmed)) {
       return this;
     }
     User updated = toBuilder().name(trimmed).auditInfo(auditInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Updates the user's CPF.
-   *
-   * <p>Returns a new, re-validated {@code User} instance with the updated CPF and refreshed {@link
-   * AuditInfo} timestamp, maintaining the immutability of the domain entity.
-   *
-   * @param newCpf the new {@link Cpf} to assign to the user
-   * @return a new, updated, and validated {@link User} instance, or {@code this} if the CPF is
-   *     unchanged
-   */
-  public User changeCpf(Cpf newCpf) {
-    if (cpf.equals(newCpf)) {
-      return this;
-    }
-    User updated = toBuilder().cpf(newCpf).auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -792,19 +803,12 @@ import java.util.UUID;
 public interface UserRepository {
 
   /**
-   * Persists a newly created {@link User} aggregate into the repository.
+   * Removes multiple {@link User} entities from the repository based on their unique identifiers.
    *
-   * @param entity the {@link User} aggregate to persist
-   * @return the fully persisted {@link User} instance
+   * @param ids a list of UUIDs representing the users to delete
+   * @return the total number of users that were successfully deleted
    */
-  User persist(User entity);
-
-  /**
-   * Updates the state of an existing {@link User} aggregate in the repository.
-   *
-   * @param entity the {@link User} instance containing the updated state
-   */
-  void update(User entity);
+  long deleteAllByIds(List<UUID> ids);
 
   /**
    * Removes a {@link User} from the repository based on its unique identifier.
@@ -816,12 +820,27 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Removes multiple {@link User} entities from the repository based on their unique identifiers.
+   * Checks whether a {@link User} with the specified CPF already exists in the repository.
    *
-   * @param ids a list of UUIDs representing the users to delete
-   * @return the total number of users that were successfully deleted
+   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
+   * constraints before persisting a new user or updating an existing one.
+   *
+   * @param cpf the numeric CPF string to check
+   * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
    */
-  long deleteAllByIds(List<UUID> ids);
+  boolean existsByCpf(String cpf);
+
+  /**
+   * Retrieves a {@link User} by their unique Brazilian CPF.
+   *
+   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
+   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
+   *
+   * @param cpf the raw, 11-digit numeric CPF string of the user
+   * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
+   *     if not
+   */
+  Optional<User> findOptionalByCpf(String cpf);
 
   /**
    * Retrieves a {@link User} by its unique identifier.
@@ -838,27 +857,19 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
-   * Retrieves a {@link User} by their unique Brazilian CPF.
+   * Persists a newly created {@link User} aggregate into the repository.
    *
-   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
-   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
-   *
-   * @param cpf the raw, 11-digit numeric CPF string of the user
-   * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
-   *     if not
+   * @param entity the {@link User} aggregate to persist
+   * @return the fully persisted {@link User} instance
    */
-  Optional<User> findOptionalByCpf(String cpf);
+  User persist(User entity);
 
   /**
-   * Checks whether a {@link User} with the specified CPF already exists in the repository.
+   * Updates the state of an existing {@link User} aggregate in the repository.
    *
-   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
-   * constraints before persisting a new user or updating an existing one.
-   *
-   * @param cpf the numeric CPF string to check
-   * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
+   * @param entity the {@link User} instance containing the updated state
    */
-  boolean existsByCpf(String cpf);
+  void update(User entity);
 }
 
 
@@ -1127,6 +1138,7 @@ public final class AccountMapper {
         .accountType(e.getAccountType())
         .passwordHash(e.getPasswordHash())
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+        .active(e.getActive())
         .build();
   }
 
@@ -1153,6 +1165,7 @@ public final class AccountMapper {
         .passwordHash(d.getPasswordHash())
         .createdAt(d.getAuditInfo().getCreatedAt())
         .updatedAt(d.getAuditInfo().getUpdatedAt())
+        .active(d.getActive())
         .build();
   }
 
@@ -1173,6 +1186,7 @@ public final class AccountMapper {
     e.setEmail(d.getEmail().toString());
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
+    e.setActive(d.getActive());
   }
 
   /**
@@ -1201,7 +1215,8 @@ public final class AccountMapper {
         accountEntity.getEmail(),
         accountEntity.getAccountType(),
         accountEntity.getCreatedAt(),
-        accountEntity.getUpdatedAt());
+        accountEntity.getUpdatedAt(),
+        accountEntity.getActive());
   }
 }
 
@@ -1312,7 +1327,8 @@ public final class AdminMapper {
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
-            accountEntity.getUpdatedAt()),
+            accountEntity.getUpdatedAt(),
+            accountEntity.getActive()),
         adminEntity.getGrantedAt(),
         adminEntity.getCampus());
   }
@@ -1402,6 +1418,10 @@ public class AccountEntity extends BaseAuditedEntity {
   /** The securely hashed representation of the user's password. */
   @Column(name = "password_hash", nullable = false)
   private String passwordHash;
+
+  /** Flag indicating whether the account is active or has been deactivated. */
+  @Column(name = "is_active", nullable = false)
+  private Boolean active;
 }
 
 
@@ -1506,6 +1526,79 @@ public class AccountRepositoryImpl
     implements AccountRepository, PanacheRepositoryBase<AccountEntity, UUID> {
 
   /** {@inheritDoc} */
+  @Override
+  public long countAllAccountsByUserId(UUID userId) {
+    if (userId == null) {
+      return 0;
+    }
+    return count("userId", userId);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    return delete("id in ?1", ids);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var result = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return result;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByEmail(String email) {
+    return find("email", email).firstResultOptional().isPresent();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds) {
+    if (CollectionUtils.isEmpty(userIds)) {
+      return List.of();
+    }
+
+    List<UUID> usedUserIds =
+        getEntityManager()
+            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
+            .setParameter("ids", userIds)
+            .getResultList();
+
+    List<UUID> orphans = new ArrayList<>(userIds);
+    orphans.removeAll(usedUserIds);
+    return orphans;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Account> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(AccountMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<UUID> findUserIdsByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return List.of();
+    }
+    return getEntityManager()
+        .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
+        .setParameter("ids", ids)
+        .getResultList();
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Account persist(Account entity) {
@@ -1529,79 +1622,6 @@ public class AccountRepositoryImpl
       return;
     }
     AccountMapper.copy(entity, managed);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var result = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return result;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAllByIds(List<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0;
-    }
-    return delete("id in ?1", ids);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Account> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(AccountMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<UUID> findUserIdsByIds(List<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return List.of();
-    }
-    return getEntityManager()
-        .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.id IN :ids", UUID.class)
-        .setParameter("ids", ids)
-        .getResultList();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds) {
-    if (CollectionUtils.isEmpty(userIds)) {
-      return List.of();
-    }
-
-    List<UUID> usedUserIds =
-        getEntityManager()
-            .createQuery("SELECT a.userId FROM AccountEntity a WHERE a.userId IN :ids", UUID.class)
-            .setParameter("ids", userIds)
-            .getResultList();
-
-    List<UUID> orphans = new ArrayList<>(userIds);
-    orphans.removeAll(usedUserIds);
-    return orphans;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public long countAllAccountsByUserId(UUID userId) {
-    if (userId == null) {
-      return 0;
-    }
-    return count("userId", userId);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByEmail(String email) {
-    return find("email", email).firstResultOptional().isPresent();
   }
 }
 
@@ -1635,6 +1655,24 @@ public class AdminRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteByAccountId(UUID accountId) {
+    if (accountId == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
+    return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Admin persist(Admin entity) {
     if (entity == null || entity.getAccountId() == null) {
       return null;
@@ -1656,24 +1694,6 @@ public class AdminRepositoryImpl
       return;
     }
     AdminMapper.copy(entity, e);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteByAccountId(UUID accountId) {
-    if (accountId == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Admin> findOptionalByAccountId(UUID accountId) {
-    return find("accountId", accountId).firstResultOptional().map(AdminMapper::toDomain);
   }
 }
 
@@ -1709,6 +1729,52 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    return delete("id in ?1", ids);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return false;
+    }
+    return count("cpf = ?1", cpf) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<User> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<User> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(UserMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public User persist(User entity) {
     if (entity == null) {
       return null;
@@ -1730,52 +1796,6 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
       return;
     }
     UserMapper.copy(entity, e);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAllByIds(List<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0;
-    }
-    return delete("id in ?1", ids);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<User> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(UserMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<User> findOptionalByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      return Optional.empty();
-    }
-    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      return false;
-    }
-    return count("cpf = ?1", cpf) > 0;
   }
 }
 
@@ -1894,15 +1914,6 @@ import java.util.UUID;
 public interface AccountQueries {
 
   /**
-   * Retrieves a read-only view of an account based on its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the account to retrieve
-   * @return an {@link Optional} containing the {@link AccountView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<AccountView> findOptionalById(UUID id);
-
-  /**
    * Retrieves a read-only view of an account based on its registered email address.
    *
    * @param email the exact email address string to search for
@@ -1910,6 +1921,15 @@ public interface AccountQueries {
    *     Optional#empty()} otherwise
    */
   Optional<AccountView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of an account based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the account to retrieve
+   * @return an {@link Optional} containing the {@link AccountView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<AccountView> findOptionalById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all accounts registered in the system.
@@ -1966,15 +1986,6 @@ import java.util.UUID;
 public interface AdminQueries {
 
   /**
-   * Retrieves a read-only view of an administrator profile based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the admin's account
-   * @return an {@link Optional} containing the {@link AdminView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<AdminView> findOptionalById(UUID accountId);
-
-  /**
    * Retrieves a read-only view of an administrator profile based on their registered email address.
    *
    * @param email the exact email address of the administrator
@@ -1982,6 +1993,15 @@ public interface AdminQueries {
    *     Optional#empty()} otherwise
    */
   Optional<AdminView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of an administrator profile based on their linked account ID.
+   *
+   * @param accountId the unique identifier (UUID) of the admin's account
+   * @return an {@link Optional} containing the {@link AdminView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<AdminView> findOptionalById(UUID accountId);
 
   /**
    * Retrieves a comprehensive list of all administrators registered in the system.
@@ -2044,7 +2064,8 @@ public record AccountView(
     String email,
     AccountType accountType,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt) {}
+    OffsetDateTime updatedAt,
+    Boolean active) {}
 
 
 ================================================================================
@@ -2167,7 +2188,8 @@ public class AccountQueriesImpl implements AccountQueries {
                     a.email,
                     a.accountType,
                     a.createdAt,
-                    a.updatedAt
+                    a.updatedAt,
+                    a.active
                   )
                   from AccountEntity a, UserEntity u
                   where u.id = a.userId
@@ -2177,23 +2199,23 @@ public class AccountQueriesImpl implements AccountQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<AccountView> findOptionalById(UUID id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-    var q = entityManager.createQuery(SELECT_BASE + " and a.id = :id", AccountView.class);
-    q.setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<AccountView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
     var q = entityManager.createQuery(SELECT_BASE + " and a.email = :email", AccountView.class);
     q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<AccountView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    var q = entityManager.createQuery(SELECT_BASE + " and a.id = :id", AccountView.class);
+    q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 
@@ -2297,7 +2319,8 @@ public class AdminQueriesImpl implements AdminQueries {
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
-                      acc.updatedAt
+                      acc.updatedAt,
+                      acc.active
                     ),
                     a.grantedAt,
                     a.campus
@@ -2311,23 +2334,23 @@ public class AdminQueriesImpl implements AdminQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<AdminView> findOptionalById(UUID accountId) {
-    if (accountId == null) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where a.accountId = :id", AdminView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<AdminView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
     var q = em.createQuery(SELECT_BASE + " where acc.email = :email", AdminView.class);
     q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<AdminView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where a.accountId = :id", AdminView.class);
+    q.setParameter("id", accountId);
     return q.getResultStream().findFirst();
   }
 
@@ -2370,10 +2393,10 @@ public class AdminQueriesImpl implements AdminQueries {
     var rows =
         em.createQuery(
                 """
-                  select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                  from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                  where acc.userId in :ids
-                  """,
+                select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                where acc.userId in :ids
+                """,
                 AdminAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
@@ -2435,22 +2458,6 @@ public class UserQueriesImpl implements UserQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<UserView> findOptionalById(UUID id) {
-    if (id == null) {
-      return Optional.empty();
-    }
-    var q =
-        em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
-                + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
-                + "from UserEntity p where p.id = :id",
-            UserView.class);
-    q.setParameter("id", id);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<UserView> findOptionalByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       return Optional.empty();
@@ -2462,6 +2469,22 @@ public class UserQueriesImpl implements UserQueries {
                 + "from UserEntity p where p.cpf = :cpf",
             UserView.class);
     q.setParameter("cpf", cpf);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<UserView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    var q =
+        em.createQuery(
+            "select new com.pug.identity.infra.read.dtos.UserView("
+                + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
+                + "from UserEntity p where p.id = :id",
+            UserView.class);
+    q.setParameter("id", id);
     return q.getResultStream().findFirst();
   }
 
@@ -2515,15 +2538,6 @@ import java.util.UUID;
 public interface UserQueries {
 
   /**
-   * Retrieves a read-only view of a user based on their unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the user to retrieve
-   * @return an {@link Optional} containing the {@link UserView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<UserView> findOptionalById(UUID id);
-
-  /**
    * Retrieves a read-only view of a user based on their exact CPF.
    *
    * @param cpf the exact 11-digit numeric CPF string
@@ -2531,6 +2545,15 @@ public interface UserQueries {
    *     Optional#empty()} otherwise
    */
   Optional<UserView> findOptionalByCpf(String cpf);
+
+  /**
+   * Retrieves a read-only view of a user based on their unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the user to retrieve
+   * @return an {@link Optional} containing the {@link UserView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<UserView> findOptionalById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all users registered in the system.
@@ -2810,13 +2833,6 @@ import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.AdminUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -2831,6 +2847,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -2851,9 +2868,9 @@ import java.util.stream.Collectors;
 /**
  * REST API Resource controller for managing Administrator profiles.
  *
- * <p>This class exposes endpoints to create, retrieve, update, and revoke administrative
- * privileges. It delegates commands to the {@link AdminService} (writes) and queries to the {@link
- * AdminReadService} (reads), strictly adhering to CQRS principles.
+ * <p>This class exposes endpoints to create, retrieve, update, deactivate, and revoke
+ * administrative privileges. It delegates commands to the {@link AdminService} (writes) and queries
+ * to the {@link AdminReadService} (reads), strictly adhering to CQRS principles.
  */
 @Path("/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -2964,13 +2981,9 @@ public class AdminResource {
   @POST
   public Response create(@Valid AdminCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
+    var cmd = AdminPresenter.toCommand(req, hashedPassword);
 
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
-    AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd, req.campus());
-
-    Admin admin = writeService.save(adminCmd);
+    Admin admin = writeService.save(cmd);
 
     AdminResponse body =
         AdminPresenter.toResponse(
@@ -2995,19 +3008,32 @@ public class AdminResource {
   @PUT
   @Path("{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
-    String hashedPassword = passwordService.hash(req.password());
+    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
+    var cmd = AdminPresenter.toCommand(req, hashedPassword);
 
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.cpfString(), req.name());
-    AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
+    Admin updatedAdmin = writeService.update(id, cmd);
 
-    Admin updatedAdmin = writeService.update(id, adminCmd);
     AdminResponse body =
         AdminPresenter.toResponse(
             readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
 
     return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Gracefully deactivates an administrator's account.
+   *
+   * <p>This disables login capabilities and system access without destroying the underlying
+   * records, maintaining historical referential integrity.
+   *
+   * @param id the unique identifier (UUIDv7) of the admin's account
+   * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
+   */
+  @PATCH
+  @Path("{id}/deactivate")
+  public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
+    writeService.deactivate(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
   /**
@@ -3060,7 +3086,8 @@ public record AccountResponse(
     String email,
     AccountType accountType,
     String accountTypeFormatted,
-    AuditInfoResponse auditInfo) {}
+    AuditInfoResponse auditInfo,
+    Boolean active) {}
 
 
 ================================================================================
@@ -3136,7 +3163,6 @@ import jakarta.validation.constraints.Size;
  * is provided as {@code null} or omitted from the JSON payload, the application service will ignore
  * it and retain the existing value for that specific attribute.
  *
- * @param cpfString the new CPF string, or {@code null} to leave unchanged
  * @param name the new full name, or {@code null} to leave unchanged (if provided, max 150
  *     characters)
  * @param emailString the new email address string, or {@code null} to leave unchanged
@@ -3145,7 +3171,6 @@ import jakarta.validation.constraints.Size;
  * @param campus the new university campus assignment, or {@code null} to leave unchanged
  */
 public record AdminUpdateRequest(
-    String cpfString,
     @Size(max = 150) String name,
     String emailString,
     @Size(min = 8, max = 255) String password,
@@ -3227,7 +3252,7 @@ public final class AccountPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo);
+        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
   }
 }
 
@@ -3239,7 +3264,16 @@ package com.pug.identity.presenter.mappers;
 
 import com.pug.identity.infra.read.dtos.AdminView;
 import com.pug.identity.presenter.dtos.AccountResponse;
+import com.pug.identity.presenter.dtos.AdminCreateRequest;
 import com.pug.identity.presenter.dtos.AdminResponse;
+import com.pug.identity.presenter.dtos.AdminUpdateRequest;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.AdminCreateCommand;
+import com.pug.identity.service.dtos.AdminUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -3248,15 +3282,51 @@ import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal administrator projections to external
- * API responses.
+ * API responses and mapping REST payloads to application commands.
  *
  * <p>This presenter acts as a translation layer, converting deeply nested CQRS query views ({@link
- * AdminView}) into consolidated, client-ready representations ({@link AdminResponse}).
+ * AdminView}) into consolidated, client-ready representations ({@link AdminResponse}), and mapping
+ * incoming data transfers to nested command structures.
  */
 public final class AdminPresenter {
 
   /** Private constructor to prevent instantiation of utility class. */
   private AdminPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer creation command.
+   *
+   * @param req the validated {@link AdminCreateRequest} payload
+   * @param hashedPassword the securely hashed password string to assign to the new account
+   * @return the corresponding {@link AdminCreateCommand}, or {@code null} if input is null
+   */
+  public static AdminCreateCommand toCommand(AdminCreateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    var userCmd = new UserCreateCommand(req.cpfString(), req.name());
+    var accountCmd =
+        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
+    return new AdminCreateCommand(accountCmd, req.campus());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer update command.
+   *
+   * @param req the validated {@link AdminUpdateRequest} payload
+   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
+   *     not being updated
+   * @return the corresponding {@link AdminUpdateCommand}, or {@code null} if input is null
+   */
+  public static AdminUpdateCommand toCommand(AdminUpdateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+    // CPF cannot be updated via this flow, so it is omitted from UserUpdateCommand
+    var userCmd = new UserUpdateCommand(req.name());
+    var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+    return new AdminUpdateCommand(accountCmd, req.campus());
+  }
 
   /**
    * Projects a read-only {@link AdminView} into a client-facing {@link AdminResponse}.
@@ -3310,25 +3380,6 @@ public final class UserPresenter {
   private UserPresenter() {}
 
   /**
-   * Projects a read-only {@link UserView} into a client-facing {@link UserResponse}.
-   *
-   * @param v the internal read-model projection of the user
-   * @param locale the locale extracted from the client's request headers
-   * @return a fully populated {@link UserResponse} ready for JSON serialization, or {@code null} if
-   *     the input view is null
-   */
-  public static UserResponse toResponse(UserView v, Locale locale) {
-    if (v == null) {
-      return null;
-    }
-
-    AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
-
-    return new UserResponse(v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), auditInfo);
-  }
-
-  /**
    * Computes the formatted string representation of a Brazilian CPF.
    *
    * <p>Transforms a raw 11-digit numeric string (e.g., "12345678900") into the standard punctuated
@@ -3349,6 +3400,25 @@ public final class UserPresenter {
         + cpf.substring(6, 9)
         + "-"
         + cpf.substring(9, 11);
+  }
+
+  /**
+   * Projects a read-only {@link UserView} into a client-facing {@link UserResponse}.
+   *
+   * @param v the internal read-model projection of the user
+   * @param locale the locale extracted from the client's request headers
+   * @return a fully populated {@link UserResponse} ready for JSON serialization, or {@code null} if
+   *     the input view is null
+   */
+  public static UserResponse toResponse(UserView v, Locale locale) {
+    if (v == null) {
+      return null;
+    }
+
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+
+    return new UserResponse(v.id(), v.cpf(), cpfFormatted(v.cpf()), v.name(), auditInfo);
   }
 }
 
@@ -3482,16 +3552,6 @@ import java.util.UUID;
 public interface AccountReadService {
 
   /**
-   * Retrieves a read-only projection of an account based on its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the requested account
-   * @return the populated {@link AccountView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
-   *     ID
-   */
-  AccountView getViewById(UUID id);
-
-  /**
    * Retrieves a read-only projection of an account based on its registered email address.
    *
    * @param email the exact email address string of the requested account
@@ -3500,6 +3560,16 @@ public interface AccountReadService {
    *     email
    */
   AccountView getViewByEmail(String email);
+
+  /**
+   * Retrieves a read-only projection of an account based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the requested account
+   * @return the populated {@link AccountView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
+   *     ID
+   */
+  AccountView getViewById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all accounts registered in the system.
@@ -3553,38 +3623,16 @@ import java.util.UUID;
 public interface AccountService {
 
   /**
-   * Instantiates and persists a new {@link Account} aggregate based on the provided command.
+   * Deactivates an existing {@link Account} without deleting it.
    *
-   * <p>This method performs a cascading save. It checks if a {@link User} already exists for the
-   * provided CPF. If they do, the new account is linked to them. If not, a new user is
-   * automatically provisioned before the account is created.
+   * <p>This disables login capabilities and system access, returning a functionally inactive
+   * account while maintaining historical referential integrity.
    *
-   * @param cmd the structured command containing the data to create the new account and linked user
-   * @return the fully instantiated and persisted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the given email
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
-   *     email, invalid CPF)
-   */
-  Account save(AccountCreateCommand cmd);
-
-  /**
-   * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
-   * data.
-   *
-   * <p>This method applies partial updates. If user data is provided in the command, the update is
-   * cascaded down to the underlying user aggregate.
-   *
-   * @param id the unique identifier (UUIDv7) of the account to be updated
-   * @param cmd the structured command containing the data to update the account
-   * @return the mutated and persisted {@link Account} aggregate
+   * @param id the unique identifier (UUID) of the account to deactivate
+   * @return the deactivated {@link Account} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
-   *     with an existing account
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
-   *     domain constraints
    */
-  Account update(UUID id, AccountUpdateCommand cmd);
+  Account deactivate(UUID id);
 
   /**
    * Removes an {@link Account} from the system by its unique identifier.
@@ -3622,6 +3670,40 @@ public interface AccountService {
    *     state violates strict domain invariants (data corruption)
    */
   Account getById(UUID id);
+
+  /**
+   * Instantiates and persists a new {@link Account} aggregate based on the provided command.
+   *
+   * <p>This method performs a cascading save. It checks if a {@link User} already exists for the
+   * provided CPF. If they do, the new account is linked to them. If not, a new user is
+   * automatically provisioned before the account is created.
+   *
+   * @param cmd the structured command containing the data to create the new account and linked user
+   * @return the fully instantiated and persisted {@link Account} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the given email
+   *     already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   *     email, invalid CPF)
+   */
+  Account save(AccountCreateCommand cmd);
+
+  /**
+   * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
+   * data.
+   *
+   * <p>This method applies partial updates. If user data is provided in the command, the update is
+   * cascaded down to the underlying user aggregate.
+   *
+   * @param id the unique identifier (UUIDv7) of the account to be updated
+   * @param cmd the structured command containing the data to update the account
+   * @return the mutated and persisted {@link Account} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
+   *     with an existing account
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
+   */
+  Account update(UUID id, AccountUpdateCommand cmd);
 }
 
 
@@ -3713,6 +3795,45 @@ import java.util.UUID;
 public interface AdminService {
 
   /**
+   * Gracefully deactivates an Administrator's account.
+   *
+   * <p>This delegates to the underlying {@link AccountService} to disable login capabilities
+   * without destroying the underlying Admin or Account records, preserving historical referential
+   * integrity.
+   *
+   * @param accountId the unique identifier of the Admin to deactivate (Account ID)
+   * @return {@code true} if the deactivation was successful, {@code false} if it was not found
+   */
+  boolean deactivate(UUID accountId);
+
+  /**
+   * Revokes administrative privileges by deleting the {@link Admin} record.
+   *
+   * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
+   * the service automatically triggers the deletion of the underlying {@link
+   * com.pug.identity.domain.Account} to ensure credentials tied strictly to admin roles are wiped
+   * out.
+   *
+   * @param accountId the unique identifier of the Admin to delete (Account ID)
+   * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID accountId);
+
+  /**
+   * Retrieves a full {@link Admin} domain aggregate by its linked account identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link AdminReadService#getViewByAccountId(UUID)} instead.
+   *
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Admin} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the Admin exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Admin getByAccountId(UUID accountId);
+
+  /**
    * Instantiates and persists a new {@link Admin} aggregate based on the provided command.
    *
    * <p>This method performs a cascading save. It delegates the creation of the underlying
@@ -3745,33 +3866,6 @@ public interface AdminService {
    *     domain constraints
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
-
-  /**
-   * Revokes administrative privileges by deleting the {@link Admin} record.
-   *
-   * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
-   * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to admin roles are wiped
-   * out.
-   *
-   * @param accountId the unique identifier of the Admin to delete (Account ID)
-   * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID accountId);
-
-  /**
-   * Retrieves a full {@link Admin} domain aggregate by its linked account identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link AdminReadService#getViewByAccountId(UUID)} instead.
-   *
-   * @param accountId the unique identifier (UUID) of the linked account
-   * @return the fully reconstituted {@link Admin} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the Admin exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Admin getByAccountId(UUID accountId);
 }
 
 
@@ -3890,10 +3984,9 @@ package com.pug.identity.service.dtos;
  * <p>This record encapsulates the requested state changes for a user. The fields are treated as
  * optional for partial updates; omitting a value will retain the current state in the database.
  *
- * @param cpfString the new 11-digit Brazilian CPF string, or {@code null} to leave unchanged
  * @param name the new name of the person, or {@code null} to leave unchanged
  */
-public record UserUpdateCommand(String cpfString, String name) {}
+public record UserUpdateCommand(String name) {}
 
 
 ================================================================================
@@ -3928,18 +4021,6 @@ public class AccountReadServiceImpl implements AccountReadService {
 
   /** {@inheritDoc} */
   @Override
-  public AccountView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Account lookup failed: ID %s not found", id);
-              return ExceptionHelper.accountNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public AccountView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw ExceptionHelper.accountNotFound();
@@ -3950,6 +4031,18 @@ public class AccountReadServiceImpl implements AccountReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Account lookup failed: Email %s not found", email);
+              return ExceptionHelper.accountNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AccountView getViewById(UUID id) {
+    return queries
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Account lookup failed: ID %s not found", id);
               return ExceptionHelper.accountNotFound();
             });
   }
@@ -4027,6 +4120,94 @@ public class AccountServiceImpl implements AccountService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public Account deactivate(UUID id) {
+    LOG.debugf("Attempting to deactivate Account ID: %s", id);
+    Account account = getById(id);
+
+    Account deactivated = account.deactivate();
+    repo.update(deactivated);
+
+    LOG.infof("Account deactivated successfully. ID: %s", id);
+    return deactivated;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Account ID: %s", id);
+    Account account = getById(id);
+
+    long count = repo.countAllAccountsByUserId(account.getUserId());
+    boolean deleted = repo.deleteById(account.getId());
+
+    if (deleted) {
+      LOG.infof("Account deleted successfully. ID: %s", id);
+      if (count <= 1) {
+        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
+        userService.delete(account.getUserId());
+      }
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAll(List<UUID> ids) {
+    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
+    List<UUID> userIds = repo.findUserIdsByIds(ids);
+
+    long deletedCount = repo.deleteAllByIds(ids);
+    if (deletedCount > 0) {
+      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
+      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
+      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
+        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
+        userService.deleteAll(userIdsToDelete);
+      }
+    }
+
+    return deletedCount;
+  }
+
+  /**
+   * Checks if an Account with the given email already exists.
+   *
+   * @param email the email address to check
+   * @return {@code true} if an Account with the email exists, {@code false} otherwise
+   */
+  private boolean existsByEmail(String email) {
+    if (email == null) {
+      return false;
+    }
+    return repo.existsByEmail(email);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Account getById(UUID id) {
+    Account account =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Account lookup failed: ID %s not found", id);
+                  return ExceptionHelper.accountNotFound();
+                });
+
+    if (account.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
+          id, account.getProblemsSummary());
+      throw ExceptionHelper.accountNotFound();
+    }
+    return account;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Account save(AccountCreateCommand cmd) {
     LOG.debugf("Attempting to create Account for email: '%s'", cmd.emailString());
 
@@ -4087,82 +4268,6 @@ public class AccountServiceImpl implements AccountService {
     repo.update(updated);
     LOG.infof("Account updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete Account ID: %s", id);
-    Account account = getById(id);
-
-    long count = repo.countAllAccountsByUserId(account.getUserId());
-    boolean deleted = repo.deleteById(account.getId());
-
-    if (deleted) {
-      LOG.infof("Account deleted successfully. ID: %s", id);
-      if (count <= 1) {
-        LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
-        userService.delete(account.getUserId());
-      }
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAll(List<UUID> ids) {
-    LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
-    List<UUID> userIds = repo.findUserIdsByIds(ids);
-
-    long deletedCount = repo.deleteAllByIds(ids);
-    if (deletedCount > 0) {
-      LOG.infof("Deleted %d Accounts successfully.", deletedCount);
-      var userIdsToDelete = repo.findAllOrphanUserIdsByUserIds(userIds);
-      if (CollectionUtils.isNotEmpty(userIdsToDelete)) {
-        LOG.infof("Auto-deleting Orphan User IDs: %s", userIdsToDelete);
-        userService.deleteAll(userIdsToDelete);
-      }
-    }
-
-    return deletedCount;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Account getById(UUID id) {
-    Account account =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Account lookup failed: ID %s not found", id);
-                  return ExceptionHelper.accountNotFound();
-                });
-
-    if (account.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Account %s violates domain rules: %s",
-          id, account.getProblemsSummary());
-      throw ExceptionHelper.accountNotFound();
-    }
-    return account;
-  }
-
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if an Account with the given email already exists.
-   *
-   * @param email the email address to check
-   * @return {@code true} if an Account with the email exists, {@code false} otherwise
-   */
-  private boolean existsByEmail(String email) {
-    if (email == null) {
-      return false;
-    }
-    return repo.existsByEmail(email);
   }
 }
 
@@ -4296,40 +4401,17 @@ public class AdminServiceImpl implements AdminService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public Admin save(AdminCreateCommand cmd) {
-    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
-    Account account = accountService.save(cmd.accountCommand());
-
-    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
-    if (admin.hasFieldErrors()) {
-      throw new AppValidationException(admin.getFieldErrors());
+  public boolean deactivate(UUID accountId) {
+    LOG.debugf("Attempting to deactivate Admin Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
     }
 
-    Admin savedAdmin = repo.persist(admin);
-    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
-    return savedAdmin;
-  }
+    getByAccountId(accountId);
 
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
-    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
-    Admin current = getByAccountId(accountId);
-
-    if (cmd.accountCommand() != null) {
-      accountService.update(accountId, cmd.accountCommand());
-    }
-
-    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
-
-    if (updatedAdmin.hasFieldErrors()) {
-      throw new AppValidationException(updatedAdmin.getFieldErrors());
-    }
-
-    repo.update(updatedAdmin);
-    LOG.infof("Admin details updated. Account ID: %s", accountId);
-    return getByAccountId(accountId);
+    accountService.deactivate(accountId);
+    LOG.infof("Admin account deactivated successfully. Account ID: %s", accountId);
+    return true;
   }
 
   /** {@inheritDoc} */
@@ -4368,6 +4450,45 @@ public class AdminServiceImpl implements AdminService {
     }
 
     return admin;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Admin save(AdminCreateCommand cmd) {
+    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
+    Account account = accountService.save(cmd.accountCommand());
+
+    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
+    if (admin.hasFieldErrors()) {
+      throw new AppValidationException(admin.getFieldErrors());
+    }
+
+    Admin savedAdmin = repo.persist(admin);
+    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
+    return savedAdmin;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
+    Admin current = getByAccountId(accountId);
+
+    if (cmd.accountCommand() != null) {
+      accountService.update(accountId, cmd.accountCommand());
+    }
+
+    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
+
+    if (updatedAdmin.hasFieldErrors()) {
+      throw new AppValidationException(updatedAdmin.getFieldErrors());
+    }
+
+    repo.update(updatedAdmin);
+    LOG.infof("Admin details updated. Account ID: %s", accountId);
+    return getByAccountId(accountId);
   }
 }
 
@@ -4445,18 +4566,6 @@ public class UserReadServiceImpl implements UserReadService {
 
   /** {@inheritDoc} */
   @Override
-  public UserView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("User lookup failed: ID %s not found", id);
-              return ExceptionHelper.userNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public UserView getViewByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       throw ExceptionHelper.userNotFound();
@@ -4467,6 +4576,18 @@ public class UserReadServiceImpl implements UserReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("User lookup failed: CPF %s not found", cpf);
+              return ExceptionHelper.userNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UserView getViewById(UUID id) {
+    return queries
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("User lookup failed: ID %s not found", id);
               return ExceptionHelper.userNotFound();
             });
   }
@@ -4532,52 +4653,6 @@ public class UserServiceImpl implements UserService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public User save(UserCreateCommand cmd) {
-    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
-    User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
-
-    if (userToPersist.hasFieldErrors()) {
-      throw new AppValidationException(userToPersist.getFieldErrors());
-    }
-
-    if (existsByCpf(userToPersist.getCpf())) {
-      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
-      throw ExceptionHelper.userAlreadyExists();
-    }
-
-    User savedUser = repo.persist(userToPersist);
-    LOG.infof("User created successfully. ID: %s", savedUser.getId());
-
-    return savedUser;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public User update(UUID id, UserUpdateCommand cmd) {
-    LOG.debugf("Attempting to update User ID: %s", id);
-
-    User current = getById(id);
-    User updated = UserProcessor.processUpdateInput(current, cmd.cpfString(), cmd.name());
-
-    if (updated.hasFieldErrors()) {
-      throw new AppValidationException(updated.getFieldErrors());
-    }
-
-    if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
-      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
-      throw ExceptionHelper.userAlreadyExists();
-    }
-
-    repo.update(updated);
-    LOG.infof("User updated successfully. ID: %s", id);
-
-    return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete User ID: %s", id);
 
@@ -4608,23 +4683,11 @@ public class UserServiceImpl implements UserService {
 
   /** {@inheritDoc} */
   @Override
-  public User getById(UUID id) {
-    User user =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("User lookup failed: ID %s not found", id);
-                  return ExceptionHelper.userNotFound();
-                });
-
-    if (user.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
-          id, user.getProblemsSummary());
-      throw ExceptionHelper.userNotFound();
+  public boolean existsByCpf(Cpf cpf) {
+    if (cpf == null) {
+      return false;
     }
-
-    return user;
+    return repo.existsByCpf(cpf.toString());
   }
 
   /** {@inheritDoc} */
@@ -4650,11 +4713,69 @@ public class UserServiceImpl implements UserService {
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsByCpf(Cpf cpf) {
-    if (cpf == null) {
-      return false;
+  public User getById(UUID id) {
+    User user =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("User lookup failed: ID %s not found", id);
+                  return ExceptionHelper.userNotFound();
+                });
+
+    if (user.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: User %s violates domain rules: %s",
+          id, user.getProblemsSummary());
+      throw ExceptionHelper.userNotFound();
     }
-    return repo.existsByCpf(cpf.toString());
+
+    return user;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public User save(UserCreateCommand cmd) {
+    LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
+    User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
+
+    if (userToPersist.hasFieldErrors()) {
+      throw new AppValidationException(userToPersist.getFieldErrors());
+    }
+
+    if (existsByCpf(userToPersist.getCpf())) {
+      LOG.warnf("Creation failed: User with CPF %s already exists", userToPersist.getCpf());
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    User savedUser = repo.persist(userToPersist);
+    LOG.infof("User created successfully. ID: %s", savedUser.getId());
+
+    return savedUser;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public User update(UUID id, UserUpdateCommand cmd) {
+    LOG.debugf("Attempting to update User ID: %s", id);
+
+    User current = getById(id);
+    User updated = UserProcessor.processUpdateInput(current, cmd.name());
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    if (!updated.getCpf().equals(current.getCpf()) && existsByCpf(updated.getCpf())) {
+      LOG.warnf("Update failed: User ID %s tried to use existing CPF %s", id, updated.getCpf());
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    repo.update(updated);
+    LOG.infof("User updated successfully. ID: %s", id);
+
+    return getById(id);
   }
 }
 
@@ -5020,36 +5141,6 @@ public final class ExceptionHelper {
   private ExceptionHelper() {}
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a User with the
-   * specified CPF already exists in the system.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
-  public static DuplicateResourceException userAlreadyExists() {
-    return new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
-  }
-
-  /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested User
-   * could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
-  public static ResourceNotFoundException userNotFound() {
-    return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND);
-  }
-
-  /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
-   * Administrator profile could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
-  public static ResourceNotFoundException adminNotFound() {
-    return new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
-  }
-
-  /**
    * Instantiates a standardized {@link DuplicateResourceException} indicating that an Account with
    * the specified email address already exists in the system.
    *
@@ -5067,6 +5158,36 @@ public final class ExceptionHelper {
    */
   public static ResourceNotFoundException accountNotFound() {
     return new ResourceNotFoundException(IdentityErrorCodes.ACCOUNT_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * Administrator profile could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException adminNotFound() {
+    return new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a User with the
+   * specified CPF already exists in the system.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
+  public static DuplicateResourceException userAlreadyExists() {
+    return new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested User
+   * could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException userNotFound() {
+    return new ResourceNotFoundException(IdentityErrorCodes.USER_NOT_FOUND);
   }
 }
 
@@ -5120,22 +5241,15 @@ public class UserProcessor {
    * a <i>new</i> instance of the {@link User} reflecting the applied changes.
    *
    * @param existingUser the current, reconstituted {@link User} aggregate from the repository
-   * @param cpfString the proposed new CPF string, or {@code null}/empty to skip updating
    * @param name the proposed new name, or {@code null}/empty to skip updating
    * @return a new {@link User} domain aggregate reflecting the requested updates, potentially
    *     containing validation errors
    */
-  public static User processUpdateInput(User existingUser, String cpfString, String name) {
-
+  public static User processUpdateInput(User existingUser, String name) {
     User updatedUser = existingUser;
 
     if (StringUtils.isNotEmpty(name)) {
-      updatedUser = updatedUser.changeName(name);
-    }
-
-    if (StringUtils.isNotEmpty(cpfString)) {
-      Cpf newCpf = Cpf.factory(cpfString);
-      updatedUser = updatedUser.changeCpf(newCpf);
+      updatedUser = updatedUser.rename(name);
     }
 
     return updatedUser;

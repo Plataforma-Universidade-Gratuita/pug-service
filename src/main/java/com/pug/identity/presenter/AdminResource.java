@@ -9,13 +9,6 @@ import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.AdminUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -30,6 +23,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
@@ -50,9 +44,9 @@ import java.util.stream.Collectors;
 /**
  * REST API Resource controller for managing Administrator profiles.
  *
- * <p>This class exposes endpoints to create, retrieve, update, and revoke administrative
- * privileges. It delegates commands to the {@link AdminService} (writes) and queries to the {@link
- * AdminReadService} (reads), strictly adhering to CQRS principles.
+ * <p>This class exposes endpoints to create, retrieve, update, deactivate, and revoke
+ * administrative privileges. It delegates commands to the {@link AdminService} (writes) and queries
+ * to the {@link AdminReadService} (reads), strictly adhering to CQRS principles.
  */
 @Path("/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -163,13 +157,9 @@ public class AdminResource {
   @POST
   public Response create(@Valid AdminCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
+    var cmd = AdminPresenter.toCommand(req, hashedPassword);
 
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
-    AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
-    AdminCreateCommand adminCmd = new AdminCreateCommand(accountCmd, req.campus());
-
-    Admin admin = writeService.save(adminCmd);
+    Admin admin = writeService.save(cmd);
 
     AdminResponse body =
         AdminPresenter.toResponse(
@@ -194,19 +184,32 @@ public class AdminResource {
   @PUT
   @Path("{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
-    String hashedPassword = passwordService.hash(req.password());
+    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
+    var cmd = AdminPresenter.toCommand(req, hashedPassword);
 
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.cpfString(), req.name());
-    AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
-    AdminUpdateCommand adminCmd = new AdminUpdateCommand(accountCmd, req.campus());
+    Admin updatedAdmin = writeService.update(id, cmd);
 
-    Admin updatedAdmin = writeService.update(id, adminCmd);
     AdminResponse body =
         AdminPresenter.toResponse(
             readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
 
     return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Gracefully deactivates an administrator's account.
+   *
+   * <p>This disables login capabilities and system access without destroying the underlying
+   * records, maintaining historical referential integrity.
+   *
+   * @param id the unique identifier (UUIDv7) of the admin's account
+   * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
+   */
+  @PATCH
+  @Path("{id}/deactivate")
+  public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
+    writeService.deactivate(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
   /**

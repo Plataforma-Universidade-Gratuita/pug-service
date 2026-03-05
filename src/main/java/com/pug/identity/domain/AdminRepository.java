@@ -13,21 +13,6 @@ import java.util.UUID;
 public interface AdminRepository {
 
   /**
-   * Persists a newly created {@link Admin} aggregate into the repository.
-   *
-   * @param entity the {@link Admin} aggregate to persist
-   * @return the fully persisted {@link Admin} instance
-   */
-  Admin persist(Admin entity);
-
-  /**
-   * Updates the state of an existing {@link Admin} aggregate in the repository.
-   *
-   * @param entity the {@link Admin} instance containing the updated state
-   */
-  void update(Admin entity);
-
-  /**
    * Removes an {@link Admin} privilege record from the repository based on its linked account
    * identifier.
    *
@@ -50,4 +35,19 @@ public interface AdminRepository {
    *     if not
    */
   Optional<Admin> findOptionalByAccountId(UUID accountId);
+
+  /**
+   * Persists a newly created {@link Admin} aggregate into the repository.
+   *
+   * @param entity the {@link Admin} aggregate to persist
+   * @return the fully persisted {@link Admin} instance
+   */
+  Admin persist(Admin entity);
+
+  /**
+   * Updates the state of an existing {@link Admin} aggregate in the repository.
+   *
+   * @param entity the {@link Admin} instance containing the updated state
+   */
+  void update(Admin entity);
 }

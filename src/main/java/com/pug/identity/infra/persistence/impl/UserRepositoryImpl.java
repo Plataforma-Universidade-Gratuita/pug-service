@@ -26,6 +26,52 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public long deleteAllByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return 0;
+    }
+    return delete("id in ?1", ids);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return false;
+    }
+    return count("cpf = ?1", cpf) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<User> findOptionalByCpf(String cpf) {
+    if (StringUtils.isEmpty(cpf)) {
+      return Optional.empty();
+    }
+    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<User> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(UserMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public User persist(User entity) {
     if (entity == null) {
       return null;
@@ -47,51 +93,5 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
       return;
     }
     UserMapper.copy(entity, e);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public long deleteAllByIds(List<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return 0;
-    }
-    return delete("id in ?1", ids);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<User> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(UserMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<User> findOptionalByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      return Optional.empty();
-    }
-    return find("cpf", cpf).firstResultOptional().map(UserMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByCpf(String cpf) {
-    if (StringUtils.isEmpty(cpf)) {
-      return false;
-    }
-    return count("cpf = ?1", cpf) > 0;
   }
 }

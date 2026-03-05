@@ -27,18 +27,6 @@ public class UserReadServiceImpl implements UserReadService {
 
   /** {@inheritDoc} */
   @Override
-  public UserView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("User lookup failed: ID %s not found", id);
-              return ExceptionHelper.userNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public UserView getViewByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       throw ExceptionHelper.userNotFound();
@@ -49,6 +37,18 @@ public class UserReadServiceImpl implements UserReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("User lookup failed: CPF %s not found", cpf);
+              return ExceptionHelper.userNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UserView getViewById(UUID id) {
+    return queries
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("User lookup failed: ID %s not found", id);
               return ExceptionHelper.userNotFound();
             });
   }

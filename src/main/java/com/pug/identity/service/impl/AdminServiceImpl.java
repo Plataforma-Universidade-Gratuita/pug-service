@@ -36,40 +36,17 @@ public class AdminServiceImpl implements AdminService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public Admin save(AdminCreateCommand cmd) {
-    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
-    Account account = accountService.save(cmd.accountCommand());
-
-    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
-    if (admin.hasFieldErrors()) {
-      throw new AppValidationException(admin.getFieldErrors());
+  public boolean deactivate(UUID accountId) {
+    LOG.debugf("Attempting to deactivate Admin Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
     }
 
-    Admin savedAdmin = repo.persist(admin);
-    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
-    return savedAdmin;
-  }
+    getByAccountId(accountId);
 
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
-    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
-    Admin current = getByAccountId(accountId);
-
-    if (cmd.accountCommand() != null) {
-      accountService.update(accountId, cmd.accountCommand());
-    }
-
-    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
-
-    if (updatedAdmin.hasFieldErrors()) {
-      throw new AppValidationException(updatedAdmin.getFieldErrors());
-    }
-
-    repo.update(updatedAdmin);
-    LOG.infof("Admin details updated. Account ID: %s", accountId);
-    return getByAccountId(accountId);
+    accountService.deactivate(accountId);
+    LOG.infof("Admin account deactivated successfully. Account ID: %s", accountId);
+    return true;
   }
 
   /** {@inheritDoc} */
@@ -108,5 +85,44 @@ public class AdminServiceImpl implements AdminService {
     }
 
     return admin;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Admin save(AdminCreateCommand cmd) {
+    LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
+    Account account = accountService.save(cmd.accountCommand());
+
+    Admin admin = AdminProcessor.processCreateInput(account.getId(), cmd.campus());
+    if (admin.hasFieldErrors()) {
+      throw new AppValidationException(admin.getFieldErrors());
+    }
+
+    Admin savedAdmin = repo.persist(admin);
+    LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
+    return savedAdmin;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Admin update(UUID accountId, AdminUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
+    Admin current = getByAccountId(accountId);
+
+    if (cmd.accountCommand() != null) {
+      accountService.update(accountId, cmd.accountCommand());
+    }
+
+    Admin updatedAdmin = AdminProcessor.processUpdateInput(current, cmd.campus());
+
+    if (updatedAdmin.hasFieldErrors()) {
+      throw new AppValidationException(updatedAdmin.getFieldErrors());
+    }
+
+    repo.update(updatedAdmin);
+    LOG.infof("Admin details updated. Account ID: %s", accountId);
+    return getByAccountId(accountId);
   }
 }

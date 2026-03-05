@@ -14,16 +14,6 @@ import java.util.UUID;
 public interface AccountReadService {
 
   /**
-   * Retrieves a read-only projection of an account based on its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the requested account
-   * @return the populated {@link AccountView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
-   *     ID
-   */
-  AccountView getViewById(UUID id);
-
-  /**
    * Retrieves a read-only projection of an account based on its registered email address.
    *
    * @param email the exact email address string of the requested account
@@ -32,6 +22,16 @@ public interface AccountReadService {
    *     email
    */
   AccountView getViewByEmail(String email);
+
+  /**
+   * Retrieves a read-only projection of an account based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the requested account
+   * @return the populated {@link AccountView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
+   *     ID
+   */
+  AccountView getViewById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all accounts registered in the system.

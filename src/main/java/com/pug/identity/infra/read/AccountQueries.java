@@ -15,15 +15,6 @@ import java.util.UUID;
 public interface AccountQueries {
 
   /**
-   * Retrieves a read-only view of an account based on its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the account to retrieve
-   * @return an {@link Optional} containing the {@link AccountView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<AccountView> findOptionalById(UUID id);
-
-  /**
    * Retrieves a read-only view of an account based on its registered email address.
    *
    * @param email the exact email address string to search for
@@ -31,6 +22,15 @@ public interface AccountQueries {
    *     Optional#empty()} otherwise
    */
   Optional<AccountView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of an account based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the account to retrieve
+   * @return an {@link Optional} containing the {@link AccountView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<AccountView> findOptionalById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all accounts registered in the system.

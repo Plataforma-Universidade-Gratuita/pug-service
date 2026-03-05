@@ -27,18 +27,6 @@ public class AccountReadServiceImpl implements AccountReadService {
 
   /** {@inheritDoc} */
   @Override
-  public AccountView getViewById(UUID id) {
-    return queries
-        .findOptionalById(id)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Account lookup failed: ID %s not found", id);
-              return ExceptionHelper.accountNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public AccountView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
       throw ExceptionHelper.accountNotFound();
@@ -49,6 +37,18 @@ public class AccountReadServiceImpl implements AccountReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Account lookup failed: Email %s not found", email);
+              return ExceptionHelper.accountNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AccountView getViewById(UUID id) {
+    return queries
+        .findOptionalById(id)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Account lookup failed: ID %s not found", id);
               return ExceptionHelper.accountNotFound();
             });
   }

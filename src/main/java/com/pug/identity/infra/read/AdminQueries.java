@@ -16,15 +16,6 @@ import java.util.UUID;
 public interface AdminQueries {
 
   /**
-   * Retrieves a read-only view of an administrator profile based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the admin's account
-   * @return an {@link Optional} containing the {@link AdminView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<AdminView> findOptionalById(UUID accountId);
-
-  /**
    * Retrieves a read-only view of an administrator profile based on their registered email address.
    *
    * @param email the exact email address of the administrator
@@ -32,6 +23,15 @@ public interface AdminQueries {
    *     Optional#empty()} otherwise
    */
   Optional<AdminView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of an administrator profile based on their linked account ID.
+   *
+   * @param accountId the unique identifier (UUID) of the admin's account
+   * @return an {@link Optional} containing the {@link AdminView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<AdminView> findOptionalById(UUID accountId);
 
   /**
    * Retrieves a comprehensive list of all administrators registered in the system.

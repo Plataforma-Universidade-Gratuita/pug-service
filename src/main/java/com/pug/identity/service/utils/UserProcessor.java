@@ -44,22 +44,15 @@ public class UserProcessor {
    * a <i>new</i> instance of the {@link User} reflecting the applied changes.
    *
    * @param existingUser the current, reconstituted {@link User} aggregate from the repository
-   * @param cpfString the proposed new CPF string, or {@code null}/empty to skip updating
    * @param name the proposed new name, or {@code null}/empty to skip updating
    * @return a new {@link User} domain aggregate reflecting the requested updates, potentially
    *     containing validation errors
    */
-  public static User processUpdateInput(User existingUser, String cpfString, String name) {
-
+  public static User processUpdateInput(User existingUser, String name) {
     User updatedUser = existingUser;
 
     if (StringUtils.isNotEmpty(name)) {
-      updatedUser = updatedUser.changeName(name);
-    }
-
-    if (StringUtils.isNotEmpty(cpfString)) {
-      Cpf newCpf = Cpf.factory(cpfString);
-      updatedUser = updatedUser.changeCpf(newCpf);
+      updatedUser = updatedUser.rename(name);
     }
 
     return updatedUser;

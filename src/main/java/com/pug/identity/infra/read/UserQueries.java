@@ -15,15 +15,6 @@ import java.util.UUID;
 public interface UserQueries {
 
   /**
-   * Retrieves a read-only view of a user based on their unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the user to retrieve
-   * @return an {@link Optional} containing the {@link UserView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<UserView> findOptionalById(UUID id);
-
-  /**
    * Retrieves a read-only view of a user based on their exact CPF.
    *
    * @param cpf the exact 11-digit numeric CPF string
@@ -31,6 +22,15 @@ public interface UserQueries {
    *     Optional#empty()} otherwise
    */
   Optional<UserView> findOptionalByCpf(String cpf);
+
+  /**
+   * Retrieves a read-only view of a user based on their unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the user to retrieve
+   * @return an {@link Optional} containing the {@link UserView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<UserView> findOptionalById(UUID id);
 
   /**
    * Retrieves a comprehensive list of all users registered in the system.

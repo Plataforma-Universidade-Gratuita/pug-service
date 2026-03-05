@@ -168,6 +168,8 @@ public interface AttendanceRepository {
    * @return {@code true} if an attendance with this hash exists, {@code false} otherwise
    */
   boolean existsByQrHash(String qrHash);
+
+  boolean existsByValidatedBy(UUID staffAccountId);
 }
 
 
@@ -321,6 +323,10 @@ public interface EnrollmentRepository {
    * @return {@code true} if the enrollment exists, {@code false} otherwise
    */
   boolean existsByIds(UUID projectId, UUID studentId);
+
+  boolean existsByStudentId(UUID studentId);
+
+  boolean existsByProjectId(UUID projectId);
 }
 
 
@@ -420,6 +426,7 @@ import lombok.Getter;
  */
 @Getter
 public enum ProjectsErrorCodes implements GenericCodes {
+  PROJECT_HAS_ENROLLMENTS("error.domain.projects.has.enrollments"),
 
   /** Indicates an attempt to record an attendance that already exists. */
   ATTENDANCE_ALREADY_EXISTS("error.domain.projects.attendance.already.exists"),
@@ -948,6 +955,10 @@ public interface ProjectRepository {
    * @return {@code true} if a matching project exists, {@code false} otherwise
    */
   boolean existsByNameAndEntityId(String name, UUID entityId);
+
+  boolean existsByEntityId(UUID entityId);
+
+  boolean existsByCreatedBy(UUID staffAccountId);
 }
 
 
@@ -2135,6 +2146,11 @@ public class AttendanceRepositoryImpl
     if (StringUtils.isEmpty(qrHash)) return false;
     return count("qrValidationHash = ?1", qrHash) > 0;
   }
+
+  @Override
+  public boolean existsByValidatedBy(UUID staffAccountId) {
+    return false;
+  }
 }
 
 
@@ -2205,6 +2221,18 @@ public class EnrollmentRepositoryImpl
     var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
     return count("id", id) > 0;
   }
+
+  @Override
+  public boolean existsByStudentId(UUID studentId) {
+    if (studentId == null) return false;
+    return count("id.studentId", studentId) > 0;
+  }
+
+  @Override
+  public boolean existsByProjectId(UUID projectId) {
+    if (projectId == null) return false;
+    return count("id.projectId", projectId) > 0;
+  }
 }
 
 
@@ -2266,6 +2294,17 @@ public class ProjectRepositoryImpl
   public boolean existsByNameAndEntityId(String name, UUID entityId) {
     if (StringUtils.isEmpty(name) || entityId == null) return false;
     return count("name = ?1 and entityId = ?2", name, entityId) > 0;
+  }
+
+  @Override
+  public boolean existsByEntityId(UUID entityId) {
+    if (entityId == null) return false;
+    return count("entityId", entityId) > 0;
+  }
+
+  @Override
+  public boolean existsByCreatedBy(UUID staffAccountId) {
+    return false;
   }
 }
 
@@ -2547,7 +2586,8 @@ public final class ProjectMapper {
               acc.getEmail(),
               acc.getAccountType(),
               acc.getCreatedAt(),
-              acc.getUpdatedAt());
+              acc.getUpdatedAt(),
+              acc.getActive());
     }
 
     return new ProjectView(
@@ -2857,7 +2897,7 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
                           ),
-                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt
+                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
                         ),
                         p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
                       ),
@@ -2867,7 +2907,7 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             su.id, su.cpf, su.name, su.createdAt, su.updatedAt
                           ),
-                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt
+                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
                         ),
                         s.academicRegistration, s.campus,
                         new com.pug.academic.infra.read.dtos.CourseView(
@@ -2885,7 +2925,7 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
                         new com.pug.identity.infra.read.dtos.UserView(
                           vu.id, vu.cpf, vu.name, vu.createdAt, vu.updatedAt
                         ),
-                        vacc.email, vacc.accountType, vacc.createdAt, vacc.updatedAt
+                        vacc.email, vacc.accountType, vacc.createdAt, vacc.updatedAt, vacc.active
                       ),
                       a.validatedAt, a.createdAt, a.updatedAt
                     )
@@ -2985,7 +3025,7 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
                           ),
-                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt
+                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
                         ),
                         p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
                       ),
@@ -2995,7 +3035,7 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
                           new com.pug.identity.infra.read.dtos.UserView(
                             su.id, su.cpf, su.name, su.createdAt, su.updatedAt
                           ),
-                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt
+                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
                         ),
                         s.academicRegistration, s.campus,
                         new com.pug.academic.infra.read.dtos.CourseView(
@@ -3105,7 +3145,7 @@ public class ProjectQueriesImpl implements ProjectQueries {
                         new com.pug.identity.infra.read.dtos.UserView(
                           u.id, u.cpf, u.name, u.createdAt, u.updatedAt
                         ),
-                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt
+                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
                       ),
                       p.maxParticipants, p.offeredHours, p.status,
                       p.closedAt, p.createdAt, p.updatedAt
@@ -3172,5 +3212,109 @@ public interface ProjectQueries {
   List<ProjectView> listByEntityId(UUID entityId);
 
   List<ProjectView> searchByName(String query);
+}
+
+
+================================================================================
+FILE: service/AttendanceService.java
+================================================================================
+package com.pug.projects.service;
+
+import java.util.UUID;
+
+public interface AttendanceService {
+
+  boolean existsByValidatedBy(UUID accountId);
+}
+
+
+================================================================================
+FILE: service/EnrollmentService.java
+================================================================================
+package com.pug.projects.service;
+
+import java.util.UUID;
+
+public interface EnrollmentService {
+  boolean existsAnyByStudentId(UUID accountId);
+}
+
+
+================================================================================
+FILE: service/impl/AttendanceServiceImpl.java
+================================================================================
+package com.pug.projects.service.impl;
+
+import com.pug.projects.service.AttendanceService;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.UUID;
+
+@ApplicationScoped
+public class AttendanceServiceImpl implements AttendanceService {
+
+  @Override
+  public boolean existsByValidatedBy(UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/impl/EnrollmentServiceImpl.java
+================================================================================
+package com.pug.projects.service.impl;
+
+import com.pug.projects.service.EnrollmentService;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class EnrollmentServiceImpl implements EnrollmentService {
+
+  @Override
+  public boolean existsAnyByStudentId(java.util.UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectServiceImpl.java
+================================================================================
+package com.pug.projects.service.impl;
+
+import com.pug.projects.domain.ProjectRepository;
+import com.pug.projects.service.ProjectService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.util.UUID;
+
+@ApplicationScoped
+public class ProjectServiceImpl implements ProjectService {
+  @Inject ProjectRepository repo;
+
+  @Override
+  public boolean existsAnyByEntityId(UUID entityId) {
+    return repo.existsByEntityId(entityId);
+  }
+
+  @Override
+  public boolean existsByCreatedBy(UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/ProjectService.java
+================================================================================
+package com.pug.projects.service;
+
+import java.util.UUID;
+
+public interface ProjectService {
+
+  boolean existsAnyByEntityId(UUID entityId);
+
+  boolean existsByCreatedBy(UUID accountId);
 }
 

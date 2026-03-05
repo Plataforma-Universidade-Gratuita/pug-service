@@ -14,19 +14,12 @@ import java.util.UUID;
 public interface UserRepository {
 
   /**
-   * Persists a newly created {@link User} aggregate into the repository.
+   * Removes multiple {@link User} entities from the repository based on their unique identifiers.
    *
-   * @param entity the {@link User} aggregate to persist
-   * @return the fully persisted {@link User} instance
+   * @param ids a list of UUIDs representing the users to delete
+   * @return the total number of users that were successfully deleted
    */
-  User persist(User entity);
-
-  /**
-   * Updates the state of an existing {@link User} aggregate in the repository.
-   *
-   * @param entity the {@link User} instance containing the updated state
-   */
-  void update(User entity);
+  long deleteAllByIds(List<UUID> ids);
 
   /**
    * Removes a {@link User} from the repository based on its unique identifier.
@@ -38,12 +31,27 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Removes multiple {@link User} entities from the repository based on their unique identifiers.
+   * Checks whether a {@link User} with the specified CPF already exists in the repository.
    *
-   * @param ids a list of UUIDs representing the users to delete
-   * @return the total number of users that were successfully deleted
+   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
+   * constraints before persisting a new user or updating an existing one.
+   *
+   * @param cpf the numeric CPF string to check
+   * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
    */
-  long deleteAllByIds(List<UUID> ids);
+  boolean existsByCpf(String cpf);
+
+  /**
+   * Retrieves a {@link User} by their unique Brazilian CPF.
+   *
+   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
+   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
+   *
+   * @param cpf the raw, 11-digit numeric CPF string of the user
+   * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
+   *     if not
+   */
+  Optional<User> findOptionalByCpf(String cpf);
 
   /**
    * Retrieves a {@link User} by its unique identifier.
@@ -60,25 +68,17 @@ public interface UserRepository {
   Optional<User> findOptionalById(UUID id);
 
   /**
-   * Retrieves a {@link User} by their unique Brazilian CPF.
+   * Persists a newly created {@link User} aggregate into the repository.
    *
-   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
-   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
-   *
-   * @param cpf the raw, 11-digit numeric CPF string of the user
-   * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
-   *     if not
+   * @param entity the {@link User} aggregate to persist
+   * @return the fully persisted {@link User} instance
    */
-  Optional<User> findOptionalByCpf(String cpf);
+  User persist(User entity);
 
   /**
-   * Checks whether a {@link User} with the specified CPF already exists in the repository.
+   * Updates the state of an existing {@link User} aggregate in the repository.
    *
-   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
-   * constraints before persisting a new user or updating an existing one.
-   *
-   * @param cpf the numeric CPF string to check
-   * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
+   * @param entity the {@link User} instance containing the updated state
    */
-  boolean existsByCpf(String cpf);
+  void update(User entity);
 }
