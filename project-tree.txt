@@ -29,7 +29,8 @@
 │   │   │           │   │   ├── Student.java
 │   │   │           │   │   ├── StudentRepository.java
 │   │   │           │   │   ├── enums/
-│   │   │           │   │   │   └── AcademicErrorCodes.java
+│   │   │           │   │   │   ├── AcademicErrorCodes.java
+│   │   │           │   │   │   └── AcademicFieldErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── AcademicRegistration.java
 │   │   │           │   │       ├── CounterpartHours.java
@@ -102,6 +103,7 @@
 │   │   │           │       │   └── StudentServiceImpl.java
 │   │   │           │       └── utils/
 │   │   │           │           ├── CourseProcessor.java
+│   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           ├── SchoolProcessor.java
 │   │   │           │           └── StudentProcessor.java
 │   │   │           ├── geo/
@@ -156,7 +158,8 @@
 │   │   │           │   │   ├── User.java
 │   │   │           │   │   ├── UserRepository.java
 │   │   │           │   │   ├── enums/
-│   │   │           │   │   │   └── IdentityErrorCodes.java
+│   │   │           │   │   │   ├── IdentityErrorCodes.java
+│   │   │           │   │   │   └── IdentityFieldErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── Cpf.java
 │   │   │           │   │       └── Email.java
@@ -227,6 +230,7 @@
 │   │   │           │       └── utils/
 │   │   │           │           ├── AccountProcessor.java
 │   │   │           │           ├── AdminProcessor.java
+│   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           └── UserProcessor.java
 │   │   │           ├── partner/
 │   │   │           │   ├── domain/
@@ -235,7 +239,8 @@
 │   │   │           │   │   ├── Staff.java
 │   │   │           │   │   ├── StaffRepository.java
 │   │   │           │   │   ├── enums/
-│   │   │           │   │   │   └── PartnerErrorCodes.java
+│   │   │           │   │   │   ├── PartnerErrorCodes.java
+│   │   │           │   │   │   └── PartnerFieldErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       └── Cnpj.java
 │   │   │           │   ├── generate-context.sh
@@ -287,6 +292,7 @@
 │   │   │           │       │   └── StaffServiceImpl.java
 │   │   │           │       └── utils/
 │   │   │           │           ├── EntityProcessor.java
+│   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           └── StaffProcessor.java
 │   │   │           ├── projects/
 │   │   │           │   ├── domain/
@@ -300,7 +306,8 @@
 │   │   │           │   │   │   ├── AttendanceStatus.java
 │   │   │           │   │   │   ├── EnrollmentStatus.java
 │   │   │           │   │   │   ├── ProjectStatus.java
-│   │   │           │   │   │   └── ProjectsErrorCodes.java
+│   │   │           │   │   │   ├── ProjectsErrorCodes.java
+│   │   │           │   │   │   └── ProjectsFieldErrorCodes.java
 │   │   │           │   │   └── vos/
 │   │   │           │   │       ├── AttendanceInfo.java
 │   │   │           │   │       ├── EnrollmentIdentifier.java
@@ -321,8 +328,20 @@
 │   │   │           │   │   │       ├── EnrollmentRepositoryImpl.java
 │   │   │           │   │   │       └── ProjectRepositoryImpl.java
 │   │   │           │   │   └── read/
+│   │   │           │   │       ├── AttendanceQueries.java
+│   │   │           │   │       ├── EnrollmentQueries.java
+│   │   │           │   │       ├── ProjectQueries.java
 │   │   │           │   │       ├── dtos/
+│   │   │           │   │       │   ├── AttendanceAcc.java
+│   │   │           │   │       │   ├── AttendanceView.java
+│   │   │           │   │       │   ├── EnrollmentAcc.java
+│   │   │           │   │       │   ├── EnrollmentView.java
+│   │   │           │   │       │   ├── ProjectAcc.java
+│   │   │           │   │       │   └── ProjectView.java
 │   │   │           │   │       └── impl/
+│   │   │           │   │           ├── AttendanceQueriesImpl.java
+│   │   │           │   │           ├── EnrollmentQueriesImpl.java
+│   │   │           │   │           └── ProjectQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── mappers/
@@ -410,7 +429,8 @@
 │   │       │       ├── V010__create_projects_table.sql
 │   │       │       ├── V011__create_projects_by_schools_table.sql
 │   │       │       ├── V012__create_enrollments_table.sql
-│   │       │       └── V013__create_attendances_table.sql
+│   │       │       ├── V013__create_attendances_table.sql
+│   │       │       └── V014__seed_system_user.sql
 │   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
 │   │       ├── messages_pt_BR.properties

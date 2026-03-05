@@ -10,10 +10,10 @@ FILE: domain/Entity.java
 package com.pug.partner.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedErrorCodes;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import com.pug.shared.utils.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -23,19 +23,51 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Entity entityId aggregate. */
+/**
+ * Immutable Domain Entity representing a Partner Organization (Entity) within the system.
+ *
+ * <p>This class acts as an aggregate root containing the partner's unique identifier, corporate
+ * identification (CNPJ), location data, and audit tracking information. It extends {@link
+ * DomainError} to accumulate validation failures across its own fields and to bubble up errors from
+ * its nested value objects.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Entity extends DomainError {
+
+  /** The unique identifier for the partner entity (UUIDv7). */
   UUID id;
+
+  /** The validated CNPJ Value Object associated with the partner entity. */
   Cnpj cnpj;
+
+  /** The registered name or corporate reason of the partner entity. */
   String name;
+
+  /**
+   * The unique identifier of the associated {@link com.pug.geo.domain.City} where the entity is
+   * located.
+   */
   UUID cityId;
+
+  /** The physical street address of the partner entity. */
   String address;
+
+  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
+  /**
+   * Constructs an {@code Entity} instance.
+   *
+   * @param id the unique identifier
+   * @param cnpj the entity's CNPJ VO
+   * @param name the entity's name
+   * @param cityId the UUID of the city
+   * @param address the physical address
+   * @param auditInfo the audit tracking VO
+   */
   @Builder(toBuilder = true)
   private Entity(
       UUID id, Cnpj cnpj, String name, UUID cityId, String address, AuditInfo auditInfo) {
@@ -48,13 +80,17 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Factory for new entities.
+   * Factory method to create a new {@code Entity} aggregate.
    *
-   * @param cnpj the CNPJ of the entityId
-   * @param name the name of the entityId.
-   * @param cityId the ID of the city where the entityId is located
-   * @param address the address where the entityId is located
-   * @return the created entityId (may contain errors)
+   * <p>Automatically generates a time-ordered epoch UUID (UUIDv7) for the identifier, initializes
+   * standard audit tracking information, and performs a full validation of the aggregate and its
+   * contents.
+   *
+   * @param cnpj the {@link Cnpj} value object representing the corporate taxpayer ID
+   * @param name the name of the partner entity
+   * @param cityId the unique identifier of the city where the entity is located
+   * @param address the physical street address
+   * @return a newly created and self-validated {@link Entity} instance
    */
   public static Entity factory(Cnpj cnpj, String name, UUID cityId, String address) {
     Entity entity =
@@ -72,12 +108,17 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the name of the entityId.
+   * Updates the partner entity's name.
    *
-   * @param newName the new name of the entityId
-   * @return the updated entityId with the new name
+   * <p>Since this entity is immutable, this method returns a new {@code Entity} instance with the
+   * updated, trimmed name and a refreshed {@link AuditInfo} timestamp. The new instance is fully
+   * re-validated.
+   *
+   * @param newName the new name of the partner entity
+   * @return a new, updated, and validated {@link Entity} instance, or {@code this} if the name is
+   *     unchanged
    */
-  public Entity changeName(String newName) {
+  public Entity rename(String newName) {
     String trimmed = StringUtils.trim(newName);
     if (name.equals(trimmed)) {
       return this;
@@ -88,12 +129,13 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the address where the entityId is located.
+   * Updates the physical address of the partner entity.
    *
-   * @param newAddress the new address of the entityId
-   * @return the updated entityId with the new address
+   * @param newAddress the new address of the partner entity
+   * @return a new, updated, and validated {@link Entity} instance, or {@code this} if the address
+   *     is unchanged
    */
-  public Entity changeAddress(String newAddress) {
+  public Entity moveToAddress(String newAddress) {
     String trimmed = StringUtils.trim(newAddress);
     if (address != null && address.equals(trimmed)) {
       return this;
@@ -104,10 +146,11 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: change the CNPJ of the entityId.
+   * Updates the corporate identification (CNPJ) of the partner entity.
    *
-   * @param newCnpj the new CNPJ for the entityId
-   * @return the updated entityId with the new CNPJ
+   * @param newCnpj the new {@link Cnpj} to assign
+   * @return a new, updated, and validated {@link Entity} instance, or {@code this} if the CNPJ is
+   *     unchanged
    */
   public Entity changeCnpj(Cnpj newCnpj) {
     if (cnpj.equals(newCnpj)) {
@@ -119,10 +162,11 @@ public class Entity extends DomainError {
   }
 
   /**
-   * Behavior: move entityId to another city.
+   * Updates the geographical location of the partner entity to a new city.
    *
-   * @param newCityId the new city ID where the entityId will be located
-   * @return the updated entityId with the new city ID
+   * @param newCityId the unique identifier of the new city
+   * @return a new, updated, and validated {@link Entity} instance, or {@code this} if the city ID
+   *     is unchanged
    */
   public Entity moveToCity(UUID newCityId) {
     if (cityId.equals(newCityId)) {
@@ -133,19 +177,41 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /** Collects all validation problems for the entityId's attributes. */
+  /**
+   * Evaluates constraints for the Entity aggregate and accumulates any validation problems.
+   *
+   * <p>Rules applied:
+   *
+   * <ul>
+   *   <li>Validates the UUID (inherited from {@link DomainError})
+   *   <li>Ensures the {@code cnpj} is not null and bubbles up any internal {@link Cnpj} errors
+   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
+   *   <li>Ensures the {@code cityId} is not null (appends {@link
+   *       PartnerFieldErrorCodes#INVALID_CITY_ID_BLANK})
+   *   <li>Ensures the {@code address} is not blank and does not exceed 254 characters (appends
+   *       {@link PartnerFieldErrorCodes#INVALID_ADDRESS_BLANK} or {@link
+   *       PartnerFieldErrorCodes#INVALID_ADDRESS_TOO_LONG})
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
+   * </ul>
+   */
   private void collectValidationProblems() {
     validateIdField(id);
-    validateForeignKeyField(cityId, "cityId");
-    validateStringField(name, 150L, "name");
-    validateStringField(address, 254L, "address");
     if (cnpj == null) {
-      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_BLANK));
+      addFieldError(PartnerFieldErrorCodes.INVALID_CNPJ_BLANK);
     } else if (cnpj.hasFieldErrors()) {
       addFieldErrors(cnpj.getFieldErrors());
     }
+    validateNameField(name);
+    if (cityId == null) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK);
+    }
+    if (StringUtils.isEmpty(address)) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_ADDRESS_BLANK);
+    } else if (address.length() > 254) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_ADDRESS_TOO_LONG);
+    }
     if (auditInfo == null) {
-      addFieldError(new Problem(SharedErrorCodes.INVALID_AUDIT_INFO_BLANK));
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
     } else if (auditInfo.hasFieldErrors()) {
       addFieldErrors(auditInfo.getFieldErrors());
     }
@@ -161,50 +227,76 @@ package com.pug.partner.domain;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository port for partner entities. Works with domain models. */
+/**
+ * Domain repository interface for managing Partner {@link Entity} aggregate roots.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting partner
+ * organization entities. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
+ */
 public interface EntityRepository {
 
   /**
-   * Persists an Entity object.
+   * Persists a newly created Partner {@link Entity} aggregate into the repository.
    *
-   * @param entity the Entity to persist.
-   * @return the persisted Entity.
+   * @param entity the {@link Entity} aggregate to persist
+   * @return the fully persisted {@link Entity} instance
    */
   Entity persist(Entity entity);
 
   /**
-   * Updates an existing Entity object.
+   * Updates the state of an existing Partner {@link Entity} aggregate in the repository.
    *
-   * @param entity the Entity to update.
+   * @param entity the {@link Entity} instance containing the updated state
    */
   void update(Entity entity);
 
   /**
-   * Deletes an Entity by its ID.
+   * Removes a Partner {@link Entity} from the repository based on its unique identifier.
    *
-   * @param id the UUID of the Entity to delete.
-   * @return true if the Entity was successfully deleted, false if it was not found.
+   * @param id the unique identifier (UUIDv7) of the partner entity to delete
+   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
   /**
-   * Finds an Entity by its ID.
+   * Retrieves a Partner {@link Entity} by its unique identifier.
    *
-   * <p>Note: The returned Entity may contain validation errors (check {@code entityId.hasErrors()})
-   * if the stored data is inconsistent with current domain rules.
+   * <p>When an entity is reconstituted from the persistence layer, it typically undergoes the same
+   * domain validations as a newly created aggregate. Therefore, the returned {@link Entity} might
+   * contain validation errors (verifiable via {@link Entity#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
    *
-   * @param id the UUID of the Entity to find.
-   * @return an Optional containing the found Entity, or empty if not found.
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return an {@link Optional} containing the {@link Entity} if found, or {@link Optional#empty()}
+   *     if not
    */
   Optional<Entity> findOptionalById(UUID id);
 
   /**
-   * Checks if an Entity exists by its CNPJ.
+   * Checks whether a Partner {@link Entity} with the specified CNPJ already exists in the
+   * repository.
    *
-   * @param cnpj the CNPJ to check.
-   * @return true if an Entity with the given CNPJ exists, false otherwise.
+   * <p>This is primarily used by domain services to enforce natural key uniqueness constraints
+   * before persisting a new partner entity or updating an existing one's corporate ID.
+   *
+   * @param cnpj the raw numeric CNPJ string to check
+   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
    */
   boolean existsByCnpj(String cnpj);
+
+  /**
+   * Checks whether any Partner {@link Entity} exists that is associated with a specific city ID.
+   *
+   * <p>This is used to enforce referential integrity across bounded contexts, such as preventing
+   * the deletion of a {@link com.pug.geo.domain.City} that is currently assigned to one or more
+   * partner organizations.
+   *
+   * @param cityId the unique identifier of the city to check
+   * @return {@code true} if at least one entity is located in the given city, {@code false}
+   *     otherwise
+   */
+  boolean existsByCityId(UUID cityId);
 }
 
 
@@ -213,38 +305,127 @@ FILE: domain/enums/PartnerErrorCodes.java
 ================================================================================
 package com.pug.partner.domain.enums;
 
-import com.pug.shared.domain.enums.GenericErrorCodes;
+import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Enum representing error codes specific to the partner domain.
+ * Enumeration of high-level domain error codes specific to the Partner context.
  *
- * <p>Each error code is associated with a specific validation failure scenario and has a {@code
- * bundleKey} that results into a localized error message. It also includes a {@code fieldName}
- * property to identify the specific field related to the error, if applicable.
+ * <p>This enum implements {@link GenericCodes} to map business rule violations and resource state
+ * conflicts directly to localized messages in the application's resource bundles. Unlike
+ * field-level validations, these codes represent aggregate-level or cross-cutting system states
+ * (e.g., duplication, structural integrity, or missing records).
  */
 @Getter
-public enum PartnerErrorCodes implements GenericErrorCodes {
-  /* Validation Errors */
-  INVALID_CNPJ_BLANK("error.domain.partner.cnpj.blank", "cnpj"),
-  INVALID_CNPJ_FORMAT("error.domain.partner.cnpj.format", "cnpj"),
-  /* Resource Errors */
-  ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists", null),
-  ENTITY_NOT_FOUND("error.domain.partner.entity.not.found", null),
-  STAFF_ALREADY_EXISTS("error.domain.partner.staff.exists", null),
-  STAFF_NOT_FOUND("error.domain.partner.staff.not.found", null);
+public enum PartnerErrorCodes implements GenericCodes {
 
+  /**
+   * Indicates an attempt to create or update a partner entity using a CNPJ that is already
+   * registered to another organization in the system.
+   */
+  ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists"),
+
+  /**
+   * Indicates that a requested partner entity could not be located in the underlying data store by
+   * its unique identifier or CNPJ.
+   */
+  ENTITY_NOT_FOUND("error.domain.partner.entity.not.found"),
+
+  /**
+   * Indicates an attempt to assign staff privileges to an account that is already actively assigned
+   * to that exact partner entity.
+   */
+  STAFF_ALREADY_EXISTS("error.domain.partner.staff.exists"),
+
+  /**
+   * Indicates an attempt to assign an account as Staff to a partner organization, but that account
+   * is already assigned to a completely different organization. (An account may only serve one
+   * partner entity at a time).
+   */
+  STAFF_ASSIGNED_TO_OTHER_ENTITY("error.domain.partner.staff.assigned.to.other.entity"),
+
+  /**
+   * Indicates that a requested staff assignment could not be located in the underlying data store
+   * by its linked account ID.
+   */
+  STAFF_NOT_FOUND("error.domain.partner.staff.not.found");
+
+  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
+
+  /**
+   * Constructs the {@code PartnerErrorCodes} enum.
+   *
+   * @param bundleKey the unique i18n key mapping to the application's resource bundles (e.g.,
+   *     {@code messages_en_US.properties})
+   */
+  PartnerErrorCodes(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/PartnerFieldErrorCodes.java
+================================================================================
+package com.pug.partner.domain.enums;
+
+import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration of field-specific validation errors within the Partner domain.
+ *
+ * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
+ * localized error messages mapped to specific domain properties (e.g., "cnpj", "address"). These
+ * constants are primarily accumulated inside {@link com.pug.shared.domain.DomainError} instances
+ * when value objects or entities fail their internal validations.
+ */
+@Getter
+public enum PartnerFieldErrorCodes implements GenericFieldErrorCodes {
+
+  /** Indicates that an account ID was provided as null. */
+  INVALID_ACCOUNT_ID_BLANK("error.domain.partner.accountId.blank", "accountId"),
+
+  /** Indicates that a physical address was provided as null, empty, or whitespace. */
+  INVALID_ADDRESS_BLANK("error.domain.partner.address.blank", "address"),
+
+  /** Indicates that a physical address exceeds the maximum allowed length constraints. */
+  INVALID_ADDRESS_TOO_LONG("error.domain.partner.address.tooLong", "address"),
+
+  /** Indicates that a city ID was provided as null. */
+  INVALID_CITY_ID_BLANK("error.domain.partner.cityId.blank", "cityId"),
+
+  /** Indicates that a CNPJ string was provided as null, empty, or whitespace. */
+  INVALID_CNPJ_BLANK("error.domain.partner.cnpj.blank", "cnpj"),
+
+  /**
+   * Indicates that a CNPJ string does not match the required format or failed the internal
+   * mathematical checksum validation.
+   */
+  INVALID_CNPJ_FORMAT("error.domain.partner.cnpj.format", "cnpj"),
+
+  /** Indicates that a partner entity ID was provided as null. */
+  INVALID_ENTITY_ID_BLANK("error.domain.partner.entityId.blank", "entityId");
+
+  /**
+   * The property key used to resolve the localized error message in the application's resource
+   * bundles.
+   */
+  private final String bundleKey;
+
+  /** The exact name of the domain property or DTO field that failed validation. */
   private final String fieldName;
 
   /**
-   * Constructor for the PartnerErrorCodes enum.
+   * Constructs a {@code PartnerFieldErrorCodes} instance.
    *
-   * @param bundleKey The internationalization resource key associated with the error.
-   * @param fieldName The name of the field associated with the error, or null if not
-   *     field-specific.
+   * @param bundleKey the unique i18n key mapping to the resource bundles (e.g., {@code
+   *     messages_en_US.properties})
+   * @param fieldName the literal name of the domain property or DTO field that failed validation
+   *     (used heavily for API error payload mapping)
    */
-  PartnerErrorCodes(String bundleKey, String fieldName) {
+  PartnerFieldErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;
   }
@@ -256,6 +437,7 @@ FILE: domain/Staff.java
 ================================================================================
 package com.pug.partner.domain;
 
+import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
 import java.util.UUID;
 import lombok.Builder;
@@ -263,14 +445,30 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/** Staff entityId aggregate. */
+/**
+ * Immutable Domain Entity representing a Staff member of a Partner Organization.
+ *
+ * <p>This class maps a specific authentication account directly to a partner {@link Entity}. It
+ * serves as an aggregate for managing employment or organizational affiliations within the partner
+ * domain. It extends {@link DomainError} to accumulate validation failures.
+ */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Staff extends DomainError {
+
+  /** The unique identifier of the linked authentication account. */
   UUID accountId;
+
+  /** The unique identifier of the linked partner entity. */
   UUID entityId;
 
+  /**
+   * Constructs a {@code Staff} instance.
+   *
+   * @param accountId the unique identifier of the account
+   * @param entityId the unique identifier of the partner entity
+   */
   @Builder(toBuilder = true)
   private Staff(UUID accountId, UUID entityId) {
     this.accountId = accountId;
@@ -278,11 +476,14 @@ public class Staff extends DomainError {
   }
 
   /**
-   * Factory method to create a new Staff instance.
+   * Factory method to create a new {@code Staff} instance.
+   *
+   * <p>The instance is created and immediately self-validated. Any validation failures are
+   * accumulated internally and can be retrieved via {@link #getFieldErrors()}.
    *
    * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the entityId
-   * @return a Staff instance (may contain errors)
+   * @param entityId the unique identifier of the partner entity
+   * @return a self-validated {@link Staff} instance
    */
   public static Staff factory(UUID accountId, UUID entityId) {
     Staff staff = Staff.builder().accountId(accountId).entityId(entityId).build();
@@ -291,10 +492,25 @@ public class Staff extends DomainError {
     return staff;
   }
 
-  /** Collects all validation problems for the Staff instance. */
+  /**
+   * Evaluates constraints for the Staff entity and aggregates any validation problems.
+   *
+   * <p>Rules applied:
+   *
+   * <ul>
+   *   <li>Ensures the {@code accountId} is not null (appends {@link
+   *       PartnerFieldErrorCodes#INVALID_ACCOUNT_ID_BLANK})
+   *   <li>Ensures the {@code entityId} is not null (appends {@link
+   *       PartnerFieldErrorCodes#INVALID_ENTITY_ID_BLANK})
+   * </ul>
+   */
   private void collectValidationProblems() {
-    validateForeignKeyField(accountId, "accountId");
-    validateForeignKeyField(entityId, "entityId");
+    if (accountId == null) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK);
+    }
+    if (entityId == null) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_ENTITY_ID_BLANK);
+    }
   }
 }
 
@@ -308,54 +524,80 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Repository interface for managing Staff entities. */
+/**
+ * Domain repository interface for managing {@link Staff} aggregate roots.
+ *
+ * <p>This interface defines the contract for assigning and revoking staff privileges that link an
+ * authentication account directly to a partner organization (Entity). It abstracts the underlying
+ * data storage mechanism to maintain a pure domain model.
+ */
 public interface StaffRepository {
 
   /**
-   * Persists a Staff entityId.
+   * Persists a newly created {@link Staff} aggregate into the repository.
    *
-   * @param staff the Staff entityId to persist.
-   * @return the persisted Staff entityId.
+   * @param staff the {@link Staff} aggregate to persist
+   * @return the fully persisted {@link Staff} instance
    */
   Staff persist(Staff staff);
 
   /**
-   * Deletes a Staff entityId by its account ID.
+   * Removes a {@link Staff} privilege record from the repository based on its linked account
+   * identifier.
    *
-   * @param accountId the account ID of the Staff entityId to delete.
-   * @return true if the entityId was deleted, false otherwise.
+   * @param accountId the unique identifier of the account whose staff privileges should be revoked
+   * @return {@code true} if the staff record was successfully deleted, {@code false} if it was not
+   *     found
    */
   boolean deleteByAccountId(UUID accountId);
 
   /**
-   * Deletes all Staff entities associated with a specific entityId ID.
+   * Removes all {@link Staff} records associated with a specific partner entity.
    *
-   * @param entityId the entityId ID whose associated Staff entities should be deleted.
-   * @return the number of Staff entities deleted.
+   * <p>This is typically used during cascading deletes when a partner entity is removed from the
+   * system, ensuring no orphaned staff privileges remain.
+   *
+   * @param entityId the unique identifier of the partner entity
+   * @return the total number of staff records successfully deleted
    */
   long deleteByEntityId(UUID entityId);
 
   /**
-   * Finds a Staff entityId by its associated account ID.
+   * Retrieves a {@link Staff} aggregate by its linked account identifier.
    *
-   * <p>Note: The returned Staff may contain validation errors (check {@code staff.hasErrors()}) if
-   * the stored data is inconsistent with current domain rules.
+   * <p>When a staff record is reconstituted from the persistence layer, it might contain validation
+   * errors (verifiable via {@link Staff#hasFieldErrors()}) if the stored data is inconsistent with
+   * current domain rules.
    *
-   * @param accountId the account ID to search for.
-   * @return an Optional containing the found Staff entityId, or empty if not found.
+   * @param accountId the unique identifier of the linked account
+   * @return an {@link Optional} containing the {@link Staff} if found, or {@link Optional#empty()}
+   *     if not
    */
   Optional<Staff> findOptionalByAccountId(UUID accountId);
 
   /**
-   * Lists all Staff entities associated with a specific entityId ID.
+   * Retrieves a list of all {@link Staff} aggregates currently linked to a specific partner entity.
    *
-   * <p>Note: The returned Staff objects may contain validation errors (check {@code
-   * staff.hasErrors()}) if the stored data is inconsistent with current domain rules.
+   * <p>Note: The returned objects may contain validation errors (verifiable via {@link
+   * Staff#hasFieldErrors()}) if the stored data violates current domain rules.
    *
-   * @param entityId the entityId ID to filter by.
-   * @return a list of Staff entities associated with the given entityId ID.
+   * @param entityId the unique identifier of the partner entity to filter by
+   * @return a {@link List} of {@link Staff} entities associated with the given partner entity
    */
   List<Staff> listAllByEntityId(UUID entityId);
+
+  /**
+   * Checks whether a specific {@link Staff} assignment already exists linking the given account to
+   * the given partner entity.
+   *
+   * <p>This is primarily used by domain services to enforce uniqueness constraints before
+   * persisting a new staff assignment.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId the unique identifier of the partner entity
+   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   */
+  boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId);
 }
 
 
@@ -364,7 +606,7 @@ FILE: domain/vos/Cnpj.java
 ================================================================================
 package com.pug.partner.domain.vos;
 
-import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.utils.StringUtils;
 import lombok.Builder;
@@ -373,27 +615,39 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Value object representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica). Extends
- * DomainError to support deferred validation.
+ * Immutable Value Object (VO) representing a Brazilian CNPJ (Cadastro Nacional da Pessoa Jurídica).
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules specific to
+ * Brazilian corporate taxpayer registry numbers without throwing immediate exceptions. This class
+ * inherently handles formatting variations by sanitizing the input prior to validation.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Cnpj extends DomainError {
 
+  /** The raw, numeric-only 14-digit string representing the CNPJ. */
   String value;
 
+  /**
+   * Constructs a {@code Cnpj} instance.
+   *
+   * @param value the sanitized, numeric-only CNPJ string
+   */
   @Builder(toBuilder = true)
   private Cnpj(String value) {
     this.value = value;
   }
 
   /**
-   * Factory method to create a new Cnpj. It cleans the input (removes non-digits) and runs
-   * validation.
+   * Factory method to create a new {@code Cnpj} instance.
    *
-   * @param rawValue the CNPJ value as a string
-   * @return The Cnpj instance (which may contain errors)
+   * <p>The provided raw value is automatically sanitized (all non-numeric characters stripped)
+   * before instantiation. The instance is immediately self-validated. Any validation failures are
+   * accumulated internally and can be retrieved via {@link #getFieldErrors()}.
+   *
+   * @param rawValue the raw CNPJ string (formatted with punctuation or unformatted)
+   * @return a self-validated {@link Cnpj} instance
    */
   public static Cnpj factory(String rawValue) {
     String cleaned = StringUtils.isEmpty(rawValue) ? null : rawValue.replaceAll("\\D", "");
@@ -403,26 +657,53 @@ public class Cnpj extends DomainError {
     return vo;
   }
 
-  /** Validates the CNPJ, populating the problems list if invalid. */
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>Must not be null or empty (appends {@link PartnerFieldErrorCodes#INVALID_CNPJ_BLANK})
+   *   <li>Must be exactly 14 digits long, cannot consist of the same repeated digit, and must pass
+   *       the standard modulo-11 checksum algorithm for both verification digits (appends {@link
+   *       PartnerFieldErrorCodes#INVALID_CNPJ_FORMAT})
+   * </ul>
+   */
   private void collectValidationProblems() {
-    validateStringField(value, 14L, "cnpj");
-    if (value.chars().distinct().count() == 1) {
-      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+    if (StringUtils.isEmpty(value)) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_CNPJ_BLANK);
       return;
     }
-    if (!isValidChecksum(value)) {
-      addFieldError(new Problem(PartnerErrorCodes.INVALID_CNPJ_FORMAT));
+    if (value.length() != 14 || value.chars().distinct().count() == 1 || !isValidChecksum(value)) {
+      addFieldError(PartnerFieldErrorCodes.INVALID_CNPJ_FORMAT);
     }
   }
 
-  // --- Internal Validation Logic ---
+  /* --- Internal Validation Logic --- */
 
+  /**
+   * Executes the standard Brazilian modulo-11 checksum algorithm to validate the last two digits
+   * (Verification Digits) of the CNPJ.
+   *
+   * @param cnpj the 14-digit numeric string representing the CNPJ
+   * @return {@code true} if the calculated check digits match the provided string, {@code false}
+   *     otherwise
+   */
   private static boolean isValidChecksum(String cnpj) {
     int d1 = calculateChecksumDigit(cnpj, new int[] {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
     int d2 = calculateChecksumDigit(cnpj, new int[] {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2});
     return (cnpj.charAt(12) - '0') == d1 && (cnpj.charAt(13) - '0') == d2;
   }
 
+  /**
+   * Calculates a single CNPJ verification digit based on the modulo-11 algorithm and provided
+   * weights.
+   *
+   * @param cnpj the numeric string containing the base digits for calculation
+   * @param weights the specific array of integer multipliers required for the respective
+   *     verification digit
+   * @return the mathematically calculated verification digit (0-9)
+   */
   private static int calculateChecksumDigit(String cnpj, int[] weights) {
     int sum = 0;
     for (int i = 0; i < weights.length; i++) {
@@ -445,16 +726,24 @@ import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.shared.domain.vos.AuditInfo;
 
-/** Maps between Entity domain and EntityEntity persistence. */
+/**
+ * Stateless utility class responsible for mapping between Partner Entity boundary layers.
+ *
+ * <p>This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link
+ * Entity}) does not leak into or depend upon the JPA Persistence model ({@link EntityEntity}).
+ */
 public final class EntityMapper {
   /** Private constructor to prevent instantiation. */
   private EntityMapper() {}
 
   /**
-   * Maps an EntityEntity to an Entity domain object.
+   * Reconstitutes a pure Domain {@link Entity} aggregate from a JPA {@link EntityEntity}.
    *
-   * @param e the persistence entityId.
-   * @return the domain object, or null if entityId is null.
+   * <p>This method translates primitive database columns back into their corresponding Domain Value
+   * Objects (e.g., using {@link Cnpj#factory(String)} and {@link AuditInfo}).
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Entity}, or {@code null} if the input entity is null
    */
   public static Entity toDomain(EntityEntity e) {
     if (e == null) {
@@ -471,10 +760,15 @@ public final class EntityMapper {
   }
 
   /**
-   * Maps an Entity domain object to an EntityEntity for persistence.
+   * Translates a pure Domain {@link Entity} aggregate into a newly instantiated JPA {@link
+   * EntityEntity}.
    *
-   * @param d the domain object.
-   * @return the persistence entityId, or null if domain is null.
+   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
+   * Domain Value Objects back into primitive types suitable for JDBC insertion.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link EntityEntity}, or {@code null} if the input domain is
+   *     null
    */
   public static EntityEntity toEntity(Entity d) {
     if (d == null) {
@@ -492,10 +786,15 @@ public final class EntityMapper {
   }
 
   /**
-   * Copies domain fields into an existing EntityEntity (for update).
+   * Updates an existing, attached JPA {@link EntityEntity} with the current state of a Domain
+   * {@link Entity}.
    *
-   * @param d the domain object.
-   * @param e the persistence entityId.
+   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
+   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements upon
+   * transaction commit. Primary keys and immutable audit fields are intentionally excluded.
+   *
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
    */
   public static void copy(Entity d, EntityEntity e) {
     if (d == null || e == null) {
@@ -534,7 +833,18 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
 import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
-/** Persistence entityId representing an Entity in the partner domain. */
+/**
+ * JPA entity representing a Partner Organization (Entity) within the persistence layer.
+ *
+ * <p>This class acts as the database-mapped counterpart to the {@link
+ * com.pug.partner.domain.Entity} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * and standard audit tracking fields from {@link BaseAuditedEntity}. It enforces strict uniqueness
+ * on the CNPJ at the database level.
+ *
+ * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
+ * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to
+ * support advanced full-text queries on the partner organization's name.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -554,10 +864,30 @@ import org.hibernate.type.SqlTypes;
 @SuperBuilder
 public class EntityEntity extends BaseAuditedEntity {
 
+  /**
+   * The unique 14-digit corporate identification number (CNPJ).
+   *
+   * <p>Mapped as a fixed-length {@code CHAR(14)} at the database level for optimal storage and
+   * indexing. This serves as a natural key for the partner entity, enforced by a database unique
+   * constraint.
+   */
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cnpj", nullable = false, length = 14, unique = true)
   private String cnpj;
 
+  /**
+   * The registered name or corporate reason of the partner entity.
+   *
+   * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
+   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   *
+   * <ul>
+   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
+   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").
+   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.
+   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.
+   * </ul>
+   */
   @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
   @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
   @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
@@ -565,9 +895,15 @@ public class EntityEntity extends BaseAuditedEntity {
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 
+  /**
+   * The unique identifier (UUID) of the associated {@link com.pug.geo.domain.City}.
+   *
+   * <p>Acts as a foreign key linking this partner organization to its geographical location.
+   */
   @Column(name = "city_id", nullable = false)
   private UUID cityId;
 
+  /** The physical street address of the partner organization. */
   @Column(name = "address", length = 254)
   private String address;
 }
@@ -589,11 +925,18 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the EntityRepository using Panache. */
+/**
+ * Implementation of the {@link EntityRepository} utilizing Hibernate ORM with Panache.
+ *
+ * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
+ * database infrastructure. It manages transaction boundaries, entity state transitions, and the
+ * mapping between domain aggregates and JPA persistence entities.
+ */
 @ApplicationScoped
 public class EntityRepositoryImpl
     implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Entity persist(Entity entity) {
@@ -609,6 +952,7 @@ public class EntityRepositoryImpl
     return EntityMapper.toDomain(loaded);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Entity entity) {
@@ -622,6 +966,7 @@ public class EntityRepositoryImpl
     EntityMapper.copy(entity, managed);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
@@ -633,6 +978,7 @@ public class EntityRepositoryImpl
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<Entity> findOptionalById(UUID id) {
     return find("select e from EntityEntity e where e.id = ?1", id)
@@ -640,12 +986,22 @@ public class EntityRepositoryImpl
         .map(EntityMapper::toDomain);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
       return false;
     }
     return find("cnpj", cnpj).firstResultOptional().isPresent();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCityId(UUID cityId) {
+    if (cityId == null) {
+      return false;
+    }
+    return count("cityId", cityId) > 0;
   }
 }
 
@@ -666,11 +1022,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the StaffRepository using Panache. */
+/**
+ * Implementation of the {@link StaffRepository} utilizing Hibernate ORM with Panache.
+ *
+ * <p>This application-scoped bean handles the persistence and retrieval of Staff privileges,
+ * linking authentication accounts to partner organizations.
+ */
 @ApplicationScoped
 public class StaffRepositoryImpl
     implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff persist(Staff entity) {
@@ -683,6 +1045,7 @@ public class StaffRepositoryImpl
     return StaffMapper.toDomain(loaded);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteByAccountId(UUID accountId) {
@@ -694,6 +1057,7 @@ public class StaffRepositoryImpl
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteByEntityId(UUID entityId) {
@@ -705,14 +1069,25 @@ public class StaffRepositoryImpl
     return deletedCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<Staff> findOptionalByAccountId(UUID accountId) {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<Staff> listAllByEntityId(UUID entityId) {
     return find("entityId = ?1", entityId).list().stream().map(StaffMapper::toDomain).toList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
+    if (accountId == null || entityId == null) {
+      return false;
+    }
+    return count("accountId = ?1 and entityId = ?2", accountId, entityId) > 0;
   }
 }
 
@@ -737,7 +1112,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-/** Persistence entityId representing a Staff member associated with an Entity. */
+/**
+ * JPA entity representing Staff privileges within the persistence layer.
+ *
+ * <p>This class is the database-mapped counterpart to the {@link com.pug.partner.domain.Staff}
+ * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
+ * key, effectively functioning as a one-to-one extension of an authentication account to grant
+ * staff-level access tied to a specific Partner Entity.
+ */
 @Getter
 @Setter
 @NoArgsConstructor
@@ -751,10 +1133,21 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 public class StaffEntity {
 
+  /**
+   * The unique identifier of the linked authentication account.
+   *
+   * <p>Serves dual purpose as both the primary key for this entity and the logical foreign key to
+   * the identity accounts table. It is strictly immutable once persisted.
+   */
   @Id
   @Column(name = "account_id", nullable = false, updatable = false)
   private UUID accountId;
 
+  /**
+   * The unique identifier of the linked {@link EntityEntity}.
+   *
+   * <p>Acts as a foreign key representing the partner organization this staff member works for.
+   */
   @Column(name = "entity_id", nullable = false)
   private UUID entityId;
 }
@@ -770,15 +1163,20 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Immutable DTO representing the read-side view of an Entity. This record is used to transfer data
+ * Data Transfer Object (DTO) representing a read-only view of a Partner Entity.
  *
- * @param id the unique identifier of the Entity
- * @param cnpj the CNPJ number of the Entity, stored as a raw string (14 digits, no formatting)
- * @param name the name of the Entity
- * @param address the address of the Entity
- * @param city the CityView associated with the Entity, containing city details
- * @param createdAt the timestamp when the Entity was created
- * @param updatedAt the timestamp when the Entity was last updated
+ * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
+ * client. It aggregates the partner organization's details with a nested projection of its
+ * geographic location ({@link CityView}) to provide a comprehensive, lightweight structure
+ * optimized for JSON serialization.
+ *
+ * @param id the unique identifier (UUIDv7) of the partner entity
+ * @param cnpj the exact 14-digit numeric CNPJ string
+ * @param name the registered name or corporate reason of the entity
+ * @param address the physical street address
+ * @param city the read-only projection of the city where the entity is located
+ * @param createdAt the exact timestamp when the entity record was created
+ * @param updatedAt the exact timestamp when the entity record was last modified
  */
 public record EntityView(
     UUID id,
@@ -802,13 +1200,17 @@ import com.pug.partner.infra.persistence.StaffEntity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
- * Record representing a combination of StaffEntity, AccountEntity, EntityEntity, and CityEntity,
- * typically used in JPA projections to simplify data retrieval for StaffView.
+ * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
  *
- * @param staff the StaffEntity.
- * @param account the AccountEntity.
- * @param entity the EntityEntity.
- * @param city the CityEntity.
+ * <p>This record acts as an intermediate data structure during complex cross-domain queries. By
+ * fetching the {@link StaffEntity} and all its required associations (Account, Entity, City) in a
+ * single query projection, it prevents N+1 select performance issues before the data is ultimately
+ * mapped into the final, client-facing {@link StaffView}.
+ *
+ * @param staff the retrieved staff persistence entity
+ * @param account the retrieved account persistence entity linked to the staff member
+ * @param entity the retrieved partner entity persistence record
+ * @param city the retrieved city persistence entity linked to the partner entity
  */
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public record StaffAcc(
@@ -823,10 +1225,15 @@ package com.pug.partner.infra.read.dtos;
 import com.pug.identity.infra.read.dtos.AccountView;
 
 /**
- * View representation of a Staff member.
+ * Data Transfer Object (DTO) representing a read-only, consolidated view of a Staff member.
  *
- * @param account the account view associated with the staff member.
- * @param entity the entityId view associated with the staff member.
+ * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
+ * client. It flattens the complex domain relationships by nesting the underlying authentication
+ * identity ({@link AccountView}) alongside the details of the partner organization they represent
+ * ({@link EntityView}).
+ *
+ * @param account the read-only projection of the linked authentication account and user
+ * @param entity the read-only projection of the linked partner organization
  */
 public record StaffView(AccountView account, EntityView entity) {}
 
@@ -841,44 +1248,59 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Entities. */
+/**
+ * Read-only interface for executing queries against Partner Entities.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving partner organization data directly into lightweight {@link EntityView} projections,
+ * bypassing the overhead of instantiating full JPA entities or domain aggregates.
+ */
 public interface EntityQueries {
+
   /**
-   * Finds an EntityView by its ID.
+   * Retrieves a read-only view of a partner entity based on its unique identifier.
    *
-   * @param id the UUID of the EntityView to find.
-   * @return an Optional containing the found EntityView, or empty if not found.
+   * @param id the unique identifier (UUID) of the entity to find
+   * @return an {@link Optional} containing the found {@link EntityView}, or {@link
+   *     Optional#empty()} if not found
    */
   Optional<EntityView> findOptionalById(UUID id);
 
   /**
-   * Finds an EntityView by its CNPJ.
+   * Retrieves a read-only view of a partner entity based on its exact CNPJ.
    *
-   * @param cnpj the CNPJ of the EntityView to find.
-   * @return an Optional containing the found EntityView, or empty if not found.
+   * @param cnpj the exact 14-digit numeric CNPJ string to find
+   * @return an {@link Optional} containing the found {@link EntityView}, or {@link
+   *     Optional#empty()} if not found
    */
   Optional<EntityView> findOptionalByCnpj(String cnpj);
 
   /**
-   * Lists all EntityView objects.
+   * Retrieves a comprehensive list of all partner entities registered in the system.
    *
-   * @return a list of all EntityView objects.
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
+   *
+   * @return a {@link List} of all {@link EntityView} objects
    */
   List<EntityView> listAllEntities();
 
   /**
-   * Lists all EntityView objects by city ID.
+   * Retrieves a list of partner entities located in a specific city.
    *
-   * @param cityId the UUID of the city.
-   * @return a list of EntityView objects in the specified city.
+   * @param cityId the unique identifier (UUID) of the city
+   * @return a {@link List} of {@link EntityView} objects located in the specified city
    */
   List<EntityView> listAllByCityId(UUID cityId);
 
   /**
-   * Searches for entities by name.
+   * Executes a robust full-text search against the names of partner entities.
    *
-   * @param query the name query string.
-   * @return a list of entities matching the name query.
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search).
+   *
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of {@link EntityView} entries matching the search criteria
    */
   List<EntityView> searchByName(String query);
 }
@@ -906,7 +1328,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Implementation of EntityQueries using JPA and Hibernate Search. */
+/**
+ * Implementation of the {@link EntityQueries} interface using JPA and Hibernate Search.
+ *
+ * <p>This application-scoped bean handles the execution of read-only queries for partner
+ * organizations. It uses JPQL constructor expressions to implicitly join the partner data with its
+ * underlying geographic location (City) in a single database round-trip.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class EntityQueriesImpl implements EntityQueries {
@@ -917,7 +1345,8 @@ public class EntityQueriesImpl implements EntityQueries {
       """
                   select new com.pug.partner.infra.read.dtos.EntityView(
                     e.id, e.cnpj, e.name, e.address,
-                    new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
+                    new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                    e.createdAt, e.updatedAt
                   )
                   from EntityEntity e
                     join CityEntity c on c.id = e.cityId
@@ -925,6 +1354,7 @@ public class EntityQueriesImpl implements EntityQueries {
 
   private static final String ORDER_BY_NAME_ASC = " order by e.name asc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<EntityView> findOptionalById(UUID id) {
     if (id == null) {
@@ -936,6 +1366,7 @@ public class EntityQueriesImpl implements EntityQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<EntityView> findOptionalByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
@@ -948,11 +1379,13 @@ public class EntityQueriesImpl implements EntityQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listAllEntities() {
     return em.createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, EntityView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listAllByCityId(UUID cityId) {
     if (cityId == null) {
@@ -966,6 +1399,13 @@ public class EntityQueriesImpl implements EntityQueries {
     return q.getResultList();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>To achieve a full-text search against the entity's name, this method first resolves the
+   * matching entities via the search index, extracts their required City UUIDs, fetches the
+   * corresponding cities, and finally assembles the complete {@link EntityView}.
+   */
   @Override
   public List<EntityView> searchByName(String key) {
     List<EntityEntity> hits = HibernateSearchUtils.searchByName(em, EntityEntity.class, key);
@@ -1034,7 +1474,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of StaffQueries using JPA EntityManager and Hibernate Search. */
+/**
+ * Implementation of the {@link StaffQueries} interface using JPA and Hibernate Search.
+ *
+ * <p>This application-scoped bean executes read-only operations for staff profiles. Given the
+ * deeply nested structure of a staff member crossing multiple domains (Staff -> Account -> User,
+ * Staff -> Entity -> City), these queries rely on explicitly declared JPQL {@code JOIN} paths
+ * inside constructor expressions to build out the full {@link StaffView} DTO without triggering N+1
+ * select performance issues.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class StaffQueriesImpl implements StaffQueries {
@@ -1050,11 +1498,13 @@ public class StaffQueriesImpl implements StaffQueries {
                       u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
                       acc.email,
                       acc.accountType,
-                      acc.createdAt
+                      acc.createdAt,
+                      acc.updatedAt
                     ),
                     new com.pug.partner.infra.read.dtos.EntityView(
                       e.id, e.cnpj, e.name, e.address,
-                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode)
+                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                      e.createdAt, e.updatedAt
                     )
                   )
                   from StaffEntity s
@@ -1066,6 +1516,7 @@ public class StaffQueriesImpl implements StaffQueries {
 
   private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<StaffView> findOptionalById(UUID accountId) {
     if (accountId == null) {
@@ -1077,6 +1528,7 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<StaffView> findOptionalByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
@@ -1088,6 +1540,7 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -1100,11 +1553,13 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listAllStaff() {
     return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StaffView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listAllByEntityId(UUID entityId) {
     if (entityId == null) {
@@ -1117,6 +1572,14 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultList();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>To achieve a full-text search against the user's name, this method first resolves the
+   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
+   * using the {@link StaffAcc} tuple projection to map the relationships backwards across the
+   * Identity, Geo, and Partner domains.
+   */
   @Override
   public List<StaffView> searchByName(String key) {
     List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
@@ -1177,53 +1640,66 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Queries related to Staff. */
+/**
+ * Read-only interface for executing Staff profile queries.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving consolidated staff profiles directly into lightweight {@link StaffView} projections.
+ * These views aggregate data across the Identity, Geo, and Partner contexts for optimized API
+ * delivery.
+ */
 public interface StaffQueries {
 
   /**
-   * Finds a StaffView by its account ID.
+   * Retrieves a read-only view of a staff member based on their linked account ID.
    *
-   * @param id the account ID of the staff member.
-   * @return an Optional containing the StaffView if found, otherwise empty.
+   * @param id the unique identifier (UUID) of the staff member's account
+   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
    */
   Optional<StaffView> findOptionalById(UUID id);
 
   /**
-   * Finds a StaffView by its email.
+   * Retrieves a read-only view of a staff member based on their registered email address.
    *
-   * @param email the email address of the staff member.
-   * @return an Optional containing the StaffView if found, otherwise empty.
+   * @param email the exact email address of the staff member
+   * @return an {@link Optional} containing the {@link StaffView} if found, otherwise empty
    */
   Optional<StaffView> findOptionalByEmail(String email);
 
   /**
-   * Lists all StaffView records.
+   * Retrieves a comprehensive list of all staff members registered in the system.
    *
-   * @return a list of all StaffView records.
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
+   *
+   * @return a {@link List} of all {@link StaffView} records
    */
   List<StaffView> listAllStaff();
 
   /**
-   * Lists StaffView records by CPF.
+   * Retrieves a list of staff members filtered by their linked user's CPF.
    *
-   * @param cpf the CPF of the staff member.
-   * @return a list of StaffView records matching the given CPF.
+   * @param cpf the exact 11-digit numeric CPF string
+   * @return a {@link List} of {@link StaffView} records matching the given CPF
    */
   List<StaffView> listByCpf(String cpf);
 
   /**
-   * Lists all StaffView records by entityId ID.
+   * Retrieves a list of all staff members linked to a specific partner organization.
    *
-   * @param entityId the entityId ID.
-   * @return a list of StaffView records associated with the given entityId ID.
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return a {@link List} of {@link StaffView} records associated with the given entity
    */
   List<StaffView> listAllByEntityId(UUID entityId);
 
   /**
-   * Searches for StaffView records by name.
+   * Executes a robust full-text search against the names of the associated staff users.
    *
-   * @param key the search key (typically a account's name).
-   * @return a list of StaffView records matching the search key.
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search).
+   *
+   * @param key the raw search string or partial name of the staff member
+   * @return a sorted {@link List} of matching {@link StaffView} records
    */
   List<StaffView> searchByName(String key);
 }
@@ -1245,22 +1721,24 @@ import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.persistence.StaffEntity;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.shared.exceptions.AppValidationException;
 
-/** Maps between Staff domain and StaffEntity persistence. */
+/**
+ * Stateless utility class responsible for mapping between Staff boundary layers.
+ *
+ * <p>This mapper handles both the translation between pure domain and JPA entities, as well as the
+ * assembly of deeply nested CQRS read views that cross module boundaries (Identity, Geo, Partner).
+ */
 public final class StaffMapper {
   /** Private constructor to prevent instantiation. */
   private StaffMapper() {}
 
   /**
-   * Maps a StaffEntity to a Staff domain object.
+   * Reconstitutes a pure Domain {@link Staff} aggregate from a JPA {@link StaffEntity}.
    *
-   * @param e the StaffEntity.
-   * @return the Staff domain object, or null if entityId is null.
-   * @throws AppValidationException if the data in the entityId (e.g., accountId or entityId) is
-   *     invalid according to domain rules, indicating corrupted data in persistence.
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Staff}, or {@code null} if the input entity is null
    */
-  public static Staff toDomain(StaffEntity e) throws AppValidationException {
+  public static Staff toDomain(StaffEntity e) {
     if (e == null) {
       return null;
     }
@@ -1268,10 +1746,12 @@ public final class StaffMapper {
   }
 
   /**
-   * Maps a Staff domain object to a StaffEntity for persistence.
+   * Translates a pure Domain {@link Staff} aggregate into a newly instantiated JPA {@link
+   * StaffEntity}.
    *
-   * @param d the Staff domain object.
-   * @return the StaffEntity, or null if domain is null.
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link StaffEntity}, or {@code null} if the input domain is
+   *     null
    */
   public static StaffEntity toEntity(Staff d) {
     if (d == null) {
@@ -1281,13 +1761,18 @@ public final class StaffMapper {
   }
 
   /**
-   * Converts an AccountEntity, EntityEntity, CityEntity, and UserEntity into a StaffView.
+   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
+   * {@link StaffView} DTO.
    *
-   * @param accountEntity the associated AccountEntity.
-   * @param entityEntity the associated EntityEntity.
-   * @param cityEntity the associated CityEntity.
-   * @param userEntity the associated UserEntity.
-   * @return the StaffView.
+   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
+   * encapsulate the staff member's profile, credentials, organization, and location in a single,
+   * flattened response ready for JSON serialization.
+   *
+   * @param accountEntity the JPA entity representing the linked authentication account
+   * @param entityEntity the JPA entity representing the partner organization
+   * @param cityEntity the JPA entity representing the city where the partner operates
+   * @param userEntity the JPA entity representing the personal identity of the staff member
+   * @return a fully populated {@link StaffView} DTO
    */
   public static StaffView toView(
       AccountEntity accountEntity,
@@ -1325,21 +1810,27 @@ FILE: presenter/dtos/EntityCreateRequest.java
 package com.pug.partner.presenter.dtos;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 /**
- * Request DTO for creating an Entity.
+ * Data Transfer Object (DTO) used as the JSON request payload for creating a new Partner Entity.
  *
- * @param cnpjString the CNPJ of the entityId as a string.
- * @param name the name of the entityId.
- * @param cityId the ID of the city associated with the entityId, as a UUID.
- * @param address the address of the entityId.
+ * <p>This record applies Jakarta Bean Validation constraints to ensure the initial data is
+ * structurally sound before it reaches the application service layer.
+ *
+ * @param cnpjString the raw 14-digit numeric CNPJ string (must not be blank)
+ * @param name the registered name or corporate reason of the organization (must not be blank and
+ *     max 150 characters)
+ * @param cityId the unique identifier (UUID) of the city where the organization is located (must
+ *     not be null)
+ * @param address the physical street address (optional, max 254 characters)
  */
 public record EntityCreateRequest(
     @NotBlank String cnpjString,
     @NotBlank @Size(max = 150) String name,
-    @NotBlank UUID cityId,
+    @NotNull UUID cityId,
     @Size(max = 254) String address) {}
 
 
@@ -1353,15 +1844,20 @@ import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.util.UUID;
 
 /**
- * DTO representing the response for an entityId. It contains all the necessary information about an
+ * Data Transfer Object (DTO) used as the standardized API JSON response for Partner Entities.
  *
- * @param id the unique identifier of the entityId
- * @param cnpj the CNPJ number of the entityId
- * @param cnpjFormatted the formatted CNPJ number of the entityId
- * @param name the name of the entityId
- * @param address the address of the entityId
- * @param city the city information of the entityId
- * @param auditInfo the audit information of the entityId, including creation and update timestamps
+ * <p>This record consolidates the backend entity data along with its resolved geographical location
+ * (City) into a single, flattened response optimized for the presentation layer. It includes
+ * pre-formatted strings for direct UI rendering.
+ *
+ * @param id the unique identifier (UUIDv7) of the partner entity
+ * @param cnpj the raw 14-digit numeric CNPJ string
+ * @param cnpjFormatted the CNPJ string formatted with standard punctuation (e.g.,
+ *     "00.000.000/0000-00")
+ * @param name the registered name or corporate reason of the partner entity
+ * @param address the physical street address of the entity
+ * @param city the nested, client-facing projection of the city where the entity is located
+ * @param auditInfo the nested audit information containing creation and update timestamps
  */
 public record EntityResponse(
     UUID id,
@@ -1378,17 +1874,29 @@ FILE: presenter/dtos/EntityUpdateRequest.java
 ================================================================================
 package com.pug.partner.presenter.dtos;
 
+import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 /**
- * Request DTO for updating an Entity.
+ * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing
+ * Partner Entity.
  *
- * @param cnpjString the CNPJ of the entityId as a string.
- * @param name the name of the entityId.
- * @param cityId the ID of the city associated with the entityId, as a UUID.
- * @param address the address of the entityId.
+ * <p>Because updates can be partial, all fields in this record are inherently optional. If a field
+ * is provided as {@code null} or omitted from the JSON payload, the application service will ignore
+ * it and retain the existing value for that specific attribute.
+ *
+ * @param cnpjString the new 14-digit numeric CNPJ string, or {@code null} to leave unchanged
+ * @param name the new name of the organization, or {@code null} to leave unchanged (if provided,
+ *     max 150 characters)
+ * @param cityId the new city UUID, or {@code null} to leave unchanged
+ * @param address the new physical street address, or {@code null} to leave unchanged (if provided,
+ *     max 254 characters)
  */
-public record EntityUpdateRequest(String cnpjString, String name, UUID cityId, String address) {}
+public record EntityUpdateRequest(
+    String cnpjString,
+    @Size(max = 150) String name,
+    UUID cityId,
+    @Size(max = 254) String address) {}
 
 
 ================================================================================
@@ -1397,24 +1905,31 @@ FILE: presenter/dtos/StaffCreateRequest.java
 package com.pug.partner.presenter.dtos;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.UUID;
 
 /**
- * Request to create a new staff member.
+ * Data Transfer Object (DTO) used as the JSON request payload for assigning a new Staff member.
  *
- * @param cpfString the CPF of the staff member as a string.
- * @param name the name of the staff member.
- * @param emailString the email of the staff member as a string.
- * @param password the password for the staff member's account.
- * @param entityId the CNPJ of the entityId the staff is part of, as a UUID.
+ * <p>This record acts as an aggregated payload that combines identity credentials with
+ * organizational assignment. It applies Jakarta Bean Validation to ensure all required components
+ * are present before attempting a complex, multi-domain transaction.
+ *
+ * @param cpfString the raw 11-digit numeric CPF string of the person (must not be blank)
+ * @param name the full name of the staff member (must not be blank and max 150 characters)
+ * @param emailString the email address for the staff member's account (must not be blank)
+ * @param password the requested password for authentication (must not be blank, between 8 and 255
+ *     characters)
+ * @param entityId the unique identifier (UUID) of the partner entity they will manage (must not be
+ *     null)
  */
 public record StaffCreateRequest(
     @NotBlank String cpfString,
     @NotBlank @Size(max = 150) String name,
     @NotBlank String emailString,
     @NotBlank @Size(min = 8, max = 255) String password,
-    @NotBlank UUID entityId) {}
+    @NotNull UUID entityId) {}
 
 
 ================================================================================
@@ -1425,10 +1940,16 @@ package com.pug.partner.presenter.dtos;
 import com.pug.identity.presenter.dtos.AccountResponse;
 
 /**
- * Response representation of a Staff member.
+ * Data Transfer Object (DTO) used as the standardized API JSON response for Staff members.
  *
- * @param account the account response associated with the staff member.
- * @param entity the entityId response associated with the staff member.
+ * <p>This record consolidates the deeply nested backend structure across the Identity, Partner, and
+ * Geo domains into a single, comprehensive response representing a user's organizational
+ * privileges.
+ *
+ * @param account the consolidated, client-facing projection of the authentication account and user
+ *     profile
+ * @param entity the consolidated, client-facing projection of the partner organization and its
+ *     location
  */
 public record StaffResponse(AccountResponse account, EntityResponse entity) {}
 
@@ -1478,7 +1999,13 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing partner entities. */
+/**
+ * REST API Resource controller for managing Partner Entities.
+ *
+ * <p>This class exposes endpoints to create, retrieve, update, and delete partner organizations. It
+ * delegates commands to the {@link EntityService} (writes) and queries to the {@link
+ * EntityReadService} (reads), strictly adhering to CQRS architectural principles.
+ */
 @ApplicationScoped
 @Path("/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -1492,11 +2019,12 @@ public class EntityResource {
   @Context HttpHeaders headers;
 
   /**
-   * Get entityId by ID.
+   * Retrieves a specific partner entity by its unique UUID identifier.
    *
-   * @param id the entityId ID
-   * @return the response containing the entityId view
-   * @throws ResourceNotFoundException if the Entity is not found.
+   * @param id the unique identifier (UUIDv7) of the partner entity
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     EntityResponse}
+   * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
   @Path("{id}")
@@ -1506,11 +2034,32 @@ public class EntityResource {
   }
 
   /**
-   * List or search entities.
+   * Retrieves a specific partner entity by its unique corporate identification (CNPJ).
    *
-   * @param q optional search query (by name)
-   * @param cityId optional city ID to filter by
-   * @return the response containing the list of entityId views
+   * @param cnpjRaw the exact 14-digit numeric CNPJ string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     EntityResponse}
+   * @throws AppValidationException if the provided CNPJ is malformed
+   * @throws ResourceNotFoundException if the entity is not found
+   */
+  @GET
+  @Path("by-cnpj/{cnpj}")
+  public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
+    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of partner entities.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * entities' names. If the {@code cityId} parameter is provided, it filters the results
+   * geographically. If both are omitted, it returns all entities.
+   *
+   * @param q the optional search query string
+   * @param cityId the optional geographic filter
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     EntityResponse}
    */
   @GET
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
@@ -1534,28 +2083,14 @@ public class EntityResource {
   }
 
   /**
-   * Get entityId by CNPJ.
+   * Registers a new partner entity within the platform.
    *
-   * @param cnpjRaw the raw CNPJ string
-   * @return the response containing the entityId view
-   * @throws AppValidationException if the provided CNPJ is malformed.
-   * @throws ResourceNotFoundException if the Entity is not found.
-   */
-  @GET
-  @Path("by-cnpj/{cnpj}")
-  public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Create a new entityId.
-   *
-   * @param req the entityId creation request
-   * @return the response containing the created entityId view
-   * @throws DuplicateResourceException if an entityId with the same CNPJ already exists.
-   * @throws AppValidationException if input validation fails.
-   * @throws ResourceNotFoundException if the specified city does not exist.
+   * @param req the validated {@link EntityCreateRequest} containing the organization's details
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link EntityResponse}
+   * @throws DuplicateResourceException if an entity with the same CNPJ already exists
+   * @throws AppValidationException if input validation fails at the domain level
+   * @throws ResourceNotFoundException if the specified city does not exist
    */
   @POST
   public Response create(@Valid EntityCreateRequest req) {
@@ -1572,14 +2107,17 @@ public class EntityResource {
   }
 
   /**
-   * Update an existing entityId.
+   * Partially updates an existing partner entity's details.
    *
-   * @param id the entityId ID
-   * @param req the entityId update request
-   * @return the response containing the updated entityId view
-   * @throws ResourceNotFoundException if the Entity is not found.
-   * @throws DuplicateResourceException if updated details conflict with existing records.
-   * @throws AppValidationException if input validation fails.
+   * <p>Omitting fields in the request payload will result in those fields retaining their current
+   * state in the database.
+   *
+   * @param id the unique identifier (UUIDv7) of the entity to update
+   * @param req the validated {@link EntityUpdateRequest} containing the modified data
+   * @return an HTTP 200 OK response containing the updated {@link EntityResponse}
+   * @throws ResourceNotFoundException if the entity or referenced city does not exist
+   * @throws DuplicateResourceException if the updated CNPJ conflicts with an existing record
+   * @throws AppValidationException if input validation fails
    */
   @PUT
   @Path("{id}")
@@ -1594,10 +2132,10 @@ public class EntityResource {
   }
 
   /**
-   * Delete an entityId by ID.
+   * Permanently removes a partner entity from the system.
    *
-   * @param id the ID of the entityId to delete
-   * @return 200 OK with empty data (idempotent).
+   * @param id the unique identifier (UUIDv7) of the entity to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("{id}")
@@ -1606,7 +2144,7 @@ public class EntityResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the request headers. */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -1626,16 +2164,29 @@ import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
 
-/** Maps read-side EntityView to presenter EntityResponse. */
+/**
+ * Stateless utility class responsible for mapping internal partner entity projections to external
+ * API responses.
+ *
+ * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
+ * EntityView}) into client-ready representations ({@link EntityResponse}). It is responsible for
+ * injecting presentation-specific formatting, such as standardizing the Brazilian CNPJ string.
+ */
 public final class EntityPresenter {
-  /** Private constructor to prevent instantiation. */
+
+  /** Private constructor to prevent instantiation of utility class. */
   private EntityPresenter() {}
 
   /**
-   * Maps EntityView to EntityResponse.
+   * Projects a read-only {@link EntityView} into a client-facing {@link EntityResponse}.
    *
-   * @param v the EntityView
-   * @return the EntityResponse
+   * <p>This mapping cascades down to format the nested {@link CityResponse} and resolves localized
+   * formatting for audit timestamps and corporate identification numbers.
+   *
+   * @param v the internal read-model projection of the partner entity
+   * @param locale the locale extracted from the client's request headers
+   * @return a fully populated {@link EntityResponse} ready for JSON serialization, or {@code null}
+   *     if the input view is null
    */
   public static EntityResponse toResponse(EntityView v, Locale locale) {
     if (v == null) {
@@ -1652,10 +2203,14 @@ public final class EntityPresenter {
   }
 
   /**
-   * Returns the formatted string representation of the CNPJ (e.g., "XX.XXX.XXX/XXXX-XX"). Returns
-   * raw value if length is invalid.
+   * Computes the formatted string representation of a Brazilian CNPJ.
    *
-   * @return the formatted CNPJ as a String.
+   * <p>Transforms a raw 14-digit numeric string (e.g., "12345678000199") into the standard
+   * punctuated format (e.g., "12.345.678/0001-99"). If the input is null or not exactly 14
+   * characters, the raw value is returned safely to prevent exceptions.
+   *
+   * @param value the raw numeric CNPJ string
+   * @return the punctuated CNPJ string, or the raw input if formatting is not possible
    */
   private static String toFormattedString(String value) {
     if (value == null || value.length() != 14) {
@@ -1685,18 +2240,30 @@ import com.pug.partner.presenter.dtos.StaffResponse;
 import com.pug.shared.i18n.I18n;
 import java.util.Locale;
 
-/** Maps read-side StaffView to presenter StaffResponse. */
+/**
+ * Stateless utility class responsible for mapping internal staff projections to external API
+ * responses.
+ *
+ * <p>This presenter acts as a translation layer, converting deeply nested CQRS query views ({@link
+ * StaffView}) into consolidated, client-ready representations ({@link StaffResponse}).
+ */
 public final class StaffPresenter {
-  /** Private constructor to prevent instantiation. */
+
+  /** Private constructor to prevent instantiation of utility class. */
   private StaffPresenter() {}
 
   /**
-   * Maps StaffView to StaffResponse.
+   * Projects a read-only {@link StaffView} into a client-facing {@link StaffResponse}.
    *
-   * @param v the StaffView.
-   * @param locale the locale for localization.
-   * @param i18n the internationalization utility.
-   * @return the StaffResponse.
+   * <p>This mapping delegates the formatting of the underlying account and user data to the
+   * Identity domain's {@link AccountPresenter}, and delegates the formatting of the organizational
+   * details to the {@link EntityPresenter}.
+   *
+   * @param v the internal read-model projection of the staff member
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link StaffResponse} ready for JSON serialization, or {@code null}
+   *     if any required input is null
    */
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
@@ -1757,7 +2324,13 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** REST resource for managing partner staff. */
+/**
+ * REST API Resource controller for managing Partner Staff privileges.
+ *
+ * <p>This class exposes endpoints to assign, retrieve, and revoke organizational roles for
+ * authentication accounts. It acts as the HTTP entry point, delegating queries to the {@link
+ * StaffReadService} and commands to the {@link StaffService}, adhering to CQRS principles.
+ */
 @ApplicationScoped
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -1773,10 +2346,12 @@ public class StaffResource {
   @Context HttpHeaders headers;
 
   /**
-   * Retrieves a staff member by their unique identifier.
+   * Retrieves a specific staff member by their linked account ID.
    *
-   * @param id the UUID of the staff member
-   * @return a Response containing the staff member details
+   * @param id the unique identifier (UUIDv7) of the staff member's account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StaffResponse}
+   * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @GET
   @Path("{id}")
@@ -1787,13 +2362,31 @@ public class StaffResource {
   }
 
   /**
-   * Lists staff members.
+   * Retrieves a specific staff member by their registered email address.
    *
-   * <p>If the 'q' query parameter is provided, performs a search by name. Otherwise, returns all
-   * staff.
+   * @param emailRaw the exact email string of the staff member
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StaffResponse}
+   * @throws AppValidationException if the provided email is malformed
+   * @throws ResourceNotFoundException if no staff member is found with the given email
+   */
+  @GET
+  @Path("by-email/{email}")
+  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
+    StaffView v = readService.getViewByEmail(emailRaw);
+    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(out)).build();
+  }
+
+  /**
+   * Retrieves a collection of staff members.
    *
-   * @param query optional name query to search for.
-   * @return a Response containing a list of staff members
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * personal names of the staff. If omitted, it returns an unfiltered list of all staff.
+   *
+   * @param query the optional search query string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     StaffResponse}
    */
   @GET
   public Response list(@QueryParam("q") String query) {
@@ -1814,15 +2407,16 @@ public class StaffResource {
   }
 
   /**
-   * Retrieves staff members by their CPF.
+   * Retrieves a collection of staff members filtered by the user's exact CPF.
    *
-   * @param cpfRaw the CPF of the staff members
-   * @return a Response containing the staff members details
-   * @throws AppValidationException if the provided CPF is malformed.
+   * @param cpfRaw the raw 11-digit numeric CPF string
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     StaffResponse}
+   * @throws AppValidationException if the provided CPF is malformed
    */
   @GET
   @Path("by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") String cpfRaw) {
+  public Response listByCpf(@PathParam("cpf") String cpfRaw) {
     List<StaffResponse> list =
         readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
@@ -1832,26 +2426,11 @@ public class StaffResource {
   }
 
   /**
-   * Retrieves a staff member by their email address.
+   * Retrieves a collection of staff members assigned to a specific partner entity.
    *
-   * @param emailRaw the email address of the staff member
-   * @return a Response containing the staff member details
-   * @throws AppValidationException if the provided email is malformed.
-   * @throws ResourceNotFoundException if no staff member is found.
-   */
-  @GET
-  @Path("by-email/{email}")
-  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
-    StaffView v = readService.getViewByEmail(emailRaw);
-    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(out)).build();
-  }
-
-  /**
-   * Lists staff members associated with a specific entityId.
-   *
-   * @param entityId the UUID of the entityId
-   * @return a Response containing a list of staff members for the entityId
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     StaffResponse}
    */
   @GET
   @Path("by-entity/{entityId}")
@@ -1865,13 +2444,21 @@ public class StaffResource {
   }
 
   /**
-   * Creates a new staff member.
+   * Registers a new staff member and assigns them to a partner organization.
    *
-   * @param req the request containing staff member details.
-   * @return a Response containing the created staff member details.
-   * @throws DuplicateResourceException if a staff member with the same account ID already exists.
-   * @throws AppValidationException if input validation fails.
-   * @throws ResourceNotFoundException if the associated entityId is not found.
+   * <p>This endpoint processes an aggregated payload, automatically handling the provisioning of
+   * the underlying user and authentication account within a single transaction.
+   *
+   * @param req the validated {@link StaffCreateRequest} containing the identity, credentials, and
+   *     entity ID
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link StaffResponse}
+   * @throws DuplicateResourceException if an account with the email already exists or is already
+   *     assigned to the entity
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned to a
+   *     different entity
+   * @throws AppValidationException if input validation fails at the domain level
+   * @throws ResourceNotFoundException if the associated partner entity is not found
    */
   @POST
   public Response create(@Valid StaffCreateRequest req) {
@@ -1893,10 +2480,11 @@ public class StaffResource {
   }
 
   /**
-   * Deletes a staff member by ID.
+   * Permanently revokes staff privileges by deleting the assignment record and its associated
+   * account.
    *
-   * @param id the UUID of the staff member (account ID) to delete.
-   * @return 200 OK with empty data (idempotent).
+   * @param id the unique identifier (UUIDv7) of the staff's account
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
   @Path("{id}")
@@ -1905,7 +2493,7 @@ public class StaffResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Picks the best locale from the request headers. */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -1920,12 +2508,15 @@ package com.pug.partner.service.dtos;
 import java.util.UUID;
 
 /**
- * Command DTO for creating an Entity.
+ * Data Transfer Object (DTO) acting as an application command to provision a new Partner Entity.
  *
- * @param cnpjString the CNPJ of the entityId as a string.
- * @param name the name of the entityId.
- * @param cityId the ID of the city where the entityId is located.
- * @param address the address where the entityId is located.
+ * <p>This record encapsulates the raw input data required by the application service to instantiate
+ * a new {@link com.pug.partner.domain.Entity} aggregate.
+ *
+ * @param cnpjString the raw 14-digit numeric CNPJ string belonging to the organization
+ * @param name the registered name or corporate reason of the organization
+ * @param cityId the unique identifier of the city where the organization is located
+ * @param address the physical street address
  */
 public record EntityCreateCommand(String cnpjString, String name, UUID cityId, String address) {}
 
@@ -1938,12 +2529,16 @@ package com.pug.partner.service.dtos;
 import java.util.UUID;
 
 /**
- * Command DTO for updating an Entity.
+ * Data Transfer Object (DTO) acting as an application command to update an existing Partner Entity.
  *
- * @param cnpjString the CNPJ of the entityId as a string (optional).
- * @param name the name of the entityId (optional).
- * @param cityId the ID of the city where the entityId is located (optional).
- * @param address the address where the entityId is located (optional).
+ * <p>This record encapsulates the requested state changes for a partner organization. The fields
+ * are treated as optional for partial updates; omitting a value will retain the current state in
+ * the database.
+ *
+ * @param cnpjString the new 14-digit numeric CNPJ string, or {@code null} to leave unchanged
+ * @param name the new name of the organization, or {@code null} to leave unchanged
+ * @param cityId the new city ID, or {@code null} to leave unchanged
+ * @param address the new physical street address, or {@code null} to leave unchanged
  */
 public record EntityUpdateCommand(String cnpjString, String name, UUID cityId, String address) {}
 
@@ -1957,10 +2552,15 @@ import com.pug.identity.service.dtos.AccountCreateCommand;
 import java.util.UUID;
 
 /**
- * Command DTO for creating a new Staff member.
+ * Data Transfer Object (DTO) acting as an application command to assign a new Staff member.
  *
- * @param entityId the ID of the entityId the staff belongs to.
- * @param accountCommand the command for creating the associated account.
+ * <p>This record encapsulates the raw input data required by the application service to instantiate
+ * a new {@link com.pug.partner.domain.Staff} aggregate, cascading down to provision the necessary
+ * authentication account (and potentially the user identity) in a single transaction.
+ *
+ * @param entityId the unique identifier of the partner organization the staff belongs to
+ * @param accountCommand the nested command containing the data to create the underlying
+ *     authentication account
  */
 public record StaffCreateCommand(UUID entityId, AccountCreateCommand accountCommand) {}
 
@@ -1974,49 +2574,61 @@ import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading entityId information. */
+/**
+ * Application service interface dedicated exclusively to querying Partner Entity data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link EntityView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
+ */
 public interface EntityReadService {
 
   /**
-   * Retrieves an EntityView by its ID.
+   * Retrieves a read-only projection of a partner entity based on its unique identifier.
    *
-   * @param id the UUID of the entityId
-   * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given ID is
-   *     found
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return the populated {@link EntityView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided
+   *     ID
    */
   EntityView getViewById(UUID id);
 
   /**
-   * Retrieves an EntityView by its CNPJ.
+   * Retrieves a read-only projection of a partner entity based on its exact CNPJ.
    *
-   * @param cnpj the CNPJ of the entityId
-   * @return the EntityView
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entityId with the given CNPJ
-   *     is found
+   * @param cnpj the raw 14-digit numeric CNPJ string
+   * @return the populated {@link EntityView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided
+   *     CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
 
   /**
-   * Lists all EntityViews.
+   * Retrieves a comprehensive list of all partner entities registered in the system.
    *
-   * @return a list of all EntityViews
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
+   *
+   * @return a {@link List} containing all available {@link EntityView} entries
    */
   List<EntityView> listViews();
 
   /**
-   * Lists EntityViews by city ID.
+   * Retrieves a list of partner entities geographically located within a specific city.
    *
-   * @param cityId the UUID of the city
-   * @return a list of EntityViews in the specified city
+   * @param cityId the unique identifier (UUID) of the city
+   * @return a {@link List} of matching {@link EntityView} entries
    */
   List<EntityView> listViewsByCityId(UUID cityId);
 
   /**
-   * Searches for EntityViews by name.
+   * Executes a robust full-text search against the names of partner organizations.
    *
-   * @param query the search query
-   * @return a list of matching EntityViews
+   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
+   * matching, accent-insensitivity, and predictive autocomplete capabilities.
+   *
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link EntityView} entries
    */
   List<EntityView> searchViews(String query);
 }
@@ -2032,59 +2644,85 @@ import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import java.util.UUID;
 
-/** Interface for managing partner entities. */
+/**
+ * Application service interface for managing the state of Partner {@link Entity} domain aggregates.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
+ * Delete) and strict domain-level retrievals. It enforces cross-cutting business rules (e.g., CNPJ
+ * uniqueness) and coordinates with the {@link com.pug.geo.service.CityService} to ensure
+ * geographical references are valid.
+ */
 public interface EntityService {
 
   /**
-   * Saves a new Entity.
+   * Instantiates and persists a new Partner {@link Entity} aggregate based on the provided command.
    *
-   * @param cmd the command containing the data to create the Entity
-   * @return the saved Entity
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
+   * <p>This method ensures that the referenced City exists before attempting to persist the new
+   * partner organization.
+   *
+   * @param cmd the structured command containing the data to create the new partner entity
+   * @return the fully instantiated and persisted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the given CNPJ
    *     already exists
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
-   *     name, invalid CNPJ).
+   *     name, malformed CNPJ)
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the referenced City ID does not
+   *     exist
    */
   Entity save(EntityCreateCommand cmd);
 
   /**
-   * Updates an existing Entity.
+   * Updates an existing Partner {@link Entity} using the provided data.
    *
-   * @param id the UUID of the Entity to update
-   * @param cmd the command containing the updated data for the Entity
-   * @return the updated Entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     corrupted) or city is not found.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entityId with the same CNPJ
-   *     already exists.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   * <p>This method applies partial updates. If a new City ID is provided, it validates the city's
+   * existence before applying the change.
+   *
+   * @param id the unique identifier (UUIDv7) of the partner entity to be updated
+   * @param cmd the structured command containing the data to update the entity
+   * @return the mutated and persisted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity or referenced City
+   *     does not exist
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CNPJ conflicts with
+   *     an existing entity
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
 
   /**
-   * Deletes an Entity by its ID.
+   * Removes a Partner {@link Entity} from the system by its unique identifier.
    *
-   * @param id the UUID of the Entity to delete
-   * @return true if the Entity was successfully deleted, false if the Entity was not found or is
-   *     still referenced by any Staff.
+   * <p>This operation enforces data hygiene. Before the partner entity is deleted, the service
+   * cascades the deletion down to revoke all associated {@link com.pug.partner.domain.Staff}
+   * privileges.
+   *
+   * @param id the unique identifier (UUID) of the partner entity to delete
+   * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
    */
   boolean delete(UUID id);
 
   /**
-   * Gets an Entity by its ID.
+   * Retrieves a full Partner {@link Entity} domain aggregate by its unique identifier.
    *
-   * @param id the UUID of the Entity
-   * @return the Entity with the specified ID
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Entity is not found (or data
-   *     is corrupted in DB).
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link EntityReadService#getViewById(UUID)} instead.
+   *
+   * @param id the unique identifier (UUID) of the partner entity
+   * @return the fully reconstituted {@link Entity} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the entity exists but its stored
+   *     state violates strict domain invariants (data corruption)
    */
   Entity getById(UUID id);
 
   /**
-   * Checks if any Entity exists with the specified city ID.
+   * Determines if any Partner Entities are currently associated with a specific City.
    *
-   * @param cityId the UUID of the city to check for references
-   * @return true if any Entity references the specified city ID, false otherwise
+   * <p>This is typically used by the Geo domain to prevent the deletion of a City that is still
+   * actively referenced by partner organizations.
+   *
+   * @param cityId the unique identifier of the city to check
+   * @return {@code true} if the city is referenced by any entity, {@code false} otherwise
    */
   boolean existsAnyByCityId(UUID cityId);
 }
@@ -2095,11 +2733,10 @@ FILE: service/impl/EntityReadServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.service.EntityReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -2107,7 +2744,13 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for entityId views. */
+/**
+ * Implementation of the {@link EntityReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * EntityQueries} infrastructure component. It handles basic input validation and translates "not
+ * found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class EntityReadServiceImpl implements EntityReadService {
 
@@ -2115,6 +2758,7 @@ public class EntityReadServiceImpl implements EntityReadService {
 
   @Inject EntityQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public EntityView getViewById(UUID id) {
     return queries
@@ -2122,15 +2766,15 @@ public class EntityReadServiceImpl implements EntityReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Entity lookup failed: ID %s not found", id);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
+              return ExceptionHelper.entityNotFound();
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public EntityView getViewByCnpj(String cnpj) {
     if (StringUtils.isEmpty(cnpj)) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, "cnpj", "empty");
+      throw ExceptionHelper.entityNotFound();
     }
 
     return queries
@@ -2138,16 +2782,17 @@ public class EntityReadServiceImpl implements EntityReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.ENTITY_NOT_FOUND, "cnpj", cnpj);
+              return ExceptionHelper.entityNotFound();
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listViews() {
     return queries.listAllEntities();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EntityView> listViewsByCityId(UUID cityId) {
     if (cityId == null) {
@@ -2156,6 +2801,13 @@ public class EntityReadServiceImpl implements EntityReadService {
     return queries.listAllByCityId(cityId);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * rules.
+   */
   @Override
   public List<EntityView> searchViews(String query) {
     String key = StringUtils.fold(query);
@@ -2172,23 +2824,28 @@ package com.pug.partner.service.impl;
 import com.pug.geo.service.CityService;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.domain.vos.Cnpj;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.partner.service.utils.EntityProcessor;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service class for managing Entity entities. */
+/**
+ * Implementation of the {@link EntityService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for partner organizations. It
+ * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
+ * via {@link CityService}), and manages the lifecycle cascading to {@link StaffService} during
+ * deletion operations.
+ */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
 
@@ -2200,6 +2857,7 @@ public class EntityServiceImpl implements EntityService {
 
   @Inject StaffService staffService;
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Entity save(EntityCreateCommand cmd) {
@@ -2218,8 +2876,7 @@ public class EntityServiceImpl implements EntityService {
 
     if (existsByCnpj(entityToPersist.getCnpj())) {
       LOG.warnf("Creation failed: Entity with CNPJ %s already exists", entityToPersist.getCnpj());
-      throw new DuplicateResourceException(
-          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, "cnpj", entityToPersist.getCnpj().toString());
+      throw ExceptionHelper.entityAlreadyExists();
     }
 
     Entity savedEntity = repo.persist(entityToPersist);
@@ -2227,6 +2884,7 @@ public class EntityServiceImpl implements EntityService {
     return savedEntity;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Entity update(UUID id, EntityUpdateCommand cmd) {
@@ -2248,8 +2906,7 @@ public class EntityServiceImpl implements EntityService {
         && existsByCnpj(updatedEntity.getCnpj())) {
       LOG.warnf(
           "Update failed: Entity ID %s tried to use existing CNPJ %s", id, updatedEntity.getCnpj());
-      throw new DuplicateResourceException(
-          PartnerErrorCodes.ENTITY_ALREADY_EXISTS, "cnpj", updatedEntity.getCnpj().toString());
+      throw ExceptionHelper.entityAlreadyExists();
     }
 
     repo.update(updatedEntity);
@@ -2257,6 +2914,7 @@ public class EntityServiceImpl implements EntityService {
     return getById(id);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -2276,6 +2934,7 @@ public class EntityServiceImpl implements EntityService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Entity getById(UUID id) {
     Entity entity =
@@ -2283,35 +2942,35 @@ public class EntityServiceImpl implements EntityService {
             .orElseThrow(
                 () -> {
                   LOG.debugf("Entity lookup failed: ID %s not found", id);
-                  return new ResourceNotFoundException(
-                      PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
+                  return ExceptionHelper.entityNotFound();
                 });
 
     if (entity.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Entity %s violates domain rules: %s",
           id, entity.getProblemsSummary());
-      throw new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND, "id", id.toString());
+      throw ExceptionHelper.entityNotFound();
     }
 
     return entity;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByCityId(UUID cityId) {
     if (cityId == null) {
       return false;
     }
-    return true;
+    return repo.existsByCityId(cityId);
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
 
   /**
-   * Checks if an Entity with the given CNPJ already exists.
+   * Checks if a Partner Entity with the given CNPJ already exists.
    *
-   * @param cnpj the CNPJ to check for existence
-   * @return true if an Entity with the given CNPJ exists, false otherwise
+   * @param cnpj the validated CNPJ to check for existence
+   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
    */
   private boolean existsByCnpj(Cnpj cnpj) {
     if (cnpj == null) {
@@ -2327,11 +2986,10 @@ FILE: service/impl/StaffReadServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.infra.read.StaffQueries;
 import com.pug.partner.infra.read.dtos.StaffView;
 import com.pug.partner.service.StaffReadService;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -2339,7 +2997,13 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Read-only service for staff views. */
+/**
+ * Implementation of the {@link StaffReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * StaffQueries} infrastructure component. It handles basic input validation and translates "not
+ * found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class StaffReadServiceImpl implements StaffReadService {
 
@@ -2347,6 +3011,7 @@ public class StaffReadServiceImpl implements StaffReadService {
 
   @Inject StaffQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public StaffView getViewByAccountId(UUID accountId) {
     return queries
@@ -2354,15 +3019,15 @@ public class StaffReadServiceImpl implements StaffReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
+              return ExceptionHelper.staffNotFound();
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public StaffView getViewByEmail(String email) {
     if (StringUtils.isEmpty(email)) {
-      throw new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND, "email", "empty");
+      throw ExceptionHelper.staffNotFound();
     }
 
     return queries
@@ -2370,16 +3035,17 @@ public class StaffReadServiceImpl implements StaffReadService {
         .orElseThrow(
             () -> {
               LOG.debugf("Staff lookup failed: Email %s not found", email);
-              return new ResourceNotFoundException(
-                  PartnerErrorCodes.STAFF_NOT_FOUND, "email", email);
+              return ExceptionHelper.staffNotFound();
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listViews() {
     return queries.listAllStaff();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listViewsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
@@ -2388,6 +3054,7 @@ public class StaffReadServiceImpl implements StaffReadService {
     return queries.listByCpf(cpf);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listViewsByEntityId(UUID entityId) {
     if (entityId == null) {
@@ -2396,6 +3063,13 @@ public class StaffReadServiceImpl implements StaffReadService {
     return queries.listAllByEntityId(entityId);
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * rules.
+   */
   @Override
   public List<StaffView> search(String term) {
     if (StringUtils.isEmpty(term)) {
@@ -2415,13 +3089,12 @@ import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.domain.StaffRepository;
-import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.partner.service.dtos.StaffCreateCommand;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.partner.service.utils.StaffProcessor;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -2429,7 +3102,14 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/** Service for managing staff assignments to partner entities. */
+/**
+ * Implementation of the {@link StaffService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for staff privileges. Because a
+ * staff member is inherently an extension of an authentication account tied to a specific partner
+ * organization, this service delegates identity concerns down to the {@link AccountService} and
+ * structural validations to the {@link EntityService}.
+ */
 @ApplicationScoped
 public class StaffServiceImpl implements StaffService {
 
@@ -2441,13 +3121,33 @@ public class StaffServiceImpl implements StaffService {
 
   @Inject EntityService entityService;
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff save(StaffCreateCommand cmd) {
     LOG.debugf("Attempting to create Staff for Entity ID: %s", cmd.entityId());
-    entityService.getById(cmd.entityId());
 
+    entityService.getById(cmd.entityId());
     Account account = accountService.save(cmd.accountCommand());
+
+    repo.findOptionalByAccountId(account.getId())
+        .ifPresent(
+            existingStaff -> {
+              if (existingStaff.getEntityId().equals(cmd.entityId())) {
+                LOG.warnf(
+                    "Creation failed: "
+                        + "Staff role already exists for Account ID: %s in Entity ID: %s",
+                    account.getId(), cmd.entityId());
+                throw ExceptionHelper.staffAlreadyExists();
+              } else {
+                LOG.warnf(
+                    "Creation failed: "
+                        + "Account ID: %s is already assigned to a different Entity ID: %s",
+                    account.getId(), existingStaff.getEntityId());
+                throw ExceptionHelper.staffAssignedToOtherEntity();
+              }
+            });
+
     Staff staff = StaffProcessor.processCreateInput(account.getId(), cmd.entityId());
 
     if (staff.hasFieldErrors()) {
@@ -2461,6 +3161,7 @@ public class StaffServiceImpl implements StaffService {
     return savedStaff;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID accountId) {
@@ -2480,6 +3181,7 @@ public class StaffServiceImpl implements StaffService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByEntityId(UUID entityId) {
@@ -2503,6 +3205,7 @@ public class StaffServiceImpl implements StaffService {
     return deletedCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Staff getByAccountId(UUID accountId) {
     Staff staff =
@@ -2510,19 +3213,33 @@ public class StaffServiceImpl implements StaffService {
             .orElseThrow(
                 () -> {
                   LOG.debugf("Staff lookup failed: Account ID %s not found", accountId);
-                  return new ResourceNotFoundException(
-                      PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
+                  return ExceptionHelper.staffNotFound();
                 });
 
     if (staff.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Staff %s violates domain rules: %s",
           accountId, staff.getProblemsSummary());
-      throw new ResourceNotFoundException(
-          PartnerErrorCodes.STAFF_NOT_FOUND, "accountId", accountId.toString());
+      throw ExceptionHelper.staffNotFound();
     }
 
     return staff;
+  }
+
+  /* --------------- INTERNAL HELPER METHODS --------------- */
+
+  /**
+   * Checks if a Staff assignment already exists for the given account and entity.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId the unique identifier of the partner entity
+   * @return {@code true} if the staff assignment exists, {@code false} otherwise
+   */
+  private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
+    if (accountId == null || entityId == null) {
+      return false;
+    }
+    return repo.existsByAccountIdAndEntityId(accountId, entityId);
   }
 }
 
@@ -2536,57 +3253,66 @@ import com.pug.partner.infra.read.dtos.StaffView;
 import java.util.List;
 import java.util.UUID;
 
-/** Interface for reading staff views. */
+/**
+ * Application service interface dedicated exclusively to querying Staff data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link StaffView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
+ */
 public interface StaffReadService {
 
   /**
-   * Retrieves a StaffView by its account ID.
+   * Retrieves a read-only projection of a staff member based on their linked account ID.
    *
-   * @param accountId the account ID of the staff member.
-   * @return the StaffView associated with the given ID.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no StaffView is found with the
-   *     given ID.
+   * @param accountId the unique identifier (UUID) of the staff member's account
+   * @return the populated {@link StaffView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided ID
    */
   StaffView getViewByAccountId(UUID accountId);
 
   /**
-   * Retrieves a StaffView by email.
+   * Retrieves a read-only projection of a staff member based on their registered email address.
    *
-   * @param email the email address.
-   * @return the StaffView associated with the given email.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no StaffView is found with the
-   *     given email.
+   * @param email the exact email address string of the requested staff member
+   * @return the populated {@link StaffView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided
+   *     email
    */
   StaffView getViewByEmail(String email);
 
   /**
-   * Lists all StaffViews.
+   * Retrieves a comprehensive list of all staff members registered in the system.
    *
-   * @return a list of all StaffViews.
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
+   *
+   * @return a {@link List} containing all available {@link StaffView} entries
    */
   List<StaffView> listViews();
 
   /**
-   * Lists all StaffViews associated with a specific CPF.
+   * Retrieves a list of staff members filtered by the exact CPF of their associated user.
    *
-   * @param cpf the CPF number.
-   * @return a list of StaffViews linked to the specified CPF.
+   * @param cpf the raw 11-digit numeric CPF string
+   * @return a {@link List} of matching {@link StaffView} entries
    */
   List<StaffView> listViewsByCpf(String cpf);
 
   /**
-   * Lists all StaffViews associated with a specific entityId ID.
+   * Retrieves a list of all staff members currently assigned to a specific partner organization.
    *
-   * @param entityId the entityId ID.
-   * @return a list of StaffViews linked to the specified entityId.
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return a {@link List} of matching {@link StaffView} entries
    */
   List<StaffView> listViewsByEntityId(UUID entityId);
 
   /**
-   * Searches for StaffViews by name.
+   * Executes a robust full-text search against the names of the associated staff users, returning
+   * their corresponding staff profiles.
    *
-   * @param term the search term (typically a account's name).
-   * @return a list of StaffViews matching the search term.
+   * @param term the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of matching {@link StaffView} entries
    */
   List<StaffView> search(String term);
 }
@@ -2601,46 +3327,77 @@ import com.pug.partner.domain.Staff;
 import com.pug.partner.service.dtos.StaffCreateCommand;
 import java.util.UUID;
 
-/** Interface for managing staff assignments to partner entities. */
+/**
+ * Application service interface for managing the state of {@link Staff} domain aggregates.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Delete). It
+ * orchestrates the lifecycle relationship between a Staff member, their underlying {@link
+ * com.pug.identity.domain.Account}, and the {@link com.pug.partner.domain.Entity} they represent,
+ * ensuring that access rights cascade correctly across domains.
+ */
 public interface StaffService {
 
   /**
-   * Save a new staff member by creating an account and linking them to an entityId.
+   * Instantiates and persists a new {@link Staff} aggregate based on the provided command.
    *
-   * @param cmd the command containing staff creation details.
-   * @return the created Staff object.
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a staff member with the same
-   *     account ID already exists.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entityId does not
-   *     exist.
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails.
+   * <p>This method performs a cascading save. It verifies that the specified partner entity exists,
+   * then delegates the creation of the underlying authentication account (and potentially the user)
+   * to the {@link com.pug.identity.service.AccountService} before appending the staff privileges.
+   *
+   * <p><b>Business Rule:</b> An authentication account may only be assigned as Staff to a single
+   * partner organization at any given time.
+   *
+   * @param cmd the structured command containing the data to create the staff member and linked
+   *     account
+   * @return the fully instantiated and persisted {@link Staff} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
+   *     exists, or if the account is already assigned to this exact entity
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned as
+   *     Staff to a different entity
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified partner entity
+   *     does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   Staff save(StaffCreateCommand cmd);
 
   /**
-   * Deletes a staff member by their account ID, removing their association with any entityId.
+   * Revokes staff privileges by deleting the {@link Staff} record.
    *
-   * @param accountId the ID of the staff account (Account ID) to delete.
-   * @return true if deletion was successful, false if the staff member was not found.
+   * <p>This operation enforces data hygiene. After the staff privileges are successfully revoked,
+   * the service automatically triggers the deletion of the underlying {@link
+   * com.pug.identity.domain.Account} to ensure credentials tied strictly to organizational roles
+   * are wiped out.
+   *
+   * @param accountId the unique identifier of the Staff to delete (Account ID)
+   * @return {@code true} if the staff record was successfully deleted, {@code false} if it was not
+   *     found
    */
   boolean delete(UUID accountId);
 
   /**
-   * Deletes all staff members associated with a specific entityId ID.
+   * Removes all {@link Staff} members associated with a specific partner organization.
    *
-   * @param entityId the ID of the entityId whose staff members should be deleted.
-   * @return the number of staff members that were deleted.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified entityId does not
-   *     exist.
+   * <p>This batch operation is typically invoked when a partner entity is deleted from the system.
+   * It extracts all associated staff accounts and cascades the deletion down to the Identity
+   * domain.
+   *
+   * @param entityId the unique identifier of the partner entity whose staff members should be
+   *     removed
+   * @return the total number of staff members that were successfully deleted
    */
   long deleteAllByEntityId(UUID entityId);
 
   /**
-   * Retrieves a staff member by their account ID.
+   * Retrieves a full {@link Staff} domain aggregate by its linked account identifier.
    *
-   * @param accountId the ID of the staff account.
-   * @return the Staff object.
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found or corrupted.
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link StaffReadService#getViewByAccountId(UUID)} instead.
+   *
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Staff} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Staff record does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the Staff exists but its stored
+   *     state violates strict domain invariants (data corruption)
    */
   Staff getByAccountId(UUID accountId);
 }
@@ -2656,17 +3413,32 @@ import com.pug.partner.domain.vos.Cnpj;
 import com.pug.shared.utils.StringUtils;
 import java.util.UUID;
 
-/** Utility class for processing Entity DTO inputs. */
+/**
+ * Stateless utility class responsible for mapping raw DTO command data into pure {@link Entity}
+ * Domain Aggregates and Value Objects.
+ *
+ * <p>This processor centralizes the orchestration of domain factory methods and state-mutation
+ * behaviors, ensuring that complex initialization or update logic does not pollute the application
+ * service layer.
+ */
 public class EntityProcessor {
 
   /**
-   * Helper method to process DTO input and build a new Entity domain object.
+   * Processes raw creation inputs and constructs a new {@link Entity} domain aggregate.
    *
-   * @param cnpjString The CNPJ string from DTO.
-   * @param name The entityId name from DTO.
-   * @param cityId The resolved city ID.
-   * @param address The address from DTO.
-   * @return The constructed Entity domain object (may contain validation errors).
+   * <p>This method translates the raw string representations into appropriate Value Objects (e.g.,
+   * {@link Cnpj}) before passing them to the entity's factory method.
+   *
+   * <p><b>Note:</b> The returned {@link Entity} object may contain accumulated domain validation
+   * failures. The caller is responsible for checking {@link Entity#hasFieldErrors()} and handling
+   * them appropriately.
+   *
+   * @param cnpjString the raw 14-digit CNPJ string requested for creation
+   * @param name the raw name of the partner organization
+   * @param cityId the unique identifier of the associated city
+   * @param address the physical street address
+   * @return a fully instantiated {@link Entity} domain aggregate, potentially containing validation
+   *     errors
    */
   public static Entity processCreateInput(
       String cnpjString, String name, UUID cityId, String address) {
@@ -2677,14 +3449,21 @@ public class EntityProcessor {
   }
 
   /**
-   * Helper method to process DTO input and update an existing Entity domain object.
+   * Processes raw update inputs and conditionally mutates the state of an existing {@link Entity}.
    *
-   * @param existingEntity The existing entityId to be updated.
-   * @param cnpjString The CNPJ string from DTO (can be null for no change).
-   * @param name The name from DTO (can be null for no change).
-   * @param cityId The resolved city ID (can be null for no change).
-   * @param address The address from DTO (can be null for no change).
-   * @return The updated Entity domain object (may contain validation errors).
+   * <p>This method applies partial updates. Only fields that are explicitly provided (i.e., not
+   * null and not empty) will trigger a state mutation via the aggregate's domain behaviors.
+   *
+   * <p>Because domain entities in this system are modeled as immutable records, this method returns
+   * a <i>new</i> instance of the {@link Entity} reflecting the applied changes.
+   *
+   * @param existingEntity the current, reconstituted {@link Entity} aggregate from the repository
+   * @param cnpjString the proposed new CNPJ string, or {@code null}/empty to skip updating
+   * @param name the proposed new name, or {@code null}/empty to skip updating
+   * @param cityId the proposed new city ID, or {@code null} to skip updating
+   * @param address the proposed new address, or {@code null}/empty to skip updating
+   * @return a new {@link Entity} domain aggregate reflecting the requested updates, potentially
+   *     containing validation errors
    */
   public static Entity processUpdateInput(
       Entity existingEntity, String cnpjString, String name, UUID cityId, String address) {
@@ -2697,7 +3476,7 @@ public class EntityProcessor {
     }
 
     if (StringUtils.isNotEmpty(name)) {
-      updatedEntity = updatedEntity.changeName(name);
+      updatedEntity = updatedEntity.rename(name);
     }
 
     if (cityId != null) {
@@ -2705,10 +3484,84 @@ public class EntityProcessor {
     }
 
     if (StringUtils.isNotEmpty(address)) {
-      updatedEntity = updatedEntity.changeAddress(address);
+      updatedEntity = updatedEntity.moveToAddress(address);
     }
 
     return updatedEntity;
+  }
+}
+
+
+================================================================================
+FILE: service/utils/ExceptionHelper.java
+================================================================================
+package com.pug.partner.service.utils;
+
+import com.pug.partner.domain.enums.PartnerErrorCodes;
+import com.pug.shared.exceptions.BusinessRuleException;
+import com.pug.shared.exceptions.DuplicateResourceException;
+import com.pug.shared.exceptions.ResourceNotFoundException;
+
+/**
+ * Utility class for centralizing the creation of common Partner domain exceptions.
+ *
+ * <p>This helper reduces boilerplate code across services by providing pre-configured exception
+ * instances ready to be thrown, ensuring consistent error codes are used throughout the partner
+ * module.
+ */
+public final class ExceptionHelper {
+
+  /** Private constructor to prevent instantiation. */
+  private ExceptionHelper() {}
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * Partner Entity could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException entityNotFound() {
+    return new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Partner Entity
+   * with the specified CNPJ already exists in the system.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
+  public static DuplicateResourceException entityAlreadyExists() {
+    return new DuplicateResourceException(PartnerErrorCodes.ENTITY_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested Staff
+   * assignment could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException staffNotFound() {
+    return new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Staff member
+   * assignment already exists for the given account and entity.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
+  public static DuplicateResourceException staffAlreadyExists() {
+    return new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an account is already
+   * assigned as Staff to a different partner entity.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException staffAssignedToOtherEntity() {
+    return new BusinessRuleException(PartnerErrorCodes.STAFF_ASSIGNED_TO_OTHER_ENTITY);
   }
 }
 
@@ -2721,15 +3574,22 @@ package com.pug.partner.service.utils;
 import com.pug.partner.domain.Staff;
 import java.util.UUID;
 
-/** Utility class for processing Staff DTO inputs. */
+/**
+ * Stateless utility class responsible for mapping raw DTO command data into pure {@link Staff}
+ * Domain Aggregates.
+ */
 public class StaffProcessor {
 
   /**
-   * Helper method to process input and build a new Staff domain object.
+   * Processes raw creation inputs and constructs a new {@link Staff} domain aggregate.
    *
-   * @param accountId The ID of the associated account.
-   * @param entityId The ID of the associated entityId.
-   * @return The constructed Staff domain object.
+   * <p><b>Note:</b> The caller is responsible for checking {@link Staff#hasFieldErrors()} on the
+   * returned object and throwing standard validation exceptions if necessary.
+   *
+   * @param accountId the unique identifier of the linked authentication account
+   * @param entityId the unique identifier of the linked partner organization
+   * @return a fully instantiated {@link Staff} domain aggregate, potentially containing validation
+   *     errors
    */
   public static Staff processCreateInput(UUID accountId, UUID entityId) {
     return Staff.factory(accountId, entityId);

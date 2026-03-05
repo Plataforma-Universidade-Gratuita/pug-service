@@ -12,25 +12,23 @@ package com.pug.shared.domain;
 import com.pug.shared.domain.enums.GenericFieldErrorCodes;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.utils.StringUtils;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 /**
- * Abstract base class for domain entities or objects that require self-validation.
- * It provides mechanisms to accumulate, check, and retrieve field-specific domain errors
- * without throwing exceptions immediately, allowing for the collection of multiple validation failures.
+ * Abstract base class for domain entities or objects that require self-validation. It provides
+ * mechanisms to accumulate, check, and retrieve field-specific domain errors without throwing
+ * exceptions immediately, allowing for the collection of multiple validation failures.
  */
 @Getter
 public abstract class DomainError {
 
-  @ToString.Exclude
-  @EqualsAndHashCode.Exclude
+  @ToString.Exclude @EqualsAndHashCode.Exclude
   private final List<GenericFieldErrorCodes> fieldErrors = new ArrayList<>();
 
   /**
@@ -63,7 +61,8 @@ public abstract class DomainError {
   /**
    * Adds a collection of validation field errors to the internal list of errors.
    *
-   * @param fieldErrors a {@link List} of {@link GenericFieldErrorCodes} to append to the current errors
+   * @param fieldErrors a {@link List} of {@link GenericFieldErrorCodes} to append to the current
+   *     errors
    */
   protected void addFieldErrors(List<GenericFieldErrorCodes> fieldErrors) {
     this.fieldErrors.addAll(fieldErrors);
@@ -71,8 +70,8 @@ public abstract class DomainError {
 
   /**
    * Validates that the provided UUID identifier is not null.
-   * <p>
-   * If the validation fails, a {@link SharedFieldErrorCodes#INVALID_ID_BLANK} error is appended.
+   *
+   * <p>If the validation fails, a {@link SharedFieldErrorCodes#INVALID_ID_BLANK} error is appended.
    *
    * @param id the {@link UUID} to validate
    */
@@ -84,11 +83,13 @@ public abstract class DomainError {
 
   /**
    * Validates that the provided name string meets the standard domain constraints.
-   * <p>
-   * Rules applied:
+   *
+   * <p>Rules applied:
+   *
    * <ul>
-   *   <li>Must not be null or empty (appends {@link SharedFieldErrorCodes#INVALID_NAME_BLANK})</li>
-   *   <li>Must not exceed 150 characters (appends {@link SharedFieldErrorCodes#INVALID_NAME_TOO_LONG})</li>
+   *   <li>Must not be null or empty (appends {@link SharedFieldErrorCodes#INVALID_NAME_BLANK})
+   *   <li>Must not exceed 150 characters (appends {@link
+   *       SharedFieldErrorCodes#INVALID_NAME_TOO_LONG})
    * </ul>
    *
    * @param name the string name to validate
@@ -105,9 +106,10 @@ public abstract class DomainError {
 
   /**
    * Returns a human-readable string summary of all accumulated validation field errors.
-   * <p>
-   * The summary is formatted as a comma-separated list in the pattern {@code "bundleKey(fieldName)"}.
-   * This method is particularly useful for logging data integrity issues and debugging.
+   *
+   * <p>The summary is formatted as a comma-separated list in the pattern {@code
+   * "bundleKey(fieldName)"}. This method is particularly useful for logging data integrity issues
+   * and debugging.
    *
    * @return a formatted summary string of the errors, or {@code "No errors"} if the list is empty
    */
@@ -116,15 +118,16 @@ public abstract class DomainError {
       return "No errors";
     }
     return fieldErrors.stream()
-            .map(
-                    gfec -> {
-                      String key = gfec.getBundleKey();
-                      String field = gfec.getFieldName();
-                      return key + "(" + field + ")";
-                    })
-            .collect(Collectors.joining(", "));
+        .map(
+            gfec -> {
+              String key = gfec.getBundleKey();
+              String field = gfec.getFieldName();
+              return key + "(" + field + ")";
+            })
+        .collect(Collectors.joining(", "));
   }
 }
+
 
 ================================================================================
 FILE: domain/enums/AccountType.java
@@ -135,10 +138,10 @@ import lombok.Getter;
 
 /**
  * Enumeration representing the distinct roles or types of accounts within the platform.
- * <p>
- * Implements {@link GenericCodes} to provide internationalized (i18n) display names
- * for each account type. This allows the UI or API responses to present localized text
- * based on the application's resource bundles.
+ *
+ * <p>Implements {@link GenericCodes} to provide internationalized (i18n) display names for each
+ * account type. This allows the UI or API responses to present localized text based on the
+ * application's resource bundles.
  */
 @Getter
 public enum AccountType implements GenericCodes {
@@ -149,94 +152,88 @@ public enum AccountType implements GenericCodes {
   ADMIN("shared.account.type.admin"),
 
   /**
-   * Partner account type, representing staff members associated with external entities or organizations.
+   * Partner account type, representing staff members associated with external entities or
+   * organizations.
    */
   PARTNER("shared.account.type.partner"),
 
   /**
-   * Student account type, representing academic users enrolled in courses and participating in projects.
+   * Student account type, representing academic users enrolled in courses and participating in
+   * projects.
    */
   STUDENT("shared.account.type.student");
 
-  /**
-   * The property key used to resolve the localized name of the account type.
-   */
+  /** The property key used to resolve the localized name of the account type. */
   private final String bundleKey;
 
   /**
    * Constructs an {@code AccountType} with its corresponding i18n message key.
    *
-   * @param bundleKey the unique key mapping to the application's resource bundles
-   *                  (e.g., {@code messages_en_US.properties} and {@code messages_pt_BR.properties})
+   * @param bundleKey the unique key mapping to the application's resource bundles (e.g., {@code
+   *     messages_en_US.properties} and {@code messages_pt_BR.properties})
    */
   AccountType(String bundleKey) {
     this.bundleKey = bundleKey;
   }
 }
 
+
 ================================================================================
 FILE: domain/enums/Campi.java
 ================================================================================
 package com.pug.shared.domain.enums;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
  * Enumeration representing the university campuses and their corresponding geographic data.
- * <p>
- * This enum serves a dual purpose within the platform:
+ *
+ * <p>This enum serves a dual purpose within the platform:
+ *
  * <ol>
- *   <li><strong>Business Domain:</strong> Identifies the available academic campuses (Jaraguá do Sul and
- *       Joinville) and provides their internationalization (i18n) keys for localized UI representation.</li>
+ *   <li><strong>Business Domain:</strong> Identifies the available academic campuses (Jaraguá do
+ *       Sul and Joinville) and provides their internationalization (i18n) keys for localized UI
+ *       representation.
  *   <li><strong>System Integrity:</strong> Defines the specific IBGE codes tied to these campuses.
  *       These cities are considered "Default Cities" in the system. They are protected from updates
- *       or deletions both at the application level and via database triggers to ensure system stability.</li>
+ *       or deletions both at the application level and via database triggers to ensure system
+ *       stability.
  * </ol>
  */
 @Getter
 @AllArgsConstructor
 public enum Campi implements GenericCodes {
 
-  /**
-   * Represents the Jaraguá do Sul campus (IBGE code: 4205407).
-   */
+  /** Represents the Jaraguá do Sul campus (IBGE code: 4205407). */
   JARAGUA_DO_SUL("4205407", "academic.campus.jaragua"),
 
-  /**
-   * Represents the Joinville campus (IBGE code: 4209106).
-   */
+  /** Represents the Joinville campus (IBGE code: 4209106). */
   JOINVILLE("4209106", "academic.campus.joinville");
 
-  /**
-   * The 7-digit IBGE code corresponding to the city where the campus is located.
-   */
+  /** The 7-digit IBGE code corresponding to the city where the campus is located. */
   private final String ibgeCode;
 
-  /**
-   * The property key used to resolve the localized name of the campus.
-   */
+  /** The property key used to resolve the localized name of the campus. */
   private final String bundleKey;
 
   /**
    * Retrieves the IBGE codes for all registered campuses.
-   * <p>
-   * These codes represent default system cities. This list is utilized by the application's
-   * business rules to prevent the modification or deletion of these specific cities, mirroring
-   * the database-level protections (e.g., the {@code trg_protect_default_cities} trigger).
+   *
+   * <p>These codes represent default system cities. This list is utilized by the application's
+   * business rules to prevent the modification or deletion of these specific cities, mirroring the
+   * database-level protections (e.g., the {@code trg_protect_default_cities} trigger).
    *
    * @return a {@link List} of strings containing the immutable IBGE codes of all campuses
    */
   public static List<String> getImmutableIbgeCodes() {
-    return Arrays.stream(Campi.values())
-            .map(Campi::getIbgeCode)
-            .collect(Collectors.toList());
+    return Arrays.stream(Campi.values()).map(Campi::getIbgeCode).collect(Collectors.toList());
   }
 }
+
 
 ================================================================================
 FILE: domain/enums/GenericCodes.java
@@ -245,17 +242,17 @@ package com.pug.shared.domain.enums;
 
 /**
  * Interface representing a general business, system, or cross-cutting message code.
- * <p>
- * Unlike {@link GenericFieldErrorCodes}, this interface is used for high-level codes
- * that are not necessarily bound to a single specific field (e.g., general error messages,
- * system statuses, or business rule violations) or general enums of the system.
- * It ensures these codes can be properly internationalized across the application.
+ *
+ * <p>Unlike {@link GenericFieldErrorCodes}, this interface is used for high-level codes that are
+ * not necessarily bound to a single specific field (e.g., general error messages, system statuses,
+ * or business rule violations) or general enums of the system. It ensures these codes can be
+ * properly internationalized across the application.
  */
 public interface GenericCodes {
 
   /**
-   * Retrieves the unique key used to look up the localized message in the
-   * application's resource bundles (e.g., {@code messages_en_US.properties}).
+   * Retrieves the unique key used to look up the localized message in the application's resource
+   * bundles (e.g., {@code messages_en_US.properties}).
    *
    * @return the i18n bundle key as a {@link String}
    */
@@ -263,12 +260,12 @@ public interface GenericCodes {
 
   /**
    * Retrieves a string representation of the code itself.
-   * <p>
-   * This is particularly useful for API responses where a raw string identifier
-   * (e.g., "RESOURCE_NOT_FOUND") is needed alongside the localized message.
-   * By default, if the implementing instance is an {@link Enum}, it returns the enum's
-   * {@code name()}. If it is a standard class, it falls back to the class's simple name.
-   * Implementers can override this method to provide a custom string code if necessary.
+   *
+   * <p>This is particularly useful for API responses where a raw string identifier (e.g.,
+   * "RESOURCE_NOT_FOUND") is needed alongside the localized message. By default, if the
+   * implementing instance is an {@link Enum}, it returns the enum's {@code name()}. If it is a
+   * standard class, it falls back to the class's simple name. Implementers can override this method
+   * to provide a custom string code if necessary.
    *
    * @return the string identifier of the code
    */
@@ -280,31 +277,34 @@ public interface GenericCodes {
   }
 }
 
+
 ================================================================================
 FILE: domain/enums/GenericFieldErrorCodes.java
 ================================================================================
 package com.pug.shared.domain.enums;
 
 /**
- * Interface representing a specific validation error associated with a distinct domain or DTO field.
- * <p>
- * By extending {@link GenericCodes}, this interface inherits the contract for providing an
- * internationalization (i18n) message key. It builds upon it by pairing the message key
- * with a specific field identifier. It is typically implemented by enums representing
- * specific domain field constraints (e.g., "name cannot be blank").
+ * Interface representing a specific validation error associated with a distinct domain or DTO
+ * field.
+ *
+ * <p>By extending {@link GenericCodes}, this interface inherits the contract for providing an
+ * internationalization (i18n) message key. It builds upon it by pairing the message key with a
+ * specific field identifier. It is typically implemented by enums representing specific domain
+ * field constraints (e.g., "name cannot be blank").
  */
 public interface GenericFieldErrorCodes extends GenericCodes {
 
   /**
    * Retrieves the exact name of the property or field that failed validation.
-   * <p>
-   * This is heavily used for mapping validation errors back to specific UI form inputs
-   * or mapping to JSON attributes in standard API error responses.
+   *
+   * <p>This is heavily used for mapping validation errors back to specific UI form inputs or
+   * mapping to JSON attributes in standard API error responses.
    *
    * @return the field name as a {@link String}, or {@code null} if no specific field is associated
    */
   String getFieldName();
 }
+
 
 ================================================================================
 FILE: domain/enums/SharedErrorCodes.java
@@ -315,47 +315,33 @@ import lombok.Getter;
 
 /**
  * Enumeration of common, high-level shared error codes used across the entire application.
- * <p>
- * These codes implement {@link GenericCodes} and map to the generic, cross-cutting error
- * states of the system (e.g., internal errors, data integrity issues, or global validation failures).
- * They are not tied to any specific domain and do not contain granular field-level details.
+ *
+ * <p>These codes implement {@link GenericCodes} and map to the generic, cross-cutting error states
+ * of the system (e.g., internal errors, data integrity issues, or global validation failures). They
+ * are not tied to any specific domain and do not contain granular field-level details.
  */
 @Getter
 public enum SharedErrorCodes implements GenericCodes {
 
-  /**
-   * Indicates a generic violation of a high-level business rule.
-   */
+  /** Indicates a generic violation of a high-level business rule. */
   BUSINESS_RULE_ERROR("error.business.rule.violation"),
 
-  /**
-   * Indicates a structural database violation, such as a foreign key constraint failure.
-   */
+  /** Indicates a structural database violation, such as a foreign key constraint failure. */
   DATA_INTEGRITY_ERROR("error.data.integrity"),
 
-  /**
-   * Indicates an attempt to create or update a resource that violates a unique constraint.
-   */
+  /** Indicates an attempt to create or update a resource that violates a unique constraint. */
   DUPLICATED_RESOURCE_ERROR("error.duplicated.resource"),
 
-  /**
-   * Indicates an unexpected or unhandled exception within the system (HTTP 500).
-   */
+  /** Indicates an unexpected or unhandled exception within the system (HTTP 500). */
   INTERNAL_ERROR("error.internal"),
 
-  /**
-   * Indicates that a requested entity or aggregate root could not be found.
-   */
+  /** Indicates that a requested entity or aggregate root could not be found. */
   RESOURCE_NOT_FOUND_ERROR("error.resource.not.found"),
 
-  /**
-   * Indicates a general request payload validation failure.
-   */
+  /** Indicates a general request payload validation failure. */
   VALIDATION_ERROR("error.validation");
 
-  /**
-   * The property key used to resolve the localized error message in the resource bundles.
-   */
+  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
   /**
@@ -368,6 +354,7 @@ public enum SharedErrorCodes implements GenericCodes {
   }
 }
 
+
 ================================================================================
 FILE: domain/enums/SharedFieldErrorCodes.java
 ================================================================================
@@ -377,38 +364,36 @@ import lombok.Getter;
 
 /**
  * Enumeration of common, field-specific validation error codes used across the application.
- * <p>
- * These codes implement {@link GenericFieldErrorCodes} and are typically accumulated inside
- * {@link com.pug.shared.domain.DomainError} instances. They represent standard constraints
- * applied to generic entity properties (like IDs, names, or audit timestamps) that are shared
- * among multiple different domains.
+ *
+ * <p>These codes implement {@link GenericFieldErrorCodes} and are typically accumulated inside
+ * {@link com.pug.shared.domain.DomainError} instances. They represent standard constraints applied
+ * to generic entity properties (like IDs, names, or audit timestamps) that are shared among
+ * multiple different domains.
  */
 @Getter
 public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
+  /** Indicates that the audit information (auditInfo) was null or unassigned. */
+  INVALID_AUDIT_INFO_BLANK("error.domain.audit.info.blank", "auditInfo"),
 
-  /**
-   * Indicates that the creation timestamp (createdAt) was null or unassigned.
-   */
+  /** Indicates that the campus field was null or unassigned. */
+  INVALID_CAMPUS_BLANK("error.domain.campus.blank", "campus"),
+
+  /** Indicates that the creation timestamp (createdAt) was null or unassigned. */
   INVALID_CREATED_AT_BLANK("error.domain.created.at.blank", "createdAt"),
 
-  /**
-   * Indicates that a generic name string was null, empty, or consisted only of whitespace.
-   */
+  /** Indicates that a generic name string was null, empty, or consisted only of whitespace. */
   INVALID_NAME_BLANK("error.domain.name.blank", "name"),
 
   /**
-   * Indicates that a generic name string exceeded the maximum allowed length (e.g., 150 characters).
+   * Indicates that a generic name string exceeded the maximum allowed length (e.g., 150
+   * characters).
    */
   INVALID_NAME_TOO_LONG("error.domain.name.too.long", "name"),
 
-  /**
-   * Indicates that a unique identifier (ID) was null or unassigned.
-   */
+  /** Indicates that a unique identifier (ID) was null or unassigned. */
   INVALID_ID_BLANK("error.domain.id.blank", "id"),
 
-  /**
-   * Indicates that the last update timestamp (updatedAt) was null or unassigned.
-   */
+  /** Indicates that the last update timestamp (updatedAt) was null or unassigned. */
   INVALID_UPDATED_AT_BLANK("error.domain.updated.at.blank", "updatedAt"),
 
   /**
@@ -416,28 +401,25 @@ public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
    */
   INVALID_UPDATED_AT_BEFORE_CREATED_AT("error.domain.updated.at.before.created.at", "updatedAt");
 
-  /**
-   * The property key used to resolve the localized error message in the resource bundles.
-   */
+  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * The exact name of the domain property or DTO field that failed validation.
-   */
+  /** The exact name of the domain property or DTO field that failed validation. */
   private final String fieldName;
 
   /**
    * Constructs the {@code SharedFieldErrorCodes} enum.
    *
    * @param bundleKey the unique i18n key mapping to the application's resource bundles
-   * @param fieldName the literal name of the field causing the validation error
-   *                  (used heavily for mapping API error details)
+   * @param fieldName the literal name of the field causing the validation error (used heavily for
+   *     mapping API error details)
    */
   SharedFieldErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;
   }
 }
+
 
 ================================================================================
 FILE: domain/vos/AuditInfo.java
@@ -446,32 +428,28 @@ package com.pug.shared.domain.vos;
 
 import com.pug.shared.domain.DomainError;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-import java.time.OffsetDateTime;
-
 /**
  * Immutable Value Object (VO) representing audit information for an entity.
- * <p>
- * Tracks the creation and last modification timestamps. It extends {@link DomainError}
- * to accumulate validation failures related to temporal integrity without throwing immediate exceptions.
+ *
+ * <p>Tracks the creation and last modification timestamps. It extends {@link DomainError} to
+ * accumulate validation failures related to temporal integrity without throwing immediate
+ * exceptions.
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class AuditInfo extends DomainError {
 
-  /**
-   * The timestamp indicating when the entity was initially created.
-   */
+  /** The timestamp indicating when the entity was initially created. */
   OffsetDateTime createdAt;
 
-  /**
-   * The timestamp indicating when the entity was last updated.
-   */
+  /** The timestamp indicating when the entity was last updated. */
   OffsetDateTime updatedAt;
 
   /**
@@ -488,25 +466,40 @@ public class AuditInfo extends DomainError {
 
   /**
    * Factory method to create a fresh {@code AuditInfo} instance for a newly created entity.
-   * <p>
-   * Sets both the {@code createdAt} and {@code updatedAt} timestamps to the current system time.
+   *
+   * <p>Sets both the {@code createdAt} and {@code updatedAt} timestamps to the current system time.
    * The created instance automatically collects any inherent validation problems.
    *
    * @return a new, self-validated {@link AuditInfo} instance
    */
   public static AuditInfo factory() {
     OffsetDateTime now = OffsetDateTime.now();
-    AuditInfo vo = AuditInfo.builder().createdAt(now).updatedAt(now).build();
+    return factory(now, now);
+  }
+
+  /**
+   * Factory method to create an {@code AuditInfo} instance with specified timestamps.
+   *
+   * <p>This method is useful for reconstructing existing entities from persistence or external
+   * sources, where the creation and update times are already known. The created instance
+   * automatically collects any inherent validation problems.
+   *
+   * @param createdAt the creation timestamp to set
+   * @param updatedAt the update timestamp to set
+   * @return a new, self-validated {@link AuditInfo} instance with specified timestamps
+   */
+  public static AuditInfo factory(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    AuditInfo vo = AuditInfo.builder().createdAt(createdAt).updatedAt(updatedAt).build();
     vo.collectValidationProblems();
     return vo;
   }
 
   /**
    * Generates a new {@code AuditInfo} instance reflecting a state update.
-   * <p>
-   * Because Value Objects are immutable, this method leverages the builder to return a
-   * copy of the current instance with the {@code updatedAt} timestamp set to the current time,
-   * while preserving the original {@code createdAt} timestamp. The new instance is then validated.
+   *
+   * <p>Because Value Objects are immutable, this method leverages the builder to return a copy of
+   * the current instance with the {@code updatedAt} timestamp set to the current time, while
+   * preserving the original {@code createdAt} timestamp. The new instance is then validated.
    *
    * @return a new, updated, and self-validated {@link AuditInfo} instance
    */
@@ -518,12 +511,16 @@ public class AuditInfo extends DomainError {
 
   /**
    * Evaluates internal constraints and accumulates validation problems.
-   * <p>
-   * Validates the following business rules:
+   *
+   * <p>Validates the following business rules:
+   *
    * <ul>
-   *   <li>{@code createdAt} cannot be null (appends {@link SharedFieldErrorCodes#INVALID_CREATED_AT_BLANK})</li>
-   *   <li>{@code updatedAt} cannot be null (appends {@link SharedFieldErrorCodes#INVALID_UPDATED_AT_BLANK})</li>
-   *   <li>{@code updatedAt} cannot precede {@code createdAt} (appends {@link SharedFieldErrorCodes#INVALID_UPDATED_AT_BEFORE_CREATED_AT})</li>
+   *   <li>{@code createdAt} cannot be null (appends {@link
+   *       SharedFieldErrorCodes#INVALID_CREATED_AT_BLANK})
+   *   <li>{@code updatedAt} cannot be null (appends {@link
+   *       SharedFieldErrorCodes#INVALID_UPDATED_AT_BLANK})
+   *   <li>{@code updatedAt} cannot precede {@code createdAt} (appends {@link
+   *       SharedFieldErrorCodes#INVALID_UPDATED_AT_BEFORE_CREATED_AT})
    * </ul>
    */
   private void collectValidationProblems() {
@@ -539,6 +536,7 @@ public class AuditInfo extends DomainError {
   }
 }
 
+
 ================================================================================
 FILE: exceptions/AppValidationException.java
 ================================================================================
@@ -547,57 +545,57 @@ package com.pug.shared.exceptions;
 import com.pug.shared.domain.enums.GenericFieldErrorCodes;
 import com.pug.shared.utils.CollectionUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import lombok.Getter;
-
 import java.io.Serial;
 import java.util.Collections;
 import java.util.List;
+import lombok.Getter;
 
 /**
  * Exception thrown to indicate that application-level or domain-level validation has failed.
- * <p>
- * Typically, this exception is thrown when a domain entity extending {@link com.pug.shared.domain.DomainError}
- * accumulates one or more validation failures. By throwing this exception, the current business flow
- * is halted, allowing a global exception handler (e.g., in the API layer) to intercept it and translate
- * the encapsulated {@link GenericFieldErrorCodes} into a structured, localized error response
- * (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
+ *
+ * <p>Typically, this exception is thrown when a domain entity extending {@link
+ * com.pug.shared.domain.DomainError} accumulates one or more validation failures. By throwing this
+ * exception, the current business flow is halted, allowing a global exception handler (e.g., in the
+ * API layer) to intercept it and translate the encapsulated {@link GenericFieldErrorCodes} into a
+ * structured, localized error response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
  */
 @Getter
 public final class AppValidationException extends RuntimeException {
 
-  @Serial
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   /**
-   * The list of specific field validation errors that triggered this exception.
-   * Marked as transient because enum instances are inherently tied to the runtime environment
-   * and do not need standard Java serialization.
+   * The list of specific field validation errors that triggered this exception. Marked as transient
+   * because enum instances are inherently tied to the runtime environment and do not need standard
+   * Java serialization.
    */
   @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
   private final transient List<GenericFieldErrorCodes> fieldErrors;
 
   /**
    * Constructs an {@code AppValidationException} containing multiple validation errors.
-   * <p>
-   * To ensure consistency, the exception requires at least one validation error to be present.
+   *
+   * <p>To ensure consistency, the exception requires at least one validation error to be present.
    * The provided list is internally wrapped in an unmodifiable collection to preserve immutability.
    *
-   * @param fieldErrors a {@link List} of {@link GenericFieldErrorCodes} detailing the validation failures
+   * @param fieldErrors a {@link List} of {@link GenericFieldErrorCodes} detailing the validation
+   *     failures
    * @throws IllegalArgumentException if the provided {@code fieldErrors} list is null or empty
    */
   public AppValidationException(List<GenericFieldErrorCodes> fieldErrors) {
     super("Application validation failed.");
     if (CollectionUtils.isEmpty(fieldErrors)) {
       throw new IllegalArgumentException(
-              "AppValidationException must contain at least one problem.");
+          "AppValidationException must contain at least one problem.");
     }
     this.fieldErrors = Collections.unmodifiableList(fieldErrors);
   }
 
   /**
-   * Convenience constructor for throwing an {@code AppValidationException} due to a single validation failure.
-   * <p>
-   * Automatically wraps the provided error code in an immutable list.
+   * Convenience constructor for throwing an {@code AppValidationException} due to a single
+   * validation failure.
+   *
+   * <p>Automatically wraps the provided error code in an immutable list.
    *
    * @param code the specific {@link GenericFieldErrorCodes} representing the validation failure
    * @throws IllegalArgumentException if the provided {@code code} is null
@@ -606,6 +604,7 @@ public final class AppValidationException extends RuntimeException {
     this(List.of(code));
   }
 }
+
 
 ================================================================================
 FILE: exceptions/BusinessRuleException.java
@@ -616,35 +615,34 @@ import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when a syntactically valid request violates a specific,
- * high-level business rule or domain policy.
- * <p>
- * Unlike {@link AppValidationException}, which is used for granular field-level constraints
- * (like "name cannot be blank"), this exception is used for aggregate-level state violations
- * or cross-cutting rules (e.g., "Cannot delete a default city" or "User is already enrolled").
- * <p>
- * It typically maps to an HTTP 422 (Unprocessable Entity) or HTTP 409 (Conflict) response,
+ * Exception thrown when a syntactically valid request violates a specific, high-level business rule
+ * or domain policy.
+ *
+ * <p>Unlike {@link AppValidationException}, which is used for granular field-level constraints
+ * (like "name cannot be blank"), this exception is used for aggregate-level state violations or
+ * cross-cutting rules (e.g., "Cannot delete a default city" or "User is already enrolled").
+ *
+ * <p>It typically maps to an HTTP 422 (Unprocessable Entity) or HTTP 409 (Conflict) response,
  * returning a single, localized message to the client without field-specific mappings.
  */
 @Getter
 public class BusinessRuleException extends RuntimeException {
 
-  /**
-   * The specific domain code representing the business rule violation.
-   */
+  /** The specific domain code representing the business rule violation. */
   private final GenericCodes code;
 
   /**
    * Constructs a new {@code BusinessRuleException}.
    *
-   * @param code The specific {@link GenericCodes} representing the rule violation
-   *             (e.g., {@code GeoErrorCodes.CITY_IS_DEFAULT}).
+   * @param code The specific {@link GenericCodes} representing the rule violation (e.g., {@code
+   *     GeoErrorCodes.CITY_IS_DEFAULT}).
    */
   public BusinessRuleException(GenericCodes code) {
     super(code.getBundleKey());
     this.code = code;
   }
 }
+
 
 ================================================================================
 FILE: exceptions/DuplicateResourceException.java
@@ -655,32 +653,31 @@ import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when attempting to create or update a resource that violates a
- * unique constraint or business uniqueness rule (e.g., "A user with this CPF already exists").
- * <p>
- * This represents a state conflict within the system rather than a syntactic validation error.
- * It typically maps to an HTTP 409 (Conflict) response, returning a localized message
- * to the client indicating the nature of the duplication.
+ * Exception thrown when attempting to create or update a resource that violates a unique constraint
+ * or business uniqueness rule (e.g., "A user with this CPF already exists").
+ *
+ * <p>This represents a state conflict within the system rather than a syntactic validation error.
+ * It typically maps to an HTTP 409 (Conflict) response, returning a localized message to the client
+ * indicating the nature of the duplication.
  */
 @Getter
 public class DuplicateResourceException extends RuntimeException {
 
-  /**
-   * The specific domain code representing the duplication error.
-   */
+  /** The specific domain code representing the duplication error. */
   private final GenericCodes code;
 
   /**
    * Constructs a new {@code DuplicateResourceException}.
    *
-   * @param code The specific {@link GenericCodes} indicating which resource already exists
-   *             (e.g., {@code IdentityErrorCodes.USER_ALREADY_EXISTS}).
+   * @param code The specific {@link GenericCodes} indicating which resource already exists (e.g.,
+   *     {@code IdentityErrorCodes.USER_ALREADY_EXISTS}).
    */
   public DuplicateResourceException(GenericCodes code) {
     super(code.getBundleKey());
     this.code = code;
   }
 }
+
 
 ================================================================================
 FILE: exceptions/ResourceNotFoundException.java
@@ -691,32 +688,31 @@ import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Exception thrown when a requested domain resource or aggregate root cannot be found
- * in the underlying data store or external system.
- * <p>
- * This exception abstracts away the underlying persistence mechanism (e.g., database lookup failure)
- * and translates it into a standard domain-level error. It typically maps to an HTTP 404 (Not Found)
- * response, delivering a localized message indicating which entity type was not found.
+ * Exception thrown when a requested domain resource or aggregate root cannot be found in the
+ * underlying data store or external system.
+ *
+ * <p>This exception abstracts away the underlying persistence mechanism (e.g., database lookup
+ * failure) and translates it into a standard domain-level error. It typically maps to an HTTP 404
+ * (Not Found) response, delivering a localized message indicating which entity type was not found.
  */
 @Getter
 public class ResourceNotFoundException extends RuntimeException {
 
-  /**
-   * The specific domain code representing the missing resource.
-   */
+  /** The specific domain code representing the missing resource. */
   private final GenericCodes code;
 
   /**
    * Constructs a new {@code ResourceNotFoundException}.
    *
-   * @param code The specific {@link GenericCodes} indicating the type of resource that was not found
-   *             (e.g., {@code GeoErrorCodes.CITY_NOT_FOUND}).
+   * @param code The specific {@link GenericCodes} indicating the type of resource that was not
+   *     found (e.g., {@code GeoErrorCodes.CITY_NOT_FOUND}).
    */
   public ResourceNotFoundException(GenericCodes code) {
     super(code.getBundleKey());
     this.code = code;
   }
 }
+
 
 ================================================================================
 FILE: http/CorrelationFilter.java
@@ -786,7 +782,6 @@ FILE: i18n/I18n.java
 package com.pug.shared.i18n;
 
 import jakarta.enterprise.context.ApplicationScoped;
-
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.MissingResourceException;
@@ -794,11 +789,11 @@ import java.util.ResourceBundle;
 
 /**
  * Application-scoped utility component for handling internationalization (i18n).
- * <p>
- * This class provides a centralized mechanism to retrieve localized messages from
- * the application's resource bundles (e.g., {@code messages_en_US.properties},
- * {@code messages_pt_BR.properties}). It leverages {@link ResourceBundle} for
- * key resolution and {@link MessageFormat} for dynamic variable interpolation.
+ *
+ * <p>This class provides a centralized mechanism to retrieve localized messages from the
+ * application's resource bundles (e.g., {@code messages_en_US.properties}, {@code
+ * messages_pt_BR.properties}). It leverages {@link ResourceBundle} for key resolution and {@link
+ * MessageFormat} for dynamic variable interpolation.
  */
 @ApplicationScoped
 public class I18n {
@@ -808,7 +803,7 @@ public class I18n {
   /**
    * Retrieves the localized translation using the system's default locale.
    *
-   * @param key  the unique property key to look up in the resource bundle
+   * @param key the unique property key to look up in the resource bundle
    * @param args optional dynamic arguments to inject into the localized message
    * @return the fully translated and formatted string, or the raw {@code key} if not found
    */
@@ -818,16 +813,18 @@ public class I18n {
 
   /**
    * Retrieves the localized translation for a specific client {@link Locale}.
-   * <p>
-   * If the specific key is not found within the resolved resource bundle, or if the bundle
-   * itself is missing, this method gracefully degrades by returning the raw {@code key}
-   * instead of throwing an exception.
    *
-   * @param key    the unique property key to look up in the resource bundle (e.g., "error.internal")
-   * @param locale the specific {@link Locale} used to resolve the correct properties file and format variables
-   * @param args   optional dynamic arguments to inject into the localized message
-   *               (replaces placeholders like {@code {0}}, {@code {1}} in the properties file)
-   * @return the fully translated and formatted string, or the raw {@code key} if no translation is found
+   * <p>If the specific key is not found within the resolved resource bundle, or if the bundle
+   * itself is missing, this method gracefully degrades by returning the raw {@code key} instead of
+   * throwing an exception.
+   *
+   * @param key the unique property key to look up in the resource bundle (e.g., "error.internal")
+   * @param locale the specific {@link Locale} used to resolve the correct properties file and
+   *     format variables
+   * @param args optional dynamic arguments to inject into the localized message (replaces
+   *     placeholders like {@code {0}}, {@code {1}} in the properties file)
+   * @return the fully translated and formatted string, or the raw {@code key} if no translation is
+   *     found
    */
   public String translation(String key, Locale locale, Object... args) {
     if (locale == null) {
@@ -847,6 +844,7 @@ public class I18n {
   }
 }
 
+
 ================================================================================
 FILE: infra/persistence/BaseAuditedEntity.java
 ================================================================================
@@ -854,20 +852,19 @@ package com.pug.shared.infra.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
+import java.time.OffsetDateTime;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.time.OffsetDateTime;
-
 /**
  * Abstract base class for JPA entities requiring standard temporal auditing.
- * <p>
- * Extends {@link BaseUuidV7Entity} to inherit the primary key, while automatically
- * incorporating consistent creation and modification timestamps. Using {@link OffsetDateTime}
- * ensures that all audit records are stored cleanly with timezone awareness.
+ *
+ * <p>Extends {@link BaseUuidV7Entity} to inherit the primary key, while automatically incorporating
+ * consistent creation and modification timestamps. Using {@link OffsetDateTime} ensures that all
+ * audit records are stored cleanly with timezone awareness.
  */
 @Getter
 @Setter
@@ -878,22 +875,23 @@ public abstract class BaseAuditedEntity extends BaseUuidV7Entity {
 
   /**
    * The exact timestamp when the entity was first persisted to the database.
-   * <p>
-   * This column is strictly immutable post-creation ({@code updatable = false})
-   * to preserve accurate historical auditing.
+   *
+   * <p>This column is strictly immutable post-creation ({@code updatable = false}) to preserve
+   * accurate historical auditing.
    */
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
   /**
    * The timestamp indicating when the entity's state was last updated.
-   * <p>
-   * This value should be refreshed via application logic or JPA lifecycle callbacks
-   * whenever the entity is modified.
+   *
+   * <p>This value should be refreshed via application logic or JPA lifecycle callbacks whenever the
+   * entity is modified.
    */
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 }
+
 
 ================================================================================
 FILE: infra/persistence/BaseUuidV7Entity.java
@@ -903,21 +901,20 @@ package com.pug.shared.infra.persistence;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.UUID;
-
 /**
  * Abstract base class for JPA entities requiring a UUID primary key.
- * <p>
- * This mapped superclass provides a standard, immutable {@code id} field. The platform
- * specifically standardizes on UUID version 7 (UUIDv7) because its time-ordered nature
- * heavily optimizes database insert performance and prevents B-tree index fragmentation
- * compared to fully random UUIDv4s.
+ *
+ * <p>This mapped superclass provides a standard, immutable {@code id} field. The platform
+ * specifically standardizes on UUID version 7 (UUIDv7) because its time-ordered nature heavily
+ * optimizes database insert performance and prevents B-tree index fragmentation compared to fully
+ * random UUIDv4s.
  */
 @Getter
 @Setter
@@ -928,14 +925,15 @@ public abstract class BaseUuidV7Entity {
 
   /**
    * The unique identifier for the entity.
-   * <p>
-   * Configured as non-nullable and non-updatable to guarantee primary key immutability
-   * once the record is persisted to the database.
+   *
+   * <p>Configured as non-nullable and non-updatable to guarantee primary key immutability once the
+   * record is persisted to the database.
    */
   @Id
   @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
   private UUID id;
 }
+
 
 ================================================================================
 FILE: infra/search/EsAnalysis.java
@@ -948,11 +946,11 @@ import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysis
 
 /**
  * Application-scoped configuration component for Hibernate Search + Elasticsearch.
- * <p>
- * This class defines custom analyzers, normalizers, and token filters used during
- * index creation. These configurations enable advanced text search capabilities
- * such as accent-insensitive searching (ASCII folding), case-insensitivity,
- * fuzzy matching, and fast auto-completion (n-grams) for Portuguese text.
+ *
+ * <p>This class defines custom analyzers, normalizers, and token filters used during index
+ * creation. These configurations enable advanced text search capabilities such as
+ * accent-insensitive searching (ASCII folding), case-insensitivity, fuzzy matching, and fast
+ * auto-completion (n-grams) for Portuguese text.
  */
 @ApplicationScoped
 public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
@@ -974,28 +972,29 @@ public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
      * E.g., "Joinville" -> "Jo", "Joi", "Join", etc. Essential for "type-as-you-go" autocomplete.
      */
     ctx.tokenFilter("edge_ngram_custom")
-            .type("edge_ngram")
-            .param("min_gram", 2)
-            .param("max_gram", 20);
+        .type("edge_ngram")
+        .param("min_gram", 2)
+        .param("max_gram", 20);
     /*
      * Analyzer: Standard text analyzer for Portuguese text.
      * Tokenizes by standard word boundaries, lowercases, and strips accents.
      * Used for standard full-text matching and fuzzy searches.
      */
     ctx.analyzer("pt_folded")
-            .custom()
-            .tokenizer("standard")
-            .tokenFilters("lowercase", "asciifolding");
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding");
     /*
      * Analyzer: Specialized text analyzer for autocomplete text fields.
      * Combines the Portuguese text rules with the edge n-gram filter to match partial words efficiently.
      */
     ctx.analyzer("auto_ngram")
-            .custom()
-            .tokenizer("standard")
-            .tokenFilters("lowercase", "asciifolding", "edge_ngram_custom");
+        .custom()
+        .tokenizer("standard")
+        .tokenFilters("lowercase", "asciifolding", "edge_ngram_custom");
   }
 }
+
 
 ================================================================================
 FILE: infra/search/HibernateSearchUtils.java
@@ -1004,110 +1003,112 @@ package com.pug.shared.infra.search;
 
 import com.pug.shared.utils.StringUtils;
 import jakarta.persistence.EntityManager;
+import java.util.List;
 import org.hibernate.search.mapper.orm.Search;
 import org.hibernate.search.mapper.orm.session.SearchSession;
 
-import java.util.List;
-
 /**
  * Utility class encapsulating complex Hibernate Search querying logic.
- * <p>
- * This class provides standardized, multi-field search strategies (like weighted boosting
- * and fuzzy matching) to ensure consistent and highly relevant search results across
- * various domain entities.
+ *
+ * <p>This class provides standardized, multi-field search strategies (like weighted boosting and
+ * fuzzy matching) to ensure consistent and highly relevant search results across various domain
+ * entities.
  */
 public final class HibernateSearchUtils {
 
-    /**
-     * Private constructor to prevent instantiation of utility class.
-     */
-    private HibernateSearchUtils() {
+  /** Private constructor to prevent instantiation of utility class. */
+  private HibernateSearchUtils() {}
+
+  /**
+   * Executes a robust search against an entity's name using a default set of mapped fields.
+   *
+   * <p>Assumes the entity has the following indexed fields configured: {@code "name"}, {@code
+   * "name_exact"}, {@code "name_auto"}, and {@code "name_sort"}.
+   *
+   * @param em the current {@link EntityManager}
+   * @param type the JPA entity class type to search against (must be indexed)
+   * @param key the raw search string provided by the user
+   * @param <T> the entity type
+   * @return a scored and sorted list of matching entities
+   */
+  public static <T> List<T> searchByName(EntityManager em, Class<T> type, String key) {
+    return searchByName(em, type, key, "name", "name_exact", "name_auto", "name_sort", 3);
+  }
+
+  /**
+   * Executes a highly tuned, multi-field boolean search query.
+   *
+   * <p><b>Scoring/Boosting Strategy:</b>
+   *
+   * <ul>
+   *   <li><i>Exact Prefix (Boost 8.0)</i>: The name starts exactly with the search key.
+   *   <li><i>Exact Substring (Boost 6.0)</i>: The search key appears exactly anywhere in the name.
+   *   <li><i>Fuzzy Match (Boost 4.0)</i>: Standard text matching allowing for 1 typo (Levenshtein
+   *       distance).
+   *   <li><i>Token Substring (Boost 3.0)</i>: Individual words from the search key appear inside
+   *       the name.
+   *   <li><i>N-Gram Auto (Boost 2.0)</i>: Partial word matches using edge n-grams.
+   * </ul>
+   *
+   * @param em the current {@link EntityManager}
+   * @param type the JPA entity class type to search against
+   * @param key the raw search string provided by the user
+   * @param nameField the standard analyzed text field used for fuzzy matching (e.g., analyzed with
+   *     "pt_folded")
+   * @param nameExactField the keyword or normalized field used for exact wildcard matching
+   * @param nameAutoField the n-gram analyzed field used for autocomplete matching
+   * @param nameSortField the keyword/normalized field used as a secondary sort tie-breaker
+   * @param minTokenLength the minimum length a word must be to trigger individual token wildcard
+   *     matching
+   * @param <T> the entity type
+   * @return a scored and sorted list of matching entities
+   */
+  public static <T> List<T> searchByName(
+      EntityManager em,
+      Class<T> type,
+      String key,
+      String nameField,
+      String nameExactField,
+      String nameAutoField,
+      String nameSortField,
+      int minTokenLength) {
+
+    if (StringUtils.isEmpty(key)) {
+      return List.of();
     }
 
-    /**
-     * Executes a robust search against an entity's name using a default set of mapped fields.
-     * <p>
-     * Assumes the entity has the following indexed fields configured:
-     * {@code "name"}, {@code "name_exact"}, {@code "name_auto"}, and {@code "name_sort"}.
-     *
-     * @param em   the current {@link EntityManager}
-     * @param type the JPA entity class type to search against (must be indexed)
-     * @param key  the raw search string provided by the user
-     * @param <T>  the entity type
-     * @return a scored and sorted list of matching entities
-     */
-    public static <T> List<T> searchByName(EntityManager em, Class<T> type, String key) {
-        return searchByName(em, type, key, "name", "name_exact", "name_auto", "name_sort", 3);
-    }
+    String[] tokens = key.split("\\s+");
+    SearchSession s = Search.session(em);
 
-    /**
-     * Executes a highly tuned, multi-field boolean search query.
-     * <p>
-     * <b>Scoring/Boosting Strategy:</b>
-     * <ul>
-     *   <li><i>Exact Prefix (Boost 8.0)</i>: The name starts exactly with the search key.</li>
-     *   <li><i>Exact Substring (Boost 6.0)</i>: The search key appears exactly anywhere in the name.</li>
-     *   <li><i>Fuzzy Match (Boost 4.0)</i>: Standard text matching allowing for 1 typo (Levenshtein distance).</li>
-     *   <li><i>Token Substring (Boost 3.0)</i>: Individual words from the search key appear inside the name.</li>
-     *   <li><i>N-Gram Auto (Boost 2.0)</i>: Partial word matches using edge n-grams.</li>
-     * </ul>
-     *
-     * @param em             the current {@link EntityManager}
-     * @param type           the JPA entity class type to search against
-     * @param key            the raw search string provided by the user
-     * @param nameField      the standard analyzed text field used for fuzzy matching (e.g., analyzed with "pt_folded")
-     * @param nameExactField the keyword or normalized field used for exact wildcard matching
-     * @param nameAutoField  the n-gram analyzed field used for autocomplete matching
-     * @param nameSortField  the keyword/normalized field used as a secondary sort tie-breaker
-     * @param minTokenLength the minimum length a word must be to trigger individual token wildcard matching
-     * @param <T>            the entity type
-     * @return a scored and sorted list of matching entities
-     */
-    public static <T> List<T> searchByName(
-            EntityManager em,
-            Class<T> type,
-            String key,
-            String nameField,
-            String nameExactField,
-            String nameAutoField,
-            String nameSortField,
-            int minTokenLength) {
-
-        if (StringUtils.isEmpty(key)) {
-            return List.of();
-        }
-
-        String[] tokens = key.split("\\s+");
-        SearchSession s = Search.session(em);
-
-        return s.search(type)
-                .where(
-                        f -> {
-                            var bool = f.bool();
-                            // Highest priority: Starts exactly with the search term
-                            bool.should(f.wildcard().field(nameExactField).matching(key + "*").boost(8f));
-                            // High priority: Contains the exact phrase anywhere
-                            bool.should(f.wildcard().field(nameExactField).matching("*" + key + "*").boost(6f));
-                            // Medium priority: Contains individual words from the search phrase
-                            for (String t : tokens) {
-                                if (t.length() >= minTokenLength) {
-                                    bool.should(f.wildcard().field(nameExactField).matching("*" + t + "*").boost(3f));
-                                }
-                            }
-                            // Normal priority: Handles typos (1 character difference)
-                            bool.should(f.match().field(nameField).matching(key).fuzzy(1).boost(4f));
-                            // Base priority: Autocomplete prefix matching via n-grams
-                            bool.should(f.match().field(nameAutoField).matching(key).boost(2f));
-                            return bool;
-                        })
-                .sort(
-                        f ->
-                                (nameSortField == null || nameSortField.isBlank())
-                                        ? f.score() // Sort exclusively by relevance score
-                                        : f.score().then().field(nameSortField)) // Tie-breaker using alphabetical sort
-                .fetchAllHits();
-    }
+    return s.search(type)
+        .where(
+            f -> {
+              var bool = f.bool();
+              // Highest priority: Starts exactly with the search term
+              bool.should(f.wildcard().field(nameExactField).matching(key + "*").boost(8f));
+              // High priority: Contains the exact phrase anywhere
+              bool.should(f.wildcard().field(nameExactField).matching("*" + key + "*").boost(6f));
+              // Medium priority: Contains individual words from the search phrase
+              for (String t : tokens) {
+                if (t.length() >= minTokenLength) {
+                  bool.should(f.wildcard().field(nameExactField).matching("*" + t + "*").boost(3f));
+                }
+              }
+              // Normal priority: Handles typos (1 character difference)
+              bool.should(f.match().field(nameField).matching(key).fuzzy(1).boost(4f));
+              // Base priority: Autocomplete prefix matching via n-grams
+              bool.should(f.match().field(nameAutoField).matching(key).boost(2f));
+              return bool;
+            })
+        .sort(
+            f ->
+                (nameSortField == null || nameSortField.isBlank())
+                    ? f.score() // Sort exclusively by relevance score
+                    : f.score().then().field(nameSortField)) // Tie-breaker using alphabetical sort
+        .fetchAllHits();
+  }
 }
+
 
 ================================================================================
 FILE: presenter/dtos/AuditInfoResponse.java
@@ -1118,21 +1119,22 @@ import java.time.OffsetDateTime;
 
 /**
  * Data Transfer Object (DTO) representing the standard audit trail of a domain entity.
- * <p>
- * This record provides both the raw ISO-8601 timestamps (useful for programmatic parsing
- * by the client) and pre-formatted, localized strings (ready for direct UI display).
  *
- * @param createdAt          the exact date and time the entity was initially persisted
- * @param createdAtFormatted the human-readable, localized string representation of the creation date
- * @param updatedAt          the exact date and time the entity was last modified
+ * <p>This record provides both the raw ISO-8601 timestamps (useful for programmatic parsing by the
+ * client) and pre-formatted, localized strings (ready for direct UI display).
+ *
+ * @param createdAt the exact date and time the entity was initially persisted
+ * @param createdAtFormatted the human-readable, localized string representation of the creation
+ *     date
+ * @param updatedAt the exact date and time the entity was last modified
  * @param updatedAtFormatted the human-readable, localized string representation of the update date
  */
 public record AuditInfoResponse(
-        OffsetDateTime createdAt,
-        String createdAtFormatted,
-        OffsetDateTime updatedAt,
-        String updatedAtFormatted) {
-}
+    OffsetDateTime createdAt,
+    String createdAtFormatted,
+    OffsetDateTime updatedAt,
+    String updatedAtFormatted) {}
+
 
 ================================================================================
 FILE: presenter/dtos/CampusResponse.java
@@ -1143,16 +1145,16 @@ import com.pug.shared.domain.enums.Campi;
 
 /**
  * Data Transfer Object (DTO) representing an academic campus.
- * <p>
- * This record pairs the raw enum constant with its corresponding localized display name,
- * making it easy for front-end applications to build select dropdowns or display labels
- * without handling client-side translation dictionaries.
  *
- * @param campus          the programmatic enum constant representing the campus
+ * <p>This record pairs the raw enum constant with its corresponding localized display name, making
+ * it easy for front-end applications to build select dropdowns or display labels without handling
+ * client-side translation dictionaries.
+ *
+ * @param campus the programmatic enum constant representing the campus
  * @param campusFormatted the human-readable, localized name of the campus (e.g., "Joinville")
  */
-public record CampusResponse(Campi campus, String campusFormatted) {
-}
+public record CampusResponse(Campi campus, String campusFormatted) {}
+
 
 ================================================================================
 FILE: presenter/mappers/SharedDataPresenter.java
@@ -1164,42 +1166,41 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import com.pug.shared.utils.StringUtils;
-
 import java.time.OffsetDateTime;
 import java.util.Locale;
 
 /**
- * Stateless utility class responsible for transforming shared domain components
- * into standardized API Response DTOs.
+ * Stateless utility class responsible for transforming shared domain components into standardized
+ * API Response DTOs.
  *
  * <p>This presenter handles common presentation logic used across multiple domains, such as:
+ *
  * <ul>
- *   <li>Formatting temporal audit fields (createdAt / updatedAt) based on the user's locale.</li>
- *   <li>Translating {@link Campi} enums into localized UI-ready response objects.</li>
+ *   <li>Formatting temporal audit fields (createdAt / updatedAt) based on the user's locale.
+ *   <li>Translating {@link Campi} enums into localized UI-ready response objects.
  * </ul>
  *
  * <p>Being a pure utility class, it cannot be instantiated.
  */
 public final class SharedDataPresenter {
 
-  /**
-   * Private constructor to prevent instantiation of the utility class.
-   */
+  /** Private constructor to prevent instantiation of the utility class. */
   private SharedDataPresenter() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
   }
 
   /**
-   * Constructs an {@link AuditInfoResponse}, formatting the provided timestamps
-   * according to the specified locale.
+   * Constructs an {@link AuditInfoResponse}, formatting the provided timestamps according to the
+   * specified locale.
    *
    * @param createdAt the exact timestamp when the entity was created
    * @param updatedAt the exact timestamp when the entity was last updated
-   * @param locale    the client's resolved locale used to determine date formatting rules
-   * @return a fully populated {@link AuditInfoResponse}, or {@code null} if any input parameter is null
+   * @param locale the client's resolved locale used to determine date formatting rules
+   * @return a fully populated {@link AuditInfoResponse}, or {@code null} if any input parameter is
+   *     null
    */
   public static AuditInfoResponse createAuditInfoResponse(
-          OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
+      OffsetDateTime createdAt, OffsetDateTime updatedAt, Locale locale) {
     if (createdAt == null || updatedAt == null || locale == null) {
       return null;
     }
@@ -1211,13 +1212,14 @@ public final class SharedDataPresenter {
   }
 
   /**
-   * Constructs a {@link CampusResponse} by leveraging the i18n service to translate
-   * the provided {@link Campi} enum.
+   * Constructs a {@link CampusResponse} by leveraging the i18n service to translate the provided
+   * {@link Campi} enum.
    *
    * @param campus the specific {@link Campi} enum to convert
    * @param locale the client's resolved locale used for the translation lookup
-   * @param i18n   the internationalization service component used to resolve the bundle key
-   * @return a fully populated {@link CampusResponse}, or {@code null} if any input parameter is null
+   * @param i18n the internationalization service component used to resolve the bundle key
+   * @return a fully populated {@link CampusResponse}, or {@code null} if any input parameter is
+   *     null
    */
   public static CampusResponse createCampusResponse(Campi campus, Locale locale, I18n i18n) {
     if (campus == null || locale == null || i18n == null) {
@@ -1228,44 +1230,47 @@ public final class SharedDataPresenter {
   }
 }
 
+
 ================================================================================
 FILE: presenter/rest/ApiEnvelope.java
 ================================================================================
 package com.pug.shared.presenter.rest;
 
-import org.jboss.logging.MDC;
-
 import java.time.Instant;
+import org.jboss.logging.MDC;
 
 /**
  * Standardized generic envelope for all REST API responses.
- * <p>
- * This envelope ensures a consistent JSON structure across the entire application,
- * whether a request succeeds or fails. It provides clients with a predictable schema
- * containing a success flag, the primary payload (or error details), a timestamp,
- * and a correlation ID for distributed tracing and debugging.
  *
- * @param <T>           the type of the successful response data payload
- * @param success       {@code true} if the request was successfully processed (e.g., HTTP 2xx);
- *                      {@code false} if an error occurred (e.g., HTTP 4xx, 5xx)
- * @param data          the response payload when {@code success} is {@code true}; {@code null} otherwise
- * @param error         the {@link ApiError} details when {@code success} is {@code false}; {@code null} otherwise
- * @param timestamp     the exact UTC time the response envelope was generated
- * @param correlationId the unique identifier used to trace the request across logs and external systems
+ * <p>This envelope ensures a consistent JSON structure across the entire application, whether a
+ * request succeeds or fails. It provides clients with a predictable schema containing a success
+ * flag, the primary payload (or error details), a timestamp, and a correlation ID for distributed
+ * tracing and debugging.
+ *
+ * @param <T> the type of the successful response data payload
+ * @param success {@code true} if the request was successfully processed (e.g., HTTP 2xx); {@code
+ *     false} if an error occurred (e.g., HTTP 4xx, 5xx)
+ * @param data the response payload when {@code success} is {@code true}; {@code null} otherwise
+ * @param error the {@link ApiError} details when {@code success} is {@code false}; {@code null}
+ *     otherwise
+ * @param timestamp the exact UTC time the response envelope was generated
+ * @param correlationId the unique identifier used to trace the request across logs and external
+ *     systems
  */
 public record ApiEnvelope<T>(
-        boolean success, T data, ApiError error, Instant timestamp, String correlationId) {
+    boolean success, T data, ApiError error, Instant timestamp, String correlationId) {
 
   /**
-   * The key used to store and retrieve the correlation ID within the Mapped Diagnostic Context (MDC).
+   * The key used to store and retrieve the correlation ID within the Mapped Diagnostic Context
+   * (MDC).
    */
   private static final String CID_KEY = "X-Correlation-Id";
 
   /**
    * Extracts the current correlation ID from the logging context (MDC).
-   * <p>
-   * This ties the API response directly to the backend application logs,
-   * greatly simplifying production debugging and observability for API consumers and operators.
+   *
+   * <p>This ties the API response directly to the backend application logs, greatly simplifying
+   * production debugging and observability for API consumers and operators.
    *
    * @return the correlation ID as a {@link String}, or {@code null} if not present in the MDC
    */
@@ -1278,7 +1283,7 @@ public record ApiEnvelope<T>(
    * Creates a successful API envelope (typically mapped to HTTP 200 OK).
    *
    * @param data the primary payload to return to the client
-   * @param <T>  the type of the payload
+   * @param <T> the type of the payload
    * @return a fully populated {@link ApiEnvelope} indicating success
    */
   public static <T> ApiEnvelope<T> ok(T data) {
@@ -1286,10 +1291,11 @@ public record ApiEnvelope<T>(
   }
 
   /**
-   * Creates a successful API envelope representing resource creation (typically mapped to HTTP 201 Created).
+   * Creates a successful API envelope representing resource creation (typically mapped to HTTP 201
+   * Created).
    *
    * @param data the newly created resource payload to return to the client
-   * @param <T>  the type of the payload
+   * @param <T> the type of the payload
    * @return a fully populated {@link ApiEnvelope} indicating successful creation
    */
   public static <T> ApiEnvelope<T> created(T data) {
@@ -1299,13 +1305,16 @@ public record ApiEnvelope<T>(
   /**
    * Creates an error API envelope (typically mapped to HTTP 4xx or 5xx statuses).
    *
-   * @param err the structured {@link ApiError} containing the failure code, localized message, and details
-   * @return a fully populated {@link ApiEnvelope} indicating failure, with a {@code Void} data payload
+   * @param err the structured {@link ApiError} containing the failure code, localized message, and
+   *     details
+   * @return a fully populated {@link ApiEnvelope} indicating failure, with a {@code Void} data
+   *     payload
    */
   public static ApiEnvelope<Void> error(ApiError err) {
     return new ApiEnvelope<>(false, null, err, Instant.now(), getCorrelationId());
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/ApiError.java
@@ -1314,28 +1323,30 @@ package com.pug.shared.presenter.rest;
 
 /**
  * Standardized structure for representing errors returned by the REST API.
- * <p>
- * This record encapsulates the core details of an error, separating the machine-readable
- * identifier from the human-readable localized message, and optionally including granular
- * context (such as specific field validation failures).
  *
- * @param code    The programmatic error identifier (e.g., "VALIDATION_ERROR"), typically derived
- *                from {@link com.pug.shared.domain.enums.GenericCodes#getCode()}. Intended for programmatic handling by clients.
+ * <p>This record encapsulates the core details of an error, separating the machine-readable
+ * identifier from the human-readable localized message, and optionally including granular context
+ * (such as specific field validation failures).
+ *
+ * @param code The programmatic error identifier (e.g., "VALIDATION_ERROR"), typically derived from
+ *     {@link com.pug.shared.domain.enums.GenericCodes#getCode()}. Intended for programmatic
+ *     handling by clients.
  * @param message The human-readable, localized error message translated for the end user.
- * @param details An optional structured object containing additional, granular context about the error
- *                (e.g., a list of {@link FieldErrorsResponse} objects).
+ * @param details An optional structured object containing additional, granular context about the
+ *     error (e.g., a list of {@link FieldErrorsResponse} objects).
  */
 public record ApiError(String code, String message, Details details) {
 
   /**
    * Factory method to create an {@code ApiError} instance that includes granular details.
-   * <p>
-   * Typically used for validation errors (e.g., HTTP 400 or 422) where the client needs
-   * to know exactly which fields failed and why.
    *
-   * @param code    The untranslated, machine-readable error code.
+   * <p>Typically used for validation errors (e.g., HTTP 400 or 422) where the client needs to know
+   * exactly which fields failed and why.
+   *
+   * @param code The untranslated, machine-readable error code.
    * @param message The localized, human-readable error message.
-   * @param details A {@link Details} object containing specific error context, or {@code null} if not applicable.
+   * @param details A {@link Details} object containing specific error context, or {@code null} if
+   *     not applicable.
    * @return A newly constructed {@link ApiError} instance.
    */
   public static ApiError of(String code, String message, Details details) {
@@ -1344,11 +1355,11 @@ public record ApiError(String code, String message, Details details) {
 
   /**
    * Factory method to create an {@code ApiError} instance without additional granular details.
-   * <p>
-   * Useful for general, high-level errors (e.g., "Internal Server Error", "Resource Not Found", or
-   * "Unauthorized") where field-specific context is unnecessary.
    *
-   * @param code    The untranslated, machine-readable error code.
+   * <p>Useful for general, high-level errors (e.g., "Internal Server Error", "Resource Not Found",
+   * or "Unauthorized") where field-specific context is unnecessary.
+   *
+   * @param code The untranslated, machine-readable error code.
    * @param message The localized, human-readable error message.
    * @return A newly constructed {@link ApiError} instance with {@code null} details.
    */
@@ -1356,6 +1367,7 @@ public record ApiError(String code, String message, Details details) {
     return new ApiError(code, message, null);
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/Details.java
@@ -1366,17 +1378,17 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * A polymorphic wrapper for granular error details in REST API responses.
- * <p>
- * This record acts as a flexible container capable of holding any structured data
- * (such as a {@link java.util.List} of {@link FieldErrorsResponse}, a specific Map, or a custom POJO).
- * The {@link JsonValue} annotation ensures that Jackson serializes the underlying {@code payload}
+ *
+ * <p>This record acts as a flexible container capable of holding any structured data (such as a
+ * {@link java.util.List} of {@link FieldErrorsResponse}, a specific Map, or a custom POJO). The
+ * {@link JsonValue} annotation ensures that Jackson serializes the underlying {@code payload}
  * directly into the {@code details} field of the parent {@link ApiError}, preventing unnecessary
  * JSON object nesting.
  *
  * @param payload The underlying structured data representing the error details.
  */
-public record Details(@JsonValue Object payload) {
-}
+public record Details(@JsonValue Object payload) {}
+
 
 ================================================================================
 FILE: presenter/rest/FieldErrorsResponse.java
@@ -1387,24 +1399,25 @@ import java.util.List;
 
 /**
  * Represents a collection of validation errors associated with a specific field.
- * <p>
- * Grouping errors by field provides a cleaner and more structured API response,
- * especially when a single input field violates multiple business rules simultaneously.
  *
- * @param field  The exact name of the property or field that caused the validation errors.
- * @param errors A list of specific error details (code and localized message) associated with this field.
+ * <p>Grouping errors by field provides a cleaner and more structured API response, especially when
+ * a single input field violates multiple business rules simultaneously.
+ *
+ * @param field The exact name of the property or field that caused the validation errors.
+ * @param errors A list of specific error details (code and localized message) associated with this
+ *     field.
  */
 public record FieldErrorsResponse(String field, List<FieldErrorDetail> errors) {
 
-    /**
-     * Represents the specific error code and its corresponding localized message.
-     *
-     * @param code    The raw string identifier of the error (e.g., "INVALID_NAME_BLANK").
-     * @param message The localized, human-readable error message translated via resource bundles.
-     */
-    public record FieldErrorDetail(String code, String message) {
-    }
+  /**
+   * Represents the specific error code and its corresponding localized message.
+   *
+   * @param code The raw string identifier of the error (e.g., "INVALID_NAME_BLANK").
+   * @param message The localized, human-readable error message translated via resource bundles.
+   */
+  public record FieldErrorDetail(String code, String message) {}
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/AppValidationExceptionMapper.java
@@ -1424,46 +1437,42 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Mapper to catch AppValidationException and return a detailed, grouped error response.
- */
+/** Mapper to catch AppValidationException and return a detailed, grouped error response. */
 @Provider
 public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
-   * Maps AppValidationException to an HTTP 400 response with validation error details
-   * grouped by their respective field names.
+   * Maps AppValidationException to an HTTP 400 response with validation error details grouped by
+   * their respective field names.
    *
    * @param exception The caught exception containing field validation errors.
    * @return An HTTP 400 response with grouped validation error details.
    */
   @Override
   public Response toResponse(AppValidationException exception) {
-    List<FieldErrorsResponse> groupedErrors = CollectionUtils.toStream(exception.getFieldErrors())
-            .collect(Collectors.groupingBy(
+    List<FieldErrorsResponse> groupedErrors =
+        CollectionUtils.toStream(exception.getFieldErrors())
+            .collect(
+                Collectors.groupingBy(
                     GenericFieldErrorCodes::getFieldName,
-                    Collectors.mapping(this::mapToDetail, Collectors.toList())
-            ))
-            .entrySet().stream()
+                    Collectors.mapping(this::mapToDetail, Collectors.toList())))
+            .entrySet()
+            .stream()
             .map(entry -> new FieldErrorsResponse(entry.getKey(), entry.getValue()))
             .toList();
 
     ApiError apiError =
-            ApiError.of(
-                    SharedErrorCodes.VALIDATION_ERROR.getCode(),
-                    i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
-                    new Details(groupedErrors));
+        ApiError.of(
+            SharedErrorCodes.VALIDATION_ERROR.getCode(),
+            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
+            new Details(groupedErrors));
 
-    return Response.status(Response.Status.BAD_REQUEST)
-            .entity(ApiEnvelope.error(apiError))
-            .build();
+    return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
   }
 
   /**
@@ -1478,6 +1487,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
     return new FieldErrorsResponse.FieldErrorDetail(errorCode, message);
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/BusinessRuleExceptionMapper.java
@@ -1496,15 +1506,14 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link BusinessRuleException} to an HTTP 422 (Unprocessable Entity) response.
- * <p>
- * Translates the specific domain business rule violation directly into a localized
- * API error response without exposing internal field names or values.
+ *
+ * <p>Translates the specific domain business rule violation directly into a localized API error
+ * response without exposing internal field names or values.
  */
 @Provider
 public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRuleException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a BusinessRuleException into a structured HTTP 422 response.
@@ -1520,11 +1529,12 @@ public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRule
     ApiError error = ApiError.of(code, message);
 
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/ConstraintViolationExceptionMapper.java
@@ -1544,79 +1554,78 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Mapper to catch {@link jakarta.validation.ConstraintViolationException} (Bean Validation)
- * and return a detailed HTTP 422 response.
- * <p>
- * This intercepts errors thrown by standard validation annotations (e.g., {@code @NotNull}, {@code @Size})
- * before they reach the domain layer, grouping multiple violations by their respective field names.
+ * Mapper to catch {@link jakarta.validation.ConstraintViolationException} (Bean Validation) and
+ * return a detailed HTTP 422 response.
+ *
+ * <p>This intercepts errors thrown by standard validation annotations (e.g., {@code @NotNull},
+ * {@code @Size}) before they reach the domain layer, grouping multiple violations by their
+ * respective field names.
  */
 @Provider
 public class ConstraintViolationExceptionMapper
-        implements ExceptionMapper<ConstraintViolationException> {
+    implements ExceptionMapper<ConstraintViolationException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a ConstraintViolationException into an HTTP 422 Unprocessable Entity response.
    *
-   * <p>The response body contains a structured JSON with error details, grouping specific
-   * field errors extracted from the constraint violations so the client can fix all issues at once.
+   * <p>The response body contains a structured JSON with error details, grouping specific field
+   * errors extracted from the constraint violations so the client can fix all issues at once.
    *
    * @param ex The ConstraintViolationException thrown during request payload validation.
    * @return A Response object with status 422 and a JSON body containing grouped error details.
    */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
-    List<FieldErrorsResponse> groupedViolations = ex.getConstraintViolations().stream()
-            .collect(Collectors.groupingBy(
+    List<FieldErrorsResponse> groupedViolations =
+        ex.getConstraintViolations().stream()
+            .collect(
+                Collectors.groupingBy(
                     this::extractFieldName,
-                    Collectors.mapping(this::mapToDetail, Collectors.toList())
-            ))
-            .entrySet().stream()
+                    Collectors.mapping(this::mapToDetail, Collectors.toList())))
+            .entrySet()
+            .stream()
             .map(entry -> new FieldErrorsResponse(entry.getKey(), entry.getValue()))
             .toList();
 
     String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
-    ApiError error = ApiError.of(
-            SharedErrorCodes.VALIDATION_ERROR.getCode(),
-            msg,
-            new Details(groupedViolations)
-    );
+    ApiError error =
+        ApiError.of(
+            SharedErrorCodes.VALIDATION_ERROR.getCode(), msg, new Details(groupedViolations));
     return Response.status(422)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 
-  /**
-   * Extracts the field name from the violation path.
-   */
+  /** Extracts the field name from the violation path. */
   private String extractFieldName(ConstraintViolation<?> violation) {
     return violation.getPropertyPath() == null ? "unknown" : violation.getPropertyPath().toString();
   }
 
   /**
    * Maps a single Bean Validation violation into a detailed error record.
-   * <p>
-   * Dynamically extracts the annotation type (e.g., "NotNull") to serve as the programmatic error code.
-   * If the annotation cannot be determined, it safely falls back to the SharedErrorCodes equivalent.
+   *
+   * <p>Dynamically extracts the annotation type (e.g., "NotNull") to serve as the programmatic
+   * error code. If the annotation cannot be determined, it safely falls back to the
+   * SharedErrorCodes equivalent.
    */
   private FieldErrorsResponse.FieldErrorDetail mapToDetail(ConstraintViolation<?> violation) {
     String code = SharedErrorCodes.VALIDATION_ERROR.getCode();
     if (violation.getConstraintDescriptor() != null
-            && violation.getConstraintDescriptor().getAnnotation() != null) {
+        && violation.getConstraintDescriptor().getAnnotation() != null) {
       code = violation.getConstraintDescriptor().getAnnotation().annotationType().getSimpleName();
     }
     String message = violation.getMessage();
     return new FieldErrorsResponse.FieldErrorDetail(code, message);
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/DuplicateResourceExceptionMapper.java
@@ -1635,16 +1644,16 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link DuplicateResourceException} to an HTTP 409 (Conflict) response.
- * <p>
- * Secures the application by returning a high-level, localized message indicating a
- * conflict (e.g., "User already exists") without echoing back potentially sensitive
- * conflicting values (like CPFs or emails) in the response body.
+ *
+ * <p>Secures the application by returning a high-level, localized message indicating a conflict
+ * (e.g., "User already exists") without echoing back potentially sensitive conflicting values (like
+ * CPFs or emails) in the response body.
  */
 @Provider
-public class DuplicateResourceExceptionMapper implements ExceptionMapper<DuplicateResourceException> {
+public class DuplicateResourceExceptionMapper
+    implements ExceptionMapper<DuplicateResourceException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a DuplicateResourceException into a structured HTTP 409 response.
@@ -1660,11 +1669,12 @@ public class DuplicateResourceExceptionMapper implements ExceptionMapper<Duplica
     ApiError error = ApiError.of(code, message);
 
     return Response.status(Response.Status.CONFLICT)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/PersistenceExceptionMapper.java
@@ -1687,20 +1697,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A highly generic exception mapper for handling {@link PersistenceException} and its underlying causes.
- * <p>
- * Instead of coupling to specific domain tables or fields, this mapper analyzes database constraint
- * naming conventions (e.g., "uq_", "_key", "_fkey") to safely map low-level database errors to
- * standardized {@link SharedErrorCodes}. This acts as a security boundary, ensuring internal database
- * structures are never exposed to the client.
+ * A highly generic exception mapper for handling {@link PersistenceException} and its underlying
+ * causes.
+ *
+ * <p>Instead of coupling to specific domain tables or fields, this mapper analyzes database
+ * constraint naming conventions (e.g., "uq_", "_key", "_fkey") to safely map low-level database
+ * errors to standardized {@link SharedErrorCodes}. This acts as a security boundary, ensuring
+ * internal database structures are never exposed to the client.
  */
 @Provider
 public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceException> {
 
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceExceptionMapper.class);
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Maps a generic PersistenceException to an appropriate HTTP response.
@@ -1723,14 +1733,15 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
   }
 
   /**
-   * Evaluates the constraint name generically to determine if it is a unique constraint
-   * or a foreign key integrity violation.
+   * Evaluates the constraint name generically to determine if it is a unique constraint or a
+   * foreign key integrity violation.
    *
    * @param constraintName The raw database constraint name.
-   * @param ex             The original exception for internal logging.
+   * @param ex The original exception for internal logging.
    * @return A safe HTTP 409 Conflict response.
    */
-  private Response handleConstraintViolation(String constraintName, ConstraintViolationException ex) {
+  private Response handleConstraintViolation(
+      String constraintName, ConstraintViolationException ex) {
     if (constraintName == null) {
       LOG.warn("Database constraint violation with null constraint name", ex);
       return buildResponse(SharedErrorCodes.DATA_INTEGRITY_ERROR, Response.Status.CONFLICT);
@@ -1751,7 +1762,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
   /**
    * Helper method to construct the final secure API error response.
    *
-   * @param code   The shared generic error code.
+   * @param code The shared generic error code.
    * @param status The HTTP status to return.
    * @return The final Response object.
    */
@@ -1760,11 +1771,12 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     ApiError error = ApiError.of(code.getCode(), msg);
 
     return Response.status(status)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/ResourceNotFoundExceptionMapper.java
@@ -1783,15 +1795,14 @@ import jakarta.ws.rs.ext.Provider;
 
 /**
  * Maps {@link ResourceNotFoundException} to an HTTP 404 (Not Found) response.
- * <p>
- * Provides a clean and standard 404 API error response, supplying the specific domain
- * code (e.g., CITY_NOT_FOUND) to help the client understand exactly what was missing.
+ *
+ * <p>Provides a clean and standard 404 API error response, supplying the specific domain code
+ * (e.g., CITY_NOT_FOUND) to help the client understand exactly what was missing.
  */
 @Provider
 public class ResourceNotFoundExceptionMapper implements ExceptionMapper<ResourceNotFoundException> {
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts a ResourceNotFoundException into a structured HTTP 404 response.
@@ -1807,11 +1818,12 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
     ApiError error = ApiError.of(code, message);
 
     return Response.status(Response.Status.NOT_FOUND)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(error))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(error))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: presenter/rest/mappers/UncaughtExceptionMapper.java
@@ -1830,24 +1842,21 @@ import jakarta.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Mapper to catch unexpected or unhandled exceptions and return a secure, generic 500 response.
- */
+/** Mapper to catch unexpected or unhandled exceptions and return a secure, generic 500 response. */
 @Provider
 public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
   private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
-  @Inject
-  I18n i18n;
+  @Inject I18n i18n;
 
   /**
    * Converts an uncaught exception into a standardized HTTP 500 error response.
    *
-   * <p>Logs the full stack trace for internal debugging but strictly returns a generic,
-   * localized error message to the client. This prevents information disclosure vulnerabilities
-   * by ensuring that internal class names, SQL statements, or underlying error messages are never
-   * exposed in the API response.
+   * <p>Logs the full stack trace for internal debugging but strictly returns a generic, localized
+   * error message to the client. This prevents information disclosure vulnerabilities by ensuring
+   * that internal class names, SQL statements, or underlying error messages are never exposed in
+   * the API response.
    *
    * @param ex The unexpected exception that was thrown.
    * @return A Response object containing a safe error code and HTTP 500 status.
@@ -1860,11 +1869,12 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
     ApiError apiError = ApiError.of(SharedErrorCodes.INTERNAL_ERROR.getCode(), msg);
 
     return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-            .type(MediaType.APPLICATION_JSON_TYPE)
-            .entity(ApiEnvelope.error(apiError))
-            .build();
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(ApiEnvelope.error(apiError))
+        .build();
   }
 }
+
 
 ================================================================================
 FILE: utils/CollectionUtils.java
@@ -1964,36 +1974,37 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Utility class containing helper methods for the presentation layer (e.g., REST controllers or presenters).
- * <p>
- * Provides standardized, stateless logic for handling UI/API-related tasks such as
- * client locale resolution, ensuring consistent behavior across different API endpoints.
+ * Utility class containing helper methods for the presentation layer (e.g., REST controllers or
+ * presenters).
+ *
+ * <p>Provides standardized, stateless logic for handling UI/API-related tasks such as client locale
+ * resolution, ensuring consistent behavior across different API endpoints.
  */
 public final class PresenterUtils {
 
-  /**
-   * Private constructor to prevent instantiation of this utility class.
-   */
-  private PresenterUtils() {
-  }
+  /** Private constructor to prevent instantiation of this utility class. */
+  private PresenterUtils() {}
 
   /**
    * Resolves the most suitable client locale from a provided list of acceptable options.
-   * <p>
-   * This method is typically used in conjunction with the HTTP {@code Accept-Language} header
-   * to determine the client's preferred language. If the client does not specify any acceptable
-   * locales, or if the provided list is null/empty, the system strictly defaults to
-   * Brazilian Portuguese ({@code pt-BR}).
    *
-   * @param acceptable a prioritized {@link List} of acceptable {@link Locale}s requested by the client
-   * @return the most preferred {@link Locale} from the list, or the {@code pt-BR} fallback if the list is empty
+   * <p>This method is typically used in conjunction with the HTTP {@code Accept-Language} header to
+   * determine the client's preferred language. If the client does not specify any acceptable
+   * locales, or if the provided list is null/empty, the system strictly defaults to Brazilian
+   * Portuguese ({@code pt-BR}).
+   *
+   * @param acceptable a prioritized {@link List} of acceptable {@link Locale}s requested by the
+   *     client
+   * @return the most preferred {@link Locale} from the list, or the {@code pt-BR} fallback if the
+   *     list is empty
    */
   public static Locale pickLocale(List<Locale> acceptable) {
     return CollectionUtils.isEmpty(acceptable)
-            ? Locale.forLanguageTag("pt-BR")
-            : acceptable.getFirst();
+        ? Locale.forLanguageTag("pt-BR")
+        : acceptable.getFirst();
   }
 }
+
 
 ================================================================================
 FILE: utils/StringUtils.java
@@ -2101,27 +2112,27 @@ FILE: validation/UuidV7.java
 ================================================================================
 package com.pug.shared.validation;
 
-import jakarta.validation.Constraint;
-import jakarta.validation.Payload;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.ElementType.TYPE_USE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
 /**
- * Custom Jakarta Bean Validation constraint to ensure a given identifier is strictly a UUID version 7.
- * <p>
- * The platform standardizes on UUIDv7 for time-ordered database indexing. This annotation
- * can be applied to API request payloads (DTOs) to validate that clients are supplying
- * the correctly formatted version of UUID before the request reaches the domain layer.
- * <p>
- * Supported types are {@link String} and {@link java.util.UUID}.
- * <i>Note:</i> Null or empty values are considered valid. Use {@code @NotNull} or {@code @NotBlank}
- * in conjunction with this annotation if the field is mandatory.
+ * Custom Jakarta Bean Validation constraint to ensure a given identifier is strictly a UUID version
+ * 7.
+ *
+ * <p>The platform standardizes on UUIDv7 for time-ordered database indexing. This annotation can be
+ * applied to API request payloads (DTOs) to validate that clients are supplying the correctly
+ * formatted version of UUID before the request reaches the domain layer.
+ *
+ * <p>Supported types are {@link String} and {@link java.util.UUID}. <i>Note:</i> Null or empty
+ * values are considered valid. Use {@code @NotNull} or {@code @NotBlank} in conjunction with this
+ * annotation if the field is mandatory.
  */
 @Target({FIELD, PARAMETER, TYPE_USE})
 @Retention(RUNTIME)
@@ -2129,8 +2140,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface UuidV7 {
 
   /**
-   * The default message interpolation key.
-   * Resolves to the localized message defined in {@code ValidationMessages.properties}.
+   * The default message interpolation key. Resolves to the localized message defined in {@code
+   * ValidationMessages.properties}.
    *
    * @return the validation message key
    */
@@ -2144,13 +2155,14 @@ public @interface UuidV7 {
   Class<?>[] groups() default {};
 
   /**
-   * Defines the payload associated with this constraint, used by clients of the
-   * Bean Validation API to assign custom metadata.
+   * Defines the payload associated with this constraint, used by clients of the Bean Validation API
+   * to assign custom metadata.
    *
    * @return an array of payload classes
    */
   Class<? extends Payload>[] payload() default {};
 }
+
 
 ================================================================================
 FILE: validation/UuidV7ForString.java
@@ -2160,26 +2172,26 @@ package com.pug.shared.validation;
 import com.pug.shared.utils.StringUtils;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.UUID;
 
 /**
- * Constraint validator implementation for evaluating {@link String} fields annotated with {@link UuidV7}.
- * <p>
- * This validator ensures that the string can be successfully parsed into a UUID, and
- * that the resulting UUID's version is exactly 7.
+ * Constraint validator implementation for evaluating {@link String} fields annotated with {@link
+ * UuidV7}.
+ *
+ * <p>This validator ensures that the string can be successfully parsed into a UUID, and that the
+ * resulting UUID's version is exactly 7.
  */
 public final class UuidV7ForString implements ConstraintValidator<UuidV7, String> {
 
   /**
    * Evaluates whether the provided string is a valid UUIDv7.
-   * <p>
-   * Consistent with standard Bean Validation practices, {@code null}, empty, or blank strings
-   * are considered valid to allow for optional fields. If the string is present but cannot
-   * be parsed into a UUID, or if it parses into a different version (e.g., v4), validation fails.
+   *
+   * <p>Consistent with standard Bean Validation practices, {@code null}, empty, or blank strings
+   * are considered valid to allow for optional fields. If the string is present but cannot be
+   * parsed into a UUID, or if it parses into a different version (e.g., v4), validation fails.
    *
    * @param value the raw string value to validate
-   * @param ctx   the context in which the constraint is evaluated
+   * @param ctx the context in which the constraint is evaluated
    * @return {@code true} if the string is empty/null or a valid UUIDv7; {@code false} otherwise
    */
   @Override
@@ -2190,11 +2202,11 @@ public final class UuidV7ForString implements ConstraintValidator<UuidV7, String
     try {
       return UUID.fromString(value).version() == 7;
     } catch (IllegalArgumentException e) {
-      // The string is not formatted as a valid UUID
       return false;
     }
   }
 }
+
 
 ================================================================================
 FILE: validation/UuidV7ForUuid.java
@@ -2203,26 +2215,26 @@ package com.pug.shared.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-
 import java.util.UUID;
 
 /**
- * Constraint validator implementation for evaluating {@link java.util.UUID} objects annotated with {@link UuidV7}.
- * <p>
- * This is typically used when the framework (like Jackson or JAX-RS) has already
- * deserialized the payload into a UUID object, but we must verify that the
- * underlying version of that UUID is specifically version 7.
+ * Constraint validator implementation for evaluating {@link java.util.UUID} objects annotated with
+ * {@link UuidV7}.
+ *
+ * <p>This is typically used when the framework (like Jackson or JAX-RS) has already deserialized
+ * the payload into a UUID object, but we must verify that the underlying version of that UUID is
+ * specifically version 7.
  */
 public final class UuidV7ForUuid implements ConstraintValidator<UuidV7, UUID> {
 
   /**
    * Evaluates whether the provided UUID object is version 7.
-   * <p>
-   * Consistent with standard Bean Validation practices, {@code null} values
-   * are considered valid.
+   *
+   * <p>Consistent with standard Bean Validation practices, {@code null} values are considered
+   * valid.
    *
    * @param value the UUID object to validate
-   * @param ctx   the context in which the constraint is evaluated
+   * @param ctx the context in which the constraint is evaluated
    * @return {@code true} if the UUID is null or its version is 7; {@code false} otherwise
    */
   @Override
@@ -2230,3 +2242,4 @@ public final class UuidV7ForUuid implements ConstraintValidator<UuidV7, UUID> {
     return value == null || value.version() == 7;
   }
 }
+
