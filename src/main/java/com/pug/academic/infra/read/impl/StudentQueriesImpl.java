@@ -66,34 +66,12 @@ public class StudentQueriesImpl implements StudentQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<StudentView> findOptionalById(UUID accountId) {
-    if (accountId == null) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration) {
     if (StringUtils.isEmpty(academicRegistration)) {
       return Optional.empty();
     }
     var q = em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class);
     q.setParameter("reg", academicRegistration);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<StudentView> findOptionalByEmail(String email) {
-    if (StringUtils.isEmpty(email)) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
-    q.setParameter("email", email);
     return q.getResultStream().findFirst();
   }
 
@@ -110,9 +88,24 @@ public class StudentQueriesImpl implements StudentQueries {
 
   /** {@inheritDoc} */
   @Override
-  public List<StudentView> listAllStudents() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
-        .getResultList();
+  public Optional<StudentView> findOptionalByEmail(String email) {
+    if (StringUtils.isEmpty(email)) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
+    q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<StudentView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
+    q.setParameter("id", accountId);
+    return q.getResultStream().findFirst();
   }
 
   /** {@inheritDoc} */
@@ -126,6 +119,13 @@ public class StudentQueriesImpl implements StudentQueries {
             SELECT_BASE + " where s.courseId = :cid" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
     q.setParameter("cid", courseId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listAllStudents() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
+        .getResultList();
   }
 
   /**

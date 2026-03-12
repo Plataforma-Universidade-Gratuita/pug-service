@@ -1,5 +1,6 @@
 package com.pug.partner.presenter;
 
+import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
@@ -117,6 +118,26 @@ public class EntityResource {
             .map(v -> EntityPresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
 
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a list of geographical cities currently associated with at least one partner entity.
+   *
+   * <p>This endpoint scans the active partner entities, extracts their unique geographical
+   * locations, and returns the corresponding city details. It is optimized to only return cities
+   * actively in use by the platform's partner network, filtering the results in-memory.
+   *
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the list of used cities.
+   */
+  @GET
+  @Path("/cities")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response listCities() {
+    var body =
+        readService.listCityViews().stream()
+            .map(CityPresenter::toResponse)
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

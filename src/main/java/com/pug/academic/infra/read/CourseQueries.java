@@ -24,13 +24,12 @@ public interface CourseQueries {
   Optional<CourseView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a read-only view of a course based on its exact name.
+   * Retrieves a list of courses offered by a specific school.
    *
-   * @param name the exact name of the course
-   * @return an {@link Optional} containing the found {@link CourseView}, or {@link
-   *     Optional#empty()} if not found
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return a {@link List} of {@link CourseView} objects linked to the specified school
    */
-  Optional<CourseView> findOptionalByName(String name);
+  List<CourseView> listAllBySchoolId(UUID schoolId);
 
   /**
    * Retrieves a comprehensive list of all academic courses registered in the system.
@@ -41,14 +40,6 @@ public interface CourseQueries {
    * @return a {@link List} of all {@link CourseView} objects
    */
   List<CourseView> listAllCourses();
-
-  /**
-   * Retrieves a list of courses offered by a specific school.
-   *
-   * @param schoolId the unique identifier (UUID) of the school
-   * @return a {@link List} of {@link CourseView} objects linked to the specified school
-   */
-  List<CourseView> listAllBySchoolId(UUID schoolId);
 
   /**
    * Executes a robust full-text search against the names of courses.

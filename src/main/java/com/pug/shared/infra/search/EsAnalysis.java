@@ -46,7 +46,8 @@ public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
         .tokenFilters("lowercase", "asciifolding");
     /*
      * Analyzer: Specialized text analyzer for autocomplete text fields.
-     * Combines the Portuguese text rules with the edge n-gram filter to match partial words efficiently.
+     * Combines the Portuguese text rules with the edge n-gram filter
+     * to match partial words efficiently.
      */
     ctx.analyzer("auto_ngram")
         .custom()

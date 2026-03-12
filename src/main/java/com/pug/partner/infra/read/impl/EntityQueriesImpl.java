@@ -84,6 +84,13 @@ public class EntityQueriesImpl implements EntityQueries {
 
   /** {@inheritDoc} */
   @Override
+  public List<UUID> listAllCityIds() {
+    return em.createQuery("select distinct e.cityId from EntityEntity e", UUID.class)
+        .getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<EntityView> listAllEntities() {
     return em.createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, EntityView.class).getResultList();
   }

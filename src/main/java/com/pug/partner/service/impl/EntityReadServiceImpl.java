@@ -1,5 +1,7 @@
 package com.pug.partner.service.impl;
 
+import com.pug.geo.infra.read.dtos.CityView;
+import com.pug.geo.service.CityReadService;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.service.EntityReadService;
@@ -24,6 +26,8 @@ public class EntityReadServiceImpl implements EntityReadService {
   private static final Logger LOG = Logger.getLogger(EntityReadServiceImpl.class);
 
   @Inject EntityQueries queries;
+
+  @Inject CityReadService cityReadService;
 
   /** {@inheritDoc} */
   @Override
@@ -51,6 +55,13 @@ public class EntityReadServiceImpl implements EntityReadService {
               LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
               return ExceptionHelper.entityNotFound();
             });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listCityViews() {
+    List<UUID> usedCityIds = queries.listAllCityIds();
+    return cityReadService.listViewsByIds(usedCityIds);
   }
 
   /** {@inheritDoc} */

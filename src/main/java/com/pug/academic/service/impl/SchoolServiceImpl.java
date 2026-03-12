@@ -35,6 +35,49 @@ public class SchoolServiceImpl implements SchoolService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete School ID: %s", id);
+    if (id == null) {
+      return false;
+    }
+
+    if (courseService.existsAnyBySchoolId(id)) {
+      LOG.warnf("Delete failed: School ID %s has active courses", id);
+      throw ExceptionHelper.schoolHasCourses();
+    }
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("School deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
+    }
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public School getById(UUID id) {
+    School school =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("School lookup failed: ID %s not found", id);
+                  return ExceptionHelper.schoolNotFound();
+                });
+
+    if (school.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+          id, school.getProblemsSummary());
+      throw ExceptionHelper.schoolNotFound();
+    }
+    return school;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public School save(SchoolCreateCommand cmd) {
     LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
@@ -75,49 +118,6 @@ public class SchoolServiceImpl implements SchoolService {
     repo.update(updatedSchool);
     LOG.infof("School updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete School ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    if (courseService.existsAnyBySchoolId(id)) {
-      LOG.warnf("Delete failed: School ID %s has active courses", id);
-      throw ExceptionHelper.schoolHasCourses();
-    }
-
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("School deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
-    }
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public School getById(UUID id) {
-    School school =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("School lookup failed: ID %s not found", id);
-                  return ExceptionHelper.schoolNotFound();
-                });
-
-    if (school.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-          id, school.getProblemsSummary());
-      throw ExceptionHelper.schoolNotFound();
-    }
-    return school;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

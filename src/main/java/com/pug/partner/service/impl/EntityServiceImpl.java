@@ -1,6 +1,6 @@
 package com.pug.partner.service.impl;
 
-import com.pug.geo.service.CityService;
+import com.pug.geo.service.CityReadService;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.vos.Cnpj;
@@ -23,8 +23,8 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
  * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link CityService}), and manages the lifecycle cascading to {@link StaffService} during
- * deletion operations.
+ * via {@link com.pug.geo.service.CityReadService}), and manages the lifecycle cascading to {@link
+ * StaffService} during deletion operations.
  */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
@@ -33,7 +33,7 @@ public class EntityServiceImpl implements EntityService {
 
   @Inject EntityRepository repo;
 
-  @Inject CityService cityService;
+  @Inject CityReadService cityReadService;
 
   @Inject StaffService staffService;
 
@@ -113,7 +113,7 @@ public class EntityServiceImpl implements EntityService {
   public Entity save(EntityCreateCommand cmd) {
     LOG.debugf("Attempting to create Entity: %s (CNPJ: %s)", cmd.name(), cmd.cnpjString());
     if (cmd.cityId() != null) {
-      cityService.getById(cmd.cityId());
+      cityReadService.getViewById(cmd.cityId());
     }
 
     Entity entityToPersist =
@@ -141,7 +141,7 @@ public class EntityServiceImpl implements EntityService {
     LOG.debugf("Attempting to update Entity ID: %s", id);
     Entity current = getById(id);
     if (cmd.cityId() != null) {
-      cityService.getById(cmd.cityId());
+      cityReadService.getViewById(cmd.cityId());
     }
 
     Entity updatedEntity =

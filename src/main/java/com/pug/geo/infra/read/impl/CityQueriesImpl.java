@@ -47,6 +47,19 @@ public class CityQueriesImpl implements CityQueries {
 
   /** {@inheritDoc} */
   @Override
+  public List<CityView> listAllByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    var q =
+        entityManager.createQuery(
+            "from CityEntity c where c.id in :ids order by c.name asc", CityEntity.class);
+    q.setParameter("ids", ids);
+    return q.getResultList().stream().map(CityMapper::toView).toList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<CityView> listAllCities() {
     var q = entityManager.createQuery("from CityEntity c order by c.name asc", CityEntity.class);
     return q.getResultList().stream().map(CityMapper::toView).toList();

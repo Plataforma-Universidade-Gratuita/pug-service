@@ -170,27 +170,32 @@ import java.util.UUID;
 public interface CourseRepository {
 
   /**
-   * Persists a newly created {@link Course} aggregate into the repository.
-   *
-   * @param entity the {@link Course} aggregate to persist
-   * @return the fully persisted {@link Course} instance
-   */
-  Course persist(Course entity);
-
-  /**
-   * Updates the state of an existing {@link Course} aggregate in the repository.
-   *
-   * @param entity the {@link Course} instance containing the updated state
-   */
-  void update(Course entity);
-
-  /**
    * Removes a {@link Course} from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the course to delete
    * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether a {@link Course} with the specified name already exists in the repository.
+   *
+   * @param name the exact name of the course
+   * @return {@code true} if a course with the given name exists, {@code false} otherwise
+   */
+  boolean existsByName(String name);
+
+  /**
+   * Checks whether any {@link Course} associated with the specified school identifier exists in the
+   * repository.
+   *
+   * <p>This query is crucial for enforcing relational integrity, ensuring schools are not deleted
+   * if they still offer active courses.
+   *
+   * @param schoolId the unique identifier (UUID) of the associated school
+   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   */
+  boolean existsBySchoolId(UUID schoolId);
 
   /**
    * Retrieves a {@link Course} by its unique identifier.
@@ -207,14 +212,19 @@ public interface CourseRepository {
   Optional<Course> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link Course} with the specified name already exists in the repository.
+   * Persists a newly created {@link Course} aggregate into the repository.
    *
-   * @param name the exact name of the course
-   * @return {@code true} if a course with the given name exists, {@code false} otherwise
+   * @param entity the {@link Course} aggregate to persist
+   * @return the fully persisted {@link Course} instance
    */
-  boolean existsByName(String name);
+  Course persist(Course entity);
 
-  boolean existsBySchoolId(UUID schoolId);
+  /**
+   * Updates the state of an existing {@link Course} aggregate in the repository.
+   *
+   * @param entity the {@link Course} instance containing the updated state
+   */
+  void update(Course entity);
 }
 
 
@@ -227,7 +237,7 @@ import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Enumeration of high-level domain error codes specific to the Academic context.
+ * Enumeration of high-level domain error codes specific to the academic context.
  *
  * <p>This enum implements {@link GenericCodes} to map business rule violations and resource state
  * conflicts directly to localized messages in the application's resource bundles. Unlike
@@ -236,15 +246,18 @@ import lombok.Getter;
  */
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
-  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
-  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
-  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates an attempt to create or update an academic course using a name that is already
    * registered in the system.
    */
   COURSE_ALREADY_EXISTS("error.domain.academic.course.already.exists"),
+
+  /**
+   * Indicates an attempt to delete or modify an academic course that currently has active student
+   * enrollments associated with it, violating relational integrity.
+   */
+  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
 
   /**
    * Indicates that a requested academic course could not be located in the underlying data store by
@@ -259,6 +272,12 @@ public enum AcademicErrorCodes implements GenericCodes {
   SCHOOL_ALREADY_EXISTS("error.domain.academic.school.already.exists"),
 
   /**
+   * Indicates an attempt to delete or modify an academic school that currently has registered
+   * courses under its hierarchy, violating relational integrity.
+   */
+  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
+
+  /**
    * Indicates that a requested academic school could not be located in the underlying data store by
    * its unique identifier.
    */
@@ -269,6 +288,12 @@ public enum AcademicErrorCodes implements GenericCodes {
    * assigned to an existing student.
    */
   STUDENT_ALREADY_EXISTS("error.domain.academic.student.already.exists"),
+
+  /**
+   * Indicates an attempt to remove or alter a student profile that still retains active or
+   * historical academic enrollments, violating relational integrity.
+   */
+  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates that a requested student enrollment record could not be located in the underlying
@@ -507,27 +532,20 @@ import java.util.UUID;
 public interface SchoolRepository {
 
   /**
-   * Persists a newly created {@link School} aggregate into the repository.
-   *
-   * @param entity the {@link School} aggregate to persist
-   * @return the fully persisted {@link School} instance
-   */
-  School persist(School entity);
-
-  /**
-   * Updates the state of an existing {@link School} aggregate in the repository.
-   *
-   * @param entity the {@link School} instance containing the updated state
-   */
-  void update(School entity);
-
-  /**
    * Removes a {@link School} from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the school to delete
    * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether a {@link School} with the specified name already exists in the repository.
+   *
+   * @param name the exact name of the school
+   * @return {@code true} if a school with the given name exists, {@code false} otherwise
+   */
+  boolean existsByName(String name);
 
   /**
    * Retrieves a {@link School} by its unique identifier.
@@ -544,12 +562,19 @@ public interface SchoolRepository {
   Optional<School> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link School} with the specified name already exists in the repository.
+   * Persists a newly created {@link School} aggregate into the repository.
    *
-   * @param name the exact name of the school
-   * @return {@code true} if a school with the given name exists, {@code false} otherwise
+   * @param entity the {@link School} aggregate to persist
+   * @return the fully persisted {@link School} instance
    */
-  boolean existsByName(String name);
+  School persist(School entity);
+
+  /**
+   * Updates the state of an existing {@link School} aggregate in the repository.
+   *
+   * @param entity the {@link School} instance containing the updated state
+   */
+  void update(School entity);
 }
 
 
@@ -833,27 +858,32 @@ import java.util.UUID;
 public interface StudentRepository {
 
   /**
-   * Persists a newly created {@link Student} aggregate into the repository.
-   *
-   * @param entity the {@link Student} aggregate to persist
-   * @return the fully persisted {@link Student} instance
-   */
-  Student persist(Student entity);
-
-  /**
-   * Updates the state of an existing {@link Student} aggregate in the repository.
-   *
-   * @param entity the {@link Student} instance containing the updated state
-   */
-  void update(Student entity);
-
-  /**
    * Removes a {@link Student} from the repository based on their linked account ID.
    *
    * @param id the unique identifier (UUID) of the student's linked account
    * @return {@code true} if the student was successfully deleted, {@code false} if not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether any {@link Student} associated with the specified course identifier exists in
+   * the repository.
+   *
+   * <p>This query enforces relational integrity, ensuring academic courses are not deleted if they
+   * still have students actively enrolled in them.
+   *
+   * @param courseId the unique identifier (UUID) of the enrolled course
+   * @return {@code true} if at least one student is enrolled in the course, {@code false} otherwise
+   */
+  boolean existsByCourseId(UUID courseId);
+
+  /**
+   * Checks whether a {@link Student} with the specified academic registration already exists.
+   *
+   * @param registration the raw academic registration string to check
+   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
+   */
+  boolean existsByRegistration(String registration);
 
   /**
    * Retrieves a {@link Student} by their linked account identifier.
@@ -869,14 +899,19 @@ public interface StudentRepository {
   Optional<Student> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link Student} with the specified academic registration already exists.
+   * Persists a newly created {@link Student} aggregate into the repository.
    *
-   * @param registration the raw academic registration string to check
-   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
+   * @param entity the {@link Student} aggregate to persist
+   * @return the fully persisted {@link Student} instance
    */
-  boolean existsByRegistration(String registration);
+  Student persist(Student entity);
 
-  boolean existsByCourseId(UUID courseId);
+  /**
+   * Updates the state of an existing {@link Student} aggregate in the repository.
+   *
+   * @param entity the {@link Student} instance containing the updated state
+   */
+  void update(Student entity);
 }
 
 
@@ -1334,6 +1369,40 @@ public class CourseRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByName(String name) {
+    return count("name = ?1", name) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return false;
+    }
+    return count("schoolId", schoolId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Course> findOptionalById(UUID id) {
+    Optional<CourseEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(CourseMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Course persist(Course entity) {
     if (entity == null) {
       return null;
@@ -1354,39 +1423,6 @@ public class CourseRepositoryImpl
     if (managed != null) {
       CourseMapper.copy(course, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Course> findOptionalById(UUID id) {
-    Optional<CourseEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(CourseMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByName(String name) {
-    return count("name = ?1", name) > 0;
-  }
-
-  @Override
-  public boolean existsBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
-      return false;
-    }
-    return count("schoolId", schoolId) > 0;
   }
 }
 
@@ -1420,6 +1456,31 @@ public class SchoolRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByName(String name) {
+    return count("name = ?1", name) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<School> findOptionalById(UUID id) {
+    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(SchoolMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public School persist(School school) {
     if (school == null) {
       return null;
@@ -1440,31 +1501,6 @@ public class SchoolRepositoryImpl
     if (managed != null) {
       SchoolMapper.copy(school, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<School> findOptionalById(UUID id) {
-    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(SchoolMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByName(String name) {
-    return count("name = ?1", name) > 0;
   }
 }
 
@@ -1499,6 +1535,43 @@ public class StudentRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCourseId(UUID courseId) {
+    if (courseId == null) {
+      return false;
+    }
+    return count("courseId", courseId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
+    }
+    return count("academicRegistration", registration) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Student> findOptionalById(UUID id) {
+    Optional<StudentEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(StudentMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Student persist(Student student) {
     if (student == null) {
       return null;
@@ -1519,42 +1592,6 @@ public class StudentRepositoryImpl
     if (entity != null) {
       StudentMapper.copy(student, entity);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Student> findOptionalById(UUID id) {
-    Optional<StudentEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(StudentMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByRegistration(String registration) {
-    if (StringUtils.isEmpty(registration)) {
-      return false;
-    }
-    return count("academicRegistration", registration) > 0;
-  }
-
-  @Override
-  public boolean existsByCourseId(UUID courseId) {
-    if (courseId == null) {
-      return false;
-    }
-    return count("courseId", courseId) > 0;
   }
 }
 
@@ -1752,13 +1789,12 @@ public interface CourseQueries {
   Optional<CourseView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a read-only view of a course based on its exact name.
+   * Retrieves a list of courses offered by a specific school.
    *
-   * @param name the exact name of the course
-   * @return an {@link Optional} containing the found {@link CourseView}, or {@link
-   *     Optional#empty()} if not found
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return a {@link List} of {@link CourseView} objects linked to the specified school
    */
-  Optional<CourseView> findOptionalByName(String name);
+  List<CourseView> listAllBySchoolId(UUID schoolId);
 
   /**
    * Retrieves a comprehensive list of all academic courses registered in the system.
@@ -1769,14 +1805,6 @@ public interface CourseQueries {
    * @return a {@link List} of all {@link CourseView} objects
    */
   List<CourseView> listAllCourses();
-
-  /**
-   * Retrieves a list of courses offered by a specific school.
-   *
-   * @param schoolId the unique identifier (UUID) of the school
-   * @return a {@link List} of {@link CourseView} objects linked to the specified school
-   */
-  List<CourseView> listAllBySchoolId(UUID schoolId);
 
   /**
    * Executes a robust full-text search against the names of courses.
@@ -1923,7 +1951,6 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.CourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -1975,25 +2002,6 @@ public class CourseQueriesImpl implements CourseQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<CourseView> findOptionalByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      return Optional.empty();
-    }
-    var q = entityManager.createQuery(SELECT_BASE + " where c.name = :name", CourseView.class);
-    q.setParameter("name", name);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<CourseView> listAllCourses() {
-    return entityManager
-        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
-        .getResultList();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public List<CourseView> listAllBySchoolId(UUID schoolId) {
     if (schoolId == null) {
       return List.of();
@@ -2003,6 +2011,14 @@ public class CourseQueriesImpl implements CourseQueries {
             SELECT_BASE + " where c.schoolId = :schoolId" + ORDER_BY_NAME_ASC, CourseView.class);
     q.setParameter("schoolId", schoolId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CourseView> listAllCourses() {
+    return entityManager
+        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
+        .getResultList();
   }
 
   /**
@@ -2193,34 +2209,12 @@ public class StudentQueriesImpl implements StudentQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<StudentView> findOptionalById(UUID accountId) {
-    if (accountId == null) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration) {
     if (StringUtils.isEmpty(academicRegistration)) {
       return Optional.empty();
     }
     var q = em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class);
     q.setParameter("reg", academicRegistration);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<StudentView> findOptionalByEmail(String email) {
-    if (StringUtils.isEmpty(email)) {
-      return Optional.empty();
-    }
-    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
-    q.setParameter("email", email);
     return q.getResultStream().findFirst();
   }
 
@@ -2237,9 +2231,24 @@ public class StudentQueriesImpl implements StudentQueries {
 
   /** {@inheritDoc} */
   @Override
-  public List<StudentView> listAllStudents() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
-        .getResultList();
+  public Optional<StudentView> findOptionalByEmail(String email) {
+    if (StringUtils.isEmpty(email)) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
+    q.setParameter("email", email);
+    return q.getResultStream().findFirst();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<StudentView> findOptionalById(UUID accountId) {
+    if (accountId == null) {
+      return Optional.empty();
+    }
+    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
+    q.setParameter("id", accountId);
+    return q.getResultStream().findFirst();
   }
 
   /** {@inheritDoc} */
@@ -2253,6 +2262,13 @@ public class StudentQueriesImpl implements StudentQueries {
             SELECT_BASE + " where s.courseId = :cid" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
     q.setParameter("cid", courseId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listAllStudents() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
+        .getResultList();
   }
 
   /**
@@ -2383,28 +2399,12 @@ import java.util.UUID;
 public interface StudentQueries {
 
   /**
-   * Retrieves a read-only view of a student based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the student's account
-   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
-   */
-  Optional<StudentView> findOptionalById(UUID accountId);
-
-  /**
    * Retrieves a read-only view of a student based on their academic registration identifier.
    *
    * @param academicRegistration the exact academic registration string of the student
    * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration);
-
-  /**
-   * Retrieves a read-only view of a student based on their registered email address.
-   *
-   * @param email the exact email address of the student
-   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
-   */
-  Optional<StudentView> findOptionalByEmail(String email);
 
   /**
    * Retrieves a read-only view of a student based on their registered CPF.
@@ -2415,14 +2415,20 @@ public interface StudentQueries {
   Optional<StudentView> findOptionalByCpf(String cpf);
 
   /**
-   * Retrieves a comprehensive list of all students registered in the system.
+   * Retrieves a read-only view of a student based on their registered email address.
    *
-   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
-   * implement pagination.
-   *
-   * @return a {@link List} of all {@link StudentView} records
+   * @param email the exact email address of the student
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
-  List<StudentView> listAllStudents();
+  Optional<StudentView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of a student based on their linked account ID.
+   *
+   * @param accountId the unique identifier (UUID) of the student's account
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
+   */
+  Optional<StudentView> findOptionalById(UUID accountId);
 
   /**
    * Retrieves a list of all students enrolled in a specific course.
@@ -2431,6 +2437,16 @@ public interface StudentQueries {
    * @return a {@link List} of {@link StudentView} records associated with the given course
    */
   List<StudentView> listAllByCourseId(UUID courseId);
+
+  /**
+   * Retrieves a comprehensive list of all students registered in the system.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
+   *
+   * @return a {@link List} of all {@link StudentView} records
+   */
+  List<StudentView> listAllStudents();
 
   /**
    * Executes a robust full-text search against the names of the associated student users.
@@ -2735,7 +2751,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Academic Courses.
+ * REST API resource controller for managing academic courses.
  *
  * <p>This class exposes endpoints to create, retrieve, update, and delete courses. It delegates
  * commands to the {@link CourseService} (writes) and queries to the {@link CourseReadService}
@@ -2856,7 +2872,11 @@ public class CourseResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -3390,7 +3410,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Academic Schools (or departments).
+ * REST API resource controller for managing academic schools (or departments).
  *
  * <p>This class exposes endpoints to create, retrieve, update, and delete schools. It delegates
  * commands to the {@link SchoolService} (writes) and queries to the {@link SchoolReadService}
@@ -3505,7 +3525,11 @@ public class SchoolResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -3563,7 +3587,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Student enrollments.
+ * REST API resource controller for managing student enrollments.
  *
  * <p>This class exposes endpoints to enroll, retrieve, update, and remove students. It delegates
  * commands to the {@link StudentService} (writes) and queries to the {@link StudentReadService}
@@ -3600,17 +3624,17 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a specific student by their exact academic registration number.
+   * Retrieves a specific student by their exact CPF.
    *
-   * @param registration the academic registration string
+   * @param cpf the raw 11-digit numeric CPF string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path("/by-registration/{registration}")
-  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
-    StudentView view = readService.getViewByAcademicRegistration(registration);
+  @Path("/by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
+    StudentView view = readService.getViewByCpf(cpf);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -3632,17 +3656,17 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a specific student by their exact CPF.
+   * Retrieves a specific student by their exact academic registration number.
    *
-   * @param cpf the raw 11-digit numeric CPF string
+   * @param registration the academic registration string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path("/by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
-    StudentView view = readService.getViewByCpf(cpf);
+  @Path("/by-registration/{registration}")
+  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
+    StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -3766,7 +3790,11 @@ public class StudentResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -3853,6 +3881,40 @@ import java.util.UUID;
 public interface CourseService {
 
   /**
+   * Removes a {@link Course} from the system by its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the course to delete
+   * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID id);
+
+  /**
+   * Checks whether any academic course associated with the specified school identifier exists.
+   *
+   * <p>This method is utilized to enforce relational integrity, ensuring that a {@link
+   * com.pug.academic.domain.School} cannot be deleted if it still has active courses linked to it.
+   *
+   * @param schoolId the unique identifier (UUID) of the school to check
+   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   */
+  boolean existsAnyBySchoolId(UUID schoolId);
+
+  /**
+   * Retrieves a full {@link Course} domain aggregate by its unique identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
+   * validating a course before enrolling a Student). For API responses, use {@link
+   * CourseReadService#getViewById(UUID)} instead.
+   *
+   * @param id the unique identifier (UUID) of the course
+   * @return the fully reconstituted {@link Course} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the course exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Course getById(UUID id);
+
+  /**
    * Instantiates and persists a new {@link Course} aggregate based on the provided command.
    *
    * <p>This method ensures the referenced {@link com.pug.academic.domain.School} exists prior to
@@ -3885,31 +3947,6 @@ public interface CourseService {
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   Course update(UUID id, CourseUpdateCommand cmd);
-
-  /**
-   * Removes a {@link Course} from the system by its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the course to delete
-   * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID id);
-
-  /**
-   * Retrieves a full {@link Course} domain aggregate by its unique identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * validating a course before enrolling a Student). For API responses, use {@link
-   * CourseReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the course
-   * @return the fully reconstituted {@link Course} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the course exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Course getById(UUID id);
-
-  boolean existsAnyBySchoolId(UUID schoolId);
 }
 
 
@@ -4175,6 +4212,56 @@ public class CourseServiceImpl implements CourseService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Course ID: %s", id);
+    if (id == null) {
+      return false;
+    }
+
+    if (studentService.existsAnyByCourseId(id)) {
+      LOG.warnf("Delete failed: Course ID %s has active students", id);
+      throw ExceptionHelper.courseHasStudents();
+    }
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Course deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyBySchoolId(UUID schoolId) {
+    return repo.existsBySchoolId(schoolId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Course getById(UUID id) {
+    Course course =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Course lookup failed: ID %s not found", id);
+                  return ExceptionHelper.courseNotFound();
+                });
+
+    if (course.hasFieldErrors()) {
+      LOG.errorf(
+          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+          id, course.getProblemsSummary());
+      throw ExceptionHelper.courseNotFound();
+    }
+    return course;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Course save(CourseCreateCommand cmd) {
     LOG.debugf("Attempting to create Course: %s", cmd.name());
     schoolService.getById(cmd.schoolId());
@@ -4222,55 +4309,6 @@ public class CourseServiceImpl implements CourseService {
     repo.update(updatedCourse);
     LOG.infof("Course updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete Course ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    if (studentService.existsAnyByCourseId(id)) {
-      LOG.warnf("Delete failed: Course ID %s has active students", id);
-      throw ExceptionHelper.courseHasStudents();
-    }
-
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("Course deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Course getById(UUID id) {
-    Course course =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Course lookup failed: ID %s not found", id);
-                  return ExceptionHelper.courseNotFound();
-                });
-
-    if (course.hasFieldErrors()) {
-      LOG.errorf(
-          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-          id, course.getProblemsSummary());
-      throw ExceptionHelper.courseNotFound();
-    }
-    return course;
-  }
-
-  @Override
-  public boolean existsAnyBySchoolId(UUID schoolId) {
-    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -4392,6 +4430,49 @@ public class SchoolServiceImpl implements SchoolService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete School ID: %s", id);
+    if (id == null) {
+      return false;
+    }
+
+    if (courseService.existsAnyBySchoolId(id)) {
+      LOG.warnf("Delete failed: School ID %s has active courses", id);
+      throw ExceptionHelper.schoolHasCourses();
+    }
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("School deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
+    }
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public School getById(UUID id) {
+    School school =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("School lookup failed: ID %s not found", id);
+                  return ExceptionHelper.schoolNotFound();
+                });
+
+    if (school.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
+          id, school.getProblemsSummary());
+      throw ExceptionHelper.schoolNotFound();
+    }
+    return school;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public School save(SchoolCreateCommand cmd) {
     LOG.debugf("Attempting to create School: %s", cmd.name());
     School schoolToPersist = SchoolProcessor.processCreateInput(cmd.name());
@@ -4432,49 +4513,6 @@ public class SchoolServiceImpl implements SchoolService {
     repo.update(updatedSchool);
     LOG.infof("School updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete School ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    if (courseService.existsAnyBySchoolId(id)) {
-      LOG.warnf("Delete failed: School ID %s has active courses", id);
-      throw ExceptionHelper.schoolHasCourses();
-    }
-
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("School deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
-    }
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public School getById(UUID id) {
-    School school =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("School lookup failed: ID %s not found", id);
-                  return ExceptionHelper.schoolNotFound();
-                });
-
-    if (school.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: School %s violates domain rules: %s",
-          id, school.getProblemsSummary());
-      throw ExceptionHelper.schoolNotFound();
-    }
-    return school;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -4653,6 +4691,59 @@ public class StudentServiceImpl implements StudentService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
+    }
+
+    if (enrollmentService.existsAnyByStudentId(accountId)) {
+      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
+      throw ExceptionHelper.studentHasEnrollments();
+    }
+
+    boolean deleted = repo.deleteById(accountId);
+
+    if (deleted) {
+      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyByCourseId(UUID courseId) {
+    return repo.existsByCourseId(courseId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Student getById(UUID accountId) {
+    Student student =
+        repo.findOptionalById(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.studentNotFound();
+                });
+
+    if (student.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+          accountId, student.getProblemsSummary());
+      throw ExceptionHelper.studentNotFound();
+    }
+
+    return student;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Student save(StudentCreateCommand cmd) {
     LOG.debugf("Attempting to create Student with registration: %s", cmd.academicRegistration());
     courseService.getById(cmd.courseId());
@@ -4724,58 +4815,6 @@ public class StudentServiceImpl implements StudentService {
     repo.update(studentToUpdate);
     LOG.infof("Student updated successfully. Account ID: %s", accountId);
     return getById(accountId);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID accountId) {
-    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
-    if (accountId == null) {
-      return false;
-    }
-
-    if (enrollmentService.existsAnyByStudentId(accountId)) {
-      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
-      throw ExceptionHelper.studentHasEnrollments();
-    }
-
-    boolean deleted = repo.deleteById(accountId);
-
-    if (deleted) {
-      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
-      accountService.delete(accountId);
-    } else {
-      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Student getById(UUID accountId) {
-    Student student =
-        repo.findOptionalById(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-                  return ExceptionHelper.studentNotFound();
-                });
-
-    if (student.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
-          accountId, student.getProblemsSummary());
-      throw ExceptionHelper.studentNotFound();
-    }
-
-    return student;
-  }
-
-  @Override
-  public boolean existsAnyByCourseId(UUID courseId) {
-    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */
@@ -4867,6 +4906,29 @@ import java.util.UUID;
 public interface SchoolService {
 
   /**
+   * Removes a {@link School} from the system by its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the school to delete
+   * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID id);
+
+  /**
+   * Retrieves a full {@link School} domain aggregate by its unique identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
+   * verifying a school exists before linking a Course). For API responses, use {@link
+   * SchoolReadService#getViewById(UUID)} instead.
+   *
+   * @param id the unique identifier (UUID) of the school
+   * @return the fully reconstituted {@link School} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the school exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  School getById(UUID id);
+
+  /**
    * Instantiates and persists a new {@link School} aggregate based on the provided command.
    *
    * @param cmd the structured command containing the data to create the new school
@@ -4893,29 +4955,6 @@ public interface SchoolService {
    *     domain constraints
    */
   School update(UUID id, SchoolUpdateCommand cmd);
-
-  /**
-   * Removes a {@link School} from the system by its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the school to delete
-   * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID id);
-
-  /**
-   * Retrieves a full {@link School} domain aggregate by its unique identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * verifying a school exists before linking a Course). For API responses, use {@link
-   * SchoolReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the school
-   * @return the fully reconstituted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the school exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  School getById(UUID id);
 }
 
 
@@ -4938,16 +4977,6 @@ import java.util.UUID;
 public interface StudentReadService {
 
   /**
-   * Retrieves a read-only projection of an enrolled student based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the student's account
-   * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
-   *     ID
-   */
-  StudentView getViewByAccountId(UUID accountId);
-
-  /**
    * Retrieves a read-only projection of a student based on their exact academic registration
    * number.
    *
@@ -4959,14 +4988,14 @@ public interface StudentReadService {
   StudentView getViewByAcademicRegistration(String academicRegistration);
 
   /**
-   * Retrieves a read-only projection of a student based on their registered email address.
+   * Retrieves a read-only projection of an enrolled student based on their linked account ID.
    *
-   * @param email the exact email address of the student
+   * @param accountId the unique identifier (UUID) of the student's account
    * @return the populated {@link StudentView} DTO
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
-   *     email
+   *     ID
    */
-  StudentView getViewByEmail(String email);
+  StudentView getViewByAccountId(UUID accountId);
 
   /**
    * Retrieves a read-only projection of a student based on their registered CPF.
@@ -4977,6 +5006,16 @@ public interface StudentReadService {
    *     CPF
    */
   StudentView getViewByCpf(String cpf);
+
+  /**
+   * Retrieves a read-only projection of a student based on their registered email address.
+   *
+   * @param email the exact email address of the student
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     email
+   */
+  StudentView getViewByEmail(String email);
 
   /**
    * Retrieves a comprehensive list of all students registered in the system.
@@ -5031,6 +5070,45 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
+   * Removes a student's enrollment by deleting the {@link Student} record.
+   *
+   * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
+   * the service automatically triggers the deletion of the underlying {@link
+   * com.pug.identity.domain.Account} to ensure credentials tied strictly to student roles are wiped
+   * out.
+   *
+   * @param accountId the unique identifier of the Student to delete (Account ID)
+   * @return {@code true} if the student was successfully deleted, {@code false} if they were not
+   *     found
+   */
+  boolean delete(UUID accountId);
+
+  /**
+   * Checks whether any active student enrollment associated with a specific course exists.
+   *
+   * <p>This method is utilized to enforce relational integrity, ensuring that an academic {@link
+   * com.pug.academic.domain.Course} cannot be deleted if it still has enrolled students.
+   *
+   * @param courseId the unique identifier (UUID) of the course to check
+   * @return {@code true} if at least one student is enrolled in the course, {@code false} otherwise
+   */
+  boolean existsAnyByCourseId(UUID courseId);
+
+  /**
+   * Retrieves a full {@link Student} domain aggregate by its linked account identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link StudentReadService#getViewByAccountId(UUID)} instead.
+   *
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the student exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Student getById(UUID accountId);
+
+  /**
    * Instantiates and persists a new {@link Student} aggregate based on the provided command.
    *
    * <p>This method performs a cascading save. It verifies that the specified course exists, then
@@ -5068,36 +5146,6 @@ public interface StudentService {
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   Student update(UUID accountId, StudentUpdateCommand cmd);
-
-  /**
-   * Removes a student's enrollment by deleting the {@link Student} record.
-   *
-   * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
-   * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to student roles are wiped
-   * out.
-   *
-   * @param accountId the unique identifier of the Student to delete (Account ID)
-   * @return {@code true} if the student was successfully deleted, {@code false} if they were not
-   *     found
-   */
-  boolean delete(UUID accountId);
-
-  /**
-   * Retrieves a full {@link Student} domain aggregate by its linked account identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link StudentReadService#getViewByAccountId(UUID)} instead.
-   *
-   * @param accountId the unique identifier (UUID) of the linked account
-   * @return the fully reconstituted {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the student exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Student getById(UUID accountId);
-
-  boolean existsAnyByCourseId(UUID courseId);
 }
 
 

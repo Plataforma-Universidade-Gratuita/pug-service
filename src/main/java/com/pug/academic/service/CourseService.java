@@ -16,6 +16,40 @@ import java.util.UUID;
 public interface CourseService {
 
   /**
+   * Removes a {@link Course} from the system by its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the course to delete
+   * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
+   */
+  boolean delete(UUID id);
+
+  /**
+   * Checks whether any academic course associated with the specified school identifier exists.
+   *
+   * <p>This method is utilized to enforce relational integrity, ensuring that a {@link
+   * com.pug.academic.domain.School} cannot be deleted if it still has active courses linked to it.
+   *
+   * @param schoolId the unique identifier (UUID) of the school to check
+   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   */
+  boolean existsAnyBySchoolId(UUID schoolId);
+
+  /**
+   * Retrieves a full {@link Course} domain aggregate by its unique identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
+   * validating a course before enrolling a Student). For API responses, use {@link
+   * CourseReadService#getViewById(UUID)} instead.
+   *
+   * @param id the unique identifier (UUID) of the course
+   * @return the fully reconstituted {@link Course} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the course exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Course getById(UUID id);
+
+  /**
    * Instantiates and persists a new {@link Course} aggregate based on the provided command.
    *
    * <p>This method ensures the referenced {@link com.pug.academic.domain.School} exists prior to
@@ -48,29 +82,4 @@ public interface CourseService {
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   Course update(UUID id, CourseUpdateCommand cmd);
-
-  /**
-   * Removes a {@link Course} from the system by its unique identifier.
-   *
-   * @param id the unique identifier (UUID) of the course to delete
-   * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
-   */
-  boolean delete(UUID id);
-
-  /**
-   * Retrieves a full {@link Course} domain aggregate by its unique identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * validating a course before enrolling a Student). For API responses, use {@link
-   * CourseReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the course
-   * @return the fully reconstituted {@link Course} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the course exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Course getById(UUID id);
-
-  boolean existsAnyBySchoolId(UUID schoolId);
 }

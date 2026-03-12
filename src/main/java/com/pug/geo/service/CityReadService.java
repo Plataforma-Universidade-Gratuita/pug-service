@@ -44,6 +44,17 @@ public interface CityReadService {
   List<CityView> listViews();
 
   /**
+   * Retrieves a list of city projections based on a provided list of unique identifiers.
+   *
+   * <p>This method is optimized for batch retrieval scenarios, allowing clients to fetch multiple
+   * city views in a single call. The results are returned in the same order as the input IDs.
+   *
+   * @param ids a {@link List} of unique identifiers (UUIDs) corresponding to the desired cities
+   * @return a {@link List} of {@link CityView} entries matching the provided IDs
+   */
+  List<CityView> listViewsByIds(List<UUID> ids);
+
+  /**
    * Executes a robust full-text search against the names of registered cities.
    *
    * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy

@@ -24,6 +24,31 @@ public class SchoolRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByName(String name) {
+    return count("name = ?1", name) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<School> findOptionalById(UUID id) {
+    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(SchoolMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public School persist(School school) {
     if (school == null) {
       return null;
@@ -44,30 +69,5 @@ public class SchoolRepositoryImpl
     if (managed != null) {
       SchoolMapper.copy(school, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<School> findOptionalById(UUID id) {
-    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(SchoolMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByName(String name) {
-    return count("name = ?1", name) > 0;
   }
 }

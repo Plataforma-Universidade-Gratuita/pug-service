@@ -13,27 +13,32 @@ import java.util.UUID;
 public interface CourseRepository {
 
   /**
-   * Persists a newly created {@link Course} aggregate into the repository.
-   *
-   * @param entity the {@link Course} aggregate to persist
-   * @return the fully persisted {@link Course} instance
-   */
-  Course persist(Course entity);
-
-  /**
-   * Updates the state of an existing {@link Course} aggregate in the repository.
-   *
-   * @param entity the {@link Course} instance containing the updated state
-   */
-  void update(Course entity);
-
-  /**
    * Removes a {@link Course} from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the course to delete
    * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether a {@link Course} with the specified name already exists in the repository.
+   *
+   * @param name the exact name of the course
+   * @return {@code true} if a course with the given name exists, {@code false} otherwise
+   */
+  boolean existsByName(String name);
+
+  /**
+   * Checks whether any {@link Course} associated with the specified school identifier exists in the
+   * repository.
+   *
+   * <p>This query is crucial for enforcing relational integrity, ensuring schools are not deleted
+   * if they still offer active courses.
+   *
+   * @param schoolId the unique identifier (UUID) of the associated school
+   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   */
+  boolean existsBySchoolId(UUID schoolId);
 
   /**
    * Retrieves a {@link Course} by its unique identifier.
@@ -50,12 +55,17 @@ public interface CourseRepository {
   Optional<Course> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link Course} with the specified name already exists in the repository.
+   * Persists a newly created {@link Course} aggregate into the repository.
    *
-   * @param name the exact name of the course
-   * @return {@code true} if a course with the given name exists, {@code false} otherwise
+   * @param entity the {@link Course} aggregate to persist
+   * @return the fully persisted {@link Course} instance
    */
-  boolean existsByName(String name);
+  Course persist(Course entity);
 
-  boolean existsBySchoolId(UUID schoolId);
+  /**
+   * Updates the state of an existing {@link Course} aggregate in the repository.
+   *
+   * @param entity the {@link Course} instance containing the updated state
+   */
+  void update(Course entity);
 }

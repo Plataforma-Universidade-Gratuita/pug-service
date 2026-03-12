@@ -59,6 +59,15 @@ public class CityReadServiceImpl implements CityReadService {
     return queries.listAllCities();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listViewsByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return queries.listAllByIds(ids);
+  }
+
   /**
    * {@inheritDoc}
    *

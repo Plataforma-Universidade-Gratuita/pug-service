@@ -25,6 +25,43 @@ public class StudentRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCourseId(UUID courseId) {
+    if (courseId == null) {
+      return false;
+    }
+    return count("courseId", courseId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByRegistration(String registration) {
+    if (StringUtils.isEmpty(registration)) {
+      return false;
+    }
+    return count("academicRegistration", registration) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Student> findOptionalById(UUID id) {
+    Optional<StudentEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(StudentMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Student persist(Student student) {
     if (student == null) {
       return null;
@@ -45,41 +82,5 @@ public class StudentRepositoryImpl
     if (entity != null) {
       StudentMapper.copy(student, entity);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Student> findOptionalById(UUID id) {
-    Optional<StudentEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(StudentMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByRegistration(String registration) {
-    if (StringUtils.isEmpty(registration)) {
-      return false;
-    }
-    return count("academicRegistration", registration) > 0;
-  }
-
-  @Override
-  public boolean existsByCourseId(UUID courseId) {
-    if (courseId == null) {
-      return false;
-    }
-    return count("courseId", courseId) > 0;
   }
 }

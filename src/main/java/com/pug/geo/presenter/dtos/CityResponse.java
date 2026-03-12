@@ -12,7 +12,5 @@ import java.util.UUID;
  * @param id the unique identifier (UUIDv7) of the city
  * @param name the name of the city
  * @param ibgeCode the 7-digit IBGE code of the city
- * @param isDefault {@code true} if this city is a protected system record (e.g., a university
- *     campus), meaning it cannot be modified or deleted; {@code false} otherwise
  */
-public record CityResponse(UUID id, String name, String ibgeCode, boolean isDefault) {}
+public record CityResponse(UUID id, String name, String ibgeCode) {}

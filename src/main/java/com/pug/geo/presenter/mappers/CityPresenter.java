@@ -32,7 +32,6 @@ public final class CityPresenter {
     if (v == null) {
       return null;
     }
-    var isDefault = Campi.getImmutableIbgeCodes().contains(v.ibgeCode());
-    return new CityResponse(v.id(), v.name(), v.ibgeCode(), isDefault);
+    return new CityResponse(v.id(), v.name(), v.ibgeCode());
   }
 }

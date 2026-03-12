@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Academic Courses.
+ * REST API resource controller for managing academic courses.
  *
  * <p>This class exposes endpoints to create, retrieve, update, and delete courses. It delegates
  * commands to the {@link CourseService} (writes) and queries to the {@link CourseReadService}
@@ -159,7 +159,11 @@ public class CourseResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

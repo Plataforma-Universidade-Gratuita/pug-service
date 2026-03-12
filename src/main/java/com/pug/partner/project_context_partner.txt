@@ -1286,6 +1286,17 @@ public interface EntityQueries {
   List<EntityView> listAllByCityId(UUID cityId);
 
   /**
+   * Retrieves a list of all city identifiers that are currently associated with any partner entity.
+   *
+   * <p>This method is useful for determining which cities are actively in use by the partner
+   * entities, allowing clients to filter or display only relevant geographic options.
+   *
+   * @return a {@link List} of {@link UUID} representing the unique identifiers of cities linked to
+   *     partner entities
+   */
+  List<UUID> listAllCityIds();
+
+  /**
    * Retrieves a comprehensive list of all partner entities registered in the system.
    *
    * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
@@ -1393,6 +1404,13 @@ public class EntityQueriesImpl implements EntityQueries {
                 SELECT_BASE + " where e.cityId = :cityId" + ORDER_BY_NAME_ASC, EntityView.class)
             .setParameter("cityId", cityId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<UUID> listAllCityIds() {
+    return em.createQuery("select distinct e.cityId from EntityEntity e", UUID.class)
+        .getResultList();
   }
 
   /** {@inheritDoc} */
@@ -1989,6 +2007,7 @@ FILE: presenter/EntityResource.java
 ================================================================================
 package com.pug.partner.presenter;
 
+import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
@@ -2106,6 +2125,26 @@ public class EntityResource {
             .map(v -> EntityPresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
 
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a list of geographical cities currently associated with at least one partner entity.
+   *
+   * <p>This endpoint scans the active partner entities, extracts their unique geographical
+   * locations, and returns the corresponding city details. It is optimized to only return cities
+   * actively in use by the platform's partner network, filtering the results in-memory.
+   *
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the list of used cities.
+   */
+  @GET
+  @Path("/cities")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Response listCities() {
+    var body =
+        readService.listCityViews().stream()
+            .map(CityPresenter::toResponse)
+            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -2723,6 +2762,7 @@ FILE: service/EntityReadService.java
 ================================================================================
 package com.pug.partner.service;
 
+import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.UUID;
@@ -2755,6 +2795,18 @@ public interface EntityReadService {
    *     CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
+
+  /**
+   * Retrieves a filtered list of city views representing only the cities currently linked to
+   * entities.
+   *
+   * <p>This method determines which cities are currently in use by fetching all distinct city
+   * identifiers associated with persisted partner entities, and subsequently filtering the
+   * comprehensive list of cities provided by the geographical module.
+   *
+   * @return a {@link List} of {@link CityView} containing the details of actively used cities.
+   */
+  List<CityView> listCityViews();
 
   /**
    * Retrieves a comprehensive list of all partner entities registered in the system.
@@ -2884,6 +2936,8 @@ FILE: service/impl/EntityReadServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
+import com.pug.geo.infra.read.dtos.CityView;
+import com.pug.geo.service.CityReadService;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.service.EntityReadService;
@@ -2908,6 +2962,8 @@ public class EntityReadServiceImpl implements EntityReadService {
   private static final Logger LOG = Logger.getLogger(EntityReadServiceImpl.class);
 
   @Inject EntityQueries queries;
+
+  @Inject CityReadService cityReadService;
 
   /** {@inheritDoc} */
   @Override
@@ -2935,6 +2991,13 @@ public class EntityReadServiceImpl implements EntityReadService {
               LOG.debugf("Entity lookup failed: CNPJ %s not found", cnpj);
               return ExceptionHelper.entityNotFound();
             });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listCityViews() {
+    List<UUID> usedCityIds = queries.listAllCityIds();
+    return cityReadService.listViewsByIds(usedCityIds);
   }
 
   /** {@inheritDoc} */
@@ -2972,7 +3035,7 @@ FILE: service/impl/EntityServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.geo.service.CityService;
+import com.pug.geo.service.CityReadService;
 import com.pug.partner.domain.Entity;
 import com.pug.partner.domain.EntityRepository;
 import com.pug.partner.domain.vos.Cnpj;
@@ -2995,8 +3058,8 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
  * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link CityService}), and manages the lifecycle cascading to {@link StaffService} during
- * deletion operations.
+ * via {@link com.pug.geo.service.CityReadService}), and manages the lifecycle cascading to {@link
+ * StaffService} during deletion operations.
  */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
@@ -3005,7 +3068,7 @@ public class EntityServiceImpl implements EntityService {
 
   @Inject EntityRepository repo;
 
-  @Inject CityService cityService;
+  @Inject CityReadService cityReadService;
 
   @Inject StaffService staffService;
 
@@ -3085,7 +3148,7 @@ public class EntityServiceImpl implements EntityService {
   public Entity save(EntityCreateCommand cmd) {
     LOG.debugf("Attempting to create Entity: %s (CNPJ: %s)", cmd.name(), cmd.cnpjString());
     if (cmd.cityId() != null) {
-      cityService.getById(cmd.cityId());
+      cityReadService.getViewById(cmd.cityId());
     }
 
     Entity entityToPersist =
@@ -3113,7 +3176,7 @@ public class EntityServiceImpl implements EntityService {
     LOG.debugf("Attempting to update Entity ID: %s", id);
     Entity current = getById(id);
     if (cmd.cityId() != null) {
-      cityService.getById(cmd.cityId());
+      cityReadService.getViewById(cmd.cityId());
     }
 
     Entity updatedEntity =

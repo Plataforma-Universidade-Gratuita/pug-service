@@ -16,28 +16,12 @@ import java.util.UUID;
 public interface StudentQueries {
 
   /**
-   * Retrieves a read-only view of a student based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the student's account
-   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
-   */
-  Optional<StudentView> findOptionalById(UUID accountId);
-
-  /**
    * Retrieves a read-only view of a student based on their academic registration identifier.
    *
    * @param academicRegistration the exact academic registration string of the student
    * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
   Optional<StudentView> findOptionalByAcademicRegistration(String academicRegistration);
-
-  /**
-   * Retrieves a read-only view of a student based on their registered email address.
-   *
-   * @param email the exact email address of the student
-   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
-   */
-  Optional<StudentView> findOptionalByEmail(String email);
 
   /**
    * Retrieves a read-only view of a student based on their registered CPF.
@@ -48,14 +32,20 @@ public interface StudentQueries {
   Optional<StudentView> findOptionalByCpf(String cpf);
 
   /**
-   * Retrieves a comprehensive list of all students registered in the system.
+   * Retrieves a read-only view of a student based on their registered email address.
    *
-   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
-   * implement pagination.
-   *
-   * @return a {@link List} of all {@link StudentView} records
+   * @param email the exact email address of the student
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
    */
-  List<StudentView> listAllStudents();
+  Optional<StudentView> findOptionalByEmail(String email);
+
+  /**
+   * Retrieves a read-only view of a student based on their linked account ID.
+   *
+   * @param accountId the unique identifier (UUID) of the student's account
+   * @return an {@link Optional} containing the {@link StudentView} if found, otherwise empty
+   */
+  Optional<StudentView> findOptionalById(UUID accountId);
 
   /**
    * Retrieves a list of all students enrolled in a specific course.
@@ -64,6 +54,16 @@ public interface StudentQueries {
    * @return a {@link List} of {@link StudentView} records associated with the given course
    */
   List<StudentView> listAllByCourseId(UUID courseId);
+
+  /**
+   * Retrieves a comprehensive list of all students registered in the system.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
+   *
+   * @return a {@link List} of all {@link StudentView} records
+   */
+  List<StudentView> listAllStudents();
 
   /**
    * Executes a robust full-text search against the names of the associated student users.

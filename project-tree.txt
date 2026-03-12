@@ -129,25 +129,17 @@
 │   │   │           │   │       └── impl/
 │   │   │           │   │           └── CityQueriesImpl.java
 │   │   │           │   ├── presenter/
-│   │   │           │   │   ├── CityResource.java
+│   │   │           │   │   ├── CityReadOnlyResource.java
 │   │   │           │   │   ├── dtos/
-│   │   │           │   │   │   ├── CityCreateRequest.java
-│   │   │           │   │   │   ├── CityResponse.java
-│   │   │           │   │   │   └── CityUpdateRequest.java
+│   │   │           │   │   │   └── CityResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
 │   │   │           │   ├── project_context_geo.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── CityReadService.java
-│   │   │           │       ├── CityService.java
-│   │   │           │       ├── dtos/
-│   │   │           │       │   ├── CityCreateCommand.java
-│   │   │           │       │   └── CityUpdateCommand.java
 │   │   │           │       ├── impl/
-│   │   │           │       │   ├── CityReadServiceImpl.java
-│   │   │           │       │   └── CityServiceImpl.java
+│   │   │           │       │   └── CityReadServiceImpl.java
 │   │   │           │       └── utils/
-│   │   │           │           ├── CityProcessor.java
 │   │   │           │           └── ExceptionHelper.java
 │   │   │           ├── identity/
 │   │   │           │   ├── domain/

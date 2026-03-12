@@ -24,6 +24,40 @@ public class CourseRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByName(String name) {
+    return count("name = ?1", name) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return false;
+    }
+    return count("schoolId", schoolId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Course> findOptionalById(UUID id) {
+    Optional<CourseEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(CourseMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Course persist(Course entity) {
     if (entity == null) {
       return null;
@@ -44,38 +78,5 @@ public class CourseRepositoryImpl
     if (managed != null) {
       CourseMapper.copy(course, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Optional<Course> findOptionalById(UUID id) {
-    Optional<CourseEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(CourseMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByName(String name) {
-    return count("name = ?1", name) > 0;
-  }
-
-  @Override
-  public boolean existsBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
-      return false;
-    }
-    return count("schoolId", schoolId) > 0;
   }
 }

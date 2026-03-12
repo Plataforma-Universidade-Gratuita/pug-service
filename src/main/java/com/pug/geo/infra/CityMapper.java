@@ -38,46 +38,6 @@ public final class CityMapper {
   }
 
   /**
-   * Translates a pure Domain {@link City} aggregate into a newly instantiated JPA {@link
-   * CityEntity}.
-   *
-   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
-   * Domain Value Objects back into primitive types suitable for JDBC insertion.
-   *
-   * @param d the Domain aggregate to convert
-   * @return a newly constructed JPA {@link CityEntity}, or {@code null} if the input domain is null
-   */
-  public static CityEntity toEntity(City d) {
-    if (d == null) {
-      return null;
-    }
-    return CityEntity.builder()
-        .id(d.getId())
-        .name(d.getName())
-        .ibgeCode(d.getIbgeCode().getCode())
-        .build();
-  }
-
-  /**
-   * Updates an existing, attached JPA {@link CityEntity} with the current state of a Domain {@link
-   * City}.
-   *
-   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
-   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements upon
-   * transaction commit. The primary key (ID) is intentionally excluded from the copy.
-   *
-   * @param d the Domain aggregate containing the updated state
-   * @param e the existing, attached JPA entity to update in-place
-   */
-  public static void copy(City d, CityEntity e) {
-    if (d == null || e == null) {
-      return;
-    }
-    e.setName(d.getName());
-    e.setIbgeCode(d.getIbgeCode().getCode());
-  }
-
-  /**
    * Projects a JPA {@link CityEntity} into a lightweight, read-only {@link CityView} DTO.
    *
    * <p>Used heavily by the query/read layer to provide flattened data structures ready for JSON

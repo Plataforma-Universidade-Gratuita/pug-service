@@ -155,65 +155,20 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link City} aggregate roots.
+ * Domain repository interface for querying {@link City} aggregate roots.
  *
- * <p>This interface defines the contract for persisting, retrieving, updating, and deleting city
- * entities. It abstracts the underlying data storage mechanism (e.g., database) to maintain a pure,
- * infrastructure-agnostic domain model.
+ * <p>Because Cities are treated as a static geographic dictionary populated via database
+ * migrations, this repository exposes strictly read-only domain operations.
  */
 public interface CityRepository {
 
   /**
-   * Persists a newly created {@link City} aggregate into the repository.
-   *
-   * @param city the {@link City} aggregate to persist
-   * @return the fully persisted {@link City} instance
-   */
-  City persist(City city);
-
-  /**
-   * Updates the state of an existing {@link City} aggregate in the repository.
-   *
-   * @param updated the {@link City} instance containing the updated state
-   */
-  void update(City updated);
-
-  /**
-   * Removes a {@link City} from the repository based on its unique identifier.
-   *
-   * <p><i>Note:</i> Certain default cities (e.g., Jaraguá do Sul and Joinville) are protected from
-   * deletion by business rules and database constraints to maintain system integrity.
-   *
-   * @param id the unique identifier (UUIDv7) of the city to delete
-   * @return {@code true} if the city was successfully deleted, {@code false} if the city was not
-   *     found
-   */
-  boolean deleteById(UUID id);
-
-  /**
    * Retrieves a {@link City} by its unique identifier.
-   *
-   * <p>When a city is reconstituted from the persistence layer, it typically undergoes the same
-   * domain validations as a newly created entity. Therefore, the returned {@link City} might
-   * contain validation errors (verifiable via {@link City#hasFieldErrors()}) if the stored data
-   * violates current domain rules.
    *
    * @param id the unique identifier (UUID) of the city
    * @return an {@link Optional} containing the {@link City} if found, or {@link Optional#empty()}
-   *     if not
    */
   Optional<City> findOptionalById(UUID id);
-
-  /**
-   * Checks whether a {@link City} with the specified IBGE code already exists in the repository.
-   *
-   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
-   * constraints before persisting a new city or updating an existing one's code.
-   *
-   * @param ibgeCodeDigits the 7-digit raw IBGE code string
-   * @return {@code true} if a city with the given IBGE code exists, {@code false} otherwise
-   */
-  boolean existsByIbgeCode(String ibgeCodeDigits);
 }
 
 
@@ -237,38 +192,13 @@ import lombok.Getter;
 public enum GeoErrorCodes implements GenericCodes {
 
   /**
-   * Indicates an attempt to create or update a city using an IBGE code that is already registered
-   * to another city in the system.
-   */
-  CITY_ALREADY_EXISTS("error.domain.geo.city.already.exists"),
-
-  /**
-   * Indicates an attempt to modify or delete a protected system default city (e.g., fixed
-   * university campus locations like Jaraguá do Sul or Joinville).
-   */
-  CITY_IS_DEFAULT("error.domain.geo.city.is.default"),
-
-  /**
    * Indicates that a requested city could not be located in the underlying data store by its ID or
    * IBGE code.
    */
-  CITY_NOT_FOUND("error.domain.geo.city.not.found"),
+  CITY_NOT_FOUND("error.domain.geo.city.not.found");
 
-  /**
-   * Indicates an attempt to delete a city that is currently assigned to one or more active Partner
-   * entities, violating data retention policies.
-   */
-  CITY_STILL_REFERENCED_BY_ENTITY("error.domain.geo.city.referenced");
-
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * Constructs the {@code GeoErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles (e.g.,
-   *     {@code messages_en_US.properties})
-   */
   GeoErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
   }
@@ -446,46 +376,6 @@ public final class CityMapper {
   }
 
   /**
-   * Translates a pure Domain {@link City} aggregate into a newly instantiated JPA {@link
-   * CityEntity}.
-   *
-   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
-   * Domain Value Objects back into primitive types suitable for JDBC insertion.
-   *
-   * @param d the Domain aggregate to convert
-   * @return a newly constructed JPA {@link CityEntity}, or {@code null} if the input domain is null
-   */
-  public static CityEntity toEntity(City d) {
-    if (d == null) {
-      return null;
-    }
-    return CityEntity.builder()
-        .id(d.getId())
-        .name(d.getName())
-        .ibgeCode(d.getIbgeCode().getCode())
-        .build();
-  }
-
-  /**
-   * Updates an existing, attached JPA {@link CityEntity} with the current state of a Domain {@link
-   * City}.
-   *
-   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
-   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements upon
-   * transaction commit. The primary key (ID) is intentionally excluded from the copy.
-   *
-   * @param d the Domain aggregate containing the updated state
-   * @param e the existing, attached JPA entity to update in-place
-   */
-  public static void copy(City d, CityEntity e) {
-    if (d == null || e == null) {
-      return;
-    }
-    e.setName(d.getName());
-    e.setIbgeCode(d.getIbgeCode().getCode());
-  }
-
-  /**
    * Projects a JPA {@link CityEntity} into a lightweight, read-only {@link CityView} DTO.
    *
    * <p>Used heavily by the query/read layer to provide flattened data structures ready for JSON
@@ -600,67 +490,21 @@ import com.pug.geo.domain.City;
 import com.pug.geo.domain.CityRepository;
 import com.pug.geo.infra.CityMapper;
 import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the CityRepository using Panache and Hibernate Search. */
+/** Implementation of the read-only CityRepository using Panache. */
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public City persist(City city) {
-    if (city == null) {
-      return null;
-    }
-    var e = CityMapper.toEntity(city);
-    persistAndFlush(e);
-    return CityMapper.toDomain(e);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public void update(City city) {
-    if (city == null || city.getId() == null) {
-      return;
-    }
-    CityEntity managed = findById(city.getId());
-    if (managed == null) {
-      return;
-    }
-    CityMapper.copy(city, managed);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
-    flush();
-    return deleted;
-  }
-
   /** {@inheritDoc} */
   @Override
   public Optional<City> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(CityMapper::toDomain);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public boolean existsByIbgeCode(String ibgeCodeDigits) {
-    if (StringUtils.isEmpty(ibgeCodeDigits)) {
-      return false;
+    if (id == null) {
+      return Optional.empty();
     }
-    return find("ibgeCode", ibgeCodeDigits).firstResultOptional().isPresent();
+    return findByIdOptional(id).map(CityMapper::toDomain);
   }
 }
 
@@ -701,6 +545,16 @@ public interface CityQueries {
    *     Optional#empty()} otherwise
    */
   Optional<CityView> findOptionalByIbgeCode(String ibgeCode);
+
+  /**
+   * Retrieves a comprehensive list of all cities registered in the system.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
+   *
+   * @return a {@link List} containing all available {@link CityView} entries
+   */
+  List<CityView> listAllByIds(List<UUID> ids);
 
   /**
    * Retrieves a comprehensive list of all cities registered in the system.
@@ -801,6 +655,19 @@ public class CityQueriesImpl implements CityQueries {
 
   /** {@inheritDoc} */
   @Override
+  public List<CityView> listAllByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    var q =
+        entityManager.createQuery(
+            "from CityEntity c where c.id in :ids order by c.name asc", CityEntity.class);
+    q.setParameter("ids", ids);
+    return q.getResultList().stream().map(CityMapper::toView).toList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<CityView> listAllCities() {
     var q = entityManager.createQuery("from CityEntity c order by c.name asc", CityEntity.class);
     return q.getResultList().stream().map(CityMapper::toView).toList();
@@ -825,68 +692,55 @@ public class CityQueriesImpl implements CityQueries {
 
 
 ================================================================================
-FILE: presenter/CityResource.java
+FILE: presenter/CityReadOnlyResource.java
 ================================================================================
 package com.pug.geo.presenter;
 
-import com.pug.geo.domain.City;
 import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.geo.presenter.dtos.CityCreateRequest;
 import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.geo.presenter.dtos.CityUpdateRequest;
 import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.geo.service.CityReadService;
-import com.pug.geo.service.CityService;
-import com.pug.geo.service.dtos.CityCreateCommand;
-import com.pug.geo.service.dtos.CityUpdateCommand;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
-import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing geographic Cities.
+ * REST API resource controller responsible for handling read-only operations on geographic cities.
  *
- * <p>This class exposes endpoints to create, retrieve, update, and delete cities. It acts as the
- * HTTP entry point, orchestrating requests by delegating commands to the {@link CityService}
- * (writes) and queries to the {@link CityReadService} (reads), strictly adhering to CQRS
- * architectural principles. All responses are wrapped in a standard {@link ApiEnvelope}.
+ * <p>This controller exposes endpoints to retrieve city details by their unique identifiers, IBGE
+ * codes, or through text-based search queries. It acts as the presentation layer for the
+ * geographical module, delegating data retrieval to the {@link CityReadService} and ensuring that
+ * all responses are consistently wrapped in a standardized {@link ApiEnvelope}.
  */
 @ApplicationScoped
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class CityResource {
+public class CityReadOnlyResource {
 
-  @Inject CityService writeService;
   @Inject CityReadService readService;
 
-  @Context UriInfo uri;
-
   /**
-   * Retrieves a specific city by its unique UUID identifier.
+   * Retrieves the details of a specific city based on its unique identifier.
    *
-   * @param id the unique identifier (UUIDv7) of the requested city
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CityResponse}
+   * <p>This endpoint looks up a single geographical city using its UUID version 7. If the city is
+   * found, it is mapped to a {@link CityResponse} and returned within a standard API envelope.
+   *
+   * @param id the {@link UUID} (version 7) representing the unique internal identifier of the city.
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details.
    */
   @GET
   @Path("{id}")
@@ -897,10 +751,13 @@ public class CityResource {
   }
 
   /**
-   * Retrieves a specific city using its natural key (IBGE code).
+   * Retrieves the details of a specific city based on its unique IBGE code.
    *
-   * @param ibgeCode the exact 7-digit IBGE code of the city
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link CityResponse}
+   * <p>The IBGE code serves as a natural key for Brazilian municipalities. This endpoint queries
+   * the persistence layer to find the exact match for the provided 7-digit geographic code.
+   *
+   * @param ibgeCode a {@link String} representing the 7-digit IBGE code of the city.
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details.
    */
   @GET
   @Path("by-ibge/{ibgeCode}")
@@ -911,17 +768,21 @@ public class CityResource {
   }
 
   /**
-   * Retrieves a collection of cities.
+   * Retrieves a comprehensive list of cities, optionally filtered by a text-based search query.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * cities' names. If omitted, it returns an unfiltered list of all available cities.
+   * <p>If a search query ({@code q}) is provided, this endpoint delegates to the underlying search
+   * service (e.g., Hibernate Search) to perform a full-text, fuzzy, or normalized search against
+   * the city names. If the query is omitted or empty, it bypasses the search index and returns a
+   * complete list of all available cities, ordered alphabetically.
    *
-   * @param q the optional search query string used to filter cities by name
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     CityResponse}
+   * @param q an optional {@link String} representing the search query used to filter cities by
+   *     name.
+   * @return a {@link Response} containing an {@link ApiEnvelope} with a collection of matching
+   *     cities.
    */
   @GET
   public Response list(@QueryParam("q") String q) {
+
     List<CityView> views;
 
     if (StringUtils.isNotEmpty(q)) {
@@ -935,88 +796,7 @@ public class CityResource {
 
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
-
-  /**
-   * Registers a new geographic city within the platform.
-   *
-   * <p>Applies Bean Validation to the incoming payload before delegating to the application
-   * service.
-   *
-   * @param req the validated {@link CityCreateRequest} containing the city's details
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created
-   *     {@link CityResponse}
-   */
-  @POST
-  public Response create(@Valid CityCreateRequest req) {
-    CityCreateCommand cmd = new CityCreateCommand(req.name(), req.ibgeCodeString());
-    City createdCityDomain = writeService.save(cmd);
-
-    CityView cityView = readService.getViewById(createdCityDomain.getId());
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-
-    URI location = uri.getAbsolutePathBuilder().path(responseBody.id().toString()).build();
-    return Response.created(location).entity(ApiEnvelope.created(responseBody)).build();
-  }
-
-  /**
-   * Partially updates an existing city's details.
-   *
-   * <p>Omitting fields in the request payload will result in those fields retaining their current
-   * state in the database.
-   *
-   * @param id the unique identifier (UUIDv7) of the city to update
-   * @param req the validated {@link CityUpdateRequest} containing the modified data
-   * @return an HTTP 200 OK response containing the updated {@link CityResponse}
-   */
-  @PUT
-  @Path("{id}")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CityUpdateRequest req) {
-    CityUpdateCommand cmd = new CityUpdateCommand(req.name(), req.ibgeCodeString());
-    City updatedCityDomain = writeService.update(id, cmd);
-
-    CityView cityView = readService.getViewById(updatedCityDomain.getId());
-    CityResponse responseBody = CityPresenter.toResponse(cityView);
-
-    return Response.ok(ApiEnvelope.ok(responseBody)).build();
-  }
-
-  /**
-   * Permanently removes a city from the system.
-   *
-   * <p><i>Note:</i> Protected default cities cannot be deleted and will trigger a 422 Unprocessable
-   * Entity.
-   *
-   * @param id the unique identifier (UUIDv7) of the city to delete
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
-   */
-  @DELETE
-  @Path("{id}")
-  public Response delete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
-  }
 }
-
-
-================================================================================
-FILE: presenter/dtos/CityCreateRequest.java
-================================================================================
-package com.pug.geo.presenter.dtos;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
-
-/**
- * Data Transfer Object (DTO) used as the JSON request payload for creating a new City.
- *
- * <p>This record applies Jakarta Bean Validation constraints to ensure the initial data is
- * structurally sound before it reaches the application service layer.
- *
- * @param name the requested name of the city (must not be blank and max 100 characters)
- * @param ibgeCodeString the exact 7-digit IBGE code as a string (must not be blank)
- */
-public record CityCreateRequest(
-    @NotBlank @Size(max = 100) String name, @NotBlank String ibgeCodeString) {}
 
 
 ================================================================================
@@ -1036,32 +816,8 @@ import java.util.UUID;
  * @param id the unique identifier (UUIDv7) of the city
  * @param name the name of the city
  * @param ibgeCode the 7-digit IBGE code of the city
- * @param isDefault {@code true} if this city is a protected system record (e.g., a university
- *     campus), meaning it cannot be modified or deleted; {@code false} otherwise
  */
-public record CityResponse(UUID id, String name, String ibgeCode, boolean isDefault) {}
-
-
-================================================================================
-FILE: presenter/dtos/CityUpdateRequest.java
-================================================================================
-package com.pug.geo.presenter.dtos;
-
-import jakarta.validation.constraints.Size;
-
-/**
- * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing
- * City.
- *
- * <p>Because updates can be partial, all fields in this record are inherently optional. If a field
- * is provided as {@code null} or omitted from the JSON payload, the application service will ignore
- * it and retain the existing value for that specific attribute.
- *
- * @param name the new name to assign to the city, or {@code null} to leave unchanged (if provided,
- *     must be max 100 characters)
- * @param ibgeCodeString the new 7-digit IBGE code string, or {@code null} to leave unchanged
- */
-public record CityUpdateRequest(@Size(max = 100) String name, String ibgeCodeString) {}
+public record CityResponse(UUID id, String name, String ibgeCode) {}
 
 
 ================================================================================
@@ -1101,8 +857,7 @@ public final class CityPresenter {
     if (v == null) {
       return null;
     }
-    var isDefault = Campi.getImmutableIbgeCodes().contains(v.ibgeCode());
-    return new CityResponse(v.id(), v.name(), v.ibgeCode(), isDefault);
+    return new CityResponse(v.id(), v.name(), v.ibgeCode());
   }
 }
 
@@ -1156,6 +911,17 @@ public interface CityReadService {
   List<CityView> listViews();
 
   /**
+   * Retrieves a list of city projections based on a provided list of unique identifiers.
+   *
+   * <p>This method is optimized for batch retrieval scenarios, allowing clients to fetch multiple
+   * city views in a single call. The results are returned in the same order as the input IDs.
+   *
+   * @param ids a {@link List} of unique identifiers (UUIDs) corresponding to the desired cities
+   * @return a {@link List} of {@link CityView} entries matching the provided IDs
+   */
+  List<CityView> listViewsByIds(List<UUID> ids);
+
+  /**
    * Executes a robust full-text search against the names of registered cities.
    *
    * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
@@ -1167,130 +933,6 @@ public interface CityReadService {
    */
   List<CityView> search(String q);
 }
-
-
-================================================================================
-FILE: service/CityService.java
-================================================================================
-package com.pug.geo.service;
-
-import com.pug.geo.domain.City;
-import com.pug.geo.service.dtos.CityCreateCommand;
-import com.pug.geo.service.dtos.CityUpdateCommand;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import java.util.UUID;
-
-/**
- * Application service interface for managing the state of {@link City} domain aggregates.
- *
- * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
- * Delete) and strict domain-level retrievals. It orchestrates domain logic, enforces business
- * constraints, and coordinates with the persistence layer to ensure the integrity of geographic
- * data.
- */
-public interface CityService {
-
-  /**
-   * Instantiates and persists a new {@link City} aggregate based on the provided command.
-   *
-   * <p>The command data is routed through the domain's factory methods to ensure all internal
-   * validations (e.g., IBGE code formatting) are strictly applied before persistence.
-   *
-   * @param cmd the structured command containing the data required to create a city
-   * @return the fully instantiated and persisted {@link City} aggregate
-   * @throws DuplicateResourceException if a city with the provided IBGE code already exists
-   * @throws AppValidationException if the input data violates domain constraints (e.g., blank name,
-   *     malformed IBGE code)
-   */
-  City save(CityCreateCommand cmd);
-
-  /**
-   * Updates the state (name and/or IBGE code) of an existing {@link City} aggregate.
-   *
-   * <p>This method reconstitutes the aggregate from the repository, applies the requested mutations
-   * through domain behaviors, and persists the updated state.
-   *
-   * @param id the unique identifier (UUIDv7) of the city to update
-   * @param cmd the structured command containing the updated city data
-   * @return the mutated and persisted {@link City} aggregate
-   * @throws ResourceNotFoundException if the city cannot be found in the repository
-   * @throws DuplicateResourceException if the updated IBGE code conflicts with an existing city
-   * @throws AppValidationException if the updated input data violates domain constraints
-   */
-  City update(UUID id, CityUpdateCommand cmd);
-
-  /**
-   * Removes a {@link City} from the system by its unique identifier.
-   *
-   * <p>This operation enforces strict data retention and integrity policies. Attempting to delete
-   * protected system defaults (e.g., Jaraguá do Sul or Joinville) or cities that are currently
-   * assigned to active aggregates (such as Partner entities) is strictly prohibited and will
-   * actively fail to prevent orphaned records.
-   *
-   * @param id the unique identifier (UUID) of the city to delete
-   * @return {@code true} if the city was successfully deleted, {@code false} if the ID is null or
-   *     if the actual database deletion was silently ignored (e.g., an idempotent concurrent
-   *     delete)
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the city to be deleted does not
-   *     exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the city is a protected default
-   *     system record, or if it is currently referenced by other entities
-   */
-  boolean delete(UUID id);
-
-  /**
-   * Retrieves a full {@link City} domain aggregate by its unique identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * loading an aggregate to mutate it). For API responses, use {@link
-   * CityReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the city
-   * @return the fully reconstituted {@link City} aggregate
-   * @throws ResourceNotFoundException if the city does not exist
-   * @throws AppValidationException if the city exists in the database but its stored state
-   *     currently violates strict domain invariants (data integrity error)
-   */
-  City getById(UUID id);
-}
-
-
-================================================================================
-FILE: service/dtos/CityCreateCommand.java
-================================================================================
-package com.pug.geo.service.dtos;
-
-/**
- * Data Transfer Object (DTO) acting as an application command to create a new geographic City.
- *
- * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.geo.domain.City} aggregate.
- *
- * @param name the requested name for the new city
- * @param ibgeCodeString the raw 7-digit string representing the IBGE code
- */
-public record CityCreateCommand(String name, String ibgeCodeString) {}
-
-
-================================================================================
-FILE: service/dtos/CityUpdateCommand.java
-================================================================================
-package com.pug.geo.service.dtos;
-
-/**
- * Data Transfer Object (DTO) acting as an application command to update an existing geographic
- * City.
- *
- * <p>This record encapsulates the requested state changes for a city. The fields are typically
- * treated as optional during the update process—meaning if a field is omitted (null or empty), the
- * application service will retain the existing value for that specific attribute.
- *
- * @param name the new name to assign to the city, or {@code null} to leave unchanged
- * @param ibgeCodeString the new raw 7-digit IBGE code string, or {@code null} to leave unchanged
- */
-public record CityUpdateCommand(String name, String ibgeCodeString) {}
 
 
 ================================================================================
@@ -1357,6 +999,15 @@ public class CityReadServiceImpl implements CityReadService {
     return queries.listAllCities();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listViewsByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    return queries.listAllByIds(ids);
+  }
+
   /**
    * {@inheritDoc}
    *
@@ -1373,260 +1024,11 @@ public class CityReadServiceImpl implements CityReadService {
 
 
 ================================================================================
-FILE: service/impl/CityServiceImpl.java
-================================================================================
-package com.pug.geo.service.impl;
-
-import com.pug.geo.domain.City;
-import com.pug.geo.domain.CityRepository;
-import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.geo.service.CityService;
-import com.pug.geo.service.dtos.CityCreateCommand;
-import com.pug.geo.service.dtos.CityUpdateCommand;
-import com.pug.geo.service.utils.CityProcessor;
-import com.pug.geo.service.utils.ExceptionHelper;
-import com.pug.partner.service.EntityService;
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.BusinessRuleException;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import java.util.UUID;
-import org.jboss.logging.Logger;
-
-/**
- * Implementation of the {@link CityService} command interface.
- *
- * <p>This application-scoped service acts as the orchestrator for geographic state mutations. It
- * manages transaction boundaries, invokes pure domain logic via {@link CityProcessor}, enforces
- * cross-cutting business rules (e.g., uniqueness, immutability of default cities), and coordinates
- * with the underlying {@link CityRepository}.
- */
-@ApplicationScoped
-public class CityServiceImpl implements CityService {
-
-  private static final Logger LOG = Logger.getLogger(CityServiceImpl.class);
-
-  @Inject CityRepository repo;
-  @Inject EntityService entityService;
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public City save(CityCreateCommand cmd) {
-    LOG.debugf("Attempting to create City: %s (IBGE: %s)", cmd.name(), cmd.ibgeCodeString());
-    City cityToPersist = CityProcessor.processCreateInput(cmd.name(), cmd.ibgeCodeString());
-
-    if (cityToPersist.hasFieldErrors()) {
-      throw new AppValidationException(cityToPersist.getFieldErrors());
-    }
-
-    if (existsByIbge(cityToPersist.getIbgeCode())) {
-      LOG.warnf(
-          "Creation failed: City with IBGE Code %s already exists",
-          cityToPersist.getIbgeCode().getCode());
-      throw ExceptionHelper.cityAlreadyExists();
-    }
-
-    City savedCity = repo.persist(cityToPersist);
-    LOG.infof("City created successfully. ID: %s", savedCity.getId());
-    return savedCity;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public City update(UUID id, CityUpdateCommand cmd) {
-    LOG.debugf("Attempting to update City ID: %s", id);
-
-    City current = getById(id);
-    ensureCityIsMutable(current);
-
-    City updated = CityProcessor.processUpdateInput(current, cmd.name(), cmd.ibgeCodeString());
-
-    if (updated.hasFieldErrors()) {
-      throw new AppValidationException(updated.getFieldErrors());
-    }
-
-    if (!updated.getIbgeCode().equals(current.getIbgeCode())
-        && existsByIbge(updated.getIbgeCode())) {
-      LOG.warnf(
-          "Update failed: City ID %s tried to use existing IBGE %s",
-          id, updated.getIbgeCode().getCode());
-      throw ExceptionHelper.cityAlreadyExists();
-    }
-
-    repo.update(updated);
-    LOG.infof("City updated successfully. ID: %s", id);
-    return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete City ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    var city = getById(id);
-    ensureCityIsMutable(city);
-    if (entityService.existsAnyByCityId(city.getId())) {
-      LOG.warnf("Delete failed: City ID %s is still referenced by other entities", id);
-      throw ExceptionHelper.cityStillReferencedByEntity();
-    }
-
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("City deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: City ID %s not found (idempotent)", id);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public City getById(UUID id) {
-    City city =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("City lookup failed: ID %s not found", id);
-                  return ExceptionHelper.cityNotFound();
-                });
-
-    if (city.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: City %s violates domain rules: %s",
-          id, city.getProblemsSummary());
-      throw ExceptionHelper.cityNotFound();
-    }
-
-    return city;
-  }
-
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Verifies whether a city already exists in the repository with the specified IBGE code.
-   *
-   * @param ibgeCode the validated {@link IbgeCode} Value Object to check
-   * @return {@code true} if a matching city exists, {@code false} otherwise
-   */
-  private boolean existsByIbge(IbgeCode ibgeCode) {
-    if (ibgeCode == null) {
-      return false;
-    }
-    return repo.existsByIbgeCode(ibgeCode.getCode());
-  }
-
-  /**
-   * Enforces the immutability rule for default system cities.
-   *
-   * <p>Checks if the provided {@link City} corresponds to one of the protected records defined in
-   * {@link Campi} (e.g., Jaraguá do Sul, Joinville). These specific records are fundamental to
-   * system integrity and must not be modified or deleted.
-   *
-   * @param city the {@link City} entity to validate
-   * @throws BusinessRuleException if the city matches a protected default IBGE code
-   * @see Campi
-   */
-  private void ensureCityIsMutable(City city) {
-    if (Campi.getImmutableIbgeCodes().contains(city.getIbgeCode().getCode())) {
-      LOG.warnf(
-          "Modification blocked: City ID %s (IBGE %s) is a default system record.",
-          city.getId(), city.getIbgeCode().getCode());
-      throw ExceptionHelper.cityIsDefault();
-    }
-  }
-}
-
-
-================================================================================
-FILE: service/utils/CityProcessor.java
-================================================================================
-package com.pug.geo.service.utils;
-
-import com.pug.geo.domain.City;
-import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.shared.utils.StringUtils;
-
-/**
- * Stateless utility class responsible for mapping raw DTO command data into pure Domain Aggregates
- * and Value Objects.
- *
- * <p>This processor centralizes the orchestration of domain factory methods and state-mutation
- * behaviors, ensuring that complex initialization or update logic does not pollute the application
- * service layer.
- */
-public class CityProcessor {
-
-  /**
-   * Processes raw creation inputs and constructs a new {@link City} domain aggregate.
-   *
-   * <p>This method translates the raw string representations into appropriate Value Objects (e.g.,
-   * {@link IbgeCode}) before passing them to the entity's factory method.
-   *
-   * <p><b>Note:</b> The returned {@link City} object may contain accumulated domain validation
-   * failures. The caller is responsible for checking {@link City#hasFieldErrors()} and handling
-   * them appropriately (e.g., throwing an {@code AppValidationException}).
-   *
-   * @param name the raw city name requested for creation
-   * @param ibgeCodeString the raw 7-digit IBGE code string
-   * @return a fully instantiated {@link City} domain aggregate, potentially containing validation
-   *     errors
-   */
-  public static City processCreateInput(String name, String ibgeCodeString) {
-    IbgeCode ibgeCodeVo = IbgeCode.factory(ibgeCodeString);
-    return City.factory(name, ibgeCodeVo);
-  }
-
-  /**
-   * Processes raw update inputs and conditionally mutates the state of an existing {@link City}.
-   *
-   * <p>This method applies partial updates. Only fields that are explicitly provided (i.e., not
-   * null and not empty) will trigger a state mutation via the aggregate's domain behaviors.
-   *
-   * <p>Because domain entities in this system are modeled as immutable records, this method returns
-   * a <i>new</i> instance of the {@link City} reflecting the applied changes. The caller must
-   * verify {@link City#hasFieldErrors()} on the returned instance.
-   *
-   * @param existingCity the current, reconstituted {@link City} aggregate from the repository
-   * @param name the proposed new city name, or {@code null}/empty to skip updating
-   * @param ibgeCodeString the proposed new IBGE code string, or {@code null}/empty to skip updating
-   * @return a new {@link City} domain aggregate reflecting the requested updates, potentially
-   *     containing validation errors
-   */
-  public static City processUpdateInput(City existingCity, String name, String ibgeCodeString) {
-
-    City updatedCity = existingCity;
-
-    if (StringUtils.isNotEmpty(name)) {
-      updatedCity = updatedCity.rename(name);
-    }
-
-    if (StringUtils.isNotEmpty(ibgeCodeString)) {
-      IbgeCode newIbgeCode = IbgeCode.factory(ibgeCodeString);
-      updatedCity = updatedCity.changeIbgeCode(newIbgeCode);
-    }
-
-    return updatedCity;
-  }
-}
-
-
-================================================================================
 FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.geo.service.utils;
 
 import com.pug.geo.domain.enums.GeoErrorCodes;
-import com.pug.shared.exceptions.BusinessRuleException;
-import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 
 /**
@@ -1649,36 +1051,6 @@ public final class ExceptionHelper {
    */
   public static ResourceNotFoundException cityNotFound() {
     return new ResourceNotFoundException(GeoErrorCodes.CITY_NOT_FOUND);
-  }
-
-  /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a City with the
-   * specified IBGE code already exists in the system.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
-  public static DuplicateResourceException cityAlreadyExists() {
-    return new DuplicateResourceException(GeoErrorCodes.CITY_ALREADY_EXISTS);
-  }
-
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that an operation cannot
-   * be performed on a default City (e.g., Jaraguá do Sul or Joinville).
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
-  public static BusinessRuleException cityIsDefault() {
-    return new BusinessRuleException(GeoErrorCodes.CITY_IS_DEFAULT);
-  }
-
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that a City cannot be
-   * deleted because it is still referenced by other entities (e.g., Partners).
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
-  public static BusinessRuleException cityStillReferencedByEntity() {
-    return new BusinessRuleException(GeoErrorCodes.CITY_STILL_REFERENCED_BY_ENTITY);
   }
 }
 

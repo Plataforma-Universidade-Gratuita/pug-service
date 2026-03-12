@@ -7,7 +7,6 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.CourseQueries;
 import com.pug.academic.infra.read.dtos.CourseView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -59,25 +58,6 @@ public class CourseQueriesImpl implements CourseQueries {
 
   /** {@inheritDoc} */
   @Override
-  public Optional<CourseView> findOptionalByName(String name) {
-    if (StringUtils.isEmpty(name)) {
-      return Optional.empty();
-    }
-    var q = entityManager.createQuery(SELECT_BASE + " where c.name = :name", CourseView.class);
-    q.setParameter("name", name);
-    return q.getResultStream().findFirst();
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<CourseView> listAllCourses() {
-    return entityManager
-        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
-        .getResultList();
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public List<CourseView> listAllBySchoolId(UUID schoolId) {
     if (schoolId == null) {
       return List.of();
@@ -87,6 +67,14 @@ public class CourseQueriesImpl implements CourseQueries {
             SELECT_BASE + " where c.schoolId = :schoolId" + ORDER_BY_NAME_ASC, CourseView.class);
     q.setParameter("schoolId", schoolId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CourseView> listAllCourses() {
+    return entityManager
+        .createQuery(SELECT_BASE + ORDER_BY_NAME_ASC, CourseView.class)
+        .getResultList();
   }
 
   /**

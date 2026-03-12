@@ -41,6 +41,17 @@ public interface EntityQueries {
   List<EntityView> listAllByCityId(UUID cityId);
 
   /**
+   * Retrieves a list of all city identifiers that are currently associated with any partner entity.
+   *
+   * <p>This method is useful for determining which cities are actively in use by the partner
+   * entities, allowing clients to filter or display only relevant geographic options.
+   *
+   * @return a {@link List} of {@link UUID} representing the unique identifiers of cities linked to
+   *     partner entities
+   */
+  List<UUID> listAllCityIds();
+
+  /**
    * Retrieves a comprehensive list of all partner entities registered in the system.
    *
    * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not

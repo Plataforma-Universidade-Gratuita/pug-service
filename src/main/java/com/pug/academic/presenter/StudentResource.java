@@ -46,7 +46,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Student enrollments.
+ * REST API resource controller for managing student enrollments.
  *
  * <p>This class exposes endpoints to enroll, retrieve, update, and remove students. It delegates
  * commands to the {@link StudentService} (writes) and queries to the {@link StudentReadService}
@@ -83,17 +83,17 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a specific student by their exact academic registration number.
+   * Retrieves a specific student by their exact CPF.
    *
-   * @param registration the academic registration string
+   * @param cpf the raw 11-digit numeric CPF string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path("/by-registration/{registration}")
-  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
-    StudentView view = readService.getViewByAcademicRegistration(registration);
+  @Path("/by-cpf/{cpf}")
+  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
+    StudentView view = readService.getViewByCpf(cpf);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -115,17 +115,17 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a specific student by their exact CPF.
+   * Retrieves a specific student by their exact academic registration number.
    *
-   * @param cpf the raw 11-digit numeric CPF string
+   * @param registration the academic registration string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path("/by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
-    StudentView view = readService.getViewByCpf(cpf);
+  @Path("/by-registration/{registration}")
+  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
+    StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -249,7 +249,11 @@ public class StudentResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

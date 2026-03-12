@@ -43,6 +43,59 @@ public class StudentServiceImpl implements StudentService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID accountId) {
+    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
+    if (accountId == null) {
+      return false;
+    }
+
+    if (enrollmentService.existsAnyByStudentId(accountId)) {
+      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
+      throw ExceptionHelper.studentHasEnrollments();
+    }
+
+    boolean deleted = repo.deleteById(accountId);
+
+    if (deleted) {
+      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
+      accountService.delete(accountId);
+    } else {
+      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyByCourseId(UUID courseId) {
+    return repo.existsByCourseId(courseId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Student getById(UUID accountId) {
+    Student student =
+        repo.findOptionalById(accountId)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
+                  return ExceptionHelper.studentNotFound();
+                });
+
+    if (student.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
+          accountId, student.getProblemsSummary());
+      throw ExceptionHelper.studentNotFound();
+    }
+
+    return student;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Student save(StudentCreateCommand cmd) {
     LOG.debugf("Attempting to create Student with registration: %s", cmd.academicRegistration());
     courseService.getById(cmd.courseId());
@@ -114,58 +167,6 @@ public class StudentServiceImpl implements StudentService {
     repo.update(studentToUpdate);
     LOG.infof("Student updated successfully. Account ID: %s", accountId);
     return getById(accountId);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID accountId) {
-    LOG.debugf("Attempting to delete Student Account ID: %s", accountId);
-    if (accountId == null) {
-      return false;
-    }
-
-    if (enrollmentService.existsAnyByStudentId(accountId)) {
-      LOG.warnf("Delete failed: Student ID %s is enrolled in projects", accountId);
-      throw ExceptionHelper.studentHasEnrollments();
-    }
-
-    boolean deleted = repo.deleteById(accountId);
-
-    if (deleted) {
-      LOG.infof("Student deleted successfully. Account ID: %s", accountId);
-      accountService.delete(accountId);
-    } else {
-      LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Student getById(UUID accountId) {
-    Student student =
-        repo.findOptionalById(accountId)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-                  return ExceptionHelper.studentNotFound();
-                });
-
-    if (student.hasFieldErrors()) {
-      LOG.errorf(
-          "DATA CORRUPTION DETECTED: Student %s violates domain rules: %s",
-          accountId, student.getProblemsSummary());
-      throw ExceptionHelper.studentNotFound();
-    }
-
-    return student;
-  }
-
-  @Override
-  public boolean existsAnyByCourseId(UUID courseId) {
-    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

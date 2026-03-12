@@ -35,6 +35,16 @@ public interface CityQueries {
   /**
    * Retrieves a comprehensive list of all cities registered in the system.
    *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
+   *
+   * @return a {@link List} containing all available {@link CityView} entries
+   */
+  List<CityView> listAllByIds(List<UUID> ids);
+
+  /**
+   * Retrieves a comprehensive list of all cities registered in the system.
+   *
    * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
    * implement pagination.
    *

@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Academic Schools (or departments).
+ * REST API resource controller for managing academic schools (or departments).
  *
  * <p>This class exposes endpoints to create, retrieve, update, and delete schools. It delegates
  * commands to the {@link SchoolService} (writes) and queries to the {@link SchoolReadService}
@@ -153,7 +153,11 @@ public class SchoolResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

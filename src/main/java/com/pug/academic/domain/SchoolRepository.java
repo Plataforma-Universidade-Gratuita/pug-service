@@ -13,27 +13,20 @@ import java.util.UUID;
 public interface SchoolRepository {
 
   /**
-   * Persists a newly created {@link School} aggregate into the repository.
-   *
-   * @param entity the {@link School} aggregate to persist
-   * @return the fully persisted {@link School} instance
-   */
-  School persist(School entity);
-
-  /**
-   * Updates the state of an existing {@link School} aggregate in the repository.
-   *
-   * @param entity the {@link School} instance containing the updated state
-   */
-  void update(School entity);
-
-  /**
    * Removes a {@link School} from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the school to delete
    * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether a {@link School} with the specified name already exists in the repository.
+   *
+   * @param name the exact name of the school
+   * @return {@code true} if a school with the given name exists, {@code false} otherwise
+   */
+  boolean existsByName(String name);
 
   /**
    * Retrieves a {@link School} by its unique identifier.
@@ -50,10 +43,17 @@ public interface SchoolRepository {
   Optional<School> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link School} with the specified name already exists in the repository.
+   * Persists a newly created {@link School} aggregate into the repository.
    *
-   * @param name the exact name of the school
-   * @return {@code true} if a school with the given name exists, {@code false} otherwise
+   * @param entity the {@link School} aggregate to persist
+   * @return the fully persisted {@link School} instance
    */
-  boolean existsByName(String name);
+  School persist(School entity);
+
+  /**
+   * Updates the state of an existing {@link School} aggregate in the repository.
+   *
+   * @param entity the {@link School} instance containing the updated state
+   */
+  void update(School entity);
 }

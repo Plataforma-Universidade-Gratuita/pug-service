@@ -1,5 +1,6 @@
 package com.pug.partner.service;
 
+import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.partner.infra.read.dtos.EntityView;
 import java.util.List;
 import java.util.UUID;
@@ -32,6 +33,18 @@ public interface EntityReadService {
    *     CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
+
+  /**
+   * Retrieves a filtered list of city views representing only the cities currently linked to
+   * entities.
+   *
+   * <p>This method determines which cities are currently in use by fetching all distinct city
+   * identifiers associated with persisted partner entities, and subsequently filtering the
+   * comprehensive list of cities provided by the geographical module.
+   *
+   * @return a {@link List} of {@link CityView} containing the details of actively used cities.
+   */
+  List<CityView> listCityViews();
 
   /**
    * Retrieves a comprehensive list of all partner entities registered in the system.

@@ -39,6 +39,56 @@ public class CourseServiceImpl implements CourseService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Course ID: %s", id);
+    if (id == null) {
+      return false;
+    }
+
+    if (studentService.existsAnyByCourseId(id)) {
+      LOG.warnf("Delete failed: Course ID %s has active students", id);
+      throw ExceptionHelper.courseHasStudents();
+    }
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Course deleted successfully. ID: %s", id);
+    } else {
+      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
+    }
+
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyBySchoolId(UUID schoolId) {
+    return repo.existsBySchoolId(schoolId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Course getById(UUID id) {
+    Course course =
+        repo.findOptionalById(id)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Course lookup failed: ID %s not found", id);
+                  return ExceptionHelper.courseNotFound();
+                });
+
+    if (course.hasFieldErrors()) {
+      LOG.errorf(
+          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
+          id, course.getProblemsSummary());
+      throw ExceptionHelper.courseNotFound();
+    }
+    return course;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public Course save(CourseCreateCommand cmd) {
     LOG.debugf("Attempting to create Course: %s", cmd.name());
     schoolService.getById(cmd.schoolId());
@@ -86,55 +136,6 @@ public class CourseServiceImpl implements CourseService {
     repo.update(updatedCourse);
     LOG.infof("Course updated successfully. ID: %s", id);
     return getById(id);
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public boolean delete(UUID id) {
-    LOG.debugf("Attempting to delete Course ID: %s", id);
-    if (id == null) {
-      return false;
-    }
-
-    if (studentService.existsAnyByCourseId(id)) {
-      LOG.warnf("Delete failed: Course ID %s has active students", id);
-      throw ExceptionHelper.courseHasStudents();
-    }
-
-    boolean deleted = repo.deleteById(id);
-    if (deleted) {
-      LOG.infof("Course deleted successfully. ID: %s", id);
-    } else {
-      LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
-    }
-
-    return deleted;
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public Course getById(UUID id) {
-    Course course =
-        repo.findOptionalById(id)
-            .orElseThrow(
-                () -> {
-                  LOG.debugf("Course lookup failed: ID %s not found", id);
-                  return ExceptionHelper.courseNotFound();
-                });
-
-    if (course.hasFieldErrors()) {
-      LOG.errorf(
-          "Data integrity error: Course with ID %s in DB violates domain rules. Problems: %s",
-          id, course.getProblemsSummary());
-      throw ExceptionHelper.courseNotFound();
-    }
-    return course;
-  }
-
-  @Override
-  public boolean existsAnyBySchoolId(UUID schoolId) {
-    return false;
   }
 
   /* --------------- INTERNAL HELPER METHODS --------------- */

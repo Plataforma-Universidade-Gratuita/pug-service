@@ -14,16 +14,6 @@ import java.util.UUID;
 public interface StudentReadService {
 
   /**
-   * Retrieves a read-only projection of an enrolled student based on their linked account ID.
-   *
-   * @param accountId the unique identifier (UUID) of the student's account
-   * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
-   *     ID
-   */
-  StudentView getViewByAccountId(UUID accountId);
-
-  /**
    * Retrieves a read-only projection of a student based on their exact academic registration
    * number.
    *
@@ -35,14 +25,14 @@ public interface StudentReadService {
   StudentView getViewByAcademicRegistration(String academicRegistration);
 
   /**
-   * Retrieves a read-only projection of a student based on their registered email address.
+   * Retrieves a read-only projection of an enrolled student based on their linked account ID.
    *
-   * @param email the exact email address of the student
+   * @param accountId the unique identifier (UUID) of the student's account
    * @return the populated {@link StudentView} DTO
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
-   *     email
+   *     ID
    */
-  StudentView getViewByEmail(String email);
+  StudentView getViewByAccountId(UUID accountId);
 
   /**
    * Retrieves a read-only projection of a student based on their registered CPF.
@@ -53,6 +43,16 @@ public interface StudentReadService {
    *     CPF
    */
   StudentView getViewByCpf(String cpf);
+
+  /**
+   * Retrieves a read-only projection of a student based on their registered email address.
+   *
+   * @param email the exact email address of the student
+   * @return the populated {@link StudentView} DTO
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   *     email
+   */
+  StudentView getViewByEmail(String email);
 
   /**
    * Retrieves a comprehensive list of all students registered in the system.

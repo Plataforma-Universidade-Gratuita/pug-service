@@ -4,7 +4,7 @@ import com.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
- * Enumeration of high-level domain error codes specific to the Academic context.
+ * Enumeration of high-level domain error codes specific to the academic context.
  *
  * <p>This enum implements {@link GenericCodes} to map business rule violations and resource state
  * conflicts directly to localized messages in the application's resource bundles. Unlike
@@ -13,15 +13,18 @@ import lombok.Getter;
  */
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
-  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
-  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
-  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates an attempt to create or update an academic course using a name that is already
    * registered in the system.
    */
   COURSE_ALREADY_EXISTS("error.domain.academic.course.already.exists"),
+
+  /**
+   * Indicates an attempt to delete or modify an academic course that currently has active student
+   * enrollments associated with it, violating relational integrity.
+   */
+  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
 
   /**
    * Indicates that a requested academic course could not be located in the underlying data store by
@@ -36,6 +39,12 @@ public enum AcademicErrorCodes implements GenericCodes {
   SCHOOL_ALREADY_EXISTS("error.domain.academic.school.already.exists"),
 
   /**
+   * Indicates an attempt to delete or modify an academic school that currently has registered
+   * courses under its hierarchy, violating relational integrity.
+   */
+  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
+
+  /**
    * Indicates that a requested academic school could not be located in the underlying data store by
    * its unique identifier.
    */
@@ -46,6 +55,12 @@ public enum AcademicErrorCodes implements GenericCodes {
    * assigned to an existing student.
    */
   STUDENT_ALREADY_EXISTS("error.domain.academic.student.already.exists"),
+
+  /**
+   * Indicates an attempt to remove or alter a student profile that still retains active or
+   * historical academic enrollments, violating relational integrity.
+   */
+  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
 
   /**
    * Indicates that a requested student enrollment record could not be located in the underlying

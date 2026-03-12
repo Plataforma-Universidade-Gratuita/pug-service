@@ -17,6 +17,45 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
+   * Removes a student's enrollment by deleting the {@link Student} record.
+   *
+   * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
+   * the service automatically triggers the deletion of the underlying {@link
+   * com.pug.identity.domain.Account} to ensure credentials tied strictly to student roles are wiped
+   * out.
+   *
+   * @param accountId the unique identifier of the Student to delete (Account ID)
+   * @return {@code true} if the student was successfully deleted, {@code false} if they were not
+   *     found
+   */
+  boolean delete(UUID accountId);
+
+  /**
+   * Checks whether any active student enrollment associated with a specific course exists.
+   *
+   * <p>This method is utilized to enforce relational integrity, ensuring that an academic {@link
+   * com.pug.academic.domain.Course} cannot be deleted if it still has enrolled students.
+   *
+   * @param courseId the unique identifier (UUID) of the course to check
+   * @return {@code true} if at least one student is enrolled in the course, {@code false} otherwise
+   */
+  boolean existsAnyByCourseId(UUID courseId);
+
+  /**
+   * Retrieves a full {@link Student} domain aggregate by its linked account identifier.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
+   * responses, use {@link StudentReadService#getViewByAccountId(UUID)} instead.
+   *
+   * @param accountId the unique identifier (UUID) of the linked account
+   * @return the fully reconstituted {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the student exists but its stored
+   *     state violates strict domain invariants (data corruption)
+   */
+  Student getById(UUID accountId);
+
+  /**
    * Instantiates and persists a new {@link Student} aggregate based on the provided command.
    *
    * <p>This method performs a cascading save. It verifies that the specified course exists, then
@@ -54,34 +93,4 @@ public interface StudentService {
    * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
    */
   Student update(UUID accountId, StudentUpdateCommand cmd);
-
-  /**
-   * Removes a student's enrollment by deleting the {@link Student} record.
-   *
-   * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
-   * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to student roles are wiped
-   * out.
-   *
-   * @param accountId the unique identifier of the Student to delete (Account ID)
-   * @return {@code true} if the student was successfully deleted, {@code false} if they were not
-   *     found
-   */
-  boolean delete(UUID accountId);
-
-  /**
-   * Retrieves a full {@link Student} domain aggregate by its linked account identifier.
-   *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link StudentReadService#getViewByAccountId(UUID)} instead.
-   *
-   * @param accountId the unique identifier (UUID) of the linked account
-   * @return the fully reconstituted {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the student exists but its stored
-   *     state violates strict domain invariants (data corruption)
-   */
-  Student getById(UUID accountId);
-
-  boolean existsAnyByCourseId(UUID courseId);
 }

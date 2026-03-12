@@ -13,27 +13,32 @@ import java.util.UUID;
 public interface StudentRepository {
 
   /**
-   * Persists a newly created {@link Student} aggregate into the repository.
-   *
-   * @param entity the {@link Student} aggregate to persist
-   * @return the fully persisted {@link Student} instance
-   */
-  Student persist(Student entity);
-
-  /**
-   * Updates the state of an existing {@link Student} aggregate in the repository.
-   *
-   * @param entity the {@link Student} instance containing the updated state
-   */
-  void update(Student entity);
-
-  /**
    * Removes a {@link Student} from the repository based on their linked account ID.
    *
    * @param id the unique identifier (UUID) of the student's linked account
    * @return {@code true} if the student was successfully deleted, {@code false} if not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether any {@link Student} associated with the specified course identifier exists in
+   * the repository.
+   *
+   * <p>This query enforces relational integrity, ensuring academic courses are not deleted if they
+   * still have students actively enrolled in them.
+   *
+   * @param courseId the unique identifier (UUID) of the enrolled course
+   * @return {@code true} if at least one student is enrolled in the course, {@code false} otherwise
+   */
+  boolean existsByCourseId(UUID courseId);
+
+  /**
+   * Checks whether a {@link Student} with the specified academic registration already exists.
+   *
+   * @param registration the raw academic registration string to check
+   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
+   */
+  boolean existsByRegistration(String registration);
 
   /**
    * Retrieves a {@link Student} by their linked account identifier.
@@ -49,12 +54,17 @@ public interface StudentRepository {
   Optional<Student> findOptionalById(UUID id);
 
   /**
-   * Checks whether a {@link Student} with the specified academic registration already exists.
+   * Persists a newly created {@link Student} aggregate into the repository.
    *
-   * @param registration the raw academic registration string to check
-   * @return {@code true} if a student with the given registration exists, {@code false} otherwise
+   * @param entity the {@link Student} aggregate to persist
+   * @return the fully persisted {@link Student} instance
    */
-  boolean existsByRegistration(String registration);
+  Student persist(Student entity);
 
-  boolean existsByCourseId(UUID courseId);
+  /**
+   * Updates the state of an existing {@link Student} aggregate in the repository.
+   *
+   * @param entity the {@link Student} instance containing the updated state
+   */
+  void update(Student entity);
 }
