@@ -4780,7 +4780,7 @@ import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.projects.service.EnrollmentService;
+import com.pug.project.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;

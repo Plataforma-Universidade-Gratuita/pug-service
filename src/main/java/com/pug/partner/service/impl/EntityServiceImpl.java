@@ -10,7 +10,7 @@ import com.pug.partner.service.dtos.EntityCreateCommand;
 import com.pug.partner.service.dtos.EntityUpdateCommand;
 import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.partner.service.utils.ExceptionHelper;
-import com.pug.projects.service.ProjectService;
+import com.pug.project.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;

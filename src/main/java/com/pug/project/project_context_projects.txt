@@ -1,0 +1,3320 @@
+PROJECT CONTEXT DUMP
+Project Name: projects
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/projects
+================================================================================
+
+
+================================================================================
+FILE: domain/Attendance.java
+================================================================================
+package com.pug.project.domain;
+
+import com.github.f4b6a3.uuid.UuidCreator;
+import com.pug.academic.domain.Student;
+import com.pug.project.domain.enums.AttendanceStatus;
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.project.domain.vos.AttendanceInfo;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
+import com.pug.project.domain.vos.QrValidationInfo;
+import com.pug.shared.domain.DomainError;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * Immutable Domain Entity representing a Student's Attendance record for a Project.
+ *
+ * <p>This class acts as an aggregate containing the unique identifier, the linked enrollment, the
+ * geolocation data (QR Validation), and the staff validation metadata. It extends {@link
+ * DomainError} to accumulate structural validation failures.
+ */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Attendance extends DomainError {
+
+  /** The unique identifier for the attendance record (UUIDv7). */
+  UUID id;
+
+  /** The composite identifier linking this attendance to a specific student and project. */
+  EnrollmentIdentifier enrollmentIdentifier;
+
+  /** The geographic and temporal data recorded when the QR code was scanned. */
+  QrValidationInfo qrValidationInfo;
+
+  /** The metadata tracking which staff member validated the attendance and when. */
+  AttendanceInfo attendanceInfo;
+
+  /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
+  AttendanceStatus status;
+
+  /**
+   * Factory method to create a new, unvalidated {@code Attendance} instance.
+   *
+   * <p>Initializes the attendance in a {@code WAITING} state with empty validation info.
+   *
+   * @param project the associated project
+   * @param student the associated student
+   * @param duration the duration of time the student spent on the project
+   * @return a newly created and self-validated {@link Attendance} instance
+   */
+  public static Attendance factory(Project project, Student student, BigDecimal duration) {
+    Attendance att =
+        Attendance.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .enrollmentIdentifier(
+                EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
+            .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
+            .attendanceInfo(AttendanceInfo.factory(null, null))
+            .status(AttendanceStatus.WAITING)
+            .build();
+
+    att.collectValidationProblems();
+    return att;
+  }
+
+  /**
+   * Validates the attendance record, transitioning its status and recording validation metadata.
+   *
+   * <p>This behavior simulates a staff member confirming the student's geographic presence and time
+   * spent via a QR code scan.
+   *
+   * @param validatorId the unique identifier of the staff account performing the validation
+   * @param lat the latitude recorded at validation time
+   * @param lon the longitude recorded at validation time
+   * @param hash the unique hash of the scanned QR code
+   * @return a new {@link Attendance} instance reflecting the validated state
+   */
+  public Attendance validateAttendance(
+      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
+
+    QrValidationInfo newQr =
+        QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
+
+    AttendanceInfo newInfo =
+        this.attendanceInfo.toBuilder()
+            .validatedBy(validatorId)
+            .validatedAt(OffsetDateTime.now())
+            .auditInfo(this.attendanceInfo.getAuditInfo().update())
+            .build();
+
+    Attendance updated =
+        this.toBuilder()
+            .qrValidationInfo(newQr)
+            .attendanceInfo(newInfo)
+            .status(AttendanceStatus.PRESENT)
+            .build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /** Evaluates constraints for the Attendance aggregate and accumulates any validation problems. */
+  private void collectValidationProblems() {
+    validateIdField(id);
+    if (enrollmentIdentifier == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK);
+    } else if (enrollmentIdentifier.hasFieldErrors()) {
+      addFieldErrors(enrollmentIdentifier.getFieldErrors());
+    }
+    if (status == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK);
+    }
+    if (qrValidationInfo != null && qrValidationInfo.hasFieldErrors()) {
+      addFieldErrors(qrValidationInfo.getFieldErrors());
+    }
+    if (attendanceInfo != null && attendanceInfo.hasFieldErrors()) {
+      addFieldErrors(attendanceInfo.getFieldErrors());
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/AttendanceRepository.java
+================================================================================
+package com.pug.project.domain;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Domain repository interface for managing {@link Attendance} aggregate roots.
+ *
+ * <p>This interface defines the contract for tracking student participation in projects, including
+ * QR code validations and temporal geographic checks.
+ */
+public interface AttendanceRepository {
+
+  Attendance persist(Attendance entity);
+
+  void update(Attendance entity);
+
+  boolean deleteById(UUID id);
+
+  Optional<Attendance> findOptionalById(UUID id);
+
+  /**
+   * Checks whether an attendance record has already been validated using the given QR hash.
+   *
+   * @param qrHash the cryptographic hash of the QR code
+   * @return {@code true} if an attendance with this hash exists, {@code false} otherwise
+   */
+  boolean existsByQrHash(String qrHash);
+
+  boolean existsByValidatedBy(UUID staffAccountId);
+}
+
+
+================================================================================
+FILE: domain/Enrollment.java
+================================================================================
+package com.pug.project.domain;
+
+import com.pug.academic.domain.Student;
+import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
+import com.pug.project.domain.vos.EnrollmentInfo;
+import com.pug.shared.domain.DomainError;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * Immutable Domain Entity representing a Student's Enrollment in a Project.
+ *
+ * <p>This class maps a student directly to a project and tracks the lifecycle state of that
+ * relationship (e.g., PENDING, APPROVED, COMPLETED). It extends {@link DomainError} to accumulate
+ * structural validation failures.
+ */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Enrollment extends DomainError {
+
+  /** The composite identifier uniquely linking the student to the project. */
+  EnrollmentIdentifier identifier;
+
+  /** The current lifecycle status of the enrollment. */
+  EnrollmentStatus status;
+
+  /** The metadata tracking critical timestamps (acceptance, closure) of the enrollment. */
+  EnrollmentInfo enrollmentInfo;
+
+  /**
+   * Factory method to create a new {@code Enrollment} instance in a PENDING state.
+   *
+   * @param student the student requesting enrollment
+   * @param project the project they wish to join
+   * @return a new, self-validated {@link Enrollment} instance
+   */
+  public static Enrollment factory(Student student, Project project) {
+    Enrollment enrollment =
+        Enrollment.builder()
+            .identifier(EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
+            .status(EnrollmentStatus.PENDING)
+            .enrollmentInfo(EnrollmentInfo.factory())
+            .build();
+
+    enrollment.collectValidationProblems();
+    return enrollment;
+  }
+
+  /**
+   * Transitions the enrollment to a new lifecycle status, updating tracking timestamps accordingly.
+   *
+   * @param newStatus the target status to transition to
+   * @return a new {@link Enrollment} instance reflecting the updated state, or the same instance if
+   *     unchanged
+   */
+  public Enrollment changeStatus(EnrollmentStatus newStatus) {
+    if (this.status == newStatus) {
+      return this;
+    }
+
+    EnrollmentInfo newInfo;
+
+    if (newStatus == EnrollmentStatus.APPROVED) {
+      newInfo = this.enrollmentInfo.accept();
+    } else if (isClosingStatus(newStatus)) {
+      newInfo = this.enrollmentInfo.closeStatus();
+    } else {
+      newInfo = this.enrollmentInfo.update();
+    }
+
+    Enrollment updated = this.toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Helper method to determine if a status represents a terminal (closing) state for the
+   * enrollment.
+   */
+  private boolean isClosingStatus(EnrollmentStatus s) {
+    return s == EnrollmentStatus.REJECTED
+        || s == EnrollmentStatus.EXITED
+        || s == EnrollmentStatus.REMOVED
+        || s == EnrollmentStatus.CANCELED
+        || s == EnrollmentStatus.COMPLETED;
+  }
+
+  /** Evaluates constraints for the Enrollment aggregate and accumulates any validation problems. */
+  private void collectValidationProblems() {
+    if (identifier == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    } else if (identifier.hasFieldErrors()) {
+      addFieldErrors(identifier.getFieldErrors());
+    }
+
+    if (status == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STATUS_BLANK);
+    }
+
+    if (enrollmentInfo != null && enrollmentInfo.hasFieldErrors()) {
+      addFieldErrors(enrollmentInfo.getFieldErrors());
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/EnrollmentRepository.java
+================================================================================
+package com.pug.project.domain;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Domain repository interface for managing {@link Enrollment} aggregate roots.
+ *
+ * <p>This interface defines the contract for persisting and retrieving student enrollments in
+ * projects. It utilizes a composite natural key (Project ID + Student ID).
+ */
+public interface EnrollmentRepository {
+
+  Enrollment persist(Enrollment entity);
+
+  void update(Enrollment entity);
+
+  boolean deleteByIds(UUID projectId, UUID studentId);
+
+  Optional<Enrollment> findOptionalByIds(UUID projectId, UUID studentId);
+
+  /**
+   * Checks whether a specific student is already enrolled in a specific project.
+   *
+   * @param projectId the unique identifier of the project
+   * @param studentId the unique identifier of the student
+   * @return {@code true} if the enrollment exists, {@code false} otherwise
+   */
+  boolean existsByIds(UUID projectId, UUID studentId);
+
+  boolean existsByStudentId(UUID studentId);
+
+  boolean existsByProjectId(UUID projectId);
+}
+
+
+================================================================================
+FILE: domain/enums/AttendanceStatus.java
+================================================================================
+package com.pug.project.domain.enums;
+
+import com.pug.shared.domain.enums.GenericCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration representing the valid lifecycle states of an Attendance record.
+ *
+ * <p>Implements {@link GenericCodes} to allow the presentation layer to easily translate these
+ * statuses into localized, human-readable strings.
+ */
+@Getter
+public enum AttendanceStatus implements GenericCodes {
+
+  /** Indicates the student was absent or the attendance was rejected. */
+  ABSENT("attendance.status.absent"),
+
+  /** Indicates the attendance has been successfully validated and the student was present. */
+  PRESENT("attendance.status.present"),
+
+  /** Indicates the attendance has been recorded but is pending staff validation. */
+  WAITING("attendance.status.waiting");
+
+  private final String bundleKey;
+
+  AttendanceStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/EnrollmentStatus.java
+================================================================================
+package com.pug.project.domain.enums;
+
+import com.pug.shared.domain.enums.GenericCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration representing the valid lifecycle states of a Student Enrollment.
+ *
+ * <p>Implements {@link GenericCodes} to allow the presentation layer to easily translate these
+ * statuses into localized, human-readable strings.
+ */
+@Getter
+public enum EnrollmentStatus implements GenericCodes {
+
+  /** Indicates the student has been accepted into the project. */
+  APPROVED("enrollment.status.approved"),
+
+  /** Indicates the enrollment was canceled before the project concluded. */
+  CANCELED("enrollment.status.canceled"),
+
+  /** Indicates the student successfully completed the project requirements. */
+  COMPLETED("enrollment.status.completed"),
+
+  /** Indicates the student voluntarily withdrew from the project. */
+  EXITED("enrollment.status.exited"),
+
+  /** Indicates the enrollment request is awaiting staff review. */
+  PENDING("enrollment.status.pending"),
+
+  /** Indicates the enrollment request was denied by staff. */
+  REJECTED("enrollment.status.rejected"),
+
+  /** Indicates the student was administratively removed from the project. */
+  REMOVED("enrollment.status.removed");
+
+  private final String bundleKey;
+
+  EnrollmentStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectsErrorCodes.java
+================================================================================
+package com.pug.project.domain.enums;
+
+import com.pug.shared.domain.enums.GenericCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration of high-level domain error codes specific to the Projects context.
+ *
+ * <p>This enum implements {@link GenericCodes} to map business rule violations, invalid state
+ * transitions, and resource state conflicts directly to localized messages.
+ */
+@Getter
+public enum ProjectsErrorCodes implements GenericCodes {
+  PROJECT_HAS_ENROLLMENTS("error.domain.projects.has.enrollments"),
+
+  /** Indicates an attempt to record an attendance that already exists. */
+  ATTENDANCE_ALREADY_EXISTS("error.domain.projects.attendance.already.exists"),
+
+  /** Indicates that a requested attendance record could not be found. */
+  ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.not.found"),
+
+  /** Indicates an attempt to create an enrollment that already exists. */
+  ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.already.exists"),
+
+  /** Indicates that a requested enrollment record could not be found. */
+  ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.not.found"),
+
+  /* --- State Transition Business Rules --- */
+
+  /** Indicates an invalid state transition attempting to cancel a project. */
+  INVALID_PROJECT_STATUS_UPDATE_CANCEL("error.domain.projects.status.update.cancel"),
+
+  /** Indicates an invalid state transition attempting to complete a project. */
+  INVALID_PROJECT_STATUS_UPDATE_COMPLETE("error.domain.projects.status.update.complete"),
+
+  /** Indicates an invalid state transition attempting to put a project on hold. */
+  INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD("error.domain.projects.status.update.put.on.hold"),
+
+  /** Indicates an invalid state transition attempting to resume a project. */
+  INVALID_PROJECT_STATUS_UPDATE_RETAKE("error.domain.projects.status.update.retake"),
+
+  /** Indicates an invalid state transition attempting to start a project. */
+  INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start"),
+
+  /* --- Resource Conflicts --- */
+
+  /** Indicates an attempt to create a project with a name that is already in use. */
+  PROJECT_ALREADY_EXISTS("error.domain.projects.already.exists"),
+
+  /** Indicates that a requested project could not be found. */
+  PROJECT_NOT_FOUND("error.domain.projects.not.found");
+
+  /** The property key used to resolve the localized error message in the resource bundles. */
+  private final String bundleKey;
+
+  /**
+   * Constructs the {@code ProjectsErrorCodes} enum.
+   *
+   * @param bundleKey the unique i18n key mapping to the application's resource bundles
+   */
+  ProjectsErrorCodes(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectsFieldErrorCodes.java
+================================================================================
+package com.pug.project.domain.enums;
+
+import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration of field-specific validation errors within the Projects domain.
+ *
+ * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
+ * localized error messages mapped to specific domain properties. These constants are primarily
+ * accumulated inside {@link com.pug.shared.domain.DomainError} instances when value objects or
+ * entities fail their internal validations.
+ */
+@Getter
+public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
+
+  /** Indicates that the duration of an attendance record is null or zero/negative. */
+  INVALID_ATTENDANCE_DURATION_INVALID(
+      "error.domain.projects.attendance.duration.invalid", "duration"),
+
+  /** Indicates that the provided latitude is out of the valid range (-90 to 90). */
+  INVALID_ATTENDANCE_GEO_INVALID_LAT(
+      "error.domain.projects.attendance.geo.invalid.lat", "latitude"),
+
+  /** Indicates that the provided longitude is out of the valid range (-180 to 180). */
+  INVALID_ATTENDANCE_GEO_INVALID_LONG(
+      "error.domain.projects.attendance.geo.invalid.long", "longitude"),
+
+  /** Indicates that geolocation data is partially missing (e.g., has latitude but no longitude). */
+  INVALID_ATTENDANCE_GEO_INVALID_MISSING(
+      "error.domain.projects.attendance.geo.invalid.missing", null),
+
+  /** Indicates that the project ID for an attendance record is null. */
+  INVALID_ATTENDANCE_PROJECT_BLANK("error.domain.projects.attendance.project.blank", "projectId"),
+
+  /** Indicates that the status of an attendance record is null. */
+  INVALID_ATTENDANCE_STATUS_BLANK("error.domain.projects.attendance.status.blank", "status"),
+
+  /** Indicates that the student ID for an attendance record is null. */
+  INVALID_ATTENDANCE_STUDENT_BLANK("error.domain.projects.attendance.student.blank", "studentId"),
+
+  /** Indicates that the creation timestamp was provided as null. */
+  INVALID_CREATED_AT_BLANK("error.domain.projects.createdat.blank", "createdAt"),
+
+  /** Indicates that the creation or validation timestamp is logically in the future. */
+  INVALID_CREATED_AT_FUTURE("error.domain.projects.createdat.future", "createdAt"),
+
+  /** Indicates that a project description was provided as null, empty, or whitespace. */
+  INVALID_DESCRIPTION_BLANK("error.domain.projects.description.blank", "description"),
+
+  /** Indicates that a project description exceeds the maximum allowed length constraints. */
+  INVALID_DESCRIPTION_TOO_LONG("error.domain.projects.description.too.long", "description"),
+
+  /**
+   * Indicates that enrollment timestamps (e.g., acceptedAt) are chronologically invalid relative to
+   * creation.
+   */
+  INVALID_ENROLLMENT_DATES_INVALID("error.domain.projects.enrollment.dates.invalid", "acceptedAt"),
+
+  /** Indicates that the project ID for an enrollment is null. */
+  INVALID_ENROLLMENT_PROJECT_BLANK("error.domain.projects.enrollment.project.blank", "projectId"),
+
+  /** Indicates that the request timestamp for an enrollment is null. */
+  INVALID_ENROLLMENT_REQUEST_AT_BLANK(
+      "error.domain.projects.enrollment.requestat.blank", "requestAt"),
+
+  /** Indicates that the status for an enrollment is null. */
+  INVALID_ENROLLMENT_STATUS_BLANK("error.domain.projects.enrollment.status.blank", "status"),
+
+  /** Indicates that the student ID for an enrollment is null. */
+  INVALID_ENROLLMENT_STUDENT_BLANK("error.domain.projects.enrollment.student.blank", "studentId"),
+
+  /** Indicates that the maximum number of participants is negative. */
+  INVALID_MAX_PARTICIPANTS_NEGATIVE(
+      "error.domain.projects.maxparticipants.negative", "maxParticipants"),
+
+  /** Indicates that a project name was provided as null, empty, or whitespace. */
+  INVALID_NAME_BLANK("error.domain.projects.name.blank", "name"),
+
+  /** Indicates that a project name exceeds the maximum allowed length constraints. */
+  INVALID_NAME_TOO_LONG("error.domain.projects.name.too.long", "name"),
+
+  /** Indicates that the UUID of the creator is null. */
+  INVALID_PROJECT_CREATED_BY_BLANK("error.domain.foreign.key.blank", "createdBy"),
+
+  /** Indicates that the offered hours for a project are negative. */
+  INVALID_PROJECT_OFFERED_HOURS_NEGATIVE("error.domain.number.negative", "offeredHours"),
+
+  /** Indicates an invalid attempt to update a project's status to CANCEL. */
+  INVALID_PROJECT_STATUS_UPDATE_CANCEL(
+      "error.domain.projects.status.update.cancel", "projectStatus"),
+
+  /** Indicates an invalid attempt to update a project's status to COMPLETE. */
+  INVALID_PROJECT_STATUS_UPDATE_COMPLETE(
+      "error.domain.projects.status.update.complete", "projectStatus"),
+
+  /** Indicates an invalid attempt to update a project's status to ON HOLD. */
+  INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD(
+      "error.domain.projects.status.update.put.on.hold", "projectStatus"),
+
+  /** Indicates an invalid attempt to update a project's status to RETAKE. */
+  INVALID_PROJECT_STATUS_UPDATE_RETAKE(
+      "error.domain.projects.status.update.retake", "projectStatus"),
+
+  /** Indicates an invalid attempt to update a project's status to START. */
+  INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start", "projectStatus"),
+
+  /** Indicates that a status enum was provided as null. */
+  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status");
+
+  /**
+   * The property key used to resolve the localized error message in the application's resource
+   * bundles.
+   */
+  private final String bundleKey;
+
+  /** The exact name of the domain property or DTO field that failed validation. */
+  private final String fieldName;
+
+  /**
+   * Constructs a {@code ProjectsFieldErrorCodes} instance.
+   *
+   * @param bundleKey the unique i18n key mapping to the resource bundles
+   * @param fieldName the literal name of the domain property or DTO field that failed validation
+   */
+  ProjectsFieldErrorCodes(String bundleKey, String fieldName) {
+    this.bundleKey = bundleKey;
+    this.fieldName = fieldName;
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectStatus.java
+================================================================================
+package com.pug.project.domain.enums;
+
+import com.pug.shared.domain.enums.GenericCodes;
+import lombok.Getter;
+
+/**
+ * Enumeration representing the valid lifecycle states of a Project.
+ *
+ * <p>Implements {@link GenericCodes} to allow the presentation layer to easily translate these
+ * statuses into localized, human-readable strings.
+ */
+@Getter
+public enum ProjectStatus implements GenericCodes {
+
+  /** Indicates the project was aborted before or during execution. */
+  CANCELED("project.status.canceled"),
+
+  /** Indicates the project has successfully finished. */
+  COMPLETED("project.status.completed"),
+
+  /** Indicates the project is currently active and students are participating. */
+  IN_PROGRESS("project.status.in.progress"),
+
+  /** Indicates the project is temporarily paused. */
+  ON_HOLD("project.status.on.hold"),
+
+  /** Indicates the project is created but has not yet started. */
+  PLANNED("project.status.planned");
+
+  private final String bundleKey;
+
+  ProjectStatus(String bundleKey) {
+    this.bundleKey = bundleKey;
+  }
+}
+
+
+================================================================================
+FILE: domain/Project.java
+================================================================================
+package com.pug.project.domain;
+
+import com.github.f4b6a3.uuid.UuidCreator;
+import com.pug.project.domain.enums.ProjectStatus;
+import com.pug.project.domain.enums.ProjectsErrorCodes;
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.project.domain.vos.ProjectInfo;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.pug.shared.exceptions.BusinessRuleException;
+import com.pug.shared.utils.StringUtils;
+import java.math.BigDecimal;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * Immutable Domain Entity representing a Project offered by a Partner Entity.
+ *
+ * <p>This class acts as an aggregate root containing the project's unique identifier, descriptive
+ * data, physical limitations (max participants, hours offered), and lifecycle state. It extends
+ * {@link DomainError} to accumulate structural validation failures.
+ */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class Project extends DomainError {
+
+  /** The unique identifier for the project (UUIDv7). */
+  UUID id;
+
+  /** The title or name of the project. */
+  String name;
+
+  /** The unique identifier of the partner organization offering this project. */
+  UUID entityId;
+
+  /** The detailed description of the project's objectives and tasks. */
+  String description;
+
+  /** The logistical metadata and audit information of the project. */
+  ProjectInfo projectInfo;
+
+  /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
+  ProjectStatus projectStatus;
+
+  /**
+   * Factory method to create a new {@code Project} instance.
+   *
+   * <p>The project is initialized in a {@code PLANNED} state with standard tracking information.
+   *
+   * @param name the name of the project
+   * @param entityId the associated partner entity
+   * @param description the project description
+   * @param createdBy the UUID of the staff account who created the project
+   * @param maxParticipants the maximum number of participants allowed
+   * @param offeredHours the total hours offered for completing the project
+   * @return a newly created and self-validated {@link Project} instance
+   */
+  public static Project factory(
+      String name,
+      UUID entityId,
+      String description,
+      UUID createdBy,
+      Integer maxParticipants,
+      BigDecimal offeredHours) {
+    ProjectInfo infoVo = ProjectInfo.factory(createdBy, maxParticipants, offeredHours);
+
+    Project project =
+        Project.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .name(StringUtils.trim(name))
+            .entityId(entityId)
+            .description(StringUtils.trim(description))
+            .projectInfo(infoVo)
+            .projectStatus(ProjectStatus.PLANNED)
+            .build();
+
+    project.collectValidationProblems();
+    return project;
+  }
+
+  /**
+   * Updates the project's title.
+   *
+   * @param newName the new name for the project
+   * @return a new {@link Project} instance with the updated name
+   */
+  public Project rename(String newName) {
+    String trimmed = StringUtils.trim(newName);
+    if (name.equals(trimmed)) {
+      return this;
+    }
+    Project updated = toBuilder().name(trimmed).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Reassigns the project to a different partner organization.
+   *
+   * @param newEntityId the unique identifier of the new partner entity
+   * @return a new {@link Project} instance with the updated entity ID
+   */
+  public Project moveToEntity(UUID newEntityId) {
+    if (entityId.equals(newEntityId)) {
+      return this;
+    }
+    Project updated = toBuilder().entityId(newEntityId).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the project's description.
+   *
+   * @param newDescription the new description text
+   * @return a new {@link Project} instance with the updated description
+   */
+  public Project changeDescription(String newDescription) {
+    String trimmed = StringUtils.trim(newDescription);
+    if (description.equals(trimmed)) {
+      return this;
+    }
+    Project updated = toBuilder().description(trimmed).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'PLANNED' to 'IN_PROGRESS'.
+   *
+   * @return a new {@link Project} instance reflecting the started status
+   * @throws BusinessRuleException if the project is not currently in a 'PLANNED' state
+   */
+  public Project start() {
+    if (projectStatus == ProjectStatus.IN_PROGRESS) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.PLANNED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_START);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'COMPLETED'.
+   *
+   * @return a new {@link Project} instance reflecting the completed status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project complete() {
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.COMPLETED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state to 'CANCELED'.
+   *
+   * @return a new {@link Project} instance reflecting the canceled status
+   * @throws BusinessRuleException if the project is already 'COMPLETED'
+   */
+  public Project cancel() {
+    if (projectStatus == ProjectStatus.CANCELED) {
+      return this;
+    }
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.CANCELED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'ON_HOLD'.
+   *
+   * @return a new {@link Project} instance reflecting the on-hold status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project putOnHold() {
+    if (projectStatus == ProjectStatus.ON_HOLD) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
+    }
+    Project updated =
+        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'ON_HOLD' back to 'IN_PROGRESS'.
+   *
+   * @return a new {@link Project} instance reflecting the resumed status
+   * @throws BusinessRuleException if the project is not currently 'ON_HOLD'
+   */
+  public Project retake() {
+    if (projectStatus != ProjectStatus.ON_HOLD) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
+  private void collectValidationProblems() {
+    validateIdField(id);
+    if (entityId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_CREATED_BY_BLANK);
+    }
+    if (StringUtils.isEmpty(description)) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_BLANK);
+    } else if (description.length() > 4000) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_TOO_LONG);
+    }
+    if (StringUtils.isEmpty(name)) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_NAME_BLANK);
+    } else if (name.length() > 150) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_NAME_TOO_LONG);
+    }
+    if (projectInfo == null) {
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
+    } else if (projectInfo.hasFieldErrors()) {
+      addFieldErrors(projectInfo.getFieldErrors());
+    }
+    if (projectStatus == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_STATUS_BLANK);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/ProjectRepository.java
+================================================================================
+package com.pug.project.domain;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Domain repository interface for managing {@link Project} aggregate roots.
+ *
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
+ * projects. It abstracts the underlying data storage mechanism to maintain a pure,
+ * infrastructure-agnostic domain model.
+ */
+public interface ProjectRepository {
+
+  Project persist(Project entity);
+
+  void update(Project entity);
+
+  boolean deleteById(UUID id);
+
+  Optional<Project> findOptionalById(UUID id);
+
+  /**
+   * Checks whether a project with the specified name already exists for a given partner entity.
+   *
+   * @param name the exact name of the project
+   * @param entityId the unique identifier of the partner organization
+   * @return {@code true} if a matching project exists, {@code false} otherwise
+   */
+  boolean existsByNameAndEntityId(String name, UUID entityId);
+
+  boolean existsByEntityId(UUID entityId);
+
+  boolean existsByCreatedBy(UUID staffAccountId);
+}
+
+
+================================================================================
+FILE: domain/vos/AttendanceInfo.java
+================================================================================
+package com.pug.project.domain.vos;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/**
+ * Immutable Value Object (VO) representing the validation metadata for an Attendance record.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules regarding
+ * the timestamp and the identity of the staff member who validated the attendance.
+ */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class AttendanceInfo extends DomainError {
+
+  /** The unique identifier (Account ID) of the staff member who validated the attendance. */
+  UUID validatedBy;
+
+  /** The exact timestamp when the attendance was explicitly validated. */
+  OffsetDateTime validatedAt;
+
+  /** The audit tracking information (creation and update timestamps). */
+  AuditInfo auditInfo;
+
+  /**
+   * Constructs an {@code AttendanceInfo} instance.
+   *
+   * @param validatedBy the unique identifier of the validating staff member
+   * @param validatedAt the timestamp of validation
+   * @param auditInfo the audit tracking VO
+   */
+  @Builder(toBuilder = true)
+  private AttendanceInfo(UUID validatedBy, OffsetDateTime validatedAt, AuditInfo auditInfo) {
+    this.validatedBy = validatedBy;
+    this.validatedAt = validatedAt;
+    this.auditInfo = auditInfo;
+  }
+
+  /**
+   * Factory method to create a new {@code AttendanceInfo} instance.
+   *
+   * <p>Initializes standard audit tracking information and immediately validates the state.
+   *
+   * @param validatedBy the unique identifier of the validating staff member
+   * @param validatedAt the timestamp of validation
+   * @return a self-validated {@link AttendanceInfo} instance
+   */
+  public static AttendanceInfo factory(UUID validatedBy, OffsetDateTime validatedAt) {
+    AttendanceInfo vo =
+        AttendanceInfo.builder()
+            .validatedBy(validatedBy)
+            .validatedAt(validatedAt)
+            .auditInfo(AuditInfo.factory())
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /**
+   * Refreshes the internal audit information to reflect a state update.
+   *
+   * @return a new {@link AttendanceInfo} instance with updated audit info
+   */
+  public AttendanceInfo update() {
+    AttendanceInfo updated = toBuilder().auditInfo(this.auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>Either both {@code validatedBy} and {@code validatedAt} are provided, or neither are.
+   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_STATUS_BLANK} if mismatched).
+   *   <li>The validation timestamp cannot chronologically precede the creation timestamp (appends
+   *       {@link ProjectsFieldErrorCodes#INVALID_CREATED_AT_FUTURE}).
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
+   * </ul>
+   */
+  private void collectValidationProblems() {
+    boolean hasValidator = validatedBy != null;
+    boolean hasDate = validatedAt != null;
+
+    if (hasValidator != hasDate) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK);
+    }
+
+    if (hasDate
+        && auditInfo != null
+        && auditInfo.getCreatedAt() != null
+        && validatedAt.isBefore(auditInfo.getCreatedAt())) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_CREATED_AT_FUTURE);
+    }
+
+    if (auditInfo == null) {
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
+    } else {
+      addFieldErrors(auditInfo.getFieldErrors());
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EnrollmentIdentifier.java
+================================================================================
+package com.pug.project.domain.vos;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/**
+ * Immutable Value Object (VO) representing the composite natural identifier for an Enrollment.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules, ensuring an
+ * enrollment is always tied to both a specific student and a specific project.
+ */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class EnrollmentIdentifier extends DomainError {
+
+  /** The unique identifier (Account ID) of the enrolled student. */
+  UUID studentId;
+
+  /** The unique identifier of the project the student is enrolled in. */
+  UUID projectId;
+
+  /**
+   * Constructs an {@code EnrollmentIdentifier} instance.
+   *
+   * @param studentId the unique identifier of the student
+   * @param projectId the unique identifier of the project
+   */
+  @Builder(toBuilder = true)
+  private EnrollmentIdentifier(UUID studentId, UUID projectId) {
+    this.studentId = studentId;
+    this.projectId = projectId;
+  }
+
+  /**
+   * Factory method to create a new {@code EnrollmentIdentifier} instance.
+   *
+   * <p>The instance is created and immediately self-validated.
+   *
+   * @param studentId the unique identifier of the student
+   * @param projectId the unique identifier of the project
+   * @return a self-validated {@link EnrollmentIdentifier} instance
+   */
+  public static EnrollmentIdentifier factory(UUID studentId, UUID projectId) {
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder().studentId(studentId).projectId(projectId).build();
+    id.collectValidationProblems();
+    return id;
+  }
+
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>The student ID must not be null (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK}).
+   *   <li>The project ID must not be null (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK}).
+   * </ul>
+   */
+  private void collectValidationProblems() {
+    if (studentId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
+    }
+    if (projectId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EnrollmentInfo.java
+================================================================================
+package com.pug.project.domain.vos;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
+import java.time.OffsetDateTime;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/**
+ * Immutable Value Object (VO) representing the lifecycle metadata of an Enrollment.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to
+ * chronological integrity, ensuring status change timestamps remain consistent.
+ */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class EnrollmentInfo extends DomainError {
+
+  /** The exact timestamp when the enrollment was formally accepted. */
+  OffsetDateTime acceptedAt;
+
+  /**
+   * The exact timestamp when the enrollment reached a terminal state (e.g., Completed, Canceled).
+   */
+  OffsetDateTime closingStatusAt;
+
+  /** The audit tracking information (creation and update timestamps). */
+  AuditInfo auditInfo;
+
+  /**
+   * Constructs an {@code EnrollmentInfo} instance.
+   *
+   * @param acceptedAt the acceptance timestamp
+   * @param closingStatusAt the terminal state timestamp
+   * @param auditInfo the audit tracking VO
+   */
+  @Builder(toBuilder = true)
+  private EnrollmentInfo(
+      OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt, AuditInfo auditInfo) {
+    this.acceptedAt = acceptedAt;
+    this.closingStatusAt = closingStatusAt;
+    this.auditInfo = auditInfo;
+  }
+
+  /**
+   * Factory method to create a new {@code EnrollmentInfo} instance in its initial state.
+   *
+   * <p>Automatically initializes standard audit tracking information with null values for the
+   * acceptance and closing timestamps.
+   *
+   * @return a newly created and self-validated {@link EnrollmentInfo} instance
+   */
+  public static EnrollmentInfo factory() {
+    EnrollmentInfo vo =
+        EnrollmentInfo.builder()
+            .acceptedAt(null)
+            .closingStatusAt(null)
+            .auditInfo(AuditInfo.factory())
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /**
+   * Refreshes the internal audit information to reflect a state update.
+   *
+   * @return a new {@link EnrollmentInfo} instance with updated audit info
+   */
+  public EnrollmentInfo update() {
+    EnrollmentInfo updated = toBuilder().auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the enrollment info to reflect an accepted status, marking the timestamp.
+   *
+   * @return a new {@link EnrollmentInfo} instance with {@code acceptedAt} set to the current time
+   */
+  public EnrollmentInfo accept() {
+    EnrollmentInfo accepted =
+        toBuilder().acceptedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+    accepted.collectValidationProblems();
+    return accepted;
+  }
+
+  /**
+   * Updates the enrollment info to reflect a closed status, marking the timestamp.
+   *
+   * @return a new {@link EnrollmentInfo} instance with {@code closingStatusAt} set to the current
+   *     time
+   */
+  public EnrollmentInfo closeStatus() {
+    EnrollmentInfo closed =
+        toBuilder().closingStatusAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+    closed.collectValidationProblems();
+    return closed;
+  }
+
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>The acceptance timestamp cannot logically precede the creation timestamp (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
+   *   <li>The closing timestamp cannot logically precede the creation timestamp (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
+   * </ul>
+   */
+  private void collectValidationProblems() {
+    if (auditInfo == null) {
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
+    } else {
+      addFieldErrors(auditInfo.getFieldErrors());
+      if (acceptedAt != null && acceptedAt.isBefore(auditInfo.getCreatedAt())) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_DATES_INVALID);
+      }
+      if (closingStatusAt != null && closingStatusAt.isBefore(auditInfo.getCreatedAt())) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_DATES_INVALID);
+      }
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/ProjectInfo.java
+================================================================================
+package com.pug.project.domain.vos;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.pug.shared.domain.vos.AuditInfo;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/**
+ * Immutable Value Object (VO) representing the comprehensive logistical details of a Project.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to project
+ * constraints, ensuring values like participant capacity and offered hours remain within logically
+ * valid bounds.
+ */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class ProjectInfo extends DomainError {
+
+  /** The unique identifier (Account ID) of the staff member who created the project. */
+  UUID createdBy;
+
+  /** The maximum number of students allowed to enroll in the project. */
+  Integer maxParticipants;
+
+  /** The total amount of counterpart hours the project offers to its participants. */
+  BigDecimal offeredHours;
+
+  /** The exact timestamp when the project was officially closed. */
+  OffsetDateTime closedAt;
+
+  /** The audit tracking information (creation and update timestamps). */
+  AuditInfo auditInfo;
+
+  /**
+   * Constructs a {@code ProjectInfo} instance.
+   *
+   * @param createdBy the unique identifier of the creator
+   * @param maxParticipants the maximum number of participants
+   * @param offeredHours the hours offered by the project
+   * @param closedAt the timestamp when the project was closed
+   * @param auditInfo the audit tracking VO
+   */
+  @Builder(toBuilder = true)
+  private ProjectInfo(
+      UUID createdBy,
+      Integer maxParticipants,
+      BigDecimal offeredHours,
+      OffsetDateTime closedAt,
+      AuditInfo auditInfo) {
+    this.createdBy = createdBy;
+    this.maxParticipants = maxParticipants;
+    this.offeredHours = offeredHours;
+    this.closedAt = closedAt;
+    this.auditInfo = auditInfo;
+  }
+
+  /**
+   * Factory method to create a new {@code ProjectInfo} instance.
+   *
+   * <p>The instance is initialized as open (closedAt is null) with standard audit tracking
+   * information. It is immediately self-validated.
+   *
+   * @param createdBy the unique identifier of the creator
+   * @param maxParticipants the maximum number of participants
+   * @param offeredHours the hours offered for the project
+   * @return a self-validated {@link ProjectInfo} instance
+   */
+  public static ProjectInfo factory(
+      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours) {
+    ProjectInfo vo =
+        ProjectInfo.builder()
+            .createdBy(createdBy)
+            .maxParticipants(maxParticipants)
+            .offeredHours(offeredHours)
+            .closedAt(null)
+            .auditInfo(AuditInfo.factory())
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /**
+   * Updates the project info to reflect a closed status by setting the {@code closedAt} timestamp.
+   *
+   * @return a new {@link ProjectInfo} instance with {@code closedAt} set, or the same instance if
+   *     already closed
+   */
+  public ProjectInfo closeProject() {
+    if (closedAt != null) {
+      return this;
+    }
+    ProjectInfo updated =
+        toBuilder().closedAt(OffsetDateTime.now()).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the offered hours for the project.
+   *
+   * @param newOfferedHours the new offered hours to set
+   * @return a new {@link ProjectInfo} instance with updated hours, or the same instance if
+   *     unchanged
+   */
+  public ProjectInfo changeOfferedHours(BigDecimal newOfferedHours) {
+    if (offeredHours != null && offeredHours.equals(newOfferedHours)) {
+      return this;
+    }
+    ProjectInfo updated =
+        toBuilder().offeredHours(newOfferedHours).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the maximum number of participants allowed to enroll in the project.
+   *
+   * @param newMaxParticipants the new participant capacity limit
+   * @return a new {@link ProjectInfo} instance with updated capacity, or the same instance if
+   *     unchanged
+   */
+  public ProjectInfo changeMaxParticipantsAllowed(Integer newMaxParticipants) {
+    if (maxParticipants != null && maxParticipants.equals(newMaxParticipants)) {
+      return this;
+    }
+    ProjectInfo updated =
+        toBuilder().maxParticipants(newMaxParticipants).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Refreshes the internal audit information to reflect a state update.
+   *
+   * @return a new {@link ProjectInfo} instance with updated audit info
+   */
+  public ProjectInfo update() {
+    ProjectInfo updated = toBuilder().auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>The creator ID must not be null (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_PROJECT_CREATED_BY_BLANK}).
+   *   <li>The participant capacity, if provided, must not be negative (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_MAX_PARTICIPANTS_NEGATIVE}).
+   *   <li>The offered hours must not be negative (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_PROJECT_OFFERED_HOURS_NEGATIVE}).
+   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
+   * </ul>
+   */
+  private void collectValidationProblems() {
+    if (createdBy == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_CREATED_BY_BLANK);
+    }
+    if (maxParticipants != null && maxParticipants < 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_MAX_PARTICIPANTS_NEGATIVE);
+    }
+    if (offeredHours != null && offeredHours.signum() < 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_OFFERED_HOURS_NEGATIVE);
+    }
+    if (auditInfo == null) {
+      addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
+    } else {
+      addFieldErrors(auditInfo.getFieldErrors());
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/QrValidationInfo.java
+================================================================================
+package com.pug.project.domain.vos;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import java.math.BigDecimal;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Value;
+
+/**
+ * Immutable Value Object (VO) representing geographic and temporal QR code validation data.
+ *
+ * <p>Extends {@link DomainError} to encapsulate and accumulate validations ensuring that geographic
+ * coordinates strictly adhere to valid global boundaries, and that recorded time durations are
+ * logically positive.
+ */
+@Getter
+@Value
+@EqualsAndHashCode(callSuper = false)
+public class QrValidationInfo extends DomainError {
+
+  /** The duration of time spent on this attendance. */
+  BigDecimal duration;
+
+  /** The geographic latitude where the attendance was recorded. */
+  BigDecimal latitude;
+
+  /** The geographic longitude where the attendance was recorded. */
+  BigDecimal longitude;
+
+  /** The unique cryptographic hash of the QR code used for validation. */
+  String qrValidationHash;
+
+  /**
+   * Constructs a {@code QrValidationInfo} instance.
+   *
+   * @param duration the time duration recorded
+   * @param latitude the geographic latitude
+   * @param longitude the geographic longitude
+   * @param qrValidationHash the unique QR hash
+   */
+  @Builder(toBuilder = true)
+  private QrValidationInfo(
+      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+    this.duration = duration;
+    this.latitude = latitude;
+    this.longitude = longitude;
+    this.qrValidationHash = qrValidationHash;
+  }
+
+  /**
+   * Factory method to create a new {@code QrValidationInfo} instance.
+   *
+   * <p>The instance is created and immediately self-validated.
+   *
+   * @param duration the time duration recorded
+   * @param latitude the geographic latitude
+   * @param longitude the geographic longitude
+   * @param qrValidationHash the hash of the QR code used
+   * @return a self-validated {@link QrValidationInfo} instance
+   */
+  public static QrValidationInfo factory(
+      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+    QrValidationInfo vo =
+        QrValidationInfo.builder()
+            .duration(duration)
+            .latitude(latitude)
+            .longitude(longitude)
+            .qrValidationHash(qrValidationHash)
+            .build();
+    vo.collectValidationProblems();
+    return vo;
+  }
+
+  /**
+   * Evaluates internal constraints and accumulates validation problems.
+   *
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>The duration must not be null and must be strictly greater than zero (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_DURATION_INVALID}).
+   *   <li>Both latitude and longitude must be provided together or completely omitted (appends
+   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_MISSING} if mismatched).
+   *   <li>The latitude, if provided, must fall strictly between -90 and 90 degrees (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LAT}).
+   *   <li>The longitude, if provided, must fall strictly between -180 and 180 degrees (appends
+   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LONG}).
+   * </ul>
+   */
+  private void collectValidationProblems() {
+    if (duration == null || duration.signum() <= 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID);
+    }
+    boolean hasLat = latitude != null;
+    boolean hasLon = longitude != null;
+    if (hasLat != hasLon) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING);
+    }
+    if (hasLat) {
+      if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
+          || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT);
+      }
+    }
+    if (hasLon) {
+      if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
+          || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
+        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG);
+      }
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/AttendanceMapper.java
+================================================================================
+package com.pug.project.infra;
+
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.project.domain.Attendance;
+import com.pug.project.domain.enums.AttendanceStatus;
+import com.pug.project.domain.vos.AttendanceInfo;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
+import com.pug.project.domain.vos.QrValidationInfo;
+import com.pug.project.infra.persistence.AttendanceEntity;
+import com.pug.project.infra.read.dtos.AttendanceView;
+import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.shared.domain.vos.AuditInfo;
+
+/**
+ * Stateless utility class responsible for mapping between Attendance boundary layers.
+ *
+ * <p>This mapper handles the translation of complex Value Objects related to geolocation,
+ * cryptographic QR verification, and temporal validation logging.
+ */
+public final class AttendanceMapper {
+
+  /** Private constructor to prevent instantiation. */
+  private AttendanceMapper() {}
+
+  /**
+   * Reconstitutes a pure Domain {@link Attendance} aggregate from a JPA {@link AttendanceEntity}.
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Attendance}, or {@code null} if the input entity is
+   *     null
+   */
+  public static Attendance toDomain(AttendanceEntity e) {
+    if (e == null) {
+      return null;
+    }
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder()
+            .projectId(e.getProjectId())
+            .studentId(e.getStudentId())
+            .build();
+
+    QrValidationInfo qrInfo =
+        QrValidationInfo.builder()
+            .duration(e.getDuration())
+            .latitude(e.getLatitude())
+            .longitude(e.getLongitude())
+            .qrValidationHash(e.getQrValidationHash())
+            .build();
+
+    AttendanceInfo attInfo =
+        AttendanceInfo.builder()
+            .validatedBy(e.getValidatedBy())
+            .validatedAt(e.getValidatedAt())
+            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+            .build();
+
+    return Attendance.builder()
+        .id(e.getId())
+        .enrollmentIdentifier(identifier)
+        .qrValidationInfo(qrInfo)
+        .attendanceInfo(attInfo)
+        .status(AttendanceStatus.valueOf(e.getStatus()))
+        .build();
+  }
+
+  /**
+   * Translates a pure Domain {@link Attendance} aggregate into a newly instantiated JPA {@link
+   * AttendanceEntity}.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link AttendanceEntity}, or {@code null} if the input domain
+   *     is null
+   */
+  public static AttendanceEntity toEntity(Attendance d) {
+    if (d == null) {
+      return null;
+    }
+
+    return AttendanceEntity.builder()
+        .id(d.getId())
+        .projectId(d.getEnrollmentIdentifier().getProjectId())
+        .studentId(d.getEnrollmentIdentifier().getStudentId())
+        .duration(d.getQrValidationInfo().getDuration())
+        .latitude(d.getQrValidationInfo().getLatitude())
+        .longitude(d.getQrValidationInfo().getLongitude())
+        .qrValidationHash(d.getQrValidationInfo().getQrValidationHash())
+        .status(d.getStatus().name())
+        .validatedBy(d.getAttendanceInfo().getValidatedBy())
+        .validatedAt(d.getAttendanceInfo().getValidatedAt())
+        .createdAt(d.getAttendanceInfo().getAuditInfo().getCreatedAt())
+        .updatedAt(d.getAttendanceInfo().getAuditInfo().getUpdatedAt())
+        .build();
+  }
+
+  /**
+   * Updates an existing, attached JPA {@link AttendanceEntity} with the current state of a Domain
+   * {@link Attendance}.
+   *
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
+   */
+  public static void copy(Attendance d, AttendanceEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setDuration(d.getQrValidationInfo().getDuration());
+    e.setLatitude(d.getQrValidationInfo().getLatitude());
+    e.setLongitude(d.getQrValidationInfo().getLongitude());
+    e.setQrValidationHash(d.getQrValidationInfo().getQrValidationHash());
+    e.setStatus(d.getStatus().name());
+    e.setValidatedBy(d.getAttendanceInfo().getValidatedBy());
+    e.setValidatedAt(d.getAttendanceInfo().getValidatedAt());
+  }
+
+  /**
+   * Projects a raw JPA {@link AttendanceEntity} and its pre-resolved nested views into a
+   * comprehensive {@link AttendanceView} DTO.
+   *
+   * @param e the JPA entity representing the raw attendance record
+   * @param project the pre-resolved, fully populated view of the project
+   * @param student the pre-resolved, fully populated view of the student
+   * @param validatedBy the pre-resolved, fully populated view of the staff validator
+   * @return a fully populated {@link AttendanceView} DTO
+   */
+  public static AttendanceView toView(
+      AttendanceEntity e, ProjectView project, StudentView student, AccountView validatedBy) {
+
+    if (e == null) return null;
+
+    return new AttendanceView(
+        e.getId(),
+        project,
+        student,
+        e.getDuration(),
+        e.getLatitude(),
+        e.getLongitude(),
+        e.getQrValidationHash(),
+        AttendanceStatus.valueOf(e.getStatus()),
+        validatedBy,
+        e.getValidatedAt(),
+        e.getCreatedAt(),
+        e.getUpdatedAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/EnrollmentMapper.java
+================================================================================
+package com.pug.project.infra;
+
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.project.domain.Enrollment;
+import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
+import com.pug.project.domain.vos.EnrollmentInfo;
+import com.pug.project.infra.persistence.EnrollmentEntity;
+import com.pug.project.infra.read.dtos.EnrollmentView;
+import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.shared.domain.vos.AuditInfo;
+
+/**
+ * Stateless utility class responsible for mapping between Enrollment boundary layers.
+ *
+ * <p>This mapper acts as an anti-corruption layer, handling the conversion of the composite
+ * database keys and timeline metadata between the Domain and Persistence layers.
+ */
+public final class EnrollmentMapper {
+
+  /** Private constructor to prevent instantiation. */
+  private EnrollmentMapper() {}
+
+  /**
+   * Reconstitutes a pure Domain {@link Enrollment} aggregate from a JPA {@link EnrollmentEntity}.
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Enrollment}, or {@code null} if the input entity is
+   *     null
+   */
+  public static Enrollment toDomain(EnrollmentEntity e) {
+    if (e == null) {
+      return null;
+    }
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder()
+            .projectId(e.getId().getProjectId())
+            .studentId(e.getId().getStudentId())
+            .build();
+
+    EnrollmentInfo info =
+        EnrollmentInfo.builder()
+            .acceptedAt(e.getAcceptedAt())
+            .closingStatusAt(e.getClosingStatusAt())
+            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+            .build();
+
+    return Enrollment.builder()
+        .identifier(identifier)
+        .status(EnrollmentStatus.valueOf(e.getStatus()))
+        .enrollmentInfo(info)
+        .build();
+  }
+
+  /**
+   * Translates a pure Domain {@link Enrollment} aggregate into a newly instantiated JPA {@link
+   * EnrollmentEntity}.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link EnrollmentEntity}, or {@code null} if the input domain
+   *     is null
+   */
+  public static EnrollmentEntity toEntity(Enrollment d) {
+    if (d == null) {
+      return null;
+    }
+
+    EnrollmentEntity.EnrollmentsId eid =
+        new EnrollmentEntity.EnrollmentsId(
+            d.getIdentifier().getProjectId(), d.getIdentifier().getStudentId());
+
+    return EnrollmentEntity.builder()
+        .id(eid)
+        .status(d.getStatus().name())
+        .acceptedAt(d.getEnrollmentInfo().getAcceptedAt())
+        .closingStatusAt(d.getEnrollmentInfo().getClosingStatusAt())
+        .createdAt(d.getEnrollmentInfo().getAuditInfo().getCreatedAt())
+        .updatedAt(d.getEnrollmentInfo().getAuditInfo().getUpdatedAt())
+        .build();
+  }
+
+  /**
+   * Updates an existing, attached JPA {@link EnrollmentEntity} with the current state of a Domain
+   * {@link Enrollment}.
+   *
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
+   */
+  public static void copy(Enrollment d, EnrollmentEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setStatus(d.getStatus().name());
+    e.setAcceptedAt(d.getEnrollmentInfo().getAcceptedAt());
+    e.setClosingStatusAt(d.getEnrollmentInfo().getClosingStatusAt());
+  }
+
+  /**
+   * Projects a raw JPA {@link EnrollmentEntity} and its pre-resolved nested views into a
+   * comprehensive {@link EnrollmentView} DTO.
+   *
+   * <p>Since resolving Projects and Students requires deep query joins across multiple modules,
+   * this mapper expects the query layer to provide the resolved nested views.
+   *
+   * @param e the JPA entity representing the enrollment lifecycle
+   * @param project the pre-resolved, fully populated view of the project
+   * @param student the pre-resolved, fully populated view of the student
+   * @return a fully populated {@link EnrollmentView} DTO
+   */
+  public static EnrollmentView toView(
+      EnrollmentEntity e, ProjectView project, StudentView student) {
+    if (e == null) return null;
+
+    return new EnrollmentView(
+        project,
+        student,
+        EnrollmentStatus.valueOf(e.getStatus()),
+        e.getCreatedAt(),
+        e.getUpdatedAt(),
+        e.getAcceptedAt(),
+        e.getClosingStatusAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/AttendanceEntity.java
+================================================================================
+package com.pug.project.infra.persistence;
+
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+
+/**
+ * JPA entity representing a Student's Attendance record within the persistence layer.
+ *
+ * <p>This class acts as the database-mapped counterpart to the {@link
+ * com.pug.project.domain.Attendance} domain aggregate. It inherits a time-ordered UUIDv7 primary
+ * key and standard audit tracking fields from {@link BaseAuditedEntity}.
+ */
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"projectId", "studentId", "status"})
+@Entity
+@Table(
+    name = "attendances",
+    indexes = {
+      @Index(name = "idx_attendances_enrollment", columnList = "project_id, student_id"),
+      @Index(name = "idx_attendances_status", columnList = "status"),
+      @Index(name = "idx_attendances_validated_by", columnList = "validated_by"),
+      @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
+      @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
+    })
+public class AttendanceEntity extends BaseAuditedEntity {
+
+  /** The unique identifier (UUID) of the associated Project. */
+  @NotNull
+  @Column(name = "project_id", nullable = false)
+  private UUID projectId;
+
+  /** The unique identifier (Account ID UUID) of the associated Student. */
+  @NotNull
+  @Column(name = "student_id", nullable = false)
+  private UUID studentId;
+
+  /** The recorded time duration the student spent on the project. */
+  @NotNull
+  @DecimalMin(value = "0.00", inclusive = false)
+  @Column(name = "duration", nullable = false, precision = 4, scale = 2)
+  private BigDecimal duration;
+
+  /** The geographic latitude where the attendance was recorded. */
+  @NotNull
+  @DecimalMin(value = "-90.000000")
+  @DecimalMax(value = "90.000000")
+  @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
+  private BigDecimal latitude;
+
+  /** The geographic longitude where the attendance was recorded. */
+  @NotNull
+  @DecimalMin(value = "-180.000000")
+  @DecimalMax(value = "180.000000")
+  @Column(name = "longitude", nullable = false, precision = 9, scale = 6)
+  private BigDecimal longitude;
+
+  /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  /** The unique cryptographic hash of the QR code used for validation. */
+  @NotBlank
+  @Size(max = 512)
+  @Column(name = "qr_validation_hash", nullable = false, length = 512, unique = true)
+  private String qrValidationHash;
+
+  /** The unique identifier of the Staff account that validated the attendance. */
+  @Column(name = "validated_by")
+  private UUID validatedBy;
+
+  /** The exact timestamp when the attendance was explicitly validated by staff. */
+  @Column(name = "validated_at")
+  private OffsetDateTime validatedAt;
+}
+
+
+================================================================================
+FILE: infra/persistence/EnrollmentEntity.java
+================================================================================
+package com.pug.project.infra.persistence;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.io.Serializable;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+/**
+ * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
+ *
+ * <p>This class is the database-mapped counterpart to the {@link
+ * com.pug.project.domain.Enrollment} domain aggregate. Because an enrollment is uniquely
+ * identified by the combination of a student and a project, this entity utilizes a composite
+ * primary key ({@link EnrollmentsId}).
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(of = {"id", "status"})
+@Entity
+@Table(
+    name = "enrollments",
+    indexes = {
+      @Index(name = "idx_enrollments_student", columnList = "student_id"),
+      @Index(name = "idx_enrollments_status", columnList = "status")
+    })
+public class EnrollmentEntity {
+
+  /** Embeddable composite primary key mapping the intersection of a Project and a Student. */
+  @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+  @Embeddable
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @EqualsAndHashCode
+  public static final class EnrollmentsId implements Serializable {
+    @Column(name = "project_id", nullable = false)
+    private UUID projectId;
+
+    @Column(name = "student_id", nullable = false)
+    private UUID studentId;
+  }
+
+  /** The composite identifier mapping. */
+  @EmbeddedId private EnrollmentsId id;
+
+  /** The current lifecycle status of the enrollment (e.g., PENDING, APPROVED). */
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  /** Timestamp indicating when this enrollment request was initially created. */
+  @NotNull
+  @Column(name = "created_at", nullable = false, updatable = false)
+  private OffsetDateTime createdAt;
+
+  /** Timestamp indicating when this enrollment record was last modified. */
+  @NotNull
+  @Column(name = "updated_at", nullable = false)
+  private OffsetDateTime updatedAt;
+
+  /** Timestamp indicating when the enrollment request was formally accepted by staff. */
+  @Column(name = "accepted_at")
+  private OffsetDateTime acceptedAt;
+
+  /**
+   * Timestamp indicating when the enrollment reached a terminal state (e.g., Completed, Canceled).
+   */
+  @Column(name = "closing_status_at")
+  private OffsetDateTime closingStatusAt;
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/AttendanceRepositoryImpl.java
+================================================================================
+package com.pug.project.infra.persistence.impl;
+
+import com.pug.project.domain.Attendance;
+import com.pug.project.domain.AttendanceRepository;
+import com.pug.project.infra.AttendanceMapper;
+import com.pug.project.infra.persistence.AttendanceEntity;
+import com.pug.shared.utils.StringUtils;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Implementation of the {@link AttendanceRepository} utilizing Hibernate ORM with Panache. */
+@ApplicationScoped
+public class AttendanceRepositoryImpl
+    implements AttendanceRepository, PanacheRepositoryBase<AttendanceEntity, UUID> {
+
+  @Transactional
+  @Override
+  public Attendance persist(Attendance entity) {
+    if (entity == null) return null;
+    var e = AttendanceMapper.toEntity(entity);
+    persistAndFlush(e);
+    return AttendanceMapper.toDomain(e);
+  }
+
+  @Transactional
+  @Override
+  public void update(Attendance entity) {
+    if (entity == null || entity.getId() == null) return;
+    AttendanceEntity managed = findById(entity.getId());
+    if (managed != null) {
+      AttendanceMapper.copy(entity, managed);
+    }
+  }
+
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) return false;
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  @Override
+  public Optional<Attendance> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(AttendanceMapper::toDomain);
+  }
+
+  @Override
+  public boolean existsByQrHash(String qrHash) {
+    if (StringUtils.isEmpty(qrHash)) return false;
+    return count("qrValidationHash = ?1", qrHash) > 0;
+  }
+
+  @Override
+  public boolean existsByValidatedBy(UUID staffAccountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/EnrollmentRepositoryImpl.java
+================================================================================
+package com.pug.project.infra.persistence.impl;
+
+import com.pug.project.domain.Enrollment;
+import com.pug.project.domain.EnrollmentRepository;
+import com.pug.project.infra.EnrollmentMapper;
+import com.pug.project.infra.persistence.EnrollmentEntity;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Implementation of the {@link EnrollmentRepository} utilizing Hibernate ORM with Panache. */
+@ApplicationScoped
+public class EnrollmentRepositoryImpl
+    implements EnrollmentRepository,
+        PanacheRepositoryBase<EnrollmentEntity, EnrollmentEntity.EnrollmentsId> {
+
+  @Transactional
+  @Override
+  public Enrollment persist(Enrollment entity) {
+    if (entity == null) return null;
+    var e = EnrollmentMapper.toEntity(entity);
+    persistAndFlush(e);
+    return EnrollmentMapper.toDomain(e);
+  }
+
+  @Transactional
+  @Override
+  public void update(Enrollment entity) {
+    if (entity == null) return;
+    var id =
+        new EnrollmentEntity.EnrollmentsId(
+            entity.getIdentifier().getProjectId(), entity.getIdentifier().getStudentId());
+
+    EnrollmentEntity managed = findById(id);
+    if (managed != null) {
+      EnrollmentMapper.copy(entity, managed);
+    }
+  }
+
+  @Transactional
+  @Override
+  public boolean deleteByIds(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) return false;
+    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  @Override
+  public Optional<Enrollment> findOptionalByIds(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) return Optional.empty();
+    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
+    return findByIdOptional(id).map(EnrollmentMapper::toDomain);
+  }
+
+  @Override
+  public boolean existsByIds(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) return false;
+    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
+    return count("id", id) > 0;
+  }
+
+  @Override
+  public boolean existsByStudentId(UUID studentId) {
+    if (studentId == null) return false;
+    return count("id.studentId", studentId) > 0;
+  }
+
+  @Override
+  public boolean existsByProjectId(UUID projectId) {
+    if (projectId == null) return false;
+    return count("id.projectId", projectId) > 0;
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/ProjectRepositoryImpl.java
+================================================================================
+package com.pug.project.infra.persistence.impl;
+
+import com.pug.project.domain.Project;
+import com.pug.project.domain.ProjectRepository;
+import com.pug.project.infra.ProjectMapper;
+import com.pug.project.infra.persistence.ProjectEntity;
+import com.pug.shared.utils.StringUtils;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Implementation of the {@link ProjectRepository} utilizing Hibernate ORM with Panache. */
+@ApplicationScoped
+public class ProjectRepositoryImpl
+    implements ProjectRepository, PanacheRepositoryBase<ProjectEntity, UUID> {
+
+  @Transactional
+  @Override
+  public Project persist(Project entity) {
+    if (entity == null) return null;
+    var e = ProjectMapper.toEntity(entity);
+    persistAndFlush(e);
+    return ProjectMapper.toDomain(e);
+  }
+
+  @Transactional
+  @Override
+  public void update(Project entity) {
+    if (entity == null || entity.getId() == null) return;
+    ProjectEntity managed = findById(entity.getId());
+    if (managed != null) {
+      ProjectMapper.copy(entity, managed);
+    }
+  }
+
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) return false;
+    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    flush();
+    return deleted;
+  }
+
+  @Override
+  public Optional<Project> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(ProjectMapper::toDomain);
+  }
+
+  @Override
+  public boolean existsByNameAndEntityId(String name, UUID entityId) {
+    if (StringUtils.isEmpty(name) || entityId == null) return false;
+    return count("name = ?1 and entityId = ?2", name, entityId) > 0;
+  }
+
+  @Override
+  public boolean existsByEntityId(UUID entityId) {
+    if (entityId == null) return false;
+    return count("entityId", entityId) > 0;
+  }
+
+  @Override
+  public boolean existsByCreatedBy(UUID staffAccountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/ProjectEntity.java
+================================================================================
+package com.pug.project.infra.persistence;
+
+import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+
+/**
+ * JPA entity representing a Project within the persistence layer.
+ *
+ * <p>This class acts as the database-mapped counterpart to the {@link
+ * com.pug.project.domain.Project} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * and standard audit tracking fields from {@link BaseAuditedEntity}.
+ */
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"name", "status"})
+@Entity
+@Table(
+    name = "projects",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_projects_entity_name",
+          columnNames = {"entity_id", "name"})
+    },
+    indexes = {
+      @Index(name = "idx_projects_entity", columnList = "entity_id"),
+      @Index(name = "idx_projects_status", columnList = "status"),
+      @Index(name = "idx_projects_created_by", columnList = "created_by"),
+      @Index(name = "idx_projects_created_at", columnList = "created_at"),
+      @Index(name = "idx_projects_updated_at", columnList = "updated_at"),
+      @Index(name = "idx_projects_closed_at", columnList = "closed_at")
+    })
+public class ProjectEntity extends BaseAuditedEntity {
+
+  /** The title or name of the project. */
+  @NotBlank
+  @Size(max = 150)
+  @Column(name = "name", nullable = false, length = 150)
+  private String name;
+
+  /** The unique identifier (UUID) of the partner organization offering this project. */
+  @NotNull
+  @Column(name = "entity_id", nullable = false)
+  private UUID entityId;
+
+  /** A detailed description of the project's objectives and tasks. */
+  @NotBlank
+  @Size(max = 4000)
+  @Column(name = "description", nullable = false, length = 4000)
+  private String description;
+
+  /** The unique identifier (Account ID) of the staff member who created the project. */
+  @NotNull
+  @Column(name = "created_by", nullable = false)
+  private UUID createdBy;
+
+  /** The exact timestamp when the project reached a terminal/closed state. */
+  @Column(name = "closed_at")
+  private OffsetDateTime closedAt;
+
+  /** The total amount of counterpart hours the project offers to its participants. */
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal offeredHours;
+
+  /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
+  @NotBlank
+  @Size(max = 16)
+  @Column(name = "status", nullable = false, length = 16)
+  private String status;
+
+  /** The maximum number of students allowed to enroll in the project. */
+  @Min(0)
+  @Column(name = "max_participants")
+  private Integer maxParticipants;
+}
+
+
+================================================================================
+FILE: infra/ProjectMapper.java
+================================================================================
+package com.pug.project.infra;
+
+import com.pug.geo.infra.persistence.CityEntity;
+import com.pug.geo.infra.read.dtos.CityView;
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.identity.infra.read.dtos.UserView;
+import com.pug.partner.infra.persistence.EntityEntity;
+import com.pug.partner.infra.read.dtos.EntityView;
+import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.ProjectStatus;
+import com.pug.project.domain.vos.ProjectInfo;
+import com.pug.project.infra.persistence.ProjectEntity;
+import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.shared.domain.vos.AuditInfo;
+
+/**
+ * Stateless utility class responsible for mapping between Project boundary layers.
+ *
+ * <p>This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link
+ * Project}) does not leak into or depend upon the JPA Persistence model ({@link ProjectEntity}) or
+ * the Read/Query model ({@link ProjectView}).
+ */
+public final class ProjectMapper {
+
+  /** Private constructor to prevent instantiation. */
+  private ProjectMapper() {}
+
+  /**
+   * Reconstitutes a pure Domain {@link Project} aggregate from a JPA {@link ProjectEntity}.
+   *
+   * <p>This method translates primitive database columns back into their corresponding Domain Value
+   * Objects (e.g., {@link ProjectInfo}, {@link AuditInfo}) and parses Enums.
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link Project}, or {@code null} if the input entity is null
+   */
+  public static Project toDomain(ProjectEntity e) {
+    if (e == null) {
+      return null;
+    }
+
+    ProjectInfo info =
+        ProjectInfo.builder()
+            .createdBy(e.getCreatedBy())
+            .maxParticipants(e.getMaxParticipants())
+            .offeredHours(e.getOfferedHours())
+            .closedAt(e.getClosedAt())
+            .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
+            .build();
+
+    return Project.builder()
+        .id(e.getId())
+        .name(e.getName())
+        .entityId(e.getEntityId())
+        .description(e.getDescription())
+        .projectInfo(info)
+        .projectStatus(ProjectStatus.valueOf(e.getStatus()))
+        .build();
+  }
+
+  /**
+   * Translates a pure Domain {@link Project} aggregate into a newly instantiated JPA {@link
+   * ProjectEntity}.
+   *
+   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
+   * Domain Value Objects back into primitive types suitable for JDBC insertion.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link ProjectEntity}, or {@code null} if the input domain is
+   *     null
+   */
+  public static ProjectEntity toEntity(Project d) {
+    if (d == null) {
+      return null;
+    }
+
+    return ProjectEntity.builder()
+        .id(d.getId())
+        .name(d.getName())
+        .entityId(d.getEntityId())
+        .description(d.getDescription())
+        .createdBy(d.getProjectInfo().getCreatedBy())
+        .maxParticipants(d.getProjectInfo().getMaxParticipants())
+        .offeredHours(d.getProjectInfo().getOfferedHours())
+        .closedAt(d.getProjectInfo().getClosedAt())
+        .status(d.getProjectStatus().name())
+        .createdAt(d.getProjectInfo().getAuditInfo().getCreatedAt())
+        .updatedAt(d.getProjectInfo().getAuditInfo().getUpdatedAt())
+        .build();
+  }
+
+  /**
+   * Updates an existing, attached JPA {@link ProjectEntity} with the current state of a Domain
+   * {@link Project}.
+   *
+   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
+   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements.
+   *
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
+   */
+  public static void copy(Project d, ProjectEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setName(d.getName());
+    e.setEntityId(d.getEntityId());
+    e.setDescription(d.getDescription());
+    e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
+    e.setOfferedHours(d.getProjectInfo().getOfferedHours());
+    e.setClosedAt(d.getProjectInfo().getClosedAt());
+    e.setStatus(d.getProjectStatus().name());
+  }
+
+  /**
+   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
+   * {@link ProjectView} DTO.
+   *
+   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
+   * encapsulate the project, its managing partner organization, and the staff creator.
+   *
+   * @param p the JPA entity representing the project
+   * @param ent the JPA entity representing the partner organization
+   * @param city the JPA entity representing the city where the partner operates
+   * @param acc the JPA entity representing the creator's authentication account
+   * @param u the JPA entity representing the creator's personal user profile
+   * @return a fully populated {@link ProjectView} DTO
+   */
+  public static ProjectView toView(
+      ProjectEntity p, EntityEntity ent, CityEntity city, AccountEntity acc, UserEntity u) {
+
+    if (p == null) return null;
+
+    CityView cityView = null;
+    if (city != null) {
+      cityView = new CityView(city.getId(), city.getName(), city.getIbgeCode());
+    }
+
+    EntityView entityView = null;
+    if (ent != null) {
+      entityView =
+          new EntityView(
+              ent.getId(),
+              ent.getCnpj(),
+              ent.getName(),
+              ent.getAddress(),
+              cityView,
+              ent.getCreatedAt(),
+              ent.getUpdatedAt());
+    }
+
+    UserView userView = null;
+    if (u != null) {
+      userView =
+          new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt());
+    }
+
+    AccountView accountView = null;
+    if (acc != null) {
+      accountView =
+          new AccountView(
+              acc.getId(),
+              userView,
+              acc.getEmail(),
+              acc.getAccountType(),
+              acc.getCreatedAt(),
+              acc.getUpdatedAt(),
+              acc.getActive());
+    }
+
+    return new ProjectView(
+        p.getId(),
+        p.getName(),
+        entityView,
+        p.getDescription(),
+        accountView,
+        p.getMaxParticipants(),
+        p.getOfferedHours(),
+        ProjectStatus.valueOf(p.getStatus()),
+        p.getClosedAt(),
+        p.getCreatedAt(),
+        p.getUpdatedAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/read/AttendanceQueries.java
+================================================================================
+package com.pug.project.infra.read;
+
+import com.pug.project.infra.read.dtos.AttendanceView;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Read-only interface for executing queries against Attendances. */
+public interface AttendanceQueries {
+  Optional<AttendanceView> findOptionalById(UUID id);
+
+  List<AttendanceView> listAllAttendances();
+
+  List<AttendanceView> listByProjectId(UUID projectId);
+
+  List<AttendanceView> listByStudentId(UUID studentId);
+}
+
+
+================================================================================
+FILE: infra/read/dtos/AttendanceAcc.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.project.infra.persistence.AttendanceEntity;
+import com.pug.project.infra.persistence.ProjectEntity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+/**
+ * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
+ *
+ * <p>Fetches the base persistence entities required to build an {@link AttendanceView} in a single
+ * query projection, mapping the attendance record to its project, student, and the staff member
+ * (validator) who approved it.
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+public record AttendanceAcc(
+    AttendanceEntity attendance,
+    ProjectEntity project,
+    StudentEntity student,
+    AccountEntity validatorAccount) {}
+
+
+================================================================================
+FILE: infra/read/dtos/AttendanceView.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.project.domain.enums.AttendanceStatus;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * Data Transfer Object (DTO) representing a read-only view of an Attendance record.
+ *
+ * <p>Following CQRS principles, this record provides a flattened view of a student's participation
+ * in a project, including geographic validation data and the staff member who approved the
+ * attendance.
+ *
+ * @param id the unique identifier (UUIDv7) of the attendance record
+ * @param project the nested read-only projection of the associated project
+ * @param student the nested read-only projection of the attending student
+ * @param duration the recorded time duration the student spent on the project
+ * @param latitude the geographic latitude where the attendance was recorded
+ * @param longitude the geographic longitude where the attendance was recorded
+ * @param qrValidationHash the unique cryptographic hash of the QR code used
+ * @param status the current validation status of the attendance
+ * @param validatedBy the nested read-only projection of the staff account who validated the record
+ * @param validatedAt the exact timestamp when the attendance was validated
+ * @param createdAt the exact timestamp when the attendance record was initially created
+ * @param updatedAt the exact timestamp when the attendance record was last modified
+ */
+public record AttendanceView(
+    UUID id,
+    ProjectView project,
+    StudentView student,
+    BigDecimal duration,
+    BigDecimal latitude,
+    BigDecimal longitude,
+    String qrValidationHash,
+    AttendanceStatus status,
+    AccountView validatedBy,
+    OffsetDateTime validatedAt,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt) {}
+
+
+================================================================================
+FILE: infra/read/dtos/EnrollmentAcc.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.project.infra.persistence.EnrollmentEntity;
+import com.pug.project.infra.persistence.ProjectEntity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+/**
+ * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
+ *
+ * <p>Extracts the base persistence entities required to build an {@link EnrollmentView}. Since
+ * Student and Project views require deep relational trees, this tuple fetches the absolute core
+ * components to serve as a baseline for the Query Implementation to assemble.
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+public record EnrollmentAcc(
+    EnrollmentEntity enrollment, ProjectEntity project, StudentEntity student) {}
+
+
+================================================================================
+FILE: infra/read/dtos/EnrollmentView.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.project.domain.enums.EnrollmentStatus;
+import java.time.OffsetDateTime;
+
+/**
+ * Data Transfer Object (DTO) representing a read-only view of a Student's Enrollment in a Project.
+ *
+ * <p>Following CQRS principles, this record flattens the many-to-many relationship between Students
+ * and Projects. It nests the full {@link ProjectView} and {@link StudentView} alongside the
+ * specific lifecycle metadata of the enrollment.
+ *
+ * @param project the nested read-only projection of the associated project
+ * @param student the nested read-only projection of the enrolled student
+ * @param status the current lifecycle status of the enrollment
+ * @param createdAt the exact timestamp when the enrollment request was created
+ * @param updatedAt the exact timestamp when the enrollment record was last modified
+ * @param acceptedAt the exact timestamp when the enrollment was formally approved
+ * @param closingStatusAt the exact timestamp when the enrollment reached a terminal state
+ */
+public record EnrollmentView(
+    ProjectView project,
+    StudentView student,
+    EnrollmentStatus status,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt,
+    OffsetDateTime acceptedAt,
+    OffsetDateTime closingStatusAt) {}
+
+
+================================================================================
+FILE: infra/read/dtos/ProjectAcc.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.geo.infra.persistence.CityEntity;
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.identity.infra.persistence.UserEntity;
+import com.pug.partner.infra.persistence.EntityEntity;
+import com.pug.project.infra.persistence.ProjectEntity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+/**
+ * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
+ *
+ * <p>Acts as an intermediate data structure during complex cross-domain queries. By fetching the
+ * {@link ProjectEntity} and all its required associations (Partner Entity, City, Creator Account,
+ * Creator User) in a single query projection, it prevents N+1 select performance issues.
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+public record ProjectAcc(
+    ProjectEntity project,
+    EntityEntity entity,
+    CityEntity city,
+    AccountEntity creatorAccount,
+    UserEntity creatorUser) {}
+
+
+================================================================================
+FILE: infra/read/dtos/ProjectView.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.partner.infra.read.dtos.EntityView;
+import com.pug.project.domain.enums.ProjectStatus;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+
+/**
+ * Data Transfer Object (DTO) representing a read-only view of a Project.
+ *
+ * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
+ * client. It aggregates the project details with nested projections of the partner organization
+ * ({@link EntityView}) and the staff creator ({@link AccountView}) to provide a comprehensive
+ * structure optimized for JSON serialization.
+ *
+ * @param id the unique identifier (UUIDv7) of the project
+ * @param name the title or name of the project
+ * @param entity the nested read-only projection of the partner organization offering the project
+ * @param description the detailed description of the project
+ * @param createdBy the nested read-only projection of the staff account who created the project
+ * @param maxParticipants the maximum number of students allowed to enroll
+ * @param offeredHours the total counterpart hours the project offers
+ * @param status the current execution state of the project
+ * @param closedAt the exact timestamp when the project reached a terminal state
+ * @param createdAt the exact timestamp when the project record was created
+ * @param updatedAt the exact timestamp when the project record was last modified
+ */
+public record ProjectView(
+    UUID id,
+    String name,
+    EntityView entity,
+    String description,
+    AccountView createdBy,
+    Integer maxParticipants,
+    BigDecimal offeredHours,
+    ProjectStatus status,
+    OffsetDateTime closedAt,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt) {}
+
+
+================================================================================
+FILE: infra/read/EnrollmentQueries.java
+================================================================================
+package com.pug.project.infra.read;
+
+import com.pug.project.infra.read.dtos.EnrollmentView;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Read-only interface for executing queries against Enrollments. */
+public interface EnrollmentQueries {
+  Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId);
+
+  List<EnrollmentView> listAllEnrollments();
+
+  List<EnrollmentView> listByProjectId(UUID projectId);
+
+  List<EnrollmentView> listByStudentId(UUID studentId);
+}
+
+
+================================================================================
+FILE: infra/read/impl/AttendanceQueriesImpl.java
+================================================================================
+package com.pug.project.infra.read.impl;
+
+import com.pug.project.infra.read.AttendanceQueries;
+import com.pug.project.infra.read.dtos.AttendanceView;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link AttendanceQueries} interface.
+ *
+ * <p>Relies on a massive JPQL constructor expression to flatten out the attendance data along with
+ * the fully populated Project graph, Student graph, and Validator Account.
+ */
+@ApplicationScoped
+@Transactional(Transactional.TxType.SUPPORTS)
+public class AttendanceQueriesImpl implements AttendanceQueries {
+
+  @Inject EntityManager em;
+
+  private static final String SELECT_BASE =
+      """
+                    select new com.pug.project.infra.read.dtos.AttendanceView(
+                      a.id,
+                      new com.pug.project.infra.read.dtos.ProjectView(
+                        p.id, p.name,
+                        new com.pug.partner.infra.read.dtos.EntityView(
+                          ent.id, ent.cnpj, ent.name, ent.address,
+                          new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                          ent.createdAt, ent.updatedAt
+                        ),
+                        p.description,
+                        new com.pug.identity.infra.read.dtos.AccountView(
+                          pacc.id,
+                          new com.pug.identity.infra.read.dtos.UserView(
+                            pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
+                          ),
+                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
+                        ),
+                        p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
+                      ),
+                      new com.pug.academic.infra.read.dtos.StudentView(
+                        new com.pug.identity.infra.read.dtos.AccountView(
+                          sacc.id,
+                          new com.pug.identity.infra.read.dtos.UserView(
+                            su.id, su.cpf, su.name, su.createdAt, su.updatedAt
+                          ),
+                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
+                        ),
+                        s.academicRegistration, s.campus,
+                        new com.pug.academic.infra.read.dtos.CourseView(
+                          course.id, course.name,
+                          new com.pug.academic.infra.read.dtos.SchoolView(
+                            sch.id, sch.name, sch.createdAt, sch.updatedAt
+                          ),
+                          course.createdAt, course.updatedAt
+                        ),
+                        s.requiredHours, s.concluded, s.startDate, s.dueDate, s.createdAt, s.updatedAt
+                      ),
+                      a.duration, a.latitude, a.longitude, a.qrValidationHash, a.status,
+                      new com.pug.identity.infra.read.dtos.AccountView(
+                        vacc.id,
+                        new com.pug.identity.infra.read.dtos.UserView(
+                          vu.id, vu.cpf, vu.name, vu.createdAt, vu.updatedAt
+                        ),
+                        vacc.email, vacc.accountType, vacc.createdAt, vacc.updatedAt, vacc.active
+                      ),
+                      a.validatedAt, a.createdAt, a.updatedAt
+                    )
+                    from AttendanceEntity a
+                    join ProjectEntity p on p.id = a.projectId
+                    join EntityEntity ent on ent.id = p.entityId
+                    join CityEntity c on c.id = ent.cityId
+                    join AccountEntity pacc on pacc.id = p.createdBy
+                    join UserEntity pu on pu.id = pacc.userId
+                    join StudentEntity s on s.accountId = a.studentId
+                    join AccountEntity sacc on sacc.id = s.accountId
+                    join UserEntity su on su.id = sacc.userId
+                    join CourseEntity course on course.id = s.courseId
+                    left join SchoolEntity sch on sch.id = course.schoolId
+                    left join AccountEntity vacc on vacc.id = a.validatedBy
+                    left join UserEntity vu on vu.id = vacc.userId
+                    """;
+
+  private static final String ORDER_BY_DATE = " order by a.createdAt desc";
+
+  @Override
+  public Optional<AttendanceView> findOptionalById(UUID id) {
+    if (id == null) return Optional.empty();
+    var q = em.createQuery(SELECT_BASE + " where a.id = :id", AttendanceView.class);
+    q.setParameter("id", id);
+    return q.getResultStream().findFirst();
+  }
+
+  @Override
+  public List<AttendanceView> listAllAttendances() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, AttendanceView.class).getResultList();
+  }
+
+  @Override
+  public List<AttendanceView> listByProjectId(UUID projectId) {
+    if (projectId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where a.projectId = :pid" + ORDER_BY_DATE, AttendanceView.class);
+    q.setParameter("pid", projectId);
+    return q.getResultList();
+  }
+
+  @Override
+  public List<AttendanceView> listByStudentId(UUID studentId) {
+    if (studentId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where a.studentId = :sid" + ORDER_BY_DATE, AttendanceView.class);
+    q.setParameter("sid", studentId);
+    return q.getResultList();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/EnrollmentQueriesImpl.java
+================================================================================
+package com.pug.project.infra.read.impl;
+
+import com.pug.project.infra.read.EnrollmentQueries;
+import com.pug.project.infra.read.dtos.EnrollmentView;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link EnrollmentQueries} interface.
+ *
+ * <p>This massive JPQL constructor projection maps an Enrollment alongside the full Project graph
+ * (Project -> Entity -> City) and the full Student graph (Student -> Account -> User, Student ->
+ * Course -> School) in a single database hit.
+ */
+@ApplicationScoped
+@Transactional(Transactional.TxType.SUPPORTS)
+public class EnrollmentQueriesImpl implements EnrollmentQueries {
+
+  @Inject EntityManager em;
+
+  private static final String SELECT_BASE =
+      """
+                    select new com.pug.project.infra.read.dtos.EnrollmentView(
+                      new com.pug.project.infra.read.dtos.ProjectView(
+                        p.id, p.name,
+                        new com.pug.partner.infra.read.dtos.EntityView(
+                          ent.id, ent.cnpj, ent.name, ent.address,
+                          new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                          ent.createdAt, ent.updatedAt
+                        ),
+                        p.description,
+                        new com.pug.identity.infra.read.dtos.AccountView(
+                          pacc.id,
+                          new com.pug.identity.infra.read.dtos.UserView(
+                            pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
+                          ),
+                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
+                        ),
+                        p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
+                      ),
+                      new com.pug.academic.infra.read.dtos.StudentView(
+                        new com.pug.identity.infra.read.dtos.AccountView(
+                          sacc.id,
+                          new com.pug.identity.infra.read.dtos.UserView(
+                            su.id, su.cpf, su.name, su.createdAt, su.updatedAt
+                          ),
+                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
+                        ),
+                        s.academicRegistration, s.campus,
+                        new com.pug.academic.infra.read.dtos.CourseView(
+                          course.id, course.name,
+                          new com.pug.academic.infra.read.dtos.SchoolView(
+                            sch.id, sch.name, sch.createdAt, sch.updatedAt
+                          ),
+                          course.createdAt, course.updatedAt
+                        ),
+                        s.requiredHours, s.concluded, s.startDate, s.dueDate, s.createdAt, s.updatedAt
+                      ),
+                      en.status, en.createdAt, en.updatedAt, en.acceptedAt, en.closingStatusAt
+                    )
+                    from EnrollmentEntity en
+                    join ProjectEntity p on p.id = en.id.projectId
+                    join EntityEntity ent on ent.id = p.entityId
+                    join CityEntity c on c.id = ent.cityId
+                    join AccountEntity pacc on pacc.id = p.createdBy
+                    join UserEntity pu on pu.id = pacc.userId
+                    join StudentEntity s on s.accountId = en.id.studentId
+                    join AccountEntity sacc on sacc.id = s.accountId
+                    join UserEntity su on su.id = sacc.userId
+                    join CourseEntity course on course.id = s.courseId
+                    left join SchoolEntity sch on sch.id = course.schoolId
+                    """;
+
+  private static final String ORDER_BY_DATE = " order by en.createdAt desc";
+
+  @Override
+  public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) return Optional.empty();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid",
+            EnrollmentView.class);
+    q.setParameter("pid", projectId);
+    q.setParameter("sid", studentId);
+    return q.getResultStream().findFirst();
+  }
+
+  @Override
+  public List<EnrollmentView> listAllEnrollments() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, EnrollmentView.class).getResultList();
+  }
+
+  @Override
+  public List<EnrollmentView> listByProjectId(UUID projectId) {
+    if (projectId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class);
+    q.setParameter("pid", projectId);
+    return q.getResultList();
+  }
+
+  @Override
+  public List<EnrollmentView> listByStudentId(UUID studentId) {
+    if (studentId == null) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class);
+    q.setParameter("sid", studentId);
+    return q.getResultList();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/ProjectQueriesImpl.java
+================================================================================
+package com.pug.project.infra.read.impl;
+
+import com.pug.project.infra.read.ProjectQueries;
+import com.pug.project.infra.read.dtos.ProjectView;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link ProjectQueries} interface.
+ *
+ * <p>Uses JPQL constructor expressions to implicitly join the project with its Partner Entity,
+ * City, and Creator Account in a single, highly optimized query.
+ */
+@ApplicationScoped
+@Transactional(Transactional.TxType.SUPPORTS)
+public class ProjectQueriesImpl implements ProjectQueries {
+
+  @Inject EntityManager em;
+
+  private static final String SELECT_BASE =
+      """
+                    select new com.pug.project.infra.read.dtos.ProjectView(
+                      p.id, p.name,
+                      new com.pug.partner.infra.read.dtos.EntityView(
+                        ent.id, ent.cnpj, ent.name, ent.address,
+                        new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                        ent.createdAt, ent.updatedAt
+                      ),
+                      p.description,
+                      new com.pug.identity.infra.read.dtos.AccountView(
+                        acc.id,
+                        new com.pug.identity.infra.read.dtos.UserView(
+                          u.id, u.cpf, u.name, u.createdAt, u.updatedAt
+                        ),
+                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
+                      ),
+                      p.maxParticipants, p.offeredHours, p.status,
+                      p.closedAt, p.createdAt, p.updatedAt
+                    )
+                    from ProjectEntity p
+                    join EntityEntity ent on ent.id = p.entityId
+                    join CityEntity c on c.id = ent.cityId
+                    join AccountEntity acc on acc.id = p.createdBy
+                    join UserEntity u on u.id = acc.userId
+                    """;
+
+  private static final String ORDER_BY_NAME = " order by p.name asc";
+
+  @Override
+  public Optional<ProjectView> findOptionalById(UUID id) {
+    if (id == null) return Optional.empty();
+    var q = em.createQuery(SELECT_BASE + " where p.id = :id", ProjectView.class);
+    q.setParameter("id", id);
+    return q.getResultStream().findFirst();
+  }
+
+  @Override
+  public List<ProjectView> listAllProjects() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_NAME, ProjectView.class).getResultList();
+  }
+
+  @Override
+  public List<ProjectView> listByEntityId(UUID entityId) {
+    if (entityId == null) return List.of();
+    var q =
+        em.createQuery(SELECT_BASE + " where p.entityId = :eid" + ORDER_BY_NAME, ProjectView.class);
+    q.setParameter("eid", entityId);
+    return q.getResultList();
+  }
+
+  @Override
+  public List<ProjectView> searchByName(String query) {
+    if (query == null || query.isBlank()) return List.of();
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where lower(p.name) like :name" + ORDER_BY_NAME, ProjectView.class);
+    q.setParameter("name", "%" + query.toLowerCase() + "%");
+    return q.getResultList();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/ProjectQueries.java
+================================================================================
+package com.pug.project.infra.read;
+
+import com.pug.project.infra.read.dtos.ProjectView;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Read-only interface for executing queries against Projects. */
+public interface ProjectQueries {
+  Optional<ProjectView> findOptionalById(UUID id);
+
+  List<ProjectView> listAllProjects();
+
+  List<ProjectView> listByEntityId(UUID entityId);
+
+  List<ProjectView> searchByName(String query);
+}
+
+
+================================================================================
+FILE: service/AttendanceService.java
+================================================================================
+package com.pug.project.service;
+
+import java.util.UUID;
+
+public interface AttendanceService {
+
+  boolean existsByValidatedBy(UUID accountId);
+}
+
+
+================================================================================
+FILE: service/EnrollmentService.java
+================================================================================
+package com.pug.project.service;
+
+import java.util.UUID;
+
+public interface EnrollmentService {
+  boolean existsAnyByStudentId(UUID accountId);
+}
+
+
+================================================================================
+FILE: service/impl/AttendanceServiceImpl.java
+================================================================================
+package com.pug.project.service.impl;
+
+import com.pug.project.service.AttendanceService;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.UUID;
+
+@ApplicationScoped
+public class AttendanceServiceImpl implements AttendanceService {
+
+  @Override
+  public boolean existsByValidatedBy(UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/impl/EnrollmentServiceImpl.java
+================================================================================
+package com.pug.project.service.impl;
+
+import com.pug.project.service.EnrollmentService;
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class EnrollmentServiceImpl implements EnrollmentService {
+
+  @Override
+  public boolean existsAnyByStudentId(java.util.UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectServiceImpl.java
+================================================================================
+package com.pug.project.service.impl;
+
+import com.pug.project.domain.ProjectRepository;
+import com.pug.project.service.ProjectService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.util.UUID;
+
+@ApplicationScoped
+public class ProjectServiceImpl implements ProjectService {
+  @Inject ProjectRepository repo;
+
+  @Override
+  public boolean existsAnyByEntityId(UUID entityId) {
+    return repo.existsByEntityId(entityId);
+  }
+
+  @Override
+  public boolean existsByCreatedBy(UUID accountId) {
+    return false;
+  }
+}
+
+
+================================================================================
+FILE: service/ProjectService.java
+================================================================================
+package com.pug.project.service;
+
+import java.util.UUID;
+
+public interface ProjectService {
+
+  boolean existsAnyByEntityId(UUID entityId);
+
+  boolean existsByCreatedBy(UUID accountId);
+}
+

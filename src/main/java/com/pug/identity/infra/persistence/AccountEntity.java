@@ -80,6 +80,6 @@ public class AccountEntity extends BaseAuditedEntity {
   private String passwordHash;
 
   /** Flag indicating whether the account is active or has been deactivated. */
-  @Column(name = "is_active", nullable = false)
+  @Column(name = "active", nullable = false)
   private Boolean active;
 }

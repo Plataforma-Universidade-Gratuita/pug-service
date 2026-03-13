@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <FindBugsFilter>
-    <!-- Ignore the com.pug.projects package for now -->
+    <!-- Ignore the com.pug.project package for now -->
     <Match>
 <!--        <Package name="~com\.pug\.projects.*"/>-->
     </Match>
