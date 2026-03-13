@@ -57,6 +57,15 @@ public class AccountRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
+  public boolean existsAnyByEmails(List<String> emails) {
+    if (CollectionUtils.isEmpty(emails)) {
+      return false;
+    }
+    return count("email in ?1", emails) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();
   }
@@ -107,6 +116,22 @@ public class AccountRepositoryImpl
     AccountEntity e = AccountMapper.toEntity(entity);
     persistAndFlush(e);
     return AccountMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Account> persistAll(List<Account> accounts) {
+    if (CollectionUtils.isEmpty(accounts)) {
+      return List.of();
+    }
+    List<AccountEntity> entities = accounts.stream().map(AccountMapper::toEntity).toList();
+
+    // Executes a batch insert and a single flush to minimize JDBC round-trips
+    persist(entities);
+    flush();
+
+    return entities.stream().map(AccountMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */

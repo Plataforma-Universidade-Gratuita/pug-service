@@ -2,11 +2,14 @@ package com.pug.identity.service.impl;
 
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
+import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.AccountService;
 import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.utils.AccountProcessor;
 import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
@@ -15,7 +18,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /**
@@ -156,6 +162,51 @@ public class AccountServiceImpl implements AccountService {
     Account savedAccount = repo.persist(account);
     LOG.infof("Account created successfully. ID: %s", savedAccount.getId());
     return savedAccount;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Account> saveInBulk(List<AccountCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Accounts", cmds.size());
+
+    List<String> emails =
+        cmds.stream().map(c -> Email.factory(c.emailString()).getValue()).toList();
+    long uniqueEmails = emails.stream().distinct().count();
+
+    if (uniqueEmails < cmds.size() || repo.existsAnyByEmails(emails)) {
+      LOG.warn("Bulk creation failed: Duplicate emails detected in payload or database");
+      throw ExceptionHelper.accountAlreadyExists();
+    }
+
+    List<String> cpfs =
+        cmds.stream()
+            .map(c -> Cpf.factory(c.userCommand().cpfString()).getValue())
+            .filter(Objects::nonNull)
+            .toList();
+
+    List<User> existingUsers = userService.listByCpfs(cpfs);
+    Map<String, UUID> userMap =
+        existingUsers.stream().collect(Collectors.toMap(u -> u.getCpf().getValue(), User::getId));
+
+    List<UserCreateCommand> missingUserCmds =
+        AccountProcessor.extractMissingUserCommands(cmds, userMap);
+
+    if (!missingUserCmds.isEmpty()) {
+      List<User> createdUsers = userService.saveInBulk(missingUserCmds);
+      for (User u : createdUsers) {
+        userMap.put(u.getCpf().getValue(), u.getId());
+      }
+    }
+
+    List<Account> accountsToPersist = AccountProcessor.processBulkCreateInput(cmds, userMap);
+
+    List<Account> savedAccounts = repo.persistAll(accountsToPersist);
+    LOG.infof("Successfully bulk created %d Accounts", savedAccounts.size());
+    return savedAccounts;
   }
 
   /** {@inheritDoc} */

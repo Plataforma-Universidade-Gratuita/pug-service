@@ -202,6 +202,54 @@ public class StudentResource {
   }
 
   /**
+   * Registers a batch of new students within the platform.
+   *
+   * <p>This endpoint processes an aggregated payload of multiple students, automatically handling
+   * the provisioning of the underlying users and authentication accounts within a single
+   * transaction.
+   *
+   * @param reqs a {@link List} of validated {@link StudentCreateRequest} containing identity and
+   *     enrollment details
+   * @return an HTTP 201 Created response containing the created {@link List} of {@link
+   *     StudentResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   *     email already exists
+   */
+  @POST
+  @Path("/bulk")
+  public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
+    List<StudentCreateCommand> cmds =
+        reqs.stream()
+            .map(
+                req -> {
+                  String hashedPassword = passwordService.hash(req.password());
+                  UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+                  AccountCreateCommand accountCmd =
+                      new AccountCreateCommand(
+                          req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+                  return new StudentCreateCommand(
+                      accountCmd,
+                      req.academicRegistration(),
+                      req.campus(),
+                      req.courseId(),
+                      req.requiredHours(),
+                      req.startDate(),
+                      req.dueDate());
+                })
+            .toList();
+
+    List<Student> createdStudents = writeService.saveInBulk(cmds);
+
+    List<UUID> accountIds = createdStudents.stream().map(Student::getAccountId).toList();
+    List<StudentView> views = readService.listViewsByAccountIds(accountIds);
+
+    List<StudentResponse> body =
+        views.stream().map(view -> StudentPresenter.toResponse(view, locale(), i18n)).toList();
+
+    return Response.status(Response.Status.CREATED).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
    * Partially updates an existing student's enrollment details.
    *
    * @param id the unique identifier (UUIDv7) of the student's account

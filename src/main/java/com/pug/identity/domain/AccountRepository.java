@@ -40,6 +40,17 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
+   * Checks whether any of the specified email addresses already exist in the repository.
+   *
+   * <p>This bulk operation is heavily utilized during batch creations to validate uniqueness
+   * payloads against the database in a single round-trip.
+   *
+   * @param emails a {@link List} of normalized email strings
+   * @return {@code true} if at least one matching email exists, {@code false} otherwise
+   */
+  boolean existsAnyByEmails(List<String> emails);
+
+  /**
    * Checks whether an {@link Account} with the specified email address already exists in the
    * repository.
    *
@@ -91,6 +102,14 @@ public interface AccountRepository {
    * @return the fully persisted {@link Account} instance
    */
   Account persist(Account entity);
+
+  /**
+   * Persists a collection of newly created {@link Account} aggregates in a single batch.
+   *
+   * @param accounts a {@link List} of {@link Account} aggregates to persist
+   * @return the fully persisted {@link List} of {@link Account} instances
+   */
+  List<Account> persistAll(List<Account> accounts);
 
   /**
    * Updates the state of an existing {@link Account} aggregate in the repository.

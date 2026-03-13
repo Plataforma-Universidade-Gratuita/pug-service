@@ -1,5 +1,6 @@
 package com.pug.academic.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,6 +20,14 @@ public interface StudentRepository {
    * @return {@code true} if the student was successfully deleted, {@code false} if not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether any of the specified academic registrations already exist in the repository.
+   *
+   * @param registrations a {@link List} of academic registration strings to check
+   * @return {@code true} if at least one registration exists, {@code false} otherwise
+   */
+  boolean existsAnyByRegistrations(List<String> registrations);
 
   /**
    * Checks whether any {@link Student} associated with the specified course identifier exists in
@@ -60,6 +69,14 @@ public interface StudentRepository {
    * @return the fully persisted {@link Student} instance
    */
   Student persist(Student entity);
+
+  /**
+   * Persists a collection of newly created {@link Student} aggregates in a single batch.
+   *
+   * @param students a {@link List} of {@link Student} aggregates to persist
+   * @return the fully persisted {@link List} of {@link Student} instances
+   */
+  List<Student> persistAll(List<Student> students);
 
   /**
    * Updates the state of an existing {@link Student} aggregate in the repository.

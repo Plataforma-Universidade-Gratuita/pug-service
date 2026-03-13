@@ -1,9 +1,17 @@
 package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.Account;
+import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -11,9 +19,71 @@ import java.util.UUID;
  * Domain Aggregates and Value Objects.
  *
  * <p>This processor centralizes the orchestration of domain factory methods, enum parsing, and
- * state-mutation behaviors to keep the application service layer clean.
+ * state-mutation behaviors to keep the application service layer clean. It also handles complex
+ * list transformations for bulk processing.
  */
 public class AccountProcessor {
+
+  /**
+   * Extracts a distinct list of user creation commands for individuals who do not yet exist in the
+   * system.
+   *
+   * @param cmds the {@link List} of bulk account creation commands
+   * @param existingUserMap a {@link Map} of currently existing users (CPF mapped to User UUID)
+   * @return a distinct {@link List} of {@link UserCreateCommand} representing the missing users
+   */
+  public static List<UserCreateCommand> extractMissingUserCommands(
+      List<AccountCreateCommand> cmds, Map<String, UUID> existingUserMap) {
+
+    Map<String, UserCreateCommand> missing = new LinkedHashMap<>();
+
+    for (AccountCreateCommand cmd : cmds) {
+      UserCreateCommand userCmd = cmd.userCommand();
+      Cpf cpf = Cpf.factory(userCmd.cpfString());
+      String cpfVal = cpf.getValue();
+
+      if (cpfVal != null && !existingUserMap.containsKey(cpfVal)) {
+        missing.putIfAbsent(cpfVal, userCmd);
+      }
+    }
+
+    return new ArrayList<>(missing.values());
+  }
+
+  /**
+   * Processes a bulk list of account creation commands, generating a list of pure Domain
+   * Aggregates.
+   *
+   * <p>This method maps each command to its underlying user identifier and triggers the aggregate's
+   * internal validations. If any account violates domain rules, an exception is thrown to abort the
+   * entire transaction.
+   *
+   * @param cmds the {@link List} of bulk account creation commands
+   * @param completeUserMap a fully populated {@link Map} resolving CPFs to User UUIDs
+   * @return a {@link List} of instantiated and validated {@link Account} aggregates
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<Account> processBulkCreateInput(
+      List<AccountCreateCommand> cmds, Map<String, UUID> completeUserMap) {
+
+    List<Account> accounts = new ArrayList<>(cmds.size());
+
+    for (AccountCreateCommand cmd : cmds) {
+      String cleanCpf = Cpf.factory(cmd.userCommand().cpfString()).getValue();
+      UUID mappedUserId = completeUserMap.get(cleanCpf);
+      String typeString = cmd.type() != null ? cmd.type().name() : null;
+
+      Account account =
+          processCreateInput(mappedUserId, cmd.emailString(), typeString, cmd.passwordHash());
+
+      if (account.hasFieldErrors()) {
+        throw new AppValidationException(account.getFieldErrors());
+      }
+      accounts.add(account);
+    }
+
+    return accounts;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link Account} domain aggregate.

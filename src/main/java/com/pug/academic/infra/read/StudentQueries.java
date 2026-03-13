@@ -66,6 +66,14 @@ public interface StudentQueries {
   List<StudentView> listAllStudents();
 
   /**
+   * Retrieves a read-only list of students based on a collection of account identifiers.
+   *
+   * @param accountIds a {@link List} of unique identifiers (UUID)
+   * @return a {@link List} of matching {@link StudentView} records
+   */
+  List<StudentView> listViewsByAccountIds(List<UUID> accountIds);
+
+  /**
    * Executes a robust full-text search against the names of the associated student users.
    *
    * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via

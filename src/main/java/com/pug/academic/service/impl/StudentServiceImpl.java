@@ -10,12 +10,15 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
+import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.projects.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -125,6 +128,41 @@ public class StudentServiceImpl implements StudentService {
     Student savedStudent = repo.persist(studentToPersist);
     LOG.infof("Student created successfully. Account ID: %s", savedStudent.getAccountId());
     return savedStudent;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Student> saveInBulk(List<StudentCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Students", cmds.size());
+
+    cmds.stream().map(StudentCreateCommand::courseId).distinct().forEach(courseService::getById);
+
+    List<String> registrations =
+        cmds.stream().map(StudentCreateCommand::academicRegistration).toList();
+    long uniqueCount = registrations.stream().distinct().count();
+
+    if (uniqueCount < cmds.size() || repo.existsAnyByRegistrations(registrations)) {
+      LOG.warn(
+          "Bulk creation failed: Duplicate academic registrations detected in payload or database");
+      throw ExceptionHelper.studentAlreadyExists();
+    }
+
+    List<AccountCreateCommand> accountCmds =
+        cmds.stream().map(StudentCreateCommand::accountCreateCommand).toList();
+
+    List<Account> createdAccounts = accountService.saveInBulk(accountCmds);
+    List<UUID> accountIds = createdAccounts.stream().map(Account::getId).toList();
+
+    List<Student> studentsToPersist = StudentProcessor.processBulkCreateInput(cmds, accountIds);
+
+    List<Student> savedStudents = repo.persistAll(studentsToPersist);
+    LOG.infof("Successfully bulk created %d Students", savedStudents.size());
+
+    return savedStudents;
   }
 
   /** {@inheritDoc} */

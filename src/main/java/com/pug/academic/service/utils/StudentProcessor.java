@@ -4,10 +4,14 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
+import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -19,6 +23,54 @@ import java.util.UUID;
  * service layer.
  */
 public class StudentProcessor {
+
+  /**
+   * Processes a bulk list of student creation commands, combining them with their newly generated
+   * account identifiers to instantiate pure Domain Aggregates.
+   *
+   * <p>This method safely maps concurrent lists by index. It triggers the aggregate's internal
+   * validations, and if any student violates domain rules, an exception is thrown to abort the
+   * entire batch transaction.
+   *
+   * @param cmds the {@link List} of bulk student creation commands
+   * @param accountIds the {@link List} of newly provisioned {@link UUID} account identifiers
+   * @return a {@link List} of instantiated and validated {@link Student} aggregates
+   * @throws IllegalArgumentException if the size of the commands list does not match the account
+   *     IDs
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<Student> processBulkCreateInput(
+      List<StudentCreateCommand> cmds, List<UUID> accountIds) {
+
+    if (cmds.size() != accountIds.size()) {
+      throw new IllegalArgumentException(
+          "Commands and Account IDs lists must be of the same size.");
+    }
+
+    List<Student> students = new ArrayList<>(cmds.size());
+
+    for (int i = 0; i < cmds.size(); i++) {
+      StudentCreateCommand cmd = cmds.get(i);
+      UUID linkedAccountId = accountIds.get(i);
+
+      Student student =
+          processCreateInput(
+              linkedAccountId,
+              cmd.academicRegistration(),
+              cmd.campus(),
+              cmd.courseId(),
+              cmd.requiredHours(),
+              cmd.startDate(),
+              cmd.dueDate());
+
+      if (student.hasFieldErrors()) {
+        throw new AppValidationException(student.getFieldErrors());
+      }
+      students.add(student);
+    }
+
+    return students;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link Student} domain aggregate.

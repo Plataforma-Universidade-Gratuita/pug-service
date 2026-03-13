@@ -18,45 +18,11 @@ import java.util.UUID;
 public interface UserService {
 
   /**
-   * Instantiates and persists a new {@link User} aggregate based on the provided command.
-   *
-   * <p>The command data is routed through the domain's factory methods to ensure all internal
-   * validations (e.g., CPF mathematical validation) are strictly applied before persistence.
-   *
-   * @param cmd the structured command containing the data required to create a new user
-   * @return the fully instantiated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the provided CPF
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if the input data violates domain
-   *     constraints (e.g., blank name, malformed CPF)
-   */
-  User save(UserCreateCommand cmd);
-
-  /**
-   * Updates the state (name and/or CPF) of an existing {@link User} aggregate.
-   *
-   * <p>This method reconstitutes the aggregate from the repository, applies the requested mutations
-   * through domain behaviors, and persists the updated state.
-   *
-   * @param id the unique identifier (UUIDv7) of the user to update
-   * @param cmd the structured command containing the updated user data
-   * @return the mutated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user cannot be found in the
-   *     repository
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CPF conflicts with
-   *     an existing user
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
-   *     domain constraints
-   */
-  User update(UUID id, UserUpdateCommand cmd);
-
-  /**
    * Removes a {@link User} from the system by its unique identifier.
    *
    * @param id the unique identifier (UUID) of the user to delete
    * @return {@code true} if the user was successfully deleted, {@code false} if the ID is null or
-   *     if the actual database deletion was silently ignored (e.g., an idempotent concurrent
-   *     delete)
+   *     if the actual database deletion was silently ignored
    */
   boolean delete(UUID id);
 
@@ -69,19 +35,12 @@ public interface UserService {
   long deleteAll(List<UUID> ids);
 
   /**
-   * Retrieves a full {@link User} domain aggregate by its unique identifier.
+   * Checks whether a user exists with the specified CPF.
    *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * loading an aggregate to mutate it or link it). For API responses, use {@link
-   * UserReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the user
-   * @return the fully reconstituted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user exists in the database but
-   *     its stored state currently violates strict domain invariants (data corruption)
+   * @param cpf the previously validated {@link Cpf} Value Object to check
+   * @return {@code true} if a matching user exists, {@code false} otherwise
    */
-  User getById(UUID id);
+  boolean existsByCpf(Cpf cpf);
 
   /**
    * Retrieves a full {@link User} domain aggregate by its associated CPF.
@@ -89,16 +48,63 @@ public interface UserService {
    * @param cpf the previously validated {@link Cpf} Value Object
    * @return the fully reconstituted {@link User} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user exists in the database but
-   *     its stored state currently violates strict domain invariants (data corruption)
+   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
    */
   User getByCpf(Cpf cpf);
 
   /**
-   * Checks whether a user exists with the specified CPF.
+   * Retrieves a full {@link User} domain aggregate by its unique identifier.
    *
-   * @param cpf the previously validated {@link Cpf} Value Object to check
-   * @return {@code true} if a matching user exists, {@code false} otherwise
+   * @param id the unique identifier (UUID) of the user
+   * @return the fully reconstituted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
    */
-  boolean existsByCpf(Cpf cpf);
+  User getById(UUID id);
+
+  /**
+   * Retrieves a collection of {@link User} aggregates corresponding to the provided CPFs.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return a {@link List} of matching {@link User} instances
+   */
+  List<User> listByCpfs(List<String> cpfs);
+
+  /**
+   * Instantiates and persists a new {@link User} aggregate based on the provided command.
+   *
+   * @param cmd the structured command containing the data required to create a new user
+   * @return the fully instantiated and persisted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the provided CPF
+   *     already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if the input data violates domain
+   *     constraints
+   */
+  User save(UserCreateCommand cmd);
+
+  /**
+   * Instantiates and persists multiple {@link User} aggregates in a single batch transaction.
+   *
+   * <p>This method drastically reduces JDBC round-trips by pre-validating domain constraints and
+   * dispatching a single flush command to the underlying repository.
+   *
+   * @param cmds a {@link List} of structured commands for the batch users
+   * @return a {@link List} of the fully instantiated and persisted {@link User} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any CPF already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any user
+   */
+  List<User> saveInBulk(List<UserCreateCommand> cmds);
+
+  /**
+   * Updates the state (name and/or CPF) of an existing {@link User} aggregate.
+   *
+   * @param id the unique identifier (UUIDv7) of the user to update
+   * @param cmd the structured command containing the updated user data
+   * @return the mutated and persisted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user cannot be found
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CPF conflicts
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
+   */
+  User update(UUID id, UserUpdateCommand cmd);
 }

@@ -4,10 +4,12 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.infra.StudentMapper;
 import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +34,15 @@ public class StudentRepositoryImpl
     var deleted = PanacheRepositoryBase.super.deleteById(id);
     flush();
     return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyByRegistrations(List<String> registrations) {
+    if (CollectionUtils.isEmpty(registrations)) {
+      return false;
+    }
+    return count("academicRegistration in ?1", registrations) > 0;
   }
 
   /** {@inheritDoc} */
@@ -69,6 +80,20 @@ public class StudentRepositoryImpl
     StudentEntity e = StudentMapper.toEntity(student);
     persistAndFlush(e);
     return StudentMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Student> persistAll(List<Student> students) {
+    if (CollectionUtils.isEmpty(students)) {
+      return List.of();
+    }
+    List<StudentEntity> entities = students.stream().map(StudentMapper::toEntity).toList();
+    persist(entities);
+    flush();
+
+    return entities.stream().map(StudentMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */

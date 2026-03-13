@@ -845,6 +845,7 @@ FILE: domain/StudentRepository.java
 ================================================================================
 package com.pug.academic.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -864,6 +865,14 @@ public interface StudentRepository {
    * @return {@code true} if the student was successfully deleted, {@code false} if not found
    */
   boolean deleteById(UUID id);
+
+  /**
+   * Checks whether any of the specified academic registrations already exist in the repository.
+   *
+   * @param registrations a {@link List} of academic registration strings to check
+   * @return {@code true} if at least one registration exists, {@code false} otherwise
+   */
+  boolean existsAnyByRegistrations(List<String> registrations);
 
   /**
    * Checks whether any {@link Student} associated with the specified course identifier exists in
@@ -905,6 +914,14 @@ public interface StudentRepository {
    * @return the fully persisted {@link Student} instance
    */
   Student persist(Student entity);
+
+  /**
+   * Persists a collection of newly created {@link Student} aggregates in a single batch.
+   *
+   * @param students a {@link List} of {@link Student} aggregates to persist
+   * @return the fully persisted {@link List} of {@link Student} instances
+   */
+  List<Student> persistAll(List<Student> students);
 
   /**
    * Updates the state of an existing {@link Student} aggregate in the repository.
@@ -1514,10 +1531,12 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.StudentRepository;
 import com.pug.academic.infra.StudentMapper;
 import com.pug.academic.infra.persistence.StudentEntity;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -1542,6 +1561,15 @@ public class StudentRepositoryImpl
     var deleted = PanacheRepositoryBase.super.deleteById(id);
     flush();
     return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsAnyByRegistrations(List<String> registrations) {
+    if (CollectionUtils.isEmpty(registrations)) {
+      return false;
+    }
+    return count("academicRegistration in ?1", registrations) > 0;
   }
 
   /** {@inheritDoc} */
@@ -1579,6 +1607,20 @@ public class StudentRepositoryImpl
     StudentEntity e = StudentMapper.toEntity(student);
     persistAndFlush(e);
     return StudentMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Student> persistAll(List<Student> students) {
+    if (CollectionUtils.isEmpty(students)) {
+      return List.of();
+    }
+    List<StudentEntity> entities = students.stream().map(StudentMapper::toEntity).toList();
+    persist(entities);
+    flush();
+
+    return entities.stream().map(StudentMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */
@@ -2271,6 +2313,20 @@ public class StudentQueriesImpl implements StudentQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
+    if (accountIds == null || accountIds.isEmpty()) {
+      return List.of();
+    }
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC,
+            StudentView.class);
+    q.setParameter("ids", accountIds);
+    return q.getResultList();
+  }
+
   /**
    * {@inheritDoc}
    *
@@ -2447,6 +2503,14 @@ public interface StudentQueries {
    * @return a {@link List} of all {@link StudentView} records
    */
   List<StudentView> listAllStudents();
+
+  /**
+   * Retrieves a read-only list of students based on a collection of account identifiers.
+   *
+   * @param accountIds a {@link List} of unique identifiers (UUID)
+   * @return a {@link List} of matching {@link StudentView} records
+   */
+  List<StudentView> listViewsByAccountIds(List<UUID> accountIds);
 
   /**
    * Executes a robust full-text search against the names of the associated student users.
@@ -3743,6 +3807,54 @@ public class StudentResource {
   }
 
   /**
+   * Registers a batch of new students within the platform.
+   *
+   * <p>This endpoint processes an aggregated payload of multiple students, automatically handling
+   * the provisioning of the underlying users and authentication accounts within a single
+   * transaction.
+   *
+   * @param reqs a {@link List} of validated {@link StudentCreateRequest} containing identity and
+   *     enrollment details
+   * @return an HTTP 201 Created response containing the created {@link List} of {@link
+   *     StudentResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   *     email already exists
+   */
+  @POST
+  @Path("/bulk")
+  public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
+    List<StudentCreateCommand> cmds =
+        reqs.stream()
+            .map(
+                req -> {
+                  String hashedPassword = passwordService.hash(req.password());
+                  UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+                  AccountCreateCommand accountCmd =
+                      new AccountCreateCommand(
+                          req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+                  return new StudentCreateCommand(
+                      accountCmd,
+                      req.academicRegistration(),
+                      req.campus(),
+                      req.courseId(),
+                      req.requiredHours(),
+                      req.startDate(),
+                      req.dueDate());
+                })
+            .toList();
+
+    List<Student> createdStudents = writeService.saveInBulk(cmds);
+
+    List<UUID> accountIds = createdStudents.stream().map(Student::getAccountId).toList();
+    List<StudentView> views = readService.listViewsByAccountIds(accountIds);
+
+    List<StudentResponse> body =
+        views.stream().map(view -> StudentPresenter.toResponse(view, locale(), i18n)).toList();
+
+    return Response.status(Response.Status.CREATED).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
    * Partially updates an existing student's enrollment details.
    *
    * @param id the unique identifier (UUIDv7) of the student's account
@@ -4564,18 +4676,6 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
-  public StudentView getViewByAccountId(UUID accountId) {
-    return queries
-        .findOptionalById(accountId)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-              return ExceptionHelper.studentNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
     return queries
         .findOptionalByAcademicRegistration(academicRegistration)
@@ -4588,12 +4688,12 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
-  public StudentView getViewByEmail(String email) {
+  public StudentView getViewByAccountId(UUID accountId) {
     return queries
-        .findOptionalByEmail(email)
+        .findOptionalById(accountId)
         .orElseThrow(
             () -> {
-              LOG.debugf("Student lookup failed: Email %s not found", email);
+              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
               return ExceptionHelper.studentNotFound();
             });
   }
@@ -4612,8 +4712,29 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
+  public StudentView getViewByEmail(String email) {
+    return queries
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Student lookup failed: Email %s not found", email);
+              return ExceptionHelper.studentNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<StudentView> listViews() {
     return queries.listAllStudents();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
+    if (accountIds == null || accountIds.isEmpty()) {
+      return List.of();
+    }
+    return queries.listViewsByAccountIds(accountIds);
   }
 
   /** {@inheritDoc} */
@@ -4658,12 +4779,15 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.StudentProcessor;
 import com.pug.identity.domain.Account;
 import com.pug.identity.service.AccountService;
+import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.projects.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -4773,6 +4897,41 @@ public class StudentServiceImpl implements StudentService {
     Student savedStudent = repo.persist(studentToPersist);
     LOG.infof("Student created successfully. Account ID: %s", savedStudent.getAccountId());
     return savedStudent;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Student> saveInBulk(List<StudentCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Students", cmds.size());
+
+    cmds.stream().map(StudentCreateCommand::courseId).distinct().forEach(courseService::getById);
+
+    List<String> registrations =
+        cmds.stream().map(StudentCreateCommand::academicRegistration).toList();
+    long uniqueCount = registrations.stream().distinct().count();
+
+    if (uniqueCount < cmds.size() || repo.existsAnyByRegistrations(registrations)) {
+      LOG.warn(
+          "Bulk creation failed: Duplicate academic registrations detected in payload or database");
+      throw ExceptionHelper.studentAlreadyExists();
+    }
+
+    List<AccountCreateCommand> accountCmds =
+        cmds.stream().map(StudentCreateCommand::accountCreateCommand).toList();
+
+    List<Account> createdAccounts = accountService.saveInBulk(accountCmds);
+    List<UUID> accountIds = createdAccounts.stream().map(Account::getId).toList();
+
+    List<Student> studentsToPersist = StudentProcessor.processBulkCreateInput(cmds, accountIds);
+
+    List<Student> savedStudents = repo.persistAll(studentsToPersist);
+    LOG.infof("Successfully bulk created %d Students", savedStudents.size());
+
+    return savedStudents;
   }
 
   /** {@inheritDoc} */
@@ -5028,6 +5187,19 @@ public interface StudentReadService {
   List<StudentView> listViews();
 
   /**
+   * Retrieves a read-only collection of students corresponding to a provided list of account
+   * identifiers.
+   *
+   * <p>This bulk operation executes an efficient {@code IN} query against the underlying
+   * persistence layer, preventing N+1 performance bottlenecks when retrieving multiple distinct
+   * student profiles simultaneously.
+   *
+   * @param accountIds a {@link List} of unique identifiers (UUID) representing the student accounts
+   * @return a {@link List} of matching {@link StudentView} entries
+   */
+  List<StudentView> listViewsByAccountIds(List<UUID> accountIds);
+
+  /**
    * Retrieves a list of all students currently enrolled in a specific course.
    *
    * @param courseId the unique identifier (UUID) of the course
@@ -5056,6 +5228,7 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -5126,6 +5299,24 @@ public interface StudentService {
    *     domain level
    */
   Student save(StudentCreateCommand cmd);
+
+  /**
+   * Instantiates and persists multiple {@link Student} aggregates in a single batch transaction.
+   *
+   * <p>This method iterates over the provided commands, applying the exact same domain rules,
+   * validations, and cascading identity provisions as a single creation, ensuring that the entire
+   * batch operation succeeds or fails together.
+   *
+   * @param cmds a {@link List} of structured commands containing the data to create the students
+   * @return a {@link List} of the fully instantiated and persisted {@link Student} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   *     email already exists
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated course does not
+   *     exist
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
+   *     record
+   */
+  List<Student> saveInBulk(List<StudentCreateCommand> cmds);
 
   /**
    * Updates an existing {@link Student} and optionally its underlying account using the provided
@@ -5370,10 +5561,14 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
+import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.shared.domain.enums.Campi;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -5385,6 +5580,54 @@ import java.util.UUID;
  * service layer.
  */
 public class StudentProcessor {
+
+  /**
+   * Processes a bulk list of student creation commands, combining them with their newly generated
+   * account identifiers to instantiate pure Domain Aggregates.
+   *
+   * <p>This method safely maps concurrent lists by index. It triggers the aggregate's internal
+   * validations, and if any student violates domain rules, an exception is thrown to abort the
+   * entire batch transaction.
+   *
+   * @param cmds the {@link List} of bulk student creation commands
+   * @param accountIds the {@link List} of newly provisioned {@link UUID} account identifiers
+   * @return a {@link List} of instantiated and validated {@link Student} aggregates
+   * @throws IllegalArgumentException if the size of the commands list does not match the account
+   *     IDs
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<Student> processBulkCreateInput(
+      List<StudentCreateCommand> cmds, List<UUID> accountIds) {
+
+    if (cmds.size() != accountIds.size()) {
+      throw new IllegalArgumentException(
+          "Commands and Account IDs lists must be of the same size.");
+    }
+
+    List<Student> students = new ArrayList<>(cmds.size());
+
+    for (int i = 0; i < cmds.size(); i++) {
+      StudentCreateCommand cmd = cmds.get(i);
+      UUID linkedAccountId = accountIds.get(i);
+
+      Student student =
+          processCreateInput(
+              linkedAccountId,
+              cmd.academicRegistration(),
+              cmd.campus(),
+              cmd.courseId(),
+              cmd.requiredHours(),
+              cmd.startDate(),
+              cmd.dueDate());
+
+      if (student.hasFieldErrors()) {
+        throw new AppValidationException(student.getFieldErrors());
+      }
+      students.add(student);
+    }
+
+    return students;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link Student} domain aggregate.

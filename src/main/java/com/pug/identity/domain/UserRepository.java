@@ -31,10 +31,18 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Checks whether a {@link User} with the specified CPF already exists in the repository.
+   * Checks whether any of the specified CPFs already exist in the repository.
    *
-   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
-   * constraints before persisting a new user or updating an existing one.
+   * <p>This bulk operation is heavily utilized during batch creations to validate uniqueness
+   * payloads against the database in a single round-trip.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return {@code true} if at least one matching CPF exists, {@code false} otherwise
+   */
+  boolean existsAnyByCpfs(List<String> cpfs);
+
+  /**
+   * Checks whether a {@link User} with the specified CPF already exists in the repository.
    *
    * @param cpf the numeric CPF string to check
    * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
@@ -43,9 +51,6 @@ public interface UserRepository {
 
   /**
    * Retrieves a {@link User} by their unique Brazilian CPF.
-   *
-   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
-   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
    *
    * @param cpf the raw, 11-digit numeric CPF string of the user
    * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
@@ -56,16 +61,19 @@ public interface UserRepository {
   /**
    * Retrieves a {@link User} by its unique identifier.
    *
-   * <p>When a user is reconstituted from the persistence layer, it typically undergoes the same
-   * domain validations as a newly created entity. Therefore, the returned {@link User} might
-   * contain validation errors (verifiable via {@link User#hasFieldErrors()}) if the stored data
-   * violates current domain rules.
-   *
    * @param id the unique identifier (UUID) of the user
    * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
    *     if not
    */
   Optional<User> findOptionalById(UUID id);
+
+  /**
+   * Retrieves a collection of {@link User} domain aggregates based on a list of CPFs.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return a {@link List} of the fully reconstituted {@link User} instances
+   */
+  List<User> listByCpfs(List<String> cpfs);
 
   /**
    * Persists a newly created {@link User} aggregate into the repository.
@@ -74,6 +82,14 @@ public interface UserRepository {
    * @return the fully persisted {@link User} instance
    */
   User persist(User entity);
+
+  /**
+   * Persists a collection of newly created {@link User} aggregates in a single batch.
+   *
+   * @param users a {@link List} of {@link User} aggregates to persist
+   * @return the fully persisted {@link List} of {@link User} instances
+   */
+  List<User> persistAll(List<User> users);
 
   /**
    * Updates the state of an existing {@link User} aggregate in the repository.

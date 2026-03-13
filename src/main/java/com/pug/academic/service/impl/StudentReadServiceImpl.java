@@ -27,18 +27,6 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
-  public StudentView getViewByAccountId(UUID accountId) {
-    return queries
-        .findOptionalById(accountId)
-        .orElseThrow(
-            () -> {
-              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
-              return ExceptionHelper.studentNotFound();
-            });
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public StudentView getViewByAcademicRegistration(String academicRegistration) {
     return queries
         .findOptionalByAcademicRegistration(academicRegistration)
@@ -51,12 +39,12 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
-  public StudentView getViewByEmail(String email) {
+  public StudentView getViewByAccountId(UUID accountId) {
     return queries
-        .findOptionalByEmail(email)
+        .findOptionalById(accountId)
         .orElseThrow(
             () -> {
-              LOG.debugf("Student lookup failed: Email %s not found", email);
+              LOG.debugf("Student lookup failed: Account ID %s not found", accountId);
               return ExceptionHelper.studentNotFound();
             });
   }
@@ -75,8 +63,29 @@ public class StudentReadServiceImpl implements StudentReadService {
 
   /** {@inheritDoc} */
   @Override
+  public StudentView getViewByEmail(String email) {
+    return queries
+        .findOptionalByEmail(email)
+        .orElseThrow(
+            () -> {
+              LOG.debugf("Student lookup failed: Email %s not found", email);
+              return ExceptionHelper.studentNotFound();
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<StudentView> listViews() {
     return queries.listAllStudents();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
+    if (accountIds == null || accountIds.isEmpty()) {
+      return List.of();
+    }
+    return queries.listViewsByAccountIds(accountIds);
   }
 
   /** {@inheritDoc} */

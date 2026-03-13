@@ -3,6 +3,7 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -73,6 +74,24 @@ public interface StudentService {
    *     domain level
    */
   Student save(StudentCreateCommand cmd);
+
+  /**
+   * Instantiates and persists multiple {@link Student} aggregates in a single batch transaction.
+   *
+   * <p>This method iterates over the provided commands, applying the exact same domain rules,
+   * validations, and cascading identity provisions as a single creation, ensuring that the entire
+   * batch operation succeeds or fails together.
+   *
+   * @param cmds a {@link List} of structured commands containing the data to create the students
+   * @return a {@link List} of the fully instantiated and persisted {@link Student} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   *     email already exists
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated course does not
+   *     exist
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
+   *     record
+   */
+  List<Student> saveInBulk(List<StudentCreateCommand> cmds);
 
   /**
    * Updates an existing {@link Student} and optionally its underlying account using the provided

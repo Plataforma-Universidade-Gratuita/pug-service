@@ -83,6 +83,20 @@ public interface AccountService {
   Account save(AccountCreateCommand cmd);
 
   /**
+   * Instantiates and persists multiple {@link Account} aggregates in a single batch transaction.
+   *
+   * <p>This method drastically optimizes cross-domain data cascades. It resolves underlying {@link
+   * User} dependencies in bulk, identifies existing users to avoid duplication, and dispatches
+   * unified bulk flushes to the database.
+   *
+   * @param cmds a {@link List} of structured commands for the batch accounts
+   * @return a {@link List} of the fully instantiated and persisted {@link Account} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any email already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   */
+  List<Account> saveInBulk(List<AccountCreateCommand> cmds);
+
+  /**
    * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
    * data.
    *

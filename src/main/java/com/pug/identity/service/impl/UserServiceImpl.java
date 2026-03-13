@@ -115,6 +115,15 @@ public class UserServiceImpl implements UserService {
   }
 
   /** {@inheritDoc} */
+  @Override
+  public List<User> listByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return List.of();
+    }
+    return repo.listByCpfs(cpfs);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
@@ -134,6 +143,30 @@ public class UserServiceImpl implements UserService {
     LOG.infof("User created successfully. ID: %s", savedUser.getId());
 
     return savedUser;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<User> saveInBulk(List<UserCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Users", cmds.size());
+
+    List<String> cpfs = cmds.stream().map(UserCreateCommand::cpfString).toList();
+    long uniqueCount = cpfs.stream().distinct().count();
+
+    if (uniqueCount < cmds.size() || repo.existsAnyByCpfs(cpfs)) {
+      LOG.warn("Bulk creation failed: Duplicate CPFs detected in payload or database");
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    List<User> usersToPersist = UserProcessor.processBulkCreateInput(cmds);
+
+    List<User> savedUsers = repo.persistAll(usersToPersist);
+    LOG.infof("Successfully bulk created %d Users", savedUsers.size());
+    return savedUsers;
   }
 
   /** {@inheritDoc} */

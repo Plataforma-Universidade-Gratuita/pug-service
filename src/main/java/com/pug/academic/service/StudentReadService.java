@@ -65,6 +65,19 @@ public interface StudentReadService {
   List<StudentView> listViews();
 
   /**
+   * Retrieves a read-only collection of students corresponding to a provided list of account
+   * identifiers.
+   *
+   * <p>This bulk operation executes an efficient {@code IN} query against the underlying
+   * persistence layer, preventing N+1 performance bottlenecks when retrieving multiple distinct
+   * student profiles simultaneously.
+   *
+   * @param accountIds a {@link List} of unique identifiers (UUID) representing the student accounts
+   * @return a {@link List} of matching {@link StudentView} entries
+   */
+  List<StudentView> listViewsByAccountIds(List<UUID> accountIds);
+
+  /**
    * Retrieves a list of all students currently enrolled in a specific course.
    *
    * @param courseId the unique identifier (UUID) of the course

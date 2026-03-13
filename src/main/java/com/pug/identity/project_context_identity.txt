@@ -264,6 +264,17 @@ public interface AccountRepository {
   boolean deleteById(UUID id);
 
   /**
+   * Checks whether any of the specified email addresses already exist in the repository.
+   *
+   * <p>This bulk operation is heavily utilized during batch creations to validate uniqueness
+   * payloads against the database in a single round-trip.
+   *
+   * @param emails a {@link List} of normalized email strings
+   * @return {@code true} if at least one matching email exists, {@code false} otherwise
+   */
+  boolean existsAnyByEmails(List<String> emails);
+
+  /**
    * Checks whether an {@link Account} with the specified email address already exists in the
    * repository.
    *
@@ -315,6 +326,14 @@ public interface AccountRepository {
    * @return the fully persisted {@link Account} instance
    */
   Account persist(Account entity);
+
+  /**
+   * Persists a collection of newly created {@link Account} aggregates in a single batch.
+   *
+   * @param accounts a {@link List} of {@link Account} aggregates to persist
+   * @return the fully persisted {@link List} of {@link Account} instances
+   */
+  List<Account> persistAll(List<Account> accounts);
 
   /**
    * Updates the state of an existing {@link Account} aggregate in the repository.
@@ -820,10 +839,18 @@ public interface UserRepository {
   boolean deleteById(UUID id);
 
   /**
-   * Checks whether a {@link User} with the specified CPF already exists in the repository.
+   * Checks whether any of the specified CPFs already exist in the repository.
    *
-   * <p>This is primarily used by domain services or use cases to enforce natural key uniqueness
-   * constraints before persisting a new user or updating an existing one.
+   * <p>This bulk operation is heavily utilized during batch creations to validate uniqueness
+   * payloads against the database in a single round-trip.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return {@code true} if at least one matching CPF exists, {@code false} otherwise
+   */
+  boolean existsAnyByCpfs(List<String> cpfs);
+
+  /**
+   * Checks whether a {@link User} with the specified CPF already exists in the repository.
    *
    * @param cpf the numeric CPF string to check
    * @return {@code true} if a user with the given CPF exists, {@code false} otherwise
@@ -832,9 +859,6 @@ public interface UserRepository {
 
   /**
    * Retrieves a {@link User} by their unique Brazilian CPF.
-   *
-   * <p>Similar to ID retrieval, the reconstituted entity may contain validation errors verifiable
-   * via {@link User#hasFieldErrors()} if the stored data is inconsistent.
    *
    * @param cpf the raw, 11-digit numeric CPF string of the user
    * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
@@ -845,16 +869,19 @@ public interface UserRepository {
   /**
    * Retrieves a {@link User} by its unique identifier.
    *
-   * <p>When a user is reconstituted from the persistence layer, it typically undergoes the same
-   * domain validations as a newly created entity. Therefore, the returned {@link User} might
-   * contain validation errors (verifiable via {@link User#hasFieldErrors()}) if the stored data
-   * violates current domain rules.
-   *
    * @param id the unique identifier (UUID) of the user
    * @return an {@link Optional} containing the {@link User} if found, or {@link Optional#empty()}
    *     if not
    */
   Optional<User> findOptionalById(UUID id);
+
+  /**
+   * Retrieves a collection of {@link User} domain aggregates based on a list of CPFs.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return a {@link List} of the fully reconstituted {@link User} instances
+   */
+  List<User> listByCpfs(List<String> cpfs);
 
   /**
    * Persists a newly created {@link User} aggregate into the repository.
@@ -863,6 +890,14 @@ public interface UserRepository {
    * @return the fully persisted {@link User} instance
    */
   User persist(User entity);
+
+  /**
+   * Persists a collection of newly created {@link User} aggregates in a single batch.
+   *
+   * @param users a {@link List} of {@link User} aggregates to persist
+   * @return the fully persisted {@link List} of {@link User} instances
+   */
+  List<User> persistAll(List<User> users);
 
   /**
    * Updates the state of an existing {@link User} aggregate in the repository.
@@ -1558,6 +1593,15 @@ public class AccountRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
+  public boolean existsAnyByEmails(List<String> emails) {
+    if (CollectionUtils.isEmpty(emails)) {
+      return false;
+    }
+    return count("email in ?1", emails) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean existsByEmail(String email) {
     return find("email", email).firstResultOptional().isPresent();
   }
@@ -1608,6 +1652,22 @@ public class AccountRepositoryImpl
     AccountEntity e = AccountMapper.toEntity(entity);
     persistAndFlush(e);
     return AccountMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Account> persistAll(List<Account> accounts) {
+    if (CollectionUtils.isEmpty(accounts)) {
+      return List.of();
+    }
+    List<AccountEntity> entities = accounts.stream().map(AccountMapper::toEntity).toList();
+
+    // Executes a batch insert and a single flush to minimize JDBC round-trips
+    persist(entities);
+    flush();
+
+    return entities.stream().map(AccountMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */
@@ -1750,6 +1810,15 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
 
   /** {@inheritDoc} */
   @Override
+  public boolean existsAnyByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return false;
+    }
+    return count("cpf in ?1", cpfs) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean existsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       return false;
@@ -1773,6 +1842,15 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
+  @Override
+  public List<User> listByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return List.of();
+    }
+    return find("cpf in ?1", cpfs).stream().map(UserMapper::toDomain).toList();
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User persist(User entity) {
@@ -1782,6 +1860,19 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     UserEntity e = UserMapper.toEntity(entity);
     persistAndFlush(e);
     return UserMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<User> persistAll(List<User> users) {
+    if (CollectionUtils.isEmpty(users)) {
+      return List.of();
+    }
+    List<UserEntity> entities = users.stream().map(UserMapper::toEntity).toList();
+    persist(entities);
+    flush();
+    return entities.stream().map(UserMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */
@@ -3688,6 +3779,20 @@ public interface AccountService {
   Account save(AccountCreateCommand cmd);
 
   /**
+   * Instantiates and persists multiple {@link Account} aggregates in a single batch transaction.
+   *
+   * <p>This method drastically optimizes cross-domain data cascades. It resolves underlying {@link
+   * User} dependencies in bulk, identifies existing users to avoid duplication, and dispatches
+   * unified bulk flushes to the database.
+   *
+   * @param cmds a {@link List} of structured commands for the batch accounts
+   * @return a {@link List} of the fully instantiated and persisted {@link Account} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any email already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   */
+  List<Account> saveInBulk(List<AccountCreateCommand> cmds);
+
+  /**
    * Updates an existing {@link Account} (and optionally its linked {@link User}) using the provided
    * data.
    *
@@ -4084,11 +4189,14 @@ package com.pug.identity.service.impl;
 
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.AccountRepository;
+import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.domain.vos.Email;
 import com.pug.identity.service.AccountService;
 import com.pug.identity.service.UserService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.utils.AccountProcessor;
 import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
@@ -4097,7 +4205,10 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /**
@@ -4238,6 +4349,51 @@ public class AccountServiceImpl implements AccountService {
     Account savedAccount = repo.persist(account);
     LOG.infof("Account created successfully. ID: %s", savedAccount.getId());
     return savedAccount;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<Account> saveInBulk(List<AccountCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Accounts", cmds.size());
+
+    List<String> emails =
+        cmds.stream().map(c -> Email.factory(c.emailString()).getValue()).toList();
+    long uniqueEmails = emails.stream().distinct().count();
+
+    if (uniqueEmails < cmds.size() || repo.existsAnyByEmails(emails)) {
+      LOG.warn("Bulk creation failed: Duplicate emails detected in payload or database");
+      throw ExceptionHelper.accountAlreadyExists();
+    }
+
+    List<String> cpfs =
+        cmds.stream()
+            .map(c -> Cpf.factory(c.userCommand().cpfString()).getValue())
+            .filter(Objects::nonNull)
+            .toList();
+
+    List<User> existingUsers = userService.listByCpfs(cpfs);
+    Map<String, UUID> userMap =
+        existingUsers.stream().collect(Collectors.toMap(u -> u.getCpf().getValue(), User::getId));
+
+    List<UserCreateCommand> missingUserCmds =
+        AccountProcessor.extractMissingUserCommands(cmds, userMap);
+
+    if (!missingUserCmds.isEmpty()) {
+      List<User> createdUsers = userService.saveInBulk(missingUserCmds);
+      for (User u : createdUsers) {
+        userMap.put(u.getCpf().getValue(), u.getId());
+      }
+    }
+
+    List<Account> accountsToPersist = AccountProcessor.processBulkCreateInput(cmds, userMap);
+
+    List<Account> savedAccounts = repo.persistAll(accountsToPersist);
+    LOG.infof("Successfully bulk created %d Accounts", savedAccounts.size());
+    return savedAccounts;
   }
 
   /** {@inheritDoc} */
@@ -4733,6 +4889,15 @@ public class UserServiceImpl implements UserService {
   }
 
   /** {@inheritDoc} */
+  @Override
+  public List<User> listByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return List.of();
+    }
+    return repo.listByCpfs(cpfs);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User save(UserCreateCommand cmd) {
@@ -4752,6 +4917,30 @@ public class UserServiceImpl implements UserService {
     LOG.infof("User created successfully. ID: %s", savedUser.getId());
 
     return savedUser;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<User> saveInBulk(List<UserCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+    LOG.debugf("Attempting to bulk create %d Users", cmds.size());
+
+    List<String> cpfs = cmds.stream().map(UserCreateCommand::cpfString).toList();
+    long uniqueCount = cpfs.stream().distinct().count();
+
+    if (uniqueCount < cmds.size() || repo.existsAnyByCpfs(cpfs)) {
+      LOG.warn("Bulk creation failed: Duplicate CPFs detected in payload or database");
+      throw ExceptionHelper.userAlreadyExists();
+    }
+
+    List<User> usersToPersist = UserProcessor.processBulkCreateInput(cmds);
+
+    List<User> savedUsers = repo.persistAll(usersToPersist);
+    LOG.infof("Successfully bulk created %d Users", savedUsers.size());
+    return savedUsers;
   }
 
   /** {@inheritDoc} */
@@ -4905,45 +5094,11 @@ import java.util.UUID;
 public interface UserService {
 
   /**
-   * Instantiates and persists a new {@link User} aggregate based on the provided command.
-   *
-   * <p>The command data is routed through the domain's factory methods to ensure all internal
-   * validations (e.g., CPF mathematical validation) are strictly applied before persistence.
-   *
-   * @param cmd the structured command containing the data required to create a new user
-   * @return the fully instantiated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the provided CPF
-   *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if the input data violates domain
-   *     constraints (e.g., blank name, malformed CPF)
-   */
-  User save(UserCreateCommand cmd);
-
-  /**
-   * Updates the state (name and/or CPF) of an existing {@link User} aggregate.
-   *
-   * <p>This method reconstitutes the aggregate from the repository, applies the requested mutations
-   * through domain behaviors, and persists the updated state.
-   *
-   * @param id the unique identifier (UUIDv7) of the user to update
-   * @param cmd the structured command containing the updated user data
-   * @return the mutated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user cannot be found in the
-   *     repository
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CPF conflicts with
-   *     an existing user
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
-   *     domain constraints
-   */
-  User update(UUID id, UserUpdateCommand cmd);
-
-  /**
    * Removes a {@link User} from the system by its unique identifier.
    *
    * @param id the unique identifier (UUID) of the user to delete
    * @return {@code true} if the user was successfully deleted, {@code false} if the ID is null or
-   *     if the actual database deletion was silently ignored (e.g., an idempotent concurrent
-   *     delete)
+   *     if the actual database deletion was silently ignored
    */
   boolean delete(UUID id);
 
@@ -4956,19 +5111,12 @@ public interface UserService {
   long deleteAll(List<UUID> ids);
 
   /**
-   * Retrieves a full {@link User} domain aggregate by its unique identifier.
+   * Checks whether a user exists with the specified CPF.
    *
-   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * loading an aggregate to mutate it or link it). For API responses, use {@link
-   * UserReadService#getViewById(UUID)} instead.
-   *
-   * @param id the unique identifier (UUID) of the user
-   * @return the fully reconstituted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user exists in the database but
-   *     its stored state currently violates strict domain invariants (data corruption)
+   * @param cpf the previously validated {@link Cpf} Value Object to check
+   * @return {@code true} if a matching user exists, {@code false} otherwise
    */
-  User getById(UUID id);
+  boolean existsByCpf(Cpf cpf);
 
   /**
    * Retrieves a full {@link User} domain aggregate by its associated CPF.
@@ -4976,18 +5124,65 @@ public interface UserService {
    * @param cpf the previously validated {@link Cpf} Value Object
    * @return the fully reconstituted {@link User} aggregate
    * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user exists in the database but
-   *     its stored state currently violates strict domain invariants (data corruption)
+   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
    */
   User getByCpf(Cpf cpf);
 
   /**
-   * Checks whether a user exists with the specified CPF.
+   * Retrieves a full {@link User} domain aggregate by its unique identifier.
    *
-   * @param cpf the previously validated {@link Cpf} Value Object to check
-   * @return {@code true} if a matching user exists, {@code false} otherwise
+   * @param id the unique identifier (UUID) of the user
+   * @return the fully reconstituted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
    */
-  boolean existsByCpf(Cpf cpf);
+  User getById(UUID id);
+
+  /**
+   * Retrieves a collection of {@link User} aggregates corresponding to the provided CPFs.
+   *
+   * @param cpfs a {@link List} of exact 11-digit numeric CPF strings
+   * @return a {@link List} of matching {@link User} instances
+   */
+  List<User> listByCpfs(List<String> cpfs);
+
+  /**
+   * Instantiates and persists a new {@link User} aggregate based on the provided command.
+   *
+   * @param cmd the structured command containing the data required to create a new user
+   * @return the fully instantiated and persisted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the provided CPF
+   *     already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if the input data violates domain
+   *     constraints
+   */
+  User save(UserCreateCommand cmd);
+
+  /**
+   * Instantiates and persists multiple {@link User} aggregates in a single batch transaction.
+   *
+   * <p>This method drastically reduces JDBC round-trips by pre-validating domain constraints and
+   * dispatching a single flush command to the underlying repository.
+   *
+   * @param cmds a {@link List} of structured commands for the batch users
+   * @return a {@link List} of the fully instantiated and persisted {@link User} aggregates
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if any CPF already exists
+   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any user
+   */
+  List<User> saveInBulk(List<UserCreateCommand> cmds);
+
+  /**
+   * Updates the state (name and/or CPF) of an existing {@link User} aggregate.
+   *
+   * @param id the unique identifier (UUIDv7) of the user to update
+   * @param cmd the structured command containing the updated user data
+   * @return the mutated and persisted {@link User} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user cannot be found
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CPF conflicts
+   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   *     domain constraints
+   */
+  User update(UUID id, UserUpdateCommand cmd);
 }
 
 
@@ -4997,9 +5192,17 @@ FILE: service/utils/AccountProcessor.java
 package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.Account;
+import com.pug.identity.domain.vos.Cpf;
 import com.pug.identity.domain.vos.Email;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.shared.domain.enums.AccountType;
+import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -5007,9 +5210,71 @@ import java.util.UUID;
  * Domain Aggregates and Value Objects.
  *
  * <p>This processor centralizes the orchestration of domain factory methods, enum parsing, and
- * state-mutation behaviors to keep the application service layer clean.
+ * state-mutation behaviors to keep the application service layer clean. It also handles complex
+ * list transformations for bulk processing.
  */
 public class AccountProcessor {
+
+  /**
+   * Extracts a distinct list of user creation commands for individuals who do not yet exist in the
+   * system.
+   *
+   * @param cmds the {@link List} of bulk account creation commands
+   * @param existingUserMap a {@link Map} of currently existing users (CPF mapped to User UUID)
+   * @return a distinct {@link List} of {@link UserCreateCommand} representing the missing users
+   */
+  public static List<UserCreateCommand> extractMissingUserCommands(
+      List<AccountCreateCommand> cmds, Map<String, UUID> existingUserMap) {
+
+    Map<String, UserCreateCommand> missing = new LinkedHashMap<>();
+
+    for (AccountCreateCommand cmd : cmds) {
+      UserCreateCommand userCmd = cmd.userCommand();
+      Cpf cpf = Cpf.factory(userCmd.cpfString());
+      String cpfVal = cpf.getValue();
+
+      if (cpfVal != null && !existingUserMap.containsKey(cpfVal)) {
+        missing.putIfAbsent(cpfVal, userCmd);
+      }
+    }
+
+    return new ArrayList<>(missing.values());
+  }
+
+  /**
+   * Processes a bulk list of account creation commands, generating a list of pure Domain
+   * Aggregates.
+   *
+   * <p>This method maps each command to its underlying user identifier and triggers the aggregate's
+   * internal validations. If any account violates domain rules, an exception is thrown to abort the
+   * entire transaction.
+   *
+   * @param cmds the {@link List} of bulk account creation commands
+   * @param completeUserMap a fully populated {@link Map} resolving CPFs to User UUIDs
+   * @return a {@link List} of instantiated and validated {@link Account} aggregates
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<Account> processBulkCreateInput(
+      List<AccountCreateCommand> cmds, Map<String, UUID> completeUserMap) {
+
+    List<Account> accounts = new ArrayList<>(cmds.size());
+
+    for (AccountCreateCommand cmd : cmds) {
+      String cleanCpf = Cpf.factory(cmd.userCommand().cpfString()).getValue();
+      UUID mappedUserId = completeUserMap.get(cleanCpf);
+      String typeString = cmd.type() != null ? cmd.type().name() : null;
+
+      Account account =
+          processCreateInput(mappedUserId, cmd.emailString(), typeString, cmd.passwordHash());
+
+      if (account.hasFieldErrors()) {
+        throw new AppValidationException(account.getFieldErrors());
+      }
+      accounts.add(account);
+    }
+
+    return accounts;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link Account} domain aggregate.
@@ -5199,7 +5464,12 @@ package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link User}
@@ -5210,6 +5480,33 @@ import com.pug.shared.utils.StringUtils;
  * service layer.
  */
 public class UserProcessor {
+
+  /**
+   * Processes a bulk list of user creation commands, generating a list of pure Domain Aggregates.
+   *
+   * <p>This method maps each command to its underlying domain entity and triggers internal
+   * validations. If any user violates domain rules, an exception is thrown to abort the entire
+   * batch transaction.
+   *
+   * @param cmds the {@link List} of bulk user creation commands
+   * @return a {@link List} of instantiated and validated {@link User} aggregates
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<User> processBulkCreateInput(List<UserCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+
+    List<User> users = new ArrayList<>(cmds.size());
+    for (UserCreateCommand cmd : cmds) {
+      User user = processCreateInput(cmd.cpfString(), cmd.name());
+      if (user.hasFieldErrors()) {
+        throw new AppValidationException(user.getFieldErrors());
+      }
+      users.add(user);
+    }
+    return users;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link User} domain aggregate.

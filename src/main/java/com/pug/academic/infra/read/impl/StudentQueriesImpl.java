@@ -128,6 +128,20 @@ public class StudentQueriesImpl implements StudentQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
+    if (accountIds == null || accountIds.isEmpty()) {
+      return List.of();
+    }
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC,
+            StudentView.class);
+    q.setParameter("ids", accountIds);
+    return q.getResultList();
+  }
+
   /**
    * {@inheritDoc}
    *

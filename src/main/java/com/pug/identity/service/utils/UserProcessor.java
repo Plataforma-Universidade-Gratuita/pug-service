@@ -2,7 +2,12 @@ package com.pug.identity.service.utils;
 
 import com.pug.identity.domain.User;
 import com.pug.identity.domain.vos.Cpf;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link User}
@@ -13,6 +18,33 @@ import com.pug.shared.utils.StringUtils;
  * service layer.
  */
 public class UserProcessor {
+
+  /**
+   * Processes a bulk list of user creation commands, generating a list of pure Domain Aggregates.
+   *
+   * <p>This method maps each command to its underlying domain entity and triggers internal
+   * validations. If any user violates domain rules, an exception is thrown to abort the entire
+   * batch transaction.
+   *
+   * @param cmds the {@link List} of bulk user creation commands
+   * @return a {@link List} of instantiated and validated {@link User} aggregates
+   * @throws AppValidationException if any aggregate contains domain validation errors
+   */
+  public static List<User> processBulkCreateInput(List<UserCreateCommand> cmds) {
+    if (CollectionUtils.isEmpty(cmds)) {
+      return List.of();
+    }
+
+    List<User> users = new ArrayList<>(cmds.size());
+    for (UserCreateCommand cmd : cmds) {
+      User user = processCreateInput(cmd.cpfString(), cmd.name());
+      if (user.hasFieldErrors()) {
+        throw new AppValidationException(user.getFieldErrors());
+      }
+      users.add(user);
+    }
+    return users;
+  }
 
   /**
    * Processes raw creation inputs and constructs a new {@link User} domain aggregate.

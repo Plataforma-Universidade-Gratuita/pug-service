@@ -47,6 +47,15 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
 
   /** {@inheritDoc} */
   @Override
+  public boolean existsAnyByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return false;
+    }
+    return count("cpf in ?1", cpfs) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public boolean existsByCpf(String cpf) {
     if (StringUtils.isEmpty(cpf)) {
       return false;
@@ -70,6 +79,15 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
+  @Override
+  public List<User> listByCpfs(List<String> cpfs) {
+    if (CollectionUtils.isEmpty(cpfs)) {
+      return List.of();
+    }
+    return find("cpf in ?1", cpfs).stream().map(UserMapper::toDomain).toList();
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public User persist(User entity) {
@@ -79,6 +97,19 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     UserEntity e = UserMapper.toEntity(entity);
     persistAndFlush(e);
     return UserMapper.toDomain(e);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<User> persistAll(List<User> users) {
+    if (CollectionUtils.isEmpty(users)) {
+      return List.of();
+    }
+    List<UserEntity> entities = users.stream().map(UserMapper::toEntity).toList();
+    persist(entities);
+    flush();
+    return entities.stream().map(UserMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */
