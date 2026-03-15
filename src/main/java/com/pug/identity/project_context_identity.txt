@@ -1195,7 +1195,7 @@ public final class AccountMapper {
     return AccountEntity.builder()
         .id(d.getId())
         .userId(d.getUserId())
-        .email(d.getEmail().toString())
+        .email(d.getEmail().getValue())
         .accountType(d.getAccountType())
         .passwordHash(d.getPasswordHash())
         .createdAt(d.getAuditInfo().getCreatedAt())
@@ -1218,7 +1218,7 @@ public final class AccountMapper {
     if (d == null || e == null) {
       return;
     }
-    e.setEmail(d.getEmail().toString());
+    e.setEmail(d.getEmail().getValue());
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
     e.setActive(d.getActive());
@@ -1455,7 +1455,7 @@ public class AccountEntity extends BaseAuditedEntity {
   private String passwordHash;
 
   /** Flag indicating whether the account is active or has been deactivated. */
-  @Column(name = "is_active", nullable = false)
+  @Column(name = "active", nullable = false)
   private Boolean active;
 }
 
@@ -1586,7 +1586,7 @@ public class AccountRepositoryImpl
     if (id == null) {
       return false;
     }
-    var result = PanacheRepositoryBase.super.deleteById(id);
+    var result = delete("id", id) > 0;
     flush();
     return result;
   }
@@ -1719,7 +1719,7 @@ public class AdminRepositoryImpl
     if (accountId == null) {
       return false;
     }
-    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
+    var deleted = delete("id", accountId) > 0;
     flush();
     return deleted;
   }
@@ -1803,7 +1803,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     if (id == null) {
       return false;
     }
-    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
+    boolean deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }
@@ -2731,7 +2731,7 @@ public final class UserMapper {
     }
     return UserEntity.builder()
         .id(d.getId())
-        .cpf(d.getCpf().toString())
+        .cpf(d.getCpf().getValue())
         .name(d.getName())
         .createdAt(d.getAuditInfo().getCreatedAt())
         .updatedAt(d.getAuditInfo().getUpdatedAt())
@@ -2754,7 +2754,7 @@ public final class UserMapper {
       return;
     }
     e.setName(d.getName());
-    e.setCpf(d.getCpf().toString());
+    e.setCpf(d.getCpf().getValue());
   }
 
   /**

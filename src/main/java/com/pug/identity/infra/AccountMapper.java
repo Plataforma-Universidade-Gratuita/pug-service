@@ -62,7 +62,7 @@ public final class AccountMapper {
     return AccountEntity.builder()
         .id(d.getId())
         .userId(d.getUserId())
-        .email(d.getEmail().toString())
+        .email(d.getEmail().getValue())
         .accountType(d.getAccountType())
         .passwordHash(d.getPasswordHash())
         .createdAt(d.getAuditInfo().getCreatedAt())
@@ -85,7 +85,7 @@ public final class AccountMapper {
     if (d == null || e == null) {
       return;
     }
-    e.setEmail(d.getEmail().toString());
+    e.setEmail(d.getEmail().getValue());
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
     e.setActive(d.getActive());

@@ -1,0 +1,27 @@
+meta {
+  name: Get School
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/academic/schools/{{schoolId}}
+  body: none
+  auth: none
+}
+
+params:query {
+  : 019cf2df-4a0f-70ca-bc5d-c240946456e3
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve the school successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody().data.id).to.equal(bru.getEnvVar("schoolId"));
+  });
+}

@@ -50,7 +50,7 @@ public class AccountRepositoryImpl
     if (id == null) {
       return false;
     }
-    var result = PanacheRepositoryBase.super.deleteById(id);
+    var result = delete("id", id) > 0;
     flush();
     return result;
   }

@@ -73,7 +73,8 @@ public final class StringUtils {
       return "";
     }
     Locale loc = (locale != null) ? locale : Locale.getDefault();
-    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.FULL).withLocale(loc);
+    DateTimeFormatter fmt =
+        DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM).withLocale(loc);
     return dateTime.format(fmt);
   }
 
@@ -90,7 +91,7 @@ public final class StringUtils {
       return "";
     }
     Locale loc = (locale != null) ? locale : Locale.getDefault();
-    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.FULL).withLocale(loc);
+    DateTimeFormatter fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(loc);
     return date.format(fmt);
   }
 }

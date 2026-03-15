@@ -1,0 +1,22 @@
+meta {
+  name: Delete Admin
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/identity/admins/{{adminAccountId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should delete the admin successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

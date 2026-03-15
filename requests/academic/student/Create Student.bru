@@ -1,0 +1,40 @@
+meta {
+  name: Create Student
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/academic/students
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "cpf": "73184295079",
+    "name": "João da Silva",
+    "email": "joao.silva@aluno.com",
+    "password": "SecurePassword123!",
+    "academicRegistration": "20261001",
+    "campus": "JOINVILLE",
+    "courseId": "{{courseId}}",
+    "requiredHours": 120.00,
+    "startDate": "2026-03-15",
+    "dueDate": "2028-12-15"
+  }
+}
+
+tests {
+  test("Should create a student successfully", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+    // The account ID is used as the student's primary identifier
+    bru.setEnvVar("studentAccountId", res.getBody().data.account.id);
+  });
+}

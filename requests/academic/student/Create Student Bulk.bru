@@ -1,0 +1,53 @@
+meta {
+  name: Create Students Bulk
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/academic/students/bulk
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  [
+    {
+      "cpf": "52998224059",
+      "name": "Maria Oliveira",
+      "email": "maria.oliveira@aluno.com",
+      "password": "SecurePassword123!",
+      "academicRegistration": "20261002",
+      "campus": "JOINVILLE",
+      "courseId": "{{courseId}}",
+      "requiredHours": 150.00,
+      "startDate": "2026-03-15",
+      "dueDate": "2028-12-15"
+    },
+    {
+      "cpf": "15858285058",
+      "name": "Carlos Souza",
+      "email": "carlos.souza@aluno.com",
+      "password": "SecurePassword123!",
+      "academicRegistration": "20261003",
+      "campus": "JARAGUA_DO_SUL",
+      "courseId": "{{courseId}}",
+      "requiredHours": 150.00,
+      "startDate": "2026-03-15",
+      "dueDate": "2028-12-15"
+    }
+  ]
+}
+
+tests {
+  test("Should bulk create students successfully", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+    expect(Array.isArray(res.getBody().data)).to.be.true;
+  });
+}

@@ -63,7 +63,7 @@ public final class StudentMapper {
     }
     return StudentEntity.builder()
         .accountId(d.getAccountId())
-        .academicRegistration(d.getAcademicRegistration().toString())
+        .academicRegistration(d.getAcademicRegistration().getValue())
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
@@ -86,7 +86,7 @@ public final class StudentMapper {
     if (d == null || e == null) {
       return;
     }
-    e.setAcademicRegistration(d.getAcademicRegistration().toString());
+    e.setAcademicRegistration(d.getAcademicRegistration().getValue());
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());

@@ -1,0 +1,26 @@
+meta {
+  name: List or Search Users
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/identity/users
+  body: none
+  auth: none
+}
+
+params:query {
+  ~q: Administrador
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should list users", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

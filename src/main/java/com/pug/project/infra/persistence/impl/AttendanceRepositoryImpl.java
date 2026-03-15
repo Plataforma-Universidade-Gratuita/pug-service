@@ -39,7 +39,7 @@ public class AttendanceRepositoryImpl
   @Override
   public boolean deleteById(UUID id) {
     if (id == null) return false;
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }

@@ -1,0 +1,26 @@
+meta {
+  name: List or Search Accounts
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/identity/accounts
+  body: none
+  auth: none
+}
+
+params:query {
+  ~q: Administrador
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should list accounts", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

@@ -1,0 +1,32 @@
+meta {
+  name: List or Search Cities
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/geo/cities
+  body: none
+  auth: none
+}
+
+query {
+  ~q: Joinville
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should list cities successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(Array.isArray(res.getBody().data)).to.be.true;
+
+    // Auto-capture the first city ID to use in the Get By ID request
+    if (res.getBody().data.length > 0) {
+      bru.setEnvVar("cityId", res.getBody().data[0].id);
+    }
+  });
+}

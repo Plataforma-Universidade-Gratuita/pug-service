@@ -14,6 +14,63 @@
 ├── mvnw.cmd
 ├── pom.xml
 ├── project-tree.txt
+├── requests/
+│   ├── academic/
+│   │   ├── course/
+│   │   │   ├── Create Course.bru
+│   │   │   ├── Delete Course.bru
+│   │   │   ├── Get Course.bru
+│   │   │   ├── List Course.bru
+│   │   │   └── Update Course.bru
+│   │   ├── school/
+│   │   │   ├── Create School.bru
+│   │   │   ├── Delete School.bru
+│   │   │   ├── Get School.bru
+│   │   │   ├── List School.bru
+│   │   │   └── Update School.bru
+│   │   └── student/
+│   │       ├── Create Student Bulk.bru
+│   │       ├── Create Student.bru
+│   │       ├── Delete Student.bru
+│   │       ├── Get Student By ID.bru
+│   │       ├── Get Student By Various Filters
+│   │       ├── List Students.bru
+│   │       └── Update Student.bru
+│   ├── bruno.json
+│   ├── environments/
+│   │   └── Local.bru
+│   ├── geo/
+│   │   └── city/
+│   │       ├── Get City by IBGE.bru
+│   │       ├── Get City by ID.bru
+│   │       └── List or Search Cities.bru
+│   ├── identity/
+│   │   ├── account/
+│   │   │   ├── Get Account By ID.bru
+│   │   │   ├── Get Accounts By Filters.bru
+│   │   │   └── List or Search Accounts.bru
+│   │   ├── admin/
+│   │   │   ├── Create Admin.bru
+│   │   │   ├── Deactivate Admin.bru
+│   │   │   ├── Delete Admin.bru
+│   │   │   ├── Get Admin By ID.bru
+│   │   │   ├── Get Admin By Various Filters.bru
+│   │   │   ├── List or Search Admins.bru
+│   │   │   └── Update Admin.bru
+│   │   └── user/
+│   │       ├── Get User By CPF.bru
+│   │       ├── Get User By ID.bru
+│   │       └── List or Search Users.bru
+│   ├── partner/
+│   │   ├── entity/
+│   │   │   ├── Create Entity.bru
+│   │   │   └── List Entities.bru
+│   │   └── staff/
+│   │       └── Create Staff.bru
+│   └── project/
+│       ├── attendance/
+│       ├── enrollment/
+│       └── project/
 ├── spotbugs-exclude.xml
 ├── src/
 │   ├── main/
@@ -288,7 +345,7 @@
 │   │   │           │           ├── EntityProcessor.java
 │   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           └── StaffProcessor.java
-│   │   │           ├── projects/
+│   │   │           ├── project/
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Attendance.java
 │   │   │           │   │   ├── AttendanceRepository.java
@@ -339,7 +396,7 @@
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   └── mappers/
-│   │   │           │   ├── project_context_projects.txt
+│   │   │           │   ├── project_context_project.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── AttendanceService.java
 │   │   │           │       ├── EnrollmentService.java
@@ -378,7 +435,8 @@
 │   │   │               │   │   └── BaseUuidV7Entity.java
 │   │   │               │   └── search/
 │   │   │               │       ├── EsAnalysis.java
-│   │   │               │       └── HibernateSearchUtils.java
+│   │   │               │       ├── HibernateSearchUtils.java
+│   │   │               │       └── SearchIndexer.java
 │   │   │               ├── presenter/
 │   │   │               │   ├── dtos/
 │   │   │               │   │   ├── AuditInfoResponse.java
@@ -413,6 +471,8 @@
 │   │       │       └── .gitkeep
 │   │       ├── ValidationMessages_en_US.properties
 │   │       ├── ValidationMessages_pt_BR.properties
+│   │       ├── application-dev.properties
+│   │       ├── application-prod.properties
 │   │       ├── application.properties
 │   │       ├── db/
 │   │       │   └── migration/
@@ -473,7 +533,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
-│       │           ├── projects/
+│       │           ├── project/
 │       │           │   ├── domain/
 │       │           │   ├── infra/
 │       │           │   │   └── persistence/

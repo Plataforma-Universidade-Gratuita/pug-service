@@ -1,0 +1,27 @@
+meta {
+  name: List or Search Schools
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/academic/schools
+  body: none
+  auth: none
+}
+
+query {
+  ~q: Ciências
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should list schools successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(Array.isArray(res.getBody().data)).to.be.true;
+  });
+}

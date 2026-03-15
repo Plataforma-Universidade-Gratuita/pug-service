@@ -1,0 +1,38 @@
+meta {
+  name: Create Admin
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/identity/admins
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "cpfString": "73184295079",
+    "name": "Administrador do Sistema",
+    "emailString": "admin.master@pug.com",
+    "password": "SuperSecretPassword123!",
+    "campus": "JARAGUA_DO_SUL"
+  }
+}
+
+tests {
+  test("Should create an admin successfully", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+
+    // Salva o ID da conta e o ID do usuário para usar nas rotas de Account e User
+    let data = res.getBody().data;
+    bru.setEnvVar("adminAccountId", data.accountResponse.id);
+    bru.setEnvVar("userId", data.accountResponse.user.id);
+  });
+}

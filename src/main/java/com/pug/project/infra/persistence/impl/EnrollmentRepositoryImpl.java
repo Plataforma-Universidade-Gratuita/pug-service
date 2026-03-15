@@ -44,7 +44,7 @@ public class EnrollmentRepositoryImpl
   public boolean deleteByIds(UUID projectId, UUID studentId) {
     if (projectId == null || studentId == null) return false;
     var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }

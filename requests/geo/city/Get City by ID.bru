@@ -1,0 +1,23 @@
+meta {
+  name: Get City by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/geo/cities/{{cityId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve the city successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody().data.id).to.equal(bru.getEnvVar("cityId"));
+  });
+}

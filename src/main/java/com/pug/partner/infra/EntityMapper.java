@@ -55,7 +55,7 @@ public final class EntityMapper {
     }
     return EntityEntity.builder()
         .id(d.getId())
-        .cnpj(d.getCnpj().toString())
+        .cnpj(d.getCnpj().getValue())
         .name(d.getName())
         .cityId(d.getCityId())
         .address(d.getAddress())
@@ -79,7 +79,7 @@ public final class EntityMapper {
     if (d == null || e == null) {
       return;
     }
-    e.setCnpj(d.getCnpj().toString());
+    e.setCnpj(d.getCnpj().getValue());
     e.setName(d.getName());
     e.setAddress(d.getAddress());
     e.setCityId(d.getCityId());

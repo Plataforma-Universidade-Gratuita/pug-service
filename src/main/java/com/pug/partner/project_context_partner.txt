@@ -778,7 +778,7 @@ public final class EntityMapper {
     }
     return EntityEntity.builder()
         .id(d.getId())
-        .cnpj(d.getCnpj().toString())
+        .cnpj(d.getCnpj().getValue())
         .name(d.getName())
         .cityId(d.getCityId())
         .address(d.getAddress())
@@ -802,7 +802,7 @@ public final class EntityMapper {
     if (d == null || e == null) {
       return;
     }
-    e.setCnpj(d.getCnpj().toString());
+    e.setCnpj(d.getCnpj().getValue());
     e.setName(d.getName());
     e.setAddress(d.getAddress());
     e.setCityId(d.getCityId());
@@ -945,7 +945,7 @@ public class EntityRepositoryImpl
     if (id == null) {
       return false;
     }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }
@@ -1041,7 +1041,7 @@ public class StaffRepositoryImpl
     if (accountId == null) {
       return false;
     }
-    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
+    var deleted = delete("id", accountId) > 0;
     flush();
     return deleted;
   }

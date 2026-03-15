@@ -1,6 +1,6 @@
 PROJECT CONTEXT DUMP
-Project Name: projects
-Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/projects
+Project Name: project
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/project
 ================================================================================
 
 
@@ -2018,10 +2018,9 @@ import lombok.ToString;
 /**
  * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link
- * com.pug.project.domain.Enrollment} domain aggregate. Because an enrollment is uniquely
- * identified by the combination of a student and a project, this entity utilizes a composite
- * primary key ({@link EnrollmentsId}).
+ * <p>This class is the database-mapped counterpart to the {@link com.pug.project.domain.Enrollment}
+ * domain aggregate. Because an enrollment is uniquely identified by the combination of a student
+ * and a project, this entity utilizes a composite primary key ({@link EnrollmentsId}).
  */
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 @Getter
@@ -2131,7 +2130,7 @@ public class AttendanceRepositoryImpl
   @Override
   public boolean deleteById(UUID id) {
     if (id == null) return false;
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }
@@ -2203,7 +2202,7 @@ public class EnrollmentRepositoryImpl
   public boolean deleteByIds(UUID projectId, UUID studentId) {
     if (projectId == null || studentId == null) return false;
     var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }
@@ -2280,7 +2279,7 @@ public class ProjectRepositoryImpl
   @Override
   public boolean deleteById(UUID id) {
     if (id == null) return false;
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }

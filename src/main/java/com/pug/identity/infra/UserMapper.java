@@ -55,7 +55,7 @@ public final class UserMapper {
     }
     return UserEntity.builder()
         .id(d.getId())
-        .cpf(d.getCpf().toString())
+        .cpf(d.getCpf().getValue())
         .name(d.getName())
         .createdAt(d.getAuditInfo().getCreatedAt())
         .updatedAt(d.getAuditInfo().getUpdatedAt())
@@ -78,7 +78,7 @@ public final class UserMapper {
       return;
     }
     e.setName(d.getName());
-    e.setCpf(d.getCpf().toString());
+    e.setCpf(d.getCpf().getValue());
   }
 
   /**

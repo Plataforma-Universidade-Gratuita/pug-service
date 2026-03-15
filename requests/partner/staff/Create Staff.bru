@@ -1,0 +1,34 @@
+meta {
+  name: Create Staff
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/partners/staff
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "cpfString": "12345678909",
+    "name": "Gestor da Parceria",
+    "emailString": "gestor@techcorp.com",
+    "password": "SecurePassword123!",
+    "entityId": "{{entityId}}"
+  }
+}
+
+tests {
+  test("Should create staff successfully", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+    bru.setEnvVar("staffAccountId", res.getBody().data.account.id);
+  });
+}

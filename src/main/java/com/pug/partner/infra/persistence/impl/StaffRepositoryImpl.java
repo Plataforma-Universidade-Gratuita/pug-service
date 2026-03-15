@@ -28,7 +28,7 @@ public class StaffRepositoryImpl
     if (accountId == null) {
       return false;
     }
-    var deleted = PanacheRepositoryBase.super.deleteById(accountId);
+    var deleted = delete("id", accountId) > 0;
     flush();
     return deleted;
   }

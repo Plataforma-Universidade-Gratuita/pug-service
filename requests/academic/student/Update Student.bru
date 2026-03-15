@@ -1,0 +1,31 @@
+meta {
+  name: Update Student
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/academic/students/{{studentAccountId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "João da Silva Atualizado",
+    "campus": "JARAGUA_DO_SUL",
+    "requiredHours": 180.00
+  }
+}
+
+tests {
+  test("Should update the student successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

@@ -1,0 +1,29 @@
+meta {
+  name: Update School
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/academic/schools/{{schoolId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Centro de Ciências Tecnológicas Atualizado"
+  }
+}
+
+tests {
+  test("Should update the school successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

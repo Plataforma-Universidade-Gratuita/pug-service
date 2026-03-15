@@ -1,0 +1,22 @@
+meta {
+  name: Delete School
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/academic/schools/{{schoolId}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should delete the school successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

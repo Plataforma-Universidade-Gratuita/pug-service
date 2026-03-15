@@ -1,0 +1,24 @@
+meta {
+  name: Get City by IBGE
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/geo/cities/by-ibge/4209106
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve the city by IBGE successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody().data.ibgeCode).to.equal("4209106");
+    expect(res.getBody().data.name).to.equal("Joinville");
+  });
+}

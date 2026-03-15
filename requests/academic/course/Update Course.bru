@@ -1,0 +1,30 @@
+meta {
+  name: Update Course
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/academic/courses/{{courseId}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Engenharia de Computação",
+    "schoolId": "{{schoolId}}"
+  }
+}
+
+tests {
+  test("Should update the course successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

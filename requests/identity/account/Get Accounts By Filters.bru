@@ -1,0 +1,24 @@
+meta {
+  name: Get Accounts By Filters
+  type: http
+  seq: 3
+}
+
+get {
+  // Alterne a URL para testar os filtros de leitura puros da Account
+  url: {{baseUrl}}/identity/accounts/by-email/admin.master@pug.com
+  // url: {{baseUrl}}/identity/accounts/by-cpf/73184295079
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve account by filter", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

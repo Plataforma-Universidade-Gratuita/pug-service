@@ -1,0 +1,34 @@
+meta {
+  name: Create Entity
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/partner/entities
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "cnpjString": "12345678000195",
+    "name": "Tech Corp Parceira",
+    "cityId": "{{cityId}}",
+    "address": "Rua da Tecnologia, 100"
+  }
+}
+
+tests {
+  test("Should create an entity successfully", function() {
+    expect(res.getStatus()).to.equal(201);
+    expect(res.getBody().success).to.be.true;
+    // Salva o entityId para os testes de Staff
+    bru.setEnvVar("entityId", res.getBody().data.id);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: Get Student By Various Filters
+  type: http
+  seq: 4
+}
+
+get {
+  // Toggle the URL to test different read operations
+  // url: {{baseUrl}}/academic/students/by-cpf/12345678900
+  // url: {{baseUrl}}/academic/students/by-email/joao.silva@aluno.com
+  url: {{baseUrl}}/academic/students/by-registration/20261001
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve the student successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

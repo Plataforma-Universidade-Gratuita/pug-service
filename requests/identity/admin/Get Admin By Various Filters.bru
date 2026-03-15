@@ -1,0 +1,24 @@
+meta {
+  name: Get Admin By Various Filters
+  type: http
+  seq: 3
+}
+
+get {
+  // Você pode testar os filtros trocando qual linha está comentada
+  url: {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
+  // url: {{baseUrl}}/identity/admins/by-cpf/73184295079
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should retrieve the admin by filter", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

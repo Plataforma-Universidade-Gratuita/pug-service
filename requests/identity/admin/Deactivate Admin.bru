@@ -1,0 +1,22 @@
+meta {
+  name: Deactivate Admin
+  type: http
+  seq: 6
+}
+
+patch {
+  url: {{baseUrl}}/identity/admins/{{adminAccountId}}/deactivate
+  body: none
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should deactivate the admin account successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}

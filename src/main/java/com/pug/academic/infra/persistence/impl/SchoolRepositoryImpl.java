@@ -28,7 +28,7 @@ public class SchoolRepositoryImpl
     if (id == null) {
       return false;
     }
-    var deleted = PanacheRepositoryBase.super.deleteById(id);
+    var deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }

@@ -40,7 +40,7 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
     if (id == null) {
       return false;
     }
-    boolean deleted = PanacheRepositoryBase.super.deleteById(id);
+    boolean deleted = delete("id", id) > 0;
     flush();
     return deleted;
   }
