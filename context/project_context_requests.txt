@@ -16,7 +16,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/courses
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -41,6 +41,10 @@ tests {
     bru.setEnvVar("courseId", res.getBody().data.id);
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/course/Delete Course.bru
@@ -54,7 +58,7 @@ meta {
 delete {
   url: {{baseUrl}}/academic/courses/{{courseId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -67,6 +71,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/course/Get Course.bru
@@ -80,7 +88,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/courses/{{courseId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -93,6 +101,10 @@ tests {
     expect(res.getBody().success).to.be.true;
     expect(res.getBody().data.id).to.equal(bru.getEnvVar("courseId"));
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }
 
 
@@ -108,7 +120,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/courses
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -128,6 +140,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/course/Update Course.bru
@@ -141,7 +157,7 @@ meta {
 put {
   url: {{baseUrl}}/academic/courses/{{courseId}}
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -162,6 +178,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/school/Create School.bru
@@ -175,7 +195,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/schools
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -199,6 +219,10 @@ tests {
     bru.setEnvVar("schoolId", res.getBody().data.id);
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/school/Delete School.bru
@@ -212,7 +236,7 @@ meta {
 delete {
   url: {{baseUrl}}/academic/schools/{{schoolId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -225,6 +249,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/school/Get School.bru
@@ -238,7 +266,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/schools/{{schoolId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -257,6 +285,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/school/List School.bru
@@ -270,7 +302,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/schools
   body: none
-  auth: none
+  auth: bearer
 }
 
 query {
@@ -288,6 +320,10 @@ tests {
     expect(Array.isArray(res.getBody().data)).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/school/Update School.bru
@@ -301,7 +337,7 @@ meta {
 put {
   url: {{baseUrl}}/academic/schools/{{schoolId}}
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -321,6 +357,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Create Student Bulk.bru
@@ -334,7 +374,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/students/bulk
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -379,6 +419,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Create Student.bru
@@ -392,7 +436,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/students
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -424,6 +468,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Delete Student.bru
@@ -437,7 +485,7 @@ meta {
 delete {
   url: {{baseUrl}}/academic/students/{{studentAccountId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -450,6 +498,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Get Student By ID.bru
@@ -463,7 +515,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/students/{{studentAccountId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -476,6 +528,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Get Student By Various Filters.bru
@@ -489,7 +545,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/students/by-registration/20261001
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -509,6 +565,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/List Students.bru
@@ -522,7 +582,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/students
   body: none
-  auth: none
+  auth: bearer
 }
 
 query {
@@ -541,6 +601,10 @@ tests {
     expect(Array.isArray(res.getBody().data)).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: academic/student/Update Student.bru
@@ -554,7 +618,7 @@ meta {
 put {
   url: {{baseUrl}}/academic/students/{{studentAccountId}}
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -576,6 +640,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: bruno.json
@@ -595,6 +663,7 @@ FILE: environments/Local.bru
 ================================================================================
 vars {
   baseUrl: http://localhost:8080
+  jwtToken:
 }
 
 ================================================================================
@@ -609,7 +678,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities/by-ibge/4209106
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -624,6 +693,10 @@ tests {
     expect(res.getBody().data.name).to.equal("Joinville");
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: geo/city/Get City by ID.bru
@@ -637,7 +710,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities/{{cityId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -651,6 +724,10 @@ tests {
     expect(res.getBody().data.id).to.equal(bru.getEnvVar("cityId"));
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: geo/city/List or Search Cities.bru
@@ -664,7 +741,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities
   body: none
-  auth: none
+  auth: bearer
 }
 
 query {
@@ -687,6 +764,10 @@ tests {
     }
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/account/Get Account By ID.bru
@@ -700,7 +781,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/accounts/019cf2fd-837e-7b34-b940-a8ab015fcea0
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -712,6 +793,10 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }
 
 
@@ -727,7 +812,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/accounts/by-email/admin.master@pug.com
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -746,6 +831,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/account/List or Search Accounts.bru
@@ -759,7 +848,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/accounts
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -777,6 +866,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Create Admin.bru
@@ -790,7 +883,7 @@ meta {
 post {
   url: {{baseUrl}}/identity/admins
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -819,6 +912,10 @@ tests {
     bru.setEnvVar("userId", data.accountResponse.user.id);
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Deactivate Admin.bru
@@ -832,7 +929,7 @@ meta {
 patch {
   url: {{baseUrl}}/identity/admins/{{adminAccountId}}/deactivate
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -845,6 +942,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Delete Admin.bru
@@ -858,7 +959,7 @@ meta {
 delete {
   url: {{baseUrl}}/identity/admins/{{adminAccountId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -871,6 +972,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Get Admin By ID.bru
@@ -884,7 +989,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/admins/{{adminAccountId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -897,6 +1002,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Get Admin By Various Filters.bru
@@ -910,7 +1019,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -929,6 +1038,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/List or Search Admins.bru
@@ -942,7 +1055,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/admins
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -961,11 +1074,100 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: identity/admin/Update Admin.bru
 ================================================================================
+meta {
+  name: Update Admin
+  type: http
+  seq: 5
+}
 
+put {
+  url: {{baseUrl}}/identity/admins/{{adminAccountId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "name": "Administrador do Sistema Atualizado",
+    "campus": "JOINVILLE"
+  }
+}
+
+docs {
+  Como o DTO `AdminUpdateRequest` usa campos opcionais, você pode enviar apenas o que deseja alterar.
+  Campos permitidos:
+  - name
+  - emailString
+  - password
+  - campus
+}
+
+tests {
+  test("Should update the admin successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody().data.accountResponse.user.name).to.equal("Administrador do Sistema Atualizado");
+    expect(res.getBody().data.campus.campus).to.equal("JOINVILLE");
+  });
+}
+
+================================================================================
+FILE: identity/auth/Login.bru
+================================================================================
+meta {
+  name: System Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "admin@pug.com",
+    "password": "admin"
+  }
+}
+
+tests {
+  test("Should login successfully and store token", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    
+    // Captura o token da resposta
+    const token = res.getBody().data.token;
+    expect(token).to.be.a("string");
+    
+    // Salva o token nas variáveis de ambiente do Bruno
+    bru.setEnvVar("jwtToken", token);
+  });
+}
 
 ================================================================================
 FILE: identity/user/Get User By CPF.bru
@@ -979,7 +1181,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/users/by-cpf/00000000000
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -991,6 +1193,10 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }
 
 
@@ -1006,7 +1212,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/users/019cf2fd-837d-799b-a963-e1b299da07df
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -1018,6 +1224,10 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }
 
 
@@ -1033,7 +1243,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/users
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -1051,6 +1261,10 @@ tests {
   });
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: partner/entity/Create Entity.bru
@@ -1064,7 +1278,7 @@ meta {
 post {
   url: {{baseUrl}}/partner/entities
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -1089,6 +1303,10 @@ tests {
     bru.setEnvVar("entityId", res.getBody().data.id);
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: partner/entity/List Entities.bru
@@ -1102,7 +1320,7 @@ meta {
 get {
   url: {{baseUrl}}/partner/entities
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -1115,6 +1333,10 @@ tests {
     expect(res.getBody().success).to.be.true;
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 
 ================================================================================
 FILE: partner/staff/Create Staff.bru
@@ -1128,7 +1350,7 @@ meta {
 post {
   url: {{baseUrl}}/partners/staff
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -1153,3 +1375,7 @@ tests {
     bru.setEnvVar("staffAccountId", res.getBody().data.account.id);
   });
 }
+auth:bearer {
+  token: {{jwtToken}}
+}
+
