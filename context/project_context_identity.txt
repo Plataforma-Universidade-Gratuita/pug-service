@@ -3150,6 +3150,57 @@ public class AdminResource {
 
 
 ================================================================================
+FILE: presenter/AuthResource.java
+================================================================================
+package com.pug.identity.presenter;
+
+import com.pug.identity.presenter.dtos.auth.LoginRequest;
+import com.pug.identity.presenter.dtos.auth.TokenResponse;
+import com.pug.identity.service.AuthService;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import jakarta.annotation.security.PermitAll;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+
+/**
+ * REST API Resource controller for handling authentication operations.
+ *
+ * <p>This class exposes public endpoints (unprotected by JWT) allowing users to authenticate and
+ * receive their access tokens.
+ */
+@ApplicationScoped
+@Path("/auth")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class AuthResource {
+
+    @Inject
+    AuthService authService;
+
+    /**
+     * Authenticates a user and generates a JSON Web Token (JWT).
+     *
+     * @param request the validated {@link LoginRequest} containing the user's email and password
+     * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+     * TokenResponse}
+     */
+    @POST
+    @Path("/login")
+    @PermitAll
+    public Response login(@Valid LoginRequest request) {
+        TokenResponse body = authService.login(request);
+        return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+}
+
+================================================================================
 FILE: presenter/dtos/AccountResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
@@ -3208,7 +3259,7 @@ public record AdminCreateRequest(
     @NotBlank String cpfString,
     @NotBlank @Size(max = 150) String name,
     @NotBlank String emailString,
-    @NotBlank @Size(min = 8, max = 255) String password,
+    @NotBlank @Size( max = 255) String password,
     @NotNull Campi campus) {}
 
 
@@ -3264,9 +3315,53 @@ import jakarta.validation.constraints.Size;
 public record AdminUpdateRequest(
     @Size(max = 150) String name,
     String emailString,
-    @Size(min = 8, max = 255) String password,
+    @Size( max = 255) String password,
     Campi campus) {}
 
+
+================================================================================
+FILE: presenter/dtos/auth/LoginRequest.java
+================================================================================
+package com.pug.identity.presenter.dtos.auth;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * Data Transfer Object (DTO) representing the client's credentials for authentication.
+ *
+ * @param email    the user's registered email address
+ * @param password the raw, plaintext password
+ */
+public record LoginRequest(
+        @NotBlank @Email @Size(max = 254) String email,
+        @NotBlank @Size( max = 255) String password) {
+}
+
+================================================================================
+FILE: presenter/dtos/auth/TokenResponse.java
+================================================================================
+package com.pug.identity.presenter.dtos.auth;
+
+import com.pug.shared.domain.enums.AccountType;
+
+import java.util.UUID;
+
+/**
+ * Data Transfer Object (DTO) containing the generated JSON Web Token and user context.
+ *
+ * <p>This record is returned to the client upon successful authentication, providing the bearer
+ * token needed for subsequent API requests, along with basic context to update the UI state.
+ *
+ * @param token       the encoded JWT bearer token
+ * @param accountId   the unique identifier of the authenticated account
+ * @param accountType the authorization role of the account
+ * @param expiresIn   the number of seconds until the token expires
+ */
+public record TokenResponse(
+        String token, UUID accountId, AccountType accountType, long expiresIn) {
+}
 
 ================================================================================
 FILE: presenter/dtos/UserResponse.java
@@ -3975,6 +4070,33 @@ public interface AdminService {
 
 
 ================================================================================
+FILE: service/AuthService.java
+================================================================================
+package com.pug.identity.service;
+
+import com.pug.identity.presenter.dtos.auth.LoginRequest;
+import com.pug.identity.presenter.dtos.auth.TokenResponse;
+
+/**
+ * Application service interface for handling authentication and authorization flows.
+ *
+ * <p>This service orchestrates credential verification and the generation of secure JSON Web Tokens
+ * (JWT) for authenticated accounts.
+ */
+public interface AuthService {
+
+    /**
+     * Authenticates a user based on their credentials and generates a JWT.
+     *
+     * @param request the structured command containing the email and plaintext password
+     * @return a {@link TokenResponse} containing the generated JWT and account metadata
+     * @throws jakarta.ws.rs.NotAuthorizedException if the credentials do not match or the account is
+     *                                              inactive
+     */
+    TokenResponse login(LoginRequest request);
+}
+
+================================================================================
 FILE: service/dtos/AccountCreateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
@@ -4648,6 +4770,83 @@ public class AdminServiceImpl implements AdminService {
   }
 }
 
+
+================================================================================
+FILE: service/impl/AuthServiceImpl.java
+================================================================================
+package com.pug.identity.service.impl;
+
+import com.pug.identity.domain.Account;
+import com.pug.identity.domain.AccountRepository;
+import com.pug.identity.presenter.dtos.auth.LoginRequest;
+import com.pug.identity.presenter.dtos.auth.TokenResponse;
+import com.pug.identity.service.AuthService;
+import com.pug.identity.service.PasswordService;
+import io.smallrye.jwt.build.Jwt;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.NotAuthorizedException;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.logging.Logger;
+
+import java.util.Set;
+
+/**
+ * Implementation of the {@link AuthService} utilizing SmallRye JWT.
+ *
+ * <p>This application-scoped bean verifies credentials against the database and signs a new JWT
+ * containing the user's role and identifiers as claims.
+ */
+@ApplicationScoped
+public class AuthServiceImpl implements AuthService {
+
+    private static final Logger LOG = Logger.getLogger(AuthServiceImpl.class);
+
+    @Inject
+    AccountRepository accountRepository;
+
+    @Inject
+    PasswordService passwordService;
+
+    @ConfigProperty(name = "smallrye.jwt.new-token.lifespan", defaultValue = "28800")
+    long lifespan;
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public TokenResponse login(LoginRequest request) {
+        LOG.debugf("Attempting authentication for email: %s", request.email());
+
+        // Buscamos a conta. Usamos um NotAuthorizedException genérico por segurança
+        // para não revelar se o erro foi no email ou na senha.
+        Account account =
+                accountRepository
+                        .find("email", request.email())
+                        .firstResultOptional()
+                        .orElseThrow(() -> new NotAuthorizedException("Invalid credentials"));
+
+        if (Boolean.FALSE.equals(account.getActive())) {
+            LOG.warnf("Authentication failed: Account %s is deactivated", account.getId());
+            throw new NotAuthorizedException("Account is inactive");
+        }
+
+        if (!passwordService.verify(account.getPasswordHash(), request.password())) {
+            LOG.warnf("Authentication failed: Invalid password for account %s", account.getId());
+            throw new NotAuthorizedException("Invalid credentials");
+        }
+
+        String token =
+                Jwt.upn(account.getEmail().getValue())
+                        .groups(Set.of(account.getAccountType().name()))
+                        .claim("accountId", account.getId().toString())
+                        .claim("userId", account.getUserId().toString())
+                        .sign();
+
+        LOG.infof("Authentication successful for account %s", account.getId());
+        return new TokenResponse(token, account.getId(), account.getAccountType(), lifespan);
+    }
+}
 
 ================================================================================
 FILE: service/impl/PasswordServiceImpl.java

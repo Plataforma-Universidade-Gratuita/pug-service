@@ -90,6 +90,15 @@ public class AccountRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
+  public Optional<Account> findOptionalByEmail(String email) {
+    if (com.pug.shared.utils.StringUtils.isEmpty(email)) {
+      return Optional.empty();
+    }
+    return find("email", email).firstResultOptional().map(AccountMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public Optional<Account> findOptionalById(UUID id) {
     return findByIdOptional(id).map(AccountMapper::toDomain);
   }

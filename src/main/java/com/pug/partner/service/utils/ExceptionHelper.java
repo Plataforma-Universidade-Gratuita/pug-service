@@ -4,6 +4,7 @@ import com.pug.partner.domain.enums.PartnerErrorCodes;
 import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import jakarta.ws.rs.NotAuthorizedException;
 
 /**
  * Utility class for centralizing the creation of common Partner domain exceptions.
@@ -95,5 +96,19 @@ public final class ExceptionHelper {
    */
   public static ResourceNotFoundException staffNotFound() {
     return new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link NotAuthorizedException} indicating that an authentication
+   * attempt or secure request failed due to invalid credentials, an inactive account state, or a
+   * missing token.
+   *
+   * <p>This exception is intercepted by the platform's global exception mapper to return a generic,
+   * safe HTTP 401 response without leaking which part of the validation failed.
+   *
+   * @return a fully configured {@link NotAuthorizedException} instance
+   */
+  public static NotAuthorizedException unauthorized() {
+    return new NotAuthorizedException("Invalid credentials or inactive account");
   }
 }

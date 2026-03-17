@@ -15,6 +15,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -67,7 +69,8 @@ public class EntityResource {
    * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
-  @Path("{id}")
+  @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(id), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -83,7 +86,8 @@ public class EntityResource {
    * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
-  @Path("by-cnpj/{cnpj}")
+  @Path("/by-cnpj/{cnpj}")
+  @Authenticated
   public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -102,6 +106,7 @@ public class EntityResource {
    *     EntityResponse}
    */
   @GET
+  @Authenticated
   public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
     List<EntityView> views;
 
@@ -132,7 +137,7 @@ public class EntityResource {
    */
   @GET
   @Path("/cities")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Authenticated
   public Response listCities() {
     var body =
         readService.listCityViews().stream()
@@ -152,6 +157,7 @@ public class EntityResource {
    * @throws ResourceNotFoundException if the specified city does not exist
    */
   @POST
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response create(@Valid EntityCreateRequest req) {
     var cmd = EntityPresenter.toCommand(req);
     var createdEntityDomain = writeService.save(cmd);
@@ -178,7 +184,8 @@ public class EntityResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path("{id}")
+  @Path("/{id}")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     var cmd = EntityPresenter.toCommand(req);
     var updatedEntityDomain = writeService.update(id, cmd);
@@ -196,7 +203,8 @@ public class EntityResource {
    * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
-  @Path("{id}")
+  @Path("/{id}")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

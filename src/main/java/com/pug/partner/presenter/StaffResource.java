@@ -9,6 +9,7 @@ import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
+import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -17,6 +18,9 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -41,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * REST API Resource controller for managing Partner Staff privileges.
@@ -53,6 +58,7 @@ import java.util.stream.Collectors;
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed({"ADMIN", "STAFF"})
 public class StaffResource {
 
   @Inject StaffService writeService;
@@ -72,7 +78,7 @@ public class StaffResource {
    * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @GET
-  @Path("{id}")
+  @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StaffView v = readService.getViewByAccountId(id);
     StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
@@ -89,11 +95,45 @@ public class StaffResource {
    * @throws ResourceNotFoundException if no staff member is found with the given email
    */
   @GET
-  @Path("by-email/{email}")
+  @Path("/by-email/{email}")
   public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     StaffView v = readService.getViewByEmail(emailRaw);
     StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(out)).build();
+  }
+
+  /**
+   * Retrieves the staff profile details of the currently authenticated user.
+   *
+   * <p>Extracts the account ID directly from the JWT claims, ensuring staff members can only
+   * request their own data.
+   *
+   * @param identity the injected {@link SecurityIdentity} containing the active JWT
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StaffResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
+   *     accountId} claim
+   */
+  @GET
+  @Path("/me")
+  @Authenticated
+  public Response getMe(@Context SecurityIdentity identity) {
+    if (identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    JsonWebToken jwt = (JsonWebToken) identity.getPrincipal();
+    String accountIdClaim = jwt.getClaim("accountId");
+
+    if (accountIdClaim == null) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    UUID accountId = UUID.fromString(accountIdClaim);
+    StaffView v = readService.getViewByAccountId(accountId);
+    StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
@@ -128,7 +168,7 @@ public class StaffResource {
    * @throws AppValidationException if the provided CPF is malformed
    */
   @GET
-  @Path("by-cpf/{cpf}")
+  @Path("/by-cpf/{cpf}")
   public Response listByCpf(@PathParam("cpf") String cpfRaw) {
     List<StaffResponse> list =
         readService.listViewsByCpf(cpfRaw).stream()
@@ -145,7 +185,7 @@ public class StaffResource {
    *     StaffResponse}
    */
   @GET
-  @Path("by-entity/{entityId}")
+  @Path("/by-entity/{entityId}")
   public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
     List<StaffResponse> list =
         readService.listViewsByEntityId(entityId).stream()
@@ -199,7 +239,7 @@ public class StaffResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path("{id}")
+  @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = StaffPresenter.toCommand(req, hashedPassword);
@@ -221,7 +261,7 @@ public class StaffResource {
    * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
    */
   @PATCH
-  @Path("{id}/deactivate")
+  @Path("/{id}/deactivate")
   public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
     writeService.deactivate(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -236,7 +276,7 @@ public class StaffResource {
    *     attendances or created projects
    */
   @DELETE
-  @Path("{id}")
+  @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

@@ -240,13 +240,17 @@
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── AccountReadOnlyResource.java
 │   │   │           │   │   ├── AdminResource.java
+│   │   │           │   │   ├── AuthResource.java
 │   │   │           │   │   ├── UserReadOnlyResource.java
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── AccountResponse.java
 │   │   │           │   │   │   ├── AdminCreateRequest.java
 │   │   │           │   │   │   ├── AdminResponse.java
 │   │   │           │   │   │   ├── AdminUpdateRequest.java
-│   │   │           │   │   │   └── UserResponse.java
+│   │   │           │   │   │   ├── UserResponse.java
+│   │   │           │   │   │   └── auth/
+│   │   │           │   │   │       ├── LoginRequest.java
+│   │   │           │   │   │       └── TokenResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── AccountPresenter.java
 │   │   │           │   │       ├── AdminPresenter.java
@@ -256,6 +260,7 @@
 │   │   │           │       ├── AccountService.java
 │   │   │           │       ├── AdminReadService.java
 │   │   │           │       ├── AdminService.java
+│   │   │           │       ├── AuthService.java
 │   │   │           │       ├── PasswordService.java
 │   │   │           │       ├── UserReadService.java
 │   │   │           │       ├── UserService.java
@@ -271,6 +276,7 @@
 │   │   │           │       │   ├── AccountServiceImpl.java
 │   │   │           │       │   ├── AdminReadServiceImpl.java
 │   │   │           │       │   ├── AdminServiceImpl.java
+│   │   │           │       │   ├── AuthServiceImpl.java
 │   │   │           │       │   ├── PasswordServiceImpl.java
 │   │   │           │       │   ├── UserReadServiceImpl.java
 │   │   │           │       │   └── UserServiceImpl.java
@@ -458,6 +464,7 @@
 │   │   │               │   ├── persistence/
 │   │   │               │   │   ├── BaseAuditedEntity.java
 │   │   │               │   │   └── BaseUuidV7Entity.java
+│   │   │               │   ├── queries/
 │   │   │               │   └── search/
 │   │   │               │       ├── EsAnalysis.java
 │   │   │               │       ├── HibernateSearchUtils.java
@@ -517,7 +524,10 @@
 │   │       │       └── V014__seed_system_user.sql
 │   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
-│   │       └── messages_pt_BR.properties
+│   │       ├── messages_pt_BR.properties
+│   │       └── queries/
+│   │           └── geo/
+│   │               └── city/
 │   └── test/
 │       ├── java/
 │       │   └── com/

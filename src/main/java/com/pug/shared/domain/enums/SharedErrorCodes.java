@@ -27,6 +27,9 @@ public enum SharedErrorCodes implements GenericCodes {
   /** Indicates that a requested entity or aggregate root could not be found. */
   RESOURCE_NOT_FOUND_ERROR("error.resource.not.found"),
 
+  /** Indicates an authentication failure due to invalid credentials or an inactive account. */
+  UNAUTHORIZED_ERROR("error.unauthorized"),
+
   /** Indicates a general request payload validation failure. */
   VALIDATION_ERROR("error.validation");
 

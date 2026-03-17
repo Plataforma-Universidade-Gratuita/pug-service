@@ -3,6 +3,7 @@ package com.pug.identity.service.utils;
 import com.pug.identity.domain.enums.IdentityErrorCodes;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import jakarta.ws.rs.NotAuthorizedException;
 
 /**
  * Utility class for centralizing the creation of common Identity domain exceptions.
@@ -44,6 +45,19 @@ public final class ExceptionHelper {
    */
   public static ResourceNotFoundException adminNotFound() {
     return new ResourceNotFoundException(IdentityErrorCodes.ADMIN_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link NotAuthorizedException} indicating that an authentication
+   * attempt failed due to invalid credentials or an inactive account state.
+   *
+   * <p>This exception is intercepted by the platform's global exception mapper to return a generic,
+   * safe HTTP 401 response without leaking which part of the validation failed.
+   *
+   * @return a fully configured {@link NotAuthorizedException} instance
+   */
+  public static NotAuthorizedException unauthorized() {
+    return new NotAuthorizedException("Invalid credentials or inactive account");
   }
 
   /**

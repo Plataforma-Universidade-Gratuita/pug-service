@@ -72,6 +72,20 @@ public interface AccountRepository {
   List<UUID> findAllOrphanUserIdsByUserIds(List<UUID> userIds);
 
   /**
+   * Retrieves an {@link Account} by its email address.
+   *
+   * <p>When an account is reconstituted from the persistence layer, it typically undergoes the same
+   * domain validations as a newly created entity. Therefore, the returned {@link Account} might
+   * contain validation errors (verifiable via {@link Account#hasFieldErrors()}) if the stored data
+   * violates current domain rules.
+   *
+   * @param email the email address string of the account to retrieve
+   * @return an {@link Optional} containing the {@link Account} if found, or {@link
+   *     Optional#empty()} if not
+   */
+  Optional<Account> findOptionalByEmail(String email);
+
+  /**
    * Retrieves an {@link Account} by its unique identifier.
    *
    * <p>When an account is reconstituted from the persistence layer, it typically undergoes the same

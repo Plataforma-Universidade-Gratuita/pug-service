@@ -53,6 +53,21 @@ public interface AccountService {
   long deleteAll(List<UUID> ids);
 
   /**
+   * Retrieves a full {@link Account} domain aggregate by its registered email address.
+   *
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (such as
+   * authentication flows). For API responses, use {@link AccountReadService#getViewByEmail(String)}
+   * instead.
+   *
+   * @param email the email address of the account
+   * @return the fully reconstituted {@link Account} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the account exists but its stored
+   *     state violates domain constraints
+   */
+  Account getByEmail(String email);
+
+  /**
    * Retrieves a full {@link Account} domain aggregate by its unique identifier.
    *
    * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API

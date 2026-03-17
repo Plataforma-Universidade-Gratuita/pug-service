@@ -14,6 +14,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -66,6 +68,7 @@ public class CourseResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     CourseView view = readService.getViewById(id);
     CourseResponse body = CoursePresenter.toResponse(view, locale());
@@ -85,6 +88,7 @@ public class CourseResource {
    *     CourseResponse}
    */
   @GET
+  @Authenticated
   public Response listOrSearch(
       @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
 
@@ -116,6 +120,7 @@ public class CourseResource {
    *     already exists
    */
   @POST
+  @RolesAllowed("ADMIN")
   public Response create(@Valid CourseCreateRequest req) {
     CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
     Course created = writeService.save(cmd);
@@ -136,6 +141,7 @@ public class CourseResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
     CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
     writeService.update(id, cmd);
@@ -154,6 +160,7 @@ public class CourseResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

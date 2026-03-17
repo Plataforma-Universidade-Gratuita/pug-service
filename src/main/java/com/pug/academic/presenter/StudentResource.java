@@ -10,6 +10,7 @@ import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
@@ -21,6 +22,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -56,6 +59,7 @@ import java.util.stream.Collectors;
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class StudentResource {
 
   @Inject StudentService writeService;
@@ -127,6 +131,40 @@ public class StudentResource {
   public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
     StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the academic enrollment details of the currently authenticated student.
+   *
+   * <p>Extracts the account ID directly from the JWT claims, ensuring students can only request
+   * their own academic data.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
+   *     accountId} claim
+   */
+  @GET
+  @Path("/me")
+  @RolesAllowed("STUDENT")
+  public Response getMe(@Context SecurityIdentity identity) {
+    if (identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    org.eclipse.microprofile.jwt.JsonWebToken jwt =
+        (org.eclipse.microprofile.jwt.JsonWebToken) identity.getPrincipal();
+
+    String accountIdClaim = jwt.getClaim("accountId");
+    if (accountIdClaim == null) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    UUID accountId = UUID.fromString(accountIdClaim);
+    StudentView view = readService.getViewByAccountId(accountId);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

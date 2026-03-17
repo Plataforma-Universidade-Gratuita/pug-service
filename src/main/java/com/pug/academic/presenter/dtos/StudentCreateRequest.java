@@ -38,7 +38,7 @@ public record StudentCreateRequest(
     @NotBlank @Size(max = 11) String cpf,
     @NotBlank @Size(max = 150) String name,
     @NotBlank @Email @Size(max = 254) String email,
-    @NotBlank @Size(min = 8, max = 255) String password,
+    @NotBlank @Size(max = 255) String password,
     @NotBlank @Size(max = 15) String academicRegistration,
     @NotNull Campi campus,
     @NotNull @UuidV7 UUID courseId,

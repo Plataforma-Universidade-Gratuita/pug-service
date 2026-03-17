@@ -22,4 +22,4 @@ import jakarta.validation.constraints.Size;
 public record StaffUpdateRequest(
     @Size(max = 100) String name,
     @Email @Size(max = 100) String emailString,
-    @Size(min = 8, max = 100) String password) {}
+    @Size(max = 100) String password) {}

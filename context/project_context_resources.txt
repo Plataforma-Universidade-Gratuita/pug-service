@@ -64,7 +64,9 @@ quarkus.datasource.jdbc.min-size=5
 quarkus.datasource.jdbc.max-size=20
 quarkus.datasource.jdbc.acquisition-timeout=PT10S
 quarkus.datasource.jdbc.background-validation-interval=PT30S
-# Security (Application Secrets)
+# Security (Application Secrets & JWT)
+smallrye.jwt.sign.key=${JWT_SECRET_KEY}
+mp.jwt.verify.publickey=${JWT_SECRET_KEY}
 security.password.pepper=${PASSWORD_PEPPER}
 # Hibernate Search + ES (Production Cluster)
 quarkus.hibernate-search-orm.elasticsearch.hosts=${ES_HOSTS}
@@ -109,6 +111,18 @@ quarkus.swagger-ui.always-include=true
 # Hibernate Search + ES (Base)
 quarkus.hibernate-search-orm.elasticsearch.version=9
 quarkus.hibernate-search-orm.elasticsearch.analysis.configurer=com.pug.shared.infra.search.EsAnalysis
+# SECURITY & JWT
+# O emissor do token (identificação da sua API)
+mp.jwt.verify.issuer=https://api.pug.com
+smallrye.jwt.new-token.issuer=https://api.pug.com
+# Algoritmo simétrico (usa uma única string secreta para assinar e validar)
+smallrye.jwt.new-token.signature-algorithm=HS256
+# Tempo de vida do token (ex: 28800 segundos = 8 horas)
+smallrye.jwt.new-token.lifespan=28800
+# A chave secreta codificada em Base64 (Deve ter pelo menos 256 bits / 32 bytes)
+# (Esta chave é apenas para DEV. Em PROD, sobrescreveremos com variável de ambiente)
+smallrye.jwt.sign.key=cHVnLXNlY3JldC1rZXktZm9yLWp3dC1zaWduYXR1cmUtMjAyNg==
+mp.jwt.verify.publickey=cHVnLXNlY3JldC1rZXktZm9yLWp3dC1zaWduYXR1cmUtMjAyNg==
 
 ================================================================================
 FILE: db/migration/V000__generate_uuid_v7_from_db.sql

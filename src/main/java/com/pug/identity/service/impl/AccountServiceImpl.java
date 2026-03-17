@@ -111,6 +111,26 @@ public class AccountServiceImpl implements AccountService {
 
   /** {@inheritDoc} */
   @Override
+  public Account getByEmail(String email) {
+    Account account =
+        repo.findOptionalByEmail(email)
+            .orElseThrow(
+                () -> {
+                  LOG.debugf("Account lookup failed: Email %s not found", email);
+                  return ExceptionHelper.accountNotFound();
+                });
+
+    if (account.hasFieldErrors()) {
+      LOG.errorf(
+          "DATA CORRUPTION DETECTED: Account with email %s violates domain rules: %s",
+          email, account.getProblemsSummary());
+      throw ExceptionHelper.accountNotFound();
+    }
+    return account;
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public Account getById(UUID id) {
     Account account =
         repo.findOptionalById(id)

@@ -27,21 +27,20 @@ import jakarta.ws.rs.core.Response;
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
 
-    @Inject
-    AuthService authService;
+  @Inject AuthService authService;
 
-    /**
-     * Authenticates a user and generates a JSON Web Token (JWT).
-     *
-     * @param request the validated {@link LoginRequest} containing the user's email and password
-     * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-     * TokenResponse}
-     */
-    @POST
-    @Path("/login")
-    @PermitAll
-    public Response login(@Valid LoginRequest request) {
-        TokenResponse body = authService.login(request);
-        return Response.ok(ApiEnvelope.ok(body)).build();
-    }
+  /**
+   * Authenticates a user and generates a JSON Web Token (JWT).
+   *
+   * @param request the validated {@link LoginRequest} containing the user's email and password
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     TokenResponse}
+   */
+  @POST
+  @Path("/login")
+  @PermitAll
+  public Response login(@Valid LoginRequest request) {
+    TokenResponse body = authService.login(request);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
 }

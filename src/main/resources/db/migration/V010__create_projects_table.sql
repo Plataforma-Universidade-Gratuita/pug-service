@@ -13,7 +13,7 @@ CREATE TABLE projects
     max_participants integer,
     PRIMARY KEY (id),
     FOREIGN KEY (entity_id) REFERENCES entities (id),
-    FOREIGN KEY (created_by) REFERENCES staff (account_id),
+    FOREIGN KEY (created_by) REFERENCES accounts (id),
     UNIQUE (entity_id, name),
     CONSTRAINT chk_proj_hours_pos CHECK (offered_hours >= 0),
     CONSTRAINT chk_proj_max_part CHECK (max_participants IS NULL OR max_participants >= 0)

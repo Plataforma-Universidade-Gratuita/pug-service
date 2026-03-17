@@ -21,5 +21,5 @@ import jakarta.validation.constraints.Size;
 public record AdminUpdateRequest(
     @Size(max = 150) String name,
     String emailString,
-    @Size(min = 8, max = 255) String password,
+    @Size(max = 255) String password,
     Campi campus) {}
