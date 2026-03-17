@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities/by-ibge/4209106
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -21,4 +21,7 @@ tests {
     expect(res.getBody().data.ibgeCode).to.equal("4209106");
     expect(res.getBody().data.name).to.equal("Joinville");
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

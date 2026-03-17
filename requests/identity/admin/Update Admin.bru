@@ -1,0 +1,45 @@
+meta {
+  name: Update Admin
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/identity/admins/{{adminAccountId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "name": "Administrador do Sistema Atualizado",
+    "campus": "JOINVILLE"
+  }
+}
+
+docs {
+  Como o DTO `AdminUpdateRequest` usa campos opcionais, você pode enviar apenas o que deseja alterar.
+  Campos permitidos:
+  - name
+  - emailString
+  - password
+  - campus
+}
+
+tests {
+  test("Should update the admin successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+    expect(res.getBody().data.accountResponse.user.name).to.equal("Administrador do Sistema Atualizado");
+    expect(res.getBody().data.campus.campus).to.equal("JOINVILLE");
+  });
+}

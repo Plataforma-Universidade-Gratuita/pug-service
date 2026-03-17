@@ -2791,6 +2791,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -2843,6 +2845,7 @@ public class CourseResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     CourseView view = readService.getViewById(id);
     CourseResponse body = CoursePresenter.toResponse(view, locale());
@@ -2862,6 +2865,7 @@ public class CourseResource {
    *     CourseResponse}
    */
   @GET
+  @Authenticated
   public Response listOrSearch(
       @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
 
@@ -2893,6 +2897,7 @@ public class CourseResource {
    *     already exists
    */
   @POST
+  @RolesAllowed("ADMIN")
   public Response create(@Valid CourseCreateRequest req) {
     CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
     Course created = writeService.save(cmd);
@@ -2913,6 +2918,7 @@ public class CourseResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
     CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
     writeService.update(id, cmd);
@@ -2931,6 +2937,7 @@ public class CourseResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -3116,7 +3123,7 @@ public record StudentCreateRequest(
     @NotBlank @Size(max = 11) String cpf,
     @NotBlank @Size(max = 150) String name,
     @NotBlank @Email @Size(max = 254) String email,
-    @NotBlank @Size( max = 255) String password,
+    @NotBlank @Size(max = 255) String password,
     @NotBlank @Size(max = 15) String academicRegistration,
     @NotNull Campi campus,
     @NotNull @UuidV7 UUID courseId,
@@ -3450,6 +3457,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -3502,6 +3511,7 @@ public class SchoolResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     SchoolView view = readService.getViewById(id);
     SchoolResponse body = SchoolPresenter.toResponse(view, locale());
@@ -3519,6 +3529,7 @@ public class SchoolResource {
    *     SchoolResponse}
    */
   @GET
+  @Authenticated
   public Response list(@QueryParam("q") String q) {
     List<SchoolView> views;
 
@@ -3546,6 +3557,7 @@ public class SchoolResource {
    *     already exists
    */
   @POST
+  @RolesAllowed("ADMIN")
   public Response create(@Valid SchoolCreateRequest req) {
     SchoolCreateCommand cmd = new SchoolCreateCommand(req.name());
     School created = writeService.save(cmd);
@@ -3566,6 +3578,7 @@ public class SchoolResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
     SchoolUpdateCommand cmd = new SchoolUpdateCommand(req.name());
     writeService.update(id, cmd);
@@ -3584,6 +3597,7 @@ public class SchoolResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -3615,6 +3629,7 @@ import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.identity.service.dtos.AccountUpdateCommand;
@@ -3626,6 +3641,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -3661,6 +3678,7 @@ import java.util.stream.Collectors;
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@RolesAllowed("ADMIN")
 public class StudentResource {
 
   @Inject StudentService writeService;
@@ -3732,6 +3750,40 @@ public class StudentResource {
   public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
     StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the academic enrollment details of the currently authenticated student.
+   *
+   * <p>Extracts the account ID directly from the JWT claims, ensuring students can only request
+   * their own academic data.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     StudentResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
+   *     accountId} claim
+   */
+  @GET
+  @Path("/me")
+  @RolesAllowed("STUDENT")
+  public Response getMe(@Context SecurityIdentity identity) {
+    if (identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    org.eclipse.microprofile.jwt.JsonWebToken jwt =
+        (org.eclipse.microprofile.jwt.JsonWebToken) identity.getPrincipal();
+
+    String accountIdClaim = jwt.getClaim("accountId");
+    if (accountIdClaim == null) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    UUID accountId = UUID.fromString(accountIdClaim);
+    StudentView view = readService.getViewByAccountId(accountId);
+    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -5415,6 +5467,7 @@ import com.pug.academic.domain.enums.AcademicErrorCodes;
 import com.pug.shared.exceptions.BusinessRuleException;
 import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import jakarta.ws.rs.NotAuthorizedException;
 
 /**
  * Utility class for centralizing the creation of common Academic domain exceptions.
@@ -5429,23 +5482,23 @@ public final class ExceptionHelper {
   private ExceptionHelper() {}
 
   /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
-   * Academic School could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
-  public static ResourceNotFoundException schoolNotFound() {
-    return new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND);
-  }
-
-  /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a School with
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Course with
    * the specified name already exists in the system.
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
-  public static DuplicateResourceException schoolAlreadyExists() {
-    return new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
+  public static DuplicateResourceException courseAlreadyExists() {
+    return new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic course
+   * cannot be modified or deleted because it currently has active student enrollments.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException courseHasStudents() {
+    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_STUDENTS);
   }
 
   /**
@@ -5459,13 +5512,54 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Course with
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a School with
    * the specified name already exists in the system.
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
-  public static DuplicateResourceException courseAlreadyExists() {
-    return new DuplicateResourceException(AcademicErrorCodes.COURSE_ALREADY_EXISTS);
+  public static DuplicateResourceException schoolAlreadyExists() {
+    return new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic school
+   * cannot be modified or deleted because it currently has active courses associated with it.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException schoolHasCourses() {
+    return new BusinessRuleException(AcademicErrorCodes.SCHOOL_HAS_COURSES);
+  }
+
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * Academic School could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
+  public static ResourceNotFoundException schoolNotFound() {
+    return new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Student with
+   * the specified academic registration already exists in the system.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
+  public static DuplicateResourceException studentAlreadyExists() {
+    return new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a student profile
+   * cannot be modified or deleted because it still retains active or historical project
+   * enrollments.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException studentHasEnrollments() {
+    return new BusinessRuleException(AcademicErrorCodes.STUDENT_HAS_ENROLLMENTS);
   }
 
   /**
@@ -5479,25 +5573,17 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Student with
-   * the specified academic registration already exists in the system.
+   * Instantiates a standardized {@link NotAuthorizedException} indicating that an authentication
+   * attempt or secure request failed due to invalid credentials, an inactive account state, or a
+   * missing token.
    *
-   * @return a fully configured {@link DuplicateResourceException} instance
+   * <p>This exception is intercepted by the platform's global exception mapper to return a generic,
+   * safe HTTP 401 response without leaking which part of the validation failed.
+   *
+   * @return a fully configured {@link NotAuthorizedException} instance
    */
-  public static DuplicateResourceException studentAlreadyExists() {
-    return new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
-  }
-
-  public static BusinessRuleException schoolHasCourses() {
-    return new BusinessRuleException(AcademicErrorCodes.SCHOOL_HAS_COURSES);
-  }
-
-  public static BusinessRuleException courseHasStudents() {
-    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_STUDENTS);
-  }
-
-  public static BusinessRuleException studentHasEnrollments() {
-    return new BusinessRuleException(AcademicErrorCodes.STUDENT_HAS_ENROLLMENTS);
+  public static NotAuthorizedException unauthorized() {
+    return new NotAuthorizedException("Invalid credentials or inactive account");
   }
 }
 

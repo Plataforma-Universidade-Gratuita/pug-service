@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/students/bulk
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -50,4 +50,8 @@ tests {
     expect(res.getBody().success).to.be.true;
     expect(Array.isArray(res.getBody().data)).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

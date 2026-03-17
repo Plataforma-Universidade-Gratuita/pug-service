@@ -58,6 +58,8 @@
 │   │   │   ├── Get Admin By Various Filters.bru
 │   │   │   ├── List or Search Admins.bru
 │   │   │   └── Update Admin.bru
+│   │   ├── auth/
+│   │   │   └── Login.bru
 │   │   └── user/
 │   │       ├── Get User By CPF.bru
 │   │       ├── Get User By ID.bru
@@ -485,6 +487,7 @@
 │   │   │               │           ├── BusinessRuleExceptionMapper.java
 │   │   │               │           ├── ConstraintViolationExceptionMapper.java
 │   │   │               │           ├── DuplicateResourceExceptionMapper.java
+│   │   │               │           ├── NotAuthorizedExceptionMapper.java
 │   │   │               │           ├── PersistenceExceptionMapper.java
 │   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
@@ -524,10 +527,7 @@
 │   │       │       └── V014__seed_system_user.sql
 │   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
-│   │       ├── messages_pt_BR.properties
-│   │       └── queries/
-│   │           └── geo/
-│   │               └── city/
+│   │       └── messages_pt_BR.properties
 │   └── test/
 │       ├── java/
 │       │   └── com/

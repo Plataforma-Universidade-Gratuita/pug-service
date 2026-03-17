@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/courses/{{courseId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -20,4 +20,8 @@ tests {
     expect(res.getBody().success).to.be.true;
     expect(res.getBody().data.id).to.equal(bru.getEnvVar("courseId"));
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

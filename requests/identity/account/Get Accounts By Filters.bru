@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/accounts/by-email/admin.master@pug.com
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -25,4 +25,7 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

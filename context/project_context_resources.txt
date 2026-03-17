@@ -620,7 +620,7 @@ CREATE TABLE projects
     max_participants integer,
     PRIMARY KEY (id),
     FOREIGN KEY (entity_id) REFERENCES entities (id),
-    FOREIGN KEY (created_by) REFERENCES staff (account_id),
+    FOREIGN KEY (created_by) REFERENCES accounts (id),
     UNIQUE (entity_id, name),
     CONSTRAINT chk_proj_hours_pos CHECK (offered_hours >= 0),
     CONSTRAINT chk_proj_max_part CHECK (max_participants IS NULL OR max_participants >= 0)
@@ -738,12 +738,149 @@ FROM new_account;
 ================================================================================
 FILE: messages_en_US.properties
 ================================================================================
-# --- MESSAGES ---
-academic.campus.jaragua=Jaragua do Sul
+# ==============================================================================
+# TRANSLATION BUNDLE: ENGLISH (UNITED STATES)
+# ==============================================================================
+
+# --- SHARED & CROSS-CUTTING ---
+error.internal=An unexpected internal server error occurred.
+error.business.rule.violation=Business rule violation.
+error.data.integrity=Data integrity error (e.g., structural constraint violation).
+error.duplicated.resource=The provided resource already exists in the system.
+error.resource.not.found=The requested resource could not be found.
+error.unauthorized=Invalid credentials or inactive account.
+error.validation=Validation failed for the provided data.
+
+error.domain.audit.info.blank=Audit information is required.
+error.domain.campus.blank=Campus assignment is required.
+error.domain.created.at.blank=Creation date is required.
+error.domain.name.blank=Name cannot be blank.
+error.domain.name.too.long=Name exceeds the maximum allowed length (150 characters).
+error.domain.id.blank=The identifier (ID) is required.
+error.domain.updated.at.blank=Update date is required.
+error.domain.updated.at.before.created.at=Update date cannot precede the creation date.
+error.domain.number.negative=The value cannot be negative.
+error.domain.number.zero=The value cannot be exactly zero.
+error.domain.field.blank=The field is required.
+error.domain.period.range=The end date cannot precede the start date.
+error.domain.foreign.key.blank=The reference key (ID) is required.
+error.validation.uuid.v7=The provided value is not a valid UUID version 7.
+
+# --- SHARED ENUMS ---
+shared.account.type.admin=Administrator
+shared.account.type.partner=Partner
+shared.account.type.student=Student
+academic.campus.jaragua=Jaraguá do Sul
 academic.campus.joinville=Joinville
-attendance.status.waiting=Waiting
-attendance.status.present=Present
+
+# --- ACADEMIC DOMAIN ---
+error.domain.academic.course.already.exists=A course with this name already exists.
+error.domain.academic.course.has.students=Cannot remove the course because it currently has enrolled students.
+error.domain.academic.course.not.found=Course not found.
+error.domain.academic.school.already.exists=A school/department with this name already exists.
+error.domain.academic.school.has.courses=Cannot remove the school because it has active linked courses.
+error.domain.academic.school.not.found=School/Department not found.
+error.domain.academic.student.already.exists=A student with this academic registration or email already exists.
+error.domain.academic.student.has.enrollments=Cannot remove the student profile because it contains historical project enrollments.
+error.domain.academic.student.not.found=Student record not found.
+
+error.domain.academic.accountId.blank=The student's account ID is required.
+error.domain.academic.course.blank=The course ID is required.
+error.domain.academic.hours.blank=The required counterpart hours are mandatory.
+error.domain.academic.period.blank=The academic period is required.
+error.domain.academic.registration.blank=The academic registration number is required.
+error.domain.academic.registration.tooLong=The academic registration exceeds the maximum length (15 characters).
+error.domain.academic.school.blank=The school/department ID is required.
+
+# Dynamic Fields (Remaining Days)
+academic.student.days.overdue=Overdue by {0} days
+academic.student.days.today=Due today
+academic.student.days.tomorrow=Due tomorrow
+academic.student.days.remaining={0} days remaining
+
+# --- GEO DOMAIN ---
+error.domain.geo.city.not.found=City not found.
+error.domain.geo.ibge.code.blank=The city's IBGE code is required.
+error.domain.geo.ibge.code.invalid=The IBGE code must consist of exactly 7 numeric digits.
+
+# --- IDENTITY DOMAIN ---
+error.domain.identity.account.already.exists=An account is already registered with this email address.
+error.domain.identity.account.not.found=User account not found.
+error.domain.identity.admin.not.found=Administrator profile not found.
+error.domain.identity.user.already.exists=A user is already registered with this CPF.
+error.domain.identity.user.not.found=User not found.
+
+error.domain.identity.account.id.blank=The account ID is required.
+error.domain.identity.account.type.blank=The account type is required.
+error.domain.identity.account.active.blank=The account activation status is required.
+error.domain.identity.cpf.blank=The CPF is required.
+error.domain.identity.cpf.format=The provided CPF is invalid or has an incorrect format.
+error.domain.identity.email.blank=The email address is required.
+error.domain.identity.email.format=The provided email address has an invalid format.
+error.domain.identity.granted.at.blank=The privilege grant date is required.
+error.domain.identity.password.hash.blank=The password hash cannot be null or empty.
+error.domain.identity.password.hash.too.long=The password exceeds the maximum allowed length (255 characters).
+error.domain.identity.user.id.blank=The user identifier is required.
+error.domain.identity.user.id.too.long=The user identifier exceeds the allowed character limit.
+
+# --- PARTNER DOMAIN ---
+error.domain.partner.entity.exists=An entity is already registered with this CNPJ.
+error.domain.partner.entity.has.projects=Cannot delete the partner entity because it has registered projects in the system.
+error.domain.partner.entity.not.found=Partner entity not found.
+error.domain.partner.staff.exists=The user is already a staff member of this entity.
+error.domain.partner.staff.assigned.to.other.entity=The user is already assigned as staff to a different partner organization.
+error.domain.partner.staff.has.attendances=Cannot remove the staff member because they have already validated student attendances.
+error.domain.partner.staff.has.projects=Cannot remove the staff member because they are listed as the creator of active projects.
+error.domain.partner.staff.not.found=Staff member not found.
+
+error.domain.partner.accountId.blank=The staff's account ID is required.
+error.domain.partner.address.blank=The physical address of the entity is required.
+error.domain.partner.address.tooLong=The address exceeds the maximum length of 254 characters.
+error.domain.partner.cityId.blank=The city ID is required.
+error.domain.partner.cnpj.blank=The CNPJ is required.
+error.domain.partner.cnpj.format=The provided CNPJ is invalid or has an incorrect format.
+error.domain.partner.entityId.blank=The partner entity ID is required.
+
+# --- PROJECT DOMAIN ---
+error.domain.projects.has.enrollments=Cannot delete the project because there are active student enrollments.
+error.domain.projects.attendance.already.exists=This attendance validation (QR Code) has already been recorded in the system.
+error.domain.projects.attendance.not.found=Attendance record not found.
+error.domain.projects.enrollment.already.exists=The student is already enrolled in this project.
+error.domain.projects.enrollment.not.found=Enrollment record not found.
+error.domain.projects.status.update.cancel=Cannot cancel the project from its current status (completed projects cannot be canceled).
+error.domain.projects.status.update.complete=Cannot complete a project that is not currently in progress.
+error.domain.projects.status.update.put.on.hold=Cannot put a project on hold that is not currently in progress.
+error.domain.projects.status.update.retake=Cannot resume a project that is not currently on hold.
+error.domain.projects.status.update.start=The project cannot be started from its current status (only planned projects can be started).
+error.domain.projects.already.exists=A project with this name already exists for this partner entity.
+error.domain.projects.not.found=Project not found.
+
+error.domain.projects.attendance.duration.invalid=The attendance duration must be greater than zero.
+error.domain.projects.attendance.geo.invalid.lat=The provided latitude must be between -90 and 90 degrees.
+error.domain.projects.attendance.geo.invalid.long=The provided longitude must be between -180 and 180 degrees.
+error.domain.projects.attendance.geo.invalid.missing=Geolocation data must contain both latitude and longitude.
+error.domain.projects.attendance.project.blank=The project ID is required to record attendance.
+error.domain.projects.attendance.status.blank=The validation status for the attendance is inconsistent.
+error.domain.projects.attendance.student.blank=The student ID is required to record attendance.
+error.domain.projects.createdat.blank=The creation date is required.
+error.domain.projects.createdat.future=Record dates cannot be logically set in the future.
+error.domain.projects.description.blank=The project description is required.
+error.domain.projects.description.too.long=The project description exceeds the maximum allowed limit (4000 characters).
+error.domain.projects.enrollment.dates.invalid=The enrollment lifecycle dates are chronologically invalid.
+error.domain.projects.enrollment.project.blank=The project ID is required for enrollment.
+error.domain.projects.enrollment.requestat.blank=The enrollment request timestamp is required.
+error.domain.projects.enrollment.status.blank=The enrollment status is required.
+error.domain.projects.enrollment.student.blank=The student ID is required for enrollment.
+error.domain.projects.maxparticipants.negative=The maximum number of participants cannot be negative.
+error.domain.projects.name.blank=The project name is required.
+error.domain.projects.name.too.long=The project name exceeds the maximum length (150 characters).
+error.domain.projects.status.blank=The project status is required.
+
+# Project / Enrollment / Attendance Statuses
 attendance.status.absent=Absent
+attendance.status.present=Present
+attendance.status.waiting=Waiting Validation
+
 enrollment.status.approved=Approved
 enrollment.status.canceled=Canceled
 enrollment.status.completed=Completed
@@ -751,146 +888,172 @@ enrollment.status.exited=Exited
 enrollment.status.pending=Pending
 enrollment.status.rejected=Rejected
 enrollment.status.removed=Removed
+
 project.status.canceled=Canceled
 project.status.completed=Completed
 project.status.in.progress=In Progress
 project.status.on.hold=On Hold
 project.status.planned=Planned
 
-# --- SHARED ERRORS ---
-error.business.rule.violation=Business rule violation.
-error.data.integrity=Data integrity violation.
-error.duplicated.resource=Resource already exists.
-error.internal=An internal server error has occurred.
-error.resource.not.found=Resource not found.
-error.validation=Validation error.
-
-# --- SHARED VALIDATION ---
-error.domain.audit.info.blank=Audit information cannot be blank.
-error.domain.created.at.blank=Creation date cannot be null.
-error.domain.field.blank=Field cannot be blank.
-error.domain.field.length=Field length is invalid.
-error.domain.foreign.key.blank=Foreign key cannot be null.
-error.domain.number.negative=Number cannot be negative.
-error.domain.number.zero=Number cannot be zero.
-error.domain.id.blank=ID cannot be null.
-error.domain.period.range=Invalid period range.
-error.domain.updated.at.blank=Update date cannot be null.
-error.domain.updated.at.before.created.at=Update date cannot be before creation date.
-
-# --- IDENTITY DOMAIN ERRORS ---
-# Validation
-error.domain.identity.account.type.blank=Account type cannot be blank.
-error.domain.identity.cpf.blank=CPF cannot be blank.
-error.domain.identity.cpf.format=Invalid CPF format.
-error.domain.identity.email.blank=Email cannot be blank.
-error.domain.identity.email.format=Invalid email format.
-error.domain.identity.granted.at.blank=Granted date cannot be blank.
-# Resources
-error.domain.identity.account.already.exists=An account with this email already exists.
-error.domain.identity.account.not.found=Account not found.
-error.domain.identity.admin.not.found=Administrator not found.
-error.domain.identity.user.already.exists=A user with this CPF already exists.
-error.domain.identity.user.not.found=User not found.
-
-# --- GEO DOMAIN ERRORS ---
-# Validation
-error.domain.geo.ibge.code.blank=IBGE code cannot be blank.
-error.domain.geo.ibge.code.invalid=Invalid IBGE code format.
-# Resources
-error.domain.geo.city.already.exists=A city with this IBGE code already exists.
-error.domain.geo.city.is.default=City is set as default and cannot be updated or deleted.
-error.domain.geo.city.not.found=City not found.
-error.domain.geo.city.referenced=City cannot be deleted because it is referenced by one or more entities.
-
-# --- PARTNER DOMAIN ERRORS ---
-# Validation
-error.domain.partner.cnpj.blank=CNPJ cannot be blank.
-error.domain.partner.cnpj.format=Invalid CNPJ format.
-# Resources
-error.domain.partner.entity.exists=An Entity with this CNPJ already exists.
-error.domain.partner.entity.not.found=Entity not found.
-error.domain.partner.staff.exists=Staff member already exists.
-error.domain.partner.staff.not.found=Staff member not found.
-
 ================================================================================
 FILE: messages_pt_BR.properties
 ================================================================================
-# --- MESSAGES ---
+# ==============================================================================
+# BUNDLE DE TRADUÇÃO: PORTUGUÊS (BRASIL)
+# ==============================================================================
+
+# --- SHARED & CROSS-CUTTING ---
+error.internal=Ocorreu um erro interno inesperado no servidor.
+error.business.rule.violation=Violação de regra de negócio.
+error.data.integrity=Erro de integridade de dados (violação de restrição estrutural).
+error.duplicated.resource=O recurso fornecido já existe no sistema.
+error.resource.not.found=O recurso solicitado não foi encontrado.
+error.unauthorized=Credenciais inválidas ou conta inativa.
+error.validation=Falha na validação dos dados fornecidos.
+
+error.domain.audit.info.blank=As informações de auditoria são obrigatórias.
+error.domain.campus.blank=O campus é obrigatório.
+error.domain.created.at.blank=A data de criação é obrigatória.
+error.domain.name.blank=O nome não pode estar em branco.
+error.domain.name.too.long=O nome excede o tamanho máximo permitido (150 caracteres).
+error.domain.id.blank=O identificador (ID) é obrigatório.
+error.domain.updated.at.blank=A data de atualização é obrigatória.
+error.domain.updated.at.before.created.at=A data de atualização não pode ser anterior à data de criação.
+error.domain.number.negative=O valor não pode ser negativo.
+error.domain.number.zero=O valor não pode ser zero.
+error.domain.field.blank=O campo é obrigatório.
+error.domain.period.range=A data de término não pode ser anterior à data de início.
+error.domain.foreign.key.blank=A chave de referência (ID) é obrigatória.
+error.validation.uuid.v7=UUID não é um UUID versão 7 válido.
+
+# --- ENUMS COMPARTILHADOS ---
+shared.account.type.admin=Administrador
+shared.account.type.partner=Parceiro
+shared.account.type.student=Estudante
 academic.campus.jaragua=Jaraguá do Sul
 academic.campus.joinville=Joinville
-attendance.status.waiting=Aguardando
-attendance.status.present=Presente
+
+# --- ACADEMIC DOMAIN ---
+error.domain.academic.course.already.exists=Já existe um curso registrado com este nome.
+error.domain.academic.course.has.students=Não é possível remover o curso pois há estudantes ativamente matriculados nele.
+error.domain.academic.course.not.found=Curso não encontrado.
+error.domain.academic.school.already.exists=Já existe uma escola ou centro registrado com este nome.
+error.domain.academic.school.has.courses=Não é possível remover a escola pois ela possui cursos vinculados.
+error.domain.academic.school.not.found=Escola/Centro acadêmico não encontrado.
+error.domain.academic.student.already.exists=Já existe um estudante com esta matrícula acadêmica ou e-mail.
+error.domain.academic.student.has.enrollments=Não é possível remover o perfil do estudante pois ele possui históricos de matrículas em projetos.
+error.domain.academic.student.not.found=Registro de estudante não encontrado.
+
+error.domain.academic.accountId.blank=O ID da conta do estudante é obrigatório.
+error.domain.academic.course.blank=O ID do curso é obrigatório.
+error.domain.academic.hours.blank=As horas de contrapartida são obrigatórias.
+error.domain.academic.period.blank=O período acadêmico é obrigatório.
+error.domain.academic.registration.blank=A matrícula acadêmica é obrigatória.
+error.domain.academic.registration.tooLong=A matrícula acadêmica excede o tamanho máximo (15 caracteres).
+error.domain.academic.school.blank=O ID da escola é obrigatório.
+
+# Campos Dinâmicos (Dias Restantes)
+academic.student.days.overdue=Atrasado há {0} dias
+academic.student.days.today=Vence hoje
+academic.student.days.tomorrow=Vence amanhã
+academic.student.days.remaining={0} dias restantes
+
+# --- GEO DOMAIN ---
+error.domain.geo.city.not.found=Cidade não encontrada.
+error.domain.geo.ibge.code.blank=O código IBGE da cidade é obrigatório.
+error.domain.geo.ibge.code.invalid=O código IBGE deve conter exatamente 7 dígitos numéricos.
+
+# --- IDENTITY DOMAIN ---
+error.domain.identity.account.already.exists=Já existe uma conta registrada com este e-mail.
+error.domain.identity.account.not.found=Conta de usuário não encontrada.
+error.domain.identity.admin.not.found=Perfil de administrador não encontrado.
+error.domain.identity.user.already.exists=Já existe um usuário registrado com este CPF.
+error.domain.identity.user.not.found=Usuário não encontrado.
+
+error.domain.identity.account.id.blank=O identificador da conta é obrigatório.
+error.domain.identity.account.type.blank=O tipo de conta é obrigatório.
+error.domain.identity.account.active.blank=O status de ativação da conta é obrigatório.
+error.domain.identity.cpf.blank=O CPF é obrigatório.
+error.domain.identity.cpf.format=O CPF fornecido é inválido ou possui o formato incorreto.
+error.domain.identity.email.blank=O endereço de e-mail é obrigatório.
+error.domain.identity.email.format=O endereço de e-mail fornecido possui um formato inválido.
+error.domain.identity.granted.at.blank=A data de concessão de privilégios é obrigatória.
+error.domain.identity.password.hash.blank=O hash da senha não pode ser nulo ou vazio.
+error.domain.identity.password.hash.too.long=A senha excede o limite máximo permitido (255 caracteres).
+error.domain.identity.user.id.blank=O identificador do usuário é obrigatório.
+error.domain.identity.user.id.too.long=O nome de usuário excede o limite de caracteres permitido.
+
+# --- PARTNER DOMAIN ---
+error.domain.partner.entity.exists=Já existe uma entidade parceira cadastrada com este CNPJ.
+error.domain.partner.entity.has.projects=Não é possível excluir a entidade parceira pois ela já possui projetos cadastrados no sistema.
+error.domain.partner.entity.not.found=Entidade parceira não encontrada.
+error.domain.partner.staff.exists=Esta conta já possui privilégios de equipe nesta entidade.
+error.domain.partner.staff.assigned.to.other.entity=A conta fornecida já atua como equipe para outra entidade parceira.
+error.domain.partner.staff.has.attendances=Não é possível remover este membro da equipe pois ele já validou presenças de alunos.
+error.domain.partner.staff.has.projects=Não é possível remover este membro da equipe pois existem projetos criados por ele.
+error.domain.partner.staff.not.found=Membro da equipe parceira não encontrado.
+
+error.domain.partner.accountId.blank=O ID da conta do parceiro é obrigatório.
+error.domain.partner.address.blank=O endereço físico da entidade é obrigatório.
+error.domain.partner.address.tooLong=O endereço excede o tamanho máximo de 254 caracteres.
+error.domain.partner.cityId.blank=O ID da cidade é obrigatório.
+error.domain.partner.cnpj.blank=O CNPJ é obrigatório.
+error.domain.partner.cnpj.format=O CNPJ fornecido é inválido ou possui um formato incorreto.
+error.domain.partner.entityId.blank=O ID da entidade parceira é obrigatório.
+
+# --- PROJECT DOMAIN ---
+error.domain.projects.has.enrollments=Não é possível excluir o projeto pois existem estudantes ativamente matriculados nele.
+error.domain.projects.attendance.already.exists=Esta validação de presença (QR Code) já foi registrada no sistema.
+error.domain.projects.attendance.not.found=Registro de presença não encontrado.
+error.domain.projects.enrollment.already.exists=O estudante já se encontra matriculado neste projeto.
+error.domain.projects.enrollment.not.found=Registro de matrícula não encontrado.
+error.domain.projects.status.update.cancel=Não é possível cancelar o projeto no seu status atual (projetos concluídos não podem ser cancelados).
+error.domain.projects.status.update.complete=Não é possível concluir um projeto que não está em andamento.
+error.domain.projects.status.update.put.on.hold=Não é possível pausar um projeto que não está em andamento.
+error.domain.projects.status.update.retake=Não é possível retomar um projeto que não está pausado.
+error.domain.projects.status.update.start=O projeto não pode ser iniciado a partir de seu status atual (apenas projetos planejados podem ser iniciados).
+error.domain.projects.already.exists=Já existe um projeto cadastrado com este título para a entidade parceira.
+error.domain.projects.not.found=Projeto não encontrado.
+
+error.domain.projects.attendance.duration.invalid=A duração da presença deve ser maior que zero.
+error.domain.projects.attendance.geo.invalid.lat=A latitude fornecida deve estar entre -90 e 90 graus.
+error.domain.projects.attendance.geo.invalid.long=A longitude fornecida deve estar entre -180 e 180 graus.
+error.domain.projects.attendance.geo.invalid.missing=Os dados de geolocalização devem conter ambos, latitude e longitude.
+error.domain.projects.attendance.project.blank=O ID do projeto é obrigatório para registrar a presença.
+error.domain.projects.attendance.status.blank=O status de validação da presença está inconsistente.
+error.domain.projects.attendance.student.blank=O ID do estudante é obrigatório para registrar a presença.
+error.domain.projects.createdat.blank=A data de criação é obrigatória.
+error.domain.projects.createdat.future=Datas de registro não podem estar no futuro.
+error.domain.projects.description.blank=A descrição do projeto é obrigatória.
+error.domain.projects.description.too.long=A descrição do projeto excede o limite máximo permitido (4000 caracteres).
+error.domain.projects.enrollment.dates.invalid=As datas de ciclo de vida da matrícula estão cronologicamente inválidas.
+error.domain.projects.enrollment.project.blank=O ID do projeto é obrigatório na matrícula.
+error.domain.projects.enrollment.requestat.blank=A data da requisição da matrícula é obrigatória.
+error.domain.projects.enrollment.status.blank=O status da matrícula é obrigatório.
+error.domain.projects.enrollment.student.blank=O ID do estudante é obrigatório na matrícula.
+error.domain.projects.maxparticipants.negative=O número máximo de participantes não pode ser negativo.
+error.domain.projects.name.blank=O nome do projeto é obrigatório.
+error.domain.projects.name.too.long=O nome do projeto excede o tamanho máximo (150 caracteres).
+error.domain.projects.status.blank=O status do projeto é obrigatório.
+
+# Status do Projeto / Matrícula / Presença
 attendance.status.absent=Ausente
+attendance.status.present=Presente
+attendance.status.waiting=Aguardando Validação
+
 enrollment.status.approved=Aprovado
 enrollment.status.canceled=Cancelado
 enrollment.status.completed=Concluído
-enrollment.status.exited=Desistente
+enrollment.status.exited=Evadiu-se
 enrollment.status.pending=Pendente
 enrollment.status.rejected=Rejeitado
-enrollment.status.removed=Removido
+enrollment.status.removed=Removido Administrativamente
+
 project.status.canceled=Cancelado
 project.status.completed=Concluído
-project.status.in.progress=Em andamento
-project.status.on.hold=Em espera
+project.status.in.progress=Em Andamento
+project.status.on.hold=Pausado
 project.status.planned=Planejado
-
-# --- SHARED ERRORS ---
-error.business.rule.violation=Violação de regra de negócio.
-error.data.integrity=Violação de integridade de dados.
-error.duplicated.resource=Recurso já existe.
-error.internal=Ocorreu um erro interno no servidor.
-error.resource.not.found=Recurso não encontrado.
-error.validation=Erro de validação.
-
-# --- SHARED VALIDATION ---
-error.domain.audit.info.blank=As informações de auditoria não podem estar em branco.
-error.domain.created.at.blank=Data de criação não pode ser nula.
-error.domain.field.blank=O campo não pode estar em branco.
-error.domain.field.length=O tamanho do campo é inválido.
-error.domain.foreign.key.blank=A chave estrangeira não pode ser nula.
-error.domain.number.negative=Valor deve ser maior ou igual a zero.
-error.domain.number.zero=Valor deve ser maior que zero.
-error.domain.id.blank=O ID não pode ser nulo.
-error.domain.period.range=Intervalo de período inválido.
-error.domain.updated.at.blank=Data de atualização não pode ser nula.
-error.domain.updated.at.before.created.at=Data de atualização não pode ser anterior à data de criação.
-
-# --- IDENTITY DOMAIN ERRORS ---
-# Validation
-error.domain.identity.account.type.blank=O tipo de conta não pode estar em branco.
-error.domain.identity.cpf.blank=O CPF não pode estar em branco.
-error.domain.identity.cpf.format=Formato de CPF inválido.
-error.domain.identity.email.blank=O email não pode estar em branco.
-error.domain.identity.email.format=Formato de email inválido.
-error.domain.identity.granted.at.blank=A data de concessão não pode estar em branco.
-
-# Resources
-error.domain.identity.account.already.exists=Já existe uma conta com este email.
-error.domain.identity.account.not.found=Conta não encontrada.
-error.domain.identity.admin.not.found=Administrador não encontrado.
-error.domain.identity.user.already.exists=Já existe um usuário com este CPF.
-error.domain.identity.user.not.found=Usuário não encontrado.
-
-# --- GEO DOMAIN ERRORS ---
-# Validation
-error.domain.geo.ibge.code.blank=O código IBGE não pode estar em branco.
-error.domain.geo.ibge.code.invalid=Formato de código IBGE inválido.
-# Resources
-error.domain.geo.city.already.exists=Já existe uma cidade com este código IBGE.
-error.domain.geo.city.is.default=A cidade está definida como padrão e não pode ser atualizada ou excluída.
-error.domain.geo.city.not.found=Cidade não encontrada.
-error.domain.geo.city.referenced=A cidade não pode ser excluída pois é referenciada por uma ou mais entidades.
-
-# --- PARTNER DOMAIN ERRORS ---
-# Validation
-error.domain.partner.cnpj.blank=O CNPJ não pode estar em branco.
-error.domain.partner.cnpj.format=Formato de CNPJ inválido.
-# Resources
-error.domain.partner.entity.exists=Já existe uma Entidade com este CNPJ.
-error.domain.partner.entity.not.found=Entidade não encontrada.
-error.domain.partner.staff.exists=Funcionário já existe.
-error.domain.partner.staff.not.found=Funcionário não encontrado.
 
 ================================================================================
 FILE: META-INF/resources/.gitkeep
@@ -900,11 +1063,31 @@ FILE: META-INF/resources/.gitkeep
 ================================================================================
 FILE: ValidationMessages_en_US.properties
 ================================================================================
-# ValidationMessages_en_US.properties
-error.validation.uuid.v7=UUID is not a valid version 7 UUID
+# ==============================================================================
+# JAKARTA BEAN VALIDATION: ENGLISH (UNITED STATES)
+# ==============================================================================
+
+# --- Standard Constraints (Jakarta) ---
+jakarta.validation.constraints.Email.message=Must be a well-formed email address.
+jakarta.validation.constraints.NotBlank.message=Must not be blank.
+jakarta.validation.constraints.NotNull.message=Must not be null.
+jakarta.validation.constraints.Size.message=Size must be between {min} and {max}.
+
+# --- Custom Constraints (PUG Platform) ---
+error.validation.uuid.v7=The provided identifier is not a valid version 7 UUID.
 
 ================================================================================
 FILE: ValidationMessages_pt_BR.properties
 ================================================================================
-# ValidationMessages_pt_BR.properties
-error.validation.uuid.v7=UUID não é um UUID versão 7 válido
+# ==============================================================================
+# JAKARTA BEAN VALIDATION: PORTUGUÊS (BRASIL)
+# ==============================================================================
+
+# --- Constraints Padrão (Jakarta) ---
+jakarta.validation.constraints.Email.message=O endereço de e-mail deve ter um formato válido.
+jakarta.validation.constraints.NotBlank.message=O campo não pode estar em branco.
+jakarta.validation.constraints.NotNull.message=O campo é obrigatório e não pode ser nulo.
+jakarta.validation.constraints.Size.message=O tamanho deve estar entre {min} e {max} caracteres.
+
+# --- Constraints Customizadas (PUG Platform) ---
+error.validation.uuid.v7=O identificador fornecido não é um UUID versão 7 válido.

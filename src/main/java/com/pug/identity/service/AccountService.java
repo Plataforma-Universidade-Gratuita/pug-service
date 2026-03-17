@@ -20,7 +20,7 @@ public interface AccountService {
   /**
    * Deactivates an existing {@link Account} without deleting it.
    *
-   * <p>This disables login capabilities and system access, returning a functionally inactive
+   * <p>This disables Login.bru capabilities and system access, returning a functionally inactive
    * account while maintaining historical referential integrity.
    *
    * @param id the unique identifier (UUID) of the account to deactivate

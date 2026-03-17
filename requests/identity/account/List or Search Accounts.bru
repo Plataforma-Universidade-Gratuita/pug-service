@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/accounts
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -23,4 +23,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

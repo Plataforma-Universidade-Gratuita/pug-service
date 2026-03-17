@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/schools/{{schoolId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 params:query {
@@ -24,4 +24,8 @@ tests {
     expect(res.getBody().success).to.be.true;
     expect(res.getBody().data.id).to.equal(bru.getEnvVar("schoolId"));
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

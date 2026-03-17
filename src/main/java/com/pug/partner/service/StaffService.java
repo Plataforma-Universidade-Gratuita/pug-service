@@ -19,7 +19,7 @@ public interface StaffService {
    * Deactivates a Staff member's account.
    *
    * <p>This operation delegates to the underlying {@link com.pug.identity.service.AccountService}
-   * to gracefully disable login and operational capabilities without permanently destroying the
+   * to gracefully disable Login.bru and operational capabilities without permanently destroying the
    * account data, preserving referential integrity for historical records.
    *
    * @param accountId the unique identifier of the Staff to deactivate (Account ID)

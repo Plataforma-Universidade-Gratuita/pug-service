@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/academic/students/by-registration/20261001
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -26,4 +26,7 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

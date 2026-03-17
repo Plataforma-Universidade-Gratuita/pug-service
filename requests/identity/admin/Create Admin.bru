@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/identity/admins
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -35,4 +35,7 @@ tests {
     bru.setEnvVar("adminAccountId", data.accountResponse.id);
     bru.setEnvVar("userId", data.accountResponse.user.id);
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

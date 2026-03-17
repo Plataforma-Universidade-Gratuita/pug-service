@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/schools
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -30,4 +30,7 @@ tests {
     // Save the created ID to the environment for subsequent requests
     bru.setEnvVar("schoolId", res.getBody().data.id);
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

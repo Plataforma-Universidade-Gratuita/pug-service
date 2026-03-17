@@ -201,7 +201,7 @@ public class AdminResource {
   /**
    * Gracefully deactivates an administrator's account.
    *
-   * <p>This disables login capabilities and system access without destroying the underlying
+   * <p>This disables Login.bru capabilities and system access without destroying the underlying
    * records, maintaining historical referential integrity.
    *
    * @param id the unique identifier (UUIDv7) of the admin's account

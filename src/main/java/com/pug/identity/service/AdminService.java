@@ -18,7 +18,7 @@ public interface AdminService {
   /**
    * Gracefully deactivates an Administrator's account.
    *
-   * <p>This delegates to the underlying {@link AccountService} to disable login capabilities
+   * <p>This delegates to the underlying {@link AccountService} to disable Login.bru capabilities
    * without destroying the underlying Admin or Account records, preserving historical referential
    * integrity.
    *

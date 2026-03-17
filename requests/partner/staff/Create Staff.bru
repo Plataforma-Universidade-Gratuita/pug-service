@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/partners/staff
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -31,4 +31,7 @@ tests {
     expect(res.getBody().success).to.be.true;
     bru.setEnvVar("staffAccountId", res.getBody().data.account.id);
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

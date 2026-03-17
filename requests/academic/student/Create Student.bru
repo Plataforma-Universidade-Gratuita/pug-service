@@ -7,7 +7,7 @@ meta {
 post {
   url: {{baseUrl}}/academic/students
   body: json
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -37,4 +37,8 @@ tests {
     // The account ID is used as the student's primary identifier
     bru.setEnvVar("studentAccountId", res.getBody().data.account.id);
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

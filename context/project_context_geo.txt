@@ -703,6 +703,7 @@ import com.pug.geo.service.CityReadService;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
@@ -729,6 +730,7 @@ import java.util.stream.Collectors;
 @Path("/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class CityReadOnlyResource {
 
   @Inject CityReadService readService;
@@ -739,8 +741,8 @@ public class CityReadOnlyResource {
    * <p>This endpoint looks up a single geographical city using its UUID version 7. If the city is
    * found, it is mapped to a {@link CityResponse} and returned within a standard API envelope.
    *
-   * @param id the {@link UUID} (version 7) representing the unique internal identifier of the city.
-   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details.
+   * @param id the {@link UUID} (version 7) representing the unique internal identifier of the city
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details
    */
   @GET
   @Path("{id}")
@@ -756,8 +758,8 @@ public class CityReadOnlyResource {
    * <p>The IBGE code serves as a natural key for Brazilian municipalities. This endpoint queries
    * the persistence layer to find the exact match for the provided 7-digit geographic code.
    *
-   * @param ibgeCode a {@link String} representing the 7-digit IBGE code of the city.
-   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details.
+   * @param ibgeCode a {@link String} representing the 7-digit IBGE code of the city
+   * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details
    */
   @GET
   @Path("by-ibge/{ibgeCode}")
@@ -775,14 +777,12 @@ public class CityReadOnlyResource {
    * the city names. If the query is omitted or empty, it bypasses the search index and returns a
    * complete list of all available cities, ordered alphabetically.
    *
-   * @param q an optional {@link String} representing the search query used to filter cities by
-   *     name.
+   * @param q an optional {@link String} representing the search query used to filter cities by name
    * @return a {@link Response} containing an {@link ApiEnvelope} with a collection of matching
-   *     cities.
+   *     cities
    */
   @GET
   public Response list(@QueryParam("q") String q) {
-
     List<CityView> views;
 
     if (StringUtils.isNotEmpty(q)) {

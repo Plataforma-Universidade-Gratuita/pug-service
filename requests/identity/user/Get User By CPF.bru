@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/identity/users/by-cpf/00000000000
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -19,4 +19,8 @@ tests {
     expect(res.getStatus()).to.equal(200);
     expect(res.getBody().success).to.be.true;
   });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
 }

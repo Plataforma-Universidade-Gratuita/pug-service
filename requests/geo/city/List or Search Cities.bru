@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities
   body: none
-  auth: none
+  auth: bearer
 }
 
 query {
@@ -29,4 +29,7 @@ tests {
       bru.setEnvVar("cityId", res.getBody().data[0].id);
     }
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }

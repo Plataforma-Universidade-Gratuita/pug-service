@@ -7,7 +7,7 @@ meta {
 get {
   url: {{baseUrl}}/geo/cities/{{cityId}}
   body: none
-  auth: none
+  auth: bearer
 }
 
 headers {
@@ -20,4 +20,7 @@ tests {
     expect(res.getBody().success).to.be.true;
     expect(res.getBody().data.id).to.equal(bru.getEnvVar("cityId"));
   });
+}
+auth:bearer {
+  token: {{jwtToken}}
 }
