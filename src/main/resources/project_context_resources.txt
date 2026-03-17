@@ -13,7 +13,6 @@ quarkus.log.category."com.pug".level=DEBUG
 quarkus.log.console.level=DEBUG
 quarkus.log.console.darken=0
 quarkus.log.console.json=false
-quarkus.otel.exporter.otlp.traces.enabled=false
 # Observabilidade de Banco (Hibernate/SQL)
 quarkus.hibernate-orm.log.sql=true
 quarkus.hibernate-orm.log.format-sql=true
@@ -31,7 +30,6 @@ quarkus.datasource.devservices.reuse=true
 # Hibernate Search + ES DevServices
 quarkus.elasticsearch.devservices.port=9201
 quarkus.elasticsearch.devservices.image-name=docker.io/elastic/elasticsearch:9.1.5
-quarkus.elasticsearch.devservices.timeout=60S
 quarkus.elasticsearch.devservices.reuse=true
 quarkus.hibernate-search-orm.schema-management.strategy=create-or-validate
 quarkus.hibernate-search-orm.indexing.plan.synchronization.strategy=sync
@@ -54,7 +52,6 @@ quarkus.log.console.level=INFO
 quarkus.log.min-level=INFO
 quarkus.console.color=false
 quarkus.log.console.json=true
-quarkus.health.extensions.enabled=true
 # Proxy & Security
 quarkus.http.proxy.proxy-address-forwarding=true
 quarkus.http.cors.origins=${CORS_ORIGINS:none}
@@ -92,7 +89,6 @@ quarkus.datasource.db-version=16.0
 # JSON (Jackson) Behaviors
 quarkus.jackson.write-dates-as-timestamps=false
 quarkus.jackson.fail-on-unknown-properties=false
-quarkus.resteasy-reactive.json-default=true
 # Console & logs (General)
 quarkus.console.color=true
 quarkus.log.metrics.enabled=true
