@@ -9,11 +9,11 @@
 │       └── plugins/
 │           └── quarkus-cli-catalog.json
 ├── README.md
+├── context/
 ├── generate-dir-tree.sh
 ├── mvnw
 ├── mvnw.cmd
 ├── pom.xml
-├── project-tree.txt
 ├── requests/
 │   ├── academic/
 │   │   ├── course/
@@ -68,11 +68,10 @@
 │   │   │   └── List Entities.bru
 │   │   └── staff/
 │   │       └── Create Staff.bru
-│   ├── project/
-│   │   ├── attendance/
-│   │   ├── enrollment/
-│   │   └── project/
-│   └── project_context_requests.txt
+│   └── project/
+│       ├── attendance/
+│       ├── enrollment/
+│       └── project/
 ├── spotbugs-exclude.xml
 ├── src/
 │   ├── main/
@@ -138,7 +137,6 @@
 │   │   │           │   │       ├── CoursePresenter.java
 │   │   │           │   │       ├── SchoolPresenter.java
 │   │   │           │   │       └── StudentPresenter.java
-│   │   │           │   ├── project_context_academic.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── CourseReadService.java
 │   │   │           │       ├── CourseService.java
@@ -193,7 +191,6 @@
 │   │   │           │   │   │   └── CityResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       └── CityPresenter.java
-│   │   │           │   ├── project_context_geo.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── CityReadService.java
 │   │   │           │       ├── impl/
@@ -254,7 +251,6 @@
 │   │   │           │   │       ├── AccountPresenter.java
 │   │   │           │   │       ├── AdminPresenter.java
 │   │   │           │   │       └── UserPresenter.java
-│   │   │           │   ├── project_context_identity.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── AccountReadService.java
 │   │   │           │       ├── AccountService.java
@@ -327,7 +323,6 @@
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── EntityPresenter.java
 │   │   │           │   │       └── StaffPresenter.java
-│   │   │           │   ├── project_context_partner.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── EntityReadService.java
 │   │   │           │       ├── EntityService.java
@@ -412,7 +407,6 @@
 │   │   │           │   │       ├── AttendancePresenter.java
 │   │   │           │   │       ├── EnrollmentPresenter.java
 │   │   │           │   │       └── ProjectPresenter.java
-│   │   │           │   ├── project_context_project.txt
 │   │   │           │   └── service/
 │   │   │           │       ├── AttendanceReadService.java
 │   │   │           │       ├── AttendanceService.java
@@ -487,7 +481,6 @@
 │   │   │               │           ├── PersistenceExceptionMapper.java
 │   │   │               │           ├── ResourceNotFoundExceptionMapper.java
 │   │   │               │           └── UncaughtExceptionMapper.java
-│   │   │               ├── project_context_shared.txt
 │   │   │               ├── utils/
 │   │   │               │   ├── CollectionUtils.java
 │   │   │               │   ├── PresenterUtils.java
@@ -524,8 +517,7 @@
 │   │       │       └── V014__seed_system_user.sql
 │   │       ├── generate-context.sh
 │   │       ├── messages_en_US.properties
-│   │       ├── messages_pt_BR.properties
-│   │       └── project_context_resources.txt
+│   │       └── messages_pt_BR.properties
 │   └── test/
 │       ├── java/
 │       │   └── com/

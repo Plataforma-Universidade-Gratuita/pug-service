@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Accept target output directory as first argument, default to current directory if not provided
+OUT_DIR="${1:-$PWD}"
+
+# Ensure the output directory exists
+mkdir -p "$OUT_DIR"
+
 # 1. Determine Output Filename based on current directory name
 CURRENT_DIR_NAME=$(basename "$PWD")
-OUTPUT_FILE="project_context_${CURRENT_DIR_NAME}.txt"
+# Point the output file to the specified OUT_DIR
+OUTPUT_FILE="$OUT_DIR/project_context_${CURRENT_DIR_NAME}.txt"
 SCRIPT_NAME=$(basename "$0")
 
 # 2. Configuration: Directories to Ignore
@@ -37,7 +44,7 @@ FILE_COUNT=0
 find . \
     \( -name ".git" -o -name ".idea" -o -name ".vscode" -o -name "node_modules" -o -name "dist" -o -name "build" -o -name "coverage" -o -name "target" -o -name ".mvn" -o -name "venv" -o -name ".settings" -o -name "__pycache__" \) -prune \
     -o -type f \
-    -not -name "$OUTPUT_FILE" \
+    -not -name "$(basename "$OUTPUT_FILE")" \
     -not -name "$SCRIPT_NAME" \
     -not -name "*.class" \
     -not -name "*.jar" \

@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OUT="project-tree.txt"
+# Determine absolute path to the root context directory
+ROOT_DIR="$PWD"
+CONTEXT_DIR="$ROOT_DIR/context"
+
+# Create the context directory if it doesn't exist
+mkdir -p "$CONTEXT_DIR"
+
+OUT="$CONTEXT_DIR/project-tree.txt"
 
 # 1. TREE GENERATION
 # ---------------------------------------------------------
@@ -33,8 +40,8 @@ generate() {
     printf "%s%s%s%s\n" "$prefix" "$connector" "$name" "$( [ $isdir -eq 1 ] && printf "/" )"
     if [ $isdir -eq 1 ]; then
       # skip ignored top-level names when recursion depth is 1
-      # (escaped dots in the regex to accurately match literal dots)
-      if [ "$dir" = "." ] && [[ "$name" =~ ^(\.git|\.idea|target|node_modules|\.mvn|build|\.DS_Store|project-tree\.txt)$ ]]; then
+      # (Added 'context' to the ignore list)
+      if [ "$dir" = "." ] && [[ "$name" =~ ^(\.git|\.idea|target|node_modules|\.mvn|build|\.DS_Store|project-tree\.txt|context)$ ]]; then
         continue
       fi
       generate "$e" "$newprefix"
@@ -78,8 +85,8 @@ for target_dir in "src" "requests"; do
                 # Ensure it is executable (optional but good practice)
                 chmod +x "$script_name" 2>/dev/null || true
 
-                # Run using bash explicitly
-                bash "$script_name"
+                # Run using bash explicitly and pass the root context directory path
+                bash "$script_name" "$CONTEXT_DIR"
             )
             echo "--------------------------------------------------"
         done
@@ -89,4 +96,4 @@ for target_dir in "src" "requests"; do
 done
 
 echo ""
-echo "All operations completed."
+echo "All operations completed. Check the ./context folder for outputs."
