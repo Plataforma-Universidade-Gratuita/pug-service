@@ -5,15 +5,19 @@ meta {
 }
 
 get {
-  // Você pode testar os filtros trocando qual linha está comentada
   url: {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
-  // url: {{baseUrl}}/identity/admins/by-cpf/73184295079
   body: none
   auth: none
 }
 
 headers {
   Accept-Language: pt-BR
+}
+
+docs {
+  Você pode testar os filtros trocando a URL do request:
+  - {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
+  - {{baseUrl}}/identity/admins/by-cpf/73184295079
 }
 
 tests {

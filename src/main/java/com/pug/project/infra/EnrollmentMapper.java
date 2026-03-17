@@ -110,7 +110,9 @@ public final class EnrollmentMapper {
    */
   public static EnrollmentView toView(
       EnrollmentEntity e, ProjectView project, StudentView student) {
-    if (e == null) return null;
+    if (e == null) {
+      return null;
+    }
 
     return new EnrollmentView(
         project,

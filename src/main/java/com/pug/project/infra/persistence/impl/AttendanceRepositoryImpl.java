@@ -19,7 +19,9 @@ public class AttendanceRepositoryImpl
   @Transactional
   @Override
   public Attendance persist(Attendance entity) {
-    if (entity == null) return null;
+    if (entity == null) {
+      return null;
+    }
     var e = AttendanceMapper.toEntity(entity);
     persistAndFlush(e);
     return AttendanceMapper.toDomain(e);
@@ -28,7 +30,9 @@ public class AttendanceRepositoryImpl
   @Transactional
   @Override
   public void update(Attendance entity) {
-    if (entity == null || entity.getId() == null) return;
+    if (entity == null || entity.getId() == null) {
+      return;
+    }
     AttendanceEntity managed = findById(entity.getId());
     if (managed != null) {
       AttendanceMapper.copy(entity, managed);
@@ -38,7 +42,9 @@ public class AttendanceRepositoryImpl
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
-    if (id == null) return false;
+    if (id == null) {
+      return false;
+    }
     var deleted = delete("id", id) > 0;
     flush();
     return deleted;
@@ -51,7 +57,9 @@ public class AttendanceRepositoryImpl
 
   @Override
   public boolean existsByQrHash(String qrHash) {
-    if (StringUtils.isEmpty(qrHash)) return false;
+    if (StringUtils.isEmpty(qrHash)) {
+      return false;
+    }
     return count("qrValidationHash = ?1", qrHash) > 0;
   }
 

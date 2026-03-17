@@ -33,12 +33,13 @@
 │   │       ├── Create Student.bru
 │   │       ├── Delete Student.bru
 │   │       ├── Get Student By ID.bru
-│   │       ├── Get Student By Various Filters
+│   │       ├── Get Student By Various Filters.bru
 │   │       ├── List Students.bru
 │   │       └── Update Student.bru
 │   ├── bruno.json
 │   ├── environments/
 │   │   └── Local.bru
+│   ├── generate-context.sh
 │   ├── geo/
 │   │   └── city/
 │   │       ├── Get City by IBGE.bru
@@ -67,10 +68,11 @@
 │   │   │   └── List Entities.bru
 │   │   └── staff/
 │   │       └── Create Staff.bru
-│   └── project/
-│       ├── attendance/
-│       ├── enrollment/
-│       └── project/
+│   ├── project/
+│   │   ├── attendance/
+│   │   ├── enrollment/
+│   │   └── project/
+│   └── project_context_requests.txt
 ├── spotbugs-exclude.xml
 ├── src/
 │   ├── main/
@@ -394,19 +396,48 @@
 │   │   │           │   │           ├── EnrollmentQueriesImpl.java
 │   │   │           │   │           └── ProjectQueriesImpl.java
 │   │   │           │   ├── presenter/
+│   │   │           │   │   ├── AttendanceResource.java
+│   │   │           │   │   ├── EnrollmentResource.java
+│   │   │           │   │   ├── ProjectResource.java
 │   │   │           │   │   ├── dtos/
+│   │   │           │   │   │   ├── AttendanceCreateRequest.java
+│   │   │           │   │   │   ├── AttendanceResponse.java
+│   │   │           │   │   │   ├── AttendanceValidateRequest.java
+│   │   │           │   │   │   ├── EnrollmentCreateRequest.java
+│   │   │           │   │   │   ├── EnrollmentResponse.java
+│   │   │           │   │   │   ├── ProjectCreateRequest.java
+│   │   │           │   │   │   ├── ProjectResponse.java
+│   │   │           │   │   │   └── ProjectUpdateRequest.java
 │   │   │           │   │   └── mappers/
+│   │   │           │   │       ├── AttendancePresenter.java
+│   │   │           │   │       ├── EnrollmentPresenter.java
+│   │   │           │   │       └── ProjectPresenter.java
 │   │   │           │   ├── project_context_project.txt
 │   │   │           │   └── service/
+│   │   │           │       ├── AttendanceReadService.java
 │   │   │           │       ├── AttendanceService.java
+│   │   │           │       ├── EnrollmentReadService.java
 │   │   │           │       ├── EnrollmentService.java
+│   │   │           │       ├── ProjectReadService.java
 │   │   │           │       ├── ProjectService.java
 │   │   │           │       ├── dtos/
+│   │   │           │       │   ├── AttendanceCreateCommand.java
+│   │   │           │       │   ├── AttendanceValidateCommand.java
+│   │   │           │       │   ├── EnrollmentCreateCommand.java
+│   │   │           │       │   ├── ProjectCreateCommand.java
+│   │   │           │       │   └── ProjectUpdateCommand.java
 │   │   │           │       ├── impl/
+│   │   │           │       │   ├── AttendanceReadServiceImpl.java
 │   │   │           │       │   ├── AttendanceServiceImpl.java
+│   │   │           │       │   ├── EnrollmentReadServiceImpl.java
 │   │   │           │       │   ├── EnrollmentServiceImpl.java
+│   │   │           │       │   ├── ProjectReadServiceImpl.java
 │   │   │           │       │   └── ProjectServiceImpl.java
 │   │   │           │       └── utils/
+│   │   │           │           ├── AttendanceProcessor.java
+│   │   │           │           ├── EnrollmentProcessor.java
+│   │   │           │           ├── ExceptionHelper.java
+│   │   │           │           └── ProjectProcessor.java
 │   │   │           └── shared/
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java

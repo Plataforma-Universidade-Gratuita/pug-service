@@ -90,7 +90,9 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   @Override
   public Optional<AttendanceView> findOptionalById(UUID id) {
-    if (id == null) return Optional.empty();
+    if (id == null) {
+      return Optional.empty();
+    }
     var q = em.createQuery(SELECT_BASE + " where a.id = :id", AttendanceView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
@@ -103,7 +105,9 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   @Override
   public List<AttendanceView> listByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+    if (projectId == null) {
+      return List.of();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where a.projectId = :pid" + ORDER_BY_DATE, AttendanceView.class);
@@ -113,7 +117,9 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   @Override
   public List<AttendanceView> listByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+    if (studentId == null) {
+      return List.of();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where a.studentId = :sid" + ORDER_BY_DATE, AttendanceView.class);

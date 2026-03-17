@@ -33,7 +33,8 @@ generate() {
     printf "%s%s%s%s\n" "$prefix" "$connector" "$name" "$( [ $isdir -eq 1 ] && printf "/" )"
     if [ $isdir -eq 1 ]; then
       # skip ignored top-level names when recursion depth is 1
-      if [ "$dir" = "." ] && [[ "$name" =~ ^(.git|.idea|target|node_modules|.mvn|build|.DS_Store|project-tree.txt)$ ]]; then
+      # (escaped dots in the regex to accurately match literal dots)
+      if [ "$dir" = "." ] && [[ "$name" =~ ^(\.git|\.idea|target|node_modules|\.mvn|build|\.DS_Store|project-tree\.txt)$ ]]; then
         continue
       fi
       generate "$e" "$newprefix"
@@ -52,35 +53,40 @@ echo "Wrote tree to $OUT"
 
 # 2. RUN GENERATE-CONTEXT SCRIPTS
 # ---------------------------------------------------------
-echo "Searching for context generation scripts under ./src..."
+# Loop over both target directories to avoid duplicated code
+for target_dir in "src" "requests"; do
+    echo ""
+    echo "Searching for context generation scripts under ./$target_dir..."
 
-# Check if src exists to prevent errors
-if [ -d "src" ]; then
-    # Find files named 'generate-context.sh' inside src
-    find src -type f -name "generate-context.sh" -print0 | while IFS= read -r -d $'\0' script_path; do
+    # Check if directory exists to prevent errors
+    if [ -d "$target_dir" ]; then
+        # Find files named 'generate-context.sh' inside the current target directory
+        find "$target_dir" -type f -name "generate-context.sh" -print0 | while IFS= read -r -d $'\0' script_path; do
 
-        script_dir=$(dirname "$script_path")
-        script_name=$(basename "$script_path")
+            script_dir=$(dirname "$script_path")
+            script_name=$(basename "$script_path")
 
-        echo ""
-        echo "Found script: $script_path"
-        echo "--------------------------------------------------"
+            echo ""
+            echo "Found script: $script_path"
+            echo "--------------------------------------------------"
 
-        # Execute in a subshell
-        (
-            cd "$script_dir" || exit
-            echo "Running $script_name in $(pwd)..."
+            # Execute in a subshell (...) so it doesn't change the main script's working directory
+            (
+                cd "$script_dir" || exit
+                echo "Running $script_name in $(pwd)..."
 
-            # Ensure it is executable (optional but good practice)
-            chmod +x "$script_name" 2>/dev/null || true
+                # Ensure it is executable (optional but good practice)
+                chmod +x "$script_name" 2>/dev/null || true
 
-            # Run using bash explicitly
-            bash "$script_name"
-        )
-        echo "--------------------------------------------------"
-    done
-else
-    echo "Directory './src' does not exist. Skipping script execution."
-fi
+                # Run using bash explicitly
+                bash "$script_name"
+            )
+            echo "--------------------------------------------------"
+        done
+    else
+        echo "Directory './$target_dir' does not exist. Skipping script execution."
+    fi
+done
 
+echo ""
 echo "All operations completed."

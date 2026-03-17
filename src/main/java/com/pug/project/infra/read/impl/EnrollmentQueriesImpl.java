@@ -80,7 +80,9 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
   @Override
   public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) return Optional.empty();
+    if (projectId == null || studentId == null) {
+      return Optional.empty();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid",
@@ -97,7 +99,9 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
   @Override
   public List<EnrollmentView> listByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+    if (projectId == null) {
+      return List.of();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class);
@@ -107,7 +111,9 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
   @Override
   public List<EnrollmentView> listByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+    if (studentId == null) {
+      return List.of();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class);

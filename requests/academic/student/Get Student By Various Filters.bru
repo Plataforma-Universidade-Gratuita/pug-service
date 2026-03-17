@@ -5,9 +5,6 @@ meta {
 }
 
 get {
-  // Toggle the URL to test different read operations
-  // url: {{baseUrl}}/academic/students/by-cpf/12345678900
-  // url: {{baseUrl}}/academic/students/by-email/joao.silva@aluno.com
   url: {{baseUrl}}/academic/students/by-registration/20261001
   body: none
   auth: none
@@ -15,6 +12,13 @@ get {
 
 headers {
   Accept-Language: pt-BR
+}
+
+docs {
+  Toggle the URL to test different read operations:
+  - {{baseUrl}}/academic/students/by-cpf/12345678900
+  - {{baseUrl}}/academic/students/by-email/joao.silva@aluno.com
+  - {{baseUrl}}/academic/students/by-registration/20261001
 }
 
 tests {

@@ -19,7 +19,9 @@ public class ProjectRepositoryImpl
   @Transactional
   @Override
   public Project persist(Project entity) {
-    if (entity == null) return null;
+    if (entity == null) {
+      return null;
+    }
     var e = ProjectMapper.toEntity(entity);
     persistAndFlush(e);
     return ProjectMapper.toDomain(e);
@@ -28,7 +30,9 @@ public class ProjectRepositoryImpl
   @Transactional
   @Override
   public void update(Project entity) {
-    if (entity == null || entity.getId() == null) return;
+    if (entity == null || entity.getId() == null) {
+      return;
+    }
     ProjectEntity managed = findById(entity.getId());
     if (managed != null) {
       ProjectMapper.copy(entity, managed);
@@ -38,7 +42,9 @@ public class ProjectRepositoryImpl
   @Transactional
   @Override
   public boolean deleteById(UUID id) {
-    if (id == null) return false;
+    if (id == null) {
+      return false;
+    }
     var deleted = delete("id", id) > 0;
     flush();
     return deleted;
@@ -51,13 +57,17 @@ public class ProjectRepositoryImpl
 
   @Override
   public boolean existsByNameAndEntityId(String name, UUID entityId) {
-    if (StringUtils.isEmpty(name) || entityId == null) return false;
+    if (StringUtils.isEmpty(name) || entityId == null) {
+      return false;
+    }
     return count("name = ?1 and entityId = ?2", name, entityId) > 0;
   }
 
   @Override
   public boolean existsByEntityId(UUID entityId) {
-    if (entityId == null) return false;
+    if (entityId == null) {
+      return false;
+    }
     return count("entityId", entityId) > 0;
   }
 

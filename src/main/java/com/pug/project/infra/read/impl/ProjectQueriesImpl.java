@@ -53,7 +53,9 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   @Override
   public Optional<ProjectView> findOptionalById(UUID id) {
-    if (id == null) return Optional.empty();
+    if (id == null) {
+      return Optional.empty();
+    }
     var q = em.createQuery(SELECT_BASE + " where p.id = :id", ProjectView.class);
     q.setParameter("id", id);
     return q.getResultStream().findFirst();
@@ -66,7 +68,9 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   @Override
   public List<ProjectView> listByEntityId(UUID entityId) {
-    if (entityId == null) return List.of();
+    if (entityId == null) {
+      return List.of();
+    }
     var q =
         em.createQuery(SELECT_BASE + " where p.entityId = :eid" + ORDER_BY_NAME, ProjectView.class);
     q.setParameter("eid", entityId);
@@ -75,7 +79,9 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   @Override
   public List<ProjectView> searchByName(String query) {
-    if (query == null || query.isBlank()) return List.of();
+    if (query == null || query.isBlank()) {
+      return List.of();
+    }
     var q =
         em.createQuery(
             SELECT_BASE + " where lower(p.name) like :name" + ORDER_BY_NAME, ProjectView.class);

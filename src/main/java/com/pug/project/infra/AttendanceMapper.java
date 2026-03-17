@@ -127,7 +127,9 @@ public final class AttendanceMapper {
   public static AttendanceView toView(
       AttendanceEntity e, ProjectView project, StudentView student, AccountView validatedBy) {
 
-    if (e == null) return null;
+    if (e == null) {
+      return null;
+    }
 
     return new AttendanceView(
         e.getId(),

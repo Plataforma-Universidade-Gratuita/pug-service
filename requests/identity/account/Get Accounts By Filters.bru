@@ -5,15 +5,19 @@ meta {
 }
 
 get {
-  // Alterne a URL para testar os filtros de leitura puros da Account
   url: {{baseUrl}}/identity/accounts/by-email/admin.master@pug.com
-  // url: {{baseUrl}}/identity/accounts/by-cpf/73184295079
   body: none
   auth: none
 }
 
 headers {
   Accept-Language: pt-BR
+}
+
+docs {
+  Alterne a URL para testar os filtros de leitura puros da Account:
+  - {{baseUrl}}/identity/accounts/by-email/admin.master@pug.com
+  - {{baseUrl}}/identity/accounts/by-cpf/73184295079
 }
 
 tests {

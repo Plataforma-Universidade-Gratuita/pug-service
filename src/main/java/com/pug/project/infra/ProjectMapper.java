@@ -131,7 +131,9 @@ public final class ProjectMapper {
   public static ProjectView toView(
       ProjectEntity p, EntityEntity ent, CityEntity city, AccountEntity acc, UserEntity u) {
 
-    if (p == null) return null;
+    if (p == null) {
+      return null;
+    }
 
     CityView cityView = null;
     if (city != null) {
