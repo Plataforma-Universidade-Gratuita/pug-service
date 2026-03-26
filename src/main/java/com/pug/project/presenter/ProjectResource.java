@@ -19,6 +19,8 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -72,6 +74,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     ProjectView view = readService.getViewById(id);
     ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
@@ -87,6 +90,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/{projectId}/schools")
+  @Authenticated
   public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
     List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
     List<SchoolResponse> body =
@@ -105,6 +109,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/by-school/{schoolId}")
+  @Authenticated
   public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
     SchoolProjectView view = readService.listViewsBySchool(schoolId);
     ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
@@ -124,6 +129,7 @@ public class ProjectResource {
    *     ProjectResponse}
    */
   @GET
+  @Authenticated
   public Response list(
       @QueryParam("q") String query, @QueryParam("entityId") @UuidV7 UUID entityId) {
     List<ProjectView> views;
@@ -153,6 +159,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/created-by/{accountId}")
+  @Authenticated
   public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
     List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
     List<ProjectResponse> body =
@@ -172,6 +179,7 @@ public class ProjectResource {
    *     exists for the entity
    */
   @POST
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response create(@Valid ProjectCreateRequest req) {
     var cmd =
         new ProjectCreateCommand(
@@ -200,6 +208,7 @@ public class ProjectResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     var cmd =
         new ProjectUpdateCommand(
@@ -224,6 +233,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/cancel")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
@@ -238,6 +248,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/complete")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
@@ -252,6 +263,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/hold")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
@@ -266,6 +278,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/retake")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
@@ -280,6 +293,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/start")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response start(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
@@ -294,6 +308,7 @@ public class ProjectResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
