@@ -1,6 +1,9 @@
 package com.pug.project.service.impl;
 
+import com.pug.academic.infra.read.SchoolQueries;
+import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.project.infra.read.ProjectQueries;
+import com.pug.project.infra.read.ProjectsBySchoolsQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.service.ProjectReadService;
@@ -15,9 +18,9 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of the {@link ProjectReadService}.
  *
- * <p>This application-scoped bean delegates read-only operations to the underlying {@link
- * ProjectQueries} infrastructure component. It handles basic input validation and translates "not
- * found" states into standardized domain exceptions.
+ * <p>This application-scoped bean delegates read-only operations to the underlying infrastructure
+ * components. It handles basic input validation and translates "not found" states into standardized
+ * domain exceptions.
  */
 @ApplicationScoped
 public class ProjectReadServiceImpl implements ProjectReadService {
@@ -25,6 +28,8 @@ public class ProjectReadServiceImpl implements ProjectReadService {
   private static final Logger LOG = Logger.getLogger(ProjectReadServiceImpl.class);
 
   @Inject ProjectQueries queries;
+  @Inject ProjectsBySchoolsQueries pbsQueries;
+  @Inject SchoolQueries schoolQueries;
 
   /** {@inheritDoc} */
   @Override
@@ -64,11 +69,21 @@ public class ProjectReadServiceImpl implements ProjectReadService {
 
   /** {@inheritDoc} */
   @Override
+  public List<SchoolView> listViewsSchoolsByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
+    List<UUID> schoolIds = pbsQueries.listAllSchoolsIdsByProjectId(projectId);
+    return schoolQueries.listByIds(schoolIds);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public SchoolProjectView listViewsBySchool(UUID schoolId) {
     if (schoolId == null) {
       return null;
     }
-    return queries.listBySchool(schoolId);
+    return pbsQueries.listBySchool(schoolId);
   }
 
   /**

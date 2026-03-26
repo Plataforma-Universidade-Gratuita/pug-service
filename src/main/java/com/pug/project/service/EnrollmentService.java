@@ -57,6 +57,8 @@ public interface EnrollmentService {
    */
   boolean existsAnyByStudentId(UUID studentId);
 
+  boolean existsAnyByProjectId(UUID projectId);
+
   /**
    * Records a student's voluntary exit from a project.
    *

@@ -6,6 +6,7 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -53,6 +54,22 @@ public class SchoolQueriesImpl implements SchoolQueries {
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
             SchoolView.class);
+    return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<SchoolView> listByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return List.of();
+    }
+    var q =
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
+                + "from SchoolEntity s where s.id in :ids order by s.name asc",
+            SchoolView.class);
+    q.setParameter("ids", ids);
     return q.getResultList();
   }
 

@@ -34,6 +34,18 @@ public interface SchoolQueries {
   List<SchoolView> listAllSchools();
 
   /**
+   * Retrieves a list of schools corresponding to the provided list of unique identifiers.
+   *
+   * <p>This method is optimized for batch retrieval and may leverage database-specific features
+   * (e.g., SQL IN clause) for efficient querying.
+   *
+   * @param ids a {@link List} of UUIDs representing the unique identifiers of the schools to
+   *     retrieve
+   * @return a {@link List} of {@link SchoolView} objects matching the provided IDs
+   */
+  List<SchoolView> listByIds(List<UUID> ids);
+
+  /**
    * Executes a robust full-text search against the names of schools.
    *
    * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via

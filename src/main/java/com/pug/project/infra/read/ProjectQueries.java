@@ -1,7 +1,6 @@
 package com.pug.project.infra.read;
 
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -45,14 +44,6 @@ public interface ProjectQueries {
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listByEntityId(UUID entityId);
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier (UUID) of the school
-   * @return the populated {@link SchoolProjectView} DTO
-   */
-  SchoolProjectView listBySchool(UUID schoolId);
 
   /**
    * Executes a robust full-text search against the names of projects.

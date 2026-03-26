@@ -1,9 +1,6 @@
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.presenter.mappers.SchoolPresenter;
-import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectResponse;
@@ -12,10 +9,7 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.StringUtils;
-import java.time.OffsetDateTime;
 import java.util.Locale;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Stateless utility class responsible for mapping internal project projections to external API
@@ -46,12 +40,9 @@ public final class ProjectPresenter {
     return new ProjectResponse(
         v.id(),
         v.name(),
-        EntityPresenter.toResponse(v.entity(), locale),
-        SchoolPresenter.toResponse(
-            new SchoolView(UUID.randomUUID(), "", OffsetDateTime.now(), OffsetDateTime.now()),
-            locale),
+        v.entityId(),
         v.description(),
-        AccountPresenter.toResponse(v.createdBy(), locale, i18n),
+        v.creatorId(),
         v.maxParticipants(),
         v.offeredHours(),
         v.status(),
@@ -77,6 +68,6 @@ public final class ProjectPresenter {
 
     return new ProjectsBySchoolResponse(
         SchoolPresenter.toResponse(v.school(), locale),
-        v.projects().stream().map(p -> toResponse(p, locale, i18n)).collect(Collectors.toList()));
+        v.projects().stream().map(p -> toResponse(p, locale, i18n)).toList());
   }
 }

@@ -45,10 +45,10 @@ public class ProjectServiceImpl implements ProjectService {
     if (id == null) {
       return false;
     }
-    //    if (enrollmentService.existsAnyByProjectId(id)) {
-    //      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
-    //      throw ExceptionHelper.projectHasEnrollments();
-    //    }
+    if (enrollmentService.existsAnyByProjectId(id)) {
+      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
+      throw ExceptionHelper.projectHasEnrollments();
+    }
     return repo.deleteById(id);
   }
 

@@ -58,6 +58,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     return repo.existsByStudentId(studentId);
   }
 
+  @Override
+  public boolean existsAnyByProjectId(UUID projectId) {
+    if (projectId == null) return false;
+    return repo.existsByStudentId(projectId);
+  }
+
   @Transactional
   @Override
   public Enrollment exit(UUID projectId, UUID studentId) {

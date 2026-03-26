@@ -1,5 +1,8 @@
 package com.pug.project.presenter;
 
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
@@ -76,9 +79,27 @@ public class ProjectResource {
   }
 
   /**
+   * Retrieves a list of schools associated with a specific project.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     SchoolResponse}
+   */
+  @GET
+  @Path("/{projectId}/schools")
+  public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
+    List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
+    List<SchoolResponse> body =
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
    * Retrieves a consolidated view of a school and its associated projects.
    *
-   * @param schoolId the unique identifier (UUID) of the school
+   * @param schoolId the unique identifier (UUIDv7) of the school
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     ProjectsBySchoolResponse}
    */
@@ -115,6 +136,25 @@ public class ProjectResource {
       views = readService.listViews();
     }
 
+    List<ProjectResponse> body =
+        views.stream()
+            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a list of projects created by a specific account.
+   *
+   * @param accountId the unique identifier (UUIDv7) of the account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
+  @GET
+  @Path("/created-by/{accountId}")
+  public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
+    List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
     List<ProjectResponse> body =
         views.stream()
             .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))

@@ -1,8 +1,5 @@
 package com.pug.project.presenter.dtos;
 
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.math.BigDecimal;
@@ -14,10 +11,9 @@ import java.util.UUID;
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project
- * @param entity the nested read-only projection of the partner organization
- * @param school the nested read-only projection of the associated school
+ * @param entityId the unique identifier of the partner organization
  * @param description the project description
- * @param createdBy the nested read-only projection of the staff creator
+ * @param createdBy the unique identifier of the creator
  * @param maxParticipants the maximum number of students allowed
  * @param offeredHours the total counterpart hours offered
  * @param status the current execution state
@@ -29,10 +25,9 @@ import java.util.UUID;
 public record ProjectResponse(
     UUID id,
     String name,
-    EntityResponse entity,
-    SchoolResponse school,
+    UUID entityId,
     String description,
-    AccountResponse createdBy,
+    UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
     ProjectStatus status,

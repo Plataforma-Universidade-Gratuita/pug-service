@@ -1,5 +1,6 @@
 package com.pug.project.service;
 
+import com.pug.academic.infra.read.dtos.SchoolView; // Import required for SchoolView
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
@@ -32,10 +33,10 @@ public interface ProjectReadService {
   List<ProjectView> listViews();
 
   /**
-   * Retrieves a list of projects created by a specific staff member.
+   * Retrieves a list of projects created by a specific member.
    *
-   * @param accountId the unique identifier of the staff account
-   * @return a {@link List} of projects created by the staff member
+   * @param accountId the unique identifier of the account
+   * @return a {@link List} of projects created by the member
    */
   List<ProjectView> listViewsByCreatedBy(UUID accountId);
 
@@ -46,6 +47,14 @@ public interface ProjectReadService {
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
+
+  /**
+   * Retrieves a list of schools associated with a specific project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return a {@link List} of associated {@link SchoolView} DTOs
+   */
+  List<SchoolView> listViewsSchoolsByProjectId(UUID projectId);
 
   /**
    * Retrieves a consolidated view of a school and its associated projects.

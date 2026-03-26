@@ -2,14 +2,6 @@ package com.pug.project.infra;
 
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
@@ -127,61 +119,22 @@ public final class ProjectMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link ProjectView} DTO.
+   * Projects a raw JPA {@link ProjectEntity} into a {@link ProjectView} DTO.
    *
    * @param p the JPA entity representing the project
-   * @param ent the JPA entity representing the partner organization
-   * @param city the JPA entity representing the city where the partner operates
-   * @param acc the JPA entity representing the creator's authentication account
-   * @param u the JPA entity representing the creator's personal user profile
-   * @return a fully populated {@link ProjectView} DTO
+   * @return a fully populated {@link ProjectView} DTO containing IDs for relations
    */
-  public static ProjectView toView(
-      ProjectEntity p, EntityEntity ent, CityEntity city, AccountEntity acc, UserEntity u) {
-
+  public static ProjectView toView(ProjectEntity p) {
     if (p == null) {
       return null;
     }
 
-    CityView cityView =
-        (city != null) ? new CityView(city.getId(), city.getName(), city.getIbgeCode()) : null;
-
-    EntityView entityView =
-        (ent != null)
-            ? new EntityView(
-                ent.getId(),
-                ent.getCnpj(),
-                ent.getName(),
-                ent.getAddress(),
-                cityView,
-                ent.getCreatedAt(),
-                ent.getUpdatedAt())
-            : null;
-
-    UserView userView =
-        (u != null)
-            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
-            : null;
-
-    AccountView accountView =
-        (acc != null)
-            ? new AccountView(
-                acc.getId(),
-                userView,
-                acc.getEmail(),
-                acc.getAccountType(),
-                acc.getCreatedAt(),
-                acc.getUpdatedAt(),
-                acc.getActive())
-            : null;
-
     return new ProjectView(
         p.getId(),
         p.getName(),
-        entityView,
+        p.getEntityId(),
         p.getDescription(),
-        accountView,
+        p.getCreatedBy(),
         p.getMaxParticipants(),
         p.getOfferedHours(),
         ProjectStatus.valueOf(p.getStatus()),
