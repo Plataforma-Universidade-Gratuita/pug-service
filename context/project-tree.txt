@@ -358,6 +358,7 @@
 │   │   │           │   │   ├── EnrollmentRepository.java
 │   │   │           │   │   ├── Project.java
 │   │   │           │   │   ├── ProjectRepository.java
+│   │   │           │   │   ├── ProjectsBySchool.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AttendanceStatus.java
 │   │   │           │   │   │   ├── EnrollmentStatus.java
@@ -379,6 +380,7 @@
 │   │   │           │   │   │   ├── AttendanceEntity.java
 │   │   │           │   │   │   ├── EnrollmentEntity.java
 │   │   │           │   │   │   ├── ProjectEntity.java
+│   │   │           │   │   │   ├── ProjectsBySchoolsEntity.java
 │   │   │           │   │   │   └── impl/
 │   │   │           │   │   │       ├── AttendanceRepositoryImpl.java
 │   │   │           │   │   │       ├── EnrollmentRepositoryImpl.java
@@ -393,7 +395,9 @@
 │   │   │           │   │       │   ├── EnrollmentAcc.java
 │   │   │           │   │       │   ├── EnrollmentView.java
 │   │   │           │   │       │   ├── ProjectAcc.java
-│   │   │           │   │       │   └── ProjectView.java
+│   │   │           │   │       │   ├── ProjectView.java
+│   │   │           │   │       │   ├── SchoolProjectAcc.java
+│   │   │           │   │       │   └── SchoolProjectView.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── AttendanceQueriesImpl.java
 │   │   │           │   │           ├── EnrollmentQueriesImpl.java
@@ -410,7 +414,8 @@
 │   │   │           │   │   │   ├── EnrollmentResponse.java
 │   │   │           │   │   │   ├── ProjectCreateRequest.java
 │   │   │           │   │   │   ├── ProjectResponse.java
-│   │   │           │   │   │   └── ProjectUpdateRequest.java
+│   │   │           │   │   │   ├── ProjectUpdateRequest.java
+│   │   │           │   │   │   └── ProjectsBySchoolResponse.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── AttendancePresenter.java
 │   │   │           │   │       ├── EnrollmentPresenter.java

@@ -610,7 +610,7 @@ CREATE TABLE projects
     id               uuid,
     name             varchar(150)             NOT NULL,
     entity_id        uuid                     NOT NULL,
-    description      varchar(4000)            NOT NULL,
+    description      varchar(4000),
     created_by       uuid                     NOT NULL,
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at       TIMESTAMP WITH TIME ZONE NOT NULL,
@@ -764,7 +764,6 @@ error.domain.number.zero=The value cannot be exactly zero.
 error.domain.field.blank=The field is required.
 error.domain.period.range=The end date cannot precede the start date.
 error.domain.foreign.key.blank=The reference key (ID) is required.
-error.validation.uuid.v7=The provided value is not a valid UUID version 7.
 
 # --- SHARED ENUMS ---
 shared.account.type.admin=Administrator
@@ -864,7 +863,6 @@ error.domain.projects.attendance.status.blank=The validation status for the atte
 error.domain.projects.attendance.student.blank=The student ID is required to record attendance.
 error.domain.projects.createdat.blank=The creation date is required.
 error.domain.projects.createdat.future=Record dates cannot be logically set in the future.
-error.domain.projects.description.blank=The project description is required.
 error.domain.projects.description.too.long=The project description exceeds the maximum allowed limit (4000 characters).
 error.domain.projects.enrollment.dates.invalid=The enrollment lifecycle dates are chronologically invalid.
 error.domain.projects.enrollment.project.blank=The project ID is required for enrollment.
@@ -875,6 +873,7 @@ error.domain.projects.maxparticipants.negative=The maximum number of participant
 error.domain.projects.name.blank=The project name is required.
 error.domain.projects.name.too.long=The project name exceeds the maximum length (150 characters).
 error.domain.projects.status.blank=The project status is required.
+error.domain.projects.school.id.blank=The school ID is required.
 
 # Project / Enrollment / Attendance Statuses
 attendance.status.absent=Absent
@@ -924,7 +923,6 @@ error.domain.number.zero=O valor não pode ser zero.
 error.domain.field.blank=O campo é obrigatório.
 error.domain.period.range=A data de término não pode ser anterior à data de início.
 error.domain.foreign.key.blank=A chave de referência (ID) é obrigatória.
-error.validation.uuid.v7=UUID não é um UUID versão 7 válido.
 
 # --- ENUMS COMPARTILHADOS ---
 shared.account.type.admin=Administrador
@@ -1024,7 +1022,6 @@ error.domain.projects.attendance.status.blank=O status de validação da presença 
 error.domain.projects.attendance.student.blank=O ID do estudante é obrigatório para registrar a presença.
 error.domain.projects.createdat.blank=A data de criação é obrigatória.
 error.domain.projects.createdat.future=Datas de registro não podem estar no futuro.
-error.domain.projects.description.blank=A descrição do projeto é obrigatória.
 error.domain.projects.description.too.long=A descrição do projeto excede o limite máximo permitido (4000 caracteres).
 error.domain.projects.enrollment.dates.invalid=As datas de ciclo de vida da matrícula estão cronologicamente inválidas.
 error.domain.projects.enrollment.project.blank=O ID do projeto é obrigatório na matrícula.
@@ -1035,6 +1032,7 @@ error.domain.projects.maxparticipants.negative=O número máximo de participantes 
 error.domain.projects.name.blank=O nome do projeto é obrigatório.
 error.domain.projects.name.too.long=O nome do projeto excede o tamanho máximo (150 caracteres).
 error.domain.projects.status.blank=O status do projeto é obrigatório.
+error.domain.projects.school.id.blank=O ID da escola é obrigatório.
 
 # Status do Projeto / Matrícula / Presença
 attendance.status.absent=Ausente

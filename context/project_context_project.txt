@@ -529,9 +529,6 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that the creation or validation timestamp is logically in the future. */
   INVALID_CREATED_AT_FUTURE("error.domain.projects.createdat.future", "createdAt"),
 
-  /** Indicates that a project description was provided as null, empty, or whitespace. */
-  INVALID_DESCRIPTION_BLANK("error.domain.projects.description.blank", "description"),
-
   /** Indicates that a project description exceeds the maximum allowed length constraints. */
   INVALID_DESCRIPTION_TOO_LONG("error.domain.projects.description.too.long", "description"),
 
@@ -590,7 +587,10 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start", "projectStatus"),
 
   /** Indicates that a status enum was provided as null. */
-  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status");
+  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
+
+  /** Indicates that a school ID was provided as null. */
+  INVALID_SCHOOL_ID_BLANK("error.domain.projects.school.id.blank", "schoolId");
 
   /**
    * The property key used to resolve the localized error message in the application's resource
@@ -698,7 +698,7 @@ public class Project extends DomainError {
   /** The unique identifier of the partner organization offering this project. */
   UUID entityId;
 
-  /** The detailed description of the project's objectives and tasks. */
+  /** The optional detailed description of the project's objectives and tasks. */
   String description;
 
   /** The logistical metadata and audit information of the project. */
@@ -706,6 +706,66 @@ public class Project extends DomainError {
 
   /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   ProjectStatus projectStatus;
+
+  /**
+   * Transitions the project's state to 'CANCELED'.
+   *
+   * @return a new {@link Project} instance reflecting the canceled status
+   * @throws BusinessRuleException if the project is already 'COMPLETED'
+   */
+  public Project cancel() {
+    if (projectStatus == ProjectStatus.CANCELED) {
+      return this;
+    }
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.CANCELED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the project's description.
+   *
+   * @param newDescription the new description text
+   * @return a new {@link Project} instance with the updated description
+   */
+  public Project changeDescription(String newDescription) {
+    String trimmed = StringUtils.trim(newDescription);
+    if (description != null && description.equals(trimmed)) {
+      return this;
+    }
+    Project updated = toBuilder().description(trimmed).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'COMPLETED'.
+   *
+   * @return a new {@link Project} instance reflecting the completed status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project complete() {
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.COMPLETED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
 
   /**
    * Factory method to create a new {@code Project} instance.
@@ -744,6 +804,25 @@ public class Project extends DomainError {
   }
 
   /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'ON_HOLD'.
+   *
+   * @return a new {@link Project} instance reflecting the on-hold status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project putOnHold() {
+    if (projectStatus == ProjectStatus.ON_HOLD) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
+    }
+    Project updated =
+        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
    * Updates the project's title.
    *
    * @param newName the new name for the project
@@ -760,32 +839,20 @@ public class Project extends DomainError {
   }
 
   /**
-   * Reassigns the project to a different partner organization.
+   * Transitions the project's state from 'ON_HOLD' back to 'IN_PROGRESS'.
    *
-   * @param newEntityId the unique identifier of the new partner entity
-   * @return a new {@link Project} instance with the updated entity ID
+   * @return a new {@link Project} instance reflecting the resumed status
+   * @throws BusinessRuleException if the project is not currently 'ON_HOLD'
    */
-  public Project moveToEntity(UUID newEntityId) {
-    if (entityId.equals(newEntityId)) {
-      return this;
+  public Project retake() {
+    if (projectStatus != ProjectStatus.ON_HOLD) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
     }
-    Project updated = toBuilder().entityId(newEntityId).projectInfo(projectInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Updates the project's description.
-   *
-   * @param newDescription the new description text
-   * @return a new {@link Project} instance with the updated description
-   */
-  public Project changeDescription(String newDescription) {
-    String trimmed = StringUtils.trim(newDescription);
-    if (description.equals(trimmed)) {
-      return this;
-    }
-    Project updated = toBuilder().description(trimmed).projectInfo(projectInfo.update()).build();
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -812,97 +879,13 @@ public class Project extends DomainError {
     return updated;
   }
 
-  /**
-   * Transitions the project's state from 'IN_PROGRESS' to 'COMPLETED'.
-   *
-   * @return a new {@link Project} instance reflecting the completed status
-   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
-   */
-  public Project complete() {
-    if (projectStatus == ProjectStatus.COMPLETED) {
-      return this;
-    }
-    if (projectStatus != ProjectStatus.IN_PROGRESS) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.COMPLETED)
-            .projectInfo(projectInfo.closeProject())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state to 'CANCELED'.
-   *
-   * @return a new {@link Project} instance reflecting the canceled status
-   * @throws BusinessRuleException if the project is already 'COMPLETED'
-   */
-  public Project cancel() {
-    if (projectStatus == ProjectStatus.CANCELED) {
-      return this;
-    }
-    if (projectStatus == ProjectStatus.COMPLETED) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.CANCELED)
-            .projectInfo(projectInfo.closeProject())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state from 'IN_PROGRESS' to 'ON_HOLD'.
-   *
-   * @return a new {@link Project} instance reflecting the on-hold status
-   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
-   */
-  public Project putOnHold() {
-    if (projectStatus == ProjectStatus.ON_HOLD) {
-      return this;
-    }
-    if (projectStatus != ProjectStatus.IN_PROGRESS) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
-    }
-    Project updated =
-        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state from 'ON_HOLD' back to 'IN_PROGRESS'.
-   *
-   * @return a new {@link Project} instance reflecting the resumed status
-   * @throws BusinessRuleException if the project is not currently 'ON_HOLD'
-   */
-  public Project retake() {
-    if (projectStatus != ProjectStatus.ON_HOLD) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.IN_PROGRESS)
-            .projectInfo(projectInfo.update())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
   /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
     if (entityId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_CREATED_BY_BLANK);
     }
-    if (StringUtils.isEmpty(description)) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_BLANK);
-    } else if (description.length() > 4000) {
+    if (StringUtils.isNotEmpty(description) && description.length() > 4000) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_TOO_LONG);
     }
     if (StringUtils.isEmpty(name)) {
@@ -931,21 +914,40 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link Project} aggregate roots.
+ * Domain repository interface for managing {@link Project} and {@link ProjectsBySchool} aggregate
+ * roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
- * projects. It abstracts the underlying data storage mechanism to maintain a pure,
- * infrastructure-agnostic domain model.
+ * projects and their school associations. It abstracts the underlying data storage mechanism to
+ * maintain a pure, infrastructure-agnostic domain model.
  */
 public interface ProjectRepository {
 
-  Project persist(Project entity);
-
-  void update(Project entity);
-
+  /**
+   * Removes a {@link Project} from the repository based on its unique identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the project to delete
+   * @return {@code true} if the project was successfully deleted, {@code false} if it was not found
+   */
   boolean deleteById(UUID id);
 
-  Optional<Project> findOptionalById(UUID id);
+  /**
+   * Checks whether any project was created by a specific staff member's account.
+   *
+   * @param accountId the unique identifier (UUID) of the staff account
+   * @return {@code true} if at least one project was created by the account, {@code false}
+   *     otherwise
+   */
+  boolean existsByCreatedBy(UUID accountId);
+
+  /**
+   * Checks whether any project exists that is associated with a specific partner entity.
+   *
+   * @param entityId the unique identifier of the partner entity to check
+   * @return {@code true} if at least one project belongs to the given entity, {@code false}
+   *     otherwise
+   */
+  boolean existsByEntityId(UUID entityId);
 
   /**
    * Checks whether a project with the specified name already exists for a given partner entity.
@@ -956,9 +958,119 @@ public interface ProjectRepository {
    */
   boolean existsByNameAndEntityId(String name, UUID entityId);
 
-  boolean existsByEntityId(UUID entityId);
+  /**
+   * Retrieves a {@link Project} by its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an {@link Optional} containing the {@link Project} if found, or {@link
+   *     Optional#empty()} if not
+   */
+  Optional<Project> findOptionalById(UUID id);
 
-  boolean existsByCreatedBy(UUID staffAccountId);
+  /**
+   * Persists a newly created {@link Project} aggregate into the repository.
+   *
+   * @param entity the {@link Project} aggregate to persist
+   * @return the fully persisted {@link Project} instance
+   */
+  Project persist(Project entity);
+
+  /**
+   * Persists a newly created {@link ProjectsBySchool} association into the repository.
+   *
+   * @param association the {@link ProjectsBySchool} aggregate to persist
+   * @return the fully persisted {@link ProjectsBySchool} instance
+   */
+  ProjectsBySchool persistAssociation(ProjectsBySchool association);
+
+  /**
+   * Updates the state of an existing {@link Project} aggregate in the repository.
+   *
+   * @param entity the {@link Project} instance containing the updated state
+   */
+  void update(Project entity);
+
+  /**
+   * Updates the school association for an existing {@link ProjectsBySchool} aggregate.
+   *
+   * @param association the {@link ProjectsBySchool} instance containing the updated state
+   */
+  void updateAssociation(ProjectsBySchool association);
+}
+
+
+================================================================================
+FILE: domain/ProjectsBySchool.java
+================================================================================
+package com.pug.project.domain;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * Domain aggregate representing the association between a Project and a School.
+ *
+ * <p>This aggregate ensures that a project is strictly linked to a valid school. It provides
+ * methods to manage and transition this association, extending {@link DomainError} for structural
+ * validation.
+ */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class ProjectsBySchool extends DomainError {
+
+  /** The unique identifier of the project. */
+  private final UUID projectId;
+
+  /** The unique identifier of the school. */
+  private final UUID schoolId;
+
+  /**
+   * Factory method to create a new {@code ProjectsBySchool} instance.
+   *
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return a self-validated {@link ProjectsBySchool} instance
+   */
+  public static ProjectsBySchool factory(UUID projectId, UUID schoolId) {
+    ProjectsBySchool association =
+        ProjectsBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+    association.collectValidationProblems();
+    return association;
+  }
+
+  /**
+   * Transitions the association to a new school.
+   *
+   * @param newSchoolId the unique identifier of the new school
+   * @return a new {@link ProjectsBySchool} instance with the updated school ID, or {@code this} if
+   *     unchanged
+   */
+  public ProjectsBySchool moveToSchool(UUID newSchoolId) {
+    if (newSchoolId != null && newSchoolId.equals(this.schoolId)) {
+      return this;
+    }
+    ProjectsBySchool updated = toBuilder().schoolId(newSchoolId).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /** Evaluates constraints for the aggregate and accumulates any validation problems. */
+  private void collectValidationProblems() {
+    if (projectId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    }
+    if (schoolId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+    }
+  }
 }
 
 
@@ -2268,11 +2380,15 @@ package com.pug.project.infra.persistence.impl;
 
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
+import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.infra.ProjectMapper;
 import com.pug.project.infra.persistence.ProjectEntity;
+import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
@@ -2282,6 +2398,54 @@ import java.util.UUID;
 public class ProjectRepositoryImpl
     implements ProjectRepository, PanacheRepositoryBase<ProjectEntity, UUID> {
 
+  @Inject EntityManager em;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    var deleted = delete("id", id) > 0;
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByCreatedBy(UUID accountId) {
+    if (accountId == null) {
+      return false;
+    }
+    return count("createdBy", accountId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByEntityId(UUID entityId) {
+    if (entityId == null) {
+      return false;
+    }
+    return count("entityId", entityId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByNameAndEntityId(String name, UUID entityId) {
+    if (StringUtils.isEmpty(name) || entityId == null) {
+      return false;
+    }
+    return count("name = ?1 and entityId = ?2", name, entityId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Project> findOptionalById(UUID id) {
+    return findByIdOptional(id).map(ProjectMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Project persist(Project entity) {
@@ -2293,6 +2457,24 @@ public class ProjectRepositoryImpl
     return ProjectMapper.toDomain(e);
   }
 
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public ProjectsBySchool persistAssociation(ProjectsBySchool association) {
+    if (association == null) {
+      return null;
+    }
+
+    ProjectsBySchoolsEntity entity =
+        new ProjectsBySchoolsEntity(
+            new ProjectsBySchoolsEntity.ProjectsBySchoolsId(
+                association.getProjectId(), association.getSchoolId()));
+    em.persist(entity);
+    em.flush();
+    return association;
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Project entity) {
@@ -2305,41 +2487,28 @@ public class ProjectRepositoryImpl
     }
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
+  public void updateAssociation(ProjectsBySchool association) {
+    if (association == null || association.getProjectId() == null) {
+      return;
     }
-    var deleted = delete("id", id) > 0;
-    flush();
-    return deleted;
-  }
 
-  @Override
-  public Optional<Project> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(ProjectMapper::toDomain);
-  }
+    var existingAssociations =
+        em.createQuery(
+                "select e from ProjectsBySchoolsEntity e where e.id.projectId = :pid",
+                ProjectsBySchoolsEntity.class)
+            .setParameter("pid", association.getProjectId())
+            .getResultList();
 
-  @Override
-  public boolean existsByNameAndEntityId(String name, UUID entityId) {
-    if (StringUtils.isEmpty(name) || entityId == null) {
-      return false;
+    if (!existingAssociations.isEmpty()) {
+      for (ProjectsBySchoolsEntity existing : existingAssociations) {
+        em.remove(existing);
+      }
     }
-    return count("name = ?1 and entityId = ?2", name, entityId) > 0;
-  }
 
-  @Override
-  public boolean existsByEntityId(UUID entityId) {
-    if (entityId == null) {
-      return false;
-    }
-    return count("entityId", entityId) > 0;
-  }
-
-  @Override
-  public boolean existsByCreatedBy(UUID staffAccountId) {
-    return false;
+    persistAssociation(association);
   }
 }
 
@@ -2370,6 +2539,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 /**
  * JPA entity representing a Project within the persistence layer.
@@ -2403,9 +2576,26 @@ import lombok.experimental.SuperBuilder;
       @Index(name = "idx_projects_updated_at", columnList = "updated_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
+@Indexed
 public class ProjectEntity extends BaseAuditedEntity {
 
-  /** The title or name of the project. */
+  /**
+   * The title or name of the project.
+   *
+   * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
+   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   *
+   * <ul>
+   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
+   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").
+   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.
+   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.
+   * </ul>
+   */
+  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
+  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
+  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
+  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @NotBlank
   @Size(max = 150)
   @Column(name = "name", nullable = false, length = 150)
@@ -2417,7 +2607,6 @@ public class ProjectEntity extends BaseAuditedEntity {
   private UUID entityId;
 
   /** A detailed description of the project's objectives and tasks. */
-  @NotBlank
   @Size(max = 4000)
   @Column(name = "description", nullable = false, length = 4000)
   private String description;
@@ -2451,10 +2640,75 @@ public class ProjectEntity extends BaseAuditedEntity {
 
 
 ================================================================================
+FILE: infra/persistence/ProjectsBySchoolsEntity.java
+================================================================================
+package com.pug.project.infra.persistence;
+
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import java.io.Serializable;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+/**
+ * JPA entity representing the many-to-many relationship between Projects and Schools.
+ *
+ * <p>This entity is intended strictly for read-only query projections and relational mapping.
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(of = "id")
+@Entity
+@Table(
+    name = "projects_by_schools",
+    indexes = {@Index(name = "idx_pbs_school", columnList = "school_id")})
+public class ProjectsBySchoolsEntity {
+
+  /** Embeddable composite primary key mapping the intersection of a Project and a School. */
+  @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
+  @Embeddable
+  @Getter
+  @Setter
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @EqualsAndHashCode
+  public static final class ProjectsBySchoolsId implements Serializable {
+    @NotNull
+    @Column(name = "project_id", nullable = false)
+    private UUID projectId;
+
+    @NotNull
+    @Column(name = "school_id", nullable = false)
+    private UUID schoolId;
+  }
+
+  /** The composite identifier mapping. */
+  @EmbeddedId private ProjectsBySchoolsId id;
+}
+
+
+================================================================================
 FILE: infra/ProjectMapper.java
 ================================================================================
 package com.pug.project.infra;
 
+import com.pug.academic.infra.persistence.SchoolEntity;
+import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.identity.infra.persistence.AccountEntity;
@@ -2468,7 +2722,9 @@ import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
+import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping between Project boundary layers.
@@ -2483,10 +2739,44 @@ public final class ProjectMapper {
   private ProjectMapper() {}
 
   /**
-   * Reconstitutes a pure Domain {@link Project} aggregate from a JPA {@link ProjectEntity}.
+   * Updates an existing, attached JPA {@link ProjectEntity} with the current state of a Domain
+   * {@link Project}.
    *
-   * <p>This method translates primitive database columns back into their corresponding Domain Value
-   * Objects (e.g., {@link ProjectInfo}, {@link AuditInfo}) and parses Enums.
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
+   */
+  public static void copy(Project d, ProjectEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setName(d.getName());
+    e.setEntityId(d.getEntityId());
+    e.setDescription(d.getDescription());
+    e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
+    e.setOfferedHours(d.getProjectInfo().getOfferedHours());
+    e.setClosedAt(d.getProjectInfo().getClosedAt());
+    e.setStatus(d.getProjectStatus().name());
+  }
+
+  /**
+   * Projects a raw JPA {@link SchoolEntity} and a list of resolved {@link ProjectView} DTOs into a
+   * {@link SchoolProjectView}.
+   *
+   * @param s the JPA entity representing the school
+   * @param projects the list of resolved project views associated with the school
+   * @return a fully populated {@link SchoolProjectView} DTO
+   */
+  public static SchoolProjectView toSchoolProjectView(SchoolEntity s, List<ProjectView> projects) {
+    if (s == null) {
+      return null;
+    }
+    SchoolView schoolView =
+        new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
+    return new SchoolProjectView(schoolView, projects);
+  }
+
+  /**
+   * Reconstitutes a pure Domain {@link Project} aggregate from a JPA {@link ProjectEntity}.
    *
    * @param e the JPA persistence entity to convert
    * @return a fully constructed Domain {@link Project}, or {@code null} if the input entity is null
@@ -2519,9 +2809,6 @@ public final class ProjectMapper {
    * Translates a pure Domain {@link Project} aggregate into a newly instantiated JPA {@link
    * ProjectEntity}.
    *
-   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
-   * Domain Value Objects back into primitive types suitable for JDBC insertion.
-   *
    * @param d the Domain aggregate to convert
    * @return a newly constructed JPA {@link ProjectEntity}, or {@code null} if the input domain is
    *     null
@@ -2547,34 +2834,8 @@ public final class ProjectMapper {
   }
 
   /**
-   * Updates an existing, attached JPA {@link ProjectEntity} with the current state of a Domain
-   * {@link Project}.
-   *
-   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
-   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements.
-   *
-   * @param d the Domain aggregate containing the updated state
-   * @param e the existing, attached JPA entity to update in-place
-   */
-  public static void copy(Project d, ProjectEntity e) {
-    if (d == null || e == null) {
-      return;
-    }
-    e.setName(d.getName());
-    e.setEntityId(d.getEntityId());
-    e.setDescription(d.getDescription());
-    e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
-    e.setOfferedHours(d.getProjectInfo().getOfferedHours());
-    e.setClosedAt(d.getProjectInfo().getClosedAt());
-    e.setStatus(d.getProjectStatus().name());
-  }
-
-  /**
    * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
    * {@link ProjectView} DTO.
-   *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the project, its managing partner organization, and the staff creator.
    *
    * @param p the JPA entity representing the project
    * @param ent the JPA entity representing the partner organization
@@ -2590,42 +2851,37 @@ public final class ProjectMapper {
       return null;
     }
 
-    CityView cityView = null;
-    if (city != null) {
-      cityView = new CityView(city.getId(), city.getName(), city.getIbgeCode());
-    }
+    CityView cityView =
+        (city != null) ? new CityView(city.getId(), city.getName(), city.getIbgeCode()) : null;
 
-    EntityView entityView = null;
-    if (ent != null) {
-      entityView =
-          new EntityView(
-              ent.getId(),
-              ent.getCnpj(),
-              ent.getName(),
-              ent.getAddress(),
-              cityView,
-              ent.getCreatedAt(),
-              ent.getUpdatedAt());
-    }
+    EntityView entityView =
+        (ent != null)
+            ? new EntityView(
+                ent.getId(),
+                ent.getCnpj(),
+                ent.getName(),
+                ent.getAddress(),
+                cityView,
+                ent.getCreatedAt(),
+                ent.getUpdatedAt())
+            : null;
 
-    UserView userView = null;
-    if (u != null) {
-      userView =
-          new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt());
-    }
+    UserView userView =
+        (u != null)
+            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
+            : null;
 
-    AccountView accountView = null;
-    if (acc != null) {
-      accountView =
-          new AccountView(
-              acc.getId(),
-              userView,
-              acc.getEmail(),
-              acc.getAccountType(),
-              acc.getCreatedAt(),
-              acc.getUpdatedAt(),
-              acc.getActive());
-    }
+    AccountView accountView =
+        (acc != null)
+            ? new AccountView(
+                acc.getId(),
+                userView,
+                acc.getEmail(),
+                acc.getAccountType(),
+                acc.getCreatedAt(),
+                acc.getUpdatedAt(),
+                acc.getActive())
+            : null;
 
     return new ProjectView(
         p.getId(),
@@ -2866,6 +3122,47 @@ public record ProjectView(
     OffsetDateTime closedAt,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
+
+
+================================================================================
+FILE: infra/read/dtos/SchoolProjectAcc.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.persistence.SchoolEntity;
+import com.pug.project.infra.persistence.ProjectEntity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
+/**
+ * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
+ *
+ * <p>By fetching the {@link ProjectEntity} and {@link SchoolEntity} in a single query projection,
+ * it allows the query layer to group projects by school without triggering multiple database
+ * round-trips.
+ */
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
+public record SchoolProjectAcc(ProjectEntity project, SchoolEntity school) {}
+
+
+================================================================================
+FILE: infra/read/dtos/SchoolProjectView.java
+================================================================================
+package com.pug.project.infra.read.dtos;
+
+import com.pug.academic.infra.read.dtos.SchoolView;
+import java.util.List;
+
+/**
+ * Data Transfer Object (DTO) representing a read-only, consolidated view of a School and its
+ * associated projects.
+ *
+ * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
+ * client, grouping a specific {@link SchoolView} with all {@link ProjectView} records linked to it.
+ *
+ * @param school the read-only projection of the school
+ * @param projects the list of projects associated with this school
+ */
+public record SchoolProjectView(SchoolView school, List<ProjectView> projects) {}
 
 
 ================================================================================
@@ -3157,8 +3454,12 @@ FILE: infra/read/impl/ProjectQueriesImpl.java
 ================================================================================
 package com.pug.project.infra.read.impl;
 
+import com.pug.project.infra.ProjectMapper;
+import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.ProjectQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
+import com.pug.shared.infra.search.HibernateSearchUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -3170,8 +3471,8 @@ import java.util.UUID;
 /**
  * Implementation of the {@link ProjectQueries} interface.
  *
- * <p>Uses JPQL constructor expressions to implicitly join the project with its Partner Entity,
- * City, and Creator Account in a single, highly optimized query.
+ * <p>Uses JPQL constructor expressions to join the project graph and {@link
+ * com.pug.project.infra.persistence.ProjectsBySchoolsEntity} for school-based relational queries.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -3181,33 +3482,34 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                    select new com.pug.project.infra.read.dtos.ProjectView(
-                      p.id, p.name,
-                      new com.pug.partner.infra.read.dtos.EntityView(
-                        ent.id, ent.cnpj, ent.name, ent.address,
-                        new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                        ent.createdAt, ent.updatedAt
+                  select new com.pug.project.infra.read.dtos.ProjectView(
+                    p.id, p.name,
+                    new com.pug.partner.infra.read.dtos.EntityView(
+                      ent.id, ent.cnpj, ent.name, ent.address,
+                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
+                      ent.createdAt, ent.updatedAt
+                    ),
+                    p.description,
+                    new com.pug.identity.infra.read.dtos.AccountView(
+                      acc.id,
+                      new com.pug.identity.infra.read.dtos.UserView(
+                        u.id, u.cpf, u.name, u.createdAt, u.updatedAt
                       ),
-                      p.description,
-                      new com.pug.identity.infra.read.dtos.AccountView(
-                        acc.id,
-                        new com.pug.identity.infra.read.dtos.UserView(
-                          u.id, u.cpf, u.name, u.createdAt, u.updatedAt
-                        ),
-                        acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
-                      ),
-                      p.maxParticipants, p.offeredHours, p.status,
-                      p.closedAt, p.createdAt, p.updatedAt
-                    )
-                    from ProjectEntity p
-                    join EntityEntity ent on ent.id = p.entityId
-                    join CityEntity c on c.id = ent.cityId
-                    join AccountEntity acc on acc.id = p.createdBy
-                    join UserEntity u on u.id = acc.userId
-                    """;
+                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
+                    ),
+                    p.maxParticipants, p.offeredHours, p.status,
+                    p.closedAt, p.createdAt, p.updatedAt
+                  )
+                  from ProjectEntity p
+                  join EntityEntity ent on ent.id = p.entityId
+                  join CityEntity c on c.id = ent.cityId
+                  join AccountEntity acc on acc.id = p.createdBy
+                  join UserEntity u on u.id = acc.userId
+                  """;
 
   private static final String ORDER_BY_NAME = " order by p.name asc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<ProjectView> findOptionalById(UUID id) {
     if (id == null) {
@@ -3218,32 +3520,75 @@ public class ProjectQueriesImpl implements ProjectQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<ProjectView> listAllProjects() {
     return em.createQuery(SELECT_BASE + ORDER_BY_NAME, ProjectView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<ProjectView> listByCreatedBy(UUID accountId) {
+    if (accountId == null) {
+      return List.of();
+    }
+    return em.createQuery(
+            SELECT_BASE + " where p.createdBy = :accId" + ORDER_BY_NAME, ProjectView.class)
+        .setParameter("accId", accountId)
+        .getResultList();
+  }
+
+  /** {@inheritDoc} */
   @Override
   public List<ProjectView> listByEntityId(UUID entityId) {
     if (entityId == null) {
       return List.of();
     }
-    var q =
-        em.createQuery(SELECT_BASE + " where p.entityId = :eid" + ORDER_BY_NAME, ProjectView.class);
-    q.setParameter("eid", entityId);
-    return q.getResultList();
+    return em.createQuery(
+            SELECT_BASE + " where p.entityId = :eid" + ORDER_BY_NAME, ProjectView.class)
+        .setParameter("eid", entityId)
+        .getResultList();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public SchoolProjectView listBySchool(UUID schoolId) {
+    if (schoolId == null) {
+      return null;
+    }
+
+    var school = em.find(com.pug.academic.infra.persistence.SchoolEntity.class, schoolId);
+    if (school == null) {
+      return null;
+    }
+
+    List<ProjectView> projects =
+        em.createQuery(
+                SELECT_BASE
+                    + " join ProjectsBySchoolsEntity pbs on pbs.id.projectId = p.id "
+                    + "where pbs.id.schoolId = :sid"
+                    + ORDER_BY_NAME,
+                ProjectView.class)
+            .setParameter("sid", schoolId)
+            .getResultList();
+
+    return ProjectMapper.toSchoolProjectView(school, projects);
+  }
+
+  /** {@inheritDoc} */
   @Override
   public List<ProjectView> searchByName(String query) {
-    if (query == null || query.isBlank()) {
+    String key = com.pug.shared.utils.StringUtils.fold(query);
+    List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);
+
+    if (hits.isEmpty()) {
       return List.of();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where lower(p.name) like :name" + ORDER_BY_NAME, ProjectView.class);
-    q.setParameter("name", "%" + query.toLowerCase() + "%");
-    return q.getResultList();
+    List<UUID> ids = hits.stream().map(ProjectEntity::getId).toList();
+
+    return em.createQuery(SELECT_BASE + " where p.id in :ids" + ORDER_BY_NAME, ProjectView.class)
+        .setParameter("ids", ids)
+        .getResultList();
   }
 }
 
@@ -3254,18 +3599,65 @@ FILE: infra/read/ProjectQueries.java
 package com.pug.project.infra.read;
 
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Read-only interface for executing queries against Projects. */
+/**
+ * Read-only interface for executing queries against Projects.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture, defining operations for
+ * retrieving project data directly into lightweight {@link ProjectView} projections.
+ */
 public interface ProjectQueries {
+
+  /**
+   * Retrieves a read-only view of a project based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the project to find
+   * @return an {@link Optional} containing the found {@link ProjectView}, or {@link
+   *     Optional#empty()} if not found
+   */
   Optional<ProjectView> findOptionalById(UUID id);
 
+  /**
+   * Retrieves a comprehensive list of all projects registered in the system.
+   *
+   * @return a {@link List} containing all available {@link ProjectView} entries
+   */
   List<ProjectView> listAllProjects();
 
+  /**
+   * Retrieves a list of all projects created by a specific staff account.
+   *
+   * @param accountId the unique identifier (UUID) of the staff account
+   * @return a {@link List} of projects created by the staff member
+   */
+  List<ProjectView> listByCreatedBy(UUID accountId);
+
+  /**
+   * Retrieves a list of projects offered by a specific partner entity.
+   *
+   * @param entityId the unique identifier (UUID) of the partner entity
+   * @return a {@link List} of matching {@link ProjectView} entries
+   */
   List<ProjectView> listByEntityId(UUID entityId);
 
+  /**
+   * Retrieves a consolidated view of a school and its associated projects.
+   *
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return the populated {@link SchoolProjectView} DTO
+   */
+  SchoolProjectView listBySchool(UUID schoolId);
+
+  /**
+   * Executes a robust full-text search against the names of projects.
+   *
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria
+   */
   List<ProjectView> searchByName(String query);
 }
 
@@ -3514,13 +3906,25 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for creating a new Project.
+ *
+ * @param createdBy the unique identifier (Account ID) of the staff member creating the project
+ * @param description the detailed description of the project's objectives (max 4000 chars)
+ * @param entityId the unique identifier of the partner organization offering the project
+ * @param maxParticipants the maximum number of students allowed to enroll (optional, min 0)
+ * @param name the title or name of the project (must not be blank, max 150 chars)
+ * @param offeredHours the total counterpart hours the project offers (must be min 0)
+ * @param schoolId the unique identifier of the school associated with the project
+ */
 public record ProjectCreateRequest(
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID entityId,
-    @NotBlank @Size(max = 4000) String description,
+    @Size(max = 4000) String description,
     @NotNull UUID createdBy,
     @Min(0) Integer maxParticipants,
-    @NotNull @DecimalMin("0.00") BigDecimal offeredHours) {}
+    @NotNull @DecimalMin("0.00") BigDecimal offeredHours,
+    @NotNull UUID schoolId) {}
 
 
 ================================================================================
@@ -3528,6 +3932,7 @@ FILE: presenter/dtos/ProjectResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
+import com.pug.academic.presenter.dtos.SchoolResponse;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.project.domain.enums.ProjectStatus;
@@ -3536,10 +3941,28 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the standardized API JSON response for Projects.
+ *
+ * @param id the unique identifier (UUIDv7) of the project
+ * @param name the title or name of the project
+ * @param entity the nested read-only projection of the partner organization
+ * @param school the nested read-only projection of the associated school
+ * @param description the project description
+ * @param createdBy the nested read-only projection of the staff creator
+ * @param maxParticipants the maximum number of students allowed
+ * @param offeredHours the total counterpart hours offered
+ * @param status the current execution state
+ * @param statusFormatted the localized project status string
+ * @param closedAt the exact timestamp when the project was closed
+ * @param closedAtFormatted the localized closure date
+ * @param auditInfo the nested audit information
+ */
 public record ProjectResponse(
     UUID id,
     String name,
     EntityResponse entity,
+    SchoolResponse school,
     String description,
     AccountResponse createdBy,
     Integer maxParticipants,
@@ -3552,6 +3975,24 @@ public record ProjectResponse(
 
 
 ================================================================================
+FILE: presenter/dtos/ProjectsBySchoolResponse.java
+================================================================================
+package com.pug.project.presenter.dtos;
+
+import com.pug.academic.presenter.dtos.SchoolResponse;
+import java.util.List;
+
+/**
+ * Data Transfer Object (DTO) used as the standardized API JSON response for a School and its
+ * associated Projects.
+ *
+ * @param school the consolidated, client-facing projection of the school
+ * @param projects the list of consolidated, client-facing projections of associated projects
+ */
+public record ProjectsBySchoolResponse(SchoolResponse school, List<ProjectResponse> projects) {}
+
+
+================================================================================
 FILE: presenter/dtos/ProjectUpdateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
@@ -3559,12 +4000,24 @@ package com.pug.project.presenter.dtos;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing
+ * Project.
+ *
+ * @param description the new project description, or {@code null} to leave unchanged
+ * @param maxParticipants the new participant capacity limit, or {@code null} to leave unchanged
+ * @param name the new name of the project, or {@code null} to leave unchanged
+ * @param offeredHours the new offered hours, or {@code null} to leave unchanged
+ * @param schoolId the new school identifier, or {@code null} to leave unchanged
+ */
 public record ProjectUpdateRequest(
     @Size(max = 150) String name,
     @Size(max = 4000) String description,
     Integer maxParticipants,
-    @DecimalMin("0.00") BigDecimal offeredHours) {}
+    @DecimalMin("0.00") BigDecimal offeredHours,
+    UUID schoolId) {}
 
 
 ================================================================================
@@ -3861,15 +4314,22 @@ FILE: presenter/mappers/ProjectPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectResponse;
+import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.StringUtils;
+import java.time.OffsetDateTime;
 import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Stateless utility class responsible for mapping internal project projections to external API
@@ -3878,6 +4338,14 @@ import java.util.Locale;
 public final class ProjectPresenter {
   private ProjectPresenter() {}
 
+  /**
+   * Projects a read-only {@link ProjectView} into a client-facing {@link ProjectResponse}.
+   *
+   * @param v the internal read-model projection of the project
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service
+   * @return a fully populated {@link ProjectResponse} ready for JSON serialization
+   */
   public static ProjectResponse toResponse(ProjectView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
@@ -3893,6 +4361,9 @@ public final class ProjectPresenter {
         v.id(),
         v.name(),
         EntityPresenter.toResponse(v.entity(), locale),
+        SchoolPresenter.toResponse(
+            new SchoolView(UUID.randomUUID(), "", OffsetDateTime.now(), OffsetDateTime.now()),
+            locale),
         v.description(),
         AccountPresenter.toResponse(v.createdBy(), locale, i18n),
         v.maxParticipants(),
@@ -3903,6 +4374,25 @@ public final class ProjectPresenter {
         closedAtFormatted,
         auditInfo);
   }
+
+  /**
+   * Projects a read-only {@link SchoolProjectView} into a client-facing {@link
+   * ProjectsBySchoolResponse}.
+   *
+   * @param v the internal read-model projection containing school and projects
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service
+   * @return a fully populated {@link ProjectsBySchoolResponse}
+   */
+  public static ProjectsBySchoolResponse toResponse(SchoolProjectView v, Locale locale, I18n i18n) {
+    if (v == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    return new ProjectsBySchoolResponse(
+        SchoolPresenter.toResponse(v.school(), locale),
+        v.projects().stream().map(p -> toResponse(p, locale, i18n)).collect(Collectors.toList()));
+  }
 }
 
 
@@ -3912,9 +4402,11 @@ FILE: presenter/ProjectResource.java
 package com.pug.project.presenter;
 
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
 import com.pug.project.presenter.dtos.ProjectUpdateRequest;
+import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.project.presenter.mappers.ProjectPresenter;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.ProjectService;
@@ -3968,6 +4460,14 @@ public class ProjectResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a specific project by its unique UUID identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     ProjectResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the project is not found
+   */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
@@ -3976,6 +4476,33 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves a consolidated view of a school and its associated projects.
+   *
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     ProjectsBySchoolResponse}
+   */
+  @GET
+  @Path("/by-school/{schoolId}")
+  public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
+    SchoolProjectView view = readService.listViewsBySchool(schoolId);
+    ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of projects.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * project names. If the {@code entityId} parameter is provided, it filters the results by partner
+   * entity.
+   *
+   * @param query the optional search query string
+   * @param entityId the optional entity filter
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
   @GET
   public Response list(
       @QueryParam("q") String query, @QueryParam("entityId") @UuidV7 UUID entityId) {
@@ -3997,6 +4524,14 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Registers a new project within the platform.
+   *
+   * @param req the validated {@link ProjectCreateRequest}
+   * @return an HTTP 201 Created response containing the created {@link ProjectResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a project with the same name
+   *     exists for the entity
+   */
   @POST
   public Response create(@Valid ProjectCreateRequest req) {
     var cmd =
@@ -4006,7 +4541,8 @@ public class ProjectResource {
             req.description(),
             req.createdBy(),
             req.maxParticipants(),
-            req.offeredHours());
+            req.offeredHours(),
+            req.schoolId());
 
     var created = writeService.save(cmd);
     ProjectView view = readService.getViewById(created.getId());
@@ -4016,12 +4552,23 @@ public class ProjectResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Updates an existing project's details.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @param req the validated {@link ProjectUpdateRequest}
+   * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
+   */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     var cmd =
         new ProjectUpdateCommand(
-            req.name(), req.description(), req.maxParticipants(), req.offeredHours());
+            req.name(),
+            req.description(),
+            req.maxParticipants(),
+            req.offeredHours(),
+            req.schoolId());
 
     writeService.update(id, cmd);
     ProjectView view = readService.getViewById(id);
@@ -4030,46 +4577,82 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Cancels a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/cancel")
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
-    writeService.cancel(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Completes a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/complete")
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.complete(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Puts a project on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/hold")
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
-    writeService.putOnHold(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Resumes a project that is on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/retake")
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
-    writeService.retake(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Starts a project, setting its status to IN_PROGRESS.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/start")
   public Response start(@PathParam("id") @UuidV7 UUID id) {
-    writeService.start(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Permanently removes a project from the system.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response
+   */
   @DELETE
   @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
@@ -4231,14 +4814,28 @@ package com.pug.project.service.dtos;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/** Data Transfer Object (DTO) acting as an application command to provision a new Project. */
+/**
+ * Data Transfer Object (DTO) acting as an application command to provision a new Project.
+ *
+ * <p>This record encapsulates the raw input data required by the application service to instantiate
+ * a new {@link com.pug.project.domain.Project} aggregate.
+ *
+ * @param createdBy the unique identifier (Account ID) of the staff member creating the project
+ * @param description the optional detailed description of the project's objectives
+ * @param entityId the unique identifier of the partner organization offering the project
+ * @param maxParticipants the maximum number of students allowed to enroll (optional)
+ * @param name the title or name of the project
+ * @param offeredHours the total counterpart hours the project offers to participants
+ * @param schoolId the unique identifier of the school associated with the project
+ */
 public record ProjectCreateCommand(
     String name,
     UUID entityId,
     String description,
     UUID createdBy,
     Integer maxParticipants,
-    BigDecimal offeredHours) {}
+    BigDecimal offeredHours,
+    UUID schoolId) {}
 
 
 ================================================================================
@@ -4247,10 +4844,27 @@ FILE: service/dtos/ProjectUpdateCommand.java
 package com.pug.project.service.dtos;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
-/** Data Transfer Object (DTO) acting as an application command to update an existing Project. */
+/**
+ * Data Transfer Object (DTO) acting as an application command to update an existing Project.
+ *
+ * <p>This record encapsulates the requested state changes for a project. The fields are treated as
+ * optional for partial updates; omitting a value (or providing {@code null}) will retain the
+ * current state in the database.
+ *
+ * @param description the new description text, or {@code null} to leave unchanged
+ * @param maxParticipants the new participant capacity limit, or {@code null} to leave unchanged
+ * @param name the new name of the project, or {@code null} to leave unchanged
+ * @param offeredHours the new offered hours, or {@code null} to leave unchanged
+ * @param schoolId the new school identifier, or {@code null} to leave unchanged
+ */
 public record ProjectUpdateCommand(
-    String name, String description, Integer maxParticipants, BigDecimal offeredHours) {}
+    String name,
+    String description,
+    Integer maxParticipants,
+    BigDecimal offeredHours,
+    UUID schoolId) {}
 
 
 ================================================================================
@@ -4755,6 +5369,7 @@ package com.pug.project.service.impl;
 
 import com.pug.project.infra.read.ProjectQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
@@ -4764,6 +5379,13 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link ProjectReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * ProjectQueries} infrastructure component. It handles basic input validation and translates "not
+ * found" states into standardized domain exceptions.
+ */
 @ApplicationScoped
 public class ProjectReadServiceImpl implements ProjectReadService {
 
@@ -4771,6 +5393,7 @@ public class ProjectReadServiceImpl implements ProjectReadService {
 
   @Inject ProjectQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public ProjectView getViewById(UUID id) {
     return queries
@@ -4782,11 +5405,22 @@ public class ProjectReadServiceImpl implements ProjectReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<ProjectView> listViews() {
     return queries.listAllProjects();
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public List<ProjectView> listViewsByCreatedBy(UUID accountId) {
+    if (accountId == null) {
+      return List.of();
+    }
+    return queries.listByCreatedBy(accountId);
+  }
+
+  /** {@inheritDoc} */
   @Override
   public List<ProjectView> listViewsByEntityId(UUID entityId) {
     if (entityId == null) {
@@ -4795,9 +5429,29 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     return queries.listByEntityId(entityId);
   }
 
+  /** {@inheritDoc} */
+  @Override
+  public SchoolProjectView listViewsBySchool(UUID schoolId) {
+    if (schoolId == null) {
+      return null;
+    }
+    return queries.listBySchool(schoolId);
+  }
+
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * rules.
+   */
   @Override
   public List<ProjectView> searchByName(String query) {
-    return queries.searchByName(StringUtils.fold(query));
+    if (StringUtils.isEmpty(query)) {
+      return List.of();
+    }
+    String key = StringUtils.fold(query);
+    return queries.searchByName(key);
   }
 }
 
@@ -4807,10 +5461,13 @@ FILE: service/impl/ProjectServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
+import com.pug.academic.service.SchoolService;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
+import com.pug.project.domain.ProjectsBySchool;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.EnrollmentService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.ProjectCreateCommand;
@@ -4824,6 +5481,13 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link ProjectService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for projects. It manages
+ * transaction boundaries, enforces cross-domain constraints, and manages project lifecycle
+ * transitions.
+ */
 @ApplicationScoped
 public class ProjectServiceImpl implements ProjectService {
 
@@ -4832,48 +5496,42 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject ProjectRepository repo;
   @Inject EntityService entityService;
   @Inject StaffService staffService;
-  @Inject EnrollmentService enrollmentService; // Need this to check before delete
+  @Inject EnrollmentService enrollmentService;
+  @Inject SchoolService schoolService;
 
-  @Transactional
-  @Override
-  public Project cancel(UUID id) {
-    Project project = getById(id).cancel();
-    repo.update(project);
-    return project;
-  }
-
-  @Transactional
-  @Override
-  public Project complete(UUID id) {
-    Project project = getById(id).complete();
-    repo.update(project);
-    return project;
-  }
-
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
     if (id == null) {
       return false;
     }
-    // Business rule: Cannot delete project with enrollments
-    // We will assume enrollmentService has a method existsByProjectId soon
-    // For now, we proceed with repo deletion directly
+    //    if (enrollmentService.existsAnyByProjectId(id)) {
+    //      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
+    //      throw ExceptionHelper.projectHasEnrollments();
+    //    }
     return repo.deleteById(id);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByEntityId(UUID entityId) {
-    if (entityId == null) return false;
+    if (entityId == null) {
+      return false;
+    }
     return repo.existsByEntityId(entityId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByCreatedBy(UUID accountId) {
-    if (accountId == null) return false;
+    if (accountId == null) {
+      return false;
+    }
     return repo.existsByCreatedBy(accountId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Project getById(UUID id) {
     Project project = repo.findOptionalById(id).orElseThrow(ExceptionHelper::projectNotFound);
@@ -4885,28 +5543,13 @@ public class ProjectServiceImpl implements ProjectService {
     return project;
   }
 
-  @Transactional
-  @Override
-  public Project putOnHold(UUID id) {
-    Project project = getById(id).putOnHold();
-    repo.update(project);
-    return project;
-  }
-
-  @Transactional
-  @Override
-  public Project retake(UUID id) {
-    Project project = getById(id).retake();
-    repo.update(project);
-    return project;
-  }
-
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
-    // Validate structural dependencies
     entityService.getById(cmd.entityId());
     staffService.getByAccountId(cmd.createdBy());
+    schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
       throw ExceptionHelper.projectAlreadyExists();
@@ -4925,22 +5568,44 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    return repo.persist(project);
+    Project savedProject = repo.persist(project);
+    ProjectsBySchool association =
+        ProjectProcessor.processCreateProjectBySchoolInput(savedProject.getId(), cmd.schoolId());
+
+    if (association.hasFieldErrors()) {
+      throw new AppValidationException(association.getFieldErrors());
+    }
+
+    repo.persistAssociation(association);
+
+    return savedProject;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Project start(UUID id) {
-    Project project = getById(id).start();
-    repo.update(project);
-    return project;
+  public Project transitionStatus(UUID id, ProjectStatus status) {
+    Project project = getById(id);
+    Project updated;
+
+    switch (status) {
+      case IN_PROGRESS -> updated = project.start();
+      case COMPLETED -> updated = project.complete();
+      case CANCELED -> updated = project.cancel();
+      case ON_HOLD -> updated = project.putOnHold();
+      case PLANNED -> updated = project.retake();
+      default -> throw new IllegalArgumentException("Unsupported status: " + status);
+    }
+
+    repo.update(updated);
+    return updated;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Project update(UUID id, ProjectUpdateCommand cmd) {
     Project current = getById(id);
-
     Project updated =
         ProjectProcessor.processUpdateInput(
             current, cmd.name(), cmd.description(), cmd.maxParticipants(), cmd.offeredHours());
@@ -4956,6 +5621,18 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
+
+    if (cmd.schoolId() != null) {
+      schoolService.getById(cmd.schoolId());
+      ProjectsBySchool association =
+          ProjectProcessor.processCreateProjectBySchoolInput(id, cmd.schoolId());
+
+      if (association.hasFieldErrors()) {
+        throw new AppValidationException(association.getFieldErrors());
+      }
+      repo.updateAssociation(association);
+    }
+
     return getById(id);
   }
 }
@@ -4967,10 +5644,17 @@ FILE: service/ProjectReadService.java
 package com.pug.project.service;
 
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.UUID;
 
-/** Application service interface dedicated exclusively to querying Project data. */
+/**
+ * Application service interface dedicated exclusively to querying Project data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link ProjectView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
+ */
 public interface ProjectReadService {
 
   /**
@@ -4978,7 +5662,8 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no project matches the provided
+   *     ID
    */
   ProjectView getViewById(UUID id);
 
@@ -4990,17 +5675,36 @@ public interface ProjectReadService {
   List<ProjectView> listViews();
 
   /**
+   * Retrieves a list of projects created by a specific staff member.
+   *
+   * @param accountId the unique identifier of the staff account
+   * @return a {@link List} of projects created by the staff member
+   */
+  List<ProjectView> listViewsByCreatedBy(UUID accountId);
+
+  /**
    * Retrieves a list of projects offered by a specific partner entity.
    *
-   * @param entityId the unique identifier (UUID) of the partner entity
+   * @param entityId the unique identifier of the partner entity
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
 
   /**
+   * Retrieves a consolidated view of a school and its associated projects.
+   *
+   * @param schoolId the unique identifier of the school
+   * @return the populated {@link SchoolProjectView} DTO
+   */
+  SchoolProjectView listViewsBySchool(UUID schoolId);
+
+  /**
    * Executes a robust full-text search against the names of projects.
    *
-   * @param query the raw search string
+   * <p>Leverages advanced text analysis to provide fuzzy matching, accent-insensitivity, and
+   * predictive autocomplete capabilities.
+   *
+   * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> searchByName(String query);
@@ -5013,28 +5717,19 @@ FILE: service/ProjectService.java
 package com.pug.project.service;
 
 import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
 import java.util.UUID;
 
-/** Application service interface for managing the state of {@link Project} domain aggregates. */
+/**
+ * Application service interface for managing the state of {@link Project} domain aggregates.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
+ * Delete) and strict domain-level retrievals. It manages the project lifecycle transitions and
+ * enforces business invariants.
+ */
 public interface ProjectService {
-
-  /**
-   * Cancels an existing project.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project cancel(UUID id);
-
-  /**
-   * Completes an existing project.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project complete(UUID id);
 
   /**
    * Removes a {@link Project} from the system by its unique identifier.
@@ -5045,6 +5740,14 @@ public interface ProjectService {
   boolean delete(UUID id);
 
   /**
+   * Checks if any project was created by a specific account.
+   *
+   * @param accountId the unique identifier of the account
+   * @return {@code true} if a project exists
+   */
+  boolean existsByCreatedBy(UUID accountId);
+
+  /**
    * Checks if any project exists for a specific entity.
    *
    * @param entityId the unique identifier of the entity
@@ -5053,36 +5756,13 @@ public interface ProjectService {
   boolean existsAnyByEntityId(UUID entityId);
 
   /**
-   * Checks if any project was created by a specific staff account.
-   *
-   * @param accountId the unique identifier of the staff account
-   * @return {@code true} if a project exists
-   */
-  boolean existsByCreatedBy(UUID accountId);
-
-  /**
    * Retrieves a full {@link Project} aggregate by its identifier.
    *
    * @param id the unique identifier (UUID) of the project
    * @return the {@link Project} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
    */
   Project getById(UUID id);
-
-  /**
-   * Puts an existing project on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project putOnHold(UUID id);
-
-  /**
-   * Resumes a project that is currently on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project retake(UUID id);
 
   /**
    * Instantiates and persists a new {@link Project} aggregate.
@@ -5093,12 +5773,14 @@ public interface ProjectService {
   Project save(ProjectCreateCommand cmd);
 
   /**
-   * Starts a planned project, changing its state to IN_PROGRESS.
+   * Transitions a project to a new status.
    *
    * @param id the unique identifier (UUID) of the project
+   * @param status the target {@link ProjectStatus}
    * @return the updated {@link Project}
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the status transition is invalid
    */
-  Project start(UUID id);
+  Project transitionStatus(UUID id, ProjectStatus status);
 
   /**
    * Updates an existing {@link Project}.
@@ -5214,30 +5896,72 @@ public final class ExceptionHelper {
   /** Private constructor to prevent instantiation. */
   private ExceptionHelper() {}
 
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that an attendance
+   * record already exists.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
   public static DuplicateResourceException attendanceAlreadyExists() {
     return new DuplicateResourceException(ProjectsErrorCodes.ATTENDANCE_ALREADY_EXISTS);
   }
 
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * attendance could not be located.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
   public static ResourceNotFoundException attendanceNotFound() {
     return new ResourceNotFoundException(ProjectsErrorCodes.ATTENDANCE_NOT_FOUND);
   }
 
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that an enrollment
+   * record already exists.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
   public static DuplicateResourceException enrollmentAlreadyExists() {
     return new DuplicateResourceException(ProjectsErrorCodes.ENROLLMENT_ALREADY_EXISTS);
   }
 
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * enrollment record could not be found.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
   public static ResourceNotFoundException enrollmentNotFound() {
     return new ResourceNotFoundException(ProjectsErrorCodes.ENROLLMENT_NOT_FOUND);
   }
 
+  /**
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a project
+   * already exists.
+   *
+   * @return a fully configured {@link DuplicateResourceException} instance
+   */
   public static DuplicateResourceException projectAlreadyExists() {
     return new DuplicateResourceException(ProjectsErrorCodes.PROJECT_ALREADY_EXISTS);
   }
 
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a project cannot be
+   * deleted because it has enrollments.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
   public static BusinessRuleException projectHasEnrollments() {
     return new BusinessRuleException(ProjectsErrorCodes.PROJECT_HAS_ENROLLMENTS);
   }
 
+  /**
+   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
+   * project could not be found.
+   *
+   * @return a fully configured {@link ResourceNotFoundException} instance
+   */
   public static ResourceNotFoundException projectNotFound() {
     return new ResourceNotFoundException(ProjectsErrorCodes.PROJECT_NOT_FOUND);
   }
@@ -5250,6 +5974,7 @@ FILE: service/utils/ProjectProcessor.java
 package com.pug.project.service.utils;
 
 import com.pug.project.domain.Project;
+import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -5257,21 +5982,14 @@ import java.util.UUID;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Project}
- * Domain Aggregates.
+ * and {@link ProjectsBySchool} Domain Aggregates.
  */
-public class ProjectProcessor {
+public final class ProjectProcessor {
 
-  /**
-   * Processes raw creation inputs and constructs a new {@link Project} domain aggregate.
-   *
-   * @param name the raw name of the project
-   * @param entityId the unique identifier of the partner organization
-   * @param description the project description
-   * @param createdBy the unique identifier of the staff member
-   * @param maxParticipants the maximum number of participants
-   * @param offeredHours the total hours offered
-   * @return a fully instantiated {@link Project} domain aggregate, potentially containing errors
-   */
+  /** Private constructor to prevent instantiation of utility class. */
+  private ProjectProcessor() {}
+
+  /** Processes raw inputs and constructs a new {@link Project} domain aggregate. */
   public static Project processCreateInput(
       String name,
       UUID entityId,
@@ -5283,14 +6001,18 @@ public class ProjectProcessor {
   }
 
   /**
-   * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
+   * Processes raw inputs and constructs a new {@link ProjectsBySchool} domain aggregate.
    *
-   * @param existingProject the current, reconstituted {@link Project} aggregate
-   * @param name the proposed new name, or {@code null}
-   * @param description the proposed new description, or {@code null}
-   * @param maxParticipants the proposed new maximum participants limit, or {@code null}
-   * @param offeredHours the proposed new offered hours, or {@code null}
-   * @return a new {@link Project} domain aggregate reflecting the requested updates
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return a fully instantiated {@link ProjectsBySchool} domain aggregate
+   */
+  public static ProjectsBySchool processCreateProjectBySchoolInput(UUID projectId, UUID schoolId) {
+    return ProjectsBySchool.factory(projectId, schoolId);
+  }
+
+  /**
+   * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
    */
   public static Project processUpdateInput(
       Project existingProject,
@@ -5304,7 +6026,7 @@ public class ProjectProcessor {
     if (StringUtils.isNotEmpty(name)) {
       updated = updated.rename(name);
     }
-    if (StringUtils.isNotEmpty(description)) {
+    if (description != null) {
       updated = updated.changeDescription(description);
     }
     if (maxParticipants != null) {
