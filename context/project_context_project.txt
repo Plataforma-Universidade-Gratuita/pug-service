@@ -2709,14 +2709,6 @@ package com.pug.project.infra;
 
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
@@ -2834,61 +2826,22 @@ public final class ProjectMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link ProjectView} DTO.
+   * Projects a raw JPA {@link ProjectEntity} into a {@link ProjectView} DTO.
    *
    * @param p the JPA entity representing the project
-   * @param ent the JPA entity representing the partner organization
-   * @param city the JPA entity representing the city where the partner operates
-   * @param acc the JPA entity representing the creator's authentication account
-   * @param u the JPA entity representing the creator's personal user profile
-   * @return a fully populated {@link ProjectView} DTO
+   * @return a fully populated {@link ProjectView} DTO containing IDs for relations
    */
-  public static ProjectView toView(
-      ProjectEntity p, EntityEntity ent, CityEntity city, AccountEntity acc, UserEntity u) {
-
+  public static ProjectView toView(ProjectEntity p) {
     if (p == null) {
       return null;
     }
 
-    CityView cityView =
-        (city != null) ? new CityView(city.getId(), city.getName(), city.getIbgeCode()) : null;
-
-    EntityView entityView =
-        (ent != null)
-            ? new EntityView(
-                ent.getId(),
-                ent.getCnpj(),
-                ent.getName(),
-                ent.getAddress(),
-                cityView,
-                ent.getCreatedAt(),
-                ent.getUpdatedAt())
-            : null;
-
-    UserView userView =
-        (u != null)
-            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
-            : null;
-
-    AccountView accountView =
-        (acc != null)
-            ? new AccountView(
-                acc.getId(),
-                userView,
-                acc.getEmail(),
-                acc.getAccountType(),
-                acc.getCreatedAt(),
-                acc.getUpdatedAt(),
-                acc.getActive())
-            : null;
-
     return new ProjectView(
         p.getId(),
         p.getName(),
-        entityView,
+        p.getEntityId(),
         p.getDescription(),
-        accountView,
+        p.getCreatedBy(),
         p.getMaxParticipants(),
         p.getOfferedHours(),
         ProjectStatus.valueOf(p.getStatus()),
@@ -3051,40 +3004,10 @@ public record EnrollmentView(
 
 
 ================================================================================
-FILE: infra/read/dtos/ProjectAcc.java
-================================================================================
-package com.pug.project.infra.read.dtos;
-
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.project.infra.persistence.ProjectEntity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-/**
- * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
- *
- * <p>Acts as an intermediate data structure during complex cross-domain queries. By fetching the
- * {@link ProjectEntity} and all its required associations (Partner Entity, City, Creator Account,
- * Creator User) in a single query projection, it prevents N+1 select performance issues.
- */
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public record ProjectAcc(
-    ProjectEntity project,
-    EntityEntity entity,
-    CityEntity city,
-    AccountEntity creatorAccount,
-    UserEntity creatorUser) {}
-
-
-================================================================================
 FILE: infra/read/dtos/ProjectView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.project.domain.enums.ProjectStatus;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -3094,15 +3017,15 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only view of a Project.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It aggregates the project details with nested projections of the partner organization
- * ({@link EntityView}) and the staff creator ({@link AccountView}) to provide a comprehensive
- * structure optimized for JSON serialization.
+ * client. It provides a lightweight projection of the project, holding only the necessary
+ * identifiers for related resources (Entity and Creator Account) to keep the response payload
+ * optimized for JSON serialization.
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project
- * @param entity the nested read-only projection of the partner organization offering the project
+ * @param entityId the unique identifier of the partner organization offering the project
  * @param description the detailed description of the project
- * @param createdBy the nested read-only projection of the staff account who created the project
+ * @param creatorId the unique identifier of the staff account who created the project
  * @param maxParticipants the maximum number of students allowed to enroll
  * @param offeredHours the total counterpart hours the project offers
  * @param status the current execution state of the project
@@ -3113,35 +3036,15 @@ import java.util.UUID;
 public record ProjectView(
     UUID id,
     String name,
-    EntityView entity,
+    UUID entityId,
     String description,
-    AccountView createdBy,
+    UUID creatorId,
     Integer maxParticipants,
     BigDecimal offeredHours,
     ProjectStatus status,
     OffsetDateTime closedAt,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
-
-
-================================================================================
-FILE: infra/read/dtos/SchoolProjectAcc.java
-================================================================================
-package com.pug.project.infra.read.dtos;
-
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.project.infra.persistence.ProjectEntity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-/**
- * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
- *
- * <p>By fetching the {@link ProjectEntity} and {@link SchoolEntity} in a single query projection,
- * it allows the query layer to group projects by school without triggering multiple database
- * round-trips.
- */
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public record SchoolProjectAcc(ProjectEntity project, SchoolEntity school) {}
 
 
 ================================================================================
@@ -3454,11 +3357,9 @@ FILE: infra/read/impl/ProjectQueriesImpl.java
 ================================================================================
 package com.pug.project.infra.read.impl;
 
-import com.pug.project.infra.ProjectMapper;
 import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.ProjectQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -3482,30 +3383,14 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.project.infra.read.dtos.ProjectView(
-                    p.id, p.name,
-                    new com.pug.partner.infra.read.dtos.EntityView(
-                      ent.id, ent.cnpj, ent.name, ent.address,
-                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                      ent.createdAt, ent.updatedAt
-                    ),
-                    p.description,
-                    new com.pug.identity.infra.read.dtos.AccountView(
-                      acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                        u.id, u.cpf, u.name, u.createdAt, u.updatedAt
-                      ),
-                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
-                    ),
-                    p.maxParticipants, p.offeredHours, p.status,
-                    p.closedAt, p.createdAt, p.updatedAt
-                  )
-                  from ProjectEntity p
-                  join EntityEntity ent on ent.id = p.entityId
-                  join CityEntity c on c.id = ent.cityId
-                  join AccountEntity acc on acc.id = p.createdBy
-                  join UserEntity u on u.id = acc.userId
-                  """;
+                   select new com.pug.project.infra.read.dtos.ProjectView(
+                     p.id, p.name, p.entityId, p.description, p.createdBy,
+                     p.maxParticipants, p.offeredHours,\s
+                     com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                     p.closedAt, p.createdAt, p.updatedAt
+                   )
+                   from ProjectEntity p
+                  \s""";
 
   private static final String ORDER_BY_NAME = " order by p.name asc";
 
@@ -3552,31 +3437,6 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   /** {@inheritDoc} */
   @Override
-  public SchoolProjectView listBySchool(UUID schoolId) {
-    if (schoolId == null) {
-      return null;
-    }
-
-    var school = em.find(com.pug.academic.infra.persistence.SchoolEntity.class, schoolId);
-    if (school == null) {
-      return null;
-    }
-
-    List<ProjectView> projects =
-        em.createQuery(
-                SELECT_BASE
-                    + " join ProjectsBySchoolsEntity pbs on pbs.id.projectId = p.id "
-                    + "where pbs.id.schoolId = :sid"
-                    + ORDER_BY_NAME,
-                ProjectView.class)
-            .setParameter("sid", schoolId)
-            .getResultList();
-
-    return ProjectMapper.toSchoolProjectView(school, projects);
-  }
-
-  /** {@inheritDoc} */
-  @Override
   public List<ProjectView> searchByName(String query) {
     String key = com.pug.shared.utils.StringUtils.fold(query);
     List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);
@@ -3594,12 +3454,88 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
 
 ================================================================================
+FILE: infra/read/impl/ProjectsBySchoolsQueriesImpl.java
+================================================================================
+package com.pug.project.infra.read.impl;
+
+import com.pug.project.infra.ProjectMapper;
+import com.pug.project.infra.read.ProjectsBySchoolsQueries;
+import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Implementation of the {@link ProjectsBySchoolsQueries} interface.
+ *
+ * <p>This query implementation provides specialized access to the relational mapping between
+ * Projects and Schools. It leverages the {@link EntityManager} to execute efficient JPQL queries,
+ * either by consolidating a full school-project projection or by resolving specific association
+ * identifiers.
+ */
+@ApplicationScoped
+@Transactional(Transactional.TxType.SUPPORTS)
+public class ProjectsBySchoolsQueriesImpl implements ProjectsBySchoolsQueries {
+
+  @Inject EntityManager em;
+
+  private static final String SELECT_BASE =
+      """
+                     select new com.pug.project.infra.read.dtos.ProjectView(
+                       p.id, p.name, p.entityId, p.description, p.createdBy,
+                       p.maxParticipants, p.offeredHours,\s
+                       com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                       p.closedAt, p.createdAt, p.updatedAt
+                     )
+                     from ProjectEntity p
+                    \s""";
+
+  /** {@inheritDoc} */
+  @Override
+  public SchoolProjectView listBySchool(UUID schoolId) {
+    if (schoolId == null) {
+      return null;
+    }
+
+    var school = em.find(com.pug.academic.infra.persistence.SchoolEntity.class, schoolId);
+    List<ProjectView> projects =
+        em.createQuery(
+                SELECT_BASE
+                    + " join ProjectsBySchoolsEntity pbs on pbs.id.projectId = p.id "
+                    + "where pbs.id.schoolId = :sid order by p.name asc",
+                ProjectView.class)
+            .setParameter("sid", schoolId)
+            .getResultList();
+
+    return ProjectMapper.toSchoolProjectView(school, projects);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<UUID> listAllSchoolsIdsByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
+
+    return em.createQuery(
+            "select pbs.id.schoolId from ProjectsBySchoolsEntity pbs where pbs.id.projectId = :pid",
+            UUID.class)
+        .setParameter("pid", projectId)
+        .getResultList();
+  }
+}
+
+
+================================================================================
 FILE: infra/read/ProjectQueries.java
 ================================================================================
 package com.pug.project.infra.read;
 
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -3645,6 +3581,28 @@ public interface ProjectQueries {
   List<ProjectView> listByEntityId(UUID entityId);
 
   /**
+   * Executes a robust full-text search against the names of projects.
+   *
+   * @param query the raw search string or partial name provided by the client
+   * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria
+   */
+  List<ProjectView> searchByName(String query);
+}
+
+
+================================================================================
+FILE: infra/read/ProjectsBySchoolsQueries.java
+================================================================================
+package com.pug.project.infra.read;
+
+import com.pug.project.infra.read.dtos.SchoolProjectView;
+import java.util.List;
+import java.util.UUID;
+
+/** Read-only interface for executing queries against Project-to-School associations. */
+public interface ProjectsBySchoolsQueries {
+
+  /**
    * Retrieves a consolidated view of a school and its associated projects.
    *
    * @param schoolId the unique identifier (UUID) of the school
@@ -3653,12 +3611,12 @@ public interface ProjectQueries {
   SchoolProjectView listBySchool(UUID schoolId);
 
   /**
-   * Executes a robust full-text search against the names of projects.
+   * Retrieves all school identifiers associated with a specific project.
    *
-   * @param query the raw search string or partial name provided by the client
-   * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria
+   * @param projectId the unique identifier (UUID) of the project
+   * @return a {@link List} of school UUIDs
    */
-  List<ProjectView> searchByName(String query);
+  List<UUID> listAllSchoolsIdsByProjectId(UUID projectId);
 }
 
 
@@ -3932,9 +3890,6 @@ FILE: presenter/dtos/ProjectResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.partner.presenter.dtos.EntityResponse;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.math.BigDecimal;
@@ -3946,10 +3901,9 @@ import java.util.UUID;
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project
- * @param entity the nested read-only projection of the partner organization
- * @param school the nested read-only projection of the associated school
+ * @param entityId the unique identifier of the partner organization
  * @param description the project description
- * @param createdBy the nested read-only projection of the staff creator
+ * @param createdBy the unique identifier of the creator
  * @param maxParticipants the maximum number of students allowed
  * @param offeredHours the total counterpart hours offered
  * @param status the current execution state
@@ -3961,10 +3915,9 @@ import java.util.UUID;
 public record ProjectResponse(
     UUID id,
     String name,
-    EntityResponse entity,
-    SchoolResponse school,
+    UUID entityId,
     String description,
-    AccountResponse createdBy,
+    UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
     ProjectStatus status,
@@ -4314,10 +4267,7 @@ FILE: presenter/mappers/ProjectPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.presenter.mappers.SchoolPresenter;
-import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.partner.presenter.mappers.EntityPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectResponse;
@@ -4326,10 +4276,7 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import com.pug.shared.utils.StringUtils;
-import java.time.OffsetDateTime;
 import java.util.Locale;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Stateless utility class responsible for mapping internal project projections to external API
@@ -4360,12 +4307,9 @@ public final class ProjectPresenter {
     return new ProjectResponse(
         v.id(),
         v.name(),
-        EntityPresenter.toResponse(v.entity(), locale),
-        SchoolPresenter.toResponse(
-            new SchoolView(UUID.randomUUID(), "", OffsetDateTime.now(), OffsetDateTime.now()),
-            locale),
+        v.entityId(),
         v.description(),
-        AccountPresenter.toResponse(v.createdBy(), locale, i18n),
+        v.creatorId(),
         v.maxParticipants(),
         v.offeredHours(),
         v.status(),
@@ -4391,7 +4335,7 @@ public final class ProjectPresenter {
 
     return new ProjectsBySchoolResponse(
         SchoolPresenter.toResponse(v.school(), locale),
-        v.projects().stream().map(p -> toResponse(p, locale, i18n)).collect(Collectors.toList()));
+        v.projects().stream().map(p -> toResponse(p, locale, i18n)).toList());
   }
 }
 
@@ -4401,6 +4345,9 @@ FILE: presenter/ProjectResource.java
 ================================================================================
 package com.pug.project.presenter;
 
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
@@ -4477,9 +4424,27 @@ public class ProjectResource {
   }
 
   /**
+   * Retrieves a list of schools associated with a specific project.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     SchoolResponse}
+   */
+  @GET
+  @Path("/{projectId}/schools")
+  public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
+    List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
+    List<SchoolResponse> body =
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
    * Retrieves a consolidated view of a school and its associated projects.
    *
-   * @param schoolId the unique identifier (UUID) of the school
+   * @param schoolId the unique identifier (UUIDv7) of the school
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     ProjectsBySchoolResponse}
    */
@@ -4516,6 +4481,25 @@ public class ProjectResource {
       views = readService.listViews();
     }
 
+    List<ProjectResponse> body =
+        views.stream()
+            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a list of projects created by a specific account.
+   *
+   * @param accountId the unique identifier (UUIDv7) of the account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
+  @GET
+  @Path("/created-by/{accountId}")
+  public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
+    List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
     List<ProjectResponse> body =
         views.stream()
             .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
@@ -4976,6 +4960,8 @@ public interface EnrollmentService {
    */
   boolean existsAnyByStudentId(UUID studentId);
 
+  boolean existsAnyByProjectId(UUID projectId);
+
   /**
    * Records a student's voluntary exit from a project.
    *
@@ -5295,6 +5281,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     return repo.existsByStudentId(studentId);
   }
 
+  @Override
+  public boolean existsAnyByProjectId(UUID projectId) {
+    if (projectId == null) return false;
+    return repo.existsByStudentId(projectId);
+  }
+
   @Transactional
   @Override
   public Enrollment exit(UUID projectId, UUID studentId) {
@@ -5367,7 +5359,10 @@ FILE: service/impl/ProjectReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
+import com.pug.academic.infra.read.SchoolQueries;
+import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.project.infra.read.ProjectQueries;
+import com.pug.project.infra.read.ProjectsBySchoolsQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.service.ProjectReadService;
@@ -5382,9 +5377,9 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of the {@link ProjectReadService}.
  *
- * <p>This application-scoped bean delegates read-only operations to the underlying {@link
- * ProjectQueries} infrastructure component. It handles basic input validation and translates "not
- * found" states into standardized domain exceptions.
+ * <p>This application-scoped bean delegates read-only operations to the underlying infrastructure
+ * components. It handles basic input validation and translates "not found" states into standardized
+ * domain exceptions.
  */
 @ApplicationScoped
 public class ProjectReadServiceImpl implements ProjectReadService {
@@ -5392,6 +5387,8 @@ public class ProjectReadServiceImpl implements ProjectReadService {
   private static final Logger LOG = Logger.getLogger(ProjectReadServiceImpl.class);
 
   @Inject ProjectQueries queries;
+  @Inject ProjectsBySchoolsQueries pbsQueries;
+  @Inject SchoolQueries schoolQueries;
 
   /** {@inheritDoc} */
   @Override
@@ -5431,11 +5428,21 @@ public class ProjectReadServiceImpl implements ProjectReadService {
 
   /** {@inheritDoc} */
   @Override
+  public List<SchoolView> listViewsSchoolsByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
+    List<UUID> schoolIds = pbsQueries.listAllSchoolsIdsByProjectId(projectId);
+    return schoolQueries.listByIds(schoolIds);
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public SchoolProjectView listViewsBySchool(UUID schoolId) {
     if (schoolId == null) {
       return null;
     }
-    return queries.listBySchool(schoolId);
+    return pbsQueries.listBySchool(schoolId);
   }
 
   /**
@@ -5506,10 +5513,10 @@ public class ProjectServiceImpl implements ProjectService {
     if (id == null) {
       return false;
     }
-    //    if (enrollmentService.existsAnyByProjectId(id)) {
-    //      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
-    //      throw ExceptionHelper.projectHasEnrollments();
-    //    }
+    if (enrollmentService.existsAnyByProjectId(id)) {
+      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
+      throw ExceptionHelper.projectHasEnrollments();
+    }
     return repo.deleteById(id);
   }
 
@@ -5643,6 +5650,7 @@ FILE: service/ProjectReadService.java
 ================================================================================
 package com.pug.project.service;
 
+import com.pug.academic.infra.read.dtos.SchoolView; // Import required for SchoolView
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
@@ -5675,10 +5683,10 @@ public interface ProjectReadService {
   List<ProjectView> listViews();
 
   /**
-   * Retrieves a list of projects created by a specific staff member.
+   * Retrieves a list of projects created by a specific member.
    *
-   * @param accountId the unique identifier of the staff account
-   * @return a {@link List} of projects created by the staff member
+   * @param accountId the unique identifier of the account
+   * @return a {@link List} of projects created by the member
    */
   List<ProjectView> listViewsByCreatedBy(UUID accountId);
 
@@ -5689,6 +5697,14 @@ public interface ProjectReadService {
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
+
+  /**
+   * Retrieves a list of schools associated with a specific project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return a {@link List} of associated {@link SchoolView} DTOs
+   */
+  List<SchoolView> listViewsSchoolsByProjectId(UUID projectId);
 
   /**
    * Retrieves a consolidated view of a school and its associated projects.

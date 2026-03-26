@@ -389,19 +389,19 @@
 │   │   │           │   │       ├── AttendanceQueries.java
 │   │   │           │   │       ├── EnrollmentQueries.java
 │   │   │           │   │       ├── ProjectQueries.java
+│   │   │           │   │       ├── ProjectsBySchoolsQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── AttendanceAcc.java
 │   │   │           │   │       │   ├── AttendanceView.java
 │   │   │           │   │       │   ├── EnrollmentAcc.java
 │   │   │           │   │       │   ├── EnrollmentView.java
-│   │   │           │   │       │   ├── ProjectAcc.java
 │   │   │           │   │       │   ├── ProjectView.java
-│   │   │           │   │       │   ├── SchoolProjectAcc.java
 │   │   │           │   │       │   └── SchoolProjectView.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── AttendanceQueriesImpl.java
 │   │   │           │   │           ├── EnrollmentQueriesImpl.java
-│   │   │           │   │           └── ProjectQueriesImpl.java
+│   │   │           │   │           ├── ProjectQueriesImpl.java
+│   │   │           │   │           └── ProjectsBySchoolsQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── AttendanceResource.java
 │   │   │           │   │   ├── EnrollmentResource.java

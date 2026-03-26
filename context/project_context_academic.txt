@@ -2111,6 +2111,7 @@ import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2158,6 +2159,22 @@ public class SchoolQueriesImpl implements SchoolQueries {
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
             SchoolView.class);
+    return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<SchoolView> listByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return List.of();
+    }
+    var q =
+        entityManager.createQuery(
+            "select new com.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
+                + "from SchoolEntity s where s.id in :ids order by s.name asc",
+            SchoolView.class);
+    q.setParameter("ids", ids);
     return q.getResultList();
   }
 
@@ -2420,6 +2437,18 @@ public interface SchoolQueries {
    * @return a {@link List} of all {@link SchoolView} objects
    */
   List<SchoolView> listAllSchools();
+
+  /**
+   * Retrieves a list of schools corresponding to the provided list of unique identifiers.
+   *
+   * <p>This method is optimized for batch retrieval and may leverage database-specific features
+   * (e.g., SQL IN clause) for efficient querying.
+   *
+   * @param ids a {@link List} of UUIDs representing the unique identifiers of the schools to
+   *     retrieve
+   * @return a {@link List} of {@link SchoolView} objects matching the provided IDs
+   */
+  List<SchoolView> listByIds(List<UUID> ids);
 
   /**
    * Executes a robust full-text search against the names of schools.
