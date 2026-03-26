@@ -3,7 +3,7 @@ CREATE TABLE projects
     id               uuid,
     name             varchar(150)             NOT NULL,
     entity_id        uuid                     NOT NULL,
-    description      varchar(4000)            NOT NULL,
+    description      varchar(4000),
     created_by       uuid                     NOT NULL,
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at       TIMESTAMP WITH TIME ZONE NOT NULL,

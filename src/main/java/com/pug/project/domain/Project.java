@@ -39,7 +39,7 @@ public class Project extends DomainError {
   /** The unique identifier of the partner organization offering this project. */
   UUID entityId;
 
-  /** The detailed description of the project's objectives and tasks. */
+  /** The optional detailed description of the project's objectives and tasks. */
   String description;
 
   /** The logistical metadata and audit information of the project. */
@@ -47,6 +47,66 @@ public class Project extends DomainError {
 
   /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   ProjectStatus projectStatus;
+
+  /**
+   * Transitions the project's state to 'CANCELED'.
+   *
+   * @return a new {@link Project} instance reflecting the canceled status
+   * @throws BusinessRuleException if the project is already 'COMPLETED'
+   */
+  public Project cancel() {
+    if (projectStatus == ProjectStatus.CANCELED) {
+      return this;
+    }
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.CANCELED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Updates the project's description.
+   *
+   * @param newDescription the new description text
+   * @return a new {@link Project} instance with the updated description
+   */
+  public Project changeDescription(String newDescription) {
+    String trimmed = StringUtils.trim(newDescription);
+    if (description != null && description.equals(trimmed)) {
+      return this;
+    }
+    Project updated = toBuilder().description(trimmed).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'COMPLETED'.
+   *
+   * @return a new {@link Project} instance reflecting the completed status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project complete() {
+    if (projectStatus == ProjectStatus.COMPLETED) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
+    }
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.COMPLETED)
+            .projectInfo(projectInfo.closeProject())
+            .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
 
   /**
    * Factory method to create a new {@code Project} instance.
@@ -85,6 +145,25 @@ public class Project extends DomainError {
   }
 
   /**
+   * Transitions the project's state from 'IN_PROGRESS' to 'ON_HOLD'.
+   *
+   * @return a new {@link Project} instance reflecting the on-hold status
+   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
+   */
+  public Project putOnHold() {
+    if (projectStatus == ProjectStatus.ON_HOLD) {
+      return this;
+    }
+    if (projectStatus != ProjectStatus.IN_PROGRESS) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
+    }
+    Project updated =
+        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
    * Updates the project's title.
    *
    * @param newName the new name for the project
@@ -101,32 +180,20 @@ public class Project extends DomainError {
   }
 
   /**
-   * Reassigns the project to a different partner organization.
+   * Transitions the project's state from 'ON_HOLD' back to 'IN_PROGRESS'.
    *
-   * @param newEntityId the unique identifier of the new partner entity
-   * @return a new {@link Project} instance with the updated entity ID
+   * @return a new {@link Project} instance reflecting the resumed status
+   * @throws BusinessRuleException if the project is not currently 'ON_HOLD'
    */
-  public Project moveToEntity(UUID newEntityId) {
-    if (entityId.equals(newEntityId)) {
-      return this;
+  public Project retake() {
+    if (projectStatus != ProjectStatus.ON_HOLD) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
     }
-    Project updated = toBuilder().entityId(newEntityId).projectInfo(projectInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Updates the project's description.
-   *
-   * @param newDescription the new description text
-   * @return a new {@link Project} instance with the updated description
-   */
-  public Project changeDescription(String newDescription) {
-    String trimmed = StringUtils.trim(newDescription);
-    if (description.equals(trimmed)) {
-      return this;
-    }
-    Project updated = toBuilder().description(trimmed).projectInfo(projectInfo.update()).build();
+    Project updated =
+        toBuilder()
+            .projectStatus(ProjectStatus.IN_PROGRESS)
+            .projectInfo(projectInfo.update())
+            .build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -153,97 +220,13 @@ public class Project extends DomainError {
     return updated;
   }
 
-  /**
-   * Transitions the project's state from 'IN_PROGRESS' to 'COMPLETED'.
-   *
-   * @return a new {@link Project} instance reflecting the completed status
-   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
-   */
-  public Project complete() {
-    if (projectStatus == ProjectStatus.COMPLETED) {
-      return this;
-    }
-    if (projectStatus != ProjectStatus.IN_PROGRESS) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_COMPLETE);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.COMPLETED)
-            .projectInfo(projectInfo.closeProject())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state to 'CANCELED'.
-   *
-   * @return a new {@link Project} instance reflecting the canceled status
-   * @throws BusinessRuleException if the project is already 'COMPLETED'
-   */
-  public Project cancel() {
-    if (projectStatus == ProjectStatus.CANCELED) {
-      return this;
-    }
-    if (projectStatus == ProjectStatus.COMPLETED) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_CANCEL);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.CANCELED)
-            .projectInfo(projectInfo.closeProject())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state from 'IN_PROGRESS' to 'ON_HOLD'.
-   *
-   * @return a new {@link Project} instance reflecting the on-hold status
-   * @throws BusinessRuleException if the project is not currently 'IN_PROGRESS'
-   */
-  public Project putOnHold() {
-    if (projectStatus == ProjectStatus.ON_HOLD) {
-      return this;
-    }
-    if (projectStatus != ProjectStatus.IN_PROGRESS) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_PUT_ON_HOLD);
-    }
-    Project updated =
-        toBuilder().projectStatus(ProjectStatus.ON_HOLD).projectInfo(projectInfo.update()).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /**
-   * Transitions the project's state from 'ON_HOLD' back to 'IN_PROGRESS'.
-   *
-   * @return a new {@link Project} instance reflecting the resumed status
-   * @throws BusinessRuleException if the project is not currently 'ON_HOLD'
-   */
-  public Project retake() {
-    if (projectStatus != ProjectStatus.ON_HOLD) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_RETAKE);
-    }
-    Project updated =
-        toBuilder()
-            .projectStatus(ProjectStatus.IN_PROGRESS)
-            .projectInfo(projectInfo.update())
-            .build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
   /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
     if (entityId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_CREATED_BY_BLANK);
     }
-    if (StringUtils.isEmpty(description)) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_BLANK);
-    } else if (description.length() > 4000) {
+    if (StringUtils.isNotEmpty(description) && description.length() > 4000) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_DESCRIPTION_TOO_LONG);
     }
     if (StringUtils.isEmpty(name)) {

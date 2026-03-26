@@ -45,9 +45,6 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that the creation or validation timestamp is logically in the future. */
   INVALID_CREATED_AT_FUTURE("error.domain.projects.createdat.future", "createdAt"),
 
-  /** Indicates that a project description was provided as null, empty, or whitespace. */
-  INVALID_DESCRIPTION_BLANK("error.domain.projects.description.blank", "description"),
-
   /** Indicates that a project description exceeds the maximum allowed length constraints. */
   INVALID_DESCRIPTION_TOO_LONG("error.domain.projects.description.too.long", "description"),
 
@@ -106,7 +103,10 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_PROJECT_STATUS_UPDATE_START("error.domain.projects.status.update.start", "projectStatus"),
 
   /** Indicates that a status enum was provided as null. */
-  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status");
+  INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
+
+  /** Indicates that a school ID was provided as null. */
+  INVALID_SCHOOL_ID_BLANK("error.domain.projects.school.id.blank", "schoolId");
 
   /**
    * The property key used to resolve the localized error message in the application's resource

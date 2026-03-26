@@ -1,10 +1,17 @@
 package com.pug.project.service;
 
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.UUID;
 
-/** Application service interface dedicated exclusively to querying Project data. */
+/**
+ * Application service interface dedicated exclusively to querying Project data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight, fully resolved {@link ProjectView} Data Transfer Objects
+ * directly from the underlying data store or search indices.
+ */
 public interface ProjectReadService {
 
   /**
@@ -12,7 +19,8 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no project matches the provided
+   *     ID
    */
   ProjectView getViewById(UUID id);
 
@@ -24,17 +32,36 @@ public interface ProjectReadService {
   List<ProjectView> listViews();
 
   /**
+   * Retrieves a list of projects created by a specific staff member.
+   *
+   * @param accountId the unique identifier of the staff account
+   * @return a {@link List} of projects created by the staff member
+   */
+  List<ProjectView> listViewsByCreatedBy(UUID accountId);
+
+  /**
    * Retrieves a list of projects offered by a specific partner entity.
    *
-   * @param entityId the unique identifier (UUID) of the partner entity
+   * @param entityId the unique identifier of the partner entity
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
 
   /**
+   * Retrieves a consolidated view of a school and its associated projects.
+   *
+   * @param schoolId the unique identifier of the school
+   * @return the populated {@link SchoolProjectView} DTO
+   */
+  SchoolProjectView listViewsBySchool(UUID schoolId);
+
+  /**
    * Executes a robust full-text search against the names of projects.
    *
-   * @param query the raw search string
+   * <p>Leverages advanced text analysis to provide fuzzy matching, accent-insensitivity, and
+   * predictive autocomplete capabilities.
+   *
+   * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> searchByName(String query);

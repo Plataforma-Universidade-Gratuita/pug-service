@@ -1,6 +1,7 @@
 package com.pug.project.service.utils;
 
 import com.pug.project.domain.Project;
+import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -8,21 +9,14 @@ import java.util.UUID;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Project}
- * Domain Aggregates.
+ * and {@link ProjectsBySchool} Domain Aggregates.
  */
-public class ProjectProcessor {
+public final class ProjectProcessor {
 
-  /**
-   * Processes raw creation inputs and constructs a new {@link Project} domain aggregate.
-   *
-   * @param name the raw name of the project
-   * @param entityId the unique identifier of the partner organization
-   * @param description the project description
-   * @param createdBy the unique identifier of the staff member
-   * @param maxParticipants the maximum number of participants
-   * @param offeredHours the total hours offered
-   * @return a fully instantiated {@link Project} domain aggregate, potentially containing errors
-   */
+  /** Private constructor to prevent instantiation of utility class. */
+  private ProjectProcessor() {}
+
+  /** Processes raw inputs and constructs a new {@link Project} domain aggregate. */
   public static Project processCreateInput(
       String name,
       UUID entityId,
@@ -34,14 +28,18 @@ public class ProjectProcessor {
   }
 
   /**
-   * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
+   * Processes raw inputs and constructs a new {@link ProjectsBySchool} domain aggregate.
    *
-   * @param existingProject the current, reconstituted {@link Project} aggregate
-   * @param name the proposed new name, or {@code null}
-   * @param description the proposed new description, or {@code null}
-   * @param maxParticipants the proposed new maximum participants limit, or {@code null}
-   * @param offeredHours the proposed new offered hours, or {@code null}
-   * @return a new {@link Project} domain aggregate reflecting the requested updates
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return a fully instantiated {@link ProjectsBySchool} domain aggregate
+   */
+  public static ProjectsBySchool processCreateProjectBySchoolInput(UUID projectId, UUID schoolId) {
+    return ProjectsBySchool.factory(projectId, schoolId);
+  }
+
+  /**
+   * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
    */
   public static Project processUpdateInput(
       Project existingProject,
@@ -55,7 +53,7 @@ public class ProjectProcessor {
     if (StringUtils.isNotEmpty(name)) {
       updated = updated.rename(name);
     }
-    if (StringUtils.isNotEmpty(description)) {
+    if (description != null) {
       updated = updated.changeDescription(description);
     }
     if (maxParticipants != null) {

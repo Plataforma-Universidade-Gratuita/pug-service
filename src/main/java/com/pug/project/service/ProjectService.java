@@ -1,28 +1,19 @@
 package com.pug.project.service;
 
 import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
 import java.util.UUID;
 
-/** Application service interface for managing the state of {@link Project} domain aggregates. */
+/**
+ * Application service interface for managing the state of {@link Project} domain aggregates.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
+ * Delete) and strict domain-level retrievals. It manages the project lifecycle transitions and
+ * enforces business invariants.
+ */
 public interface ProjectService {
-
-  /**
-   * Cancels an existing project.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project cancel(UUID id);
-
-  /**
-   * Completes an existing project.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project complete(UUID id);
 
   /**
    * Removes a {@link Project} from the system by its unique identifier.
@@ -33,6 +24,14 @@ public interface ProjectService {
   boolean delete(UUID id);
 
   /**
+   * Checks if any project was created by a specific account.
+   *
+   * @param accountId the unique identifier of the account
+   * @return {@code true} if a project exists
+   */
+  boolean existsByCreatedBy(UUID accountId);
+
+  /**
    * Checks if any project exists for a specific entity.
    *
    * @param entityId the unique identifier of the entity
@@ -41,36 +40,13 @@ public interface ProjectService {
   boolean existsAnyByEntityId(UUID entityId);
 
   /**
-   * Checks if any project was created by a specific staff account.
-   *
-   * @param accountId the unique identifier of the staff account
-   * @return {@code true} if a project exists
-   */
-  boolean existsByCreatedBy(UUID accountId);
-
-  /**
    * Retrieves a full {@link Project} aggregate by its identifier.
    *
    * @param id the unique identifier (UUID) of the project
    * @return the {@link Project} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
    */
   Project getById(UUID id);
-
-  /**
-   * Puts an existing project on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project putOnHold(UUID id);
-
-  /**
-   * Resumes a project that is currently on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return the updated {@link Project}
-   */
-  Project retake(UUID id);
 
   /**
    * Instantiates and persists a new {@link Project} aggregate.
@@ -81,12 +57,14 @@ public interface ProjectService {
   Project save(ProjectCreateCommand cmd);
 
   /**
-   * Starts a planned project, changing its state to IN_PROGRESS.
+   * Transitions a project to a new status.
    *
    * @param id the unique identifier (UUID) of the project
+   * @param status the target {@link ProjectStatus}
    * @return the updated {@link Project}
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the status transition is invalid
    */
-  Project start(UUID id);
+  Project transitionStatus(UUID id, ProjectStatus status);
 
   /**
    * Updates an existing {@link Project}.

@@ -1,9 +1,12 @@
 package com.pug.project.service.impl;
 
+import com.pug.academic.service.SchoolService;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
+import com.pug.project.domain.ProjectsBySchool;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.EnrollmentService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.ProjectCreateCommand;
@@ -17,6 +20,13 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link ProjectService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for projects. It manages
+ * transaction boundaries, enforces cross-domain constraints, and manages project lifecycle
+ * transitions.
+ */
 @ApplicationScoped
 public class ProjectServiceImpl implements ProjectService {
 
@@ -25,48 +35,42 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject ProjectRepository repo;
   @Inject EntityService entityService;
   @Inject StaffService staffService;
-  @Inject EnrollmentService enrollmentService; // Need this to check before delete
+  @Inject EnrollmentService enrollmentService;
+  @Inject SchoolService schoolService;
 
-  @Transactional
-  @Override
-  public Project cancel(UUID id) {
-    Project project = getById(id).cancel();
-    repo.update(project);
-    return project;
-  }
-
-  @Transactional
-  @Override
-  public Project complete(UUID id) {
-    Project project = getById(id).complete();
-    repo.update(project);
-    return project;
-  }
-
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
     if (id == null) {
       return false;
     }
-    // Business rule: Cannot delete project with enrollments
-    // We will assume enrollmentService has a method existsByProjectId soon
-    // For now, we proceed with repo deletion directly
+    //    if (enrollmentService.existsAnyByProjectId(id)) {
+    //      LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
+    //      throw ExceptionHelper.projectHasEnrollments();
+    //    }
     return repo.deleteById(id);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByEntityId(UUID entityId) {
-    if (entityId == null) return false;
+    if (entityId == null) {
+      return false;
+    }
     return repo.existsByEntityId(entityId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByCreatedBy(UUID accountId) {
-    if (accountId == null) return false;
+    if (accountId == null) {
+      return false;
+    }
     return repo.existsByCreatedBy(accountId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Project getById(UUID id) {
     Project project = repo.findOptionalById(id).orElseThrow(ExceptionHelper::projectNotFound);
@@ -78,28 +82,13 @@ public class ProjectServiceImpl implements ProjectService {
     return project;
   }
 
-  @Transactional
-  @Override
-  public Project putOnHold(UUID id) {
-    Project project = getById(id).putOnHold();
-    repo.update(project);
-    return project;
-  }
-
-  @Transactional
-  @Override
-  public Project retake(UUID id) {
-    Project project = getById(id).retake();
-    repo.update(project);
-    return project;
-  }
-
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
-    // Validate structural dependencies
     entityService.getById(cmd.entityId());
     staffService.getByAccountId(cmd.createdBy());
+    schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
       throw ExceptionHelper.projectAlreadyExists();
@@ -118,22 +107,44 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    return repo.persist(project);
+    Project savedProject = repo.persist(project);
+    ProjectsBySchool association =
+        ProjectProcessor.processCreateProjectBySchoolInput(savedProject.getId(), cmd.schoolId());
+
+    if (association.hasFieldErrors()) {
+      throw new AppValidationException(association.getFieldErrors());
+    }
+
+    repo.persistAssociation(association);
+
+    return savedProject;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Project start(UUID id) {
-    Project project = getById(id).start();
-    repo.update(project);
-    return project;
+  public Project transitionStatus(UUID id, ProjectStatus status) {
+    Project project = getById(id);
+    Project updated;
+
+    switch (status) {
+      case IN_PROGRESS -> updated = project.start();
+      case COMPLETED -> updated = project.complete();
+      case CANCELED -> updated = project.cancel();
+      case ON_HOLD -> updated = project.putOnHold();
+      case PLANNED -> updated = project.retake();
+      default -> throw new IllegalArgumentException("Unsupported status: " + status);
+    }
+
+    repo.update(updated);
+    return updated;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Project update(UUID id, ProjectUpdateCommand cmd) {
     Project current = getById(id);
-
     Project updated =
         ProjectProcessor.processUpdateInput(
             current, cmd.name(), cmd.description(), cmd.maxParticipants(), cmd.offeredHours());
@@ -149,6 +160,18 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
+
+    if (cmd.schoolId() != null) {
+      schoolService.getById(cmd.schoolId());
+      ProjectsBySchool association =
+          ProjectProcessor.processCreateProjectBySchoolInput(id, cmd.schoolId());
+
+      if (association.hasFieldErrors()) {
+        throw new AppValidationException(association.getFieldErrors());
+      }
+      repo.updateAssociation(association);
+    }
+
     return getById(id);
   }
 }

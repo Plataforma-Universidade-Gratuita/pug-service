@@ -8,10 +8,22 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for creating a new Project.
+ *
+ * @param createdBy the unique identifier (Account ID) of the staff member creating the project
+ * @param description the detailed description of the project's objectives (max 4000 chars)
+ * @param entityId the unique identifier of the partner organization offering the project
+ * @param maxParticipants the maximum number of students allowed to enroll (optional, min 0)
+ * @param name the title or name of the project (must not be blank, max 150 chars)
+ * @param offeredHours the total counterpart hours the project offers (must be min 0)
+ * @param schoolId the unique identifier of the school associated with the project
+ */
 public record ProjectCreateRequest(
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID entityId,
-    @NotBlank @Size(max = 4000) String description,
+    @Size(max = 4000) String description,
     @NotNull UUID createdBy,
     @Min(0) Integer maxParticipants,
-    @NotNull @DecimalMin("0.00") BigDecimal offeredHours) {}
+    @NotNull @DecimalMin("0.00") BigDecimal offeredHours,
+    @NotNull UUID schoolId) {}

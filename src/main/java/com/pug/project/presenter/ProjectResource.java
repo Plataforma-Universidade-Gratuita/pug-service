@@ -1,9 +1,11 @@
 package com.pug.project.presenter;
 
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
 import com.pug.project.presenter.dtos.ProjectUpdateRequest;
+import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.project.presenter.mappers.ProjectPresenter;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.ProjectService;
@@ -57,6 +59,14 @@ public class ProjectResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a specific project by its unique UUID identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     ProjectResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the project is not found
+   */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
@@ -65,6 +75,33 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves a consolidated view of a school and its associated projects.
+   *
+   * @param schoolId the unique identifier (UUID) of the school
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     ProjectsBySchoolResponse}
+   */
+  @GET
+  @Path("/by-school/{schoolId}")
+  public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
+    SchoolProjectView view = readService.listViewsBySchool(schoolId);
+    ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of projects.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * project names. If the {@code entityId} parameter is provided, it filters the results by partner
+   * entity.
+   *
+   * @param query the optional search query string
+   * @param entityId the optional entity filter
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
   @GET
   public Response list(
       @QueryParam("q") String query, @QueryParam("entityId") @UuidV7 UUID entityId) {
@@ -86,6 +123,14 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Registers a new project within the platform.
+   *
+   * @param req the validated {@link ProjectCreateRequest}
+   * @return an HTTP 201 Created response containing the created {@link ProjectResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if a project with the same name
+   *     exists for the entity
+   */
   @POST
   public Response create(@Valid ProjectCreateRequest req) {
     var cmd =
@@ -95,7 +140,8 @@ public class ProjectResource {
             req.description(),
             req.createdBy(),
             req.maxParticipants(),
-            req.offeredHours());
+            req.offeredHours(),
+            req.schoolId());
 
     var created = writeService.save(cmd);
     ProjectView view = readService.getViewById(created.getId());
@@ -105,12 +151,23 @@ public class ProjectResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Updates an existing project's details.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @param req the validated {@link ProjectUpdateRequest}
+   * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
+   */
   @PUT
   @Path("/{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     var cmd =
         new ProjectUpdateCommand(
-            req.name(), req.description(), req.maxParticipants(), req.offeredHours());
+            req.name(),
+            req.description(),
+            req.maxParticipants(),
+            req.offeredHours(),
+            req.schoolId());
 
     writeService.update(id, cmd);
     ProjectView view = readService.getViewById(id);
@@ -119,46 +176,82 @@ public class ProjectResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Cancels a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/cancel")
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
-    writeService.cancel(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Completes a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/complete")
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.complete(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Puts a project on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/hold")
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
-    writeService.putOnHold(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Resumes a project that is on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/retake")
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
-    writeService.retake(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Starts a project, setting its status to IN_PROGRESS.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
   @PATCH
   @Path("/{id}/start")
   public Response start(@PathParam("id") @UuidV7 UUID id) {
-    writeService.start(id);
+    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /**
+   * Permanently removes a project from the system.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response
+   */
   @DELETE
   @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {

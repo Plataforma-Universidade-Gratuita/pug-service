@@ -1,5 +1,7 @@
 package com.pug.project.infra;
 
+import com.pug.academic.infra.persistence.SchoolEntity;
+import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.geo.infra.persistence.CityEntity;
 import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.identity.infra.persistence.AccountEntity;
@@ -13,7 +15,9 @@ import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
+import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping between Project boundary layers.
@@ -28,10 +32,44 @@ public final class ProjectMapper {
   private ProjectMapper() {}
 
   /**
-   * Reconstitutes a pure Domain {@link Project} aggregate from a JPA {@link ProjectEntity}.
+   * Updates an existing, attached JPA {@link ProjectEntity} with the current state of a Domain
+   * {@link Project}.
    *
-   * <p>This method translates primitive database columns back into their corresponding Domain Value
-   * Objects (e.g., {@link ProjectInfo}, {@link AuditInfo}) and parses Enums.
+   * @param d the Domain aggregate containing the updated state
+   * @param e the existing, attached JPA entity to update in-place
+   */
+  public static void copy(Project d, ProjectEntity e) {
+    if (d == null || e == null) {
+      return;
+    }
+    e.setName(d.getName());
+    e.setEntityId(d.getEntityId());
+    e.setDescription(d.getDescription());
+    e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
+    e.setOfferedHours(d.getProjectInfo().getOfferedHours());
+    e.setClosedAt(d.getProjectInfo().getClosedAt());
+    e.setStatus(d.getProjectStatus().name());
+  }
+
+  /**
+   * Projects a raw JPA {@link SchoolEntity} and a list of resolved {@link ProjectView} DTOs into a
+   * {@link SchoolProjectView}.
+   *
+   * @param s the JPA entity representing the school
+   * @param projects the list of resolved project views associated with the school
+   * @return a fully populated {@link SchoolProjectView} DTO
+   */
+  public static SchoolProjectView toSchoolProjectView(SchoolEntity s, List<ProjectView> projects) {
+    if (s == null) {
+      return null;
+    }
+    SchoolView schoolView =
+        new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
+    return new SchoolProjectView(schoolView, projects);
+  }
+
+  /**
+   * Reconstitutes a pure Domain {@link Project} aggregate from a JPA {@link ProjectEntity}.
    *
    * @param e the JPA persistence entity to convert
    * @return a fully constructed Domain {@link Project}, or {@code null} if the input entity is null
@@ -64,9 +102,6 @@ public final class ProjectMapper {
    * Translates a pure Domain {@link Project} aggregate into a newly instantiated JPA {@link
    * ProjectEntity}.
    *
-   * <p>This is typically used when persisting a brand-new entity to the database. It flattens
-   * Domain Value Objects back into primitive types suitable for JDBC insertion.
-   *
    * @param d the Domain aggregate to convert
    * @return a newly constructed JPA {@link ProjectEntity}, or {@code null} if the input domain is
    *     null
@@ -92,34 +127,8 @@ public final class ProjectMapper {
   }
 
   /**
-   * Updates an existing, attached JPA {@link ProjectEntity} with the current state of a Domain
-   * {@link Project}.
-   *
-   * <p>This method is used during update operations. Modifying the attached entity allows the ORM
-   * (Hibernate) to track changes and issue the appropriate SQL {@code UPDATE} statements.
-   *
-   * @param d the Domain aggregate containing the updated state
-   * @param e the existing, attached JPA entity to update in-place
-   */
-  public static void copy(Project d, ProjectEntity e) {
-    if (d == null || e == null) {
-      return;
-    }
-    e.setName(d.getName());
-    e.setEntityId(d.getEntityId());
-    e.setDescription(d.getDescription());
-    e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
-    e.setOfferedHours(d.getProjectInfo().getOfferedHours());
-    e.setClosedAt(d.getProjectInfo().getClosedAt());
-    e.setStatus(d.getProjectStatus().name());
-  }
-
-  /**
    * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
    * {@link ProjectView} DTO.
-   *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the project, its managing partner organization, and the staff creator.
    *
    * @param p the JPA entity representing the project
    * @param ent the JPA entity representing the partner organization
@@ -135,42 +144,37 @@ public final class ProjectMapper {
       return null;
     }
 
-    CityView cityView = null;
-    if (city != null) {
-      cityView = new CityView(city.getId(), city.getName(), city.getIbgeCode());
-    }
+    CityView cityView =
+        (city != null) ? new CityView(city.getId(), city.getName(), city.getIbgeCode()) : null;
 
-    EntityView entityView = null;
-    if (ent != null) {
-      entityView =
-          new EntityView(
-              ent.getId(),
-              ent.getCnpj(),
-              ent.getName(),
-              ent.getAddress(),
-              cityView,
-              ent.getCreatedAt(),
-              ent.getUpdatedAt());
-    }
+    EntityView entityView =
+        (ent != null)
+            ? new EntityView(
+                ent.getId(),
+                ent.getCnpj(),
+                ent.getName(),
+                ent.getAddress(),
+                cityView,
+                ent.getCreatedAt(),
+                ent.getUpdatedAt())
+            : null;
 
-    UserView userView = null;
-    if (u != null) {
-      userView =
-          new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt());
-    }
+    UserView userView =
+        (u != null)
+            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
+            : null;
 
-    AccountView accountView = null;
-    if (acc != null) {
-      accountView =
-          new AccountView(
-              acc.getId(),
-              userView,
-              acc.getEmail(),
-              acc.getAccountType(),
-              acc.getCreatedAt(),
-              acc.getUpdatedAt(),
-              acc.getActive());
-    }
+    AccountView accountView =
+        (acc != null)
+            ? new AccountView(
+                acc.getId(),
+                userView,
+                acc.getEmail(),
+                acc.getAccountType(),
+                acc.getCreatedAt(),
+                acc.getUpdatedAt(),
+                acc.getActive())
+            : null;
 
     return new ProjectView(
         p.getId(),
