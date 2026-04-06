@@ -1,8 +1,6 @@
 package com.pug.project.service;
 
-import com.pug.academic.infra.read.dtos.SchoolView; // Import required for SchoolView
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,8 +8,8 @@ import java.util.UUID;
  * Application service interface dedicated exclusively to querying Project data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
- * domain logic and retrieves lightweight, fully resolved {@link ProjectView} Data Transfer Objects
- * directly from the underlying data store or search indices.
+ * domain logic and retrieves lightweight {@link ProjectView} Data Transfer Objects directly from
+ * the underlying data store or search indices.
  */
 public interface ProjectReadService {
 
@@ -47,22 +45,6 @@ public interface ProjectReadService {
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
-
-  /**
-   * Retrieves a list of schools associated with a specific project.
-   *
-   * @param projectId the unique identifier of the project
-   * @return a {@link List} of associated {@link SchoolView} DTOs
-   */
-  List<SchoolView> listViewsSchoolsByProjectId(UUID projectId);
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier of the school
-   * @return the populated {@link SchoolProjectView} DTO
-   */
-  SchoolProjectView listViewsBySchool(UUID schoolId);
 
   /**
    * Executes a robust full-text search against the names of projects.

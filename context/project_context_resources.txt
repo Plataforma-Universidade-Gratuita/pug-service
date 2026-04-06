@@ -642,8 +642,8 @@ CREATE TABLE projects_by_schools
     project_id uuid NOT NULL,
     school_id  uuid NOT NULL,
     PRIMARY KEY (project_id, school_id),
-    FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
-    FOREIGN KEY (school_id) REFERENCES schools (id) ON DELETE CASCADE
+    FOREIGN KEY (project_id) REFERENCES projects (id),
+    FOREIGN KEY (school_id) REFERENCES schools (id)
 );
 
 CREATE INDEX idx_pbs_school ON projects_by_schools (school_id);
@@ -846,6 +846,7 @@ error.domain.projects.attendance.already.exists=This attendance validation (QR C
 error.domain.projects.attendance.not.found=Attendance record not found.
 error.domain.projects.enrollment.already.exists=The student is already enrolled in this project.
 error.domain.projects.enrollment.not.found=Enrollment record not found.
+error.domain.projects.enrollment.status.invalid=The enrollment cannot be transitioned from its current status to the requested status.
 error.domain.projects.status.update.cancel=Cannot cancel the project from its current status (completed projects cannot be canceled).
 error.domain.projects.status.update.complete=Cannot complete a project that is not currently in progress.
 error.domain.projects.status.update.put.on.hold=Cannot put a project on hold that is not currently in progress.
@@ -1005,6 +1006,7 @@ error.domain.projects.attendance.already.exists=Esta validação de presença (QR C
 error.domain.projects.attendance.not.found=Registro de presença não encontrado.
 error.domain.projects.enrollment.already.exists=O estudante já se encontra matriculado neste projeto.
 error.domain.projects.enrollment.not.found=Registro de matrícula não encontrado.
+error.domain.projects.enrollment.status.invalid=Não é possível alterar o status da matrícula do estado atual para o estado solicitado.
 error.domain.projects.status.update.cancel=Não é possível cancelar o projeto no seu status atual (projetos concluídos não podem ser cancelados).
 error.domain.projects.status.update.complete=Não é possível concluir um projeto que não está em andamento.
 error.domain.projects.status.update.put.on.hold=Não é possível pausar um projeto que não está em andamento.

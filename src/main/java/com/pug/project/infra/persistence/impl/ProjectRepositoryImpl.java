@@ -2,10 +2,8 @@ package com.pug.project.infra.persistence.impl;
 
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
-import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.infra.ProjectMapper;
 import com.pug.project.infra.persistence.ProjectEntity;
-import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -82,23 +80,6 @@ public class ProjectRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public ProjectsBySchool persistAssociation(ProjectsBySchool association) {
-    if (association == null) {
-      return null;
-    }
-
-    ProjectsBySchoolsEntity entity =
-        new ProjectsBySchoolsEntity(
-            new ProjectsBySchoolsEntity.ProjectsBySchoolsId(
-                association.getProjectId(), association.getSchoolId()));
-    em.persist(entity);
-    em.flush();
-    return association;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
   public void update(Project entity) {
     if (entity == null || entity.getId() == null) {
       return;
@@ -107,29 +88,5 @@ public class ProjectRepositoryImpl
     if (managed != null) {
       ProjectMapper.copy(entity, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public void updateAssociation(ProjectsBySchool association) {
-    if (association == null || association.getProjectId() == null) {
-      return;
-    }
-
-    var existingAssociations =
-        em.createQuery(
-                "select e from ProjectsBySchoolsEntity e where e.id.projectId = :pid",
-                ProjectsBySchoolsEntity.class)
-            .setParameter("pid", association.getProjectId())
-            .getResultList();
-
-    if (!existingAssociations.isEmpty()) {
-      for (ProjectsBySchoolsEntity existing : existingAssociations) {
-        em.remove(existing);
-      }
-    }
-
-    persistAssociation(association);
   }
 }

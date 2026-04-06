@@ -63,7 +63,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     // Validate structural dependencies
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(cmd.studentId());
-    enrollmentService.getByIds(cmd.projectId(), cmd.studentId()); // Ensures they are enrolled
+    //    enrollmentService.getByIds(cmd.projectId(), cmd.studentId());
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(project, student, cmd.duration());

@@ -1,14 +1,10 @@
 package com.pug.project.presenter;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.academic.presenter.mappers.SchoolPresenter;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
 import com.pug.project.presenter.dtos.ProjectUpdateRequest;
-import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.project.presenter.mappers.ProjectPresenter;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.ProjectService;
@@ -58,10 +54,13 @@ import java.util.stream.Collectors;
 public class ProjectResource {
 
   @Inject ProjectService writeService;
+
   @Inject ProjectReadService readService;
+
   @Inject I18n i18n;
 
   @Context UriInfo uri;
+
   @Context HttpHeaders headers;
 
   /**
@@ -78,41 +77,6 @@ public class ProjectResource {
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     ProjectView view = readService.getViewById(id);
     ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a list of schools associated with a specific project.
-   *
-   * @param projectId the unique identifier (UUIDv7) of the project
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     SchoolResponse}
-   */
-  @GET
-  @Path("/{projectId}/schools")
-  @RolesAllowed({"ADMIN"})
-  public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
-    List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
-    List<SchoolResponse> body =
-        views.stream()
-            .map(v -> SchoolPresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     ProjectsBySchoolResponse}
-   */
-  @GET
-  @Path("/by-school/{schoolId}")
-  @RolesAllowed({"ADMIN"})
-  public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    SchoolProjectView view = readService.listViewsBySchool(schoolId);
-    ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -219,7 +183,7 @@ public class ProjectResource {
   @Path("/{id}/cancel")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
+    writeService.transitionStatus(id, ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -234,7 +198,7 @@ public class ProjectResource {
   @Path("/{id}/complete")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
+    writeService.transitionStatus(id, ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -249,7 +213,7 @@ public class ProjectResource {
   @Path("/{id}/hold")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
+    writeService.transitionStatus(id, ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -264,7 +228,7 @@ public class ProjectResource {
   @Path("/{id}/retake")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
+    writeService.transitionStatus(id, ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -279,7 +243,7 @@ public class ProjectResource {
   @Path("/{id}/start")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response start(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
+    writeService.transitionStatus(id, ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }

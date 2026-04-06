@@ -20,7 +20,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
-public class ProjectsBySchool extends DomainError {
+public class ProjectBySchool extends DomainError {
 
   /** The unique identifier of the project. */
   private final UUID projectId;
@@ -33,29 +33,13 @@ public class ProjectsBySchool extends DomainError {
    *
    * @param projectId the unique identifier of the project
    * @param schoolId the unique identifier of the school
-   * @return a self-validated {@link ProjectsBySchool} instance
+   * @return a self-validated {@link ProjectBySchool} instance
    */
-  public static ProjectsBySchool factory(UUID projectId, UUID schoolId) {
-    ProjectsBySchool association =
-        ProjectsBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+  public static ProjectBySchool factory(UUID projectId, UUID schoolId) {
+    ProjectBySchool association =
+        ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
     association.collectValidationProblems();
     return association;
-  }
-
-  /**
-   * Transitions the association to a new school.
-   *
-   * @param newSchoolId the unique identifier of the new school
-   * @return a new {@link ProjectsBySchool} instance with the updated school ID, or {@code this} if
-   *     unchanged
-   */
-  public ProjectsBySchool moveToSchool(UUID newSchoolId) {
-    if (newSchoolId != null && newSchoolId.equals(this.schoolId)) {
-      return this;
-    }
-    ProjectsBySchool updated = toBuilder().schoolId(newSchoolId).build();
-    updated.collectValidationProblems();
-    return updated;
   }
 
   /** Evaluates constraints for the aggregate and accumulates any validation problems. */

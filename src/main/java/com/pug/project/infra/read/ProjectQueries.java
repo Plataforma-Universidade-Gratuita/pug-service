@@ -46,6 +46,14 @@ public interface ProjectQueries {
   List<ProjectView> listByEntityId(UUID entityId);
 
   /**
+   * Retrieves a list of projects matching the provided list of unique identifiers.
+   *
+   * @param ids a {@link List} of project UUIDs to retrieve
+   * @return a {@link List} of {@link ProjectView} entries corresponding to the provided IDs
+   */
+  List<ProjectView> listByIds(List<UUID> ids);
+
+  /**
    * Executes a robust full-text search against the names of projects.
    *
    * @param query the raw search string or partial name provided by the client

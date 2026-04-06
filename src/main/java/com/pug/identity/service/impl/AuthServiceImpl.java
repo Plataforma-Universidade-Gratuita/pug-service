@@ -148,4 +148,13 @@ public class AuthServiceImpl implements AuthService {
       throw ExceptionHelper.unauthorized();
     }
   }
+
+  /** {@inheritDoc} */
+  @Override
+  public void requireCurrentAccountOfType(AccountType allowed) {
+    AccountType current = getCurrentAccountType();
+    if (current != allowed) {
+      throw ExceptionHelper.unauthorized();
+    }
+  }
 }

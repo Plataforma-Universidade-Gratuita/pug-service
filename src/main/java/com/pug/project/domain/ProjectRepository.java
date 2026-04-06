@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link Project} and {@link ProjectsBySchool} aggregate
+ * Domain repository interface for managing {@link Project} and {@link ProjectBySchool} aggregate
  * roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
@@ -66,24 +66,9 @@ public interface ProjectRepository {
   Project persist(Project entity);
 
   /**
-   * Persists a newly created {@link ProjectsBySchool} association into the repository.
-   *
-   * @param association the {@link ProjectsBySchool} aggregate to persist
-   * @return the fully persisted {@link ProjectsBySchool} instance
-   */
-  ProjectsBySchool persistAssociation(ProjectsBySchool association);
-
-  /**
    * Updates the state of an existing {@link Project} aggregate in the repository.
    *
    * @param entity the {@link Project} instance containing the updated state
    */
   void update(Project entity);
-
-  /**
-   * Updates the school association for an existing {@link ProjectsBySchool} aggregate.
-   *
-   * @param association the {@link ProjectsBySchool} instance containing the updated state
-   */
-  void updateAssociation(ProjectsBySchool association);
 }

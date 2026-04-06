@@ -1,27 +1,28 @@
 package com.pug.project.infra.read.dtos;
 
-import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.project.domain.enums.EnrollmentStatus;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) representing a read-only view of a Student's Enrollment in a Project.
+ * Data Transfer Object (DTO) representing a lightweight, read-only view of an Enrollment.
  *
- * <p>Following CQRS principles, this record flattens the many-to-many relationship between Students
- * and Projects. It nests the full {@link ProjectView} and {@link StudentView} alongside the
- * specific lifecycle metadata of the enrollment.
+ * <p>Following CQRS principles, this record is intentionally minimal and exposes only identifiers
+ * and lifecycle metadata. It is optimized for list and filter operations, allowing clients to
+ * resolve detailed project and student information on demand via dedicated endpoints.
  *
- * @param project the nested read-only projection of the associated project
- * @param student the nested read-only projection of the enrolled student
- * @param status the current lifecycle status of the enrollment
- * @param createdAt the exact timestamp when the enrollment request was created
+ * @param projectId the unique identifier (UUID) of the associated project
+ * @param studentId the unique identifier (UUID) of the associated student account
+ * @param status the current lifecycle {@link EnrollmentStatus} of the enrollment
+ * @param createdAt the exact timestamp when the enrollment record was initially created
  * @param updatedAt the exact timestamp when the enrollment record was last modified
- * @param acceptedAt the exact timestamp when the enrollment was formally approved
- * @param closingStatusAt the exact timestamp when the enrollment reached a terminal state
+ * @param acceptedAt the timestamp when the enrollment was formally approved (may be {@code null})
+ * @param closingStatusAt the timestamp when the enrollment reached a terminal state (may be {@code
+ *     null})
  */
 public record EnrollmentView(
-    ProjectView project,
-    StudentView student,
+    UUID projectId,
+    UUID studentId,
     EnrollmentStatus status,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,

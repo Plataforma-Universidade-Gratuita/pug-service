@@ -68,4 +68,13 @@ public interface AuthService {
    *     type, or if there is no authenticated principal
    */
   void requireCurrentAccountNotOfType(AccountType forbidden);
+
+  /**
+   * Ensures that the currently authenticated account is of the given allowed type.
+   *
+   * @param allowed the {@link AccountType} that is allowed to perform the current operation
+   * @throws jakarta.ws.rs.NotAuthorizedException if the current account type do not matches the
+   *     allowed type, or if there is no authenticated principal
+   */
+  void requireCurrentAccountOfType(AccountType allowed);
 }

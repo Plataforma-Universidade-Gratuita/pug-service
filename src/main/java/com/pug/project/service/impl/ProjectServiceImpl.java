@@ -3,12 +3,11 @@ package com.pug.project.service.impl;
 import com.pug.academic.service.SchoolService;
 import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
-import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
-import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.EnrollmentService;
+import com.pug.project.service.ProjectBySchoolService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
@@ -35,9 +34,9 @@ public class ProjectServiceImpl implements ProjectService {
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
   @Inject ProjectRepository repo;
+  @Inject ProjectBySchoolService associationService;
   @Inject AuthService authService;
   @Inject EntityService entityService;
-  @Inject StaffService staffService;
   @Inject EnrollmentService enrollmentService;
   @Inject SchoolService schoolService;
 
@@ -48,10 +47,13 @@ public class ProjectServiceImpl implements ProjectService {
     if (id == null) {
       return false;
     }
+
     if (enrollmentService.existsAnyByProjectId(id)) {
       LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
       throw ExceptionHelper.projectHasEnrollments();
     }
+    associationService.deleteAllByProjectId(id);
+
     return repo.deleteById(id);
   }
 
@@ -91,7 +93,6 @@ public class ProjectServiceImpl implements ProjectService {
   public Project save(ProjectCreateCommand cmd) {
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
-    schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
       throw ExceptionHelper.projectAlreadyExists();
@@ -110,17 +111,7 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    Project savedProject = repo.persist(project);
-    ProjectsBySchool association =
-        ProjectProcessor.processCreateProjectBySchoolInput(savedProject.getId(), cmd.schoolId());
-
-    if (association.hasFieldErrors()) {
-      throw new AppValidationException(association.getFieldErrors());
-    }
-
-    repo.persistAssociation(association);
-
-    return savedProject;
+    return repo.persist(project);
   }
 
   /** {@inheritDoc} */
@@ -163,18 +154,6 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
-
-    if (cmd.schoolId() != null) {
-      schoolService.getById(cmd.schoolId());
-      ProjectsBySchool association =
-          ProjectProcessor.processCreateProjectBySchoolInput(id, cmd.schoolId());
-
-      if (association.hasFieldErrors()) {
-        throw new AppValidationException(association.getFieldErrors());
-      }
-      repo.updateAssociation(association);
-    }
-
     return getById(id);
   }
 }

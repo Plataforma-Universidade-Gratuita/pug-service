@@ -88,6 +88,8 @@ public final class StudentMapper {
     e.setConcluded(d.getCounterpartHours().getConcluded());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**

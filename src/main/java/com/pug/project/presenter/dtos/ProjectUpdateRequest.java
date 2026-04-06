@@ -3,7 +3,6 @@ package com.pug.project.presenter.dtos;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing
@@ -13,11 +12,9 @@ import java.util.UUID;
  * @param maxParticipants the new participant capacity limit, or {@code null} to leave unchanged
  * @param name the new name of the project, or {@code null} to leave unchanged
  * @param offeredHours the new offered hours, or {@code null} to leave unchanged
- * @param schoolId the new school identifier, or {@code null} to leave unchanged
  */
 public record ProjectUpdateRequest(
     @Size(max = 150) String name,
     @Size(max = 4000) String description,
     Integer maxParticipants,
-    @DecimalMin("0.00") BigDecimal offeredHours,
-    UUID schoolId) {}
+    @DecimalMin("0.00") BigDecimal offeredHours) {}

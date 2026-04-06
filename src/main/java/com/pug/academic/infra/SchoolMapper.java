@@ -64,6 +64,8 @@ public final class SchoolMapper {
       return;
     }
     e.setName(d.getName());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**

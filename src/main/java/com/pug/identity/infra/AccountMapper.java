@@ -87,6 +87,8 @@ public final class AccountMapper {
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
     e.setActive(d.getActive());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**

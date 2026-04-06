@@ -16,12 +16,10 @@ import java.util.UUID;
  * @param maxParticipants the maximum number of students allowed to enroll (optional, min 0)
  * @param name the title or name of the project (must not be blank, max 150 chars)
  * @param offeredHours the total counterpart hours the project offers (must be min 0)
- * @param schoolId the unique identifier of the school associated with the project
  */
 public record ProjectCreateRequest(
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID entityId,
     @Size(max = 4000) String description,
     @Min(0) Integer maxParticipants,
-    @NotNull @DecimalMin("0.00") BigDecimal offeredHours,
-    @NotNull UUID schoolId) {}
+    @NotNull @DecimalMin("0.00") BigDecimal offeredHours) {}

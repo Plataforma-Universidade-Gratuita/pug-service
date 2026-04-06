@@ -83,5 +83,7 @@ public final class EntityMapper {
     e.setName(d.getName());
     e.setAddress(d.getAddress());
     e.setCityId(d.getCityId());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 }

@@ -10,6 +10,14 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link EnrollmentReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * EnrollmentQueries} infrastructure component. It handles basic input validation, translates "not
+ * found" states into standardized domain exceptions, and exposes lightweight {@link EnrollmentView}
+ * projections to the presentation layer.
+ */
 @ApplicationScoped
 public class EnrollmentReadServiceImpl implements EnrollmentReadService {
 
@@ -17,6 +25,7 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
 
   @Inject EnrollmentQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public EnrollmentView getViewByIds(UUID projectId, UUID studentId) {
     return queries
@@ -28,20 +37,27 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViews() {
     return queries.listAllEnrollments();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+    if (projectId == null) {
+      return List.of();
+    }
     return queries.listByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+    if (studentId == null) {
+      return List.of();
+    }
     return queries.listByStudentId(studentId);
   }
 }

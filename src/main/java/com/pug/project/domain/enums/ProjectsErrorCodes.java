@@ -27,6 +27,9 @@ public enum ProjectsErrorCodes implements GenericCodes {
 
   /* --- State Transition Business Rules --- */
 
+  /** Indicates an invalid state transition attempting on an enrollment. */
+  INVALID_ENROLLMENT_STATUS_UPDATE("error.domain.projects.enrollment.status.invalid"),
+
   /** Indicates an invalid state transition attempting to cancel a project. */
   INVALID_PROJECT_STATUS_UPDATE_CANCEL("error.domain.projects.status.update.cancel"),
 

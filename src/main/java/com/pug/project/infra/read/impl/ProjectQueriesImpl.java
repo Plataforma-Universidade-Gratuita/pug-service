@@ -80,6 +80,17 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   /** {@inheritDoc} */
   @Override
+  public List<ProjectView> listByIds(List<UUID> ids) {
+    if (ids == null) {
+      return List.of();
+    }
+    return em.createQuery(SELECT_BASE + " where p.id in :ids" + ORDER_BY_NAME, ProjectView.class)
+        .setParameter("ids", ids)
+        .getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<ProjectView> searchByName(String query) {
     String key = com.pug.shared.utils.StringUtils.fold(query);
     List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);

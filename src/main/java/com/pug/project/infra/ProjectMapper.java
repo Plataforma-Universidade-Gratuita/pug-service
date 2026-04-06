@@ -1,15 +1,11 @@
 package com.pug.project.infra;
 
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
-import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping between Project boundary layers.
@@ -41,23 +37,8 @@ public final class ProjectMapper {
     e.setOfferedHours(d.getProjectInfo().getOfferedHours());
     e.setClosedAt(d.getProjectInfo().getClosedAt());
     e.setStatus(d.getProjectStatus().name());
-  }
-
-  /**
-   * Projects a raw JPA {@link SchoolEntity} and a list of resolved {@link ProjectView} DTOs into a
-   * {@link SchoolProjectView}.
-   *
-   * @param s the JPA entity representing the school
-   * @param projects the list of resolved project views associated with the school
-   * @return a fully populated {@link SchoolProjectView} DTO
-   */
-  public static SchoolProjectView toSchoolProjectView(SchoolEntity s, List<ProjectView> projects) {
-    if (s == null) {
-      return null;
-    }
-    SchoolView schoolView =
-        new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
-    return new SchoolProjectView(schoolView, projects);
+    e.setCreatedAt(d.getProjectInfo().getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getProjectInfo().getAuditInfo().getUpdatedAt());
   }
 
   /**

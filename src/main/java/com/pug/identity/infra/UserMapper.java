@@ -79,6 +79,8 @@ public final class UserMapper {
     }
     e.setName(d.getName());
     e.setCpf(d.getCpf().getValue());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**

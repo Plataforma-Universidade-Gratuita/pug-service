@@ -8,6 +8,7 @@ import com.pug.academic.service.dtos.SchoolCreateCommand;
 import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.SchoolProcessor;
+import com.pug.project.service.ProjectBySchoolService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -32,6 +33,8 @@ public class SchoolServiceImpl implements SchoolService {
 
   @Inject CourseService courseService;
 
+  @Inject ProjectBySchoolService projectBySchoolService;
+
   /** {@inheritDoc} */
   @Transactional
   @Override
@@ -49,6 +52,7 @@ public class SchoolServiceImpl implements SchoolService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("School deleted successfully. ID: %s", id);
+      projectBySchoolService.deleteAllBySchoolId(id);
     } else {
       LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }

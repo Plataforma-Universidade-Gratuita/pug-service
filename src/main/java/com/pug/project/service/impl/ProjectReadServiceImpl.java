@@ -1,11 +1,7 @@
 package com.pug.project.service.impl;
 
-import com.pug.academic.infra.read.SchoolQueries;
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.project.infra.read.ProjectQueries;
-import com.pug.project.infra.read.ProjectsBySchoolsQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
@@ -28,8 +24,6 @@ public class ProjectReadServiceImpl implements ProjectReadService {
   private static final Logger LOG = Logger.getLogger(ProjectReadServiceImpl.class);
 
   @Inject ProjectQueries queries;
-  @Inject ProjectsBySchoolsQueries pbsQueries;
-  @Inject SchoolQueries schoolQueries;
 
   /** {@inheritDoc} */
   @Override
@@ -65,25 +59,6 @@ public class ProjectReadServiceImpl implements ProjectReadService {
       return List.of();
     }
     return queries.listByEntityId(entityId);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<SchoolView> listViewsSchoolsByProjectId(UUID projectId) {
-    if (projectId == null) {
-      return List.of();
-    }
-    List<UUID> schoolIds = pbsQueries.listAllSchoolsIdsByProjectId(projectId);
-    return schoolQueries.listByIds(schoolIds);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public SchoolProjectView listViewsBySchool(UUID schoolId) {
-    if (schoolId == null) {
-      return null;
-    }
-    return pbsQueries.listBySchool(schoolId);
   }
 
   /**

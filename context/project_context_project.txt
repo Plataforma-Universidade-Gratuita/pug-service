@@ -180,10 +180,13 @@ package com.pug.project.domain;
 
 import com.pug.academic.domain.Student;
 import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.enums.ProjectsErrorCodes;
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.BusinessRuleException;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -193,9 +196,10 @@ import lombok.Getter;
 /**
  * Immutable Domain Entity representing a Student's Enrollment in a Project.
  *
- * <p>This class maps a student directly to a project and tracks the lifecycle state of that
- * relationship (e.g., PENDING, APPROVED, COMPLETED). It extends {@link DomainError} to accumulate
- * structural validation failures.
+ * <p>This class maps a specific {@link Student} directly to a {@link Project} and tracks the
+ * lifecycle state of that relationship (e.g., {@link EnrollmentStatus#PENDING}, {@link
+ * EnrollmentStatus#APPROVED}, {@link EnrollmentStatus#COMPLETED}). It extends {@link DomainError}
+ * to accumulate structural validation failures and bubble up problems from nested value objects.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -213,11 +217,19 @@ public class Enrollment extends DomainError {
   EnrollmentInfo enrollmentInfo;
 
   /**
-   * Factory method to create a new {@code Enrollment} instance in a PENDING state.
+   * Factory method to create a new {@code Enrollment} instance in a {@link
+   * EnrollmentStatus#PENDING} state.
    *
-   * @param student the student requesting enrollment
-   * @param project the project they wish to join
-   * @return a new, self-validated {@link Enrollment} instance
+   * <p>The returned aggregate is initialized with a freshly created {@link EnrollmentIdentifier}
+   * based on the provided {@link Student} and {@link Project}, and a default {@link EnrollmentInfo}
+   * with no acceptance or closing timestamps set. The instance is immediately self-validated; any
+   * problems are accumulated internally and can be inspected via {@link #hasFieldErrors()} and
+   * {@link #getFieldErrors()}.
+   *
+   * @param student the {@link Student} requesting enrollment
+   * @param project the {@link Project} the student wishes to join
+   * @return a new, self-validated {@link Enrollment} instance in {@link EnrollmentStatus#PENDING}
+   *     state
    */
   public static Enrollment factory(Student student, Project project) {
     Enrollment enrollment =
@@ -234,34 +246,76 @@ public class Enrollment extends DomainError {
   /**
    * Transitions the enrollment to a new lifecycle status, updating tracking timestamps accordingly.
    *
-   * @param newStatus the target status to transition to
-   * @return a new {@link Enrollment} instance reflecting the updated state, or the same instance if
-   *     unchanged
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>If the requested {@code newStatus} is equal to the current {@code status}, this method is
+   *       idempotent and returns {@code this} without changes.
+   *   <li>If the current {@code status} is already a closing state (see {@link
+   *       #isClosingStatus(EnrollmentStatus)}), no further transitions are allowed and a {@link
+   *       BusinessRuleException} is thrown with {@link
+   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
+   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current {@code
+   *       status} is {@link EnrollmentStatus#PENDING}. On success, {@link EnrollmentInfo#accept()}
+   *       is applied, stamping {@code acceptedAt}.
+   *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
+   *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
+   *       EnrollmentStatus#REJECTED}, {@link EnrollmentStatus#REMOVED}) are only allowed when the
+   *       current {@code status} is {@link EnrollmentStatus#APPROVED}. On success, {@link
+   *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
+   *   <li>All other transitions (for example, attempting to go from {@code PENDING} directly to a
+   *       closing status, or attempting to revert from a closing status back to {@code PENDING} or
+   *       {@code APPROVED}) are rejected with a {@link BusinessRuleException} using {@link
+   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
+   * </ul>
+   *
+   * @param newStatus the target {@link EnrollmentStatus} to transition to (must not be {@code null}
+   *     for a valid transition)
+   * @return a new {@link Enrollment} instance reflecting the updated status and lifecycle metadata,
+   *     or {@code this} if the status is unchanged
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the requested transition violates
+   *     the enrollment lifecycle rules and {@link
+   *     ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
    */
   public Enrollment changeStatus(EnrollmentStatus newStatus) {
-    if (this.status == newStatus) {
+    if (status == newStatus) {
       return this;
+    }
+
+    if (isClosingStatus(status)) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
 
     EnrollmentInfo newInfo;
 
-    if (newStatus == EnrollmentStatus.APPROVED) {
-      newInfo = this.enrollmentInfo.accept();
-    } else if (isClosingStatus(newStatus)) {
-      newInfo = this.enrollmentInfo.closeStatus();
+    if (Objects.requireNonNull(newStatus) == EnrollmentStatus.APPROVED) {
+      if (status != EnrollmentStatus.PENDING) {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
+      newInfo = enrollmentInfo.accept();
     } else {
-      newInfo = this.enrollmentInfo.update();
+      if (isClosingStatus(newStatus)) {
+        if (status != EnrollmentStatus.APPROVED) {
+          throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+        }
+        newInfo = enrollmentInfo.closeStatus();
+      } else {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
     }
 
-    Enrollment updated = this.toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
-
+    Enrollment updated = toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
     updated.collectValidationProblems();
     return updated;
   }
 
   /**
-   * Helper method to determine if a status represents a terminal (closing) state for the
-   * enrollment.
+   * Evaluates whether the provided enrollment status represents a terminal (closing) state in the
+   * enrollment lifecycle.
+   *
+   * @param s the {@link EnrollmentStatus} to evaluate
+   * @return {@code true} if the status is considered closing (e.g., {@code CANCELED}, {@code
+   *     COMPLETED}, {@code EXITED}, {@code REJECTED}, {@code REMOVED}); {@code false} otherwise
    */
   private boolean isClosingStatus(EnrollmentStatus s) {
     return s == EnrollmentStatus.REJECTED
@@ -271,7 +325,23 @@ public class Enrollment extends DomainError {
         || s == EnrollmentStatus.COMPLETED;
   }
 
-  /** Evaluates constraints for the Enrollment aggregate and accumulates any validation problems. */
+  /**
+   * Evaluates constraints for the {@code Enrollment} aggregate and accumulates any validation
+   * problems.
+   *
+   * <p>Rules applied:
+   *
+   * <ul>
+   *   <li>Ensures the {@code identifier} is not {@code null} and bubbles up any internal errors
+   *       from {@link EnrollmentIdentifier}. If {@code identifier} is {@code null}, both {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK} and {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK} are appended.
+   *   <li>Ensures the {@code status} is not {@code null} (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STATUS_BLANK}).
+   *   <li>Ensures the {@code enrollmentInfo} is either {@code null} (no additional checks) or, if
+   *       present, bubbles up any internal errors from {@link EnrollmentInfo}.
+   * </ul>
+   */
   private void collectValidationProblems() {
     if (identifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
@@ -296,37 +366,107 @@ FILE: domain/EnrollmentRepository.java
 ================================================================================
 package com.pug.project.domain;
 
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Domain repository interface for managing {@link Enrollment} aggregate roots.
  *
- * <p>This interface defines the contract for persisting and retrieving student enrollments in
- * projects. It utilizes a composite natural key (Project ID + Student ID).
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting student
+ * enrollments in projects. It utilizes a composite natural key represented by {@link
+ * EnrollmentIdentifier} (Project ID + Student ID).
  */
 public interface EnrollmentRepository {
 
-  Enrollment persist(Enrollment entity);
-
-  void update(Enrollment entity);
-
-  boolean deleteByIds(UUID projectId, UUID studentId);
-
-  Optional<Enrollment> findOptionalByIds(UUID projectId, UUID studentId);
+  /**
+   * Removes an {@link Enrollment} from the repository based on its composite identifier.
+   *
+   * <p>This operation is expected to be idempotent: if the enrollment does not exist, the
+   * implementation should simply return {@code false} without raising an exception.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return {@code true} if the enrollment was successfully deleted, {@code false} if it was not
+   *     found
+   */
+  boolean deleteById(EnrollmentIdentifier identifier);
 
   /**
-   * Checks whether a specific student is already enrolled in a specific project.
+   * Checks whether a specific enrollment exists in the repository.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return {@code true} if the enrollment exists, {@code false} otherwise
+   * <p>The lookup is performed using the composite natural key encapsulated by {@link
+   * EnrollmentIdentifier}.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return {@code true} if an enrollment with the given identifier exists, {@code false} otherwise
    */
-  boolean existsByIds(UUID projectId, UUID studentId);
+  boolean existsById(EnrollmentIdentifier identifier);
 
+  /**
+   * Checks whether any {@link Enrollment} associated with the specified project identifier exists
+   * in the repository.
+   *
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link Project}
+   * cannot be deleted while it still has students enrolled.
+   *
+   * @param projectId the unique identifier (UUID) of the project
+   * @return {@code true} if at least one enrollment is linked to the project, {@code false}
+   *     otherwise
+   */
+  boolean existsByProjectId(UUID projectId);
+
+  /**
+   * Checks whether any {@link Enrollment} associated with the specified student identifier exists
+   * in the repository.
+   *
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
+   * com.pug.academic.domain.Student} cannot be deleted while they still have project enrollments.
+   *
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return {@code true} if at least one enrollment is linked to the student, {@code false}
+   *     otherwise
+   */
   boolean existsByStudentId(UUID studentId);
 
-  boolean existsByProjectId(UUID projectId);
+  /**
+   * Retrieves an {@link Enrollment} by its composite identifier.
+   *
+   * <p>When an enrollment is reconstituted from the persistence layer, it typically undergoes the
+   * same domain validations as a newly created aggregate. Therefore, the returned {@link
+   * Enrollment} might contain validation errors (verifiable via {@link
+   * Enrollment#hasFieldErrors()}) if the stored data violates current domain rules.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return an {@link Optional} containing the found {@link Enrollment}, or {@link
+   *     Optional#empty()} if not found
+   */
+  Optional<Enrollment> findOptionalById(EnrollmentIdentifier identifier);
+
+  /**
+   * Persists a newly created {@link Enrollment} aggregate into the repository.
+   *
+   * <p>The returned instance should reflect the fully persisted state, including any persistence
+   * layer side effects (such as database-generated timestamps).
+   *
+   * @param entity the {@link Enrollment} aggregate to persist
+   * @return the fully persisted {@link Enrollment} instance, or {@code null} if the input is {@code
+   *     null}
+   */
+  Enrollment persist(Enrollment entity);
+
+  /**
+   * Updates the state of an existing {@link Enrollment} aggregate in the repository.
+   *
+   * <p>Implementations are expected to safely ignore {@code null} entities. If the enrollment does
+   * not exist, the operation should be a no-op rather than throwing an exception; existence checks
+   * should be performed beforehand in the application service layer when necessary.
+   *
+   * @param entity the {@link Enrollment} instance containing the updated state
+   */
+  void update(Enrollment entity);
 }
 
 
@@ -441,6 +581,9 @@ public enum ProjectsErrorCodes implements GenericCodes {
   ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.not.found"),
 
   /* --- State Transition Business Rules --- */
+
+  /** Indicates an invalid state transition attempting on an enrollment. */
+  INVALID_ENROLLMENT_STATUS_UPDATE("error.domain.projects.enrollment.status.invalid"),
 
   /** Indicates an invalid state transition attempting to cancel a project. */
   INVALID_PROJECT_STATUS_UPDATE_CANCEL("error.domain.projects.status.update.cancel"),
@@ -906,6 +1049,151 @@ public class Project extends DomainError {
 
 
 ================================================================================
+FILE: domain/ProjectBySchool.java
+================================================================================
+package com.pug.project.domain;
+
+import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.pug.shared.domain.DomainError;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+
+/**
+ * Domain aggregate representing the association between a Project and a School.
+ *
+ * <p>This aggregate ensures that a project is strictly linked to a valid school. It provides
+ * methods to manage and transition this association, extending {@link DomainError} for structural
+ * validation.
+ */
+@Getter
+@Builder(toBuilder = true)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@EqualsAndHashCode(callSuper = false)
+public class ProjectBySchool extends DomainError {
+
+  /** The unique identifier of the project. */
+  private final UUID projectId;
+
+  /** The unique identifier of the school. */
+  private final UUID schoolId;
+
+  /**
+   * Factory method to create a new {@code ProjectsBySchool} instance.
+   *
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return a self-validated {@link ProjectBySchool} instance
+   */
+  public static ProjectBySchool factory(UUID projectId, UUID schoolId) {
+    ProjectBySchool association =
+        ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+    association.collectValidationProblems();
+    return association;
+  }
+
+  /** Evaluates constraints for the aggregate and accumulates any validation problems. */
+  private void collectValidationProblems() {
+    if (projectId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    }
+    if (schoolId == null) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/ProjectBySchoolRepository.java
+================================================================================
+package com.pug.project.domain;
+
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Domain repository interface for managing {@link ProjectBySchool} aggregate roots.
+ *
+ * <p>This interface defines the contract for persisting project-to-school association aggregates,
+ * as well as removing existing associations either in bulk or for a specific project–school pair.
+ */
+public interface ProjectBySchoolRepository {
+
+  /**
+   * Removes a specific association between a project and a school.
+   *
+   * <p>The implementation is expected to use the {@code projectId} and {@code schoolId} contained
+   * in the provided {@link ProjectBySchool} aggregate to identify and delete a single matching
+   * record.
+   *
+   * @param association the {@link ProjectBySchool} aggregate containing both identifiers
+   * @return {@code true} if an association was deleted, {@code false} otherwise
+   */
+  boolean delete(ProjectBySchool association);
+
+  /**
+   * Removes all associations for the specified project.
+   *
+   * <p>The implementation is expected to use the provided {@code projectId} to identify and delete
+   * all matching {@link ProjectBySchool} records.
+   *
+   * @param projectId the unique identifier of the project
+   * @return the number of associations deleted
+   */
+  long deleteAllByProjectId(UUID projectId);
+
+  /**
+   * Removes all associations for the specified school.
+   *
+   * <p>The implementation is expected to use the provided {@code schoolId} to identify and delete
+   * all matching {@link ProjectBySchool} records.
+   *
+   * @param schoolId the unique identifier of the school
+   * @return the number of associations deleted
+   */
+  long deleteAllBySchoolId(UUID schoolId);
+
+  /**
+   * Retrieves the identifiers of all schools associated with the given project.
+   *
+   * <p>This method is intended for write-side orchestration (e.g., when updating or deleting a
+   * project and needing to understand its current school links). It does not instantiate full
+   * association aggregates, returning only the foreign key identifiers.
+   *
+   * @param projectId the unique identifier of the project
+   * @return a {@link Set} of school UUIDs associated with the project; an empty set if {@code
+   *     projectId} is {@code null} or if no associations exist
+   */
+  Set<UUID> findAllSchoolIdsByProjectId(UUID projectId);
+
+  /**
+   * Retrieves the identifiers of all projects associated with the given school.
+   *
+   * <p>This method is intended for write-side orchestration (e.g., when updating or deleting a
+   * school and needing to understand its current project links). It does not instantiate full
+   * association aggregates, returning only the foreign key identifiers.
+   *
+   * @param schoolId the unique identifier of the school
+   * @return a {@link Set} of project UUIDs associated with the school; an empty set if {@code
+   *     schoolId} is {@code null} or if no associations exist
+   */
+  Set<java.util.UUID> findAllProjectIdsBySchoolId(UUID schoolId);
+
+  /**
+   * Persists a newly created {@link ProjectBySchool} association into the repository.
+   *
+   * @param association the {@link ProjectBySchool} aggregate to persist
+   * @return the fully persisted {@link ProjectBySchool} instance
+   */
+  ProjectBySchool persist(ProjectBySchool association);
+}
+
+
+================================================================================
 FILE: domain/ProjectRepository.java
 ================================================================================
 package com.pug.project.domain;
@@ -914,7 +1202,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link Project} and {@link ProjectsBySchool} aggregate
+ * Domain repository interface for managing {@link Project} and {@link ProjectBySchool} aggregate
  * roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
@@ -976,101 +1264,11 @@ public interface ProjectRepository {
   Project persist(Project entity);
 
   /**
-   * Persists a newly created {@link ProjectsBySchool} association into the repository.
-   *
-   * @param association the {@link ProjectsBySchool} aggregate to persist
-   * @return the fully persisted {@link ProjectsBySchool} instance
-   */
-  ProjectsBySchool persistAssociation(ProjectsBySchool association);
-
-  /**
    * Updates the state of an existing {@link Project} aggregate in the repository.
    *
    * @param entity the {@link Project} instance containing the updated state
    */
   void update(Project entity);
-
-  /**
-   * Updates the school association for an existing {@link ProjectsBySchool} aggregate.
-   *
-   * @param association the {@link ProjectsBySchool} instance containing the updated state
-   */
-  void updateAssociation(ProjectsBySchool association);
-}
-
-
-================================================================================
-FILE: domain/ProjectsBySchool.java
-================================================================================
-package com.pug.project.domain;
-
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-
-/**
- * Domain aggregate representing the association between a Project and a School.
- *
- * <p>This aggregate ensures that a project is strictly linked to a valid school. It provides
- * methods to manage and transition this association, extending {@link DomainError} for structural
- * validation.
- */
-@Getter
-@Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-@EqualsAndHashCode(callSuper = false)
-public class ProjectsBySchool extends DomainError {
-
-  /** The unique identifier of the project. */
-  private final UUID projectId;
-
-  /** The unique identifier of the school. */
-  private final UUID schoolId;
-
-  /**
-   * Factory method to create a new {@code ProjectsBySchool} instance.
-   *
-   * @param projectId the unique identifier of the project
-   * @param schoolId the unique identifier of the school
-   * @return a self-validated {@link ProjectsBySchool} instance
-   */
-  public static ProjectsBySchool factory(UUID projectId, UUID schoolId) {
-    ProjectsBySchool association =
-        ProjectsBySchool.builder().projectId(projectId).schoolId(schoolId).build();
-    association.collectValidationProblems();
-    return association;
-  }
-
-  /**
-   * Transitions the association to a new school.
-   *
-   * @param newSchoolId the unique identifier of the new school
-   * @return a new {@link ProjectsBySchool} instance with the updated school ID, or {@code this} if
-   *     unchanged
-   */
-  public ProjectsBySchool moveToSchool(UUID newSchoolId) {
-    if (newSchoolId != null && newSchoolId.equals(this.schoolId)) {
-      return this;
-    }
-    ProjectsBySchool updated = toBuilder().schoolId(newSchoolId).build();
-    updated.collectValidationProblems();
-    return updated;
-  }
-
-  /** Evaluates constraints for the aggregate and accumulates any validation problems. */
-  private void collectValidationProblems() {
-    if (projectId == null) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
-    }
-    if (schoolId == null) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
-    }
-  }
 }
 
 
@@ -1873,14 +2071,11 @@ FILE: infra/EnrollmentMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.project.domain.Enrollment;
 import com.pug.project.domain.enums.EnrollmentStatus;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.EnrollmentInfo;
 import com.pug.project.infra.persistence.EnrollmentEntity;
-import com.pug.project.infra.read.dtos.EnrollmentView;
-import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -1967,34 +2162,8 @@ public final class EnrollmentMapper {
     e.setStatus(d.getStatus().name());
     e.setAcceptedAt(d.getEnrollmentInfo().getAcceptedAt());
     e.setClosingStatusAt(d.getEnrollmentInfo().getClosingStatusAt());
-  }
-
-  /**
-   * Projects a raw JPA {@link EnrollmentEntity} and its pre-resolved nested views into a
-   * comprehensive {@link EnrollmentView} DTO.
-   *
-   * <p>Since resolving Projects and Students requires deep query joins across multiple modules,
-   * this mapper expects the query layer to provide the resolved nested views.
-   *
-   * @param e the JPA entity representing the enrollment lifecycle
-   * @param project the pre-resolved, fully populated view of the project
-   * @param student the pre-resolved, fully populated view of the student
-   * @return a fully populated {@link EnrollmentView} DTO
-   */
-  public static EnrollmentView toView(
-      EnrollmentEntity e, ProjectView project, StudentView student) {
-    if (e == null) {
-      return null;
-    }
-
-    return new EnrollmentView(
-        project,
-        student,
-        EnrollmentStatus.valueOf(e.getStatus()),
-        e.getCreatedAt(),
-        e.getUpdatedAt(),
-        e.getAcceptedAt(),
-        e.getClosingStatusAt());
+    e.setCreatedAt(d.getEnrollmentInfo().getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getEnrollmentInfo().getAuditInfo().getUpdatedAt());
   }
 }
 
@@ -2284,6 +2453,7 @@ package com.pug.project.infra.persistence.impl;
 
 import com.pug.project.domain.Enrollment;
 import com.pug.project.domain.EnrollmentRepository;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.infra.EnrollmentMapper;
 import com.pug.project.infra.persistence.EnrollmentEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
@@ -2298,23 +2468,92 @@ public class EnrollmentRepositoryImpl
     implements EnrollmentRepository,
         PanacheRepositoryBase<EnrollmentEntity, EnrollmentEntity.EnrollmentsId> {
 
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(EnrollmentIdentifier identifier) {
+    if (identifier == null
+        || identifier.getProjectId() == null
+        || identifier.getStudentId() == null) {
+      return false;
+    }
+
+    var id =
+        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
+
+    boolean deleted = delete("id", id) > 0;
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsById(EnrollmentIdentifier identifier) {
+    if (identifier == null
+        || identifier.getProjectId() == null
+        || identifier.getStudentId() == null) {
+      return false;
+    }
+
+    var id =
+        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
+
+    return count("id", id) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return false;
+    }
+    return count("id.projectId", projectId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByStudentId(UUID studentId) {
+    if (studentId == null) {
+      return false;
+    }
+    return count("id.studentId", studentId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Enrollment> findOptionalById(EnrollmentIdentifier identifier) {
+    if (identifier == null
+        || identifier.getProjectId() == null
+        || identifier.getStudentId() == null) {
+      return Optional.empty();
+    }
+
+    var id =
+        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
+
+    return findByIdOptional(id).map(EnrollmentMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Enrollment persist(Enrollment entity) {
     if (entity == null) {
       return null;
     }
-    var e = EnrollmentMapper.toEntity(entity);
+    EnrollmentEntity e = EnrollmentMapper.toEntity(entity);
     persistAndFlush(e);
     return EnrollmentMapper.toDomain(e);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Enrollment entity) {
-    if (entity == null) {
+    if (entity == null || entity.getIdentifier() == null) {
       return;
     }
+
     var id =
         new EnrollmentEntity.EnrollmentsId(
             entity.getIdentifier().getProjectId(), entity.getIdentifier().getStudentId());
@@ -2324,51 +2563,115 @@ public class EnrollmentRepositoryImpl
       EnrollmentMapper.copy(entity, managed);
     }
   }
+}
 
+
+================================================================================
+FILE: infra/persistence/impl/ProjectBySchoolRepositoryImpl.java
+================================================================================
+package com.pug.project.infra.persistence.impl;
+
+import com.pug.project.domain.ProjectBySchool;
+import com.pug.project.domain.ProjectBySchoolRepository;
+import com.pug.project.infra.ProjectBySchoolMapper;
+import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/** Implementation of the {@link ProjectBySchoolRepository} utilizing Hibernate ORM with Panache. */
+@ApplicationScoped
+public class ProjectBySchoolRepositoryImpl
+    implements ProjectBySchoolRepository,
+        PanacheRepositoryBase<
+            ProjectsBySchoolsEntity, ProjectsBySchoolsEntity.ProjectsBySchoolsId> {
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean deleteByIds(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) {
+  public boolean delete(ProjectBySchool association) {
+    if (association == null) {
       return false;
     }
-    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
-    var deleted = delete("id", id) > 0;
+
+    ProjectsBySchoolsEntity entity = ProjectBySchoolMapper.toEntity(association);
+    if (entity == null || entity.getId() == null) {
+      return false;
+    }
+
+    long deleted = delete("id", entity.getId());
+    flush();
+    return deleted > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return 0;
+    }
+    long deleted = delete("id.projectId", projectId);
     flush();
     return deleted;
   }
 
+  /** {@inheritDoc} */
+  @Transactional
   @Override
-  public Optional<Enrollment> findOptionalByIds(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) {
-      return Optional.empty();
+  public long deleteAllBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return 0;
     }
-    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
-    return findByIdOptional(id).map(EnrollmentMapper::toDomain);
+    long deleted = delete("id.schoolId", schoolId);
+    flush();
+    return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public boolean existsByIds(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) {
-      return false;
-    }
-    var id = new EnrollmentEntity.EnrollmentsId(projectId, studentId);
-    return count("id", id) > 0;
-  }
-
-  @Override
-  public boolean existsByStudentId(UUID studentId) {
-    if (studentId == null) {
-      return false;
-    }
-    return count("id.studentId", studentId) > 0;
-  }
-
-  @Override
-  public boolean existsByProjectId(UUID projectId) {
+  public Set<UUID> findAllSchoolIdsByProjectId(UUID projectId) {
     if (projectId == null) {
-      return false;
+      return Set.of();
     }
-    return count("id.projectId", projectId) > 0;
+
+    return find("id.projectId", projectId).stream()
+        .map(ProjectsBySchoolsEntity::getId)
+        .filter(Objects::nonNull)
+        .map(ProjectsBySchoolsEntity.ProjectsBySchoolsId::getSchoolId)
+        .collect(Collectors.toSet());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Set<UUID> findAllProjectIdsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return Set.of();
+    }
+
+    return find("id.schoolId", schoolId).stream()
+        .map(ProjectsBySchoolsEntity::getId)
+        .filter(Objects::nonNull)
+        .map(ProjectsBySchoolsEntity.ProjectsBySchoolsId::getProjectId)
+        .collect(Collectors.toSet());
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public ProjectBySchool persist(ProjectBySchool association) {
+    if (association == null) {
+      return null;
+    }
+
+    ProjectsBySchoolsEntity entity = ProjectBySchoolMapper.toEntity(association);
+    persistAndFlush(entity);
+
+    return ProjectBySchoolMapper.toDomain(entity);
   }
 }
 
@@ -2380,10 +2683,8 @@ package com.pug.project.infra.persistence.impl;
 
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
-import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.infra.ProjectMapper;
 import com.pug.project.infra.persistence.ProjectEntity;
-import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
 import com.pug.shared.utils.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2460,23 +2761,6 @@ public class ProjectRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public ProjectsBySchool persistAssociation(ProjectsBySchool association) {
-    if (association == null) {
-      return null;
-    }
-
-    ProjectsBySchoolsEntity entity =
-        new ProjectsBySchoolsEntity(
-            new ProjectsBySchoolsEntity.ProjectsBySchoolsId(
-                association.getProjectId(), association.getSchoolId()));
-    em.persist(entity);
-    em.flush();
-    return association;
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
   public void update(Project entity) {
     if (entity == null || entity.getId() == null) {
       return;
@@ -2485,30 +2769,6 @@ public class ProjectRepositoryImpl
     if (managed != null) {
       ProjectMapper.copy(entity, managed);
     }
-  }
-
-  /** {@inheritDoc} */
-  @Transactional
-  @Override
-  public void updateAssociation(ProjectsBySchool association) {
-    if (association == null || association.getProjectId() == null) {
-      return;
-    }
-
-    var existingAssociations =
-        em.createQuery(
-                "select e from ProjectsBySchoolsEntity e where e.id.projectId = :pid",
-                ProjectsBySchoolsEntity.class)
-            .setParameter("pid", association.getProjectId())
-            .getResultList();
-
-    if (!existingAssociations.isEmpty()) {
-      for (ProjectsBySchoolsEntity existing : existingAssociations) {
-        em.remove(existing);
-      }
-    }
-
-    persistAssociation(association);
   }
 }
 
@@ -2703,20 +2963,72 @@ public class ProjectsBySchoolsEntity {
 
 
 ================================================================================
+FILE: infra/ProjectBySchoolMapper.java
+================================================================================
+package com.pug.project.infra;
+
+import com.pug.project.domain.ProjectBySchool;
+import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
+
+/**
+ * Stateless utility class responsible for mapping between ProjectsBySchool boundary layers.
+ *
+ * <p>This mapper acts as an anti-corruption layer for the association aggregate {@link
+ * ProjectBySchool}, handling conversions to and from the JPA persistence model ({@link
+ * ProjectsBySchoolsEntity}) as well as consolidated read models that join projects and schools.
+ */
+public final class ProjectBySchoolMapper {
+
+  /** Private constructor to prevent instantiation. */
+  private ProjectBySchoolMapper() {}
+
+  /**
+   * Reconstitutes a {@link ProjectBySchool} aggregate from a JPA {@link ProjectsBySchoolsEntity}.
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed {@link ProjectBySchool}, or {@code null} if the input entity is
+   *     null
+   */
+  public static ProjectBySchool toDomain(ProjectsBySchoolsEntity e) {
+    if (e == null || e.getId() == null) {
+      return null;
+    }
+    return ProjectBySchool.builder()
+        .projectId(e.getId().getProjectId())
+        .schoolId(e.getId().getSchoolId())
+        .build();
+  }
+
+  /**
+   * Translates a {@link ProjectBySchool} aggregate into a newly instantiated JPA {@link
+   * ProjectsBySchoolsEntity}.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed {@link ProjectsBySchoolsEntity}, or {@code null} if the input
+   *     aggregate is null
+   */
+  public static ProjectsBySchoolsEntity toEntity(ProjectBySchool d) {
+    if (d == null) {
+      return null;
+    }
+    ProjectsBySchoolsEntity.ProjectsBySchoolsId id =
+        new ProjectsBySchoolsEntity.ProjectsBySchoolsId(d.getProjectId(), d.getSchoolId());
+    return new ProjectsBySchoolsEntity(id);
+  }
+}
+
+
+================================================================================
 FILE: infra/ProjectMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.project.infra.persistence.ProjectEntity;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
-import java.util.List;
 
 /**
  * Stateless utility class responsible for mapping between Project boundary layers.
@@ -2748,23 +3060,8 @@ public final class ProjectMapper {
     e.setOfferedHours(d.getProjectInfo().getOfferedHours());
     e.setClosedAt(d.getProjectInfo().getClosedAt());
     e.setStatus(d.getProjectStatus().name());
-  }
-
-  /**
-   * Projects a raw JPA {@link SchoolEntity} and a list of resolved {@link ProjectView} DTOs into a
-   * {@link SchoolProjectView}.
-   *
-   * @param s the JPA entity representing the school
-   * @param projects the list of resolved project views associated with the school
-   * @return a fully populated {@link SchoolProjectView} DTO
-   */
-  public static SchoolProjectView toSchoolProjectView(SchoolEntity s, List<ProjectView> projects) {
-    if (s == null) {
-      return null;
-    }
-    SchoolView schoolView =
-        new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt());
-    return new SchoolProjectView(schoolView, projects);
+    e.setCreatedAt(d.getProjectInfo().getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getProjectInfo().getAuditInfo().getUpdatedAt());
   }
 
   /**
@@ -2974,28 +3271,29 @@ FILE: infra/read/dtos/EnrollmentView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.project.domain.enums.EnrollmentStatus;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) representing a read-only view of a Student's Enrollment in a Project.
+ * Data Transfer Object (DTO) representing a lightweight, read-only view of an Enrollment.
  *
- * <p>Following CQRS principles, this record flattens the many-to-many relationship between Students
- * and Projects. It nests the full {@link ProjectView} and {@link StudentView} alongside the
- * specific lifecycle metadata of the enrollment.
+ * <p>Following CQRS principles, this record is intentionally minimal and exposes only identifiers
+ * and lifecycle metadata. It is optimized for list and filter operations, allowing clients to
+ * resolve detailed project and student information on demand via dedicated endpoints.
  *
- * @param project the nested read-only projection of the associated project
- * @param student the nested read-only projection of the enrolled student
- * @param status the current lifecycle status of the enrollment
- * @param createdAt the exact timestamp when the enrollment request was created
+ * @param projectId the unique identifier (UUID) of the associated project
+ * @param studentId the unique identifier (UUID) of the associated student account
+ * @param status the current lifecycle {@link EnrollmentStatus} of the enrollment
+ * @param createdAt the exact timestamp when the enrollment record was initially created
  * @param updatedAt the exact timestamp when the enrollment record was last modified
- * @param acceptedAt the exact timestamp when the enrollment was formally approved
- * @param closingStatusAt the exact timestamp when the enrollment reached a terminal state
+ * @param acceptedAt the timestamp when the enrollment was formally approved (may be {@code null})
+ * @param closingStatusAt the timestamp when the enrollment reached a terminal state (may be {@code
+ *     null})
  */
 public record EnrollmentView(
-    ProjectView project,
-    StudentView student,
+    UUID projectId,
+    UUID studentId,
     EnrollmentStatus status,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
@@ -3048,27 +3346,6 @@ public record ProjectView(
 
 
 ================================================================================
-FILE: infra/read/dtos/SchoolProjectView.java
-================================================================================
-package com.pug.project.infra.read.dtos;
-
-import com.pug.academic.infra.read.dtos.SchoolView;
-import java.util.List;
-
-/**
- * Data Transfer Object (DTO) representing a read-only, consolidated view of a School and its
- * associated projects.
- *
- * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client, grouping a specific {@link SchoolView} with all {@link ProjectView} records linked to it.
- *
- * @param school the read-only projection of the school
- * @param projects the list of projects associated with this school
- */
-public record SchoolProjectView(SchoolView school, List<ProjectView> projects) {}
-
-
-================================================================================
 FILE: infra/read/EnrollmentQueries.java
 ================================================================================
 package com.pug.project.infra.read;
@@ -3078,14 +3355,63 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Read-only interface for executing queries against Enrollments. */
+/**
+ * Read-only interface for executing queries against {@link com.pug.project.domain.Enrollment}
+ * records.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving enrollment data directly into lightweight, read-optimized {@link EnrollmentView}
+ * projections, bypassing the overhead of instantiating full domain aggregates.
+ */
 public interface EnrollmentQueries {
+
+  /**
+   * Retrieves a read-only view of a specific enrollment based on its composite identifier.
+   *
+   * <p>The composite identifier is given by the pair ({@code projectId}, {@code studentId}), which
+   * together uniquely identify an enrollment record.
+   *
+   * @param projectId the unique identifier (UUID) of the project
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return an {@link Optional} containing the {@link EnrollmentView} if found, or {@link
+   *     Optional#empty()} if no matching enrollment exists
+   */
   Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId);
 
+  /**
+   * Retrieves a comprehensive list of all enrollments registered in the system.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination and returns the entire result set in a single call.
+   *
+   * @return a {@link List} containing all available {@link EnrollmentView} entries
+   */
   List<EnrollmentView> listAllEnrollments();
 
+  /**
+   * Retrieves a list of enrollments associated with a specific project.
+   *
+   * <p>Each {@link EnrollmentView} in the result set typically includes the fully resolved {@code
+   * ProjectView} and {@code StudentView} data required by the presentation layer in a single query
+   * round-trip.
+   *
+   * @param projectId the unique identifier (UUID) of the project
+   * @return a {@link List} of {@link EnrollmentView} entries linked to the given project, or an
+   *     empty list if none are found
+   */
   List<EnrollmentView> listByProjectId(UUID projectId);
 
+  /**
+   * Retrieves a list of enrollments associated with a specific student.
+   *
+   * <p>Each {@link EnrollmentView} in the result set typically includes the fully resolved {@code
+   * ProjectView} and {@code StudentView} data required by the presentation layer in a single query
+   * round-trip.
+   *
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return a {@link List} of {@link EnrollmentView} entries linked to the given student, or an
+   *     empty list if none are found
+   */
   List<EnrollmentView> listByStudentId(UUID studentId);
 }
 
@@ -3240,11 +3566,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link EnrollmentQueries} interface.
+ * Implementation of the {@link EnrollmentQueries} interface using JPA constructor expressions.
  *
- * <p>This massive JPQL constructor projection maps an Enrollment alongside the full Project graph
- * (Project -> Entity -> City) and the full Student graph (Student -> Account -> User, Student ->
- * Course -> School) in a single database hit.
+ * <p>This application-scoped bean executes read-only operations for enrollments. It projects {@link
+ * com.pug.project.infra.persistence.EnrollmentEntity} rows into lightweight {@link EnrollmentView}
+ * DTOs containing only identifiers and lifecycle metadata, leaving project and student details to
+ * be resolved on demand via dedicated endpoints.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -3254,59 +3581,21 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
   private static final String SELECT_BASE =
       """
-                    select new com.pug.project.infra.read.dtos.EnrollmentView(
-                      new com.pug.project.infra.read.dtos.ProjectView(
-                        p.id, p.name,
-                        new com.pug.partner.infra.read.dtos.EntityView(
-                          ent.id, ent.cnpj, ent.name, ent.address,
-                          new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                          ent.createdAt, ent.updatedAt
-                        ),
-                        p.description,
-                        new com.pug.identity.infra.read.dtos.AccountView(
-                          pacc.id,
-                          new com.pug.identity.infra.read.dtos.UserView(
-                            pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
-                          ),
-                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
-                        ),
-                        p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
-                      ),
-                      new com.pug.academic.infra.read.dtos.StudentView(
-                        new com.pug.identity.infra.read.dtos.AccountView(
-                          sacc.id,
-                          new com.pug.identity.infra.read.dtos.UserView(
-                            su.id, su.cpf, su.name, su.createdAt, su.updatedAt
-                          ),
-                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
-                        ),
-                        s.academicRegistration, s.campus,
-                        new com.pug.academic.infra.read.dtos.CourseView(
-                          course.id, course.name,
-                          new com.pug.academic.infra.read.dtos.SchoolView(
-                            sch.id, sch.name, sch.createdAt, sch.updatedAt
-                          ),
-                          course.createdAt, course.updatedAt
-                        ),
-                        s.requiredHours, s.concluded, s.startDate, s.dueDate, s.createdAt, s.updatedAt
-                      ),
-                      en.status, en.createdAt, en.updatedAt, en.acceptedAt, en.closingStatusAt
-                    )
-                    from EnrollmentEntity en
-                    join ProjectEntity p on p.id = en.id.projectId
-                    join EntityEntity ent on ent.id = p.entityId
-                    join CityEntity c on c.id = ent.cityId
-                    join AccountEntity pacc on pacc.id = p.createdBy
-                    join UserEntity pu on pu.id = pacc.userId
-                    join StudentEntity s on s.accountId = en.id.studentId
-                    join AccountEntity sacc on sacc.id = s.accountId
-                    join UserEntity su on su.id = sacc.userId
-                    join CourseEntity course on course.id = s.courseId
-                    left join SchoolEntity sch on sch.id = course.schoolId
-                    """;
+                  select new com.pug.project.infra.read.dtos.EnrollmentView(
+                    en.id.projectId,
+                    en.id.studentId,
+                    com.pug.project.domain.enums.EnrollmentStatus.valueOf(en.status),
+                    en.createdAt,
+                    en.updatedAt,
+                    en.acceptedAt,
+                    en.closingStatusAt
+                  )
+                  from EnrollmentEntity en
+                  """;
 
   private static final String ORDER_BY_DATE = " order by en.createdAt desc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
     if (projectId == null || studentId == null) {
@@ -3314,18 +3603,20 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
     }
     var q =
         em.createQuery(
-            SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid",
-            EnrollmentView.class);
-    q.setParameter("pid", projectId);
-    q.setParameter("sid", studentId);
+                SELECT_BASE + " where en.id.projectId = :pid and en.id.studentId = :sid",
+                EnrollmentView.class)
+            .setParameter("pid", projectId)
+            .setParameter("sid", studentId);
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listAllEnrollments() {
     return em.createQuery(SELECT_BASE + ORDER_BY_DATE, EnrollmentView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listByProjectId(UUID projectId) {
     if (projectId == null) {
@@ -3333,11 +3624,12 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
     }
     var q =
         em.createQuery(
-            SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class);
-    q.setParameter("pid", projectId);
+                SELECT_BASE + " where en.id.projectId = :pid" + ORDER_BY_DATE, EnrollmentView.class)
+            .setParameter("pid", projectId);
     return q.getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listByStudentId(UUID studentId) {
     if (studentId == null) {
@@ -3345,8 +3637,8 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
     }
     var q =
         em.createQuery(
-            SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class);
-    q.setParameter("sid", studentId);
+                SELECT_BASE + " where en.id.studentId = :sid" + ORDER_BY_DATE, EnrollmentView.class)
+            .setParameter("sid", studentId);
     return q.getResultList();
   }
 }
@@ -3437,6 +3729,17 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   /** {@inheritDoc} */
   @Override
+  public List<ProjectView> listByIds(List<UUID> ids) {
+    if (ids == null) {
+      return List.of();
+    }
+    return em.createQuery(SELECT_BASE + " where p.id in :ids" + ORDER_BY_NAME, ProjectView.class)
+        .setParameter("ids", ids)
+        .getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
   public List<ProjectView> searchByName(String query) {
     String key = com.pug.shared.utils.StringUtils.fold(query);
     List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);
@@ -3448,83 +3751,6 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
     return em.createQuery(SELECT_BASE + " where p.id in :ids" + ORDER_BY_NAME, ProjectView.class)
         .setParameter("ids", ids)
-        .getResultList();
-  }
-}
-
-
-================================================================================
-FILE: infra/read/impl/ProjectsBySchoolsQueriesImpl.java
-================================================================================
-package com.pug.project.infra.read.impl;
-
-import com.pug.project.infra.ProjectMapper;
-import com.pug.project.infra.read.ProjectsBySchoolsQueries;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.Transactional;
-import java.util.List;
-import java.util.UUID;
-
-/**
- * Implementation of the {@link ProjectsBySchoolsQueries} interface.
- *
- * <p>This query implementation provides specialized access to the relational mapping between
- * Projects and Schools. It leverages the {@link EntityManager} to execute efficient JPQL queries,
- * either by consolidating a full school-project projection or by resolving specific association
- * identifiers.
- */
-@ApplicationScoped
-@Transactional(Transactional.TxType.SUPPORTS)
-public class ProjectsBySchoolsQueriesImpl implements ProjectsBySchoolsQueries {
-
-  @Inject EntityManager em;
-
-  private static final String SELECT_BASE =
-      """
-                     select new com.pug.project.infra.read.dtos.ProjectView(
-                       p.id, p.name, p.entityId, p.description, p.createdBy,
-                       p.maxParticipants, p.offeredHours,\s
-                       com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
-                       p.closedAt, p.createdAt, p.updatedAt
-                     )
-                     from ProjectEntity p
-                    \s""";
-
-  /** {@inheritDoc} */
-  @Override
-  public SchoolProjectView listBySchool(UUID schoolId) {
-    if (schoolId == null) {
-      return null;
-    }
-
-    var school = em.find(com.pug.academic.infra.persistence.SchoolEntity.class, schoolId);
-    List<ProjectView> projects =
-        em.createQuery(
-                SELECT_BASE
-                    + " join ProjectsBySchoolsEntity pbs on pbs.id.projectId = p.id "
-                    + "where pbs.id.schoolId = :sid order by p.name asc",
-                ProjectView.class)
-            .setParameter("sid", schoolId)
-            .getResultList();
-
-    return ProjectMapper.toSchoolProjectView(school, projects);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public List<UUID> listAllSchoolsIdsByProjectId(UUID projectId) {
-    if (projectId == null) {
-      return List.of();
-    }
-
-    return em.createQuery(
-            "select pbs.id.schoolId from ProjectsBySchoolsEntity pbs where pbs.id.projectId = :pid",
-            UUID.class)
-        .setParameter("pid", projectId)
         .getResultList();
   }
 }
@@ -3581,42 +3807,20 @@ public interface ProjectQueries {
   List<ProjectView> listByEntityId(UUID entityId);
 
   /**
+   * Retrieves a list of projects matching the provided list of unique identifiers.
+   *
+   * @param ids a {@link List} of project UUIDs to retrieve
+   * @return a {@link List} of {@link ProjectView} entries corresponding to the provided IDs
+   */
+  List<ProjectView> listByIds(List<UUID> ids);
+
+  /**
    * Executes a robust full-text search against the names of projects.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria
    */
   List<ProjectView> searchByName(String query);
-}
-
-
-================================================================================
-FILE: infra/read/ProjectsBySchoolsQueries.java
-================================================================================
-package com.pug.project.infra.read;
-
-import com.pug.project.infra.read.dtos.SchoolProjectView;
-import java.util.List;
-import java.util.UUID;
-
-/** Read-only interface for executing queries against Project-to-School associations. */
-public interface ProjectsBySchoolsQueries {
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier (UUID) of the school
-   * @return the populated {@link SchoolProjectView} DTO
-   */
-  SchoolProjectView listBySchool(UUID schoolId);
-
-  /**
-   * Retrieves all school identifiers associated with a specific project.
-   *
-   * @param projectId the unique identifier (UUID) of the project
-   * @return a {@link List} of school UUIDs
-   */
-  List<UUID> listAllSchoolsIdsByProjectId(UUID projectId);
 }
 
 
@@ -3825,8 +4029,18 @@ import com.pug.shared.validation.UuidV7;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
-public record EnrollmentCreateRequest(
-    @NotNull @UuidV7 UUID projectId, @NotNull @UuidV7 UUID studentId) {}
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for creating a new Enrollment.
+ *
+ * <p>This request only carries the target {@code projectId}. The {@code studentId} is not provided
+ * by the client; instead, it is resolved server-side from the currently authenticated user (for
+ * example, via {@code AuthService.getCurrentAccountId()}), ensuring that a student can only create
+ * enrollments on their own behalf.
+ *
+ * @param projectId the unique identifier (UUIDv7) of the project the currently authenticated
+ *     student wishes to enroll in
+ */
+public record EnrollmentCreateRequest(@NotNull @UuidV7 UUID projectId) {}
 
 
 ================================================================================
@@ -3834,14 +4048,38 @@ FILE: presenter/dtos/EnrollmentResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.academic.presenter.dtos.StudentResponse;
 import com.pug.project.domain.enums.EnrollmentStatus;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the standardized API JSON response for Enrollment records.
+ *
+ * <p>This record provides a lightweight, identifier-centric view of an enrollment. Instead of
+ * nesting the full {@link ProjectResponse} or {@link
+ * com.pug.academic.presenter.dtos.StudentResponse}, it exposes only the {@code projectId} and
+ * {@code studentId}, allowing API clients to resolve detailed project and student information on
+ * demand via dedicated endpoints.
+ *
+ * @param projectId the unique identifier (UUIDv7) of the associated project
+ * @param studentId the unique identifier (UUIDv7) of the associated student account
+ * @param status the current lifecycle {@link EnrollmentStatus} of the enrollment
+ * @param statusFormatted the localized, human-readable enrollment status (e.g., "Aprovado",
+ *     "Concluído")
+ * @param acceptedAt the exact timestamp when the enrollment was formally approved (may be {@code
+ *     null} if still pending)
+ * @param acceptedAtFormatted a localized, human-readable string representing {@code acceptedAt}
+ *     (empty if {@code acceptedAt} is {@code null})
+ * @param closingStatusAt the exact timestamp when the enrollment reached a terminal state (e.g.,
+ *     Canceled, Completed), or {@code null} if it is not yet closed
+ * @param closingStatusAtFormatted a localized, human-readable string representing {@code
+ *     closingStatusAt} (empty if {@code closingStatusAt} is {@code null})
+ * @param auditInfo the nested audit information containing creation and last update timestamps
+ */
 public record EnrollmentResponse(
-    ProjectResponse project,
-    StudentResponse student,
+    UUID projectId,
+    UUID studentId,
     EnrollmentStatus status,
     String statusFormatted,
     OffsetDateTime acceptedAt,
@@ -3849,6 +4087,32 @@ public record EnrollmentResponse(
     OffsetDateTime closingStatusAt,
     String closingStatusAtFormatted,
     AuditInfoResponse auditInfo) {}
+
+
+================================================================================
+FILE: presenter/dtos/ProjectBySchoolRequest.java
+================================================================================
+package com.pug.project.presenter.dtos;
+
+import com.pug.shared.validation.UuidV7;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for assigning a Project to one or
+ * more Schools.
+ *
+ * <p>This request does not create or update the {@link com.pug.project.domain.Project} itself; it
+ * is dedicated exclusively to managing the project–school association via {@link
+ * com.pug.project.domain.ProjectBySchool}.
+ *
+ * @param projectId the unique identifier (UUIDv7) of the project to be associated
+ * @param schoolIds the list of unique identifiers (UUIDv7) of the schools to link to the project
+ */
+public record ProjectBySchoolRequest(
+    @NotNull @UuidV7 UUID projectId, @NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {}
 
 
 ================================================================================
@@ -3872,15 +4136,13 @@ import java.util.UUID;
  * @param maxParticipants the maximum number of students allowed to enroll (optional, min 0)
  * @param name the title or name of the project (must not be blank, max 150 chars)
  * @param offeredHours the total counterpart hours the project offers (must be min 0)
- * @param schoolId the unique identifier of the school associated with the project
  */
 public record ProjectCreateRequest(
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID entityId,
     @Size(max = 4000) String description,
     @Min(0) Integer maxParticipants,
-    @NotNull @DecimalMin("0.00") BigDecimal offeredHours,
-    @NotNull UUID schoolId) {}
+    @NotNull @DecimalMin("0.00") BigDecimal offeredHours) {}
 
 
 ================================================================================
@@ -3926,24 +4188,6 @@ public record ProjectResponse(
 
 
 ================================================================================
-FILE: presenter/dtos/ProjectsBySchoolResponse.java
-================================================================================
-package com.pug.project.presenter.dtos;
-
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import java.util.List;
-
-/**
- * Data Transfer Object (DTO) used as the standardized API JSON response for a School and its
- * associated Projects.
- *
- * @param school the consolidated, client-facing projection of the school
- * @param projects the list of consolidated, client-facing projections of associated projects
- */
-public record ProjectsBySchoolResponse(SchoolResponse school, List<ProjectResponse> projects) {}
-
-
-================================================================================
 FILE: presenter/dtos/ProjectUpdateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
@@ -3951,7 +4195,6 @@ package com.pug.project.presenter.dtos;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) used as the JSON request payload for partially updating an existing
@@ -3961,14 +4204,12 @@ import java.util.UUID;
  * @param maxParticipants the new participant capacity limit, or {@code null} to leave unchanged
  * @param name the new name of the project, or {@code null} to leave unchanged
  * @param offeredHours the new offered hours, or {@code null} to leave unchanged
- * @param schoolId the new school identifier, or {@code null} to leave unchanged
  */
 public record ProjectUpdateRequest(
     @Size(max = 150) String name,
     @Size(max = 4000) String description,
     Integer maxParticipants,
-    @DecimalMin("0.00") BigDecimal offeredHours,
-    UUID schoolId) {}
+    @DecimalMin("0.00") BigDecimal offeredHours) {}
 
 
 ================================================================================
@@ -3976,6 +4217,9 @@ FILE: presenter/EnrollmentResource.java
 ================================================================================
 package com.pug.project.presenter;
 
+import com.pug.identity.service.AuthService;
+import com.pug.project.domain.Enrollment;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.infra.read.dtos.EnrollmentView;
 import com.pug.project.presenter.dtos.EnrollmentCreateRequest;
 import com.pug.project.presenter.dtos.EnrollmentResponse;
@@ -3987,6 +4231,8 @@ import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -4023,6 +4269,7 @@ import java.util.stream.Collectors;
 @Produces(MediaType.APPLICATION_JSON)
 public class EnrollmentResource {
 
+  @Inject AuthService authService;
   @Inject EnrollmentService writeService;
   @Inject EnrollmentReadService readService;
   @Inject I18n i18n;
@@ -4030,8 +4277,18 @@ public class EnrollmentResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a specific enrollment by its composite identifier.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     EnrollmentResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment is not found
+   */
   @GET
   @Path("/{projectId}/{studentId}")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response get(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
@@ -4040,7 +4297,46 @@ public class EnrollmentResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves the enrollment of the currently authenticated student for the given project.
+   *
+   * <p>The student account identifier is resolved from the JWT (for example, via the {@code
+   * accountId} claim) using {@link AuthService#getCurrentAccountId()}, ensuring that callers can
+   * only access their own enrollment record for the specified project.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     EnrollmentResponse} for the current student in the given project
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment is not found
+   */
   @GET
+  @Path("/{projectId}/me")
+  @RolesAllowed("STUDENT")
+  public Response getMine(@PathParam("projectId") @UuidV7 UUID projectId) {
+    UUID studentAccountId = authService.getCurrentAccountId();
+
+    EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
+    EnrollmentResponse body = EnrollmentPresenter.toResponse(view, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of enrollments.
+   *
+   * <p>If the optional {@code projectId} parameter is provided, it filters the enrollments by
+   * project. If the {@code studentId} is provided, it filters by student. If both are omitted, it
+   * returns all enrollments.
+   *
+   * @param projectId the optional project identifier to filter by
+   * @param studentId the optional student identifier to filter by
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     EnrollmentResponse}
+   */
+  @GET
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("studentId") @UuidV7 UUID studentId) {
@@ -4062,10 +4358,56 @@ public class EnrollmentResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves the enrollments of the currently authenticated student.
+   *
+   * <p>The student account identifier is resolved from the JWT (for example, via the {@code
+   * accountId} claim) using {@link AuthService#getCurrentAccountId()}, ensuring that callers can
+   * only access their own enrollment records.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     EnrollmentResponse} for the current student
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
+   */
+  @GET
+  @Path("/me")
+  @RolesAllowed("STUDENT")
+  public Response listMine() {
+    UUID studentAccountId = authService.getCurrentAccountId();
+
+    var views = readService.listViewsByStudentId(studentAccountId);
+
+    List<EnrollmentResponse> body =
+        views.stream()
+            .map(v -> EnrollmentPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Registers a new enrollment for the currently authenticated student in the given project.
+   *
+   * <p>The student account is resolved from the authentication context (e.g., {@code
+   * AuthService.getCurrentAccountId()}) inside the application service. This endpoint only accepts
+   * the {@code projectId} in the request payload.
+   *
+   * @param req the validated {@link EnrollmentCreateRequest} containing the target project
+   *     identifier
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link EnrollmentResponse}
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if the student is already enrolled
+   *     in the project
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the project or student does not
+   *     exist
+   * @throws com.pug.shared.exceptions.AppValidationException if domain validation fails
+   */
   @POST
+  @Authenticated
   public Response create(@Valid EnrollmentCreateRequest req) {
-    var cmd = new EnrollmentCreateCommand(req.projectId(), req.studentId());
-    var created = writeService.save(cmd);
+    EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(req);
+    Enrollment created = writeService.save(cmd);
 
     EnrollmentView view =
         readService.getViewByIds(
@@ -4081,81 +4423,177 @@ public class EnrollmentResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Approves a pending enrollment.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
   @Path("/{projectId}/{studentId}/accept")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response accept(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.accept(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.accept(identifier);
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
 
+  /**
+   * Cancels an active enrollment.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
   @Path("/{projectId}/{studentId}/cancel")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response cancel(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.cancel(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.cancel(identifier);
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
 
+  /**
+   * Marks a student's enrollment as completed.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
   @Path("/{projectId}/{studentId}/complete")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response complete(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.complete(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.complete(identifier);
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
 
+  /**
+   * Records the currently authenticated student's voluntary exit from a project.
+   *
+   * <p>The student account is resolved from the JWT (for example, via {@code accountId} claim),
+   * ensuring that a student can only exit their own enrollment and never someone else's.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
-  @Path("/{projectId}/{studentId}/exit")
-  public Response exit(
-      @PathParam("projectId") @UuidV7 UUID projectId,
-      @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.exit(projectId, studentId);
-    EnrollmentView view = readService.getViewByIds(projectId, studentId);
-    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
-        .build();
+  @Path("/{projectId}/exit")
+  @RolesAllowed({"STUDENT"})
+  public Response exit(@PathParam("projectId") @UuidV7 UUID projectId) {
+
+    UUID studentAccountId = authService.getCurrentAccountId();
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentAccountId).build();
+
+    writeService.exit(identifier);
+    EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
+
+    EnrollmentResponse body = EnrollmentPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Rejects a pending enrollment request.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
   @Path("/{projectId}/{studentId}/reject")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response reject(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.reject(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.reject(identifier);
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
 
+  /**
+   * Administratively removes a student's enrollment from a project.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
+   */
   @PATCH
   @Path("/{projectId}/{studentId}/remove")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response remove(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.remove(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.remove(identifier);
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
 
+  /**
+   * Physically removes an enrollment from the system.
+   *
+   * <p>This endpoint executes a hard delete using the composite identifier. It is idempotent:
+   * deleting a non-existing enrollment simply produces a successful 200 response with an empty
+   * payload.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param studentId the unique identifier (UUIDv7) of the student account
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
   @DELETE
   @Path("/{projectId}/{studentId}")
+  @RolesAllowed({"ADMIN"})
   public Response delete(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
-    writeService.delete(projectId, studentId);
+
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build();
+
+    writeService.delete(identifier);
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
+  /**
+   * Helper method to determine the preferred locale from the incoming request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -4218,9 +4656,10 @@ FILE: presenter/mappers/EnrollmentPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.presenter.mappers.StudentPresenter;
 import com.pug.project.infra.read.dtos.EnrollmentView;
+import com.pug.project.presenter.dtos.EnrollmentCreateRequest;
 import com.pug.project.presenter.dtos.EnrollmentResponse;
+import com.pug.project.service.dtos.EnrollmentCreateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -4230,10 +4669,56 @@ import java.util.Locale;
 /**
  * Stateless utility class responsible for mapping internal enrollment projections to external API
  * responses.
+ *
+ * <p>This presenter acts as a translation layer, converting lightweight CQRS query views ({@link
+ * EnrollmentView}) into client-ready representations ({@link EnrollmentResponse}). It also applies
+ * presentation-specific formatting for dates and localized status labels, while keeping project and
+ * student details referenced only by their identifiers.
  */
 public final class EnrollmentPresenter {
+
+  /** Private constructor to prevent instantiation. */
   private EnrollmentPresenter() {}
 
+  /**
+   * Maps an incoming REST creation request into an application layer enrollment creation command.
+   *
+   * <p>This helper extracts the {@code projectId} from the payload and encapsulates it into an
+   * {@link EnrollmentCreateCommand}, leaving student resolution and domain validation to the
+   * application service layer.
+   *
+   * @param req the validated {@link EnrollmentCreateRequest} payload
+   * @return the corresponding {@link EnrollmentCreateCommand}, or {@code null} if {@code req} is
+   *     {@code null}
+   */
+  public static EnrollmentCreateCommand toCommand(EnrollmentCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new EnrollmentCreateCommand(req.projectId());
+  }
+
+  /**
+   * Projects a read-only {@link EnrollmentView} into a client-facing {@link EnrollmentResponse}.
+   *
+   * <p>Mapping rules:
+   *
+   * <ul>
+   *   <li>Copies the {@code projectId} and {@code studentId} identifiers directly from the view.
+   *   <li>Translates the {@link com.pug.project.domain.enums.EnrollmentStatus} enum into a
+   *       localized status label using {@link I18n}.
+   *   <li>Formats the {@code acceptedAt} and {@code closingStatusAt} timestamps according to the
+   *       provided {@link Locale}.
+   *   <li>Builds a standard {@link AuditInfoResponse} using {@link SharedDataPresenter} to expose
+   *       creation and last update timestamps in both raw and formatted forms.
+   * </ul>
+   *
+   * @param v the internal read-model projection of the enrollment
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link EnrollmentResponse} ready for JSON serialization, or {@code
+   *     null} if any required input ({@code v}, {@code locale}, {@code i18n}) is {@code null}
+   */
   public static EnrollmentResponse toResponse(EnrollmentView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
@@ -4247,8 +4732,8 @@ public final class EnrollmentPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new EnrollmentResponse(
-        ProjectPresenter.toResponse(v.project(), locale, i18n),
-        StudentPresenter.toResponse(v.student(), locale, i18n),
+        v.projectId(),
+        v.studentId(),
         v.status(),
         statusFormatted,
         v.acceptedAt(),
@@ -4265,13 +4750,10 @@ FILE: presenter/mappers/ProjectPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
 import com.pug.project.presenter.dtos.ProjectUpdateRequest;
-import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
 import com.pug.shared.i18n.I18n;
@@ -4303,12 +4785,7 @@ public final class ProjectPresenter {
       return null;
     }
     return new ProjectCreateCommand(
-        req.name(),
-        req.entityId(),
-        req.description(),
-        req.maxParticipants(),
-        req.offeredHours(),
-        req.schoolId());
+        req.name(), req.entityId(), req.description(), req.maxParticipants(), req.offeredHours());
   }
 
   /**
@@ -4327,7 +4804,7 @@ public final class ProjectPresenter {
       return null;
     }
     return new ProjectUpdateCommand(
-        req.name(), req.description(), req.maxParticipants(), req.offeredHours(), req.schoolId());
+        req.name(), req.description(), req.maxParticipants(), req.offeredHours());
   }
 
   /**
@@ -4363,24 +4840,212 @@ public final class ProjectPresenter {
         closedAtFormatted,
         auditInfo);
   }
+}
+
+
+================================================================================
+FILE: presenter/ProjectBySchoolResource.java
+================================================================================
+package com.pug.project.presenter;
+
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.mappers.SchoolPresenter;
+import com.pug.project.infra.read.dtos.ProjectView;
+import com.pug.project.presenter.dtos.ProjectBySchoolRequest;
+import com.pug.project.presenter.dtos.ProjectResponse;
+import com.pug.project.presenter.mappers.ProjectPresenter;
+import com.pug.project.service.ProjectBySchoolReadService;
+import com.pug.project.service.ProjectBySchoolService;
+import com.pug.shared.i18n.I18n;
+import com.pug.shared.presenter.rest.ApiEnvelope;
+import com.pug.shared.utils.PresenterUtils;
+import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * REST API Resource controller for managing Project–School associations.
+ *
+ * <p>This resource is dedicated exclusively to linking existing {@link
+ * com.pug.project.domain.Project} instances to existing {@link com.pug.academic.domain.School}
+ * instances via the {@link com.pug.project.domain.ProjectBySchool} aggregate.
+ *
+ * <p>Following CQRS principles:
+ *
+ * <ul>
+ *   <li>Write operations delegate to {@link ProjectBySchoolService}.
+ *   <li>Read operations delegate to {@link ProjectBySchoolReadService} and use existing read models
+ *       ({@link ProjectView}, {@link SchoolView}).
+ * </ul>
+ */
+@ApplicationScoped
+@Path("/projects/by-school")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+@Authenticated
+public class ProjectBySchoolResource {
+
+  @Inject ProjectBySchoolService writeService;
+
+  @Inject ProjectBySchoolReadService readService;
+
+  @Inject I18n i18n;
+
+  @Context UriInfo uri;
+
+  @Context HttpHeaders headers;
 
   /**
-   * Projects a read-only {@link SchoolProjectView} into a client-facing {@link
-   * ProjectsBySchoolResponse}.
+   * Retrieves all schools associated with a specific project.
    *
-   * @param v the internal read-model projection containing school and projects
-   * @param locale the locale extracted from the client's request headers
-   * @param i18n the internationalization service
-   * @return a fully populated {@link ProjectsBySchoolResponse}
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     SchoolResponse}
    */
-  public static ProjectsBySchoolResponse toResponse(SchoolProjectView v, Locale locale, I18n i18n) {
-    if (v == null || locale == null || i18n == null) {
-      return null;
-    }
+  @GET
+  @Path("/projects/{projectId}/schools")
+  @Authenticated
+  public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
+    Set<SchoolView> views = readService.listAllSchoolsByProjectId(projectId);
 
-    return new ProjectsBySchoolResponse(
-        SchoolPresenter.toResponse(v.school(), locale),
-        v.projects().stream().map(p -> toResponse(p, locale, i18n)).toList());
+    List<SchoolResponse> body =
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves all projects associated with a specific school.
+   *
+   * @param schoolId the unique identifier (UUIDv7) of the school
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
+  @GET
+  @Path("/schools/{schoolId}/projects")
+  @Authenticated
+  public Response listProjectsBySchoolId(@PathParam("schoolId") @UuidV7 UUID schoolId) {
+    Set<ProjectView> views = readService.listAllProjectsBySchoolId(schoolId);
+
+    List<ProjectResponse> body =
+        views.stream()
+            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Registers associations between a project and one or more schools.
+   *
+   * <p>This operation is idempotent for existing links: attempting to reassign a school that is
+   * already linked to the project will be silently ignored.
+   *
+   * @param req the validated {@link ProjectBySchoolRequest} payload containing the projectId and
+   *     the list of schoolIds to associate
+   * @return an HTTP 201 Created response containing the updated list of {@link SchoolResponse}
+   *     associated with the project
+   */
+  @POST
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response createAssociations(@Valid ProjectBySchoolRequest req) {
+    writeService.save(req.projectId(), req.schoolIds());
+
+    Set<SchoolView> views = readService.listAllSchoolsByProjectId(req.projectId());
+    List<SchoolResponse> body =
+        views.stream()
+            .map(v -> SchoolPresenter.toResponse(v, locale()))
+            .collect(Collectors.toList());
+
+    URI location =
+        uri.getAbsolutePathBuilder()
+            .path("projects")
+            .path(req.projectId().toString())
+            .path("schools")
+            .build();
+
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
+   * Removes a specific association between a project and a school.
+   *
+   * <p>This operation is idempotent: attempting to delete a non-existing association will result in
+   * a successful 200 response with an empty payload.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param schoolId the unique identifier (UUIDv7) of the school
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
+  @DELETE
+  @Path("/projects/{projectId}/schools/{schoolId}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response deleteAssociation(
+      @PathParam("projectId") @UuidV7 UUID projectId,
+      @PathParam("schoolId") @UuidV7 UUID schoolId) {
+
+    writeService.delete(projectId, schoolId);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /**
+   * Removes all school associations for a specific project.
+   *
+   * <p>This operation is idempotent: if no associations exist, it still returns 200 OK.
+   *
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
+  @DELETE
+  @Path("/projects/{projectId}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response deleteAllByProject(@PathParam("projectId") @UuidV7 UUID projectId) {
+    writeService.deleteAllByProjectId(projectId);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  /**
+   * Removes all project associations for a specific school.
+   *
+   * <p>This operation is idempotent: if no associations exist, it still returns 200 OK.
+   *
+   * @param schoolId the unique identifier (UUIDv7) of the school
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
+  @DELETE
+  @Path("/schools/{schoolId}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response deleteAllBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
+    writeService.deleteAllBySchoolId(schoolId);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
 
@@ -4390,15 +5055,11 @@ FILE: presenter/ProjectResource.java
 ================================================================================
 package com.pug.project.presenter;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.academic.presenter.mappers.SchoolPresenter;
+import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
 import com.pug.project.presenter.dtos.ProjectUpdateRequest;
-import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
 import com.pug.project.presenter.mappers.ProjectPresenter;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.ProjectService;
@@ -4448,10 +5109,13 @@ import java.util.stream.Collectors;
 public class ProjectResource {
 
   @Inject ProjectService writeService;
+
   @Inject ProjectReadService readService;
+
   @Inject I18n i18n;
 
   @Context UriInfo uri;
+
   @Context HttpHeaders headers;
 
   /**
@@ -4468,41 +5132,6 @@ public class ProjectResource {
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     ProjectView view = readService.getViewById(id);
     ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a list of schools associated with a specific project.
-   *
-   * @param projectId the unique identifier (UUIDv7) of the project
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     SchoolResponse}
-   */
-  @GET
-  @Path("/{projectId}/schools")
-  @RolesAllowed({"ADMIN"})
-  public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
-    List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
-    List<SchoolResponse> body =
-        views.stream()
-            .map(v -> SchoolPresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     ProjectsBySchoolResponse}
-   */
-  @GET
-  @Path("/by-school/{schoolId}")
-  @RolesAllowed({"ADMIN"})
-  public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    SchoolProjectView view = readService.listViewsBySchool(schoolId);
-    ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -4609,7 +5238,7 @@ public class ProjectResource {
   @Path("/{id}/cancel")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
+    writeService.transitionStatus(id, ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -4624,7 +5253,7 @@ public class ProjectResource {
   @Path("/{id}/complete")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
+    writeService.transitionStatus(id, ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -4639,7 +5268,7 @@ public class ProjectResource {
   @Path("/{id}/hold")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
+    writeService.transitionStatus(id, ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -4654,7 +5283,7 @@ public class ProjectResource {
   @Path("/{id}/retake")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
+    writeService.transitionStatus(id, ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -4669,7 +5298,7 @@ public class ProjectResource {
   @Path("/{id}/start")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response start(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
+    writeService.transitionStatus(id, ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
@@ -4830,8 +5459,24 @@ package com.pug.project.service.dtos;
 
 import java.util.UUID;
 
-/** Data Transfer Object (DTO) acting as an application command to request a new Enrollment. */
-public record EnrollmentCreateCommand(UUID projectId, UUID studentId) {}
+/**
+ * Data Transfer Object (DTO) acting as an application command to request a new {@link
+ * com.pug.project.domain.Enrollment}.
+ *
+ * <p>This record encapsulates the minimal data required by the application service to instantiate a
+ * new enrollment aggregate, namely the identifier of the target project. The student account to be
+ * enrolled is resolved server-side from the current authentication context (for example, via {@code
+ * AuthService.getCurrentAccountId()}), ensuring that a student can only create enrollments on their
+ * own behalf.
+ *
+ * <p>This DTO does not perform any validation by itself; structural and business validations are
+ * enforced in the {@link com.pug.project.service.EnrollmentService} and within the {@link
+ * com.pug.project.domain.Enrollment} aggregate.
+ *
+ * @param projectId the unique identifier (UUID) of the project for which the enrollment is being
+ *     requested
+ */
+public record EnrollmentCreateCommand(UUID projectId) {}
 
 
 ================================================================================
@@ -4853,15 +5498,13 @@ import java.util.UUID;
  * @param maxParticipants the maximum number of students allowed to enroll (optional)
  * @param name the title or name of the project
  * @param offeredHours the total counterpart hours the project offers to participants
- * @param schoolId the unique identifier of the school associated with the project
  */
 public record ProjectCreateCommand(
     String name,
     UUID entityId,
     String description,
     Integer maxParticipants,
-    BigDecimal offeredHours,
-    UUID schoolId) {}
+    BigDecimal offeredHours) {}
 
 
 ================================================================================
@@ -4870,7 +5513,6 @@ FILE: service/dtos/ProjectUpdateCommand.java
 package com.pug.project.service.dtos;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to update an existing Project.
@@ -4883,14 +5525,9 @@ import java.util.UUID;
  * @param maxParticipants the new participant capacity limit, or {@code null} to leave unchanged
  * @param name the new name of the project, or {@code null} to leave unchanged
  * @param offeredHours the new offered hours, or {@code null} to leave unchanged
- * @param schoolId the new school identifier, or {@code null} to leave unchanged
  */
 public record ProjectUpdateCommand(
-    String name,
-    String description,
-    Integer maxParticipants,
-    BigDecimal offeredHours,
-    UUID schoolId) {}
+    String name, String description, Integer maxParticipants, BigDecimal offeredHours) {}
 
 
 ================================================================================
@@ -4902,21 +5539,36 @@ import com.pug.project.infra.read.dtos.EnrollmentView;
 import java.util.List;
 import java.util.UUID;
 
-/** Application service interface dedicated exclusively to querying Enrollment data. */
+/**
+ * Application service interface dedicated exclusively to querying {@link
+ * com.pug.project.domain.Enrollment} data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
+ * domain logic and retrieves lightweight {@link EnrollmentView} Data Transfer Objects directly from
+ * the underlying read infrastructure, optimized for list and filter operations.
+ */
 public interface EnrollmentReadService {
 
   /**
    * Retrieves a read-only projection of an enrollment based on its composite identifier.
    *
+   * <p>The composite key is given by the pair ({@code projectId}, {@code studentId}), which
+   * together uniquely identify an enrollment record.
+   *
    * @param projectId the unique identifier (UUID) of the project
-   * @param studentId the unique identifier (UUID) of the student
+   * @param studentId the unique identifier (UUID) of the student account
    * @return the populated {@link EnrollmentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no enrollment matches the
+   *     provided identifiers
    */
   EnrollmentView getViewByIds(UUID projectId, UUID studentId);
 
   /**
    * Retrieves a comprehensive list of all enrollments registered in the system.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded or where additional filtering is
+   * applied at a higher layer.
    *
    * @return a {@link List} containing all available {@link EnrollmentView} entries
    */
@@ -4925,16 +5577,26 @@ public interface EnrollmentReadService {
   /**
    * Retrieves a list of enrollments for a specific project.
    *
+   * <p>The returned {@link EnrollmentView} items expose only identifiers and lifecycle metadata,
+   * allowing callers to resolve detailed project and student information on demand via dedicated
+   * endpoints.
+   *
    * @param projectId the unique identifier (UUID) of the project
-   * @return a {@link List} of matching {@link EnrollmentView} entries
+   * @return a {@link List} of matching {@link EnrollmentView} entries, or an empty list if none are
+   *     found or if {@code projectId} is {@code null}
    */
   List<EnrollmentView> listViewsByProjectId(UUID projectId);
 
   /**
    * Retrieves a list of enrollments for a specific student.
    *
-   * @param studentId the unique identifier (UUID) of the student
-   * @return a {@link List} of matching {@link EnrollmentView} entries
+   * <p>The returned {@link EnrollmentView} items expose only identifiers and lifecycle metadata,
+   * allowing callers to resolve detailed project and student information on demand via dedicated
+   * endpoints.
+   *
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return a {@link List} of matching {@link EnrollmentView} entries, or an empty list if none are
+   *     found or if {@code studentId} is {@code null}
    */
   List<EnrollmentView> listViewsByStudentId(UUID studentId);
 }
@@ -4946,6 +5608,8 @@ FILE: service/EnrollmentService.java
 package com.pug.project.service;
 
 import com.pug.project.domain.Enrollment;
+import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.dtos.EnrollmentCreateCommand;
 import java.util.UUID;
 
@@ -4953,98 +5617,189 @@ import java.util.UUID;
  * Application service interface for managing the state of {@link Enrollment} domain aggregates.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
- * Delete) and strict domain-level retrievals. It manages the complex lifecycle states of an
- * enrollment (Pending, Approved, Completed, etc.).
+ * Delete) and strict domain-level retrievals. It orchestrates the complex lifecycle states of an
+ * enrollment ({@link EnrollmentStatus#PENDING}, {@link EnrollmentStatus#APPROVED}, {@link
+ * EnrollmentStatus#COMPLETED}, etc.), delegating pure state transitions to the aggregate itself.
  */
 public interface EnrollmentService {
 
   /**
    * Approves a pending enrollment.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#PENDING} to {@link EnrollmentStatus#APPROVED}, stamping the {@code acceptedAt}
+   * timestamp via {@link com.pug.project.domain.vos.EnrollmentInfo#accept()}. Any attempt to
+   * approve an enrollment that is not currently pending is rejected at the domain level.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#APPROVED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code APPROVED}
    */
-  Enrollment accept(UUID projectId, UUID studentId);
+  Enrollment accept(EnrollmentIdentifier identifier);
 
   /**
-   * Cancels an active or pending enrollment.
+   * Cancels an active enrollment.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#CANCELED}, stamping the {@code
+   * closingStatusAt} timestamp. Once canceled, the enrollment becomes a terminal record and cannot
+   * transition to any other status.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#CANCELED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code CANCELED}
    */
-  Enrollment cancel(UUID projectId, UUID studentId);
+  Enrollment cancel(EnrollmentIdentifier identifier);
 
   /**
    * Marks a student's participation in a project as completed.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#COMPLETED}, stamping the {@code
+   * closingStatusAt} timestamp. Once completed, the enrollment becomes a terminal record and cannot
+   * transition to any other status.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#COMPLETED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code COMPLETED}
    */
-  Enrollment complete(UUID projectId, UUID studentId);
+  Enrollment complete(EnrollmentIdentifier identifier);
 
   /**
    * Physically removes an {@link Enrollment} record from the system.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return {@code true} if deleted, {@code false} if not found
+   * <p>This operation executes a hard delete against the persistence layer using the composite key
+   * (project + student). It is expected to be idempotent: if the enrollment does not exist, the
+   * implementation should simply return {@code false} without raising an exception.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return {@code true} if the enrollment was successfully deleted, {@code false} if it was not
+   *     found
    */
-  boolean delete(UUID projectId, UUID studentId);
+  boolean delete(EnrollmentIdentifier identifier);
 
   /**
    * Checks if a student is enrolled in any project.
    *
-   * @param studentId the unique identifier of the student
-   * @return {@code true} if any enrollment exists
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
+   * com.pug.academic.domain.Student} cannot be deleted while they still have historical enrollments
+   * registered in projects.
+   *
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return {@code true} if at least one {@link Enrollment} exists for the given student, {@code
+   *     false} otherwise
    */
   boolean existsAnyByStudentId(UUID studentId);
 
+  /**
+   * Checks whether any {@link Enrollment} exists for the specified project identifier.
+   *
+   * <p>This query is utilized by higher-level services (such as {@link ProjectService}) to enforce
+   * relational integrity, ensuring that a {@link com.pug.project.domain.Project} cannot be deleted
+   * while there are students enrolled in it.
+   *
+   * @param projectId the unique identifier (UUID) of the project to check
+   * @return {@code true} if at least one enrollment is linked to the given project, {@code false}
+   *     otherwise
+   */
   boolean existsAnyByProjectId(UUID projectId);
 
   /**
    * Records a student's voluntary exit from a project.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#EXITED}, stamping the {@code
+   * closingStatusAt} timestamp. Once exited, the enrollment becomes a terminal record and cannot
+   * transition to any other status.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#EXITED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code EXITED}
    */
-  Enrollment exit(UUID projectId, UUID studentId);
+  Enrollment exit(EnrollmentIdentifier identifier);
 
   /**
    * Retrieves a full {@link Enrollment} aggregate by its composite identifier.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the {@link Enrollment} aggregate
+   * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g., prior
+   * to invoking {@link Enrollment#changeStatus(com.pug.project.domain.enums.EnrollmentStatus)}).
+   * For API responses, prefer using the {@link com.pug.project.service.EnrollmentReadService}
+   * projections.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the fully reconstituted {@link Enrollment} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the stored enrollment violates
+   *     strict domain invariants (e.g., invalid timestamps or identifiers)
    */
-  Enrollment getByIds(UUID projectId, UUID studentId);
+  Enrollment getByIds(EnrollmentIdentifier identifier);
 
   /**
    * Rejects a pending enrollment request.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#REJECTED}, stamping the {@code
+   * closingStatusAt} timestamp. Once rejected as a closing state, the enrollment cannot transition
+   * to any other status.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REJECTED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code REJECTED}
    */
-  Enrollment reject(UUID projectId, UUID studentId);
+  Enrollment reject(EnrollmentIdentifier identifier);
 
   /**
    * Administratively removes a student from a project.
    *
-   * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student
-   * @return the updated {@link Enrollment}
+   * <p>This operation transitions the underlying {@link Enrollment} from {@link
+   * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#REMOVED}, stamping the {@code
+   * closingStatusAt} timestamp. It is typically used for administrative actions (e.g., disciplinary
+   * removal). Once removed, the enrollment becomes a terminal record and cannot transition to any
+   * other status.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REMOVED} state
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   *     transition to {@code REMOVED}
    */
-  Enrollment remove(UUID projectId, UUID studentId);
+  Enrollment remove(EnrollmentIdentifier identifier);
 
   /**
    * Instantiates and requests a new {@link Enrollment}.
    *
-   * @param cmd the command containing enrollment data
-   * @return the persisted {@link Enrollment}
+   * <p>This method verifies the existence of the associated {@link com.pug.project.domain.Project}
+   * and {@link com.pug.academic.domain.Student}, checks for duplicate enrollments for the same
+   * (project, student) pair, and delegates the aggregate initialization to {@link
+   * com.pug.project.service.utils.EnrollmentProcessor}. The resulting aggregate is self-validated
+   * before being persisted.
+   *
+   * @param cmd the structured {@link EnrollmentCreateCommand} containing enrollment data
+   * @return the fully instantiated and persisted {@link Enrollment} aggregate
+   * @throws com.pug.shared.exceptions.DuplicateResourceException if an enrollment for the given
+   *     project and student already exists
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated project or
+   *     student does not exist
+   * @throws com.pug.shared.exceptions.AppValidationException if the created enrollment violates
+   *     domain constraints
    */
   Enrollment save(EnrollmentCreateCommand cmd);
 }
@@ -5170,7 +5925,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     // Validate structural dependencies
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(cmd.studentId());
-    enrollmentService.getByIds(cmd.projectId(), cmd.studentId()); // Ensures they are enrolled
+    //    enrollmentService.getByIds(cmd.projectId(), cmd.studentId());
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(project, student, cmd.duration());
@@ -5223,6 +5978,14 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link EnrollmentReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying {@link
+ * EnrollmentQueries} infrastructure component. It handles basic input validation, translates "not
+ * found" states into standardized domain exceptions, and exposes lightweight {@link EnrollmentView}
+ * projections to the presentation layer.
+ */
 @ApplicationScoped
 public class EnrollmentReadServiceImpl implements EnrollmentReadService {
 
@@ -5230,6 +5993,7 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
 
   @Inject EnrollmentQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public EnrollmentView getViewByIds(UUID projectId, UUID studentId) {
     return queries
@@ -5241,20 +6005,27 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViews() {
     return queries.listAllEnrollments();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+    if (projectId == null) {
+      return List.of();
+    }
     return queries.listByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+    if (studentId == null) {
+      return List.of();
+    }
     return queries.listByStudentId(studentId);
   }
 }
@@ -5267,15 +6038,18 @@ package com.pug.project.service.impl;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.StudentService;
+import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Enrollment;
 import com.pug.project.domain.EnrollmentRepository;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.EnrollmentService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.EnrollmentCreateCommand;
 import com.pug.project.service.utils.EnrollmentProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -5283,92 +6057,125 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link EnrollmentService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for student enrollments. It
+ * coordinates with {@link ProjectService} and {@link StudentService} to validate structural
+ * references and delegates pure lifecycle transitions to the {@link Enrollment} aggregate.
+ */
 @ApplicationScoped
 public class EnrollmentServiceImpl implements EnrollmentService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentServiceImpl.class);
 
   @Inject EnrollmentRepository repo;
+  @Inject AuthService authService;
   @Inject ProjectService projectService;
   @Inject StudentService studentService;
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment accept(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.APPROVED);
+  public Enrollment accept(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.APPROVED);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment cancel(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.CANCELED);
+  public Enrollment cancel(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.CANCELED);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment complete(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.COMPLETED);
+  public Enrollment complete(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.COMPLETED);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean delete(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) return false;
-    return repo.deleteByIds(projectId, studentId);
+  public boolean delete(EnrollmentIdentifier identifier) {
+    if (identifier == null
+        || identifier.getProjectId() == null
+        || identifier.getStudentId() == null) {
+      return false;
+    }
+    return repo.deleteById(identifier);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByStudentId(UUID studentId) {
-    if (studentId == null) return false;
+    if (studentId == null) {
+      return false;
+    }
     return repo.existsByStudentId(studentId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByProjectId(UUID projectId) {
-    if (projectId == null) return false;
-    return repo.existsByStudentId(projectId);
+    if (projectId == null) {
+      return false;
+    }
+    return repo.existsByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment exit(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.EXITED);
+  public Enrollment exit(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.EXITED);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public Enrollment getByIds(UUID projectId, UUID studentId) {
+  public Enrollment getByIds(EnrollmentIdentifier identifier) {
     Enrollment enrollment =
-        repo.findOptionalByIds(projectId, studentId)
-            .orElseThrow(ExceptionHelper::enrollmentNotFound);
+        repo.findOptionalById(identifier).orElseThrow(ExceptionHelper::enrollmentNotFound);
 
     if (enrollment.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: Enrollment [P:%s, S:%s]: %s",
-          projectId, studentId, enrollment.getProblemsSummary());
+          identifier.getProjectId(), identifier.getStudentId(), enrollment.getProblemsSummary());
       throw ExceptionHelper.enrollmentNotFound();
     }
     return enrollment;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment reject(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.REJECTED);
+  public Enrollment reject(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.REJECTED);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
-  public Enrollment remove(UUID projectId, UUID studentId) {
-    return changeStatus(projectId, studentId, EnrollmentStatus.REMOVED);
+  public Enrollment remove(EnrollmentIdentifier identifier) {
+    return changeStatus(identifier, EnrollmentStatus.REMOVED);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Enrollment save(EnrollmentCreateCommand cmd) {
+    authService.requireCurrentAccountOfType(AccountType.STUDENT);
     Project project = projectService.getById(cmd.projectId());
-    Student student = studentService.getById(cmd.studentId());
+    Student student = studentService.getById(authService.getCurrentAccountId());
 
-    if (repo.existsByIds(cmd.projectId(), cmd.studentId())) {
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.factory(project.getId(), student.getAccountId());
+
+    if (identifier.hasFieldErrors()) {
+      throw new AppValidationException(identifier.getFieldErrors());
+    }
+    if (repo.existsById(identifier)) {
       throw ExceptionHelper.enrollmentAlreadyExists();
     }
 
@@ -5381,9 +6188,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     return repo.persist(enrollment);
   }
 
-  /** Centralized private helper to handle status transitions */
-  private Enrollment changeStatus(UUID projectId, UUID studentId, EnrollmentStatus newStatus) {
-    Enrollment current = getByIds(projectId, studentId);
+  /**
+   * Centralized private helper to handle enrollment status transitions.
+   *
+   * <p>This method reconstitutes the current {@link Enrollment} aggregate, delegates the status
+   * transition to {@link Enrollment#changeStatus(EnrollmentStatus)}, validates the resulting
+   * aggregate, and persists the updated state.
+   *
+   * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
+   *     enrollment (project + student)
+   * @param newStatus the target {@link EnrollmentStatus} to transition to
+   * @return the updated {@link Enrollment} aggregate
+   * @throws AppValidationException if the updated enrollment violates domain constraints
+   */
+  private Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus newStatus) {
+    Enrollment current = getByIds(identifier);
     Enrollment updated = current.changeStatus(newStatus);
 
     if (updated.hasFieldErrors()) {
@@ -5397,16 +6216,232 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
 
 ================================================================================
-FILE: service/impl/ProjectReadServiceImpl.java
+FILE: service/impl/ProjectBySchoolReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
 import com.pug.academic.infra.read.SchoolQueries;
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.project.domain.ProjectBySchoolRepository;
 import com.pug.project.infra.read.ProjectQueries;
-import com.pug.project.infra.read.ProjectsBySchoolsQueries;
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
+import com.pug.project.service.ProjectBySchoolReadService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import org.jboss.logging.Logger;
+
+/**
+ * Implementation of the {@link ProjectBySchoolReadService}.
+ *
+ * <p>This application-scoped bean delegates read-only operations to the underlying association
+ * repository and the existing {@link SchoolQueries} and {@link ProjectQueries} components. It
+ * resolves identifier sets via {@link ProjectBySchoolRepository} and then projects them into read
+ * models without instantiating full domain aggregates.
+ */
+@ApplicationScoped
+public class ProjectBySchoolReadServiceImpl implements ProjectBySchoolReadService {
+
+  private static final Logger LOG = Logger.getLogger(ProjectBySchoolReadServiceImpl.class);
+
+  @Inject ProjectBySchoolRepository associationRepo;
+
+  @Inject SchoolQueries schoolQueries;
+
+  @Inject ProjectQueries projectQueries;
+
+  @Override
+  public Set<SchoolView> listAllSchoolsByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return Set.of();
+    }
+
+    var schoolIds = associationRepo.findAllSchoolIdsByProjectId(projectId);
+    if (schoolIds.isEmpty()) {
+      LOG.debugf(
+          "No ProjectsBySchool associations found for projectId=%s when listing schools",
+          projectId);
+      return Set.of();
+    }
+
+    List<SchoolView> schools = schoolQueries.listByIds(List.copyOf(schoolIds));
+    return new HashSet<>(schools);
+  }
+
+  @Override
+  public Set<ProjectView> listAllProjectsBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      return Set.of();
+    }
+
+    var projectIds = associationRepo.findAllProjectIdsBySchoolId(schoolId);
+    if (projectIds.isEmpty()) {
+      LOG.debugf(
+          "No ProjectsBySchool associations found for schoolId=%s when listing projects", schoolId);
+      return Set.of();
+    }
+
+    List<ProjectView> result = projectQueries.listByIds(List.copyOf(projectIds));
+    return new HashSet<>(result);
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectBySchoolServiceImpl.java
+================================================================================
+package com.pug.project.service.impl;
+
+import com.pug.project.domain.ProjectBySchool;
+import com.pug.project.domain.ProjectBySchoolRepository;
+import com.pug.project.service.ProjectBySchoolService;
+import com.pug.project.service.utils.ProjectBySchoolProcessor;
+import com.pug.project.service.utils.ProjectProcessor;
+import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.utils.CollectionUtils;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import org.jboss.logging.Logger;
+
+/**
+ * Implementation of the {@link ProjectBySchoolService} command interface.
+ *
+ * <p>This application-scoped service orchestrates state mutations for the association between
+ * projects and schools. It delegates aggregate construction to {@link ProjectProcessor} and
+ * persistence concerns to the {@link ProjectBySchoolRepository}, enforcing domain validation before
+ * write operations.
+ */
+@ApplicationScoped
+public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
+
+  private static final Logger LOG = Logger.getLogger(ProjectBySchoolServiceImpl.class);
+
+  @Inject ProjectBySchoolRepository repo;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds) {
+    if (projectId == null || CollectionUtils.isEmpty(schoolIds)) {
+      LOG.debugf("ProjectBySchool save skipped: projectId=%s, schoolIds=%s", projectId, schoolIds);
+      return List.of();
+    }
+
+    List<UUID> requestedSchoolIds = schoolIds.stream().filter(Objects::nonNull).distinct().toList();
+
+    Set<UUID> existingSchoolIds = repo.findAllSchoolIdsByProjectId(projectId);
+
+    LOG.debugf(
+        "Creating ProjectBySchool associations for projectId=%s. Requested=%d, existing=%d",
+        projectId, requestedSchoolIds.size(), existingSchoolIds.size());
+
+    List<ProjectBySchool> created = new ArrayList<>();
+
+    for (UUID schoolId : requestedSchoolIds) {
+      if (existingSchoolIds.contains(schoolId)) {
+        LOG.debugf(
+            "Skipping: association already exists (projectId=%s, schoolId=%s)",
+            projectId, schoolId);
+        continue;
+      }
+
+      ProjectBySchool association =
+          ProjectBySchoolProcessor.processCreateInput(projectId, schoolId);
+
+      if (association.hasFieldErrors()) {
+        throw new AppValidationException(association.getFieldErrors());
+      }
+
+      ProjectBySchool persisted = repo.persist(association);
+      created.add(persisted);
+    }
+
+    LOG.infof(
+        "Created %d new ProjectBySchool associations for projectId=%s", created.size(), projectId);
+
+    return created;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean delete(UUID projectId, UUID schoolId) {
+    if (projectId == null || schoolId == null) {
+      LOG.debugf(
+          "Delete ProjectsBySchool skipped due to null identifier(s): projectId=%s, schoolId=%s",
+          projectId, schoolId);
+      return false;
+    }
+
+    LOG.debugf(
+        "Attempting to delete ProjectsBySchool association: projectId=%s, schoolId=%s",
+        projectId, schoolId);
+
+    // No need to trigger domain validation for a delete operation; we just need the IDs.
+    ProjectBySchool association =
+        ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+
+    boolean deleted = repo.delete(association);
+    if (deleted) {
+      LOG.infof(
+          "ProjectsBySchool association deleted successfully. projectId=%s, schoolId=%s",
+          projectId, schoolId);
+    } else {
+      LOG.debugf(
+          "ProjectsBySchool association not found for deletion. projectId=%s, schoolId=%s",
+          projectId, schoolId);
+    }
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByProjectId(UUID projectId) {
+    if (projectId == null) {
+      LOG.debug("deleteAllByProjectId skipped: projectId is null");
+      return 0L;
+    }
+
+    LOG.debugf("Deleting all ProjectsBySchool associations for projectId=%s", projectId);
+    long deleted = repo.deleteAllByProjectId(projectId);
+    LOG.infof("Deleted %d ProjectsBySchool associations for projectId=%s", deleted, projectId);
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllBySchoolId(UUID schoolId) {
+    if (schoolId == null) {
+      LOG.debug("deleteAllBySchoolId skipped: schoolId is null");
+      return 0L;
+    }
+
+    LOG.debugf("Deleting all ProjectsBySchool associations for schoolId=%s", schoolId);
+    long deleted = repo.deleteAllBySchoolId(schoolId);
+    LOG.infof("Deleted %d ProjectsBySchool associations for schoolId=%s", deleted, schoolId);
+    return deleted;
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectReadServiceImpl.java
+================================================================================
+package com.pug.project.service.impl;
+
+import com.pug.project.infra.read.ProjectQueries;
+import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.service.ProjectReadService;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.utils.StringUtils;
@@ -5429,8 +6464,6 @@ public class ProjectReadServiceImpl implements ProjectReadService {
   private static final Logger LOG = Logger.getLogger(ProjectReadServiceImpl.class);
 
   @Inject ProjectQueries queries;
-  @Inject ProjectsBySchoolsQueries pbsQueries;
-  @Inject SchoolQueries schoolQueries;
 
   /** {@inheritDoc} */
   @Override
@@ -5468,25 +6501,6 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     return queries.listByEntityId(entityId);
   }
 
-  /** {@inheritDoc} */
-  @Override
-  public List<SchoolView> listViewsSchoolsByProjectId(UUID projectId) {
-    if (projectId == null) {
-      return List.of();
-    }
-    List<UUID> schoolIds = pbsQueries.listAllSchoolsIdsByProjectId(projectId);
-    return schoolQueries.listByIds(schoolIds);
-  }
-
-  /** {@inheritDoc} */
-  @Override
-  public SchoolProjectView listViewsBySchool(UUID schoolId) {
-    if (schoolId == null) {
-      return null;
-    }
-    return pbsQueries.listBySchool(schoolId);
-  }
-
   /**
    * {@inheritDoc}
    *
@@ -5513,12 +6527,11 @@ package com.pug.project.service.impl;
 import com.pug.academic.service.SchoolService;
 import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
-import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
 import com.pug.project.domain.ProjectRepository;
-import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.EnrollmentService;
+import com.pug.project.service.ProjectBySchoolService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
@@ -5545,9 +6558,9 @@ public class ProjectServiceImpl implements ProjectService {
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
   @Inject ProjectRepository repo;
+  @Inject ProjectBySchoolService associationService;
   @Inject AuthService authService;
   @Inject EntityService entityService;
-  @Inject StaffService staffService;
   @Inject EnrollmentService enrollmentService;
   @Inject SchoolService schoolService;
 
@@ -5558,10 +6571,13 @@ public class ProjectServiceImpl implements ProjectService {
     if (id == null) {
       return false;
     }
+
     if (enrollmentService.existsAnyByProjectId(id)) {
       LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
       throw ExceptionHelper.projectHasEnrollments();
     }
+    associationService.deleteAllByProjectId(id);
+
     return repo.deleteById(id);
   }
 
@@ -5601,7 +6617,6 @@ public class ProjectServiceImpl implements ProjectService {
   public Project save(ProjectCreateCommand cmd) {
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
-    schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
       throw ExceptionHelper.projectAlreadyExists();
@@ -5620,17 +6635,7 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    Project savedProject = repo.persist(project);
-    ProjectsBySchool association =
-        ProjectProcessor.processCreateProjectBySchoolInput(savedProject.getId(), cmd.schoolId());
-
-    if (association.hasFieldErrors()) {
-      throw new AppValidationException(association.getFieldErrors());
-    }
-
-    repo.persistAssociation(association);
-
-    return savedProject;
+    return repo.persist(project);
   }
 
   /** {@inheritDoc} */
@@ -5673,20 +6678,142 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
-
-    if (cmd.schoolId() != null) {
-      schoolService.getById(cmd.schoolId());
-      ProjectsBySchool association =
-          ProjectProcessor.processCreateProjectBySchoolInput(id, cmd.schoolId());
-
-      if (association.hasFieldErrors()) {
-        throw new AppValidationException(association.getFieldErrors());
-      }
-      repo.updateAssociation(association);
-    }
-
     return getById(id);
   }
+}
+
+
+================================================================================
+FILE: service/ProjectBySchoolReadService.java
+================================================================================
+package com.pug.project.service;
+
+import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.project.infra.read.dtos.ProjectView;
+import java.util.Set;
+import java.util.UUID;
+
+/**
+ * Application service interface dedicated exclusively to querying the association between projects
+ * and schools.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations for the project–school
+ * link. It leverages the underlying {@link com.pug.project.domain.ProjectBySchoolRepository} to
+ * resolve identifiers and then projects them into lightweight read models.
+ */
+public interface ProjectBySchoolReadService {
+
+  /**
+   * Retrieves all schools associated with the specified project.
+   *
+   * <p>This method:
+   *
+   * <ul>
+   *   <li>Resolves all school identifiers linked to the given {@code projectId}, and
+   *   <li>Projects them into {@link SchoolView} DTOs.
+   * </ul>
+   *
+   * @param projectId the unique identifier of the project
+   * @return a {@link Set} of {@link SchoolView} associated with the project; an empty set if {@code
+   *     projectId} is {@code null} or if no associations exist
+   */
+  Set<SchoolView> listAllSchoolsByProjectId(UUID projectId);
+
+  /**
+   * Retrieves all projects associated with the specified school.
+   *
+   * <p>This method:
+   *
+   * <ul>
+   *   <li>Resolves all project identifiers linked to the given {@code schoolId}, and
+   *   <li>Projects them into {@link ProjectView} DTOs.
+   * </ul>
+   *
+   * @param schoolId the unique identifier of the school
+   * @return a {@link Set} of {@link ProjectView} associated with the school; an empty set if {@code
+   *     schoolId} is {@code null} or if no associations exist
+   */
+  Set<ProjectView> listAllProjectsBySchoolId(UUID schoolId);
+}
+
+
+================================================================================
+FILE: service/ProjectBySchoolService.java
+================================================================================
+package com.pug.project.service;
+
+import com.pug.project.domain.ProjectBySchool;
+import com.pug.project.domain.ProjectBySchoolRepository;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Application service interface for managing the association between {@link
+ * com.pug.project.domain.Project} and {@link com.pug.academic.domain.School} aggregates via {@link
+ * ProjectBySchool}.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations for the
+ * project–school link: creation and deletion of associations. It orchestrates validation and
+ * delegates persistence concerns to the {@link ProjectBySchoolRepository}.
+ */
+public interface ProjectBySchoolService {
+
+  /**
+   * Creates new associations between a project and one or more schools.
+   *
+   * <p>This operation:
+   *
+   * <ul>
+   *   <li>Constructs a {@link ProjectBySchool} aggregate for each provided school ID via its
+   *       factory method,
+   *   <li>validates structural constraints for every association (non-null IDs), and
+   *   <li>persists all valid associations using the underlying repository.
+   * </ul>
+   *
+   * @param projectId the unique identifier of the project to link
+   * @param schoolIds the unique identifiers of the schools to link to the project
+   * @return a {@link List} of fully instantiated and persisted {@link ProjectBySchool} aggregates
+   *     corresponding to the provided school IDs
+   * @throws com.pug.shared.exceptions.AppValidationException if any created association violates
+   *     domain constraints (e.g., null IDs)
+   */
+  List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds);
+
+  /**
+   * Removes a specific association between a project and a school.
+   *
+   * <p>This operation is expected to be idempotent: if the association does not exist, the
+   * implementation should simply return {@code false} without raising an exception.
+   *
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return {@code true} if an association was deleted, {@code false} otherwise
+   */
+  boolean delete(UUID projectId, UUID schoolId);
+
+  /**
+   * Removes all associations for the specified project.
+   *
+   * <p>This is typically used when deleting or restructuring a project and needing to clean up all
+   * of its school links in a single operation.
+   *
+   * @param projectId the unique identifier of the project
+   * @return the number of associations deleted (zero if {@code projectId} is {@code null} or no
+   *     associations exist)
+   */
+  long deleteAllByProjectId(UUID projectId);
+
+  /**
+   * Removes all associations for the specified school.
+   *
+   * <p>This is typically used when deleting or restructuring a school and needing to clean up all
+   * of its project links in a single operation.
+   *
+   * @param schoolId the unique identifier of the school
+   * @return the number of associations deleted (zero if {@code schoolId} is {@code null} or no
+   *     associations exist)
+   */
+  long deleteAllBySchoolId(UUID schoolId);
 }
 
 
@@ -5695,9 +6822,7 @@ FILE: service/ProjectReadService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.academic.infra.read.dtos.SchoolView; // Import required for SchoolView
 import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.infra.read.dtos.SchoolProjectView;
 import java.util.List;
 import java.util.UUID;
 
@@ -5705,8 +6830,8 @@ import java.util.UUID;
  * Application service interface dedicated exclusively to querying Project data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
- * domain logic and retrieves lightweight, fully resolved {@link ProjectView} Data Transfer Objects
- * directly from the underlying data store or search indices.
+ * domain logic and retrieves lightweight {@link ProjectView} Data Transfer Objects directly from
+ * the underlying data store or search indices.
  */
 public interface ProjectReadService {
 
@@ -5742,22 +6867,6 @@ public interface ProjectReadService {
    * @return a {@link List} of matching {@link ProjectView} entries
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
-
-  /**
-   * Retrieves a list of schools associated with a specific project.
-   *
-   * @param projectId the unique identifier of the project
-   * @return a {@link List} of associated {@link SchoolView} DTOs
-   */
-  List<SchoolView> listViewsSchoolsByProjectId(UUID projectId);
-
-  /**
-   * Retrieves a consolidated view of a school and its associated projects.
-   *
-   * @param schoolId the unique identifier of the school
-   * @return the populated {@link SchoolProjectView} DTO
-   */
-  SchoolProjectView listViewsBySchool(UUID schoolId);
 
   /**
    * Executes a robust full-text search against the names of projects.
@@ -5919,15 +7028,28 @@ import com.pug.project.domain.Project;
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Enrollment}
  * Domain Aggregates.
+ *
+ * <p>This processor centralizes the orchestration of domain factory methods, ensuring that the
+ * application service layer remains focused on coordination and error handling rather than on the
+ * low-level details of aggregate construction.
  */
-public class EnrollmentProcessor {
+public final class EnrollmentProcessor {
 
   /**
    * Processes raw creation inputs and constructs a new {@link Enrollment} domain aggregate.
    *
-   * @param student the fully reconstituted {@link Student} aggregate
-   * @param project the fully reconstituted {@link Project} aggregate
-   * @return a fully instantiated {@link Enrollment} domain aggregate, potentially containing errors
+   * <p>This method expects fully reconstituted {@link Student} and {@link Project} aggregates, and
+   * delegates the initialization of the enrollment to {@link Enrollment#factory(Student, Project)}.
+   * The returned instance is immediately self-validated; any accumulated domain validation problems
+   * can be inspected via {@link Enrollment#hasFieldErrors()} and {@link
+   * Enrollment#getFieldErrors()} and should be translated into an {@link
+   * com.pug.shared.exceptions.AppValidationException} by the calling service when appropriate.
+   *
+   * @param student the fully reconstituted {@link Student} aggregate to enroll
+   * @param project the fully reconstituted {@link Project} aggregate representing the target
+   *     project
+   * @return a fully instantiated {@link Enrollment} domain aggregate, potentially containing
+   *     validation errors
    */
   public static Enrollment processCreateInput(Student student, Project project) {
     return Enrollment.factory(student, project);
@@ -6030,12 +7152,51 @@ public final class ExceptionHelper {
 
 
 ================================================================================
+FILE: service/utils/ProjectBySchoolProcessor.java
+================================================================================
+package com.pug.project.service.utils;
+
+import com.pug.project.domain.ProjectBySchool;
+import java.util.UUID;
+
+/**
+ * Stateless utility class responsible for mapping raw command data into pure {@link
+ * ProjectBySchool} Domain Aggregates.
+ *
+ * <p>This processor centralizes the orchestration of the {@link ProjectBySchool} factory, ensuring
+ * that the application service layer remains focused on coordination and error handling rather than
+ * on low-level aggregate construction details.
+ */
+public final class ProjectBySchoolProcessor {
+
+  /** Private constructor to prevent instantiation of utility class. */
+  private ProjectBySchoolProcessor() {}
+
+  /**
+   * Processes raw inputs and constructs a new {@link ProjectBySchool} domain aggregate.
+   *
+   * <p>This method delegates to {@link ProjectBySchool#factory(UUID, UUID)}, which immediately
+   * self-validates the created aggregate. The caller is responsible for inspecting {@link
+   * ProjectBySchool#hasFieldErrors()} and handling any collected validation problems (for example,
+   * by throwing an {@link com.pug.shared.exceptions.AppValidationException}).
+   *
+   * @param projectId the unique identifier of the project
+   * @param schoolId the unique identifier of the school
+   * @return a fully instantiated {@link ProjectBySchool} domain aggregate, potentially containing
+   *     validation errors
+   */
+  public static ProjectBySchool processCreateInput(UUID projectId, UUID schoolId) {
+    return ProjectBySchool.factory(projectId, schoolId);
+  }
+}
+
+
+================================================================================
 FILE: service/utils/ProjectProcessor.java
 ================================================================================
 package com.pug.project.service.utils;
 
 import com.pug.project.domain.Project;
-import com.pug.project.domain.ProjectsBySchool;
 import com.pug.project.domain.vos.ProjectInfo;
 import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
@@ -6043,14 +7204,35 @@ import java.util.UUID;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Project}
- * and {@link ProjectsBySchool} Domain Aggregates.
+ * Domain Aggregates.
+ *
+ * <p>This processor centralizes orchestration of {@link Project} factory methods and state‑mutation
+ * behaviors, ensuring that application services remain focused on coordination, cross‑aggregate
+ * rules, and error handling rather than low-level aggregate construction details.
  */
 public final class ProjectProcessor {
 
   /** Private constructor to prevent instantiation of utility class. */
   private ProjectProcessor() {}
 
-  /** Processes raw inputs and constructs a new {@link Project} domain aggregate. */
+  /**
+   * Processes raw creation inputs and constructs a new {@link Project} domain aggregate.
+   *
+   * <p>This method delegates to {@link Project#factory(String, UUID, String, UUID, Integer,
+   * BigDecimal)}, which immediately self-validates the created aggregate. The caller is responsible
+   * for inspecting {@link Project#hasFieldErrors()} and reacting appropriately (for example, by
+   * throwing an {@link com.pug.shared.exceptions.AppValidationException}) when validation problems
+   * are present.
+   *
+   * @param name the raw project name
+   * @param entityId the unique identifier of the partner entity offering the project
+   * @param description the optional detailed project description
+   * @param createdBy the unique identifier of the staff account that is creating the project
+   * @param maxParticipants the maximum number of students allowed to enroll (may be {@code null})
+   * @param offeredHours the total counterpart hours offered by the project
+   * @return a fully instantiated {@link Project} domain aggregate, potentially containing
+   *     validation errors
+   */
   public static Project processCreateInput(
       String name,
       UUID entityId,
@@ -6062,18 +7244,31 @@ public final class ProjectProcessor {
   }
 
   /**
-   * Processes raw inputs and constructs a new {@link ProjectsBySchool} domain aggregate.
-   *
-   * @param projectId the unique identifier of the project
-   * @param schoolId the unique identifier of the school
-   * @return a fully instantiated {@link ProjectsBySchool} domain aggregate
-   */
-  public static ProjectsBySchool processCreateProjectBySchoolInput(UUID projectId, UUID schoolId) {
-    return ProjectsBySchool.factory(projectId, schoolId);
-  }
-
-  /**
    * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
+   *
+   * <p>This method applies partial updates to the provided {@code existingProject}. Only fields
+   * that are explicitly present in the input (non-{@code null} and, for strings, non-empty) will
+   * trigger a state mutation via the aggregate's domain behaviors:
+   *
+   * <ul>
+   *   <li>{@code name} &rarr; {@link Project#rename(String)}
+   *   <li>{@code description} &rarr; {@link Project#changeDescription(String)}
+   *   <li>{@code maxParticipants} &rarr; {@link ProjectInfo#changeMaxParticipantsAllowed(Integer)}
+   *   <li>{@code offeredHours} &rarr; {@link ProjectInfo#changeOfferedHours(BigDecimal)}
+   * </ul>
+   *
+   * <p>Because {@link Project} is modeled as an immutable aggregate, this method returns a
+   * <em>new</em> {@link Project} instance reflecting the requested updates. The caller is
+   * responsible for checking {@link Project#hasFieldErrors()} on the returned instance.
+   *
+   * @param existingProject the current, reconstituted {@link Project} aggregate from the repository
+   * @param name the proposed new name for the project, or {@code null} to leave unchanged
+   * @param description the proposed new description, or {@code null} to leave unchanged
+   * @param maxParticipants the proposed new maximum number of participants, or {@code null} to
+   *     leave unchanged
+   * @param offeredHours the proposed new offered hours, or {@code null} to leave unchanged
+   * @return a new {@link Project} aggregate reflecting the requested updates, potentially
+   *     containing validation errors
    */
   public static Project processUpdateInput(
       Project existingProject,

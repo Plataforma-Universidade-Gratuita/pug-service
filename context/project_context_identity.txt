@@ -1234,6 +1234,8 @@ public final class AccountMapper {
     e.setAccountType(d.getAccountType());
     e.setPasswordHash(d.getPasswordHash());
     e.setActive(d.getActive());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**
@@ -2763,6 +2765,8 @@ public final class UserMapper {
     }
     e.setName(d.getName());
     e.setCpf(d.getCpf().getValue());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**
@@ -4244,6 +4248,15 @@ public interface AuthService {
    *     type, or if there is no authenticated principal
    */
   void requireCurrentAccountNotOfType(AccountType forbidden);
+
+  /**
+   * Ensures that the currently authenticated account is of the given allowed type.
+   *
+   * @param allowed the {@link AccountType} that is allowed to perform the current operation
+   * @throws jakarta.ws.rs.NotAuthorizedException if the current account type do not matches the
+   *     allowed type, or if there is no authenticated principal
+   */
+  void requireCurrentAccountOfType(AccountType allowed);
 }
 
 
@@ -5092,6 +5105,15 @@ public class AuthServiceImpl implements AuthService {
   public void requireCurrentAccountNotOfType(AccountType forbidden) {
     AccountType current = getCurrentAccountType();
     if (current == forbidden) {
+      throw ExceptionHelper.unauthorized();
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void requireCurrentAccountOfType(AccountType allowed) {
+    AccountType current = getCurrentAccountType();
+    if (current != allowed) {
       throw ExceptionHelper.unauthorized();
     }
   }

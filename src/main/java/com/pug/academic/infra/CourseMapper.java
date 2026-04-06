@@ -70,6 +70,8 @@ public final class CourseMapper {
     }
     e.setName(d.getName());
     e.setSchoolId(d.getSchoolId());
+    e.setCreatedAt(d.getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**

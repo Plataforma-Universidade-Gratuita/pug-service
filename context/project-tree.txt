@@ -357,8 +357,9 @@
 │   │   │           │   │   ├── Enrollment.java
 │   │   │           │   │   ├── EnrollmentRepository.java
 │   │   │           │   │   ├── Project.java
+│   │   │           │   │   ├── ProjectBySchool.java
+│   │   │           │   │   ├── ProjectBySchoolRepository.java
 │   │   │           │   │   ├── ProjectRepository.java
-│   │   │           │   │   ├── ProjectsBySchool.java
 │   │   │           │   │   ├── enums/
 │   │   │           │   │   │   ├── AttendanceStatus.java
 │   │   │           │   │   │   ├── EnrollmentStatus.java
@@ -375,6 +376,7 @@
 │   │   │           │   ├── infra/
 │   │   │           │   │   ├── AttendanceMapper.java
 │   │   │           │   │   ├── EnrollmentMapper.java
+│   │   │           │   │   ├── ProjectBySchoolMapper.java
 │   │   │           │   │   ├── ProjectMapper.java
 │   │   │           │   │   ├── persistence/
 │   │   │           │   │   │   ├── AttendanceEntity.java
@@ -384,27 +386,26 @@
 │   │   │           │   │   │   └── impl/
 │   │   │           │   │   │       ├── AttendanceRepositoryImpl.java
 │   │   │           │   │   │       ├── EnrollmentRepositoryImpl.java
+│   │   │           │   │   │       ├── ProjectBySchoolRepositoryImpl.java
 │   │   │           │   │   │       └── ProjectRepositoryImpl.java
 │   │   │           │   │   └── read/
 │   │   │           │   │       ├── AttendanceQueries.java
 │   │   │           │   │       ├── EnrollmentQueries.java
 │   │   │           │   │       ├── ProjectQueries.java
-│   │   │           │   │       ├── ProjectsBySchoolsQueries.java
 │   │   │           │   │       ├── dtos/
 │   │   │           │   │       │   ├── AttendanceAcc.java
 │   │   │           │   │       │   ├── AttendanceView.java
 │   │   │           │   │       │   ├── EnrollmentAcc.java
 │   │   │           │   │       │   ├── EnrollmentView.java
-│   │   │           │   │       │   ├── ProjectView.java
-│   │   │           │   │       │   └── SchoolProjectView.java
+│   │   │           │   │       │   └── ProjectView.java
 │   │   │           │   │       └── impl/
 │   │   │           │   │           ├── AttendanceQueriesImpl.java
 │   │   │           │   │           ├── EnrollmentQueriesImpl.java
-│   │   │           │   │           ├── ProjectQueriesImpl.java
-│   │   │           │   │           └── ProjectsBySchoolsQueriesImpl.java
+│   │   │           │   │           └── ProjectQueriesImpl.java
 │   │   │           │   ├── presenter/
 │   │   │           │   │   ├── AttendanceResource.java
 │   │   │           │   │   ├── EnrollmentResource.java
+│   │   │           │   │   ├── ProjectBySchoolResource.java
 │   │   │           │   │   ├── ProjectResource.java
 │   │   │           │   │   ├── dtos/
 │   │   │           │   │   │   ├── AttendanceCreateRequest.java
@@ -412,10 +413,10 @@
 │   │   │           │   │   │   ├── AttendanceValidateRequest.java
 │   │   │           │   │   │   ├── EnrollmentCreateRequest.java
 │   │   │           │   │   │   ├── EnrollmentResponse.java
+│   │   │           │   │   │   ├── ProjectBySchoolRequest.java
 │   │   │           │   │   │   ├── ProjectCreateRequest.java
 │   │   │           │   │   │   ├── ProjectResponse.java
-│   │   │           │   │   │   ├── ProjectUpdateRequest.java
-│   │   │           │   │   │   └── ProjectsBySchoolResponse.java
+│   │   │           │   │   │   └── ProjectUpdateRequest.java
 │   │   │           │   │   └── mappers/
 │   │   │           │   │       ├── AttendancePresenter.java
 │   │   │           │   │       ├── EnrollmentPresenter.java
@@ -425,6 +426,8 @@
 │   │   │           │       ├── AttendanceService.java
 │   │   │           │       ├── EnrollmentReadService.java
 │   │   │           │       ├── EnrollmentService.java
+│   │   │           │       ├── ProjectBySchoolReadService.java
+│   │   │           │       ├── ProjectBySchoolService.java
 │   │   │           │       ├── ProjectReadService.java
 │   │   │           │       ├── ProjectService.java
 │   │   │           │       ├── dtos/
@@ -438,12 +441,15 @@
 │   │   │           │       │   ├── AttendanceServiceImpl.java
 │   │   │           │       │   ├── EnrollmentReadServiceImpl.java
 │   │   │           │       │   ├── EnrollmentServiceImpl.java
+│   │   │           │       │   ├── ProjectBySchoolReadServiceImpl.java
+│   │   │           │       │   ├── ProjectBySchoolServiceImpl.java
 │   │   │           │       │   ├── ProjectReadServiceImpl.java
 │   │   │           │       │   └── ProjectServiceImpl.java
 │   │   │           │       └── utils/
 │   │   │           │           ├── AttendanceProcessor.java
 │   │   │           │           ├── EnrollmentProcessor.java
 │   │   │           │           ├── ExceptionHelper.java
+│   │   │           │           ├── ProjectBySchoolProcessor.java
 │   │   │           │           └── ProjectProcessor.java
 │   │   │           └── shared/
 │   │   │               ├── domain/
@@ -471,7 +477,6 @@
 │   │   │               │   ├── persistence/
 │   │   │               │   │   ├── BaseAuditedEntity.java
 │   │   │               │   │   └── BaseUuidV7Entity.java
-│   │   │               │   ├── queries/
 │   │   │               │   └── search/
 │   │   │               │       ├── EsAnalysis.java
 │   │   │               │       ├── HibernateSearchUtils.java

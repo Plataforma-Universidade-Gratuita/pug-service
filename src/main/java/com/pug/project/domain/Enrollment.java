@@ -2,10 +2,13 @@ package com.pug.project.domain;
 
 import com.pug.academic.domain.Student;
 import com.pug.project.domain.enums.EnrollmentStatus;
+import com.pug.project.domain.enums.ProjectsErrorCodes;
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.EnrollmentInfo;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.BusinessRuleException;
+import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,9 +18,10 @@ import lombok.Getter;
 /**
  * Immutable Domain Entity representing a Student's Enrollment in a Project.
  *
- * <p>This class maps a student directly to a project and tracks the lifecycle state of that
- * relationship (e.g., PENDING, APPROVED, COMPLETED). It extends {@link DomainError} to accumulate
- * structural validation failures.
+ * <p>This class maps a specific {@link Student} directly to a {@link Project} and tracks the
+ * lifecycle state of that relationship (e.g., {@link EnrollmentStatus#PENDING}, {@link
+ * EnrollmentStatus#APPROVED}, {@link EnrollmentStatus#COMPLETED}). It extends {@link DomainError}
+ * to accumulate structural validation failures and bubble up problems from nested value objects.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -35,11 +39,19 @@ public class Enrollment extends DomainError {
   EnrollmentInfo enrollmentInfo;
 
   /**
-   * Factory method to create a new {@code Enrollment} instance in a PENDING state.
+   * Factory method to create a new {@code Enrollment} instance in a {@link
+   * EnrollmentStatus#PENDING} state.
    *
-   * @param student the student requesting enrollment
-   * @param project the project they wish to join
-   * @return a new, self-validated {@link Enrollment} instance
+   * <p>The returned aggregate is initialized with a freshly created {@link EnrollmentIdentifier}
+   * based on the provided {@link Student} and {@link Project}, and a default {@link EnrollmentInfo}
+   * with no acceptance or closing timestamps set. The instance is immediately self-validated; any
+   * problems are accumulated internally and can be inspected via {@link #hasFieldErrors()} and
+   * {@link #getFieldErrors()}.
+   *
+   * @param student the {@link Student} requesting enrollment
+   * @param project the {@link Project} the student wishes to join
+   * @return a new, self-validated {@link Enrollment} instance in {@link EnrollmentStatus#PENDING}
+   *     state
    */
   public static Enrollment factory(Student student, Project project) {
     Enrollment enrollment =
@@ -56,34 +68,76 @@ public class Enrollment extends DomainError {
   /**
    * Transitions the enrollment to a new lifecycle status, updating tracking timestamps accordingly.
    *
-   * @param newStatus the target status to transition to
-   * @return a new {@link Enrollment} instance reflecting the updated state, or the same instance if
-   *     unchanged
+   * <p>Business rules applied:
+   *
+   * <ul>
+   *   <li>If the requested {@code newStatus} is equal to the current {@code status}, this method is
+   *       idempotent and returns {@code this} without changes.
+   *   <li>If the current {@code status} is already a closing state (see {@link
+   *       #isClosingStatus(EnrollmentStatus)}), no further transitions are allowed and a {@link
+   *       BusinessRuleException} is thrown with {@link
+   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
+   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current {@code
+   *       status} is {@link EnrollmentStatus#PENDING}. On success, {@link EnrollmentInfo#accept()}
+   *       is applied, stamping {@code acceptedAt}.
+   *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
+   *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
+   *       EnrollmentStatus#REJECTED}, {@link EnrollmentStatus#REMOVED}) are only allowed when the
+   *       current {@code status} is {@link EnrollmentStatus#APPROVED}. On success, {@link
+   *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
+   *   <li>All other transitions (for example, attempting to go from {@code PENDING} directly to a
+   *       closing status, or attempting to revert from a closing status back to {@code PENDING} or
+   *       {@code APPROVED}) are rejected with a {@link BusinessRuleException} using {@link
+   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
+   * </ul>
+   *
+   * @param newStatus the target {@link EnrollmentStatus} to transition to (must not be {@code null}
+   *     for a valid transition)
+   * @return a new {@link Enrollment} instance reflecting the updated status and lifecycle metadata,
+   *     or {@code this} if the status is unchanged
+   * @throws com.pug.shared.exceptions.BusinessRuleException if the requested transition violates
+   *     the enrollment lifecycle rules and {@link
+   *     ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
    */
   public Enrollment changeStatus(EnrollmentStatus newStatus) {
-    if (this.status == newStatus) {
+    if (status == newStatus) {
       return this;
+    }
+
+    if (isClosingStatus(status)) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
 
     EnrollmentInfo newInfo;
 
-    if (newStatus == EnrollmentStatus.APPROVED) {
-      newInfo = this.enrollmentInfo.accept();
-    } else if (isClosingStatus(newStatus)) {
-      newInfo = this.enrollmentInfo.closeStatus();
+    if (Objects.requireNonNull(newStatus) == EnrollmentStatus.APPROVED) {
+      if (status != EnrollmentStatus.PENDING) {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
+      newInfo = enrollmentInfo.accept();
     } else {
-      newInfo = this.enrollmentInfo.update();
+      if (isClosingStatus(newStatus)) {
+        if (status != EnrollmentStatus.APPROVED) {
+          throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+        }
+        newInfo = enrollmentInfo.closeStatus();
+      } else {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
     }
 
-    Enrollment updated = this.toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
-
+    Enrollment updated = toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
     updated.collectValidationProblems();
     return updated;
   }
 
   /**
-   * Helper method to determine if a status represents a terminal (closing) state for the
-   * enrollment.
+   * Evaluates whether the provided enrollment status represents a terminal (closing) state in the
+   * enrollment lifecycle.
+   *
+   * @param s the {@link EnrollmentStatus} to evaluate
+   * @return {@code true} if the status is considered closing (e.g., {@code CANCELED}, {@code
+   *     COMPLETED}, {@code EXITED}, {@code REJECTED}, {@code REMOVED}); {@code false} otherwise
    */
   private boolean isClosingStatus(EnrollmentStatus s) {
     return s == EnrollmentStatus.REJECTED
@@ -93,7 +147,23 @@ public class Enrollment extends DomainError {
         || s == EnrollmentStatus.COMPLETED;
   }
 
-  /** Evaluates constraints for the Enrollment aggregate and accumulates any validation problems. */
+  /**
+   * Evaluates constraints for the {@code Enrollment} aggregate and accumulates any validation
+   * problems.
+   *
+   * <p>Rules applied:
+   *
+   * <ul>
+   *   <li>Ensures the {@code identifier} is not {@code null} and bubbles up any internal errors
+   *       from {@link EnrollmentIdentifier}. If {@code identifier} is {@code null}, both {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK} and {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK} are appended.
+   *   <li>Ensures the {@code status} is not {@code null} (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STATUS_BLANK}).
+   *   <li>Ensures the {@code enrollmentInfo} is either {@code null} (no additional checks) or, if
+   *       present, bubbles up any internal errors from {@link EnrollmentInfo}.
+   * </ul>
+   */
   private void collectValidationProblems() {
     if (identifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);

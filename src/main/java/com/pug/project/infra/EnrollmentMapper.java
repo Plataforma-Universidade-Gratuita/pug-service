@@ -1,13 +1,10 @@
 package com.pug.project.infra;
 
-import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.project.domain.Enrollment;
 import com.pug.project.domain.enums.EnrollmentStatus;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.EnrollmentInfo;
 import com.pug.project.infra.persistence.EnrollmentEntity;
-import com.pug.project.infra.read.dtos.EnrollmentView;
-import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -94,33 +91,7 @@ public final class EnrollmentMapper {
     e.setStatus(d.getStatus().name());
     e.setAcceptedAt(d.getEnrollmentInfo().getAcceptedAt());
     e.setClosingStatusAt(d.getEnrollmentInfo().getClosingStatusAt());
-  }
-
-  /**
-   * Projects a raw JPA {@link EnrollmentEntity} and its pre-resolved nested views into a
-   * comprehensive {@link EnrollmentView} DTO.
-   *
-   * <p>Since resolving Projects and Students requires deep query joins across multiple modules,
-   * this mapper expects the query layer to provide the resolved nested views.
-   *
-   * @param e the JPA entity representing the enrollment lifecycle
-   * @param project the pre-resolved, fully populated view of the project
-   * @param student the pre-resolved, fully populated view of the student
-   * @return a fully populated {@link EnrollmentView} DTO
-   */
-  public static EnrollmentView toView(
-      EnrollmentEntity e, ProjectView project, StudentView student) {
-    if (e == null) {
-      return null;
-    }
-
-    return new EnrollmentView(
-        project,
-        student,
-        EnrollmentStatus.valueOf(e.getStatus()),
-        e.getCreatedAt(),
-        e.getUpdatedAt(),
-        e.getAcceptedAt(),
-        e.getClosingStatusAt());
+    e.setCreatedAt(d.getEnrollmentInfo().getAuditInfo().getCreatedAt());
+    e.setUpdatedAt(d.getEnrollmentInfo().getAuditInfo().getUpdatedAt());
   }
 }
