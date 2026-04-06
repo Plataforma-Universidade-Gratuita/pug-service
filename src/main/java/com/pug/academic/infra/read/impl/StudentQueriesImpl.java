@@ -37,23 +37,23 @@ public class StudentQueriesImpl implements StudentQueries {
   private static final String SELECT_BASE =
       """
                   select new com.pug.academic.infra.read.dtos.StudentView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
-                      acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
-                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
-                    ),
+                    s.accountId,
+                    acc.userId,
+                    acc.email,
+                    acc.accountType,
+                    acc.active,
                     s.academicRegistration,
                     s.campus,
-                    new com.pug.academic.infra.read.dtos.CourseView(
-                      c.id, c.name,
-                      new com.pug.academic.infra.read.dtos.SchoolView(
-                      sch.id, sch.name, sch.createdAt, sch.updatedAt),
-                      c.createdAt, c.updatedAt
-                    ),
-                    s.requiredHours, s.concluded,
-                    s.startDate, s.dueDate,
-                    s.createdAt, s.updatedAt
+                    c.id,
+                    c.name,
+                    sch.id,
+                    sch.name,
+                    s.requiredHours,
+                    s.concluded,
+                    s.startDate,
+                    s.dueDate,
+                    s.createdAt,
+                    s.updatedAt
                   )
                   from StudentEntity s
                   join AccountEntity acc on acc.id = s.accountId
@@ -159,7 +159,7 @@ public class StudentQueriesImpl implements StudentQueries {
 
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    var rows =
+    List<StudentAcc> rows =
         em.createQuery(
                 """
                                     select new com.pug.academic.infra.read.dtos.StudentAcc(
@@ -189,7 +189,7 @@ public class StudentQueriesImpl implements StudentQueries {
       }
       for (StudentAcc row : pairs) {
         if (row.s() != null && row.acc() != null && row.c() != null) {
-          out.add(toView(row.s(), row.acc(), u, row.c(), row.sch()));
+          out.add(toView(row.s(), row.acc(), row.c(), row.sch()));
         }
       }
     }

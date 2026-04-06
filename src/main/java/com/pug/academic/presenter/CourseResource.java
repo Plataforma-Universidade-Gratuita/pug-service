@@ -122,7 +122,7 @@ public class CourseResource {
   @POST
   @RolesAllowed("ADMIN")
   public Response create(@Valid CourseCreateRequest req) {
-    CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
+    CourseCreateCommand cmd = CoursePresenter.toCommand(req);
     Course created = writeService.save(cmd);
 
     CourseView view = readService.getViewById(created.getId());
@@ -143,7 +143,7 @@ public class CourseResource {
   @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
-    CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
+    CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
     writeService.update(id, cmd);
 
     CourseView view = readService.getViewById(id);

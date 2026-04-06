@@ -9,7 +9,6 @@ import java.util.UUID;
  * <p>This record encapsulates the raw input data required by the application service to instantiate
  * a new {@link com.pug.project.domain.Project} aggregate.
  *
- * @param createdBy the unique identifier (Account ID) of the staff member creating the project
  * @param description the optional detailed description of the project's objectives
  * @param entityId the unique identifier of the partner organization offering the project
  * @param maxParticipants the maximum number of students allowed to enroll (optional)
@@ -21,7 +20,6 @@ public record ProjectCreateCommand(
     String name,
     UUID entityId,
     String description,
-    UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
     UUID schoolId) {}

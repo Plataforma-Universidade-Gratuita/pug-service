@@ -1,7 +1,5 @@
 package com.pug.partner.presenter.mappers;
 
-import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
@@ -79,8 +77,9 @@ public final class EntityPresenter {
   /**
    * Projects a read-only {@link EntityView} into a client-facing {@link EntityResponse}.
    *
-   * <p>This mapping cascades down to format the nested {@link CityResponse} and resolves localized
-   * formatting for audit timestamps and corporate identification numbers.
+   * <p>This mapping resolves localized formatting for audit timestamps and corporate identification
+   * numbers, while exposing only the {@code cityId} so that additional geographic details can be
+   * resolved on demand by the client.
    *
    * @param v the internal read-model projection of the partner entity
    * @param locale the locale extracted from the client's request headers
@@ -93,11 +92,10 @@ public final class EntityPresenter {
     }
 
     String formattedCnpj = toFormattedString(v.cnpj());
-    CityResponse cityResponse = CityPresenter.toResponse(v.city());
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new EntityResponse(
-        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
+        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), v.cityId(), auditInfo);
   }
 }

@@ -8,6 +8,7 @@ import com.pug.identity.presenter.dtos.AdminUpdateRequest;
 import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -55,6 +56,7 @@ import java.util.stream.Collectors;
 @RolesAllowed("ADMIN")
 public class AdminResource {
 
+  @Inject AuthService authService;
   @Inject PasswordService passwordService;
   @Inject AdminReadService readService;
   @Inject AdminService writeService;
@@ -93,6 +95,27 @@ public class AdminResource {
   public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     AdminView view = readService.getViewByEmail(emailRaw);
     AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the administrator profile associated with the currently authenticated account.
+   *
+   * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
+   * AuthService}, ensuring that callers can only access their own administrator profile. This
+   * endpoint is restricted to users with the ADMIN role.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     AdminResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
+   */
+  @GET
+  @Path("me")
+  public Response getMe() {
+    UUID accountId = authService.getCurrentAccountId();
+    AdminView v = readService.getViewByAccountId(accountId);
+    AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

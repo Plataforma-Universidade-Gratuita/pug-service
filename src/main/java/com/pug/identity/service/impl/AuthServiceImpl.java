@@ -7,12 +7,16 @@ import com.pug.identity.service.AccountService;
 import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.utils.ExceptionHelper;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Set;
+import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
 /**
@@ -30,8 +34,77 @@ public class AuthServiceImpl implements AuthService {
 
   @Inject PasswordService passwordService;
 
+  @Inject SecurityIdentity identity;
+
   @ConfigProperty(name = "smallrye.jwt.new-token.lifespan", defaultValue = "28800")
   long lifespan;
+
+  /** {@inheritDoc} */
+  @Override
+  public UUID getCurrentAccountId() {
+    String accountId = getRequiredClaim("accountId");
+    return UUID.fromString(accountId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AccountType getCurrentAccountType() {
+    if (identity == null || identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    Object principal = identity.getPrincipal();
+    if (!(principal instanceof JsonWebToken jwt)) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    var groups = jwt.getGroups();
+    if (groups == null || groups.isEmpty()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    String rawType = groups.iterator().next();
+    try {
+      return AccountType.valueOf(rawType);
+    } catch (IllegalArgumentException e) {
+      throw ExceptionHelper.unauthorized();
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UUID getCurrentUserId() {
+    String userId = getRequiredClaim("userId");
+    return UUID.fromString(userId);
+  }
+
+  /**
+   * Retrieves a required string claim from the current JWT principal.
+   *
+   * <p>If there is no authenticated principal, the principal is not a {@link JsonWebToken}, or the
+   * claim is missing, this method throws the standardized unauthorized exception.
+   *
+   * @param claimName the name of the claim to resolve (e.g., {@code "accountId"}, {@code "userId"})
+   * @return the claim value as a non-null {@link String}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the claim cannot be resolved
+   */
+  private String getRequiredClaim(String claimName) {
+    if (identity == null || identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    Object principal = identity.getPrincipal();
+    if (!(principal instanceof JsonWebToken jwt)) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    String claim = jwt.getClaim(claimName);
+    if (claim == null) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    return claim;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -65,5 +138,14 @@ public class AuthServiceImpl implements AuthService {
 
     LOG.infof("Authentication successful for account %s", account.getId());
     return new TokenResponse(token, account.getId(), account.getAccountType(), lifespan);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void requireCurrentAccountNotOfType(AccountType forbidden) {
+    AccountType current = getCurrentAccountType();
+    if (current == forbidden) {
+      throw ExceptionHelper.unauthorized();
+    }
   }
 }

@@ -1,6 +1,7 @@
 package com.pug.project.service.impl;
 
 import com.pug.academic.service.SchoolService;
+import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
@@ -13,6 +14,7 @@ import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.project.service.utils.ProjectProcessor;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -33,6 +35,7 @@ public class ProjectServiceImpl implements ProjectService {
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
   @Inject ProjectRepository repo;
+  @Inject AuthService authService;
   @Inject EntityService entityService;
   @Inject StaffService staffService;
   @Inject EnrollmentService enrollmentService;
@@ -86,8 +89,8 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
+    authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
-    staffService.getByAccountId(cmd.createdBy());
     schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
@@ -99,7 +102,7 @@ public class ProjectServiceImpl implements ProjectService {
             cmd.name(),
             cmd.entityId(),
             cmd.description(),
-            cmd.createdBy(),
+            authService.getCurrentAccountId(),
             cmd.maxParticipants(),
             cmd.offeredHours());
 

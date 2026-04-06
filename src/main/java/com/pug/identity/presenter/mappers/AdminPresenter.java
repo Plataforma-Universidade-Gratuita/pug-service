@@ -60,7 +60,6 @@ public final class AdminPresenter {
     if (req == null) {
       return null;
     }
-    // CPF cannot be updated via this flow, so it is omitted from UserUpdateCommand
     var userCmd = new UserUpdateCommand(req.name());
     var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
     return new AdminUpdateCommand(accountCmd, req.campus());

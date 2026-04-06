@@ -7,13 +7,8 @@ import com.pug.academic.domain.vos.Period;
 import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -96,56 +91,38 @@ public final class StudentMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link StudentView} DTO.
+   * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
+   * StudentView} DTO.
    *
    * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the student's profile, credentials, and academic details in a single, flattened
-   * response ready for JSON serialization.
+   * encapsulate the student's identity (account and user references) and academic details (course
+   * and school metadata) in a single, flat response ready for JSON serialization.
    *
    * @param s the JPA entity representing the student's academic records
    * @param acc the JPA entity representing the linked authentication account
-   * @param u the JPA entity representing the personal identity of the student
    * @param c the JPA entity representing the enrolled course
    * @param sch the JPA entity representing the school offering the course
-   * @return a fully populated {@link StudentView} DTO
+   * @return a fully populated, flattened {@link StudentView} DTO, or {@code null} if the student
+   *     entity is null
    */
   public static StudentView toView(
-      StudentEntity s, AccountEntity acc, UserEntity u, CourseEntity c, SchoolEntity sch) {
+      StudentEntity s, AccountEntity acc, CourseEntity c, SchoolEntity sch) {
     if (s == null) {
       return null;
     }
 
-    UserView userView =
-        (u != null)
-            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
-            : null;
-    AccountView accountView =
-        (acc != null)
-            ? new AccountView(
-                acc.getId(),
-                userView,
-                acc.getEmail(),
-                acc.getAccountType(),
-                acc.getCreatedAt(),
-                acc.getUpdatedAt(),
-                acc.getActive())
-            : null;
-
-    SchoolView schoolView =
-        (sch != null)
-            ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt())
-            : null;
-    CourseView courseView =
-        (c != null)
-            ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt())
-            : null;
-
     return new StudentView(
-        accountView,
+        s.getAccountId(),
+        acc != null ? acc.getUserId() : null,
+        acc != null ? acc.getEmail() : null,
+        acc != null ? acc.getAccountType() : null,
+        acc != null ? acc.getActive() : null,
         s.getAcademicRegistration(),
         s.getCampus(),
-        courseView,
+        c != null ? c.getId() : null,
+        c != null ? c.getName() : null,
+        sch != null ? sch.getId() : null,
+        sch != null ? sch.getName() : null,
         s.getRequiredHours(),
         s.getConcluded(),
         s.getStartDate(),

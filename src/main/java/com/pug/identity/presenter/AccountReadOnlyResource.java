@@ -4,14 +4,13 @@ import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.identity.service.AccountReadService;
-import com.pug.identity.service.utils.ExceptionHelper;
+import com.pug.identity.service.AuthService;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * REST endpoint for read-only operations on accounts.
@@ -47,7 +45,7 @@ public class AccountReadOnlyResource {
 
   @Inject I18n i18n;
 
-  @Inject SecurityIdentity identity;
+  @Inject AuthService authService;
 
   @Context HttpHeaders headers;
 
@@ -86,8 +84,8 @@ public class AccountReadOnlyResource {
   /**
    * Retrieves the account details of the currently authenticated user.
    *
-   * <p>Extracts the account ID directly from the JWT claims, ensuring users can only request their
-   * own account data. Accessible by any authenticated role.
+   * <p>Extracts the account ID directly from the JWT claims via {@link AuthService}, ensuring users
+   * can only request their own account data. Accessible by any authenticated role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     AccountResponse}
@@ -98,18 +96,7 @@ public class AccountReadOnlyResource {
   @Path("me")
   @Authenticated
   public Response getMe() {
-    if (identity.isAnonymous()) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    JsonWebToken jwt = (JsonWebToken) identity.getPrincipal();
-    String accountIdClaim = jwt.getClaim("accountId");
-
-    if (accountIdClaim == null) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    UUID accountId = UUID.fromString(accountIdClaim);
+    UUID accountId = authService.getCurrentAccountId();
     var body = AccountPresenter.toResponse(readService.getViewById(accountId), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }

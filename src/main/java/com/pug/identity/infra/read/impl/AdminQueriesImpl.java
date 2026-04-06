@@ -2,6 +2,8 @@ package com.pug.identity.infra.read.impl;
 
 import static com.pug.identity.infra.AdminMapper.toView;
 
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.identity.infra.persistence.AdminEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.AdminQueries;
 import com.pug.identity.infra.read.dtos.AdminAcc;
@@ -38,8 +40,7 @@ public class AdminQueriesImpl implements AdminQueries {
                   select new com.pug.identity.infra.read.dtos.AdminView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                      u.id,
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
@@ -100,10 +101,10 @@ public class AdminQueriesImpl implements AdminQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link AdminAcc} tuple projection to map the relationships backwards to the
-   * administrator profile.
+   * <p>This implementation preserves the relevance order returned by the full-text search in {@link
+   * UserEntity}. For each user found, the function loads the associated pairs ({@link AdminEntity},
+   * {@link AccountEntity}) and projects them into {@link AdminView} using the mapper {@link
+   * com.pug.identity.infra.AdminMapper#toView(AdminEntity, AccountEntity)}.
    */
   @Override
   public List<AdminView> searchByName(String key) {
@@ -114,32 +115,34 @@ public class AdminQueriesImpl implements AdminQueries {
 
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    var rows =
+    List<AdminAcc> rows =
         em.createQuery(
                 """
-                select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                where acc.userId in :ids
-                """,
+                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                        where acc.userId in :ids
+                        """,
                 AdminAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
 
     Map<UUID, List<AdminAcc>> byUser = new HashMap<>();
     for (AdminAcc row : rows) {
-      byUser.computeIfAbsent(row.account().getUserId(), k -> new ArrayList<>()).add(row);
+      UUID userId = row.account().getUserId();
+      byUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(row);
     }
 
     List<AdminView> out = new ArrayList<>();
     for (UserEntity u : userHits) {
-      List<AdminAcc> pairs = byUser.get(u.getId());
-      if (pairs == null) {
+      List<AdminAcc> accs = byUser.get(u.getId());
+      if (accs == null) {
         continue;
       }
-      for (AdminAcc row : pairs) {
-        out.add(toView(row.admin(), row.account(), u));
+      for (AdminAcc pair : accs) {
+        out.add(toView(pair.admin(), pair.account()));
       }
     }
+
     return out;
   }
 }

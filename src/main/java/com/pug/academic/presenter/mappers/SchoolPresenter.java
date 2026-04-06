@@ -1,7 +1,11 @@
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.dtos.SchoolCreateRequest;
 import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
+import com.pug.academic.service.dtos.SchoolCreateCommand;
+import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
@@ -16,6 +20,40 @@ import java.util.Locale;
 public final class SchoolPresenter {
   /** Private constructor to prevent instantiation. */
   private SchoolPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer school creation command.
+   *
+   * <p>This helper is responsible only for the school portion of the payload. It extracts the raw
+   * name and encapsulates it into a {@link SchoolCreateCommand}, leaving domain validation and
+   * orchestration to the application service layer.
+   *
+   * @param req the validated {@link SchoolCreateRequest} payload
+   * @return the corresponding {@link SchoolCreateCommand}, or {@code null} if the request is null
+   */
+  public static SchoolCreateCommand toCommand(SchoolCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new SchoolCreateCommand(req.name());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer school update command.
+   *
+   * <p>This helper is responsible only for the school portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} name to the {@link
+   * SchoolUpdateCommand}, allowing the service layer to interpret omitted values as "no change".
+   *
+   * @param req the validated {@link SchoolUpdateRequest} payload containing the modified data
+   * @return the corresponding {@link SchoolUpdateCommand}, or {@code null} if the request is null
+   */
+  public static SchoolUpdateCommand toCommand(SchoolUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new SchoolUpdateCommand(req.name());
+  }
 
   /**
    * Projects a read-only {@link SchoolView} into a client-facing {@link SchoolResponse}.

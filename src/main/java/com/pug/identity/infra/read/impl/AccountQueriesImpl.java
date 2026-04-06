@@ -14,10 +14,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link AccountQueries} interface using JPA and Hibernate Search.
@@ -37,8 +35,7 @@ public class AccountQueriesImpl implements AccountQueries {
       """
                   select new com.pug.identity.infra.read.dtos.AccountView(
                     a.id,
-                    new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                    u.id,
                     a.email,
                     a.accountType,
                     a.createdAt,
@@ -110,15 +107,9 @@ public class AccountQueriesImpl implements AccountQueries {
             .setParameter("userIds", userIds)
             .getResultList();
 
-    Map<UUID, UserEntity> userEntityMap =
-        userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
-
-    List<AccountView> out = new ArrayList<>();
+    List<AccountView> out = new ArrayList<>(accountEntities.size());
     for (AccountEntity accountEntity : accountEntities) {
-      UserEntity userEntity = userEntityMap.get(accountEntity.getUserId());
-      if (userEntity != null) {
-        out.add(toView(accountEntity, userEntity));
-      }
+      out.add(toView(accountEntity));
     }
     return out;
   }

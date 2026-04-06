@@ -66,8 +66,8 @@ public final class StaffPresenter {
    * Projects a read-only {@link StaffView} into a client-facing {@link StaffResponse}.
    *
    * <p>This mapping delegates the formatting of the underlying account and user data to the
-   * Identity domain's {@link AccountPresenter}, and delegates the formatting of the organizational
-   * details to the {@link EntityPresenter}.
+   * Identity domain's {@link AccountPresenter}, while exposing only the identifiers of the linked
+   * partner entity and city so that additional details can be resolved on demand.
    *
    * @param v the internal read-model projection of the staff member
    * @param locale the locale extracted from the client's request headers
@@ -80,7 +80,6 @@ public final class StaffPresenter {
       return null;
     }
     return new StaffResponse(
-        AccountPresenter.toResponse(v.account(), locale, i18n),
-        EntityPresenter.toResponse(v.entity(), locale));
+        AccountPresenter.toResponse(v.account(), locale, i18n), v.entityId(), v.cityId());
   }
 }

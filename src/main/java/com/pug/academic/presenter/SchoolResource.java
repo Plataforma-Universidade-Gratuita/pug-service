@@ -116,7 +116,7 @@ public class SchoolResource {
   @POST
   @RolesAllowed("ADMIN")
   public Response create(@Valid SchoolCreateRequest req) {
-    SchoolCreateCommand cmd = new SchoolCreateCommand(req.name());
+    SchoolCreateCommand cmd = SchoolPresenter.toCommand(req);
     School created = writeService.save(cmd);
 
     SchoolView view = readService.getViewById(created.getId());
@@ -137,7 +137,7 @@ public class SchoolResource {
   @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
-    SchoolUpdateCommand cmd = new SchoolUpdateCommand(req.name());
+    SchoolUpdateCommand cmd = SchoolPresenter.toCommand(req);
     writeService.update(id, cmd);
 
     SchoolView view = readService.getViewById(id);

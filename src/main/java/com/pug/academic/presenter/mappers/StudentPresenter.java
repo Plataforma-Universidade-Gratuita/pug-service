@@ -1,8 +1,16 @@
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.identity.presenter.mappers.AccountPresenter;
+import com.pug.academic.presenter.dtos.StudentUpdateRequest;
+import com.pug.academic.service.dtos.StudentCreateCommand;
+import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
@@ -25,6 +33,69 @@ import java.util.Locale;
 public final class StudentPresenter {
   /** Private constructor to prevent instantiation. */
   private StudentPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer student creation command.
+   *
+   * <p>This helper is responsible for assembling the nested command structure required to create
+   * the underlying user, authentication account, and student enrollment in a single transaction. It
+   * expects the password to have been securely hashed beforehand.
+   *
+   * @param req the validated {@link StudentCreateRequest} payload containing identity and
+   *     enrollment details
+   * @param hashedPassword the securely hashed password string to assign to the new account
+   * @return the corresponding {@link StudentCreateCommand}, or {@code null} if the request is null
+   */
+  public static StudentCreateCommand toCommand(StudentCreateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+    AccountCreateCommand accountCmd =
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+
+    return new StudentCreateCommand(
+        accountCmd,
+        req.academicRegistration(),
+        req.campus(),
+        req.courseId(),
+        req.requiredHours(),
+        req.startDate(),
+        req.dueDate());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer student update command.
+   *
+   * <p>This helper is responsible for assembling the nested command structure required to update
+   * the underlying user and authentication account (if applicable), as well as the academic
+   * enrollment details. It expects the password (if provided) to have been securely hashed
+   * beforehand.
+   *
+   * @param req the validated {@link StudentUpdateRequest} payload containing the modified data
+   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
+   *     not being updated
+   * @return the corresponding {@link StudentUpdateCommand}, or {@code null} if the request is null
+   */
+  public static StudentUpdateCommand toCommand(StudentUpdateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+
+    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
+    AccountUpdateCommand accountCmd =
+        new AccountUpdateCommand(req.email(), hashedPassword, userCmd);
+
+    return new StudentUpdateCommand(
+        accountCmd,
+        req.academicRegistration(),
+        req.campus(),
+        req.courseId(),
+        req.requiredHours(),
+        req.startDate(),
+        req.dueDate());
+  }
 
   /**
    * Projects a read-only {@link StudentView} into a client-facing {@link StudentResponse}.
@@ -51,9 +122,11 @@ public final class StudentPresenter {
     String startDateFormatted = StringUtils.toStringFormatted(v.startDate(), locale);
     String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
+    BigDecimal requiredHours = v.requiredHours();
+    BigDecimal completedHours = BigDecimal.ZERO;
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (v.requiredHours() != null && !v.concluded()) {
-      missingHours = v.requiredHours().subtract(BigDecimal.ZERO);
+    if (requiredHours != null && Boolean.FALSE.equals(v.concluded())) {
+      missingHours = requiredHours.subtract(completedHours);
     }
 
     long remainingDays = 0;
@@ -68,12 +141,15 @@ public final class StudentPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new StudentResponse(
-        AccountPresenter.toResponse(v.account(), locale, i18n),
+        v.accountId(),
         v.academicRegistration(),
         campus,
-        CoursePresenter.toResponse(v.course(), locale),
-        v.requiredHours(),
-        BigDecimal.ZERO,
+        v.courseId(),
+        v.courseName(),
+        v.schoolId(),
+        v.schoolName(),
+        requiredHours,
+        completedHours,
         missingHours,
         v.startDate(),
         startDateFormatted,
@@ -101,17 +177,16 @@ public final class StudentPresenter {
 
     long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
 
-    String formattedString;
     if (remainingDays < 0) {
-      formattedString =
-          i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
-    } else if (remainingDays == 0) {
-      formattedString = i18n.translation("academic.student.days.today", locale);
-    } else if (remainingDays == 1) {
-      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
-    } else {
-      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
+      return i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
     }
-    return formattedString;
+    if (remainingDays == 0) {
+      return i18n.translation("academic.student.days.today", locale);
+    }
+    if (remainingDays == 1) {
+      return i18n.translation("academic.student.days.tomorrow", locale);
+    }
+
+    return i18n.translation("academic.student.days.remaining", locale, remainingDays);
   }
 }

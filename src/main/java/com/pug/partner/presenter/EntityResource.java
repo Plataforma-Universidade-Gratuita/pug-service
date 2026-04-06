@@ -87,7 +87,7 @@ public class EntityResource {
    */
   @GET
   @Path("/by-cnpj/{cnpj}")
-  @Authenticated
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -137,7 +137,7 @@ public class EntityResource {
    */
   @GET
   @Path("/cities")
-  @Authenticated
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response listCities() {
     var body =
         readService.listCityViews().stream()
@@ -204,7 +204,7 @@ public class EntityResource {
    */
   @DELETE
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

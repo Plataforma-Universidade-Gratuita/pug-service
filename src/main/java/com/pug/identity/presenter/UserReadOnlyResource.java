@@ -3,6 +3,7 @@ package com.pug.identity.presenter;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -10,6 +11,7 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -43,6 +45,8 @@ public class UserReadOnlyResource {
 
   @Inject UserReadService readService;
 
+  @Inject AuthService authService;
+
   @Context HttpHeaders headers;
 
   /**
@@ -71,6 +75,26 @@ public class UserReadOnlyResource {
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
     UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the identity details of the currently authenticated user.
+   *
+   * <p>The user identifier is resolved exclusively from the JWT {@code userId} claim via {@link
+   * AuthService}, ensuring that callers can only access their own user record, regardless of the
+   * request parameters. This endpoint is available to any authenticated role.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or does not contain the
+   *     required {@code userId} claim
+   */
+  @GET
+  @Path("me")
+  @Authenticated
+  public Response getMe() {
+    UUID userId = authService.getCurrentUserId();
+    UserResponse body = UserPresenter.toResponse(readService.getViewById(userId), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

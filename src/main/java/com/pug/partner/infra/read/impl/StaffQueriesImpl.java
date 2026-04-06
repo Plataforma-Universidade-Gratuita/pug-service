@@ -39,19 +39,15 @@ public class StaffQueriesImpl implements StaffQueries {
                   select new com.pug.partner.infra.read.dtos.StaffView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                      acc.userId,
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
                       acc.updatedAt,
                       acc.active
                     ),
-                    new com.pug.partner.infra.read.dtos.EntityView(
-                      e.id, e.cnpj, e.name, e.address,
-                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                      e.createdAt, e.updatedAt
-                    )
+                    e.id,
+                    c.id
                   )
                   from StaffEntity s
                     join AccountEntity acc on acc.id = s.accountId
@@ -118,14 +114,6 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultList();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link StaffAcc} tuple projection to map the relationships backwards across the
-   * Identity, Geo, and Partner domains.
-   */
   @Override
   public List<StaffView> searchByName(String key) {
     List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
@@ -138,13 +126,13 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
-                from StaffEntity s
-                  join AccountEntity acc on acc.id = s.accountId
-                  join EntityEntity e on e.id = s.entityId
-                  join CityEntity c on c.id = e.cityId
-                where acc.userId in :ids
-                """,
+                                  select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
+                                  from StaffEntity s
+                                    join AccountEntity acc on acc.id = s.accountId
+                                    join EntityEntity e on e.id = s.entityId
+                                    join CityEntity c on c.id = e.cityId
+                                  where acc.userId in :ids
+                                  """,
                 StaffAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
@@ -163,11 +151,8 @@ public class StaffQueriesImpl implements StaffQueries {
         continue;
       }
       for (StaffAcc row : pairs) {
-        if (row.staff() != null
-            && row.account() != null
-            && row.entity() != null
-            && row.city() != null) {
-          out.add(toView(row.account(), row.entity(), row.city(), u));
+        if (row.account() != null && row.entity() != null) {
+          out.add(toView(row.account(), row.entity()));
         }
       }
     }

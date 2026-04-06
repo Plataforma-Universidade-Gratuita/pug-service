@@ -2,7 +2,6 @@ package com.pug.identity.presenter.mappers;
 
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -25,8 +24,10 @@ public final class AccountPresenter {
   /**
    * Projects a read-only {@link AccountView} into a client-facing {@link AccountResponse}.
    *
-   * <p>This mapping cascades down to format the nested {@link UserResponse} and calculates
-   * localized strings for Enums and timestamps.
+   * <p>This mapping produces a flattened response: instead of nesting the full user payload, it
+   * exposes only the {@code userId}, allowing clients to retrieve detailed user information on
+   * demand via dedicated user endpoints. It also resolves the localized label for the account type
+   * and formats the audit timestamps according to the provided {@link Locale}.
    *
    * @param v the internal read-model projection of the account
    * @param locale the locale extracted from the client's request headers
@@ -39,12 +40,11 @@ public final class AccountPresenter {
       return null;
     }
 
-    UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
+        v.id(), v.userId(), v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
   }
 }

@@ -8,19 +8,21 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only view of an authentication Account.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It aggregates the account details with a nested projection of the associated user ({@link
- * UserView}) to provide a comprehensive, lightweight structure optimized for JSON serialization.
+ * client. It provides a lightweight projection of the account entity without nesting the associated
+ * user details. Instead, it exposes only the {@code userId}, allowing clients to fetch user
+ * information on demand via dedicated user endpoints.
  *
  * @param id the unique identifier (UUIDv7) of the account
- * @param user the read-only projection of the user linked to this account
+ * @param userId the unique identifier (UUIDv7) of the user linked to this account
  * @param email the email address registered for authentication
  * @param accountType the assigned role or classification of the account (e.g., ADMIN, STUDENT)
  * @param createdAt the exact timestamp when the account record was created
  * @param updatedAt the exact timestamp when the account record was last modified
+ * @param active flag indicating whether the account is currently active
  */
 public record AccountView(
     UUID id,
-    UserView user,
+    UUID userId,
     String email,
     AccountType accountType,
     OffsetDateTime createdAt,

@@ -1,15 +1,10 @@
 package com.pug.partner.infra;
 
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.persistence.StaffEntity;
-import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.infra.read.dtos.StaffView;
 
 /**
@@ -51,45 +46,30 @@ public final class StaffMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link StaffView} DTO.
+   * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
+   * StaffView} DTO.
    *
    * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the staff member's profile, credentials, organization, and location in a single,
-   * flattened response ready for JSON serialization.
+   * encapsulate the staff member's account and organizational linkage in a single response,
+   * exposing only the identifiers of the partner entity and city so that additional details can be
+   * resolved on demand.
    *
    * @param accountEntity the JPA entity representing the linked authentication account
    * @param entityEntity the JPA entity representing the partner organization
-   * @param cityEntity the JPA entity representing the city where the partner operates
-   * @param userEntity the JPA entity representing the personal identity of the staff member
    * @return a fully populated {@link StaffView} DTO
    */
-  public static StaffView toView(
-      AccountEntity accountEntity,
-      EntityEntity entityEntity,
-      CityEntity cityEntity,
-      UserEntity userEntity) {
-    return new StaffView(
+  public static StaffView toView(AccountEntity accountEntity, EntityEntity entityEntity) {
+
+    var accountView =
         new AccountView(
             accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt(),
-                userEntity.getUpdatedAt()),
+            accountEntity.getUserId(),
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt(),
-            accountEntity.getActive()),
-        new EntityView(
-            entityEntity.getId(),
-            entityEntity.getCnpj(),
-            entityEntity.getName(),
-            entityEntity.getAddress(),
-            new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode()),
-            entityEntity.getCreatedAt(),
-            entityEntity.getUpdatedAt()));
+            accountEntity.getActive());
+
+    return new StaffView(accountView, entityEntity.getId(), entityEntity.getCityId());
   }
 }

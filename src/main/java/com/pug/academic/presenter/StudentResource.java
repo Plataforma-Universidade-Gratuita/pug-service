@@ -10,19 +10,14 @@ import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.academic.service.utils.ExceptionHelper;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
-import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -59,9 +54,9 @@ import java.util.stream.Collectors;
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed("ADMIN")
 public class StudentResource {
 
+  @Inject AuthService authService;
   @Inject StudentService writeService;
   @Inject StudentReadService readService;
   @Inject PasswordService passwordService;
@@ -80,6 +75,7 @@ public class StudentResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StudentView view = readService.getViewByAccountId(id);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -96,6 +92,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-cpf/{cpf}")
+  @RolesAllowed("ADMIN")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
     StudentView view = readService.getViewByCpf(cpf);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -112,6 +109,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-email/{email}")
+  @RolesAllowed("ADMIN")
   public Response getByEmail(@PathParam("email") @NotNull String email) {
     StudentView view = readService.getViewByEmail(email);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -128,6 +126,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-registration/{registration}")
+  @RolesAllowed("ADMIN")
   public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
     StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -137,34 +136,22 @@ public class StudentResource {
   /**
    * Retrieves the academic enrollment details of the currently authenticated student.
    *
-   * <p>Extracts the account ID directly from the JWT claims, ensuring students can only request
-   * their own academic data.
+   * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
+   * com.pug.identity.service.AuthService}, ensuring that callers can only access their own academic
+   * record. This endpoint is restricted to users with the STUDENT role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StudentResponse}
-   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
-   *     accountId} claim
+   *     com.pug.academic.presenter.dtos.StudentResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
    */
   @GET
   @Path("/me")
-  @RolesAllowed("STUDENT")
-  public Response getMe(@Context SecurityIdentity identity) {
-    if (identity.isAnonymous()) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    org.eclipse.microprofile.jwt.JsonWebToken jwt =
-        (org.eclipse.microprofile.jwt.JsonWebToken) identity.getPrincipal();
-
-    String accountIdClaim = jwt.getClaim("accountId");
-    if (accountIdClaim == null) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    UUID accountId = UUID.fromString(accountIdClaim);
+  @Authenticated
+  public Response getMe() {
+    UUID accountId = authService.getCurrentAccountId();
     StudentView view = readService.getViewByAccountId(accountId);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -181,6 +168,7 @@ public class StudentResource {
    *     StudentResponse}
    */
   @GET
+  @Authenticated
   public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
 
     List<StudentView> views;
@@ -215,21 +203,10 @@ public class StudentResource {
    *     email already exists
    */
   @POST
+  @RolesAllowed("ADMIN")
   public Response create(@Valid StudentCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
-
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
-    AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
-    StudentCreateCommand studentCmd =
-        new StudentCreateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+    StudentCreateCommand studentCmd = StudentPresenter.toCommand(req, hashedPassword);
 
     Student created = writeService.save(studentCmd);
     StudentView view = readService.getViewByAccountId(created.getAccountId());
@@ -255,24 +232,14 @@ public class StudentResource {
    */
   @POST
   @Path("/bulk")
+  @RolesAllowed("ADMIN")
   public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
     List<StudentCreateCommand> cmds =
         reqs.stream()
             .map(
                 req -> {
                   String hashedPassword = passwordService.hash(req.password());
-                  UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
-                  AccountCreateCommand accountCmd =
-                      new AccountCreateCommand(
-                          req.email(), AccountType.STUDENT, hashedPassword, userCmd);
-                  return new StudentCreateCommand(
-                      accountCmd,
-                      req.academicRegistration(),
-                      req.campus(),
-                      req.courseId(),
-                      req.requiredHours(),
-                      req.startDate(),
-                      req.dueDate());
+                  return StudentPresenter.toCommand(req, hashedPassword);
                 })
             .toList();
 
@@ -296,24 +263,13 @@ public class StudentResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
-    // Only hash the password if a new one was provided
     String passwordHash = null;
     if (StringUtils.isNotEmpty(req.password())) {
       passwordHash = passwordService.hash(req.password());
     }
-
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
-    AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
-    StudentUpdateCommand studentCmd =
-        new StudentUpdateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+    StudentUpdateCommand studentCmd = StudentPresenter.toCommand(req, passwordHash);
 
     writeService.update(id, studentCmd);
     StudentView view = readService.getViewByAccountId(id);
@@ -330,6 +286,7 @@ public class StudentResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

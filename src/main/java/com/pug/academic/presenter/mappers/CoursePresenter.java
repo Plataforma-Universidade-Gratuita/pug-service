@@ -1,7 +1,11 @@
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.CourseView;
+import com.pug.academic.presenter.dtos.CourseCreateRequest;
 import com.pug.academic.presenter.dtos.CourseResponse;
+import com.pug.academic.presenter.dtos.CourseUpdateRequest;
+import com.pug.academic.service.dtos.CourseCreateCommand;
+import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
@@ -17,6 +21,41 @@ import java.util.Locale;
 public final class CoursePresenter {
   /** Private constructor to prevent instantiation. */
   private CoursePresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer course creation command.
+   *
+   * <p>This helper is responsible only for the course portion of the payload. It extracts the raw
+   * name and school identifier and encapsulates them into a {@link CourseCreateCommand}, leaving
+   * domain validation and orchestration to the application service layer.
+   *
+   * @param req the validated {@link CourseCreateRequest} payload
+   * @return the corresponding {@link CourseCreateCommand}, or {@code null} if the request is null
+   */
+  public static CourseCreateCommand toCommand(CourseCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new CourseCreateCommand(req.name(), req.schoolId());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer course update command.
+   *
+   * <p>This helper is responsible only for the course portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} fields to the
+   * {@link CourseUpdateCommand}, allowing the service layer to interpret omitted values as "no
+   * change".
+   *
+   * @param req the validated {@link CourseUpdateRequest} payload containing the modified data
+   * @return the corresponding {@link CourseUpdateCommand}, or {@code null} if the request is null
+   */
+  public static CourseUpdateCommand toCommand(CourseUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new CourseUpdateCommand(req.name(), req.schoolId());
+  }
 
   /**
    * Projects a read-only {@link CourseView} into a client-facing {@link CourseResponse}.

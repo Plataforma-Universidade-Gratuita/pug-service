@@ -3,8 +3,12 @@ package com.pug.project.presenter.mappers;
 import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
+import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
+import com.pug.project.presenter.dtos.ProjectUpdateRequest;
 import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
+import com.pug.project.service.dtos.ProjectCreateCommand;
+import com.pug.project.service.dtos.ProjectUpdateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -17,6 +21,49 @@ import java.util.Locale;
  */
 public final class ProjectPresenter {
   private ProjectPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer project creation command.
+   *
+   * <p>This helper is responsible only for the project portion of the payload. It extracts the raw
+   * data from the {@link ProjectCreateRequest} and encapsulates it into a {@link
+   * ProjectCreateCommand}, leaving domain validation and orchestration to the application service
+   * layer.
+   *
+   * @param req the validated {@link ProjectCreateRequest} payload
+   * @return the corresponding {@link ProjectCreateCommand}, or {@code null} if the request is null
+   */
+  public static ProjectCreateCommand toCommand(ProjectCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new ProjectCreateCommand(
+        req.name(),
+        req.entityId(),
+        req.description(),
+        req.maxParticipants(),
+        req.offeredHours(),
+        req.schoolId());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer project update command.
+   *
+   * <p>This helper is responsible only for the project portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} fields to the
+   * {@link ProjectUpdateCommand}, allowing the service layer to interpret omitted values as "no
+   * change".
+   *
+   * @param req the validated {@link ProjectUpdateRequest} payload
+   * @return the corresponding {@link ProjectUpdateCommand}, or {@code null} if the request is null
+   */
+  public static ProjectUpdateCommand toCommand(ProjectUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new ProjectUpdateCommand(
+        req.name(), req.description(), req.maxParticipants(), req.offeredHours(), req.schoolId());
+  }
 
   /**
    * Projects a read-only {@link ProjectView} into a client-facing {@link ProjectResponse}.

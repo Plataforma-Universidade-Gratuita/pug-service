@@ -3,10 +3,8 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.AdminEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.infra.read.dtos.UserView;
 
 /**
  * Stateless utility class responsible for mapping between Administrator boundary layers.
@@ -76,34 +74,31 @@ public final class AdminMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities (Admin, Account, User) into a comprehensive {@link
-   * AdminView} DTO.
+   * Projects a pair of JPA entities ({@link AdminEntity} and {@link AccountEntity}) into a
+   * consolidated {@link AdminView} DTO.
    *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the administrator's profile, credentials, and identity in a single view.
+   * <p>The resulting view nests a flattened {@link AccountView}, which exposes the linked user
+   * through its {@code userId} field, along with the administrator-specific metadata ({@code
+   * grantedAt} and {@code campus}).
    *
    * @param adminEntity the JPA persistence entity representing the admin privileges
-   * @param accountEntity the JPA persistence entity representing the linked account
-   * @param userEntity the JPA persistence entity representing the linked user
-   * @return a fully populated {@link AdminView} DTO
+   * @param accountEntity the JPA persistence entity representing the linked authentication account
+   * @return a fully populated {@link AdminView} DTO, or {@code null} if either input entity is null
    */
-  public static AdminView toView(
-      AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
-    return new AdminView(
+  public static AdminView toView(AdminEntity adminEntity, AccountEntity accountEntity) {
+    if (adminEntity == null || accountEntity == null) {
+      return null;
+    }
+    AccountView accountView =
         new AccountView(
             accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt(),
-                userEntity.getUpdatedAt()),
+            accountEntity.getUserId(),
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt(),
-            accountEntity.getActive()),
-        adminEntity.getGrantedAt(),
-        adminEntity.getCampus());
+            accountEntity.getActive());
+
+    return new AdminView(accountView, adminEntity.getGrantedAt(), adminEntity.getCampus());
   }
 }

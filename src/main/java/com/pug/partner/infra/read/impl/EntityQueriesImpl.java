@@ -1,6 +1,5 @@
 package com.pug.partner.infra.read.impl;
 
-import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
@@ -12,10 +11,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link EntityQueries} interface using JPA and Hibernate Search.
@@ -33,12 +30,15 @@ public class EntityQueriesImpl implements EntityQueries {
   private static final String SELECT_BASE =
       """
                   select new com.pug.partner.infra.read.dtos.EntityView(
-                    e.id, e.cnpj, e.name, e.address,
-                    new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                    e.createdAt, e.updatedAt
+                    e.id,
+                    e.cnpj,
+                    e.name,
+                    e.address,
+                    e.cityId,
+                    e.createdAt,
+                    e.updatedAt
                   )
                   from EntityEntity e
-                    join CityEntity c on c.id = e.cityId
                   """;
 
   private static final String ORDER_BY_NAME_ASC = " order by e.name asc";
@@ -98,9 +98,10 @@ public class EntityQueriesImpl implements EntityQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the entity's name, this method first resolves the
-   * matching entities via the search index, extracts their required City UUIDs, fetches the
-   * corresponding cities, and finally assembles the complete {@link EntityView}.
+   * <p>To achieve a full-text search against the entity's name, this implementation first resolves
+   * the matching entities via the search index and then projects them directly into flattened
+   * {@link EntityView} DTOs. City details are not nested here; only the {@code cityId} is exposed
+   * so that callers can resolve additional geographic information on demand.
    */
   @Override
   public List<EntityView> searchByName(String key) {
@@ -109,37 +110,17 @@ public class EntityQueriesImpl implements EntityQueries {
       return List.of();
     }
 
-    List<UUID> cityIds = hits.stream().map(EntityEntity::getCityId).distinct().toList();
-
-    List<CityView> cities =
-        em.createQuery(
-                """
-                                    select new com.pug.geo.infra.read.dtos.CityView(
-                                    c.id, c.name, c.ibgeCode)
-                                    from CityEntity c
-                                    where c.id in :ids
-                                    """,
-                CityView.class)
-            .setParameter("ids", cityIds)
-            .getResultList();
-
-    Map<UUID, CityView> cityMap =
-        cities.stream().collect(Collectors.toMap(CityView::id, city -> city));
-
     List<EntityView> out = new ArrayList<>(hits.size());
     for (EntityEntity e : hits) {
-      CityView city = cityMap.get(e.getCityId());
-      if (city != null) {
-        out.add(
-            new EntityView(
-                e.getId(),
-                e.getCnpj(),
-                e.getName(),
-                e.getAddress(),
-                city,
-                e.getCreatedAt(),
-                e.getUpdatedAt()));
-      }
+      out.add(
+          new EntityView(
+              e.getId(),
+              e.getCnpj(),
+              e.getName(),
+              e.getAddress(),
+              e.getCityId(),
+              e.getCreatedAt(),
+              e.getUpdatedAt()));
     }
     return out;
   }

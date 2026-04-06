@@ -3,9 +3,7 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -92,32 +90,26 @@ public final class AccountMapper {
   }
 
   /**
-   * Projects an {@link AccountEntity} and its parent {@link UserEntity} into a consolidated {@link
-   * AccountView} DTO.
+   * Projects a JPA {@link AccountEntity} into a lightweight, read-only {@link AccountView} DTO.
    *
-   * <p>Used heavily by the query/read layer to provide a rich, nested structure ready for JSON
-   * serialization without requiring complex domain logic or repeated database hits.
+   * <p>This mapping flattens the persistence entity into a CQRS read model without nesting the
+   * associated user details. Instead, it exposes only the {@code userId}, allowing callers or
+   * clients to fetch user information on demand via dedicated user endpoints.
    *
-   * @param accountEntity the JPA persistence entity representing the account
-   * @param userEntity the JPA persistence entity representing the linked user
-   * @return a populated {@link AccountView} DTO, or {@code null} if either input entity is null
+   * @param e the JPA persistence entity to project
+   * @return a flattened {@link AccountView} DTO, or {@code null} if the input entity is null
    */
-  public static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
-    if (accountEntity == null || userEntity == null) {
+  public static AccountView toView(AccountEntity e) {
+    if (e == null) {
       return null;
     }
     return new AccountView(
-        accountEntity.getId(),
-        new UserView(
-            userEntity.getId(),
-            userEntity.getCpf(),
-            userEntity.getName(),
-            userEntity.getCreatedAt(),
-            userEntity.getUpdatedAt()),
-        accountEntity.getEmail(),
-        accountEntity.getAccountType(),
-        accountEntity.getCreatedAt(),
-        accountEntity.getUpdatedAt(),
-        accountEntity.getActive());
+        e.getId(),
+        e.getUserId(),
+        e.getEmail(),
+        e.getAccountType(),
+        e.getCreatedAt(),
+        e.getUpdatedAt(),
+        e.getActive());
   }
 }

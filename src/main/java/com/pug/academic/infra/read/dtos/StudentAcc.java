@@ -12,7 +12,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>This record acts as an intermediate data structure during complex cross-domain queries. By
  * fetching the {@link StudentEntity} and all its required associations (Account, Course, School) in
  * a single query projection, it prevents N+1 select performance issues before the data is
- * ultimately mapped into the final, client-facing {@link StudentView}.
+ * ultimately mapped into the final, flattened, client-facing {@link
+ * com.pug.academic.infra.read.dtos.StudentView}.
  *
  * @param s the retrieved student persistence entity
  * @param acc the retrieved authentication account persistence entity linked to the student
