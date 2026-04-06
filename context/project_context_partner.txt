@@ -1160,23 +1160,22 @@ FILE: infra/read/dtos/EntityView.java
 ================================================================================
 package com.pug.partner.infra.read.dtos;
 
-import com.pug.geo.infra.read.dtos.CityView;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) representing a read-only view of a Partner Entity.
+ * Data Transfer Object (DTO) representing a read-only, flattened view of a Partner Entity.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It aggregates the partner organization's details with a nested projection of its
- * geographic location ({@link CityView}) to provide a comprehensive, lightweight structure
- * optimized for JSON serialization.
+ * client. It consolidates the partner organization's details and its geographic reference into a
+ * single structure, exposing only the city's identifier so that additional location details can be
+ * fetched on demand via dedicated geo endpoints.
  *
  * @param id the unique identifier (UUIDv7) of the partner entity
  * @param cnpj the exact 14-digit numeric CNPJ string
  * @param name the registered name or corporate reason of the entity
- * @param address the physical street address
- * @param city the read-only projection of the city where the entity is located
+ * @param address the physical street address of the entity
+ * @param cityId the unique identifier (UUIDv7) of the city where the entity is located
  * @param createdAt the exact timestamp when the entity record was created
  * @param updatedAt the exact timestamp when the entity record was last modified
  */
@@ -1185,7 +1184,7 @@ public record EntityView(
     String cnpj,
     String name,
     String address,
-    CityView city,
+    UUID cityId,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
 
@@ -1225,19 +1224,22 @@ FILE: infra/read/dtos/StaffView.java
 package com.pug.partner.infra.read.dtos;
 
 import com.pug.identity.infra.read.dtos.AccountView;
+import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) representing a read-only, consolidated view of a Staff member.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It flattens the complex domain relationships by nesting the underlying authentication
- * identity ({@link AccountView}) alongside the details of the partner organization they represent
- * ({@link EntityView}).
+ * client. It nests the authentication account projection ({@link AccountView}) and exposes only the
+ * identifiers of the linked partner organization and city, allowing the client to resolve
+ * additional details on demand via dedicated endpoints.
  *
- * @param account the read-only projection of the linked authentication account and user
- * @param entity the read-only projection of the linked partner organization
+ * @param account the read-only projection of the linked authentication account
+ * @param entityId the unique identifier (UUIDv7) of the partner organization the staff belongs to
+ * @param cityId the unique identifier (UUIDv7) of the city where the partner organization is
+ *     located
  */
-public record StaffView(AccountView account, EntityView entity) {}
+public record StaffView(AccountView account, UUID entityId, UUID cityId) {}
 
 
 ================================================================================
@@ -1324,7 +1326,6 @@ FILE: infra/read/impl/EntityQueriesImpl.java
 ================================================================================
 package com.pug.partner.infra.read.impl;
 
-import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.read.EntityQueries;
 import com.pug.partner.infra.read.dtos.EntityView;
@@ -1336,10 +1337,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link EntityQueries} interface using JPA and Hibernate Search.
@@ -1357,12 +1356,15 @@ public class EntityQueriesImpl implements EntityQueries {
   private static final String SELECT_BASE =
       """
                   select new com.pug.partner.infra.read.dtos.EntityView(
-                    e.id, e.cnpj, e.name, e.address,
-                    new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                    e.createdAt, e.updatedAt
+                    e.id,
+                    e.cnpj,
+                    e.name,
+                    e.address,
+                    e.cityId,
+                    e.createdAt,
+                    e.updatedAt
                   )
                   from EntityEntity e
-                    join CityEntity c on c.id = e.cityId
                   """;
 
   private static final String ORDER_BY_NAME_ASC = " order by e.name asc";
@@ -1422,9 +1424,10 @@ public class EntityQueriesImpl implements EntityQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the entity's name, this method first resolves the
-   * matching entities via the search index, extracts their required City UUIDs, fetches the
-   * corresponding cities, and finally assembles the complete {@link EntityView}.
+   * <p>To achieve a full-text search against the entity's name, this implementation first resolves
+   * the matching entities via the search index and then projects them directly into flattened
+   * {@link EntityView} DTOs. City details are not nested here; only the {@code cityId} is exposed
+   * so that callers can resolve additional geographic information on demand.
    */
   @Override
   public List<EntityView> searchByName(String key) {
@@ -1433,37 +1436,17 @@ public class EntityQueriesImpl implements EntityQueries {
       return List.of();
     }
 
-    List<UUID> cityIds = hits.stream().map(EntityEntity::getCityId).distinct().toList();
-
-    List<CityView> cities =
-        em.createQuery(
-                """
-                                    select new com.pug.geo.infra.read.dtos.CityView(
-                                    c.id, c.name, c.ibgeCode)
-                                    from CityEntity c
-                                    where c.id in :ids
-                                    """,
-                CityView.class)
-            .setParameter("ids", cityIds)
-            .getResultList();
-
-    Map<UUID, CityView> cityMap =
-        cities.stream().collect(Collectors.toMap(CityView::id, city -> city));
-
     List<EntityView> out = new ArrayList<>(hits.size());
     for (EntityEntity e : hits) {
-      CityView city = cityMap.get(e.getCityId());
-      if (city != null) {
-        out.add(
-            new EntityView(
-                e.getId(),
-                e.getCnpj(),
-                e.getName(),
-                e.getAddress(),
-                city,
-                e.getCreatedAt(),
-                e.getUpdatedAt()));
-      }
+      out.add(
+          new EntityView(
+              e.getId(),
+              e.getCnpj(),
+              e.getName(),
+              e.getAddress(),
+              e.getCityId(),
+              e.getCreatedAt(),
+              e.getUpdatedAt()));
     }
     return out;
   }
@@ -1514,19 +1497,15 @@ public class StaffQueriesImpl implements StaffQueries {
                   select new com.pug.partner.infra.read.dtos.StaffView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                      acc.userId,
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
                       acc.updatedAt,
                       acc.active
                     ),
-                    new com.pug.partner.infra.read.dtos.EntityView(
-                      e.id, e.cnpj, e.name, e.address,
-                      new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                      e.createdAt, e.updatedAt
-                    )
+                    e.id,
+                    c.id
                   )
                   from StaffEntity s
                     join AccountEntity acc on acc.id = s.accountId
@@ -1593,14 +1572,6 @@ public class StaffQueriesImpl implements StaffQueries {
     return q.getResultList();
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link StaffAcc} tuple projection to map the relationships backwards across the
-   * Identity, Geo, and Partner domains.
-   */
   @Override
   public List<StaffView> searchByName(String key) {
     List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
@@ -1613,13 +1584,13 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
-                from StaffEntity s
-                  join AccountEntity acc on acc.id = s.accountId
-                  join EntityEntity e on e.id = s.entityId
-                  join CityEntity c on c.id = e.cityId
-                where acc.userId in :ids
-                """,
+                                  select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
+                                  from StaffEntity s
+                                    join AccountEntity acc on acc.id = s.accountId
+                                    join EntityEntity e on e.id = s.entityId
+                                    join CityEntity c on c.id = e.cityId
+                                  where acc.userId in :ids
+                                  """,
                 StaffAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
@@ -1638,11 +1609,8 @@ public class StaffQueriesImpl implements StaffQueries {
         continue;
       }
       for (StaffAcc row : pairs) {
-        if (row.staff() != null
-            && row.account() != null
-            && row.entity() != null
-            && row.city() != null) {
-          out.add(toView(row.account(), row.entity(), row.city(), u));
+        if (row.account() != null && row.entity() != null) {
+          out.add(toView(row.account(), row.entity()));
         }
       }
     }
@@ -1731,16 +1699,11 @@ FILE: infra/StaffMapper.java
 ================================================================================
 package com.pug.partner.infra;
 
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.dtos.CityView;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.persistence.EntityEntity;
 import com.pug.partner.infra.persistence.StaffEntity;
-import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.infra.read.dtos.StaffView;
 
 /**
@@ -1782,46 +1745,31 @@ public final class StaffMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link StaffView} DTO.
+   * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
+   * StaffView} DTO.
    *
    * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the staff member's profile, credentials, organization, and location in a single,
-   * flattened response ready for JSON serialization.
+   * encapsulate the staff member's account and organizational linkage in a single response,
+   * exposing only the identifiers of the partner entity and city so that additional details can be
+   * resolved on demand.
    *
    * @param accountEntity the JPA entity representing the linked authentication account
    * @param entityEntity the JPA entity representing the partner organization
-   * @param cityEntity the JPA entity representing the city where the partner operates
-   * @param userEntity the JPA entity representing the personal identity of the staff member
    * @return a fully populated {@link StaffView} DTO
    */
-  public static StaffView toView(
-      AccountEntity accountEntity,
-      EntityEntity entityEntity,
-      CityEntity cityEntity,
-      UserEntity userEntity) {
-    return new StaffView(
+  public static StaffView toView(AccountEntity accountEntity, EntityEntity entityEntity) {
+
+    var accountView =
         new AccountView(
             accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt(),
-                userEntity.getUpdatedAt()),
+            accountEntity.getUserId(),
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt(),
-            accountEntity.getActive()),
-        new EntityView(
-            entityEntity.getId(),
-            entityEntity.getCnpj(),
-            entityEntity.getName(),
-            entityEntity.getAddress(),
-            new CityView(cityEntity.getId(), cityEntity.getName(), cityEntity.getIbgeCode()),
-            entityEntity.getCreatedAt(),
-            entityEntity.getUpdatedAt()));
+            accountEntity.getActive());
+
+    return new StaffView(accountView, entityEntity.getId(), entityEntity.getCityId());
   }
 }
 
@@ -1861,16 +1809,16 @@ FILE: presenter/dtos/EntityResponse.java
 ================================================================================
 package com.pug.partner.presenter.dtos;
 
-import com.pug.geo.presenter.dtos.CityResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) used as the standardized API JSON response for Partner Entities.
  *
- * <p>This record consolidates the backend entity data along with its resolved geographical location
- * (City) into a single, flattened response optimized for the presentation layer. It includes
- * pre-formatted strings for direct UI rendering.
+ * <p>This record consolidates the backend entity data into a single, flattened response optimized
+ * for the presentation layer. Instead of nesting the full city details, it exposes only the {@code
+ * cityId} so that additional geographic information can be fetched on demand via dedicated geo
+ * endpoints.
  *
  * @param id the unique identifier (UUIDv7) of the partner entity
  * @param cnpj the raw 14-digit numeric CNPJ string
@@ -1878,7 +1826,7 @@ import java.util.UUID;
  *     "00.000.000/0000-00")
  * @param name the registered name or corporate reason of the partner entity
  * @param address the physical street address of the entity
- * @param city the nested, client-facing projection of the city where the entity is located
+ * @param cityId the unique identifier (UUIDv7) of the city where the entity is located
  * @param auditInfo the nested audit information containing creation and update timestamps
  */
 public record EntityResponse(
@@ -1887,7 +1835,7 @@ public record EntityResponse(
     String cnpjFormatted,
     String name,
     String address,
-    CityResponse city,
+    UUID cityId,
     AuditInfoResponse auditInfo) {}
 
 
@@ -1956,20 +1904,23 @@ FILE: presenter/dtos/StaffResponse.java
 package com.pug.partner.presenter.dtos;
 
 import com.pug.identity.presenter.dtos.AccountResponse;
+import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) used as the standardized API JSON response for Staff members.
  *
- * <p>This record consolidates the deeply nested backend structure across the Identity, Partner, and
- * Geo domains into a single, comprehensive response representing a user's organizational
- * privileges.
+ * <p>This record consolidates the staff member's authentication account with the identifiers of the
+ * partner organization and its city. Instead of nesting the full partner or city structures, it
+ * exposes {@code entityId} and {@code cityId} so that additional details can be fetched on demand
+ * via dedicated endpoints.
  *
  * @param account the consolidated, client-facing projection of the authentication account and user
  *     profile
- * @param entity the consolidated, client-facing projection of the partner organization and its
- *     location
+ * @param entityId the unique identifier (UUIDv7) of the partner organization the staff belongs to
+ * @param cityId the unique identifier (UUIDv7) of the city where the partner organization is
+ *     located
  */
-public record StaffResponse(AccountResponse account, EntityResponse entity) {}
+public record StaffResponse(AccountResponse account, UUID entityId, UUID cityId) {}
 
 
 ================================================================================
@@ -2094,7 +2045,7 @@ public class EntityResource {
    */
   @GET
   @Path("/by-cnpj/{cnpj}")
-  @Authenticated
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -2144,7 +2095,7 @@ public class EntityResource {
    */
   @GET
   @Path("/cities")
-  @Authenticated
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response listCities() {
     var body =
         readService.listCityViews().stream()
@@ -2211,7 +2162,7 @@ public class EntityResource {
    */
   @DELETE
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -2229,8 +2180,6 @@ FILE: presenter/mappers/EntityPresenter.java
 ================================================================================
 package com.pug.partner.presenter.mappers;
 
-import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.geo.presenter.mappers.CityPresenter;
 import com.pug.partner.infra.read.dtos.EntityView;
 import com.pug.partner.presenter.dtos.EntityCreateRequest;
 import com.pug.partner.presenter.dtos.EntityResponse;
@@ -2308,8 +2257,9 @@ public final class EntityPresenter {
   /**
    * Projects a read-only {@link EntityView} into a client-facing {@link EntityResponse}.
    *
-   * <p>This mapping cascades down to format the nested {@link CityResponse} and resolves localized
-   * formatting for audit timestamps and corporate identification numbers.
+   * <p>This mapping resolves localized formatting for audit timestamps and corporate identification
+   * numbers, while exposing only the {@code cityId} so that additional geographic details can be
+   * resolved on demand by the client.
    *
    * @param v the internal read-model projection of the partner entity
    * @param locale the locale extracted from the client's request headers
@@ -2322,12 +2272,11 @@ public final class EntityPresenter {
     }
 
     String formattedCnpj = toFormattedString(v.cnpj());
-    CityResponse cityResponse = CityPresenter.toResponse(v.city());
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new EntityResponse(
-        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), cityResponse, auditInfo);
+        v.id(), v.cnpj(), formattedCnpj, v.name(), v.address(), v.cityId(), auditInfo);
   }
 }
 
@@ -2403,8 +2352,8 @@ public final class StaffPresenter {
    * Projects a read-only {@link StaffView} into a client-facing {@link StaffResponse}.
    *
    * <p>This mapping delegates the formatting of the underlying account and user data to the
-   * Identity domain's {@link AccountPresenter}, and delegates the formatting of the organizational
-   * details to the {@link EntityPresenter}.
+   * Identity domain's {@link AccountPresenter}, while exposing only the identifiers of the linked
+   * partner entity and city so that additional details can be resolved on demand.
    *
    * @param v the internal read-model projection of the staff member
    * @param locale the locale extracted from the client's request headers
@@ -2417,8 +2366,7 @@ public final class StaffPresenter {
       return null;
     }
     return new StaffResponse(
-        AccountPresenter.toResponse(v.account(), locale, i18n),
-        EntityPresenter.toResponse(v.entity(), locale));
+        AccountPresenter.toResponse(v.account(), locale, i18n), v.entityId(), v.cityId());
   }
 }
 
@@ -2428,6 +2376,7 @@ FILE: presenter/StaffResource.java
 ================================================================================
 package com.pug.partner.presenter;
 
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
 import com.pug.partner.domain.Staff;
 import com.pug.partner.infra.read.dtos.StaffView;
@@ -2437,9 +2386,7 @@ import com.pug.partner.presenter.dtos.StaffUpdateRequest;
 import com.pug.partner.presenter.mappers.StaffPresenter;
 import com.pug.partner.service.StaffReadService;
 import com.pug.partner.service.StaffService;
-import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
@@ -2447,7 +2394,6 @@ import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -2473,7 +2419,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * REST API Resource controller for managing Partner Staff privileges.
@@ -2486,12 +2431,12 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @Path("/partners/staff")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed({"ADMIN", "STAFF"})
 public class StaffResource {
 
   @Inject StaffService writeService;
   @Inject StaffReadService readService;
   @Inject PasswordService passwordService;
+  @Inject AuthService authService;
   @Inject I18n i18n;
 
   @Context UriInfo uri;
@@ -2500,6 +2445,9 @@ public class StaffResource {
   /**
    * Retrieves a specific staff member by their linked account ID.
    *
+   * <p>Available to any authenticated user so that students can see which staff members they will
+   * work with.
+   *
    * @param id the unique identifier (UUIDv7) of the staff member's account
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StaffResponse}
@@ -2507,6 +2455,7 @@ public class StaffResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StaffView v = readService.getViewByAccountId(id);
     StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
@@ -2516,6 +2465,8 @@ public class StaffResource {
   /**
    * Retrieves a specific staff member by their registered email address.
    *
+   * <p>Available to any authenticated user so that students can look up staff contacts by email.
+   *
    * @param emailRaw the exact email string of the staff member
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StaffResponse}
@@ -2524,6 +2475,7 @@ public class StaffResource {
    */
   @GET
   @Path("/by-email/{email}")
+  @Authenticated
   public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     StaffView v = readService.getViewByEmail(emailRaw);
     StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
@@ -2533,34 +2485,22 @@ public class StaffResource {
   /**
    * Retrieves the staff profile details of the currently authenticated user.
    *
-   * <p>Extracts the account ID directly from the JWT claims, ensuring staff members can only
-   * request their own data.
+   * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
+   * com.pug.identity.service.AuthService}, ensuring that staff members can only request their own
+   * staff profile. Restricted to users with the STAFF role.
    *
-   * @param identity the injected {@link SecurityIdentity} containing the active JWT
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StaffResponse}
-   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
-   *     accountId} claim
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
    */
   @GET
   @Path("/me")
   @Authenticated
-  public Response getMe(@Context SecurityIdentity identity) {
-    if (identity.isAnonymous()) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    JsonWebToken jwt = (JsonWebToken) identity.getPrincipal();
-    String accountIdClaim = jwt.getClaim("accountId");
-
-    if (accountIdClaim == null) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    UUID accountId = UUID.fromString(accountIdClaim);
+  public Response getMe() {
+    UUID accountId = authService.getCurrentAccountId();
     StaffView v = readService.getViewByAccountId(accountId);
     StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
-
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -2568,13 +2508,15 @@ public class StaffResource {
    * Retrieves a collection of staff members.
    *
    * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * personal names of the staff. If omitted, it returns an unfiltered list of all staff.
+   * personal names of the staff. If omitted, it returns an unfiltered list of all staff. Available
+   * to any authenticated user so that students can see the staff members they will interact with.
    *
    * @param query the optional search query string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     StaffResponse}
    */
   @GET
+  @Authenticated
   public Response list(@QueryParam("q") String query) {
     List<StaffView> views =
         StringUtils.isNotEmpty(query) ? readService.search(query) : readService.listViews();
@@ -2590,6 +2532,9 @@ public class StaffResource {
   /**
    * Retrieves a collection of staff members filtered by the user's exact CPF.
    *
+   * <p>Available to any authenticated user. Useful for administrative use cases and internal tools;
+   * not a common path for students, but safe to expose read-only.
+   *
    * @param cpfRaw the raw 11-digit numeric CPF string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     StaffResponse}
@@ -2597,6 +2542,7 @@ public class StaffResource {
    */
   @GET
   @Path("/by-cpf/{cpf}")
+  @Authenticated
   public Response listByCpf(@PathParam("cpf") String cpfRaw) {
     List<StaffResponse> list =
         readService.listViewsByCpf(cpfRaw).stream()
@@ -2608,12 +2554,16 @@ public class StaffResource {
   /**
    * Retrieves a collection of staff members assigned to a specific partner entity.
    *
+   * <p>Available to any authenticated user so that students can see the staff of the entity they
+   * will work with.
+   *
    * @param entityId the unique identifier (UUID) of the partner entity
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     StaffResponse}
    */
   @GET
   @Path("/by-entity/{entityId}")
+  @Authenticated
   public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
     List<StaffResponse> list =
         readService.listViewsByEntityId(entityId).stream()
@@ -2625,21 +2575,10 @@ public class StaffResource {
   /**
    * Registers a new staff member and assigns them to a partner organization.
    *
-   * <p>This endpoint processes an aggregated payload, automatically handling the provisioning of
-   * the underlying user and authentication account within a single transaction.
-   *
-   * @param req the validated {@link StaffCreateRequest} containing the identity, credentials, and
-   *     entity ID
-   * @return an HTTP 201 Created response containing a {@code Location} header and the created
-   *     {@link StaffResponse}
-   * @throws DuplicateResourceException if an account with the email already exists or is already
-   *     assigned to the entity
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned to a
-   *     different entity
-   * @throws AppValidationException if input validation fails at the domain level
-   * @throws ResourceNotFoundException if the associated partner entity is not found
+   * <p>Restricted to ADMIN and STAFF roles.
    */
   @POST
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response create(@Valid StaffCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
     var cmd = StaffPresenter.toCommand(req, hashedPassword);
@@ -2655,19 +2594,11 @@ public class StaffResource {
   /**
    * Partially updates a staff member's account and personal details.
    *
-   * <p>Note: The staff member's linked entity ID and account ID remain immutable. Omitting fields
-   * in the request payload will result in those fields retaining their current state in the
-   * database.
-   *
-   * @param id the unique identifier (UUIDv7) of the staff member's account
-   * @param req the validated {@link StaffUpdateRequest} containing the modified data
-   * @return an HTTP 200 OK response containing the updated {@link StaffResponse}
-   * @throws ResourceNotFoundException if the staff member is not found
-   * @throws DuplicateResourceException if the updated email conflicts with an existing account
-   * @throws AppValidationException if input validation fails
+   * <p>Restricted to ADMIN and STAFF roles.
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = StaffPresenter.toCommand(req, hashedPassword);
@@ -2682,14 +2613,11 @@ public class StaffResource {
   /**
    * Gracefully deactivates a staff member's account.
    *
-   * <p>This disables Login.bru capabilities and system access without destroying the underlying
-   * records, maintaining historical referential integrity.
-   *
-   * @param id the unique identifier (UUIDv7) of the staff member's account
-   * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
+   * <p>Restricted to ADMIN and STAFF roles.
    */
   @PATCH
   @Path("/{id}/deactivate")
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
     writeService.deactivate(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -2698,23 +2626,16 @@ public class StaffResource {
   /**
    * Permanently removes a staff member and their underlying account from the system.
    *
-   * @param id the unique identifier (UUIDv7) of the staff member's account to delete
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the staff member has validated
-   *     attendances or created projects
+   * <p>Restricted to ADMIN role only.
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   *
-   * @return the resolved {@link Locale} to be used for formatting responses
-   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

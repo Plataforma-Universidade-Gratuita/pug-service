@@ -3867,7 +3867,6 @@ import java.util.UUID;
 /**
  * Data Transfer Object (DTO) used as the JSON request payload for creating a new Project.
  *
- * @param createdBy the unique identifier (Account ID) of the staff member creating the project
  * @param description the detailed description of the project's objectives (max 4000 chars)
  * @param entityId the unique identifier of the partner organization offering the project
  * @param maxParticipants the maximum number of students allowed to enroll (optional, min 0)
@@ -3879,7 +3878,6 @@ public record ProjectCreateRequest(
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID entityId,
     @Size(max = 4000) String description,
-    @NotNull UUID createdBy,
     @Min(0) Integer maxParticipants,
     @NotNull @DecimalMin("0.00") BigDecimal offeredHours,
     @NotNull UUID schoolId) {}
@@ -4270,8 +4268,12 @@ package com.pug.project.presenter.mappers;
 import com.pug.academic.presenter.mappers.SchoolPresenter;
 import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.project.infra.read.dtos.SchoolProjectView;
+import com.pug.project.presenter.dtos.ProjectCreateRequest;
 import com.pug.project.presenter.dtos.ProjectResponse;
+import com.pug.project.presenter.dtos.ProjectUpdateRequest;
 import com.pug.project.presenter.dtos.ProjectsBySchoolResponse;
+import com.pug.project.service.dtos.ProjectCreateCommand;
+import com.pug.project.service.dtos.ProjectUpdateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -4284,6 +4286,49 @@ import java.util.Locale;
  */
 public final class ProjectPresenter {
   private ProjectPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer project creation command.
+   *
+   * <p>This helper is responsible only for the project portion of the payload. It extracts the raw
+   * data from the {@link ProjectCreateRequest} and encapsulates it into a {@link
+   * ProjectCreateCommand}, leaving domain validation and orchestration to the application service
+   * layer.
+   *
+   * @param req the validated {@link ProjectCreateRequest} payload
+   * @return the corresponding {@link ProjectCreateCommand}, or {@code null} if the request is null
+   */
+  public static ProjectCreateCommand toCommand(ProjectCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new ProjectCreateCommand(
+        req.name(),
+        req.entityId(),
+        req.description(),
+        req.maxParticipants(),
+        req.offeredHours(),
+        req.schoolId());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer project update command.
+   *
+   * <p>This helper is responsible only for the project portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} fields to the
+   * {@link ProjectUpdateCommand}, allowing the service layer to interpret omitted values as "no
+   * change".
+   *
+   * @param req the validated {@link ProjectUpdateRequest} payload
+   * @return the corresponding {@link ProjectUpdateCommand}, or {@code null} if the request is null
+   */
+  public static ProjectUpdateCommand toCommand(ProjectUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new ProjectUpdateCommand(
+        req.name(), req.description(), req.maxParticipants(), req.offeredHours(), req.schoolId());
+  }
 
   /**
    * Projects a read-only {@link ProjectView} into a client-facing {@link ProjectResponse}.
@@ -4435,7 +4480,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/{projectId}/schools")
-  @Authenticated
+  @RolesAllowed({"ADMIN"})
   public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
     List<SchoolView> views = readService.listViewsSchoolsByProjectId(projectId);
     List<SchoolResponse> body =
@@ -4454,7 +4499,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/by-school/{schoolId}")
-  @Authenticated
+  @RolesAllowed({"ADMIN"})
   public Response getBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
     SchoolProjectView view = readService.listViewsBySchool(schoolId);
     ProjectsBySchoolResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
@@ -4504,7 +4549,7 @@ public class ProjectResource {
    */
   @GET
   @Path("/created-by/{accountId}")
-  @Authenticated
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
     List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
     List<ProjectResponse> body =
@@ -4524,18 +4569,9 @@ public class ProjectResource {
    *     exists for the entity
    */
   @POST
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response create(@Valid ProjectCreateRequest req) {
-    var cmd =
-        new ProjectCreateCommand(
-            req.name(),
-            req.entityId(),
-            req.description(),
-            req.createdBy(),
-            req.maxParticipants(),
-            req.offeredHours(),
-            req.schoolId());
-
+    ProjectCreateCommand cmd = ProjectPresenter.toCommand(req);
     var created = writeService.save(cmd);
     ProjectView view = readService.getViewById(created.getId());
     ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
@@ -4553,16 +4589,9 @@ public class ProjectResource {
    */
   @PUT
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
-    var cmd =
-        new ProjectUpdateCommand(
-            req.name(),
-            req.description(),
-            req.maxParticipants(),
-            req.offeredHours(),
-            req.schoolId());
-
+    ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
     writeService.update(id, cmd);
     ProjectView view = readService.getViewById(id);
     ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
@@ -4578,7 +4607,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/cancel")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response cancel(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.CANCELED);
     ProjectView view = readService.getViewById(id);
@@ -4593,7 +4622,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/complete")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response complete(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.COMPLETED);
     ProjectView view = readService.getViewById(id);
@@ -4608,7 +4637,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/hold")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.ON_HOLD);
     ProjectView view = readService.getViewById(id);
@@ -4623,7 +4652,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/retake")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response retake(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.PLANNED);
     ProjectView view = readService.getViewById(id);
@@ -4638,7 +4667,7 @@ public class ProjectResource {
    */
   @PATCH
   @Path("/{id}/start")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response start(@PathParam("id") @UuidV7 UUID id) {
     writeService.transitionStatus(id, com.pug.project.domain.enums.ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
@@ -4653,7 +4682,7 @@ public class ProjectResource {
    */
   @DELETE
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "STAFF"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();
@@ -4819,7 +4848,6 @@ import java.util.UUID;
  * <p>This record encapsulates the raw input data required by the application service to instantiate
  * a new {@link com.pug.project.domain.Project} aggregate.
  *
- * @param createdBy the unique identifier (Account ID) of the staff member creating the project
  * @param description the optional detailed description of the project's objectives
  * @param entityId the unique identifier of the partner organization offering the project
  * @param maxParticipants the maximum number of students allowed to enroll (optional)
@@ -4831,7 +4859,6 @@ public record ProjectCreateCommand(
     String name,
     UUID entityId,
     String description,
-    UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
     UUID schoolId) {}
@@ -5484,6 +5511,7 @@ FILE: service/impl/ProjectServiceImpl.java
 package com.pug.project.service.impl;
 
 import com.pug.academic.service.SchoolService;
+import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
 import com.pug.partner.service.StaffService;
 import com.pug.project.domain.Project;
@@ -5496,6 +5524,7 @@ import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.project.service.utils.ProjectProcessor;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -5516,6 +5545,7 @@ public class ProjectServiceImpl implements ProjectService {
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
   @Inject ProjectRepository repo;
+  @Inject AuthService authService;
   @Inject EntityService entityService;
   @Inject StaffService staffService;
   @Inject EnrollmentService enrollmentService;
@@ -5569,8 +5599,8 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
+    authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
-    staffService.getByAccountId(cmd.createdBy());
     schoolService.getById(cmd.schoolId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
@@ -5582,7 +5612,7 @@ public class ProjectServiceImpl implements ProjectService {
             cmd.name(),
             cmd.entityId(),
             cmd.description(),
-            cmd.createdBy(),
+            authService.getCurrentAccountId(),
             cmd.maxParticipants(),
             cmd.offeredHours());
 

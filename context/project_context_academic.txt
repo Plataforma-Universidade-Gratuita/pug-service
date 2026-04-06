@@ -1926,7 +1926,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>This record acts as an intermediate data structure during complex cross-domain queries. By
  * fetching the {@link StudentEntity} and all its required associations (Account, Course, School) in
  * a single query projection, it prevents N+1 select performance issues before the data is
- * ultimately mapped into the final, client-facing {@link StudentView}.
+ * ultimately mapped into the final, flattened, client-facing {@link
+ * com.pug.academic.infra.read.dtos.StudentView}.
  *
  * @param s the retrieved student persistence entity
  * @param acc the retrieved authentication account persistence entity linked to the student
@@ -1942,37 +1943,51 @@ FILE: infra/read/dtos/StudentView.java
 ================================================================================
 package com.pug.academic.infra.read.dtos;
 
-import com.pug.identity.infra.read.dtos.AccountView;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) representing a read-only, consolidated view of an enrolled Student.
+ * Data Transfer Object (DTO) representing a read-only, flattened view of an enrolled Student.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It flattens complex domain value objects and nests the underlying authentication identity
- * ({@link AccountView}) alongside academic details ({@link CourseView}) into a comprehensive
- * structure optimized for JSON serialization.
+ * client. It consolidates identity and academic data into a single structure without nesting other
+ * view types (such as {@code AccountView}, {@code CourseView} or {@code SchoolView}). Instead, it
+ * exposes only the essential identifiers and scalar attributes required by the presentation layer.
  *
- * @param account the consolidated, client-facing projection of the authentication account and user
- *     profile
+ * @param accountId the unique identifier (UUIDv7) of the student's authentication account
+ * @param userId the unique identifier (UUIDv7) of the user linked to the student's account
+ * @param email the email address registered to the student's account
+ * @param accountType the designated role of the account (typically {@link AccountType#STUDENT})
+ * @param accountActive flag indicating whether the underlying account is currently active
  * @param academicRegistration the raw academic registration string of the student
  * @param campus the designated university campus where the student is enrolled
- * @param course the consolidated, client-facing projection of the course the student is taking
- * @param requiredHours the required counterpart hours the student must fulfill
- * @param concluded a flag indicating whether the required hours have been successfully completed
+ * @param courseId the unique identifier (UUIDv7) of the enrolled course
+ * @param courseName the name of the enrolled course
+ * @param schoolId the unique identifier (UUIDv7) of the school offering the course
+ * @param schoolName the name of the school offering the course
+ * @param requiredHours the total counterpart hours the student is required to fulfill
+ * @param concluded flag indicating whether the required counterpart hours have been completed
  * @param startDate the date when the student's enrollment period begins
  * @param dueDate the date when the student's enrollment period expires
  * @param createdAt the exact timestamp when the student record was initially created
  * @param updatedAt the exact timestamp when the student record was last modified
  */
 public record StudentView(
-    AccountView account,
+    UUID accountId,
+    UUID userId,
+    String email,
+    AccountType accountType,
+    Boolean accountActive,
     String academicRegistration,
     Campi campus,
-    CourseView course,
+    UUID courseId,
+    String courseName,
+    UUID schoolId,
+    String schoolName,
     BigDecimal requiredHours,
     Boolean concluded,
     LocalDate startDate,
@@ -2239,23 +2254,23 @@ public class StudentQueriesImpl implements StudentQueries {
   private static final String SELECT_BASE =
       """
                   select new com.pug.academic.infra.read.dtos.StudentView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
-                      acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
-                      acc.email, acc.accountType, acc.createdAt, acc.updatedAt, acc.active
-                    ),
+                    s.accountId,
+                    acc.userId,
+                    acc.email,
+                    acc.accountType,
+                    acc.active,
                     s.academicRegistration,
                     s.campus,
-                    new com.pug.academic.infra.read.dtos.CourseView(
-                      c.id, c.name,
-                      new com.pug.academic.infra.read.dtos.SchoolView(
-                      sch.id, sch.name, sch.createdAt, sch.updatedAt),
-                      c.createdAt, c.updatedAt
-                    ),
-                    s.requiredHours, s.concluded,
-                    s.startDate, s.dueDate,
-                    s.createdAt, s.updatedAt
+                    c.id,
+                    c.name,
+                    sch.id,
+                    sch.name,
+                    s.requiredHours,
+                    s.concluded,
+                    s.startDate,
+                    s.dueDate,
+                    s.createdAt,
+                    s.updatedAt
                   )
                   from StudentEntity s
                   join AccountEntity acc on acc.id = s.accountId
@@ -2361,7 +2376,7 @@ public class StudentQueriesImpl implements StudentQueries {
 
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    var rows =
+    List<StudentAcc> rows =
         em.createQuery(
                 """
                                     select new com.pug.academic.infra.read.dtos.StudentAcc(
@@ -2391,7 +2406,7 @@ public class StudentQueriesImpl implements StudentQueries {
       }
       for (StudentAcc row : pairs) {
         if (row.s() != null && row.acc() != null && row.c() != null) {
-          out.add(toView(row.s(), row.acc(), u, row.c(), row.sch()));
+          out.add(toView(row.s(), row.acc(), row.c(), row.sch()));
         }
       }
     }
@@ -2652,13 +2667,8 @@ import com.pug.academic.domain.vos.Period;
 import com.pug.academic.infra.persistence.CourseEntity;
 import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.infra.read.dtos.SchoolView;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -2741,56 +2751,38 @@ public final class StudentMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities across multiple domains into a comprehensive
-   * {@link StudentView} DTO.
+   * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
+   * StudentView} DTO.
    *
    * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the student's profile, credentials, and academic details in a single, flattened
-   * response ready for JSON serialization.
+   * encapsulate the student's identity (account and user references) and academic details (course
+   * and school metadata) in a single, flat response ready for JSON serialization.
    *
    * @param s the JPA entity representing the student's academic records
    * @param acc the JPA entity representing the linked authentication account
-   * @param u the JPA entity representing the personal identity of the student
    * @param c the JPA entity representing the enrolled course
    * @param sch the JPA entity representing the school offering the course
-   * @return a fully populated {@link StudentView} DTO
+   * @return a fully populated, flattened {@link StudentView} DTO, or {@code null} if the student
+   *     entity is null
    */
   public static StudentView toView(
-      StudentEntity s, AccountEntity acc, UserEntity u, CourseEntity c, SchoolEntity sch) {
+      StudentEntity s, AccountEntity acc, CourseEntity c, SchoolEntity sch) {
     if (s == null) {
       return null;
     }
 
-    UserView userView =
-        (u != null)
-            ? new UserView(u.getId(), u.getCpf(), u.getName(), u.getCreatedAt(), u.getUpdatedAt())
-            : null;
-    AccountView accountView =
-        (acc != null)
-            ? new AccountView(
-                acc.getId(),
-                userView,
-                acc.getEmail(),
-                acc.getAccountType(),
-                acc.getCreatedAt(),
-                acc.getUpdatedAt(),
-                acc.getActive())
-            : null;
-
-    SchoolView schoolView =
-        (sch != null)
-            ? new SchoolView(sch.getId(), sch.getName(), s.getCreatedAt(), s.getUpdatedAt())
-            : null;
-    CourseView courseView =
-        (c != null)
-            ? new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt())
-            : null;
-
     return new StudentView(
-        accountView,
+        s.getAccountId(),
+        acc != null ? acc.getUserId() : null,
+        acc != null ? acc.getEmail() : null,
+        acc != null ? acc.getAccountType() : null,
+        acc != null ? acc.getActive() : null,
         s.getAcademicRegistration(),
         s.getCampus(),
-        courseView,
+        c != null ? c.getId() : null,
+        c != null ? c.getName() : null,
+        sch != null ? sch.getId() : null,
+        sch != null ? sch.getName() : null,
         s.getRequiredHours(),
         s.getConcluded(),
         s.getStartDate(),
@@ -2928,7 +2920,7 @@ public class CourseResource {
   @POST
   @RolesAllowed("ADMIN")
   public Response create(@Valid CourseCreateRequest req) {
-    CourseCreateCommand cmd = new CourseCreateCommand(req.name(), req.schoolId());
+    CourseCreateCommand cmd = CoursePresenter.toCommand(req);
     Course created = writeService.save(cmd);
 
     CourseView view = readService.getViewById(created.getId());
@@ -2949,7 +2941,7 @@ public class CourseResource {
   @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
-    CourseUpdateCommand cmd = new CourseUpdateCommand(req.name(), req.schoolId());
+    CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
     writeService.update(id, cmd);
 
     CourseView view = readService.getViewById(id);
@@ -3166,25 +3158,27 @@ FILE: presenter/dtos/StudentResponse.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) used as the standardized API JSON response for Student profiles.
  *
- * <p>This record consolidates the deeply nested backend structure across the Identity and Academic
- * domains into a single, comprehensive response representing a student's enrollment. It includes
- * pre-computed business logic (e.g., missing hours, remaining days) and formatted strings optimized
- * for direct UI rendering.
+ * <p>This record consolidates identity and academic data into a single, flattened structure
+ * optimized for the presentation layer. Instead of nesting the full account or course responses, it
+ * exposes only the essential identifiers and scalar attributes required by the UI, allowing clients
+ * to fetch detailed account or course information on demand via dedicated endpoints.
  *
- * @param account the consolidated, client-facing projection of the authentication account and user
- *     profile
+ * @param accountId the unique identifier (UUIDv7) of the student's authentication account
  * @param academicRegistration the raw academic registration string
  * @param campus the formatted response object representing the student's assigned campus
- * @param course the consolidated, client-facing projection of the enrolled course
+ * @param courseId the unique identifier (UUIDv7) of the enrolled course
+ * @param courseName the name of the enrolled course
+ * @param schoolId the unique identifier (UUIDv7) of the school offering the course
+ * @param schoolName the name of the school offering the course
  * @param requiredHours the total required counterpart hours the student must fulfill
  * @param completedHours the total counterpart hours the student has completed to date
  * @param missingHours the remaining counterpart hours left to fulfill the requirement
@@ -3198,10 +3192,13 @@ import java.time.LocalDate;
  * @param auditInfo the nested audit information containing creation and update timestamps
  */
 public record StudentResponse(
-    AccountResponse account,
+    UUID accountId,
     String academicRegistration,
     CampusResponse campus,
-    CourseResponse course,
+    UUID courseId,
+    String courseName,
+    UUID schoolId,
+    String schoolName,
     BigDecimal requiredHours,
     BigDecimal completedHours,
     BigDecimal missingHours,
@@ -3263,7 +3260,11 @@ FILE: presenter/mappers/CoursePresenter.java
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.CourseView;
+import com.pug.academic.presenter.dtos.CourseCreateRequest;
 import com.pug.academic.presenter.dtos.CourseResponse;
+import com.pug.academic.presenter.dtos.CourseUpdateRequest;
+import com.pug.academic.service.dtos.CourseCreateCommand;
+import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
@@ -3279,6 +3280,41 @@ import java.util.Locale;
 public final class CoursePresenter {
   /** Private constructor to prevent instantiation. */
   private CoursePresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer course creation command.
+   *
+   * <p>This helper is responsible only for the course portion of the payload. It extracts the raw
+   * name and school identifier and encapsulates them into a {@link CourseCreateCommand}, leaving
+   * domain validation and orchestration to the application service layer.
+   *
+   * @param req the validated {@link CourseCreateRequest} payload
+   * @return the corresponding {@link CourseCreateCommand}, or {@code null} if the request is null
+   */
+  public static CourseCreateCommand toCommand(CourseCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new CourseCreateCommand(req.name(), req.schoolId());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer course update command.
+   *
+   * <p>This helper is responsible only for the course portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} fields to the
+   * {@link CourseUpdateCommand}, allowing the service layer to interpret omitted values as "no
+   * change".
+   *
+   * @param req the validated {@link CourseUpdateRequest} payload containing the modified data
+   * @return the corresponding {@link CourseUpdateCommand}, or {@code null} if the request is null
+   */
+  public static CourseUpdateCommand toCommand(CourseUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new CourseUpdateCommand(req.name(), req.schoolId());
+  }
 
   /**
    * Projects a read-only {@link CourseView} into a client-facing {@link CourseResponse}.
@@ -3308,7 +3344,11 @@ FILE: presenter/mappers/SchoolPresenter.java
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.SchoolView;
+import com.pug.academic.presenter.dtos.SchoolCreateRequest;
 import com.pug.academic.presenter.dtos.SchoolResponse;
+import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
+import com.pug.academic.service.dtos.SchoolCreateCommand;
+import com.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;
@@ -3323,6 +3363,40 @@ import java.util.Locale;
 public final class SchoolPresenter {
   /** Private constructor to prevent instantiation. */
   private SchoolPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer school creation command.
+   *
+   * <p>This helper is responsible only for the school portion of the payload. It extracts the raw
+   * name and encapsulates it into a {@link SchoolCreateCommand}, leaving domain validation and
+   * orchestration to the application service layer.
+   *
+   * @param req the validated {@link SchoolCreateRequest} payload
+   * @return the corresponding {@link SchoolCreateCommand}, or {@code null} if the request is null
+   */
+  public static SchoolCreateCommand toCommand(SchoolCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new SchoolCreateCommand(req.name());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer school update command.
+   *
+   * <p>This helper is responsible only for the school portion of the update payload. Because
+   * updates can be partial, it directly propagates the potentially {@code null} name to the {@link
+   * SchoolUpdateCommand}, allowing the service layer to interpret omitted values as "no change".
+   *
+   * @param req the validated {@link SchoolUpdateRequest} payload containing the modified data
+   * @return the corresponding {@link SchoolUpdateCommand}, or {@code null} if the request is null
+   */
+  public static SchoolUpdateCommand toCommand(SchoolUpdateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new SchoolUpdateCommand(req.name());
+  }
 
   /**
    * Projects a read-only {@link SchoolView} into a client-facing {@link SchoolResponse}.
@@ -3351,8 +3425,16 @@ FILE: presenter/mappers/StudentPresenter.java
 package com.pug.academic.presenter.mappers;
 
 import com.pug.academic.infra.read.dtos.StudentView;
+import com.pug.academic.presenter.dtos.StudentCreateRequest;
 import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.identity.presenter.mappers.AccountPresenter;
+import com.pug.academic.presenter.dtos.StudentUpdateRequest;
+import com.pug.academic.service.dtos.StudentCreateCommand;
+import com.pug.academic.service.dtos.StudentUpdateCommand;
+import com.pug.identity.service.dtos.AccountCreateCommand;
+import com.pug.identity.service.dtos.AccountUpdateCommand;
+import com.pug.identity.service.dtos.UserCreateCommand;
+import com.pug.identity.service.dtos.UserUpdateCommand;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.dtos.CampusResponse;
@@ -3375,6 +3457,69 @@ import java.util.Locale;
 public final class StudentPresenter {
   /** Private constructor to prevent instantiation. */
   private StudentPresenter() {}
+
+  /**
+   * Maps an incoming REST creation request into an application layer student creation command.
+   *
+   * <p>This helper is responsible for assembling the nested command structure required to create
+   * the underlying user, authentication account, and student enrollment in a single transaction. It
+   * expects the password to have been securely hashed beforehand.
+   *
+   * @param req the validated {@link StudentCreateRequest} payload containing identity and
+   *     enrollment details
+   * @param hashedPassword the securely hashed password string to assign to the new account
+   * @return the corresponding {@link StudentCreateCommand}, or {@code null} if the request is null
+   */
+  public static StudentCreateCommand toCommand(StudentCreateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
+    AccountCreateCommand accountCmd =
+        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
+
+    return new StudentCreateCommand(
+        accountCmd,
+        req.academicRegistration(),
+        req.campus(),
+        req.courseId(),
+        req.requiredHours(),
+        req.startDate(),
+        req.dueDate());
+  }
+
+  /**
+   * Maps an incoming REST update request into an application layer student update command.
+   *
+   * <p>This helper is responsible for assembling the nested command structure required to update
+   * the underlying user and authentication account (if applicable), as well as the academic
+   * enrollment details. It expects the password (if provided) to have been securely hashed
+   * beforehand.
+   *
+   * @param req the validated {@link StudentUpdateRequest} payload containing the modified data
+   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
+   *     not being updated
+   * @return the corresponding {@link StudentUpdateCommand}, or {@code null} if the request is null
+   */
+  public static StudentUpdateCommand toCommand(StudentUpdateRequest req, String hashedPassword) {
+    if (req == null) {
+      return null;
+    }
+
+    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
+    AccountUpdateCommand accountCmd =
+        new AccountUpdateCommand(req.email(), hashedPassword, userCmd);
+
+    return new StudentUpdateCommand(
+        accountCmd,
+        req.academicRegistration(),
+        req.campus(),
+        req.courseId(),
+        req.requiredHours(),
+        req.startDate(),
+        req.dueDate());
+  }
 
   /**
    * Projects a read-only {@link StudentView} into a client-facing {@link StudentResponse}.
@@ -3401,9 +3546,11 @@ public final class StudentPresenter {
     String startDateFormatted = StringUtils.toStringFormatted(v.startDate(), locale);
     String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
+    BigDecimal requiredHours = v.requiredHours();
+    BigDecimal completedHours = BigDecimal.ZERO;
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (v.requiredHours() != null && !v.concluded()) {
-      missingHours = v.requiredHours().subtract(BigDecimal.ZERO);
+    if (requiredHours != null && Boolean.FALSE.equals(v.concluded())) {
+      missingHours = requiredHours.subtract(completedHours);
     }
 
     long remainingDays = 0;
@@ -3418,12 +3565,15 @@ public final class StudentPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new StudentResponse(
-        AccountPresenter.toResponse(v.account(), locale, i18n),
+        v.accountId(),
         v.academicRegistration(),
         campus,
-        CoursePresenter.toResponse(v.course(), locale),
-        v.requiredHours(),
-        BigDecimal.ZERO,
+        v.courseId(),
+        v.courseName(),
+        v.schoolId(),
+        v.schoolName(),
+        requiredHours,
+        completedHours,
         missingHours,
         v.startDate(),
         startDateFormatted,
@@ -3451,18 +3601,17 @@ public final class StudentPresenter {
 
     long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
 
-    String formattedString;
     if (remainingDays < 0) {
-      formattedString =
-          i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
-    } else if (remainingDays == 0) {
-      formattedString = i18n.translation("academic.student.days.today", locale);
-    } else if (remainingDays == 1) {
-      formattedString = i18n.translation("academic.student.days.tomorrow", locale);
-    } else {
-      formattedString = i18n.translation("academic.student.days.remaining", locale, remainingDays);
+      return i18n.translation("academic.student.days.overdue", locale, Math.abs(remainingDays));
     }
-    return formattedString;
+    if (remainingDays == 0) {
+      return i18n.translation("academic.student.days.today", locale);
+    }
+    if (remainingDays == 1) {
+      return i18n.translation("academic.student.days.tomorrow", locale);
+    }
+
+    return i18n.translation("academic.student.days.remaining", locale, remainingDays);
   }
 }
 
@@ -3588,7 +3737,7 @@ public class SchoolResource {
   @POST
   @RolesAllowed("ADMIN")
   public Response create(@Valid SchoolCreateRequest req) {
-    SchoolCreateCommand cmd = new SchoolCreateCommand(req.name());
+    SchoolCreateCommand cmd = SchoolPresenter.toCommand(req);
     School created = writeService.save(cmd);
 
     SchoolView view = readService.getViewById(created.getId());
@@ -3609,7 +3758,7 @@ public class SchoolResource {
   @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
-    SchoolUpdateCommand cmd = new SchoolUpdateCommand(req.name());
+    SchoolUpdateCommand cmd = SchoolPresenter.toCommand(req);
     writeService.update(id, cmd);
 
     SchoolView view = readService.getViewById(id);
@@ -3658,19 +3807,14 @@ import com.pug.academic.service.StudentReadService;
 import com.pug.academic.service.StudentService;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.academic.service.utils.ExceptionHelper;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
-import io.quarkus.security.identity.SecurityIdentity;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -3707,9 +3851,9 @@ import java.util.stream.Collectors;
 @Path("/academic/students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-@RolesAllowed("ADMIN")
 public class StudentResource {
 
+  @Inject AuthService authService;
   @Inject StudentService writeService;
   @Inject StudentReadService readService;
   @Inject PasswordService passwordService;
@@ -3728,6 +3872,7 @@ public class StudentResource {
    */
   @GET
   @Path("/{id}")
+  @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StudentView view = readService.getViewByAccountId(id);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -3744,6 +3889,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-cpf/{cpf}")
+  @RolesAllowed("ADMIN")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
     StudentView view = readService.getViewByCpf(cpf);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -3760,6 +3906,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-email/{email}")
+  @RolesAllowed("ADMIN")
   public Response getByEmail(@PathParam("email") @NotNull String email) {
     StudentView view = readService.getViewByEmail(email);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -3776,6 +3923,7 @@ public class StudentResource {
    */
   @GET
   @Path("/by-registration/{registration}")
+  @RolesAllowed("ADMIN")
   public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
     StudentView view = readService.getViewByAcademicRegistration(registration);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
@@ -3785,34 +3933,22 @@ public class StudentResource {
   /**
    * Retrieves the academic enrollment details of the currently authenticated student.
    *
-   * <p>Extracts the account ID directly from the JWT claims, ensuring students can only request
-   * their own academic data.
+   * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
+   * com.pug.identity.service.AuthService}, ensuring that callers can only access their own academic
+   * record. This endpoint is restricted to users with the STUDENT role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StudentResponse}
-   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or lacks the {@code
-   *     accountId} claim
+   *     com.pug.academic.presenter.dtos.StudentResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
    */
   @GET
   @Path("/me")
-  @RolesAllowed("STUDENT")
-  public Response getMe(@Context SecurityIdentity identity) {
-    if (identity.isAnonymous()) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    org.eclipse.microprofile.jwt.JsonWebToken jwt =
-        (org.eclipse.microprofile.jwt.JsonWebToken) identity.getPrincipal();
-
-    String accountIdClaim = jwt.getClaim("accountId");
-    if (accountIdClaim == null) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    UUID accountId = UUID.fromString(accountIdClaim);
+  @Authenticated
+  public Response getMe() {
+    UUID accountId = authService.getCurrentAccountId();
     StudentView view = readService.getViewByAccountId(accountId);
     StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -3829,6 +3965,7 @@ public class StudentResource {
    *     StudentResponse}
    */
   @GET
+  @Authenticated
   public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
 
     List<StudentView> views;
@@ -3863,21 +4000,10 @@ public class StudentResource {
    *     email already exists
    */
   @POST
+  @RolesAllowed("ADMIN")
   public Response create(@Valid StudentCreateRequest req) {
     String hashedPassword = passwordService.hash(req.password());
-
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
-    AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.email(), AccountType.STUDENT, hashedPassword, userCmd);
-    StudentCreateCommand studentCmd =
-        new StudentCreateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+    StudentCreateCommand studentCmd = StudentPresenter.toCommand(req, hashedPassword);
 
     Student created = writeService.save(studentCmd);
     StudentView view = readService.getViewByAccountId(created.getAccountId());
@@ -3903,24 +4029,14 @@ public class StudentResource {
    */
   @POST
   @Path("/bulk")
+  @RolesAllowed("ADMIN")
   public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
     List<StudentCreateCommand> cmds =
         reqs.stream()
             .map(
                 req -> {
                   String hashedPassword = passwordService.hash(req.password());
-                  UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
-                  AccountCreateCommand accountCmd =
-                      new AccountCreateCommand(
-                          req.email(), AccountType.STUDENT, hashedPassword, userCmd);
-                  return new StudentCreateCommand(
-                      accountCmd,
-                      req.academicRegistration(),
-                      req.campus(),
-                      req.courseId(),
-                      req.requiredHours(),
-                      req.startDate(),
-                      req.dueDate());
+                  return StudentPresenter.toCommand(req, hashedPassword);
                 })
             .toList();
 
@@ -3944,24 +4060,13 @@ public class StudentResource {
    */
   @PUT
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
-    // Only hash the password if a new one was provided
     String passwordHash = null;
     if (StringUtils.isNotEmpty(req.password())) {
       passwordHash = passwordService.hash(req.password());
     }
-
-    UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
-    AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), passwordHash, userCmd);
-    StudentUpdateCommand studentCmd =
-        new StudentUpdateCommand(
-            accountCmd,
-            req.academicRegistration(),
-            req.campus(),
-            req.courseId(),
-            req.requiredHours(),
-            req.startDate(),
-            req.dueDate());
+    StudentUpdateCommand studentCmd = StudentPresenter.toCommand(req, passwordHash);
 
     writeService.update(id, studentCmd);
     StudentView view = readService.getViewByAccountId(id);
@@ -3978,6 +4083,7 @@ public class StudentResource {
    */
   @DELETE
   @Path("/{id}")
+  @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.ok(ApiEnvelope.ok(null)).build();

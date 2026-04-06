@@ -1150,9 +1150,7 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Account;
 import com.pug.identity.domain.vos.Email;
 import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -1239,33 +1237,27 @@ public final class AccountMapper {
   }
 
   /**
-   * Projects an {@link AccountEntity} and its parent {@link UserEntity} into a consolidated {@link
-   * AccountView} DTO.
+   * Projects a JPA {@link AccountEntity} into a lightweight, read-only {@link AccountView} DTO.
    *
-   * <p>Used heavily by the query/read layer to provide a rich, nested structure ready for JSON
-   * serialization without requiring complex domain logic or repeated database hits.
+   * <p>This mapping flattens the persistence entity into a CQRS read model without nesting the
+   * associated user details. Instead, it exposes only the {@code userId}, allowing callers or
+   * clients to fetch user information on demand via dedicated user endpoints.
    *
-   * @param accountEntity the JPA persistence entity representing the account
-   * @param userEntity the JPA persistence entity representing the linked user
-   * @return a populated {@link AccountView} DTO, or {@code null} if either input entity is null
+   * @param e the JPA persistence entity to project
+   * @return a flattened {@link AccountView} DTO, or {@code null} if the input entity is null
    */
-  public static AccountView toView(AccountEntity accountEntity, UserEntity userEntity) {
-    if (accountEntity == null || userEntity == null) {
+  public static AccountView toView(AccountEntity e) {
+    if (e == null) {
       return null;
     }
     return new AccountView(
-        accountEntity.getId(),
-        new UserView(
-            userEntity.getId(),
-            userEntity.getCpf(),
-            userEntity.getName(),
-            userEntity.getCreatedAt(),
-            userEntity.getUpdatedAt()),
-        accountEntity.getEmail(),
-        accountEntity.getAccountType(),
-        accountEntity.getCreatedAt(),
-        accountEntity.getUpdatedAt(),
-        accountEntity.getActive());
+        e.getId(),
+        e.getUserId(),
+        e.getEmail(),
+        e.getAccountType(),
+        e.getCreatedAt(),
+        e.getUpdatedAt(),
+        e.getActive());
   }
 }
 
@@ -1278,10 +1270,8 @@ package com.pug.identity.infra;
 import com.pug.identity.domain.Admin;
 import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.identity.infra.persistence.AdminEntity;
-import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.infra.read.dtos.UserView;
 
 /**
  * Stateless utility class responsible for mapping between Administrator boundary layers.
@@ -1351,35 +1341,32 @@ public final class AdminMapper {
   }
 
   /**
-   * Projects a deeply nested set of JPA Entities (Admin, Account, User) into a comprehensive {@link
-   * AdminView} DTO.
+   * Projects a pair of JPA entities ({@link AdminEntity} and {@link AccountEntity}) into a
+   * consolidated {@link AdminView} DTO.
    *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the administrator's profile, credentials, and identity in a single view.
+   * <p>The resulting view nests a flattened {@link AccountView}, which exposes the linked user
+   * through its {@code userId} field, along with the administrator-specific metadata ({@code
+   * grantedAt} and {@code campus}).
    *
    * @param adminEntity the JPA persistence entity representing the admin privileges
-   * @param accountEntity the JPA persistence entity representing the linked account
-   * @param userEntity the JPA persistence entity representing the linked user
-   * @return a fully populated {@link AdminView} DTO
+   * @param accountEntity the JPA persistence entity representing the linked authentication account
+   * @return a fully populated {@link AdminView} DTO, or {@code null} if either input entity is null
    */
-  public static AdminView toView(
-      AdminEntity adminEntity, AccountEntity accountEntity, UserEntity userEntity) {
-    return new AdminView(
+  public static AdminView toView(AdminEntity adminEntity, AccountEntity accountEntity) {
+    if (adminEntity == null || accountEntity == null) {
+      return null;
+    }
+    AccountView accountView =
         new AccountView(
             accountEntity.getId(),
-            new UserView(
-                userEntity.getId(),
-                userEntity.getCpf(),
-                userEntity.getName(),
-                userEntity.getCreatedAt(),
-                userEntity.getUpdatedAt()),
+            accountEntity.getUserId(),
             accountEntity.getEmail(),
             accountEntity.getAccountType(),
             accountEntity.getCreatedAt(),
             accountEntity.getUpdatedAt(),
-            accountEntity.getActive()),
-        adminEntity.getGrantedAt(),
-        adminEntity.getCampus());
+            accountEntity.getActive());
+
+    return new AdminView(accountView, adminEntity.getGrantedAt(), adminEntity.getCampus());
   }
 }
 
@@ -2162,19 +2149,21 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only view of an authentication Account.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It aggregates the account details with a nested projection of the associated user ({@link
- * UserView}) to provide a comprehensive, lightweight structure optimized for JSON serialization.
+ * client. It provides a lightweight projection of the account entity without nesting the associated
+ * user details. Instead, it exposes only the {@code userId}, allowing clients to fetch user
+ * information on demand via dedicated user endpoints.
  *
  * @param id the unique identifier (UUIDv7) of the account
- * @param user the read-only projection of the user linked to this account
+ * @param userId the unique identifier (UUIDv7) of the user linked to this account
  * @param email the email address registered for authentication
  * @param accountType the assigned role or classification of the account (e.g., ADMIN, STUDENT)
  * @param createdAt the exact timestamp when the account record was created
  * @param updatedAt the exact timestamp when the account record was last modified
+ * @param active flag indicating whether the account is currently active
  */
 public record AccountView(
     UUID id,
-    UserView user,
+    UUID userId,
     String email,
     AccountType accountType,
     OffsetDateTime createdAt,
@@ -2197,7 +2186,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
  * <p>This record acts as an intermediate data structure during complex database queries. By
  * fetching both the {@link AdminEntity} and its linked {@link AccountEntity} in a single query
  * projection, it prevents N+1 select performance issues before the data is ultimately mapped into
- * the final, client-facing {@link AdminView}.
+ * the final, client-facing {@link AdminView} (which nests a flattened {@link AccountView}).
  *
  * @param admin the retrieved administrator persistence entity
  * @param account the retrieved account persistence entity linked to the administrator
@@ -2219,10 +2208,12 @@ import java.time.OffsetDateTime;
  * profile.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It flattens the internal domain relationships by nesting the underlying account details
- * ({@link AccountView}) alongside the specific administrator privileges and operational boundaries.
+ * client. It flattens the internal domain relationships by nesting the underlying authentication
+ * account as an {@link AccountView}, while keeping user details referenced indirectly via the
+ * {@code userId} contained in that account view.
  *
- * @param accountView the read-only projection of the linked authentication account
+ * @param accountView the read-only projection of the linked authentication account (including
+ *     userId, email, type and audit info)
  * @param grantedAt the exact timestamp when administrative privileges were granted
  * @param campus the designated university campus where the administrator operates
  */
@@ -2274,10 +2265,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the {@link AccountQueries} interface using JPA and Hibernate Search.
@@ -2297,8 +2286,7 @@ public class AccountQueriesImpl implements AccountQueries {
       """
                   select new com.pug.identity.infra.read.dtos.AccountView(
                     a.id,
-                    new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                    u.id,
                     a.email,
                     a.accountType,
                     a.createdAt,
@@ -2370,15 +2358,9 @@ public class AccountQueriesImpl implements AccountQueries {
             .setParameter("userIds", userIds)
             .getResultList();
 
-    Map<UUID, UserEntity> userEntityMap =
-        userHits.stream().collect(Collectors.toMap(UserEntity::getId, user -> user));
-
-    List<AccountView> out = new ArrayList<>();
+    List<AccountView> out = new ArrayList<>(accountEntities.size());
     for (AccountEntity accountEntity : accountEntities) {
-      UserEntity userEntity = userEntityMap.get(accountEntity.getUserId());
-      if (userEntity != null) {
-        out.add(toView(accountEntity, userEntity));
-      }
+      out.add(toView(accountEntity));
     }
     return out;
   }
@@ -2392,6 +2374,8 @@ package com.pug.identity.infra.read.impl;
 
 import static com.pug.identity.infra.AdminMapper.toView;
 
+import com.pug.identity.infra.persistence.AccountEntity;
+import com.pug.identity.infra.persistence.AdminEntity;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.identity.infra.read.AdminQueries;
 import com.pug.identity.infra.read.dtos.AdminAcc;
@@ -2428,8 +2412,7 @@ public class AdminQueriesImpl implements AdminQueries {
                   select new com.pug.identity.infra.read.dtos.AdminView(
                     new com.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
-                      new com.pug.identity.infra.read.dtos.UserView(
-                      u.id, u.cpf, u.name, u.createdAt, u.updatedAt),
+                      u.id,
                       acc.email,
                       acc.accountType,
                       acc.createdAt,
@@ -2490,10 +2473,10 @@ public class AdminQueriesImpl implements AdminQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link AdminAcc} tuple projection to map the relationships backwards to the
-   * administrator profile.
+   * <p>This implementation preserves the relevance order returned by the full-text search in {@link
+   * UserEntity}. For each user found, the function loads the associated pairs ({@link AdminEntity},
+   * {@link AccountEntity}) and projects them into {@link AdminView} using the mapper {@link
+   * com.pug.identity.infra.AdminMapper#toView(AdminEntity, AccountEntity)}.
    */
   @Override
   public List<AdminView> searchByName(String key) {
@@ -2504,32 +2487,34 @@ public class AdminQueriesImpl implements AdminQueries {
 
     List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
 
-    var rows =
+    List<AdminAcc> rows =
         em.createQuery(
                 """
-                select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                where acc.userId in :ids
-                """,
+                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        from AdminEntity a join AccountEntity acc on acc.id = a.accountId
+                        where acc.userId in :ids
+                        """,
                 AdminAcc.class)
             .setParameter("ids", userIds)
             .getResultList();
 
     Map<UUID, List<AdminAcc>> byUser = new HashMap<>();
     for (AdminAcc row : rows) {
-      byUser.computeIfAbsent(row.account().getUserId(), k -> new ArrayList<>()).add(row);
+      UUID userId = row.account().getUserId();
+      byUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(row);
     }
 
     List<AdminView> out = new ArrayList<>();
     for (UserEntity u : userHits) {
-      List<AdminAcc> pairs = byUser.get(u.getId());
-      if (pairs == null) {
+      List<AdminAcc> accs = byUser.get(u.getId());
+      if (accs == null) {
         continue;
       }
-      for (AdminAcc row : pairs) {
-        out.add(toView(row.admin(), row.account(), u));
+      for (AdminAcc pair : accs) {
+        out.add(toView(pair.admin(), pair.account()));
       }
     }
+
     return out;
   }
 }
@@ -2807,14 +2792,13 @@ import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.identity.service.AccountReadService;
-import com.pug.identity.service.utils.ExceptionHelper;
+import com.pug.identity.service.AuthService;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
-import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -2832,7 +2816,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import org.eclipse.microprofile.jwt.JsonWebToken;
 
 /**
  * REST endpoint for read-only operations on accounts.
@@ -2850,7 +2833,7 @@ public class AccountReadOnlyResource {
 
   @Inject I18n i18n;
 
-  @Inject SecurityIdentity identity;
+  @Inject AuthService authService;
 
   @Context HttpHeaders headers;
 
@@ -2889,8 +2872,8 @@ public class AccountReadOnlyResource {
   /**
    * Retrieves the account details of the currently authenticated user.
    *
-   * <p>Extracts the account ID directly from the JWT claims, ensuring users can only request their
-   * own account data. Accessible by any authenticated role.
+   * <p>Extracts the account ID directly from the JWT claims via {@link AuthService}, ensuring users
+   * can only request their own account data. Accessible by any authenticated role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     AccountResponse}
@@ -2901,18 +2884,7 @@ public class AccountReadOnlyResource {
   @Path("me")
   @Authenticated
   public Response getMe() {
-    if (identity.isAnonymous()) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    JsonWebToken jwt = (JsonWebToken) identity.getPrincipal();
-    String accountIdClaim = jwt.getClaim("accountId");
-
-    if (accountIdClaim == null) {
-      throw ExceptionHelper.unauthorized();
-    }
-
-    UUID accountId = UUID.fromString(accountIdClaim);
+    UUID accountId = authService.getCurrentAccountId();
     var body = AccountPresenter.toResponse(readService.getViewById(accountId), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -2985,6 +2957,7 @@ import com.pug.identity.presenter.dtos.AdminUpdateRequest;
 import com.pug.identity.presenter.mappers.AdminPresenter;
 import com.pug.identity.service.AdminReadService;
 import com.pug.identity.service.AdminService;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.DuplicateResourceException;
@@ -3032,6 +3005,7 @@ import java.util.stream.Collectors;
 @RolesAllowed("ADMIN")
 public class AdminResource {
 
+  @Inject AuthService authService;
   @Inject PasswordService passwordService;
   @Inject AdminReadService readService;
   @Inject AdminService writeService;
@@ -3070,6 +3044,27 @@ public class AdminResource {
   public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
     AdminView view = readService.getViewByEmail(emailRaw);
     AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the administrator profile associated with the currently authenticated account.
+   *
+   * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
+   * AuthService}, ensuring that callers can only access their own administrator profile. This
+   * endpoint is restricted to users with the ADMIN role.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     AdminResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
+   *     contain the required {@code accountId} claim
+   */
+  @GET
+  @Path("me")
+  public Response getMe() {
+    UUID accountId = authService.getCurrentAccountId();
+    AdminView v = readService.getViewByAccountId(accountId);
+    AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -3276,19 +3271,22 @@ import java.util.UUID;
 /**
  * Data Transfer Object (DTO) used as the standardized API JSON response for Account data.
  *
- * <p>This record provides the client with the essential details of an authentication account,
- * including nested user data and formatted strings optimized for direct UI presentation.
+ * <p>This record provides the client with the essential details of an authentication account in a
+ * flattened shape. Instead of nesting the full user payload, it exposes only the {@code userId},
+ * allowing clients to retrieve detailed user information on demand via the appropriate user
+ * endpoints.
  *
  * @param id the unique identifier (UUIDv7) of the account
- * @param user the nested, client-facing projection of the associated user
+ * @param userId the unique identifier (UUIDv7) of the user linked to this account
  * @param email the email address registered to the account
  * @param accountType the designated role or classification of the account (e.g., ADMIN, STUDENT)
  * @param accountTypeFormatted a localized, human-readable string representation of the account type
  * @param auditInfo the nested audit information containing creation and update timestamps
+ * @param active flag indicating whether the account is currently active
  */
 public record AccountResponse(
     UUID id,
-    UserResponse user,
+    UUID userId,
     String email,
     AccountType accountType,
     String accountTypeFormatted,
@@ -3338,10 +3336,12 @@ import java.time.OffsetDateTime;
 /**
  * Data Transfer Object (DTO) used as the standardized API JSON response for Administrator profiles.
  *
- * <p>This record consolidates the deeply nested backend structure (Admin -> Account -> User) into a
- * single, flattened response optimized for the presentation layer.
+ * <p>This record consolidates the administrator information for the presentation layer by combining
+ * the flattened {@link AccountResponse} (which references the user via {@code userId}) with the
+ * campus assignment and the timestamp indicating when administrative privileges were granted.
  *
- * @param accountResponse the consolidated details of the underlying account and user
+ * @param accountResponse the consolidated details of the underlying account (including userId and
+ *     audit info)
  * @param campus the formatted response object representing the admin's assigned campus
  * @param grantedAt the exact timestamp when administrative privileges were granted
  * @param grantedAtFormatted a localized, human-readable string representing the granted date
@@ -3457,7 +3457,6 @@ package com.pug.identity.presenter.mappers;
 
 import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -3480,8 +3479,10 @@ public final class AccountPresenter {
   /**
    * Projects a read-only {@link AccountView} into a client-facing {@link AccountResponse}.
    *
-   * <p>This mapping cascades down to format the nested {@link UserResponse} and calculates
-   * localized strings for Enums and timestamps.
+   * <p>This mapping produces a flattened response: instead of nesting the full user payload, it
+   * exposes only the {@code userId}, allowing clients to retrieve detailed user information on
+   * demand via dedicated user endpoints. It also resolves the localized label for the account type
+   * and formats the audit timestamps according to the provided {@link Locale}.
    *
    * @param v the internal read-model projection of the account
    * @param locale the locale extracted from the client's request headers
@@ -3494,13 +3495,12 @@ public final class AccountPresenter {
       return null;
     }
 
-    UserResponse userResponse = UserPresenter.toResponse(v.user(), locale);
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), userResponse, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
+        v.id(), v.userId(), v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
   }
 }
 
@@ -3570,7 +3570,6 @@ public final class AdminPresenter {
     if (req == null) {
       return null;
     }
-    // CPF cannot be updated via this flow, so it is omitted from UserUpdateCommand
     var userCmd = new UserUpdateCommand(req.name());
     var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
     return new AdminUpdateCommand(accountCmd, req.campus());
@@ -3679,6 +3678,7 @@ package com.pug.identity.presenter;
 import com.pug.identity.infra.read.dtos.UserView;
 import com.pug.identity.presenter.dtos.UserResponse;
 import com.pug.identity.presenter.mappers.UserPresenter;
+import com.pug.identity.service.AuthService;
 import com.pug.identity.service.UserReadService;
 import com.pug.shared.exceptions.AppValidationException;
 import com.pug.shared.exceptions.ResourceNotFoundException;
@@ -3686,6 +3686,7 @@ import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.utils.StringUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -3719,6 +3720,8 @@ public class UserReadOnlyResource {
 
   @Inject UserReadService readService;
 
+  @Inject AuthService authService;
+
   @Context HttpHeaders headers;
 
   /**
@@ -3747,6 +3750,26 @@ public class UserReadOnlyResource {
   @Path("by-cpf/{cpf}")
   public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
     UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves the identity details of the currently authenticated user.
+   *
+   * <p>The user identifier is resolved exclusively from the JWT {@code userId} claim via {@link
+   * AuthService}, ensuring that callers can only access their own user record, regardless of the
+   * request parameters. This endpoint is available to any authenticated role.
+   *
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing or does not contain the
+   *     required {@code userId} claim
+   */
+  @GET
+  @Path("me")
+  @Authenticated
+  public Response getMe() {
+    UUID userId = authService.getCurrentUserId();
+    UserResponse body = UserPresenter.toResponse(readService.getViewById(userId), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
@@ -4155,15 +4178,47 @@ package com.pug.identity.service;
 
 import com.pug.identity.presenter.dtos.auth.LoginRequest;
 import com.pug.identity.presenter.dtos.auth.TokenResponse;
+import com.pug.shared.domain.enums.AccountType;
+import java.util.UUID;
 
 /**
  * Application service interface for handling authentication and authorization flows.
  *
  * <p>This service orchestrates credential verification and the generation of secure JSON Web Tokens
- * (JWT) for authenticated accounts. It relies on underlying domain services to securely resolve
- * identity and validate hashed passwords, abstracting away direct persistence access.
+ * (JWT) for authenticated accounts. It also exposes helper methods to resolve the current
+ * authenticated principal from the security context.
  */
 public interface AuthService {
+
+  /**
+   * Resolves the current authenticated account identifier from the active security context.
+   *
+   * <p>Implementations must throw a {@link jakarta.ws.rs.NotAuthorizedException} when there is no
+   * authenticated principal or the JWT does not contain the {@code accountId} claim.
+   *
+   * @return the UUID of the authenticated account
+   */
+  UUID getCurrentAccountId();
+
+  /**
+   * Retrieves the {@link AccountType} of the currently authenticated account based on the JWT
+   * {@code groups} claim.
+   *
+   * @return the {@link AccountType} of the current account
+   * @throws jakarta.ws.rs.NotAuthorizedException if there is no authenticated principal or the
+   *     token does not contain a valid group
+   */
+  AccountType getCurrentAccountType();
+
+  /**
+   * Resolves the current authenticated user identifier from the active security context.
+   *
+   * <p>Implementations must throw a {@link jakarta.ws.rs.NotAuthorizedException} when there is no
+   * authenticated principal or the JWT does not contain the {@code userId} claim.
+   *
+   * @return the UUID of the authenticated user
+   */
+  UUID getCurrentUserId();
 
   /**
    * Authenticates a user based on their credentials and generates a JSON Web Token (JWT).
@@ -4180,6 +4235,15 @@ public interface AuthService {
    *     not match, or the account is currently marked as inactive
    */
   TokenResponse login(LoginRequest request);
+
+  /**
+   * Ensures that the currently authenticated account is not of the given forbidden type.
+   *
+   * @param forbidden the {@link AccountType} that is not allowed to perform the current operation
+   * @throws jakarta.ws.rs.NotAuthorizedException if the current account type matches the forbidden
+   *     type, or if there is no authenticated principal
+   */
+  void requireCurrentAccountNotOfType(AccountType forbidden);
 }
 
 
@@ -4890,12 +4954,16 @@ import com.pug.identity.service.AccountService;
 import com.pug.identity.service.AuthService;
 import com.pug.identity.service.PasswordService;
 import com.pug.identity.service.utils.ExceptionHelper;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.Set;
+import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
 /**
@@ -4913,8 +4981,77 @@ public class AuthServiceImpl implements AuthService {
 
   @Inject PasswordService passwordService;
 
+  @Inject SecurityIdentity identity;
+
   @ConfigProperty(name = "smallrye.jwt.new-token.lifespan", defaultValue = "28800")
   long lifespan;
+
+  /** {@inheritDoc} */
+  @Override
+  public UUID getCurrentAccountId() {
+    String accountId = getRequiredClaim("accountId");
+    return UUID.fromString(accountId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AccountType getCurrentAccountType() {
+    if (identity == null || identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    Object principal = identity.getPrincipal();
+    if (!(principal instanceof JsonWebToken jwt)) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    var groups = jwt.getGroups();
+    if (groups == null || groups.isEmpty()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    String rawType = groups.iterator().next();
+    try {
+      return AccountType.valueOf(rawType);
+    } catch (IllegalArgumentException e) {
+      throw ExceptionHelper.unauthorized();
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public UUID getCurrentUserId() {
+    String userId = getRequiredClaim("userId");
+    return UUID.fromString(userId);
+  }
+
+  /**
+   * Retrieves a required string claim from the current JWT principal.
+   *
+   * <p>If there is no authenticated principal, the principal is not a {@link JsonWebToken}, or the
+   * claim is missing, this method throws the standardized unauthorized exception.
+   *
+   * @param claimName the name of the claim to resolve (e.g., {@code "accountId"}, {@code "userId"})
+   * @return the claim value as a non-null {@link String}
+   * @throws jakarta.ws.rs.NotAuthorizedException if the claim cannot be resolved
+   */
+  private String getRequiredClaim(String claimName) {
+    if (identity == null || identity.isAnonymous()) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    Object principal = identity.getPrincipal();
+    if (!(principal instanceof JsonWebToken jwt)) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    String claim = jwt.getClaim(claimName);
+    if (claim == null) {
+      throw ExceptionHelper.unauthorized();
+    }
+
+    return claim;
+  }
 
   /** {@inheritDoc} */
   @Override
@@ -4948,6 +5085,15 @@ public class AuthServiceImpl implements AuthService {
 
     LOG.infof("Authentication successful for account %s", account.getId());
     return new TokenResponse(token, account.getId(), account.getAccountType(), lifespan);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void requireCurrentAccountNotOfType(AccountType forbidden) {
+    AccountType current = getCurrentAccountType();
+    if (current == forbidden) {
+      throw ExceptionHelper.unauthorized();
+    }
   }
 }
 
