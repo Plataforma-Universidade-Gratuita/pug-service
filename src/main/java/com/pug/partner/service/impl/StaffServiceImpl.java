@@ -13,6 +13,7 @@ import com.pug.partner.service.utils.StaffProcessor;
 import com.pug.project.service.AttendanceService;
 import com.pug.project.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -32,6 +33,8 @@ import org.jboss.logging.Logger;
 public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject StaffRepository repo;
 
@@ -79,8 +82,10 @@ public class StaffServiceImpl implements StaffService {
     boolean deleted = repo.deleteByAccountId(accountId);
     if (deleted) {
       LOG.infof("Staff deleted successfully. Account ID: %s", accountId);
+      auditPublisher.fireDelete(Staff.class.getName(), accountId);
       accountService.delete(accountId);
     }
+
     return deleted;
   }
 
@@ -106,20 +111,6 @@ public class StaffServiceImpl implements StaffService {
         "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
         deletedCount, entityId);
     return deletedCount;
-  }
-
-  /**
-   * Checks if a Staff assignment already exists for the given account and entity.
-   *
-   * @param accountId the unique identifier of the linked authentication account
-   * @param entityId the unique identifier of the partner entity
-   * @return {@code true} if the staff assignment exists, {@code false} otherwise
-   */
-  private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
-    if (accountId == null || entityId == null) {
-      return false;
-    }
-    return repo.existsByAccountIdAndEntityId(accountId, entityId);
   }
 
   /** {@inheritDoc} */
@@ -180,6 +171,8 @@ public class StaffServiceImpl implements StaffService {
     LOG.infof(
         "Staff role granted successfully. Account ID: %s, Entity ID: %s",
         savedStaff.getAccountId(), savedStaff.getEntityId());
+
+    auditPublisher.fireCreate(Staff.class.getName(), savedStaff.getAccountId());
     return savedStaff;
   }
 
@@ -193,6 +186,8 @@ public class StaffServiceImpl implements StaffService {
     accountService.update(accountId, cmd.accountCommand());
 
     LOG.infof("Staff account updated successfully. Account ID: %s", accountId);
+
+    auditPublisher.fireUpdate(Staff.class.getName(), accountId, current, getByAccountId(accountId));
     return current;
   }
 }

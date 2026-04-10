@@ -13,6 +13,7 @@ import com.pug.identity.service.dtos.UserCreateCommand;
 import com.pug.identity.service.utils.AccountProcessor;
 import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -37,6 +38,8 @@ public class AccountServiceImpl implements AccountService {
 
   private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
+
   @Inject AccountRepository repo;
 
   @Inject UserService userService;
@@ -52,6 +55,8 @@ public class AccountServiceImpl implements AccountService {
     repo.update(deactivated);
 
     LOG.infof("Account deactivated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Account.class.getName(), id, account, deactivated);
     return deactivated;
   }
 
@@ -67,6 +72,7 @@ public class AccountServiceImpl implements AccountService {
 
     if (deleted) {
       LOG.infof("Account deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Account.class.getName(), id);
       if (count <= 1) {
         LOG.infof("Auto-deleting Orphan User ID: %s", account.getUserId());
         userService.delete(account.getUserId());
@@ -181,6 +187,8 @@ public class AccountServiceImpl implements AccountService {
 
     Account savedAccount = repo.persist(account);
     LOG.infof("Account created successfully. ID: %s", savedAccount.getId());
+
+    auditPublisher.fireCreate(Account.class.getName(), savedAccount.getId());
     return savedAccount;
   }
 
@@ -256,6 +264,8 @@ public class AccountServiceImpl implements AccountService {
 
     repo.update(updated);
     LOG.infof("Account updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Account.class.getName(), id, current, updated);
     return getById(id);
   }
 }

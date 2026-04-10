@@ -15,6 +15,7 @@ import com.pug.project.service.utils.EnrollmentProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -33,6 +34,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject EnrollmentRepository repo;
   @Inject AuthService authService;
   @Inject ProjectService projectService;
@@ -63,12 +65,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Transactional
   @Override
   public boolean delete(EnrollmentIdentifier identifier) {
-    if (identifier == null
-        || identifier.getProjectId() == null
-        || identifier.getStudentId() == null) {
+    LOG.debugf("Attempting to delete Enrollment: %s", identifier);
+    if (identifier == null) {
       return false;
     }
-    return repo.deleteById(identifier);
+
+    boolean deleted = repo.deleteById(identifier);
+    if (deleted) {
+      LOG.infof("Enrollment deleted successfully. Identifier: %s", identifier);
+      auditPublisher.fireDelete(Enrollment.class.getName(), identifier.getProjectId());
+    } else {
+      LOG.debugf("Delete failed: Enrollment %s not found (idempotent)", identifier);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -129,6 +138,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Transactional
   @Override
   public Enrollment save(EnrollmentCreateCommand cmd) {
+    LOG.debugf("Attempting to create Enrollment for Project ID: %s", cmd.projectId());
     authService.requireCurrentAccountOfType(AccountType.STUDENT);
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(authService.getCurrentAccountId());
@@ -140,6 +150,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
       throw new AppValidationException(identifier.getFieldErrors());
     }
     if (repo.existsById(identifier)) {
+      LOG.warnf(
+          "Creation failed: Enrollment already exists for Project: %s, Student: %s",
+          project.getId(), student.getAccountId());
       throw ExceptionHelper.enrollmentAlreadyExists();
     }
 
@@ -149,7 +162,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
       throw new AppValidationException(enrollment.getFieldErrors());
     }
 
-    return repo.persist(enrollment);
+    Enrollment saved = repo.persist(enrollment);
+    LOG.infof("Enrollment created successfully. Identifier: %s", identifier);
+
+    auditPublisher.fireCreate(Enrollment.class.getName(), identifier.getProjectId());
+    return saved;
   }
 
   /**
@@ -166,6 +183,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
    * @throws AppValidationException if the updated enrollment violates domain constraints
    */
   private Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus newStatus) {
+    LOG.debugf("Attempting to transition Enrollment %s to status %s", identifier, newStatus);
     Enrollment current = getByIds(identifier);
     Enrollment updated = current.changeStatus(newStatus);
 
@@ -174,6 +192,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     repo.update(updated);
+    LOG.infof("Enrollment status updated to %s. Identifier: %s", newStatus, identifier);
+
+    auditPublisher.fireUpdate(
+        Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
   }
 }

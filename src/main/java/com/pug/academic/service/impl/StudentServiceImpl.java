@@ -13,6 +13,7 @@ import com.pug.identity.service.AccountService;
 import com.pug.identity.service.dtos.AccountCreateCommand;
 import com.pug.project.service.EnrollmentService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -35,6 +36,8 @@ import org.jboss.logging.Logger;
 public class StudentServiceImpl implements StudentService {
 
   private static final Logger LOG = Logger.getLogger(StudentServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject StudentRepository repo;
 
@@ -81,6 +84,7 @@ public class StudentServiceImpl implements StudentService {
     if (deleted) {
       LOG.infof("Student deleted successfully. Account ID: %s", accountId);
       accountService.delete(accountId);
+      auditPublisher.fireDelete(Student.class.getName(), accountId);
     } else {
       LOG.debugf("Delete failed: Student Account ID %s not found (idempotent)", accountId);
     }
@@ -146,6 +150,8 @@ public class StudentServiceImpl implements StudentService {
 
     Student savedStudent = repo.persist(studentToPersist);
     LOG.infof("Student created successfully. Account ID: %s", savedStudent.getAccountId());
+
+    auditPublisher.fireCreate(Student.class.getName(), savedStudent.getAccountId());
     return savedStudent;
   }
 
@@ -223,6 +229,8 @@ public class StudentServiceImpl implements StudentService {
 
     repo.update(studentToUpdate);
     LOG.infof("Student updated successfully. Account ID: %s", accountId);
+
+    auditPublisher.fireUpdate(Student.class.getName(), accountId, current, studentToUpdate);
     return getById(accountId);
   }
 

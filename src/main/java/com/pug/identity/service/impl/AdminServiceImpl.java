@@ -10,6 +10,7 @@ import com.pug.identity.service.dtos.AdminUpdateCommand;
 import com.pug.identity.service.utils.AdminProcessor;
 import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -28,6 +29,8 @@ import org.jboss.logging.Logger;
 public class AdminServiceImpl implements AdminService {
 
   private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject AdminRepository repo;
 
@@ -59,6 +62,7 @@ public class AdminServiceImpl implements AdminService {
     if (deleted) {
       LOG.infof("Admin role revoked successfully. Account ID: %s", accountId);
       accountService.delete(accountId);
+      auditPublisher.fireDelete(Admin.class.getName(), accountId);
     } else {
       LOG.debugf("Revoke failed: Admin ID %s not found (idempotent)", accountId);
     }
@@ -101,6 +105,8 @@ public class AdminServiceImpl implements AdminService {
 
     Admin savedAdmin = repo.persist(admin);
     LOG.infof("Admin role granted successfully. Account ID: %s", savedAdmin.getAccountId());
+
+    auditPublisher.fireCreate(Admin.class.getName(), savedAdmin.getAccountId());
     return savedAdmin;
   }
 
@@ -123,6 +129,8 @@ public class AdminServiceImpl implements AdminService {
 
     repo.update(updatedAdmin);
     LOG.infof("Admin details updated. Account ID: %s", accountId);
+
+    auditPublisher.fireUpdate(Admin.class.getName(), accountId, current, updatedAdmin);
     return getByAccountId(accountId);
   }
 }

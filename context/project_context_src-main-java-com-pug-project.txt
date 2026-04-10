@@ -5460,6 +5460,351 @@ public class ProjectResource {
 
 
 ================================================================================
+FILE: README.md
+================================================================================
+# 📋 Project Module
+
+## Overview
+
+The **Project** module is the operational core of the PUG platform. It manages community service **Projects** offered by partner entities, **Enrollments** of students into those projects, and **Attendance** tracking via QR code validation. Projects follow a rich lifecycle state machine (PLANNED → IN_PROGRESS → COMPLETED/CANCELED) and track counterpart hours.
+
+## Domain Model
+
+```mermaid
+classDiagram
+    class Project {
+        +UUID id
+        +String name
+        +UUID entityId
+        +String description
+        +ProjectInfo projectInfo
+        +ProjectStatus projectStatus
+    }
+
+    class ProjectBySchool {
+        +UUID projectId
+        +UUID schoolId
+    }
+
+    class Enrollment {
+        +EnrollmentIdentifier id
+        +EnrollmentStatus status
+        +EnrollmentInfo enrollmentInfo
+    }
+
+    class Attendance {
+        +UUID id
+        +EnrollmentIdentifier enrollmentIdentifier
+        +QrValidationInfo qrValidationInfo
+        +AttendanceInfo attendanceInfo
+        +AttendanceStatus status
+    }
+
+    class ProjectInfo {
+        +UUID createdBy
+        +int maxParticipants
+        +BigDecimal offeredHours
+        +BigDecimal completedHours
+        +Instant closedAt
+        +AuditInfo auditInfo
+    }
+
+    class EnrollmentIdentifier {
+        +UUID studentId
+        +UUID projectId
+    }
+
+    class EnrollmentInfo {
+        +Instant acceptedAt
+        +Instant closingStatusAt
+        +AuditInfo auditInfo
+    }
+
+    class AttendanceInfo {
+        +UUID validatedBy
+        +Instant validatedAt
+        +AuditInfo auditInfo
+    }
+
+    class QrValidationInfo {
+        +BigDecimal duration
+        +String qrValidationHash
+    }
+
+    class ProjectStatus {
+        <<enumeration>>
+        PLANNED
+        IN_PROGRESS
+        ON_HOLD
+        COMPLETED
+        CANCELED
+    }
+
+    class EnrollmentStatus {
+        <<enumeration>>
+        PENDING
+        APPROVED
+        COMPLETED
+        CANCELED
+        EXITED
+        REJECTED
+        REMOVED
+    }
+
+    class AttendanceStatus {
+        <<enumeration>>
+        WAITING
+        PRESENT
+        ABSENT
+    }
+
+    Project --> ProjectInfo
+    Project --> ProjectStatus
+    Project "1" --> "*" ProjectBySchool
+    Project "1" --> "*" Enrollment
+    Project "1" --> "*" Attendance
+    Enrollment --> EnrollmentIdentifier
+    Enrollment --> EnrollmentStatus
+    Enrollment --> EnrollmentInfo
+    Attendance --> EnrollmentIdentifier
+    Attendance --> QrValidationInfo
+    Attendance --> AttendanceInfo
+    Attendance --> AttendanceStatus
+```
+
+## Architecture
+
+```
+presenter/                        ← REST controllers
+  ProjectResource                 ← CRUD + lifecycle for projects
+  ProjectBySchoolResource         ← Project-School associations
+  EnrollmentResource              ← CRUD + status transitions for enrollments
+  AttendanceResource              ← CRUD + QR validation for attendances
+  dtos/                           ← Request/Response DTOs
+  mappers/                        ← Presenter layer transformers
+domain/                           ← Pure domain model
+  Project, Enrollment, Attendance ← Aggregate roots
+  ProjectBySchool                 ← Association aggregate
+  vos/                            ← Value Objects
+  enums/                          ← Status enums
+  *Repository                     ← Repository interfaces
+service/                          ← Application services (CQRS)
+  ProjectService                  ← Project commands + lifecycle
+  EnrollmentService               ← Enrollment commands + transitions
+  AttendanceService               ← Attendance commands + QR validation
+  *ReadService                    ← Query-side services
+infra/                            ← Infrastructure layer
+  persistence/                    ← JPA entities (Hibernate Search indexed)
+  read/                           ← CQRS query implementations
+  *Mapper                         ← Domain ↔ JPA anti-corruption layers
+```
+
+## Endpoints
+
+### Projects — `/projects/projects`
+
+```mermaid
+graph LR
+    subgraph Projects["📋 /projects/projects"]
+        direction TB
+        GET_LIST["GET / — List/search ?q= ?entityId= ?createdBy=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
+        POST["POST / — Create project<br/>🔒 Authenticated"]
+        PUT["PUT /{id} — Update project<br/>🔒 Authenticated"]
+        PATCH_START["PATCH /{id}/start — To IN_PROGRESS<br/>🔒 Authenticated"]
+        PATCH_COMPLETE["PATCH /{id}/complete — To COMPLETED<br/>🔒 Authenticated"]
+        PATCH_CANCEL["PATCH /{id}/cancel — To CANCELED<br/>🔒 Authenticated"]
+        PATCH_HOLD["PATCH /{id}/hold — To ON_HOLD<br/>🔒 Authenticated"]
+        PATCH_RETAKE["PATCH /{id}/retake — Resume from ON_HOLD<br/>🔒 Authenticated"]
+        DELETE["DELETE /{id} — Delete project<br/>🔒 Authenticated"]
+    end
+```
+
+### Project ↔ School Associations — `/projects/projects-by-schools`
+
+```mermaid
+graph LR
+    subgraph PBS["🏫 /projects/projects-by-schools"]
+        direction TB
+        GET_LIST["GET / — List by ?projectId= or ?schoolId=<br/>🔒 Authenticated"]
+        POST["POST / — Create association<br/>🔒 Authenticated"]
+        DELETE["DELETE / — Remove association<br/>🔒 Authenticated"]
+    end
+```
+
+### Enrollments — `/projects/enrollments`
+
+```mermaid
+graph LR
+    subgraph Enrollments["📝 /projects/enrollments"]
+        direction TB
+        GET_LIST["GET / — List ?projectId= ?studentId=<br/>🔒 Authenticated"]
+        GET_ID["GET /{projectId}/{studentId} — Get specific<br/>🔒 Authenticated"]
+        POST["POST / — Enroll student<br/>🔒 Authenticated"]
+        PATCH["PATCH /{projectId}/{studentId}/status — Change status<br/>🔒 Authenticated"]
+        DELETE["DELETE /{projectId}/{studentId} — Delete<br/>🔒 Authenticated"]
+    end
+```
+
+### Attendances — `/projects/attendances`
+
+```mermaid
+graph LR
+    subgraph Attendances["📱 /projects/attendances"]
+        direction TB
+        GET_LIST["GET / — List ?projectId= ?studentId=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
+        POST["POST / — Record attendance via QR<br/>🔒 Authenticated"]
+        PATCH["PATCH /{id}/validate — Staff validates<br/>🔒 Authenticated"]
+        DELETE["DELETE /{id} — Delete record<br/>🔒 Authenticated"]
+    end
+```
+
+## Use Case Diagram
+
+```mermaid
+graph TB
+    subgraph Actors
+        STAFF["👥 Staff / Authenticated User"]
+        STUDENT["🎓 Student"]
+    end
+
+    subgraph ProjectModule["📋 Project Module"]
+        UC1["Create / Update / Delete Project"]
+        UC2["Manage Project Lifecycle<br/>start · hold · retake · complete · cancel"]
+        UC3["Associate Projects with Schools"]
+        UC4["Enroll Students in Projects"]
+        UC5["Approve / Reject / Remove Enrollments"]
+        UC6["Record Student Attendance via QR"]
+        UC7["Validate Attendance — mark PRESENT / ABSENT"]
+        UC8["View own Enrollments"]
+        UC9["View own Attendances"]
+        UC10["Submit Attendance via QR Code"]
+    end
+
+    STAFF --> UC1
+    STAFF --> UC2
+    STAFF --> UC3
+    STAFF --> UC4
+    STAFF --> UC5
+    STAFF --> UC6
+    STAFF --> UC7
+
+    STUDENT --> UC8
+    STUDENT --> UC9
+    STUDENT --> UC10
+```
+
+## Project Lifecycle State Machine
+
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED
+    PLANNED --> IN_PROGRESS : start()
+    IN_PROGRESS --> ON_HOLD : putOnHold()
+    ON_HOLD --> IN_PROGRESS : retake()
+    IN_PROGRESS --> COMPLETED : complete()
+    PLANNED --> CANCELED : cancel()
+    IN_PROGRESS --> CANCELED : cancel()
+    ON_HOLD --> CANCELED : cancel()
+
+    COMPLETED --> [*]
+    CANCELED --> [*]
+
+    note right of COMPLETED
+        Terminal state —
+        cannot be canceled
+    end note
+```
+
+## Enrollment Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> APPROVED : approve()
+    PENDING --> REJECTED : reject()
+    APPROVED --> COMPLETED : complete()
+    APPROVED --> CANCELED : cancel()
+    APPROVED --> EXITED : exit()
+    APPROVED --> REMOVED : remove()
+
+    COMPLETED --> [*]
+    CANCELED --> [*]
+    EXITED --> [*]
+    REJECTED --> [*]
+    REMOVED --> [*]
+```
+
+## ERM (Entity-Relationship Model)
+
+```mermaid
+erDiagram
+    projects {
+        UUID id PK
+        VARCHAR name
+        UUID entity_id FK
+        TEXT description
+        UUID created_by FK
+        INT max_participants
+        DECIMAL offered_hours
+        DECIMAL completed_hours
+        VARCHAR status
+        TIMESTAMPTZ closed_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    projects_by_schools {
+        UUID project_id PK
+        UUID school_id PK
+    }
+
+    enrollments {
+        UUID project_id PK
+        UUID student_id PK
+        VARCHAR status
+        TIMESTAMPTZ accepted_at
+        TIMESTAMPTZ closing_status_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    attendances {
+        UUID id PK
+        UUID project_id FK
+        UUID student_id FK
+        DECIMAL duration
+        VARCHAR qr_validation_hash UK
+        VARCHAR status
+        UUID validated_by FK
+        TIMESTAMPTZ validated_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    entities ||--o{ projects : "offers"
+    staff ||--o{ projects : "created_by"
+    projects ||--o{ projects_by_schools : "associated"
+    schools ||--o{ projects_by_schools : "associated"
+    projects ||--o{ enrollments : "has"
+    students ||--o{ enrollments : "participates"
+    projects ||--o{ attendances : "has"
+    students ||--o{ attendances : "records"
+    staff ||--o{ attendances : "validated_by"
+```
+
+## Business Rules
+
+- Project names must be unique per partner entity.
+- A project cannot be deleted if it has enrollments.
+- Enrollment status transitions follow a strict state machine (e.g., cannot go from PENDING directly to COMPLETED).
+- Attendance QR hashes must be globally unique to prevent duplicate submissions.
+- When completed hours reach offered hours, the project auto-completes.
+- Staff members validate attendances, creating an audit trail (who validated, when).
+
+
+================================================================================
 FILE: service/AttendanceReadService.java
 ================================================================================
 package com.pug.project.service;
@@ -6064,7 +6409,6 @@ package com.pug.project.service.impl;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.StudentService;
-import com.pug.identity.service.AccountService;
 import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.AttendanceRepository;
@@ -6079,6 +6423,7 @@ import com.pug.project.service.utils.AttendanceProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -6099,10 +6444,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
   private static final Logger LOG = Logger.getLogger(AttendanceServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject AttendanceRepository repo;
   @Inject ProjectService projectService;
   @Inject StudentService studentService;
-  @Inject AccountService accountService;
   @Inject AuthService authService;
 
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
@@ -6116,17 +6461,31 @@ public class AttendanceServiceImpl implements AttendanceService {
       return 0;
     }
     LOG.debugf("Deleting all attendances for Enrollment: %s", identifier);
-    return repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+    long deleted =
+        repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+    if (deleted > 0) {
+      auditPublisher.fireDelete(Attendance.class.getName(), identifier.getProjectId());
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Attendance ID: %s", id);
     if (id == null) {
       return false;
     }
-    return repo.deleteById(id);
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Attendance deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Attendance.class.getName(), id);
+    } else {
+      LOG.debugf("Delete failed: Attendance ID %s not found (idempotent)", id);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -6156,6 +6515,9 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Transactional
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
+    LOG.debugf(
+        "Attempting to create Attendance for Project: %s, Student: %s",
+        cmd.projectId(), cmd.studentId());
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(cmd.studentId());
 
@@ -6168,18 +6530,24 @@ public class AttendanceServiceImpl implements AttendanceService {
       throw new AppValidationException(attendance.getFieldErrors());
     }
 
-    return repo.persist(attendance);
+    Attendance saved = repo.persist(attendance);
+    LOG.infof("Attendance created successfully. ID: %s", saved.getId());
+
+    auditPublisher.fireCreate(Attendance.class.getName(), saved.getId());
+    return saved;
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
+    LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);
     UUID validatorAccountId = authService.getCurrentAccountId();
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
 
     if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
+      LOG.warnf("Validation failed: QR Hash mismatch for Attendance ID: %s", id);
       throw ExceptionHelper.attendanceNotFound();
     }
 
@@ -6191,6 +6559,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     repo.update(validated);
+    LOG.infof("Attendance validated successfully. ID: %s, Status: %s", id, cmd.status());
 
     if (validated.getStatus() == AttendanceStatus.PRESENT) {
       studentService.addCompletedHours(
@@ -6201,6 +6570,7 @@ public class AttendanceServiceImpl implements AttendanceService {
           validated.getQrValidationInfo().getDuration());
     }
 
+    auditPublisher.fireUpdate(Attendance.class.getName(), id, current, validated);
     return getById(id);
   }
 
@@ -6300,6 +6670,7 @@ import com.pug.project.service.utils.EnrollmentProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -6318,6 +6689,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject EnrollmentRepository repo;
   @Inject AuthService authService;
   @Inject ProjectService projectService;
@@ -6348,12 +6720,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Transactional
   @Override
   public boolean delete(EnrollmentIdentifier identifier) {
-    if (identifier == null
-        || identifier.getProjectId() == null
-        || identifier.getStudentId() == null) {
+    LOG.debugf("Attempting to delete Enrollment: %s", identifier);
+    if (identifier == null) {
       return false;
     }
-    return repo.deleteById(identifier);
+
+    boolean deleted = repo.deleteById(identifier);
+    if (deleted) {
+      LOG.infof("Enrollment deleted successfully. Identifier: %s", identifier);
+      auditPublisher.fireDelete(Enrollment.class.getName(), identifier.getProjectId());
+    } else {
+      LOG.debugf("Delete failed: Enrollment %s not found (idempotent)", identifier);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -6414,6 +6793,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Transactional
   @Override
   public Enrollment save(EnrollmentCreateCommand cmd) {
+    LOG.debugf("Attempting to create Enrollment for Project ID: %s", cmd.projectId());
     authService.requireCurrentAccountOfType(AccountType.STUDENT);
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(authService.getCurrentAccountId());
@@ -6425,6 +6805,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
       throw new AppValidationException(identifier.getFieldErrors());
     }
     if (repo.existsById(identifier)) {
+      LOG.warnf(
+          "Creation failed: Enrollment already exists for Project: %s, Student: %s",
+          project.getId(), student.getAccountId());
       throw ExceptionHelper.enrollmentAlreadyExists();
     }
 
@@ -6434,7 +6817,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
       throw new AppValidationException(enrollment.getFieldErrors());
     }
 
-    return repo.persist(enrollment);
+    Enrollment saved = repo.persist(enrollment);
+    LOG.infof("Enrollment created successfully. Identifier: %s", identifier);
+
+    auditPublisher.fireCreate(Enrollment.class.getName(), identifier.getProjectId());
+    return saved;
   }
 
   /**
@@ -6451,6 +6838,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
    * @throws AppValidationException if the updated enrollment violates domain constraints
    */
   private Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus newStatus) {
+    LOG.debugf("Attempting to transition Enrollment %s to status %s", identifier, newStatus);
     Enrollment current = getByIds(identifier);
     Enrollment updated = current.changeStatus(newStatus);
 
@@ -6459,6 +6847,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     repo.update(updated);
+    LOG.infof("Enrollment status updated to %s. Identifier: %s", newStatus, identifier);
+
+    auditPublisher.fireUpdate(
+        Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
   }
 }
@@ -6550,6 +6942,7 @@ import com.pug.project.service.ProjectBySchoolService;
 import com.pug.project.service.utils.ProjectBySchoolProcessor;
 import com.pug.project.service.utils.ProjectProcessor;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -6574,6 +6967,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
 
   private static final Logger LOG = Logger.getLogger(ProjectBySchoolServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject ProjectBySchoolRepository repo;
 
   /** {@inheritDoc} */
@@ -6617,6 +7011,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.infof(
         "Created %d new ProjectBySchool associations for projectId=%s", created.size(), projectId);
 
+    auditPublisher.fireCreate(ProjectBySchool.class.getName(), projectId);
     return created;
   }
 
@@ -6635,7 +7030,6 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
         "Attempting to delete ProjectsBySchool association: projectId=%s, schoolId=%s",
         projectId, schoolId);
 
-    // No need to trigger domain validation for a delete operation; we just need the IDs.
     ProjectBySchool association =
         ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
 
@@ -6648,6 +7042,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
       LOG.debugf(
           "ProjectsBySchool association not found for deletion. projectId=%s, schoolId=%s",
           projectId, schoolId);
+    }
+
+    if (deleted) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
     }
     return deleted;
   }
@@ -6664,6 +7062,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.debugf("Deleting all ProjectsBySchool associations for projectId=%s", projectId);
     long deleted = repo.deleteAllByProjectId(projectId);
     LOG.infof("Deleted %d ProjectsBySchool associations for projectId=%s", deleted, projectId);
+
+    if (deleted > 0) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
+    }
     return deleted;
   }
 
@@ -6679,6 +7081,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.debugf("Deleting all ProjectsBySchool associations for schoolId=%s", schoolId);
     long deleted = repo.deleteAllBySchoolId(schoolId);
     LOG.infof("Deleted %d ProjectsBySchool associations for schoolId=%s", deleted, schoolId);
+
+    if (deleted > 0) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), schoolId);
+    }
     return deleted;
   }
 }
@@ -6787,6 +7193,7 @@ import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.project.service.utils.ProjectProcessor;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -6806,6 +7213,7 @@ public class ProjectServiceImpl implements ProjectService {
 
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject ProjectRepository repo;
   @Inject ProjectBySchoolService associationService;
   @Inject AuthService authService;
@@ -6834,6 +7242,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Project ID: %s", id);
     if (id == null) {
       return false;
     }
@@ -6844,7 +7253,14 @@ public class ProjectServiceImpl implements ProjectService {
     }
     associationService.deleteAllByProjectId(id);
 
-    return repo.deleteById(id);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Project deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Project.class.getName(), id);
+    } else {
+      LOG.debugf("Delete failed: Project ID %s not found (idempotent)", id);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -6881,10 +7297,14 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
+    LOG.debugf("Attempting to create Project: %s", cmd.name());
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
+      LOG.warnf(
+          "Creation failed: Project with name %s already exists for entity %s",
+          cmd.name(), cmd.entityId());
       throw ExceptionHelper.projectAlreadyExists();
     }
 
@@ -6901,7 +7321,11 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    return repo.persist(project);
+    Project savedProject = repo.persist(project);
+    LOG.infof("Project created successfully. ID: %s", savedProject.getId());
+
+    auditPublisher.fireCreate(Project.class.getName(), savedProject.getId());
+    return savedProject;
   }
 
   /** {@inheritDoc} */
@@ -6921,6 +7345,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
+
+    auditPublisher.fireUpdate(Project.class.getName(), id, project, updated);
     return updated;
   }
 
@@ -6928,6 +7354,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project update(UUID id, ProjectUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Project ID: %s", id);
     Project current = getById(id);
     Project updated =
         ProjectProcessor.processUpdateInput(
@@ -6940,10 +7367,16 @@ public class ProjectServiceImpl implements ProjectService {
     if (cmd.name() != null
         && !cmd.name().equals(current.getName())
         && repo.existsByNameAndEntityId(updated.getName(), current.getEntityId())) {
+      LOG.warnf(
+          "Update failed: Project name %s already exists for entity %s",
+          updated.getName(), current.getEntityId());
       throw ExceptionHelper.projectAlreadyExists();
     }
 
     repo.update(updated);
+    LOG.infof("Project updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Project.class.getName(), id, current, updated);
     return getById(id);
   }
 }

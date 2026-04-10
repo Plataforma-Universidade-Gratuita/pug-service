@@ -14,6 +14,7 @@ import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.project.service.utils.ProjectProcessor;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -33,6 +34,7 @@ public class ProjectServiceImpl implements ProjectService {
 
   private static final Logger LOG = Logger.getLogger(ProjectServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject ProjectRepository repo;
   @Inject ProjectBySchoolService associationService;
   @Inject AuthService authService;
@@ -61,6 +63,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Project ID: %s", id);
     if (id == null) {
       return false;
     }
@@ -71,7 +74,14 @@ public class ProjectServiceImpl implements ProjectService {
     }
     associationService.deleteAllByProjectId(id);
 
-    return repo.deleteById(id);
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Project deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Project.class.getName(), id);
+    } else {
+      LOG.debugf("Delete failed: Project ID %s not found (idempotent)", id);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -108,10 +118,14 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project save(ProjectCreateCommand cmd) {
+    LOG.debugf("Attempting to create Project: %s", cmd.name());
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
     entityService.getById(cmd.entityId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
+      LOG.warnf(
+          "Creation failed: Project with name %s already exists for entity %s",
+          cmd.name(), cmd.entityId());
       throw ExceptionHelper.projectAlreadyExists();
     }
 
@@ -128,7 +142,11 @@ public class ProjectServiceImpl implements ProjectService {
       throw new AppValidationException(project.getFieldErrors());
     }
 
-    return repo.persist(project);
+    Project savedProject = repo.persist(project);
+    LOG.infof("Project created successfully. ID: %s", savedProject.getId());
+
+    auditPublisher.fireCreate(Project.class.getName(), savedProject.getId());
+    return savedProject;
   }
 
   /** {@inheritDoc} */
@@ -148,6 +166,8 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
+
+    auditPublisher.fireUpdate(Project.class.getName(), id, project, updated);
     return updated;
   }
 
@@ -155,6 +175,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Transactional
   @Override
   public Project update(UUID id, ProjectUpdateCommand cmd) {
+    LOG.debugf("Attempting to update Project ID: %s", id);
     Project current = getById(id);
     Project updated =
         ProjectProcessor.processUpdateInput(
@@ -167,10 +188,16 @@ public class ProjectServiceImpl implements ProjectService {
     if (cmd.name() != null
         && !cmd.name().equals(current.getName())
         && repo.existsByNameAndEntityId(updated.getName(), current.getEntityId())) {
+      LOG.warnf(
+          "Update failed: Project name %s already exists for entity %s",
+          updated.getName(), current.getEntityId());
       throw ExceptionHelper.projectAlreadyExists();
     }
 
     repo.update(updated);
+    LOG.infof("Project updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Project.class.getName(), id, current, updated);
     return getById(id);
   }
 }

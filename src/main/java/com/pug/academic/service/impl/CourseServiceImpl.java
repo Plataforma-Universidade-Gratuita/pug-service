@@ -10,6 +10,7 @@ import com.pug.academic.service.dtos.CourseUpdateCommand;
 import com.pug.academic.service.utils.CourseProcessor;
 import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -29,6 +30,8 @@ import org.jboss.logging.Logger;
 public class CourseServiceImpl implements CourseService {
 
   private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject CourseRepository repo;
 
@@ -53,6 +56,7 @@ public class CourseServiceImpl implements CourseService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("Course deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Course.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: Course ID %s not found (idempotent)", id);
     }
@@ -106,6 +110,8 @@ public class CourseServiceImpl implements CourseService {
 
     Course savedCourse = repo.persist(courseToPersist);
     LOG.infof("Course created successfully. ID: %s", savedCourse.getId());
+
+    auditPublisher.fireCreate(Course.class.getName(), savedCourse.getId());
     return savedCourse;
   }
 
@@ -135,6 +141,8 @@ public class CourseServiceImpl implements CourseService {
 
     repo.update(updatedCourse);
     LOG.infof("Course updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Course.class.getName(), id, current, updatedCourse);
     return getById(id);
   }
 

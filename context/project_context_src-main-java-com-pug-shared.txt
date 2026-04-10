@@ -830,6 +830,244 @@ public class I18n {
 
 
 ================================================================================
+FILE: infra/audit/AuditListener.java
+================================================================================
+package com.pug.shared.infra.audit;
+
+import io.quarkus.mongodb.panache.PanacheMongoRepository;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.ObservesAsync;
+import java.time.OffsetDateTime;
+import org.jboss.logging.Logger;
+
+/**
+ * Asynchronous listener that persists audit events to MongoDB.
+ *
+ * <p>This listener observes {@link DomainAuditEvent} events fired throughout the application and
+ * persists them into the configured MongoDB collection. It runs asynchronously, ensuring that audit
+ * logging does not impose latency on primary business transactions.
+ */
+@ApplicationScoped
+public class AuditListener implements PanacheMongoRepository<AuditLog> {
+
+  private static final Logger LOG = Logger.getLogger(AuditListener.class);
+
+  /**
+   * Consumes domain events and writes them to the audit database.
+   *
+   * @param event the audit event payload to be persisted
+   */
+  public void onAuditEvent(@ObservesAsync DomainAuditEvent event) {
+    try {
+      AuditLog log =
+          AuditLog.builder()
+              .entityName(event.entityName())
+              .entityId(event.entityId())
+              .action(event.action())
+              .changes(event.changes())
+              .performedBy(event.performedBy())
+              .timestamp(OffsetDateTime.now())
+              .correlationId(event.correlationId())
+              .build();
+
+      persist(log);
+      LOG.debugf("Audit log persisted for entity: %s", event.entityName());
+    } catch (Exception e) {
+      // Catch exception to prevent the async observer from failing the entire process
+      LOG.errorf(e, "Failed to persist audit log for entity: %s", event.entityName());
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/audit/AuditLog.java
+================================================================================
+package com.pug.shared.infra.audit;
+
+import io.quarkus.mongodb.panache.common.MongoEntity;
+import java.time.OffsetDateTime;
+import java.util.Map;
+import java.util.UUID;
+import lombok.Builder;
+import lombok.Getter;
+import org.bson.codecs.pojo.annotations.BsonId;
+
+/**
+ * MongoDB document representing a system-wide audit entry.
+ *
+ * <p>This entity captures historical state changes across the system, linking modifications to the
+ * specific user account and request correlation ID for auditability and distributed tracing.
+ */
+@Getter
+@Builder
+@MongoEntity(collection = "audit_logs")
+public class AuditLog {
+
+  /** The unique MongoDB identifier for the audit log entry. */
+  @BsonId private String id;
+
+  /** The name of the domain entity that was modified (e.g., "Project"). */
+  private String entityName;
+
+  /** The unique identifier of the specific entity instance that was changed. */
+  private UUID entityId;
+
+  /** The type of operation performed (e.g., "CREATE", "UPDATE", "DELETE"). */
+  private String action;
+
+  /**
+   * A map capturing the structural changes, typically mapping field names to their old and new
+   * values.
+   */
+  private Map<String, Object> changes;
+
+  /** The unique identifier (Account ID) of the user who performed the change. */
+  private UUID performedBy;
+
+  /** The exact timestamp when the audit log entry was created. */
+  private OffsetDateTime timestamp;
+
+  /**
+   * The correlation ID extracted from the request, used to trace the audit log to specific API
+   * requests.
+   */
+  private String correlationId;
+}
+
+
+================================================================================
+FILE: infra/audit/AuditPublisher.java
+================================================================================
+package com.pug.shared.infra.audit;
+
+import com.pug.identity.service.AuthService;
+import com.pug.shared.utils.DiffUtils;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Event;
+import jakarta.inject.Inject;
+import java.util.Map;
+import java.util.UUID;
+import org.jboss.logging.MDC;
+
+/**
+ * Centralized service responsible for publishing domain-level audit events.
+ *
+ * <p>This component provides a clean, abstraction-heavy API for services to record state mutations.
+ * By centralizing event publication, it decouples business logic from audit persistence and ensures
+ * consistent event structure throughout the application.
+ *
+ * <p>All events are fired asynchronously to ensure that audit logging does not impact the latency
+ * or success of the primary business transactions.
+ */
+@ApplicationScoped
+public class AuditPublisher {
+
+  @Inject Event<DomainAuditEvent> auditEvent;
+
+  @Inject AuthService authService;
+
+  /**
+   * Publishes an asynchronous event signifying that a new entity has been created.
+   *
+   * @param entityName the name of the entity (e.g., "Project")
+   * @param entityId the unique identifier of the newly created entity
+   */
+  public void fireCreate(String entityName, UUID entityId) {
+    String cid =
+        MDC.get("X-Correlation-Id") != null ? MDC.get("X-Correlation-Id").toString() : "N/A";
+    UUID userId = authService.getCurrentAccountId();
+    auditEvent.fireAsync(new DomainAuditEvent(entityName, entityId, "CREATE", null, userId, cid));
+  }
+
+  /**
+   * Publishes an asynchronous event signifying that an entity has been deleted.
+   *
+   * @param entityName the name of the entity
+   * @param entityId the unique identifier of the deleted entity
+   */
+  public void fireDelete(String entityName, UUID entityId) {
+    String cid =
+        MDC.get("X-Correlation-Id") != null ? MDC.get("X-Correlation-Id").toString() : "N/A";
+    UUID userId = authService.getCurrentAccountId();
+    auditEvent.fireAsync(new DomainAuditEvent(entityName, entityId, "DELETE", null, userId, cid));
+  }
+
+  /**
+   * Calculates the delta between two states and publishes an update event if changes are detected.
+   *
+   * <p>This method performs a deep comparison between the {@code oldObj} and {@code newObj}. If
+   * differences are identified, a {@link DomainAuditEvent} is dispatched with the calculated {@link
+   * Map} of field changes. If no differences are found, the event is suppressed to prevent noisy
+   * audit logs.
+   *
+   * @param entityName the name of the entity being updated
+   * @param entityId the unique identifier of the entity
+   * @param oldObj the original state of the entity
+   * @param newObj the updated state of the entity
+   */
+  public void fireUpdate(String entityName, UUID entityId, Object oldObj, Object newObj) {
+    Map<String, FieldChange> changes = DiffUtils.diff(oldObj, newObj);
+    String cid =
+        MDC.get("X-Correlation-Id") != null ? MDC.get("X-Correlation-Id").toString() : "N/A";
+    UUID userId = authService.getCurrentAccountId();
+    if (!changes.isEmpty()) {
+      auditEvent.fireAsync(
+          new DomainAuditEvent(entityName, entityId, "UPDATE", (Map) changes, userId, cid));
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/audit/DomainAuditEvent.java
+================================================================================
+package com.pug.shared.infra.audit;
+
+import java.util.Map;
+import java.util.UUID;
+
+/**
+ * Event payload for triggering an asynchronous audit log entry.
+ *
+ * <p>This record is used to propagate change information from the application services to the
+ * asynchronous audit listener, allowing decoupled recording of modifications without impacting the
+ * primary business transaction.
+ *
+ * @param entityName the name of the domain entity being modified
+ * @param entityId the unique identifier of the modified entity
+ * @param action the type of action performed (e.g., "UPDATE")
+ * @param changes a {@link Map} representing the differences or state captured during the operation
+ * @param performedBy the user who triggered that transaction
+ * @param correlationId the correlation identifier for distributed systems
+ */
+public record DomainAuditEvent(
+    String entityName,
+    UUID entityId,
+    String action,
+    Map<String, Object> changes,
+    UUID performedBy,
+    String correlationId) {}
+
+
+================================================================================
+FILE: infra/audit/FieldChange.java
+================================================================================
+package com.pug.shared.infra.audit;
+
+/**
+ * Represents a granular change for a specific domain field.
+ *
+ * <p>This record acts as a container for tracking the transition of a field's value from an old
+ * state to a new state within the audit system.
+ *
+ * @param oldValue the original value of the field before the modification
+ * @param newValue the new value of the field after the modification
+ */
+public record FieldChange(Object oldValue, Object newValue) {}
+
+
+================================================================================
 FILE: infra/persistence/BaseAuditedEntity.java
 ================================================================================
 package com.pug.shared.infra.persistence;
@@ -1960,6 +2198,234 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
 
 
 ================================================================================
+FILE: README.md
+================================================================================
+# 🧩 Shared Module
+
+## Overview
+
+The **Shared** module provides cross-cutting infrastructure, utilities, and base domain abstractions used by all other bounded contexts. It is **not** a standalone business module — instead, it defines the foundational building blocks of the platform's architecture.
+
+## Components
+
+### Domain Layer
+
+```mermaid
+classDiagram
+    class DomainError {
+        <<abstract>>
+        +List~FieldError~ errors
+        +addError(field, code, message)
+        +hasErrors() boolean
+        +validate()
+    }
+
+    class AuditInfo {
+        <<value object>>
+        +Instant createdAt
+        +Instant updatedAt
+    }
+
+    class SharedErrorCodes {
+        <<interface>>
+        INTERNAL_ERROR
+        VALIDATION_ERROR
+        UNAUTHORIZED_ERROR
+    }
+
+    class SharedFieldErrorCodes {
+        <<interface>>
+        INVALID_ID_BLANK
+        INVALID_NAME_BLANK
+    }
+
+    class AccountType {
+        <<enumeration>>
+        ADMIN
+        PARTNER
+        STUDENT
+    }
+
+    class Campi {
+        <<enumeration>>
+        JARAGUA_DO_SUL
+        JOINVILLE
+    }
+
+    DomainError --> AuditInfo
+    DomainError ..> SharedFieldErrorCodes : uses
+```
+
+### Exception Handling
+
+```mermaid
+classDiagram
+    class AppValidationException {
+        «HTTP 400»
+        +List~FieldError~ fieldErrors
+    }
+
+    class BusinessRuleException {
+        «HTTP 422»
+        +String code
+        +String message
+    }
+
+    class DuplicateResourceException {
+        «HTTP 409»
+        +String resourceName
+    }
+
+    class ResourceNotFoundException {
+        «HTTP 404»
+        +String resourceName
+        +String identifier
+    }
+
+    RuntimeException <|-- AppValidationException
+    RuntimeException <|-- BusinessRuleException
+    RuntimeException <|-- DuplicateResourceException
+    RuntimeException <|-- ResourceNotFoundException
+```
+
+### REST API Infrastructure
+
+```mermaid
+classDiagram
+    class ApiEnvelope~T~ {
+        +boolean success
+        +T data
+        +ApiError error
+        +Instant timestamp
+        +String correlationId
+    }
+
+    class ApiError {
+        +String code
+        +String message
+        +List~Details~ details
+    }
+
+    class FieldErrorsResponse {
+        +String field
+        +List~CodeMessage~ errors
+    }
+
+    class CorrelationFilter {
+        «JAX-RS Filter»
+        +X-Correlation-Id management
+    }
+
+    ApiEnvelope --> ApiError
+    ApiError --> FieldErrorsResponse
+```
+
+### Internationalization (i18n)
+
+```mermaid
+classDiagram
+    class I18n {
+        <<ApplicationScoped>>
+        +getMessage(code, locale) String
+        +getMessage(code, locale, args) String
+        -ResourceBundle messages_en_US
+        -ResourceBundle messages_pt_BR
+    }
+```
+
+### Infrastructure
+
+```mermaid
+classDiagram
+    class BaseUuidV7Entity {
+        <<abstract MappedSuperclass>>
+        +UUID id
+    }
+
+    class BaseAuditedEntity {
+        <<abstract MappedSuperclass>>
+        +Instant createdAt
+        +Instant updatedAt
+    }
+
+    class EsAnalysis {
+        «Elasticsearch Analyzers»
+        +pt_folded
+        +auto_ngram
+        +folding_lowercase
+    }
+
+    class HibernateSearchUtils {
+        +multiFieldSearch(query, fields, boosts)
+    }
+
+    class SearchIndexer {
+        «@Observes StartupEvent»
+        +rebuildIndexes()
+    }
+
+    BaseUuidV7Entity <|-- BaseAuditedEntity
+    BaseAuditedEntity ..> EsAnalysis : indexed by
+    HibernateSearchUtils ..> EsAnalysis : uses
+    SearchIndexer ..> HibernateSearchUtils : triggers
+```
+
+### Utilities
+
+```mermaid
+classDiagram
+    class StringUtils {
+        +trim(value) String
+        +isEmpty(value) boolean
+        +fold(value) String
+        +formatDate(date) String
+    }
+
+    class CollectionUtils {
+        +isNullOrEmpty(collection) boolean
+        +toStream(collection) Stream
+    }
+
+    class PresenterUtils {
+        +resolveLocale(headers) Locale
+    }
+```
+
+### Validation
+
+```mermaid
+classDiagram
+    class UuidV7 {
+        <<Jakarta Bean Validation>>
+        +Custom annotation
+        +Validates UUIDv7 path parameters
+    }
+```
+
+## Architecture Diagram
+
+```
+shared/
+├── domain/
+│   ├── DomainError              ← Self-validating base
+│   ├── enums/                   ← AccountType, Campi, error codes
+│   └── vos/AuditInfo            ← Shared value object
+├── exceptions/                  ← Custom exception hierarchy
+├── http/CorrelationFilter       ← Request tracing
+├── i18n/I18n                    ← Internationalization
+├── infra/
+│   ├── persistence/             ← Base JPA entities
+│   └── search/                  ← Elasticsearch config + utilities
+├── presenter/
+│   ├── dtos/                    ← Shared response DTOs
+│   ├── mappers/                 ← SharedDataPresenter
+│   └── rest/                    ← ApiEnvelope, ApiError, exception mappers
+├── utils/                       ← String, Collection, Presenter utilities
+└── validation/                  ← Custom annotations
+```
+
+
+================================================================================
 FILE: utils/CollectionUtils.java
 ================================================================================
 package com.pug.shared.utils;
@@ -2044,6 +2510,115 @@ public final class CollectionUtils {
    */
   public static <T> Stream<T> toStream(Iterable<T> it) {
     return it == null ? Stream.empty() : StreamSupport.stream(it.spliterator(), false);
+  }
+}
+
+
+================================================================================
+FILE: utils/DiffUtils.java
+================================================================================
+package com.pug.shared.utils;
+
+import com.pug.shared.infra.audit.FieldChange;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Utility class for calculating the differences between two objects using reflection.
+ *
+ * <p>This class provides mechanisms to inspect two domain objects and determine which specific
+ * fields have changed, making it ideal for auditing state transitions in an immutable domain model.
+ */
+public final class DiffUtils {
+
+  /** Private constructor to prevent instantiation of utility class. */
+  private DiffUtils() {}
+
+  /**
+   * Defines fields that should be excluded from audit logs due to security, privacy, or technical
+   * reasons.
+   */
+  private enum Ignored {
+    PASSWORD_HASH("passwordHash"),
+    QR_VALIDATION_HASH("qrValidationHash"),
+    EMAIL("email"),
+    CPF("cpf"),
+    CNPJ("cnpj"),
+    CREATED_AT("createdAt"),
+    UPDATED_AT("updatedAt");
+
+    private final String fieldName;
+
+    Ignored(String fieldName) {
+      this.fieldName = fieldName;
+    }
+
+    public static Set<String> all() {
+      return Set.of(
+          PASSWORD_HASH.fieldName,
+          QR_VALIDATION_HASH.fieldName,
+          EMAIL.fieldName,
+          CPF.fieldName,
+          CNPJ.fieldName,
+          CREATED_AT.fieldName,
+          UPDATED_AT.fieldName);
+    }
+  }
+
+  /**
+   * Compares two objects of the same type and returns a map of changed fields.
+   *
+   * <p>The map uses the field name as the key and a {@link FieldChange} record containing the old
+   * and new values as the value. Fields explicitly listed in the {@code ignoredFields} set are
+   * skipped during comparison, which is useful for filtering sensitive data like password hashes.
+   *
+   * @param oldObj the original state of the object
+   * @param newObj the new state of the object
+   * @return a {@link Map} where keys are field names and values are the {@link FieldChange} records
+   */
+  public static Map<String, FieldChange> diff(Object oldObj, Object newObj) {
+    Map<String, FieldChange> diffs = new HashMap<>();
+    if (oldObj == null || newObj == null) {
+      return diffs;
+    }
+
+    for (Field field : oldObj.getClass().getDeclaredFields()) {
+      if (Ignored.all().contains(field.getName())) {
+        continue;
+      }
+
+      field.setAccessible(true);
+      try {
+        Object oldVal = field.get(oldObj);
+        Object newVal = field.get(newObj);
+
+        if (hasChanged(oldVal, newVal)) {
+          diffs.put(field.getName(), new FieldChange(oldVal, newVal));
+        }
+      } catch (IllegalAccessException e) {
+        // Silently skip fields that cannot be accessed via reflection
+      }
+    }
+    return diffs;
+  }
+
+  /**
+   * Helper method to determine if two values are different.
+   *
+   * @param oldVal the original value
+   * @param newVal the new value
+   * @return {@code true} if the values are different, {@code false} otherwise
+   */
+  private static boolean hasChanged(Object oldVal, Object newVal) {
+    if (oldVal == null && newVal == null) {
+      return false;
+    }
+    if (oldVal == null || newVal == null) {
+      return true;
+    }
+    return !oldVal.equals(newVal);
   }
 }
 

@@ -9,6 +9,7 @@ import com.pug.identity.service.dtos.UserUpdateCommand;
 import com.pug.identity.service.utils.ExceptionHelper;
 import com.pug.identity.service.utils.UserProcessor;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +31,8 @@ public class UserServiceImpl implements UserService {
 
   private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
+
   @Inject UserRepository repo;
 
   /** {@inheritDoc} */
@@ -42,6 +45,7 @@ public class UserServiceImpl implements UserService {
 
     if (deleted) {
       LOG.infof("User deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(User.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: User ID %s not found (idempotent response)", id);
     }
@@ -142,6 +146,7 @@ public class UserServiceImpl implements UserService {
     User savedUser = repo.persist(userToPersist);
     LOG.infof("User created successfully. ID: %s", savedUser.getId());
 
+    auditPublisher.fireCreate(User.class.getName(), savedUser.getId());
     return savedUser;
   }
 
@@ -190,6 +195,7 @@ public class UserServiceImpl implements UserService {
     repo.update(updated);
     LOG.infof("User updated successfully. ID: %s", id);
 
+    auditPublisher.fireUpdate(User.class.getName(), id, current, updated);
     return getById(id);
   }
 }

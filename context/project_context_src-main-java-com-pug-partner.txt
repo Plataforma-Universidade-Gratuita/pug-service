@@ -2645,6 +2645,159 @@ public class StaffResource {
 
 
 ================================================================================
+FILE: README.md
+================================================================================
+# 🏢 Partner Module
+
+## Overview
+
+The **Partner** module manages external partner organizations (entities) and their staff members. A partner entity represents a company or organization identified by a Brazilian CNPJ that offers community service projects. Staff members are accounts with privileges to manage that organization's projects.
+
+## Domain Model
+
+```mermaid
+classDiagram
+    class Entity {
+        +UUID id
+        +Cnpj cnpj
+        +String name
+        +UUID cityId
+        +String address
+        +AuditInfo auditInfo
+    }
+
+    class Staff {
+        +UUID accountId
+        +UUID entityId
+    }
+
+    class Cnpj {
+        +String value
+        «14-digit with modulo-11 checksum»
+    }
+
+    Entity "1" --> "*" Staff : employs
+    Entity --> Cnpj
+```
+
+## Architecture
+
+```
+presenter/                    ← REST controllers
+  EntityResource              ← CRUD for partner entities
+  StaffResource               ← CRUD for staff members
+  dtos/                       ← Request/Response DTOs
+  mappers/                    ← Presenter layer transformers
+domain/                       ← Pure domain model
+  Entity                      ← Partner organization aggregate
+  Staff                       ← Staff assignment aggregate
+  vos/Cnpj                    ← Value Object
+  *Repository                 ← Repository interfaces
+service/                      ← Application services (CQRS)
+  EntityService               ← Entity CRUD commands
+  StaffService                ← Staff assignment commands
+  *ReadService                ← Query-side services
+infra/                        ← Infrastructure layer
+  persistence/                ← JPA entities (Hibernate Search indexed)
+  read/                       ← CQRS query implementations
+  *Mapper                     ← Domain ↔ JPA anti-corruption layers
+```
+
+## Endpoints
+
+### Partner Entities — `/partner/entities`
+
+```mermaid
+graph LR
+    subgraph Entities["🏢 /partner/entities"]
+        direction TB
+        GET_LIST["GET / — List/search ?q= ?cityId=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
+        GET_CNPJ["GET /by-cnpj/{cnpj} — Get by CNPJ<br/>🔒 Authenticated"]
+        GET_CITIES["GET /cities — List city IDs used<br/>🔒 Authenticated"]
+        POST["POST / — Create entity<br/>🔒 ADMIN"]
+        PUT["PUT /{id} — Update entity<br/>🔒 ADMIN"]
+        DELETE["DELETE /{id} — Delete entity<br/>🔒 ADMIN"]
+    end
+```
+
+### Staff Members — `/partner/staff`
+
+```mermaid
+graph LR
+    subgraph Staff["👥 /partner/staff"]
+        direction TB
+        GET_LIST["GET / — List/search ?q= ?entityId= ?cpf=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by account ID<br/>🔒 Authenticated"]
+        GET_EMAIL["GET /by-email/{email}<br/>🔒 Authenticated"]
+        GET_ME["GET /me — Current staff profile<br/>🔒 Authenticated"]
+        POST["POST / — Assign staff to entity<br/>🔒 ADMIN"]
+        PUT["PUT /{id} — Update staff<br/>🔒 ADMIN"]
+        DELETE["DELETE /{id} — Revoke staff<br/>🔒 ADMIN"]
+    end
+```
+
+## Use Case Diagram
+
+```mermaid
+graph TB
+    subgraph Actors
+        AUTH["👤 Authenticated User"]
+        ADMIN["🛡️ Admin"]
+    end
+
+    subgraph PartnerModule["🏢 Partner Module"]
+        UC1["List / Search Partner Entities"]
+        UC2["Get Entity by ID or CNPJ"]
+        UC3["List / Search Staff Members"]
+        UC4["View own Staff profile /me"]
+        UC5["Create / Update / Delete Partner Entity"]
+        UC6["Assign / Update / Revoke Staff"]
+    end
+
+    AUTH --> UC1
+    AUTH --> UC2
+    AUTH --> UC3
+    AUTH --> UC4
+
+    ADMIN --> UC5
+    ADMIN --> UC6
+```
+
+## ERM (Entity-Relationship Model)
+
+```mermaid
+erDiagram
+    entities {
+        UUID id PK
+        CHAR_14 cnpj UK
+        VARCHAR name
+        UUID city_id FK
+        VARCHAR address
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    staff {
+        UUID account_id PK
+        UUID entity_id FK
+    }
+
+    cities ||--o{ entities : "located in"
+    entities ||--o{ staff : "employs"
+    staff }o--|| accounts : "PK/FK account_id"
+```
+
+## Business Rules
+
+- A CNPJ must be unique across all partner entities.
+- An account can only be assigned as staff to **one** partner entity at a time.
+- A partner entity cannot be deleted if it has associated projects.
+- A staff member cannot be deleted if they have validated attendances or created projects.
+
+
+
+================================================================================
 FILE: service/dtos/EntityCreateCommand.java
 ================================================================================
 package com.pug.partner.service.dtos;
@@ -3018,6 +3171,7 @@ import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.project.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -3036,6 +3190,8 @@ import org.jboss.logging.Logger;
 public class EntityServiceImpl implements EntityService {
 
   private static final Logger LOG = Logger.getLogger(EntityServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject EntityRepository repo;
 
@@ -3063,6 +3219,7 @@ public class EntityServiceImpl implements EntityService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("Entity deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Entity.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: Entity ID %s not found (idempotent)", id);
     }
@@ -3137,6 +3294,8 @@ public class EntityServiceImpl implements EntityService {
 
     Entity savedEntity = repo.persist(entityToPersist);
     LOG.infof("Entity created successfully. ID: %s", savedEntity.getId());
+
+    auditPublisher.fireCreate(Entity.class.getName(), savedEntity.getId());
     return savedEntity;
   }
 
@@ -3159,6 +3318,8 @@ public class EntityServiceImpl implements EntityService {
 
     repo.update(updatedEntity);
     LOG.infof("Entity updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Entity.class.getName(), id, current, updatedEntity);
     return getById(id);
   }
 }
@@ -3281,6 +3442,7 @@ import com.pug.partner.service.utils.StaffProcessor;
 import com.pug.project.service.AttendanceService;
 import com.pug.project.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -3300,6 +3462,8 @@ import org.jboss.logging.Logger;
 public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject StaffRepository repo;
 
@@ -3347,8 +3511,10 @@ public class StaffServiceImpl implements StaffService {
     boolean deleted = repo.deleteByAccountId(accountId);
     if (deleted) {
       LOG.infof("Staff deleted successfully. Account ID: %s", accountId);
+      auditPublisher.fireDelete(Staff.class.getName(), accountId);
       accountService.delete(accountId);
     }
+
     return deleted;
   }
 
@@ -3374,20 +3540,6 @@ public class StaffServiceImpl implements StaffService {
         "Batch delete complete. Removed %d staff members (and their accounts) for Entity ID: %s",
         deletedCount, entityId);
     return deletedCount;
-  }
-
-  /**
-   * Checks if a Staff assignment already exists for the given account and entity.
-   *
-   * @param accountId the unique identifier of the linked authentication account
-   * @param entityId the unique identifier of the partner entity
-   * @return {@code true} if the staff assignment exists, {@code false} otherwise
-   */
-  private boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
-    if (accountId == null || entityId == null) {
-      return false;
-    }
-    return repo.existsByAccountIdAndEntityId(accountId, entityId);
   }
 
   /** {@inheritDoc} */
@@ -3448,6 +3600,8 @@ public class StaffServiceImpl implements StaffService {
     LOG.infof(
         "Staff role granted successfully. Account ID: %s, Entity ID: %s",
         savedStaff.getAccountId(), savedStaff.getEntityId());
+
+    auditPublisher.fireCreate(Staff.class.getName(), savedStaff.getAccountId());
     return savedStaff;
   }
 
@@ -3461,6 +3615,8 @@ public class StaffServiceImpl implements StaffService {
     accountService.update(accountId, cmd.accountCommand());
 
     LOG.infof("Staff account updated successfully. Account ID: %s", accountId);
+
+    auditPublisher.fireUpdate(Staff.class.getName(), accountId, current, getByAccountId(accountId));
     return current;
   }
 }

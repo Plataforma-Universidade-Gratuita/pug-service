@@ -6,6 +6,7 @@ import com.pug.project.service.ProjectBySchoolService;
 import com.pug.project.service.utils.ProjectBySchoolProcessor;
 import com.pug.project.service.utils.ProjectProcessor;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +31,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
 
   private static final Logger LOG = Logger.getLogger(ProjectBySchoolServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject ProjectBySchoolRepository repo;
 
   /** {@inheritDoc} */
@@ -73,6 +75,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.infof(
         "Created %d new ProjectBySchool associations for projectId=%s", created.size(), projectId);
 
+    auditPublisher.fireCreate(ProjectBySchool.class.getName(), projectId);
     return created;
   }
 
@@ -91,7 +94,6 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
         "Attempting to delete ProjectsBySchool association: projectId=%s, schoolId=%s",
         projectId, schoolId);
 
-    // No need to trigger domain validation for a delete operation; we just need the IDs.
     ProjectBySchool association =
         ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
 
@@ -104,6 +106,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
       LOG.debugf(
           "ProjectsBySchool association not found for deletion. projectId=%s, schoolId=%s",
           projectId, schoolId);
+    }
+
+    if (deleted) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
     }
     return deleted;
   }
@@ -120,6 +126,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.debugf("Deleting all ProjectsBySchool associations for projectId=%s", projectId);
     long deleted = repo.deleteAllByProjectId(projectId);
     LOG.infof("Deleted %d ProjectsBySchool associations for projectId=%s", deleted, projectId);
+
+    if (deleted > 0) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
+    }
     return deleted;
   }
 
@@ -135,6 +145,10 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.debugf("Deleting all ProjectsBySchool associations for schoolId=%s", schoolId);
     long deleted = repo.deleteAllBySchoolId(schoolId);
     LOG.infof("Deleted %d ProjectsBySchool associations for schoolId=%s", deleted, schoolId);
+
+    if (deleted > 0) {
+      auditPublisher.fireDelete(ProjectBySchool.class.getName(), schoolId);
+    }
     return deleted;
   }
 }

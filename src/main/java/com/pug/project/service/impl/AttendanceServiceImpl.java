@@ -2,7 +2,6 @@ package com.pug.project.service.impl;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.StudentService;
-import com.pug.identity.service.AccountService;
 import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.AttendanceRepository;
@@ -17,6 +16,7 @@ import com.pug.project.service.utils.AttendanceProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
 import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -37,10 +37,10 @@ public class AttendanceServiceImpl implements AttendanceService {
 
   private static final Logger LOG = Logger.getLogger(AttendanceServiceImpl.class);
 
+  @Inject AuditPublisher auditPublisher;
   @Inject AttendanceRepository repo;
   @Inject ProjectService projectService;
   @Inject StudentService studentService;
-  @Inject AccountService accountService;
   @Inject AuthService authService;
 
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
@@ -54,17 +54,31 @@ public class AttendanceServiceImpl implements AttendanceService {
       return 0;
     }
     LOG.debugf("Deleting all attendances for Enrollment: %s", identifier);
-    return repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+    long deleted =
+        repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+    if (deleted > 0) {
+      auditPublisher.fireDelete(Attendance.class.getName(), identifier.getProjectId());
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
+    LOG.debugf("Attempting to delete Attendance ID: %s", id);
     if (id == null) {
       return false;
     }
-    return repo.deleteById(id);
+
+    boolean deleted = repo.deleteById(id);
+    if (deleted) {
+      LOG.infof("Attendance deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Attendance.class.getName(), id);
+    } else {
+      LOG.debugf("Delete failed: Attendance ID %s not found (idempotent)", id);
+    }
+    return deleted;
   }
 
   /** {@inheritDoc} */
@@ -94,6 +108,9 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Transactional
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
+    LOG.debugf(
+        "Attempting to create Attendance for Project: %s, Student: %s",
+        cmd.projectId(), cmd.studentId());
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(cmd.studentId());
 
@@ -106,18 +123,24 @@ public class AttendanceServiceImpl implements AttendanceService {
       throw new AppValidationException(attendance.getFieldErrors());
     }
 
-    return repo.persist(attendance);
+    Attendance saved = repo.persist(attendance);
+    LOG.infof("Attendance created successfully. ID: %s", saved.getId());
+
+    auditPublisher.fireCreate(Attendance.class.getName(), saved.getId());
+    return saved;
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
+    LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);
     UUID validatorAccountId = authService.getCurrentAccountId();
     authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
 
     if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
+      LOG.warnf("Validation failed: QR Hash mismatch for Attendance ID: %s", id);
       throw ExceptionHelper.attendanceNotFound();
     }
 
@@ -129,6 +152,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     repo.update(validated);
+    LOG.infof("Attendance validated successfully. ID: %s, Status: %s", id, cmd.status());
 
     if (validated.getStatus() == AttendanceStatus.PRESENT) {
       studentService.addCompletedHours(
@@ -139,6 +163,7 @@ public class AttendanceServiceImpl implements AttendanceService {
           validated.getQrValidationInfo().getDuration());
     }
 
+    auditPublisher.fireUpdate(Attendance.class.getName(), id, current, validated);
     return getById(id);
   }
 

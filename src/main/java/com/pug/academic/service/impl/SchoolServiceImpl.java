@@ -10,6 +10,7 @@ import com.pug.academic.service.utils.ExceptionHelper;
 import com.pug.academic.service.utils.SchoolProcessor;
 import com.pug.project.service.ProjectBySchoolService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,6 +29,8 @@ import org.jboss.logging.Logger;
 public class SchoolServiceImpl implements SchoolService {
 
   private static final Logger LOG = Logger.getLogger(SchoolServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject SchoolRepository repo;
 
@@ -53,9 +56,11 @@ public class SchoolServiceImpl implements SchoolService {
     if (deleted) {
       LOG.infof("School deleted successfully. ID: %s", id);
       projectBySchoolService.deleteAllBySchoolId(id);
+      auditPublisher.fireDelete(School.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);
     }
+
     return deleted;
   }
 
@@ -97,6 +102,8 @@ public class SchoolServiceImpl implements SchoolService {
 
     School savedSchool = repo.persist(schoolToPersist);
     LOG.infof("School created successfully. ID: %s", savedSchool.getId());
+
+    auditPublisher.fireCreate(School.class.getName(), savedSchool.getId());
     return savedSchool;
   }
 
@@ -121,6 +128,8 @@ public class SchoolServiceImpl implements SchoolService {
 
     repo.update(updatedSchool);
     LOG.infof("School updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(School.class.getName(), id, current, updatedSchool);
     return getById(id);
   }
 

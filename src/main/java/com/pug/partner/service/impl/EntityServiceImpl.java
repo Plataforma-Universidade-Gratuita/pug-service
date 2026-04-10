@@ -12,6 +12,7 @@ import com.pug.partner.service.utils.EntityProcessor;
 import com.pug.partner.service.utils.ExceptionHelper;
 import com.pug.project.service.ProjectService;
 import com.pug.shared.exceptions.AppValidationException;
+import com.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -30,6 +31,8 @@ import org.jboss.logging.Logger;
 public class EntityServiceImpl implements EntityService {
 
   private static final Logger LOG = Logger.getLogger(EntityServiceImpl.class);
+
+  @Inject AuditPublisher auditPublisher;
 
   @Inject EntityRepository repo;
 
@@ -57,6 +60,7 @@ public class EntityServiceImpl implements EntityService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("Entity deleted successfully. ID: %s", id);
+      auditPublisher.fireDelete(Entity.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: Entity ID %s not found (idempotent)", id);
     }
@@ -131,6 +135,8 @@ public class EntityServiceImpl implements EntityService {
 
     Entity savedEntity = repo.persist(entityToPersist);
     LOG.infof("Entity created successfully. ID: %s", savedEntity.getId());
+
+    auditPublisher.fireCreate(Entity.class.getName(), savedEntity.getId());
     return savedEntity;
   }
 
@@ -153,6 +159,8 @@ public class EntityServiceImpl implements EntityService {
 
     repo.update(updatedEntity);
     LOG.infof("Entity updated successfully. ID: %s", id);
+
+    auditPublisher.fireUpdate(Entity.class.getName(), id, current, updatedEntity);
     return getById(id);
   }
 }

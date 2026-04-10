@@ -81,6 +81,7 @@
 │   │   │   └── com/
 │   │   │       └── pug/
 │   │   │           ├── academic/
+│   │   │           │   ├── README.md
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Course.java
 │   │   │           │   │   ├── CourseRepository.java
@@ -165,6 +166,7 @@
 │   │   │           │           ├── SchoolProcessor.java
 │   │   │           │           └── StudentProcessor.java
 │   │   │           ├── geo/
+│   │   │           │   ├── README.md
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── City.java
 │   │   │           │   │   ├── CityRepository.java
@@ -199,6 +201,7 @@
 │   │   │           │       └── utils/
 │   │   │           │           └── ExceptionHelper.java
 │   │   │           ├── identity/
+│   │   │           │   ├── README.md
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Account.java
 │   │   │           │   │   ├── AccountRepository.java
@@ -287,6 +290,7 @@
 │   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           └── UserProcessor.java
 │   │   │           ├── partner/
+│   │   │           │   ├── README.md
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Entity.java
 │   │   │           │   │   ├── EntityRepository.java
@@ -350,6 +354,7 @@
 │   │   │           │           ├── ExceptionHelper.java
 │   │   │           │           └── StaffProcessor.java
 │   │   │           ├── project/
+│   │   │           │   ├── README.md
 │   │   │           │   ├── domain/
 │   │   │           │   │   ├── Attendance.java
 │   │   │           │   │   ├── AttendanceRepository.java
@@ -449,6 +454,7 @@
 │   │   │           │           ├── ProjectBySchoolProcessor.java
 │   │   │           │           └── ProjectProcessor.java
 │   │   │           └── shared/
+│   │   │               ├── README.md
 │   │   │               ├── domain/
 │   │   │               │   ├── DomainError.java
 │   │   │               │   ├── enums/
@@ -471,6 +477,12 @@
 │   │   │               ├── i18n/
 │   │   │               │   └── I18n.java
 │   │   │               ├── infra/
+│   │   │               │   ├── audit/
+│   │   │               │   │   ├── AuditListener.java
+│   │   │               │   │   ├── AuditLog.java
+│   │   │               │   │   ├── AuditPublisher.java
+│   │   │               │   │   ├── DomainAuditEvent.java
+│   │   │               │   │   └── FieldChange.java
 │   │   │               │   ├── persistence/
 │   │   │               │   │   ├── BaseAuditedEntity.java
 │   │   │               │   │   └── BaseUuidV7Entity.java
@@ -500,6 +512,7 @@
 │   │   │               │           └── UncaughtExceptionMapper.java
 │   │   │               ├── utils/
 │   │   │               │   ├── CollectionUtils.java
+│   │   │               │   ├── DiffUtils.java
 │   │   │               │   ├── PresenterUtils.java
 │   │   │               │   └── StringUtils.java
 │   │   │               └── validation/
@@ -541,46 +554,23 @@
 │       │       └── pug/
 │       │           ├── academic/
 │       │           │   ├── domain/
-│       │           │   ├── infra/
-│       │           │   │   └── persistence/
-│       │           │   ├── presenter/
-│       │           │   │   └── rest/
-│       │           │   └── service/
-│       │           ├── generate-context.sh
-│       │           ├── geo/
-│       │           │   ├── domain/
+│       │           │   │   ├── enums/
 │       │           │   │   └── vos/
 │       │           │   ├── infra/
-│       │           │   │   └── persistence/
+│       │           │   │   ├── persistence/
+│       │           │   │   │   ├── .gitkeep
+│       │           │   │   │   └── impl/
+│       │           │   │   └── read/
+│       │           │   │       ├── dtos/
+│       │           │   │       └── impl/
 │       │           │   ├── presenter/
 │       │           │   │   ├── dtos/
-│       │           │   │   └── rest/
+│       │           │   │   └── mappers/
 │       │           │   └── service/
-│       │           ├── identity/
-│       │           │   ├── domain/
-│       │           │   │   ├── enums/
-│       │           │   │   └── vos/
-│       │           │   ├── infra/
-│       │           │   │   └── persistence/
-│       │           │   ├── presenter/
-│       │           │   │   └── rest/
-│       │           │   └── service/
-│       │           ├── partner/
-│       │           │   ├── domain/
-│       │           │   │   ├── enums/
-│       │           │   │   └── vos/
-│       │           │   ├── infra/
-│       │           │   │   └── persistence/
-│       │           │   ├── presenter/
-│       │           │   │   └── rest/
-│       │           │   └── service/
-│       │           ├── project/
-│       │           │   ├── domain/
-│       │           │   ├── infra/
-│       │           │   │   └── persistence/
-│       │           │   ├── presenter/
-│       │           │   │   └── rest/
-│       │           │   └── service/
+│       │           │       ├── dtos/
+│       │           │       ├── impl/
+│       │           │       └── utils/
+│       │           ├── generate-context.sh
 │       │           └── shared/
 │       └── resources/
 │           ├── application.properties

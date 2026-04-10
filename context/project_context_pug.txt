@@ -3,3 +3,8 @@ Project Name: pug
 Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/test/java/com/pug
 ================================================================================
 
+
+================================================================================
+FILE: academic/infra/persistence/.gitkeep
+================================================================================
+
