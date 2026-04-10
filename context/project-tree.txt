@@ -393,9 +393,7 @@
 │   │   │           │   │       ├── EnrollmentQueries.java
 │   │   │           │   │       ├── ProjectQueries.java
 │   │   │           │   │       ├── dtos/
-│   │   │           │   │       │   ├── AttendanceAcc.java
 │   │   │           │   │       │   ├── AttendanceView.java
-│   │   │           │   │       │   ├── EnrollmentAcc.java
 │   │   │           │   │       │   ├── EnrollmentView.java
 │   │   │           │   │       │   └── ProjectView.java
 │   │   │           │   │       └── impl/

@@ -10,6 +10,12 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link AttendanceReadService}.
+ *
+ * <p>Delegates read-only operations to the underlying {@link AttendanceQueries} infrastructure
+ * component.
+ */
 @ApplicationScoped
 public class AttendanceReadServiceImpl implements AttendanceReadService {
 
@@ -17,6 +23,7 @@ public class AttendanceReadServiceImpl implements AttendanceReadService {
 
   @Inject AttendanceQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public AttendanceView getViewById(UUID id) {
     return queries
@@ -28,20 +35,36 @@ public class AttendanceReadServiceImpl implements AttendanceReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViews() {
-    return queries.listAllAttendances();
+  public List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) {
+      return List.of();
+    }
+    return queries.listByEnrollmentId(projectId, studentId);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViewsByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+  public List<AttendanceView> listByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
     return queries.listByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViewsByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+  public List<AttendanceView> listByStudentId(UUID studentId) {
+    if (studentId == null) {
+      return List.of();
+    }
     return queries.listByStudentId(studentId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<AttendanceView> listViews() {
+    return queries.listViews();
   }
 }

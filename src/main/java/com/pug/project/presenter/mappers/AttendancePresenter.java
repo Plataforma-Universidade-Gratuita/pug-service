@@ -1,9 +1,11 @@
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.presenter.mappers.StudentPresenter;
-import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.project.infra.read.dtos.AttendanceView;
+import com.pug.project.presenter.dtos.AttendanceCreateRequest;
 import com.pug.project.presenter.dtos.AttendanceResponse;
+import com.pug.project.presenter.dtos.AttendanceValidateRequest;
+import com.pug.project.service.dtos.AttendanceCreateCommand;
+import com.pug.project.service.dtos.AttendanceValidateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -12,11 +14,56 @@ import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal attendance projections to external API
- * responses.
+ * responses and REST payloads to application commands.
+ *
+ * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
+ * AttendanceView}) into client-ready representations ({@link AttendanceResponse}), and mapping
+ * incoming data transfers to command structures.
  */
 public final class AttendancePresenter {
+
+  /** Private constructor to prevent instantiation of utility class. */
   private AttendancePresenter() {}
 
+  /**
+   * Maps an incoming REST creation request into an application layer creation command.
+   *
+   * @param req the validated {@link AttendanceCreateRequest} payload
+   * @return the corresponding {@link AttendanceCreateCommand}, or {@code null} if input is null
+   */
+  public static AttendanceCreateCommand toCommand(AttendanceCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new AttendanceCreateCommand(req.projectId(), req.studentId(), req.duration());
+  }
+
+  /**
+   * Maps an incoming REST validation request into an application layer validation command.
+   *
+   * @param req the validated {@link AttendanceValidateRequest} payload
+   * @return the corresponding {@link AttendanceValidateCommand}, or {@code null} if input is null
+   */
+  public static AttendanceValidateCommand toCommand(AttendanceValidateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new AttendanceValidateCommand(req.qrValidationHash(), req.status());
+  }
+
+  /**
+   * Projects a read-only {@link AttendanceView} into a client-facing {@link AttendanceResponse}.
+   *
+   * <p>This mapping flattens the response, returning only the identifiers for project, student, and
+   * validator, while resolving localized labels and formatting dates based on the client's {@link
+   * Locale}.
+   *
+   * @param v the internal read-model projection of the attendance
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link AttendanceResponse} ready for JSON serialization, or {@code
+   *     null} if any required input is null
+   */
   public static AttendanceResponse toResponse(AttendanceView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
@@ -30,15 +77,13 @@ public final class AttendancePresenter {
 
     return new AttendanceResponse(
         v.id(),
-        ProjectPresenter.toResponse(v.project(), locale, i18n),
-        StudentPresenter.toResponse(v.student(), locale, i18n),
+        v.projectId(),
+        v.studentId(),
         v.duration(),
-        v.latitude(),
-        v.longitude(),
         v.qrValidationHash(),
         v.status(),
         statusFormatted,
-        AccountPresenter.toResponse(v.validatedBy(), locale, i18n),
+        v.validatedById(),
         v.validatedAt(),
         validatedAtFormatted,
         auditInfo);

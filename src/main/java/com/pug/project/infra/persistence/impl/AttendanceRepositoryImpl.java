@@ -11,11 +11,76 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the {@link AttendanceRepository} utilizing Hibernate ORM with Panache. */
+/**
+ * Implementation of the {@link AttendanceRepository} utilizing Hibernate ORM with Panache.
+ *
+ * <p>Bridges the pure domain repository interface with the persistence layer.
+ */
 @ApplicationScoped
 public class AttendanceRepositoryImpl
     implements AttendanceRepository, PanacheRepositoryBase<AttendanceEntity, UUID> {
 
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByEnrollmentId(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) {
+      return 0;
+    }
+    long deleted = delete("projectId = ?1 and studentId = ?2", projectId, studentId);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    boolean deleted = delete("id", id) > 0;
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByQrHash(String qrHash) {
+    if (StringUtils.isEmpty(qrHash)) {
+      return false;
+    }
+    return count("qrValidationHash = ?1", qrHash) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByValidatedBy(UUID accountId) {
+    if (accountId == null) {
+      return false;
+    }
+    return count("validatedBy", accountId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Attendance> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    return findByIdOptional(id).map(AttendanceMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Attendance> findOptionalByQrHash(String qrHash) {
+    if (StringUtils.isEmpty(qrHash)) {
+      return Optional.empty();
+    }
+    return find("qrValidationHash", qrHash).firstResultOptional().map(AttendanceMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance persist(Attendance entity) {
@@ -27,6 +92,7 @@ public class AttendanceRepositoryImpl
     return AttendanceMapper.toDomain(e);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Attendance entity) {
@@ -37,34 +103,5 @@ public class AttendanceRepositoryImpl
     if (managed != null) {
       AttendanceMapper.copy(entity, managed);
     }
-  }
-
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = delete("id", id) > 0;
-    flush();
-    return deleted;
-  }
-
-  @Override
-  public Optional<Attendance> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(AttendanceMapper::toDomain);
-  }
-
-  @Override
-  public boolean existsByQrHash(String qrHash) {
-    if (StringUtils.isEmpty(qrHash)) {
-      return false;
-    }
-    return count("qrValidationHash = ?1", qrHash) > 0;
-  }
-
-  @Override
-  public boolean existsByValidatedBy(UUID staffAccountId) {
-    return false;
   }
 }

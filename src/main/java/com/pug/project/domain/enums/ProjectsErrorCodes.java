@@ -11,10 +11,8 @@ import lombok.Getter;
  */
 @Getter
 public enum ProjectsErrorCodes implements GenericCodes {
+  /** Indicates an attempt to delete a project that still has enrollments. */
   PROJECT_HAS_ENROLLMENTS("error.domain.projects.has.enrollments"),
-
-  /** Indicates an attempt to record an attendance that already exists. */
-  ATTENDANCE_ALREADY_EXISTS("error.domain.projects.attendance.already.exists"),
 
   /** Indicates that a requested attendance record could not be found. */
   ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.not.found"),

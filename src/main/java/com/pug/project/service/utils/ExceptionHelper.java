@@ -18,16 +18,6 @@ public final class ExceptionHelper {
   private ExceptionHelper() {}
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that an attendance
-   * record already exists.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
-  public static DuplicateResourceException attendanceAlreadyExists() {
-    return new DuplicateResourceException(ProjectsErrorCodes.ATTENDANCE_ALREADY_EXISTS);
-  }
-
-  /**
    * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
    * attendance could not be located.
    *

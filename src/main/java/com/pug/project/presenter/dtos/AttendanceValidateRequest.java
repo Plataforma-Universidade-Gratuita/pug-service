@@ -1,16 +1,17 @@
 package com.pug.project.presenter.dtos;
 
-import com.pug.shared.validation.UuidV7;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
+import com.pug.project.domain.enums.AttendanceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for validating an existing
+ * Attendance.
+ *
+ * @param status the status to assign to the attendance (PRESENT or ABSENT; must not be null)
+ * @param qrValidationHash the unique cryptographic hash of the QR code being scanned (must not be
+ *     blank, max 512 chars)
+ */
 public record AttendanceValidateRequest(
-    @NotNull @UuidV7 UUID validatorId,
-    @NotNull @DecimalMin("-90.000000") @DecimalMax("90.000000") BigDecimal latitude,
-    @NotNull @DecimalMin("-180.000000") @DecimalMax("180.000000") BigDecimal longitude,
-    @NotBlank @Size(max = 512) String qrValidationHash) {}
+    @NotNull AttendanceStatus status, @NotBlank @Size(max = 512) String qrValidationHash) {}

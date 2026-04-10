@@ -12,11 +12,13 @@ package com.pug.project.domain;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.Student;
 import com.pug.project.domain.enums.AttendanceStatus;
+import com.pug.project.domain.enums.ProjectsErrorCodes;
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.project.domain.vos.AttendanceInfo;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.BusinessRuleException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -30,8 +32,8 @@ import lombok.Getter;
  * Immutable Domain Entity representing a Student's Attendance record for a Project.
  *
  * <p>This class acts as an aggregate containing the unique identifier, the linked enrollment, the
- * geolocation data (QR Validation), and the staff validation metadata. It extends {@link
- * DomainError} to accumulate structural validation failures.
+ * QR validation data, and the staff validation metadata. It extends {@link DomainError} to
+ * accumulate structural validation failures.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -45,7 +47,7 @@ public class Attendance extends DomainError {
   /** The composite identifier linking this attendance to a specific student and project. */
   EnrollmentIdentifier enrollmentIdentifier;
 
-  /** The geographic and temporal data recorded when the QR code was scanned. */
+  /** The temporal data and unique QR validation hash recorded. */
   QrValidationInfo qrValidationInfo;
 
   /** The metadata tracking which staff member validated the attendance and when. */
@@ -62,15 +64,17 @@ public class Attendance extends DomainError {
    * @param project the associated project
    * @param student the associated student
    * @param duration the duration of time the student spent on the project
+   * @param qrHash the unique hash of the QR code being registered
    * @return a newly created and self-validated {@link Attendance} instance
    */
-  public static Attendance factory(Project project, Student student, BigDecimal duration) {
+  public static Attendance factory(
+      Project project, Student student, BigDecimal duration, String qrHash) {
     Attendance att =
         Attendance.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .enrollmentIdentifier(
                 EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
-            .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
+            .qrValidationInfo(QrValidationInfo.factory(duration, qrHash))
             .attendanceInfo(AttendanceInfo.factory(null, null))
             .status(AttendanceStatus.WAITING)
             .build();
@@ -82,20 +86,18 @@ public class Attendance extends DomainError {
   /**
    * Validates the attendance record, transitioning its status and recording validation metadata.
    *
-   * <p>This behavior simulates a staff member confirming the student's geographic presence and time
-   * spent via a QR code scan.
+   * <p>This allows marking the attendance as either PRESENT (valid) or ABSENT (rejected) by a staff
+   * member.
    *
-   * @param validatorId the unique identifier of the staff account performing the validation
-   * @param lat the latitude recorded at validation time
-   * @param lon the longitude recorded at validation time
-   * @param hash the unique hash of the scanned QR code
-   * @return a new {@link Attendance} instance reflecting the validated state
+   * @param validatorId the unique identifier of the staff account performing the action
+   * @param newStatus the target status (must be PRESENT or ABSENT)
+   * @return a new {@link Attendance} instance reflecting the updated state
+   * @throws BusinessRuleException if the status is not a valid transition state
    */
-  public Attendance validateAttendance(
-      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
-
-    QrValidationInfo newQr =
-        QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
+  public Attendance validatePresence(UUID validatorId, AttendanceStatus newStatus) {
+    if (newStatus != AttendanceStatus.PRESENT && newStatus != AttendanceStatus.ABSENT) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_START);
+    }
 
     AttendanceInfo newInfo =
         this.attendanceInfo.toBuilder()
@@ -104,12 +106,7 @@ public class Attendance extends DomainError {
             .auditInfo(this.attendanceInfo.getAuditInfo().update())
             .build();
 
-    Attendance updated =
-        this.toBuilder()
-            .qrValidationInfo(newQr)
-            .attendanceInfo(newInfo)
-            .status(AttendanceStatus.PRESENT)
-            .build();
+    Attendance updated = this.toBuilder().attendanceInfo(newInfo).status(newStatus).build();
 
     updated.collectValidationProblems();
     return updated;
@@ -121,7 +118,7 @@ public class Attendance extends DomainError {
     if (enrollmentIdentifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK);
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK);
-    } else if (enrollmentIdentifier.hasFieldErrors()) {
+    } else if (identifierHasFieldErrors()) {
       addFieldErrors(enrollmentIdentifier.getFieldErrors());
     }
     if (status == null) {
@@ -133,6 +130,10 @@ public class Attendance extends DomainError {
     if (attendanceInfo != null && attendanceInfo.hasFieldErrors()) {
       addFieldErrors(attendanceInfo.getFieldErrors());
     }
+  }
+
+  private boolean identifierHasFieldErrors() {
+    return enrollmentIdentifier != null && enrollmentIdentifier.hasFieldErrors();
   }
 }
 
@@ -149,17 +150,26 @@ import java.util.UUID;
  * Domain repository interface for managing {@link Attendance} aggregate roots.
  *
  * <p>This interface defines the contract for tracking student participation in projects, including
- * QR code validations and temporal geographic checks.
+ * QR code validations and temporal checks.
  */
 public interface AttendanceRepository {
 
-  Attendance persist(Attendance entity);
+  /**
+   * Removes all attendance records associated with a specific project/student pair.
+   *
+   * @param projectId the unique identifier of the project
+   * @param studentId the unique identifier of the student account
+   * @return the total number of attendance records successfully deleted
+   */
+  long deleteAllByEnrollmentId(UUID projectId, UUID studentId);
 
-  void update(Attendance entity);
-
+  /**
+   * Removes an {@link Attendance} record from the repository based on its unique identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance
+   * @return {@code true} if deleted, {@code false} if not found
+   */
   boolean deleteById(UUID id);
-
-  Optional<Attendance> findOptionalById(UUID id);
 
   /**
    * Checks whether an attendance record has already been validated using the given QR hash.
@@ -169,7 +179,45 @@ public interface AttendanceRepository {
    */
   boolean existsByQrHash(String qrHash);
 
-  boolean existsByValidatedBy(UUID staffAccountId);
+  /**
+   * Checks whether an attendance record has been validated by a specific account.
+   *
+   * @param accountId the unique identifier of the account
+   * @return {@code true} if any record exists, {@code false} otherwise
+   */
+  boolean existsByValidatedBy(UUID accountId);
+
+  /**
+   * Retrieves an {@link Attendance} aggregate by its unique identifier.
+   *
+   * @param id the unique identifier of the attendance record
+   * @return an {@link Optional} containing the {@link Attendance} if found, or {@link
+   *     Optional#empty()} if not
+   */
+  Optional<Attendance> findOptionalById(UUID id);
+
+  /**
+   * Retrieves an {@link Attendance} by its unique QR code hash.
+   *
+   * @param qrHash the unique cryptographic hash
+   * @return an {@link Optional} containing the Attendance if found
+   */
+  Optional<Attendance> findOptionalByQrHash(String qrHash);
+
+  /**
+   * Persists a newly created {@link Attendance} aggregate into the repository.
+   *
+   * @param entity the {@link Attendance} aggregate to persist
+   * @return the fully persisted {@link Attendance} instance
+   */
+  Attendance persist(Attendance entity);
+
+  /**
+   * Updates the state of an existing {@link Attendance} aggregate in the repository.
+   *
+   * @param entity the {@link Attendance} instance containing the updated state
+   */
+  void update(Attendance entity);
 }
 
 
@@ -566,10 +614,8 @@ import lombok.Getter;
  */
 @Getter
 public enum ProjectsErrorCodes implements GenericCodes {
+  /** Indicates an attempt to delete a project that still has enrollments. */
   PROJECT_HAS_ENROLLMENTS("error.domain.projects.has.enrollments"),
-
-  /** Indicates an attempt to record an attendance that already exists. */
-  ATTENDANCE_ALREADY_EXISTS("error.domain.projects.attendance.already.exists"),
 
   /** Indicates that a requested attendance record could not be found. */
   ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.not.found"),
@@ -645,20 +691,12 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_ATTENDANCE_DURATION_INVALID(
       "error.domain.projects.attendance.duration.invalid", "duration"),
 
-  /** Indicates that the provided latitude is out of the valid range (-90 to 90). */
-  INVALID_ATTENDANCE_GEO_INVALID_LAT(
-      "error.domain.projects.attendance.geo.invalid.lat", "latitude"),
-
-  /** Indicates that the provided longitude is out of the valid range (-180 to 180). */
-  INVALID_ATTENDANCE_GEO_INVALID_LONG(
-      "error.domain.projects.attendance.geo.invalid.long", "longitude"),
-
-  /** Indicates that geolocation data is partially missing (e.g., has latitude but no longitude). */
-  INVALID_ATTENDANCE_GEO_INVALID_MISSING(
-      "error.domain.projects.attendance.geo.invalid.missing", null),
-
   /** Indicates that the project ID for an attendance record is null. */
   INVALID_ATTENDANCE_PROJECT_BLANK("error.domain.projects.attendance.project.blank", "projectId"),
+
+  /** Indicates that the validation hashcode for the QRCode is null or an empty string. */
+  INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY(
+      "error.domain.projects.attendance.qr.validation.hash.empty", "qrValidationHash"),
 
   /** Indicates that the status of an attendance record is null. */
   INVALID_ATTENDANCE_STATUS_BLANK("error.domain.projects.attendance.status.blank", "status"),
@@ -1299,7 +1337,7 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AttendanceInfo extends DomainError {
 
-  /** The unique identifier (Account ID) of the staff member who validated the attendance. */
+  /** The unique identifier (Account ID) of who validated the attendance. */
   UUID validatedBy;
 
   /** The exact timestamp when the attendance was explicitly validated. */
@@ -1348,7 +1386,7 @@ public class AttendanceInfo extends DomainError {
    * @return a new {@link AttendanceInfo} instance with updated audit info
    */
   public AttendanceInfo update() {
-    AttendanceInfo updated = toBuilder().auditInfo(this.auditInfo.update()).build();
+    AttendanceInfo updated = toBuilder().auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }
@@ -1801,6 +1839,7 @@ package com.pug.project.domain.vos;
 
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1822,12 +1861,6 @@ public class QrValidationInfo extends DomainError {
   /** The duration of time spent on this attendance. */
   BigDecimal duration;
 
-  /** The geographic latitude where the attendance was recorded. */
-  BigDecimal latitude;
-
-  /** The geographic longitude where the attendance was recorded. */
-  BigDecimal longitude;
-
   /** The unique cryptographic hash of the QR code used for validation. */
   String qrValidationHash;
 
@@ -1835,16 +1868,11 @@ public class QrValidationInfo extends DomainError {
    * Constructs a {@code QrValidationInfo} instance.
    *
    * @param duration the time duration recorded
-   * @param latitude the geographic latitude
-   * @param longitude the geographic longitude
    * @param qrValidationHash the unique QR hash
    */
   @Builder(toBuilder = true)
-  private QrValidationInfo(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+  private QrValidationInfo(BigDecimal duration, String qrValidationHash) {
     this.duration = duration;
-    this.latitude = latitude;
-    this.longitude = longitude;
     this.qrValidationHash = qrValidationHash;
   }
 
@@ -1854,20 +1882,12 @@ public class QrValidationInfo extends DomainError {
    * <p>The instance is created and immediately self-validated.
    *
    * @param duration the time duration recorded
-   * @param latitude the geographic latitude
-   * @param longitude the geographic longitude
    * @param qrValidationHash the hash of the QR code used
    * @return a self-validated {@link QrValidationInfo} instance
    */
-  public static QrValidationInfo factory(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+  public static QrValidationInfo factory(BigDecimal duration, String qrValidationHash) {
     QrValidationInfo vo =
-        QrValidationInfo.builder()
-            .duration(duration)
-            .latitude(latitude)
-            .longitude(longitude)
-            .qrValidationHash(qrValidationHash)
-            .build();
+        QrValidationInfo.builder().duration(duration).qrValidationHash(qrValidationHash).build();
     vo.collectValidationProblems();
     return vo;
   }
@@ -1880,34 +1900,16 @@ public class QrValidationInfo extends DomainError {
    * <ul>
    *   <li>The duration must not be null and must be strictly greater than zero (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_DURATION_INVALID}).
-   *   <li>Both latitude and longitude must be provided together or completely omitted (appends
-   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_MISSING} if mismatched).
-   *   <li>The latitude, if provided, must fall strictly between -90 and 90 degrees (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LAT}).
-   *   <li>The longitude, if provided, must fall strictly between -180 and 180 degrees (appends
-   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LONG}).
+   *   <li>The qrValidationHash must not be null or an empty string (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY}).
    * </ul>
    */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID);
     }
-    boolean hasLat = latitude != null;
-    boolean hasLon = longitude != null;
-    if (hasLat != hasLon) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING);
-    }
-    if (hasLat) {
-      if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
-          || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT);
-      }
-    }
-    if (hasLon) {
-      if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
-          || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG);
-      }
+    if (StringUtils.isEmpty(qrValidationHash)) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
     }
   }
 }
@@ -1918,8 +1920,6 @@ FILE: infra/AttendanceMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.enums.AttendanceStatus;
 import com.pug.project.domain.vos.AttendanceInfo;
@@ -1927,14 +1927,13 @@ import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.QrValidationInfo;
 import com.pug.project.infra.persistence.AttendanceEntity;
 import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Attendance boundary layers.
  *
- * <p>This mapper handles the translation of complex Value Objects related to geolocation,
- * cryptographic QR verification, and temporal validation logging.
+ * <p>This mapper acts as an anti-corruption layer, handling the conversion of Value Objects and
+ * database entities between the Domain and Persistence/Read layers.
  */
 public final class AttendanceMapper {
 
@@ -1959,13 +1958,7 @@ public final class AttendanceMapper {
             .studentId(e.getStudentId())
             .build();
 
-    QrValidationInfo qrInfo =
-        QrValidationInfo.builder()
-            .duration(e.getDuration())
-            .latitude(e.getLatitude())
-            .longitude(e.getLongitude())
-            .qrValidationHash(e.getQrValidationHash())
-            .build();
+    QrValidationInfo qrInfo = QrValidationInfo.factory(e.getDuration(), e.getQrValidationHash());
 
     AttendanceInfo attInfo =
         AttendanceInfo.builder()
@@ -2001,8 +1994,6 @@ public final class AttendanceMapper {
         .projectId(d.getEnrollmentIdentifier().getProjectId())
         .studentId(d.getEnrollmentIdentifier().getStudentId())
         .duration(d.getQrValidationInfo().getDuration())
-        .latitude(d.getQrValidationInfo().getLatitude())
-        .longitude(d.getQrValidationInfo().getLongitude())
         .qrValidationHash(d.getQrValidationInfo().getQrValidationHash())
         .status(d.getStatus().name())
         .validatedBy(d.getAttendanceInfo().getValidatedBy())
@@ -2024,41 +2015,36 @@ public final class AttendanceMapper {
       return;
     }
     e.setDuration(d.getQrValidationInfo().getDuration());
-    e.setLatitude(d.getQrValidationInfo().getLatitude());
-    e.setLongitude(d.getQrValidationInfo().getLongitude());
     e.setQrValidationHash(d.getQrValidationInfo().getQrValidationHash());
     e.setStatus(d.getStatus().name());
     e.setValidatedBy(d.getAttendanceInfo().getValidatedBy());
     e.setValidatedAt(d.getAttendanceInfo().getValidatedAt());
+    e.setUpdatedAt(d.getAttendanceInfo().getAuditInfo().getUpdatedAt());
   }
 
   /**
-   * Projects a raw JPA {@link AttendanceEntity} and its pre-resolved nested views into a
-   * comprehensive {@link AttendanceView} DTO.
+   * Projects a raw JPA {@link AttendanceEntity} into a lightweight {@link AttendanceView} DTO.
+   *
+   * <p>This mapping flattens the persistence entity into a CQRS read model, exposing only the
+   * necessary identifiers (e.g., {@code projectId}, {@code studentId}, {@code validatedById})
+   * rather than nesting complex objects.
    *
    * @param e the JPA entity representing the raw attendance record
-   * @param project the pre-resolved, fully populated view of the project
-   * @param student the pre-resolved, fully populated view of the student
-   * @param validatedBy the pre-resolved, fully populated view of the staff validator
    * @return a fully populated {@link AttendanceView} DTO
    */
-  public static AttendanceView toView(
-      AttendanceEntity e, ProjectView project, StudentView student, AccountView validatedBy) {
-
+  public static AttendanceView toView(AttendanceEntity e) {
     if (e == null) {
       return null;
     }
 
     return new AttendanceView(
         e.getId(),
-        project,
-        student,
+        e.getProjectId(),
+        e.getStudentId(),
         e.getDuration(),
-        e.getLatitude(),
-        e.getLongitude(),
         e.getQrValidationHash(),
         AttendanceStatus.valueOf(e.getStatus()),
-        validatedBy,
+        e.getValidatedBy(),
         e.getValidatedAt(),
         e.getCreatedAt(),
         e.getUpdatedAt());
@@ -2178,7 +2164,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -2237,20 +2222,6 @@ public class AttendanceEntity extends BaseAuditedEntity {
   @DecimalMin(value = "0.00", inclusive = false)
   @Column(name = "duration", nullable = false, precision = 4, scale = 2)
   private BigDecimal duration;
-
-  /** The geographic latitude where the attendance was recorded. */
-  @NotNull
-  @DecimalMin(value = "-90.000000")
-  @DecimalMax(value = "90.000000")
-  @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
-  private BigDecimal latitude;
-
-  /** The geographic longitude where the attendance was recorded. */
-  @NotNull
-  @DecimalMin(value = "-180.000000")
-  @DecimalMax(value = "180.000000")
-  @Column(name = "longitude", nullable = false, precision = 9, scale = 6)
-  private BigDecimal longitude;
 
   /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
   @NotBlank
@@ -2387,11 +2358,76 @@ import jakarta.transaction.Transactional;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the {@link AttendanceRepository} utilizing Hibernate ORM with Panache. */
+/**
+ * Implementation of the {@link AttendanceRepository} utilizing Hibernate ORM with Panache.
+ *
+ * <p>Bridges the pure domain repository interface with the persistence layer.
+ */
 @ApplicationScoped
 public class AttendanceRepositoryImpl
     implements AttendanceRepository, PanacheRepositoryBase<AttendanceEntity, UUID> {
 
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByEnrollmentId(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) {
+      return 0;
+    }
+    long deleted = delete("projectId = ?1 and studentId = ?2", projectId, studentId);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public boolean deleteById(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    boolean deleted = delete("id", id) > 0;
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByQrHash(String qrHash) {
+    if (StringUtils.isEmpty(qrHash)) {
+      return false;
+    }
+    return count("qrValidationHash = ?1", qrHash) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean existsByValidatedBy(UUID accountId) {
+    if (accountId == null) {
+      return false;
+    }
+    return count("validatedBy", accountId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Attendance> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    return findByIdOptional(id).map(AttendanceMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<Attendance> findOptionalByQrHash(String qrHash) {
+    if (StringUtils.isEmpty(qrHash)) {
+      return Optional.empty();
+    }
+    return find("qrValidationHash", qrHash).firstResultOptional().map(AttendanceMapper::toDomain);
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance persist(Attendance entity) {
@@ -2403,6 +2439,7 @@ public class AttendanceRepositoryImpl
     return AttendanceMapper.toDomain(e);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Attendance entity) {
@@ -2413,35 +2450,6 @@ public class AttendanceRepositoryImpl
     if (managed != null) {
       AttendanceMapper.copy(entity, managed);
     }
-  }
-
-  @Transactional
-  @Override
-  public boolean deleteById(UUID id) {
-    if (id == null) {
-      return false;
-    }
-    var deleted = delete("id", id) > 0;
-    flush();
-    return deleted;
-  }
-
-  @Override
-  public Optional<Attendance> findOptionalById(UUID id) {
-    return findByIdOptional(id).map(AttendanceMapper::toDomain);
-  }
-
-  @Override
-  public boolean existsByQrHash(String qrHash) {
-    if (StringUtils.isEmpty(qrHash)) {
-      return false;
-    }
-    return count("qrValidationHash = ?1", qrHash) > 0;
-  }
-
-  @Override
-  public boolean existsByValidatedBy(UUID staffAccountId) {
-    return false;
   }
 }
 
@@ -3159,42 +3167,54 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Read-only interface for executing queries against Attendances. */
+/**
+ * Read-only interface for executing attendance queries.
+ *
+ * <p>Represents the Query side of a CQRS architecture, retrieving lightweight {@link
+ * AttendanceView} projections.
+ */
 public interface AttendanceQueries {
+
+  /**
+   * Retrieves a read-only view of an attendance record based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the attendance
+   * @return an {@link Optional} containing the {@link AttendanceView} if found, or empty otherwise
+   */
   Optional<AttendanceView> findOptionalById(UUID id);
 
-  List<AttendanceView> listAllAttendances();
+  /**
+   * Retrieves a list of attendance records associated with a specific project and student.
+   *
+   * @param projectId the unique identifier of the project
+   * @param studentId the unique identifier of the student account
+   * @return a {@link List} of matching {@link AttendanceView} entries
+   */
+  List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId);
 
+  /**
+   * Retrieves a list of attendance records for a specific project.
+   *
+   * @param projectId the unique identifier (UUID) of the project
+   * @return a {@link List} of matching {@link AttendanceView} entries
+   */
   List<AttendanceView> listByProjectId(UUID projectId);
 
+  /**
+   * Retrieves a list of attendance records for a specific student.
+   *
+   * @param studentId the unique identifier (UUID) of the student account
+   * @return a {@link List} of matching {@link AttendanceView} entries
+   */
   List<AttendanceView> listByStudentId(UUID studentId);
+
+  /**
+   * Retrieves a comprehensive list of all attendance records registered in the system.
+   *
+   * @return a {@link List} containing all available {@link AttendanceView} entries
+   */
+  List<AttendanceView> listViews();
 }
-
-
-================================================================================
-FILE: infra/read/dtos/AttendanceAcc.java
-================================================================================
-package com.pug.project.infra.read.dtos;
-
-import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.project.infra.persistence.AttendanceEntity;
-import com.pug.project.infra.persistence.ProjectEntity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-/**
- * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
- *
- * <p>Fetches the base persistence entities required to build an {@link AttendanceView} in a single
- * query projection, mapping the attendance record to its project, student, and the staff member
- * (validator) who approved it.
- */
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public record AttendanceAcc(
-    AttendanceEntity attendance,
-    ProjectEntity project,
-    StudentEntity student,
-    AccountEntity validatorAccount) {}
 
 
 ================================================================================
@@ -3202,8 +3222,6 @@ FILE: infra/read/dtos/AttendanceView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.project.domain.enums.AttendanceStatus;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -3212,58 +3230,31 @@ import java.util.UUID;
 /**
  * Data Transfer Object (DTO) representing a read-only view of an Attendance record.
  *
- * <p>Following CQRS principles, this record provides a flattened view of a student's participation
- * in a project, including geographic validation data and the staff member who approved the
- * attendance.
+ * <p>Following CQRS principles, this view is flattened to provide essential identifiers, minimizing
+ * data payload size.
  *
  * @param id the unique identifier (UUIDv7) of the attendance record
- * @param project the nested read-only projection of the associated project
- * @param student the nested read-only projection of the attending student
- * @param duration the recorded time duration the student spent on the project
- * @param latitude the geographic latitude where the attendance was recorded
- * @param longitude the geographic longitude where the attendance was recorded
- * @param qrValidationHash the unique cryptographic hash of the QR code used
- * @param status the current validation status of the attendance
- * @param validatedBy the nested read-only projection of the staff account who validated the record
- * @param validatedAt the exact timestamp when the attendance was validated
- * @param createdAt the exact timestamp when the attendance record was initially created
- * @param updatedAt the exact timestamp when the attendance record was last modified
+ * @param projectId the unique identifier of the associated project
+ * @param studentId the unique identifier of the associated student account
+ * @param duration the recorded time duration
+ * @param qrValidationHash the unique hash of the QR code
+ * @param status the current validation status
+ * @param validatedById the unique identifier of the staff who validated the record
+ * @param validatedAt the timestamp of validation
+ * @param createdAt the timestamp of creation
+ * @param updatedAt the timestamp of last modification
  */
 public record AttendanceView(
     UUID id,
-    ProjectView project,
-    StudentView student,
+    UUID projectId,
+    UUID studentId,
     BigDecimal duration,
-    BigDecimal latitude,
-    BigDecimal longitude,
     String qrValidationHash,
     AttendanceStatus status,
-    AccountView validatedBy,
+    UUID validatedById,
     OffsetDateTime validatedAt,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
-
-
-================================================================================
-FILE: infra/read/dtos/EnrollmentAcc.java
-================================================================================
-package com.pug.project.infra.read.dtos;
-
-import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.project.infra.persistence.EnrollmentEntity;
-import com.pug.project.infra.persistence.ProjectEntity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-/**
- * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
- *
- * <p>Extracts the base persistence entities required to build an {@link EnrollmentView}. Since
- * Student and Project views require deep relational trees, this tuple fetches the absolute core
- * components to serve as a baseline for the Query Implementation to assemble.
- */
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public record EnrollmentAcc(
-    EnrollmentEntity enrollment, ProjectEntity project, StudentEntity student) {}
 
 
 ================================================================================
@@ -3432,10 +3423,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link AttendanceQueries} interface.
+ * Implementation of the {@link AttendanceQueries} interface using JPA constructor expressions.
  *
- * <p>Relies on a massive JPQL constructor expression to flatten out the attendance data along with
- * the fully populated Project graph, Student graph, and Validator Account.
+ * <p>Projects attendance data into lightweight DTOs without nested relations.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -3445,70 +3435,17 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   private static final String SELECT_BASE =
       """
-                    select new com.pug.project.infra.read.dtos.AttendanceView(
-                      a.id,
-                      new com.pug.project.infra.read.dtos.ProjectView(
-                        p.id, p.name,
-                        new com.pug.partner.infra.read.dtos.EntityView(
-                          ent.id, ent.cnpj, ent.name, ent.address,
-                          new com.pug.geo.infra.read.dtos.CityView(c.id, c.name, c.ibgeCode),
-                          ent.createdAt, ent.updatedAt
-                        ),
-                        p.description,
-                        new com.pug.identity.infra.read.dtos.AccountView(
-                          pacc.id,
-                          new com.pug.identity.infra.read.dtos.UserView(
-                            pu.id, pu.cpf, pu.name, pu.createdAt, pu.updatedAt
-                          ),
-                          pacc.email, pacc.accountType, pacc.createdAt, pacc.updatedAt, pacc.active
-                        ),
-                        p.maxParticipants, p.offeredHours, p.status, p.closedAt, p.createdAt, p.updatedAt
-                      ),
-                      new com.pug.academic.infra.read.dtos.StudentView(
-                        new com.pug.identity.infra.read.dtos.AccountView(
-                          sacc.id,
-                          new com.pug.identity.infra.read.dtos.UserView(
-                            su.id, su.cpf, su.name, su.createdAt, su.updatedAt
-                          ),
-                          sacc.email, sacc.accountType, sacc.createdAt, sacc.updatedAt, sacc.active
-                        ),
-                        s.academicRegistration, s.campus,
-                        new com.pug.academic.infra.read.dtos.CourseView(
-                          course.id, course.name,
-                          new com.pug.academic.infra.read.dtos.SchoolView(
-                            sch.id, sch.name, sch.createdAt, sch.updatedAt
-                          ),
-                          course.createdAt, course.updatedAt
-                        ),
-                        s.requiredHours, s.concluded, s.startDate, s.dueDate, s.createdAt, s.updatedAt
-                      ),
-                      a.duration, a.latitude, a.longitude, a.qrValidationHash, a.status,
-                      new com.pug.identity.infra.read.dtos.AccountView(
-                        vacc.id,
-                        new com.pug.identity.infra.read.dtos.UserView(
-                          vu.id, vu.cpf, vu.name, vu.createdAt, vu.updatedAt
-                        ),
-                        vacc.email, vacc.accountType, vacc.createdAt, vacc.updatedAt, vacc.active
-                      ),
-                      a.validatedAt, a.createdAt, a.updatedAt
-                    )
-                    from AttendanceEntity a
-                    join ProjectEntity p on p.id = a.projectId
-                    join EntityEntity ent on ent.id = p.entityId
-                    join CityEntity c on c.id = ent.cityId
-                    join AccountEntity pacc on pacc.id = p.createdBy
-                    join UserEntity pu on pu.id = pacc.userId
-                    join StudentEntity s on s.accountId = a.studentId
-                    join AccountEntity sacc on sacc.id = s.accountId
-                    join UserEntity su on su.id = sacc.userId
-                    join CourseEntity course on course.id = s.courseId
-                    left join SchoolEntity sch on sch.id = course.schoolId
-                    left join AccountEntity vacc on vacc.id = a.validatedBy
-                    left join UserEntity vu on vu.id = vacc.userId
-                    """;
+          select new com.pug.project.infra.read.dtos.AttendanceView(
+            a.id, a.projectId, a.studentId, a.duration, a.qrValidationHash,\s
+            com.pug.project.domain.enums.AttendanceStatus.valueOf(a.status),
+            a.validatedBy, a.validatedAt, a.createdAt, a.updatedAt
+          )
+          from AttendanceEntity a
+         \s""";
 
   private static final String ORDER_BY_DATE = " order by a.createdAt desc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<AttendanceView> findOptionalById(UUID id) {
     if (id == null) {
@@ -3519,11 +3456,22 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
     return q.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listAllAttendances() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, AttendanceView.class).getResultList();
+  public List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) {
+      return List.of();
+    }
+    var q =
+        em.createQuery(
+            SELECT_BASE + " where a.projectId = :pid and a.studentId = :sid" + ORDER_BY_DATE,
+            AttendanceView.class);
+    q.setParameter("pid", projectId);
+    q.setParameter("sid", studentId);
+    return q.getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listByProjectId(UUID projectId) {
     if (projectId == null) {
@@ -3536,6 +3484,7 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
     return q.getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listByStudentId(UUID studentId) {
     if (studentId == null) {
@@ -3546,6 +3495,12 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
             SELECT_BASE + " where a.studentId = :sid" + ORDER_BY_DATE, AttendanceView.class);
     q.setParameter("sid", studentId);
     return q.getResultList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<AttendanceView> listViews() {
+    return em.createQuery(SELECT_BASE + ORDER_BY_DATE, AttendanceView.class).getResultList();
   }
 }
 
@@ -3836,12 +3791,11 @@ import com.pug.project.presenter.dtos.AttendanceValidateRequest;
 import com.pug.project.presenter.mappers.AttendancePresenter;
 import com.pug.project.service.AttendanceReadService;
 import com.pug.project.service.AttendanceService;
-import com.pug.project.service.dtos.AttendanceCreateCommand;
-import com.pug.project.service.dtos.AttendanceValidateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -3875,6 +3829,7 @@ import java.util.stream.Collectors;
 @Path("/projects/attendances")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class AttendanceResource {
 
   @Inject AttendanceService writeService;
@@ -3884,6 +3839,14 @@ public class AttendanceResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a specific attendance record by its unique identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     AttendanceResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the attendance is not found
+   */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
@@ -3892,16 +3855,30 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves a collection of attendance records.
+   *
+   * <p>If both {@code projectId} and {@code studentId} are provided, it filters by enrollment.
+   * Otherwise, it filters by project or student individually. If all are omitted, returns all
+   * attendance records.
+   *
+   * @param projectId the optional project identifier to filter by
+   * @param studentId the optional student identifier to filter by
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     AttendanceResponse}
+   */
   @GET
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("studentId") @UuidV7 UUID studentId) {
     List<AttendanceView> views;
 
-    if (projectId != null) {
-      views = readService.listViewsByProjectId(projectId);
+    if (projectId != null && studentId != null) {
+      views = readService.listByEnrollmentId(projectId, studentId);
+    } else if (projectId != null) {
+      views = readService.listByProjectId(projectId);
     } else if (studentId != null) {
-      views = readService.listViewsByStudentId(studentId);
+      views = readService.listByStudentId(studentId);
     } else {
       views = readService.listViews();
     }
@@ -3914,9 +3891,16 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Registers a new attendance record.
+   *
+   * @param req the validated {@link AttendanceCreateRequest} payload
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link AttendanceResponse}
+   */
   @POST
   public Response create(@Valid AttendanceCreateRequest req) {
-    var cmd = new AttendanceCreateCommand(req.projectId(), req.studentId(), req.duration());
+    var cmd = AttendancePresenter.toCommand(req);
     var created = writeService.save(cmd);
 
     AttendanceView view = readService.getViewById(created.getId());
@@ -3926,12 +3910,17 @@ public class AttendanceResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Validates an attendance record via QR code scan.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance to validate
+   * @param req the validated {@link AttendanceValidateRequest} payload
+   * @return an HTTP 200 OK response containing the updated {@link AttendanceResponse}
+   */
   @PATCH
   @Path("/{id}/validate")
   public Response validate(@PathParam("id") @UuidV7 UUID id, @Valid AttendanceValidateRequest req) {
-    var cmd =
-        new AttendanceValidateCommand(
-            req.validatorId(), req.latitude(), req.longitude(), req.qrValidationHash());
+    var cmd = AttendancePresenter.toCommand(req);
 
     writeService.validate(id, cmd);
     AttendanceView view = readService.getViewById(id);
@@ -3940,6 +3929,12 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Permanently removes an attendance record from the system.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
   @DELETE
   @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
@@ -3947,6 +3942,11 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
+  /**
+   * Determines the appropriate {@link Locale} based on the request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
@@ -3964,10 +3964,17 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for creating a new Attendance record.
+ *
+ * @param projectId the unique identifier (UUIDv7) of the project (must not be null)
+ * @param studentId the unique identifier (UUIDv7) of the student account (must not be null)
+ * @param duration the duration of time the student spent on the project (must be min 0.01)
+ */
 public record AttendanceCreateRequest(
     @NotNull @UuidV7 UUID projectId,
     @NotNull @UuidV7 UUID studentId,
-    @NotNull @DecimalMin(value = "0.00", inclusive = false) BigDecimal duration) {}
+    @NotNull @DecimalMin(value = "0.01") BigDecimal duration) {}
 
 
 ================================================================================
@@ -3975,25 +3982,36 @@ FILE: presenter/dtos/AttendanceResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.identity.presenter.dtos.AccountResponse;
 import com.pug.project.domain.enums.AttendanceStatus;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the standardized API JSON response for Attendance data.
+ *
+ * @param id the unique identifier (UUIDv7) of the attendance record
+ * @param projectId the unique identifier (UUIDv7) of the associated project
+ * @param studentId the unique identifier (UUIDv7) of the student account
+ * @param duration the recorded time duration
+ * @param qrValidationHash the unique cryptographic hash of the QR code used
+ * @param status the current validation status (enum)
+ * @param statusFormatted the localized, human-readable attendance status
+ * @param validatedById the unique identifier (UUIDv7) of the staff who validated the record
+ * @param validatedAt the exact timestamp when the attendance was validated
+ * @param validatedAtFormatted the human-readable, localized string of the validation date
+ * @param auditInfo the nested audit information
+ */
 public record AttendanceResponse(
     UUID id,
-    ProjectResponse project,
-    StudentResponse student,
+    UUID projectId,
+    UUID studentId,
     BigDecimal duration,
-    BigDecimal latitude,
-    BigDecimal longitude,
     String qrValidationHash,
     AttendanceStatus status,
     String statusFormatted,
-    AccountResponse validatedBy,
+    UUID validatedById,
     OffsetDateTime validatedAt,
     String validatedAtFormatted,
     AuditInfoResponse auditInfo) {}
@@ -4004,20 +4022,21 @@ FILE: presenter/dtos/AttendanceValidateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.shared.validation.UuidV7;
-import jakarta.validation.constraints.DecimalMax;
-import jakarta.validation.constraints.DecimalMin;
+import com.pug.project.domain.enums.AttendanceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.util.UUID;
 
+/**
+ * Data Transfer Object (DTO) used as the JSON request payload for validating an existing
+ * Attendance.
+ *
+ * @param status the status to assign to the attendance (PRESENT or ABSENT; must not be null)
+ * @param qrValidationHash the unique cryptographic hash of the QR code being scanned (must not be
+ *     blank, max 512 chars)
+ */
 public record AttendanceValidateRequest(
-    @NotNull @UuidV7 UUID validatorId,
-    @NotNull @DecimalMin("-90.000000") @DecimalMax("90.000000") BigDecimal latitude,
-    @NotNull @DecimalMin("-180.000000") @DecimalMax("180.000000") BigDecimal longitude,
-    @NotBlank @Size(max = 512) String qrValidationHash) {}
+    @NotNull AttendanceStatus status, @NotBlank @Size(max = 512) String qrValidationHash) {}
 
 
 ================================================================================
@@ -4605,10 +4624,12 @@ FILE: presenter/mappers/AttendancePresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.academic.presenter.mappers.StudentPresenter;
-import com.pug.identity.presenter.mappers.AccountPresenter;
 import com.pug.project.infra.read.dtos.AttendanceView;
+import com.pug.project.presenter.dtos.AttendanceCreateRequest;
 import com.pug.project.presenter.dtos.AttendanceResponse;
+import com.pug.project.presenter.dtos.AttendanceValidateRequest;
+import com.pug.project.service.dtos.AttendanceCreateCommand;
+import com.pug.project.service.dtos.AttendanceValidateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.dtos.AuditInfoResponse;
 import com.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -4617,11 +4638,56 @@ import java.util.Locale;
 
 /**
  * Stateless utility class responsible for mapping internal attendance projections to external API
- * responses.
+ * responses and REST payloads to application commands.
+ *
+ * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
+ * AttendanceView}) into client-ready representations ({@link AttendanceResponse}), and mapping
+ * incoming data transfers to command structures.
  */
 public final class AttendancePresenter {
+
+  /** Private constructor to prevent instantiation of utility class. */
   private AttendancePresenter() {}
 
+  /**
+   * Maps an incoming REST creation request into an application layer creation command.
+   *
+   * @param req the validated {@link AttendanceCreateRequest} payload
+   * @return the corresponding {@link AttendanceCreateCommand}, or {@code null} if input is null
+   */
+  public static AttendanceCreateCommand toCommand(AttendanceCreateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new AttendanceCreateCommand(req.projectId(), req.studentId(), req.duration());
+  }
+
+  /**
+   * Maps an incoming REST validation request into an application layer validation command.
+   *
+   * @param req the validated {@link AttendanceValidateRequest} payload
+   * @return the corresponding {@link AttendanceValidateCommand}, or {@code null} if input is null
+   */
+  public static AttendanceValidateCommand toCommand(AttendanceValidateRequest req) {
+    if (req == null) {
+      return null;
+    }
+    return new AttendanceValidateCommand(req.qrValidationHash(), req.status());
+  }
+
+  /**
+   * Projects a read-only {@link AttendanceView} into a client-facing {@link AttendanceResponse}.
+   *
+   * <p>This mapping flattens the response, returning only the identifiers for project, student, and
+   * validator, while resolving localized labels and formatting dates based on the client's {@link
+   * Locale}.
+   *
+   * @param v the internal read-model projection of the attendance
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link AttendanceResponse} ready for JSON serialization, or {@code
+   *     null} if any required input is null
+   */
   public static AttendanceResponse toResponse(AttendanceView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;
@@ -4635,15 +4701,13 @@ public final class AttendancePresenter {
 
     return new AttendanceResponse(
         v.id(),
-        ProjectPresenter.toResponse(v.project(), locale, i18n),
-        StudentPresenter.toResponse(v.student(), locale, i18n),
+        v.projectId(),
+        v.studentId(),
         v.duration(),
-        v.latitude(),
-        v.longitude(),
         v.qrValidationHash(),
         v.status(),
         statusFormatted,
-        AccountPresenter.toResponse(v.validatedBy(), locale, i18n),
+        v.validatedById(),
         v.validatedAt(),
         validatedAtFormatted,
         auditInfo);
@@ -5332,7 +5396,13 @@ import com.pug.project.infra.read.dtos.AttendanceView;
 import java.util.List;
 import java.util.UUID;
 
-/** Application service interface dedicated exclusively to querying Attendance data. */
+/**
+ * Application service interface dedicated exclusively to querying {@link
+ * com.pug.project.domain.Attendance} data.
+ *
+ * <p>Following CQRS principles, this service handles the "Query" operations, retrieving lightweight
+ * {@link AttendanceView} Data Transfer Objects directly from the read infrastructure.
+ */
 public interface AttendanceReadService {
 
   /**
@@ -5340,16 +5410,19 @@ public interface AttendanceReadService {
    *
    * @param id the unique identifier (UUID) of the attendance
    * @return the populated {@link AttendanceView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no attendance matches the
+   *     provided ID
    */
   AttendanceView getViewById(UUID id);
 
   /**
-   * Retrieves a comprehensive list of all attendance records registered in the system.
+   * Retrieves a list of attendance records associated with a specific project and student.
    *
-   * @return a {@link List} containing all available {@link AttendanceView} entries
+   * @param projectId the unique identifier of the project
+   * @param studentId the unique identifier of the student account
+   * @return a {@link List} of matching {@link AttendanceView} entries
    */
-  List<AttendanceView> listViews();
+  List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId);
 
   /**
    * Retrieves a list of attendance records for a specific project.
@@ -5357,15 +5430,22 @@ public interface AttendanceReadService {
    * @param projectId the unique identifier (UUID) of the project
    * @return a {@link List} of matching {@link AttendanceView} entries
    */
-  List<AttendanceView> listViewsByProjectId(UUID projectId);
+  List<AttendanceView> listByProjectId(UUID projectId);
 
   /**
    * Retrieves a list of attendance records for a specific student.
    *
-   * @param studentId the unique identifier (UUID) of the student's account
+   * @param studentId the unique identifier (UUID) of the student account
    * @return a {@link List} of matching {@link AttendanceView} entries
    */
-  List<AttendanceView> listViewsByStudentId(UUID studentId);
+  List<AttendanceView> listByStudentId(UUID studentId);
+
+  /**
+   * Retrieves a comprehensive list of all attendance records registered in the system.
+   *
+   * @return a {@link List} containing all available {@link AttendanceView} entries
+   */
+  List<AttendanceView> listViews();
 }
 
 
@@ -5375,12 +5455,26 @@ FILE: service/AttendanceService.java
 package com.pug.project.service;
 
 import com.pug.project.domain.Attendance;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.dtos.AttendanceCreateCommand;
 import com.pug.project.service.dtos.AttendanceValidateCommand;
 import java.util.UUID;
 
-/** Application service interface for managing the state of {@link Attendance} domain aggregates. */
+/**
+ * Application service interface for managing the state of {@link Attendance} domain aggregates.
+ *
+ * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
+ * Delete) and strict domain-level retrievals.
+ */
 public interface AttendanceService {
+
+  /**
+   * Removes all attendance records associated with a specific enrollment.
+   *
+   * @param identifier the composite identifier of the enrollment
+   * @return the total number of records successfully deleted
+   */
+  long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier);
 
   /**
    * Removes an {@link Attendance} record from the system.
@@ -5415,10 +5509,10 @@ public interface AttendanceService {
   Attendance save(AttendanceCreateCommand cmd);
 
   /**
-   * Validates an attendance record, verifying geographic data and applying staff authorization.
+   * Validates an attendance record, transitioning its state and applying staff authorization.
    *
    * @param id the unique identifier (UUID) of the attendance
-   * @param cmd the command containing validation metrics and staff identifier
+   * @param cmd the command containing validation status and hash
    * @return the updated {@link Attendance}
    */
   Attendance validate(UUID id, AttendanceValidateCommand cmd);
@@ -5433,7 +5527,15 @@ package com.pug.project.service.dtos;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/** Data Transfer Object (DTO) acting as an application command to record a new Attendance entry. */
+/**
+ * Data Transfer Object (DTO) acting as an application command to record a new Attendance entry.
+ *
+ * <p>This command captures the essential data needed to register an attendance instance.
+ *
+ * @param projectId the unique identifier of the project
+ * @param studentId the unique identifier of the student account
+ * @param duration the total hours the student claims to have worked
+ */
 public record AttendanceCreateCommand(UUID projectId, UUID studentId, BigDecimal duration) {}
 
 
@@ -5442,14 +5544,17 @@ FILE: service/dtos/AttendanceValidateCommand.java
 ================================================================================
 package com.pug.project.service.dtos;
 
-import java.math.BigDecimal;
-import java.util.UUID;
+import com.pug.project.domain.enums.AttendanceStatus;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to validate an existing Attendance.
+ *
+ * <p>This command encapsulates the account's decision regarding the attendance record.
+ *
+ * @param qrValidationHash the unique hash associated with the attendance record to be validated
+ * @param status the status to assign to the attendance (PRESENT or ABSENT)
  */
-public record AttendanceValidateCommand(
-    UUID validatorId, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {}
+public record AttendanceValidateCommand(String qrValidationHash, AttendanceStatus status) {}
 
 
 ================================================================================
@@ -5820,6 +5925,12 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link AttendanceReadService}.
+ *
+ * <p>Delegates read-only operations to the underlying {@link AttendanceQueries} infrastructure
+ * component.
+ */
 @ApplicationScoped
 public class AttendanceReadServiceImpl implements AttendanceReadService {
 
@@ -5827,6 +5938,7 @@ public class AttendanceReadServiceImpl implements AttendanceReadService {
 
   @Inject AttendanceQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public AttendanceView getViewById(UUID id) {
     return queries
@@ -5838,21 +5950,37 @@ public class AttendanceReadServiceImpl implements AttendanceReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViews() {
-    return queries.listAllAttendances();
+  public List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId) {
+    if (projectId == null || studentId == null) {
+      return List.of();
+    }
+    return queries.listByEnrollmentId(projectId, studentId);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViewsByProjectId(UUID projectId) {
-    if (projectId == null) return List.of();
+  public List<AttendanceView> listByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
     return queries.listByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<AttendanceView> listViewsByStudentId(UUID studentId) {
-    if (studentId == null) return List.of();
+  public List<AttendanceView> listByStudentId(UUID studentId) {
+    if (studentId == null) {
+      return List.of();
+    }
     return queries.listByStudentId(studentId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<AttendanceView> listViews() {
+    return queries.listViews();
   }
 }
 
@@ -5864,24 +5992,35 @@ package com.pug.project.service.impl;
 
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.StudentService;
-import com.pug.partner.service.StaffService;
+import com.pug.identity.service.AccountService;
+import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.AttendanceRepository;
 import com.pug.project.domain.Project;
+import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.AttendanceService;
-import com.pug.project.service.EnrollmentService;
 import com.pug.project.service.ProjectService;
 import com.pug.project.service.dtos.AttendanceCreateCommand;
 import com.pug.project.service.dtos.AttendanceValidateCommand;
 import com.pug.project.service.utils.AttendanceProcessor;
 import com.pug.project.service.utils.ExceptionHelper;
+import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.exceptions.AppValidationException;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.UUID;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
+/**
+ * Implementation of the {@link AttendanceService} command interface.
+ *
+ * <p>Orchestrates state mutations for attendance records, coordinating with domain services and
+ * utilizing the {@link AttendanceProcessor} for logic encapsulation.
+ */
 @ApplicationScoped
 public class AttendanceServiceImpl implements AttendanceService {
 
@@ -5890,22 +6029,43 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Inject AttendanceRepository repo;
   @Inject ProjectService projectService;
   @Inject StudentService studentService;
-  @Inject EnrollmentService enrollmentService;
-  @Inject StaffService staffService;
+  @Inject AccountService accountService;
+  @Inject AuthService authService;
 
+  @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
+  String pepper;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
+    if (identifier == null) {
+      return 0;
+    }
+    LOG.debugf("Deleting all attendances for Enrollment: %s", identifier);
+    return repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+  }
+
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
-    if (id == null) return false;
+    if (id == null) {
+      return false;
+    }
     return repo.deleteById(id);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByValidatedBy(UUID accountId) {
-    if (accountId == null) return false;
+    if (accountId == null) {
+      return false;
+    }
     return repo.existsByValidatedBy(accountId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Attendance getById(UUID id) {
     Attendance attendance =
@@ -5919,16 +6079,17 @@ public class AttendanceServiceImpl implements AttendanceService {
     return attendance;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
-    // Validate structural dependencies
     Project project = projectService.getById(cmd.projectId());
     Student student = studentService.getById(cmd.studentId());
-    //    enrollmentService.getByIds(cmd.projectId(), cmd.studentId());
+
+    String qrHash = generateQrHash(cmd.projectId(), cmd.studentId());
 
     Attendance attendance =
-        AttendanceProcessor.processCreateInput(project, student, cmd.duration());
+        AttendanceProcessor.processCreateInput(project, student, cmd.duration(), qrHash);
 
     if (attendance.hasFieldErrors()) {
       throw new AppValidationException(attendance.getFieldErrors());
@@ -5937,28 +6098,33 @@ public class AttendanceServiceImpl implements AttendanceService {
     return repo.persist(attendance);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
     Attendance current = getById(id);
+    UUID validatorAccountId = authService.getCurrentAccountId();
+    authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
 
-    // Ensure the validator is an active Staff member
-    staffService.getByAccountId(cmd.validatorId());
+    if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
+      throw ExceptionHelper.attendanceNotFound();
+    }
 
     Attendance validated =
-        AttendanceProcessor.processValidationInput(
-            current, cmd.validatorId(), cmd.latitude(), cmd.longitude(), cmd.qrValidationHash());
+        AttendanceProcessor.processValidationInput(current, validatorAccountId, cmd.status());
 
     if (validated.hasFieldErrors()) {
       throw new AppValidationException(validated.getFieldErrors());
     }
 
-    if (repo.existsByQrHash(cmd.qrValidationHash())) {
-      throw ExceptionHelper.attendanceAlreadyExists(); // Hash already consumed
-    }
-
     repo.update(validated);
     return getById(id);
+  }
+
+  /** Generates a unique QR hash based on project, student, timestamp, and system pepper. */
+  private String generateQrHash(UUID projectId, UUID studentId) {
+    String raw = projectId.toString() + studentId.toString() + LocalDateTime.now() + pepper;
+    return BcryptUtil.bcryptHash(raw);
   }
 }
 
@@ -6971,14 +7137,22 @@ package com.pug.project.service.utils;
 import com.pug.academic.domain.Student;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.AttendanceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Attendance}
  * Domain Aggregates.
+ *
+ * <p>This processor centralizes the orchestration of domain factory methods and state-mutation
+ * behaviors, ensuring that the application service layer remains focused on coordination and error
+ * handling.
  */
-public class AttendanceProcessor {
+public final class AttendanceProcessor {
+
+  /** Private constructor to prevent instantiation. */
+  private AttendanceProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Attendance} domain aggregate in a
@@ -6987,31 +7161,26 @@ public class AttendanceProcessor {
    * @param project the fully reconstituted {@link Project} aggregate
    * @param student the fully reconstituted {@link Student} aggregate
    * @param duration the duration of time the student spent on the project
+   * @param qrHash the unique cryptographic hash for the new QR code
    * @return a fully instantiated {@link Attendance} domain aggregate, potentially containing errors
    */
   public static Attendance processCreateInput(
-      Project project, Student student, BigDecimal duration) {
-    return Attendance.factory(project, student, duration);
+      Project project, Student student, BigDecimal duration, String qrHash) {
+    return Attendance.factory(project, student, duration, qrHash);
   }
 
   /**
-   * Processes raw validation inputs and mutates an existing {@link Attendance} into a PRESENT
-   * state.
+   * Processes raw validation inputs and mutates an existing {@link Attendance} into a new status
+   * (e.g., PRESENT or ABSENT).
    *
    * @param existing the current, reconstituted {@link Attendance} aggregate
    * @param validatorId the unique identifier of the staff account validating the attendance
-   * @param latitude the geographic latitude recorded at validation time
-   * @param longitude the geographic longitude recorded at validation time
-   * @param qrValidationHash the cryptographic hash of the scanned QR code
+   * @param status the new status to apply to the attendance record
    * @return a new {@link Attendance} domain aggregate reflecting the validated state
    */
   public static Attendance processValidationInput(
-      Attendance existing,
-      UUID validatorId,
-      BigDecimal latitude,
-      BigDecimal longitude,
-      String qrValidationHash) {
-    return existing.validateAttendance(validatorId, latitude, longitude, qrValidationHash);
+      Attendance existing, UUID validatorId, AttendanceStatus status) {
+    return existing.validatePresence(validatorId, status);
   }
 }
 
@@ -7078,16 +7247,6 @@ public final class ExceptionHelper {
 
   /** Private constructor to prevent instantiation. */
   private ExceptionHelper() {}
-
-  /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that an attendance
-   * record already exists.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
-  public static DuplicateResourceException attendanceAlreadyExists() {
-    return new DuplicateResourceException(ProjectsErrorCodes.ATTENDANCE_ALREADY_EXISTS);
-  }
 
   /**
    * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested

@@ -7,12 +7,11 @@ import com.pug.project.presenter.dtos.AttendanceValidateRequest;
 import com.pug.project.presenter.mappers.AttendancePresenter;
 import com.pug.project.service.AttendanceReadService;
 import com.pug.project.service.AttendanceService;
-import com.pug.project.service.dtos.AttendanceCreateCommand;
-import com.pug.project.service.dtos.AttendanceValidateCommand;
 import com.pug.shared.i18n.I18n;
 import com.pug.shared.presenter.rest.ApiEnvelope;
 import com.pug.shared.utils.PresenterUtils;
 import com.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -46,6 +45,7 @@ import java.util.stream.Collectors;
 @Path("/projects/attendances")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Authenticated
 public class AttendanceResource {
 
   @Inject AttendanceService writeService;
@@ -55,6 +55,14 @@ public class AttendanceResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a specific attendance record by its unique identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     AttendanceResponse}
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the attendance is not found
+   */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
@@ -63,16 +71,30 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves a collection of attendance records.
+   *
+   * <p>If both {@code projectId} and {@code studentId} are provided, it filters by enrollment.
+   * Otherwise, it filters by project or student individually. If all are omitted, returns all
+   * attendance records.
+   *
+   * @param projectId the optional project identifier to filter by
+   * @param studentId the optional student identifier to filter by
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     AttendanceResponse}
+   */
   @GET
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("studentId") @UuidV7 UUID studentId) {
     List<AttendanceView> views;
 
-    if (projectId != null) {
-      views = readService.listViewsByProjectId(projectId);
+    if (projectId != null && studentId != null) {
+      views = readService.listByEnrollmentId(projectId, studentId);
+    } else if (projectId != null) {
+      views = readService.listByProjectId(projectId);
     } else if (studentId != null) {
-      views = readService.listViewsByStudentId(studentId);
+      views = readService.listByStudentId(studentId);
     } else {
       views = readService.listViews();
     }
@@ -85,9 +107,16 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Registers a new attendance record.
+   *
+   * @param req the validated {@link AttendanceCreateRequest} payload
+   * @return an HTTP 201 Created response containing a {@code Location} header and the created
+   *     {@link AttendanceResponse}
+   */
   @POST
   public Response create(@Valid AttendanceCreateRequest req) {
-    var cmd = new AttendanceCreateCommand(req.projectId(), req.studentId(), req.duration());
+    var cmd = AttendancePresenter.toCommand(req);
     var created = writeService.save(cmd);
 
     AttendanceView view = readService.getViewById(created.getId());
@@ -97,12 +126,17 @@ public class AttendanceResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Validates an attendance record via QR code scan.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance to validate
+   * @param req the validated {@link AttendanceValidateRequest} payload
+   * @return an HTTP 200 OK response containing the updated {@link AttendanceResponse}
+   */
   @PATCH
   @Path("/{id}/validate")
   public Response validate(@PathParam("id") @UuidV7 UUID id, @Valid AttendanceValidateRequest req) {
-    var cmd =
-        new AttendanceValidateCommand(
-            req.validatorId(), req.latitude(), req.longitude(), req.qrValidationHash());
+    var cmd = AttendancePresenter.toCommand(req);
 
     writeService.validate(id, cmd);
     AttendanceView view = readService.getViewById(id);
@@ -111,6 +145,12 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Permanently removes an attendance record from the system.
+   *
+   * @param id the unique identifier (UUIDv7) of the attendance to delete
+   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   */
   @DELETE
   @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
@@ -118,6 +158,11 @@ public class AttendanceResource {
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
+  /**
+   * Determines the appropriate {@link Locale} based on the request headers.
+   *
+   * @return the resolved {@link Locale}
+   */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

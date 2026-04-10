@@ -1,10 +1,13 @@
 package com.pug.project.service.dtos;
 
-import java.math.BigDecimal;
-import java.util.UUID;
+import com.pug.project.domain.enums.AttendanceStatus;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to validate an existing Attendance.
+ *
+ * <p>This command encapsulates the account's decision regarding the attendance record.
+ *
+ * @param qrValidationHash the unique hash associated with the attendance record to be validated
+ * @param status the status to assign to the attendance (PRESENT or ABSENT)
  */
-public record AttendanceValidateCommand(
-    UUID validatorId, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {}
+public record AttendanceValidateCommand(String qrValidationHash, AttendanceStatus status) {}

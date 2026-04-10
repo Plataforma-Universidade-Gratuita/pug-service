@@ -2,6 +2,7 @@ package com.pug.project.domain.vos;
 
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.utils.StringUtils;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -23,12 +24,6 @@ public class QrValidationInfo extends DomainError {
   /** The duration of time spent on this attendance. */
   BigDecimal duration;
 
-  /** The geographic latitude where the attendance was recorded. */
-  BigDecimal latitude;
-
-  /** The geographic longitude where the attendance was recorded. */
-  BigDecimal longitude;
-
   /** The unique cryptographic hash of the QR code used for validation. */
   String qrValidationHash;
 
@@ -36,16 +31,11 @@ public class QrValidationInfo extends DomainError {
    * Constructs a {@code QrValidationInfo} instance.
    *
    * @param duration the time duration recorded
-   * @param latitude the geographic latitude
-   * @param longitude the geographic longitude
    * @param qrValidationHash the unique QR hash
    */
   @Builder(toBuilder = true)
-  private QrValidationInfo(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+  private QrValidationInfo(BigDecimal duration, String qrValidationHash) {
     this.duration = duration;
-    this.latitude = latitude;
-    this.longitude = longitude;
     this.qrValidationHash = qrValidationHash;
   }
 
@@ -55,20 +45,12 @@ public class QrValidationInfo extends DomainError {
    * <p>The instance is created and immediately self-validated.
    *
    * @param duration the time duration recorded
-   * @param latitude the geographic latitude
-   * @param longitude the geographic longitude
    * @param qrValidationHash the hash of the QR code used
    * @return a self-validated {@link QrValidationInfo} instance
    */
-  public static QrValidationInfo factory(
-      BigDecimal duration, BigDecimal latitude, BigDecimal longitude, String qrValidationHash) {
+  public static QrValidationInfo factory(BigDecimal duration, String qrValidationHash) {
     QrValidationInfo vo =
-        QrValidationInfo.builder()
-            .duration(duration)
-            .latitude(latitude)
-            .longitude(longitude)
-            .qrValidationHash(qrValidationHash)
-            .build();
+        QrValidationInfo.builder().duration(duration).qrValidationHash(qrValidationHash).build();
     vo.collectValidationProblems();
     return vo;
   }
@@ -81,34 +63,16 @@ public class QrValidationInfo extends DomainError {
    * <ul>
    *   <li>The duration must not be null and must be strictly greater than zero (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_DURATION_INVALID}).
-   *   <li>Both latitude and longitude must be provided together or completely omitted (appends
-   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_MISSING} if mismatched).
-   *   <li>The latitude, if provided, must fall strictly between -90 and 90 degrees (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LAT}).
-   *   <li>The longitude, if provided, must fall strictly between -180 and 180 degrees (appends
-   *       {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_GEO_INVALID_LONG}).
+   *   <li>The qrValidationHash must not be null or an empty string (appends {@link
+   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY}).
    * </ul>
    */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID);
     }
-    boolean hasLat = latitude != null;
-    boolean hasLon = longitude != null;
-    if (hasLat != hasLon) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_MISSING);
-    }
-    if (hasLat) {
-      if (latitude.compareTo(BigDecimal.valueOf(90)) > 0
-          || latitude.compareTo(BigDecimal.valueOf(-90)) < 0) {
-        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LAT);
-      }
-    }
-    if (hasLon) {
-      if (longitude.compareTo(BigDecimal.valueOf(180)) > 0
-          || longitude.compareTo(BigDecimal.valueOf(-180)) < 0) {
-        addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_GEO_INVALID_LONG);
-      }
+    if (StringUtils.isEmpty(qrValidationHash)) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
     }
   }
 }

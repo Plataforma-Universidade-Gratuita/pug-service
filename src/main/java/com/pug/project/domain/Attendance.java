@@ -3,11 +3,13 @@ package com.pug.project.domain;
 import com.github.f4b6a3.uuid.UuidCreator;
 import com.pug.academic.domain.Student;
 import com.pug.project.domain.enums.AttendanceStatus;
+import com.pug.project.domain.enums.ProjectsErrorCodes;
 import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.pug.project.domain.vos.AttendanceInfo;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.QrValidationInfo;
 import com.pug.shared.domain.DomainError;
+import com.pug.shared.exceptions.BusinessRuleException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -21,8 +23,8 @@ import lombok.Getter;
  * Immutable Domain Entity representing a Student's Attendance record for a Project.
  *
  * <p>This class acts as an aggregate containing the unique identifier, the linked enrollment, the
- * geolocation data (QR Validation), and the staff validation metadata. It extends {@link
- * DomainError} to accumulate structural validation failures.
+ * QR validation data, and the staff validation metadata. It extends {@link DomainError} to
+ * accumulate structural validation failures.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -36,7 +38,7 @@ public class Attendance extends DomainError {
   /** The composite identifier linking this attendance to a specific student and project. */
   EnrollmentIdentifier enrollmentIdentifier;
 
-  /** The geographic and temporal data recorded when the QR code was scanned. */
+  /** The temporal data and unique QR validation hash recorded. */
   QrValidationInfo qrValidationInfo;
 
   /** The metadata tracking which staff member validated the attendance and when. */
@@ -53,15 +55,17 @@ public class Attendance extends DomainError {
    * @param project the associated project
    * @param student the associated student
    * @param duration the duration of time the student spent on the project
+   * @param qrHash the unique hash of the QR code being registered
    * @return a newly created and self-validated {@link Attendance} instance
    */
-  public static Attendance factory(Project project, Student student, BigDecimal duration) {
+  public static Attendance factory(
+      Project project, Student student, BigDecimal duration, String qrHash) {
     Attendance att =
         Attendance.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .enrollmentIdentifier(
                 EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
-            .qrValidationInfo(QrValidationInfo.factory(duration, null, null, null))
+            .qrValidationInfo(QrValidationInfo.factory(duration, qrHash))
             .attendanceInfo(AttendanceInfo.factory(null, null))
             .status(AttendanceStatus.WAITING)
             .build();
@@ -73,20 +77,18 @@ public class Attendance extends DomainError {
   /**
    * Validates the attendance record, transitioning its status and recording validation metadata.
    *
-   * <p>This behavior simulates a staff member confirming the student's geographic presence and time
-   * spent via a QR code scan.
+   * <p>This allows marking the attendance as either PRESENT (valid) or ABSENT (rejected) by a staff
+   * member.
    *
-   * @param validatorId the unique identifier of the staff account performing the validation
-   * @param lat the latitude recorded at validation time
-   * @param lon the longitude recorded at validation time
-   * @param hash the unique hash of the scanned QR code
-   * @return a new {@link Attendance} instance reflecting the validated state
+   * @param validatorId the unique identifier of the staff account performing the action
+   * @param newStatus the target status (must be PRESENT or ABSENT)
+   * @return a new {@link Attendance} instance reflecting the updated state
+   * @throws BusinessRuleException if the status is not a valid transition state
    */
-  public Attendance validateAttendance(
-      UUID validatorId, BigDecimal lat, BigDecimal lon, String hash) {
-
-    QrValidationInfo newQr =
-        QrValidationInfo.factory(this.qrValidationInfo.getDuration(), lat, lon, hash);
+  public Attendance validatePresence(UUID validatorId, AttendanceStatus newStatus) {
+    if (newStatus != AttendanceStatus.PRESENT && newStatus != AttendanceStatus.ABSENT) {
+      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_PROJECT_STATUS_UPDATE_START);
+    }
 
     AttendanceInfo newInfo =
         this.attendanceInfo.toBuilder()
@@ -95,12 +97,7 @@ public class Attendance extends DomainError {
             .auditInfo(this.attendanceInfo.getAuditInfo().update())
             .build();
 
-    Attendance updated =
-        this.toBuilder()
-            .qrValidationInfo(newQr)
-            .attendanceInfo(newInfo)
-            .status(AttendanceStatus.PRESENT)
-            .build();
+    Attendance updated = this.toBuilder().attendanceInfo(newInfo).status(newStatus).build();
 
     updated.collectValidationProblems();
     return updated;
@@ -112,7 +109,7 @@ public class Attendance extends DomainError {
     if (enrollmentIdentifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK);
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK);
-    } else if (enrollmentIdentifier.hasFieldErrors()) {
+    } else if (identifierHasFieldErrors()) {
       addFieldErrors(enrollmentIdentifier.getFieldErrors());
     }
     if (status == null) {
@@ -124,5 +121,9 @@ public class Attendance extends DomainError {
     if (attendanceInfo != null && attendanceInfo.hasFieldErrors()) {
       addFieldErrors(attendanceInfo.getFieldErrors());
     }
+  }
+
+  private boolean identifierHasFieldErrors() {
+    return enrollmentIdentifier != null && enrollmentIdentifier.hasFieldErrors();
   }
 }

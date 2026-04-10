@@ -1,7 +1,5 @@
 package com.pug.project.infra;
 
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.read.dtos.AccountView;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.enums.AttendanceStatus;
 import com.pug.project.domain.vos.AttendanceInfo;
@@ -9,14 +7,13 @@ import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.domain.vos.QrValidationInfo;
 import com.pug.project.infra.persistence.AttendanceEntity;
 import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.project.infra.read.dtos.ProjectView;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Attendance boundary layers.
  *
- * <p>This mapper handles the translation of complex Value Objects related to geolocation,
- * cryptographic QR verification, and temporal validation logging.
+ * <p>This mapper acts as an anti-corruption layer, handling the conversion of Value Objects and
+ * database entities between the Domain and Persistence/Read layers.
  */
 public final class AttendanceMapper {
 
@@ -41,13 +38,7 @@ public final class AttendanceMapper {
             .studentId(e.getStudentId())
             .build();
 
-    QrValidationInfo qrInfo =
-        QrValidationInfo.builder()
-            .duration(e.getDuration())
-            .latitude(e.getLatitude())
-            .longitude(e.getLongitude())
-            .qrValidationHash(e.getQrValidationHash())
-            .build();
+    QrValidationInfo qrInfo = QrValidationInfo.factory(e.getDuration(), e.getQrValidationHash());
 
     AttendanceInfo attInfo =
         AttendanceInfo.builder()
@@ -83,8 +74,6 @@ public final class AttendanceMapper {
         .projectId(d.getEnrollmentIdentifier().getProjectId())
         .studentId(d.getEnrollmentIdentifier().getStudentId())
         .duration(d.getQrValidationInfo().getDuration())
-        .latitude(d.getQrValidationInfo().getLatitude())
-        .longitude(d.getQrValidationInfo().getLongitude())
         .qrValidationHash(d.getQrValidationInfo().getQrValidationHash())
         .status(d.getStatus().name())
         .validatedBy(d.getAttendanceInfo().getValidatedBy())
@@ -106,41 +95,36 @@ public final class AttendanceMapper {
       return;
     }
     e.setDuration(d.getQrValidationInfo().getDuration());
-    e.setLatitude(d.getQrValidationInfo().getLatitude());
-    e.setLongitude(d.getQrValidationInfo().getLongitude());
     e.setQrValidationHash(d.getQrValidationInfo().getQrValidationHash());
     e.setStatus(d.getStatus().name());
     e.setValidatedBy(d.getAttendanceInfo().getValidatedBy());
     e.setValidatedAt(d.getAttendanceInfo().getValidatedAt());
+    e.setUpdatedAt(d.getAttendanceInfo().getAuditInfo().getUpdatedAt());
   }
 
   /**
-   * Projects a raw JPA {@link AttendanceEntity} and its pre-resolved nested views into a
-   * comprehensive {@link AttendanceView} DTO.
+   * Projects a raw JPA {@link AttendanceEntity} into a lightweight {@link AttendanceView} DTO.
+   *
+   * <p>This mapping flattens the persistence entity into a CQRS read model, exposing only the
+   * necessary identifiers (e.g., {@code projectId}, {@code studentId}, {@code validatedById})
+   * rather than nesting complex objects.
    *
    * @param e the JPA entity representing the raw attendance record
-   * @param project the pre-resolved, fully populated view of the project
-   * @param student the pre-resolved, fully populated view of the student
-   * @param validatedBy the pre-resolved, fully populated view of the staff validator
    * @return a fully populated {@link AttendanceView} DTO
    */
-  public static AttendanceView toView(
-      AttendanceEntity e, ProjectView project, StudentView student, AccountView validatedBy) {
-
+  public static AttendanceView toView(AttendanceEntity e) {
     if (e == null) {
       return null;
     }
 
     return new AttendanceView(
         e.getId(),
-        project,
-        student,
+        e.getProjectId(),
+        e.getStudentId(),
         e.getDuration(),
-        e.getLatitude(),
-        e.getLongitude(),
         e.getQrValidationHash(),
         AttendanceStatus.valueOf(e.getStatus()),
-        validatedBy,
+        e.getValidatedBy(),
         e.getValidatedAt(),
         e.getCreatedAt(),
         e.getUpdatedAt());

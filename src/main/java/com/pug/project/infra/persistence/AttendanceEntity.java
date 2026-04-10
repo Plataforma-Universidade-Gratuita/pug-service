@@ -5,7 +5,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -64,20 +63,6 @@ public class AttendanceEntity extends BaseAuditedEntity {
   @DecimalMin(value = "0.00", inclusive = false)
   @Column(name = "duration", nullable = false, precision = 4, scale = 2)
   private BigDecimal duration;
-
-  /** The geographic latitude where the attendance was recorded. */
-  @NotNull
-  @DecimalMin(value = "-90.000000")
-  @DecimalMax(value = "90.000000")
-  @Column(name = "latitude", nullable = false, precision = 9, scale = 6)
-  private BigDecimal latitude;
-
-  /** The geographic longitude where the attendance was recorded. */
-  @NotNull
-  @DecimalMin(value = "-180.000000")
-  @DecimalMax(value = "180.000000")
-  @Column(name = "longitude", nullable = false, precision = 9, scale = 6)
-  private BigDecimal longitude;
 
   /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
   @NotBlank

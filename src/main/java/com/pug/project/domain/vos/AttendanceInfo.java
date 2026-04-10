@@ -22,7 +22,7 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AttendanceInfo extends DomainError {
 
-  /** The unique identifier (Account ID) of the staff member who validated the attendance. */
+  /** The unique identifier (Account ID) of who validated the attendance. */
   UUID validatedBy;
 
   /** The exact timestamp when the attendance was explicitly validated. */
@@ -71,7 +71,7 @@ public class AttendanceInfo extends DomainError {
    * @return a new {@link AttendanceInfo} instance with updated audit info
    */
   public AttendanceInfo update() {
-    AttendanceInfo updated = toBuilder().auditInfo(this.auditInfo.update()).build();
+    AttendanceInfo updated = toBuilder().auditInfo(auditInfo.update()).build();
     updated.collectValidationProblems();
     return updated;
   }

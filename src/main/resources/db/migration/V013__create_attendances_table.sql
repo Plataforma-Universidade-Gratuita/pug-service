@@ -4,8 +4,6 @@ CREATE TABLE attendances
     project_id         uuid          NOT NULL,
     student_id         uuid          NOT NULL,
     duration           DECIMAL(4, 2) NOT NULL,
-    latitude           DECIMAL(9, 6) NOT NULL,
-    longitude          DECIMAL(9, 6) NOT NULL,
     status             varchar(16)   NOT NULL,
     qr_validation_hash varchar(512)  NOT NULL,
     validated_by       uuid,
@@ -14,11 +12,9 @@ CREATE TABLE attendances
     updated_at         TIMESTAMP WITH TIME ZONE,
     PRIMARY KEY (id),
     FOREIGN KEY (project_id, student_id) REFERENCES enrollments (project_id, student_id),
-    FOREIGN KEY (validated_by) REFERENCES staff (account_id),
+    FOREIGN KEY (validated_by) REFERENCES accounts (id),
     UNIQUE (qr_validation_hash),
-    CONSTRAINT chk_attendance_duration_pos CHECK (duration > 0),
-    CONSTRAINT chk_attendance_lat CHECK (latitude IS NULL OR (latitude >= -90 AND latitude <= 90)),
-    CONSTRAINT chk_attendance_lon CHECK (longitude IS NULL OR (longitude >= -180 AND longitude <= 180))
+    CONSTRAINT chk_attendance_duration_pos CHECK (duration > 0)
 );
 
 CREATE INDEX idx_attendances_enrollment ON attendances (project_id, student_id);
