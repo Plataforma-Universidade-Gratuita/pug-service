@@ -17,8 +17,8 @@ import java.util.UUID;
 /**
  * Implementation of the {@link StudentQueries} interface.
  *
- * <p>Executa consultas de leitura para perfis de estudantes, utilizando JPQL com expressões de
- * construtor para projetar os dados diretamente em {@link StudentView}.
+ * <p>Executes read queries for student profiles, using JPQL with constructor expressions to project
+ * the data directly into {@link StudentView}.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)

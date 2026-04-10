@@ -1,5 +1,5 @@
 PROJECT CONTEXT DUMP
-Project Name: identity
+Base: project_context_src-main-java-com-pug-identity
 Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/identity
 ================================================================================
 

@@ -11,10 +11,8 @@ mkdir -p "$CONTEXT_DIR"
 OUT="$CONTEXT_DIR/project-tree.txt"
 
 # 1. TREE GENERATION
-# ---------------------------------------------------------
 echo "Generating project tree..."
 
-# fallback simpler working approach using recursion in shell
 generate() {
   local dir="$1"
   local prefix="$2"
@@ -39,8 +37,6 @@ generate() {
     fi
     printf "%s%s%s%s\n" "$prefix" "$connector" "$name" "$( [ $isdir -eq 1 ] && printf "/" )"
     if [ $isdir -eq 1 ]; then
-      # skip ignored top-level names when recursion depth is 1
-      # (Added 'context' to the ignore list)
       if [ "$dir" = "." ] && [[ "$name" =~ ^(\.git|\.idea|target|node_modules|\.mvn|build|\.DS_Store|project-tree\.txt|context)$ ]]; then
         continue
       fi
@@ -49,7 +45,6 @@ generate() {
   done
 }
 
-# write header and run tree generation
 {
   echo "./"
   generate "." ""
@@ -57,41 +52,26 @@ generate() {
 
 echo "Wrote tree to $OUT"
 
-
 # 2. RUN GENERATE-CONTEXT SCRIPTS
-# ---------------------------------------------------------
-# Loop over both target directories to avoid duplicated code
-for target_dir in "src" "requests"; do
-    echo ""
-    echo "Searching for context generation scripts under ./$target_dir..."
-
-    # Check if directory exists to prevent errors
+for target_dir in "src" "requests" "academic" "geo"; do
     if [ -d "$target_dir" ]; then
-        # Find files named 'generate-context.sh' inside the current target directory
         find "$target_dir" -type f -name "generate-context.sh" -print0 | while IFS= read -r -d $'\0' script_path; do
-
             script_dir=$(dirname "$script_path")
             script_name=$(basename "$script_path")
+
+            # Gera um sufixo amigável baseado no caminho (ex: academic-domain-enums)
+            DIR_SUFFIX=$(echo "$script_dir" | tr '/' '-')
 
             echo ""
             echo "Found script: $script_path"
             echo "--------------------------------------------------"
-
-            # Execute in a subshell (...) so it doesn't change the main script's working directory
             (
                 cd "$script_dir" || exit
-                echo "Running $script_name in $(pwd)..."
-
-                # Ensure it is executable (optional but good practice)
                 chmod +x "$script_name" 2>/dev/null || true
-
-                # Run using bash explicitly and pass the root context directory path
-                bash "$script_name" "$CONTEXT_DIR"
+                bash "$script_name" "$CONTEXT_DIR" "$DIR_SUFFIX"
             )
             echo "--------------------------------------------------"
         done
-    else
-        echo "Directory './$target_dir' does not exist. Skipping script execution."
     fi
 done
 

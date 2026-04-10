@@ -19,15 +19,15 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
-   * Adiciona horas completadas ao progresso acadêmico de um estudante.
+   * Adds completed hours to a student's academic progress.
    *
-   * <p>Este método atualiza o registro do estudante, recalculando se o aluno atingiu o requisito
-   * total de horas de contrapartida.
+   * <p>This method updates the student's record, recalculating whether the student has reached the
+   * total required counterpart hours.
    *
-   * @param accountId o identificador da conta do estudante
-   * @param hours a quantidade de horas a adicionar
-   * @return o agregado {@link Student} atualizado
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o estudante não existir
+   * @param accountId the student's account identifier
+   * @param hours the amount of hours to add
+   * @return the updated {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
    */
   Student addCompletedHours(UUID accountId, BigDecimal hours);
 

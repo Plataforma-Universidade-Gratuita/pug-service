@@ -207,10 +207,13 @@ public class Student extends DomainError {
   }
 
   /**
-   * Adiciona horas completadas ao progresso do estudante.
+   * Adds completed hours to the student's progress.
    *
-   * @param hours o valor de horas a ser adicionado
-   * @return uma nova instância de {@link Student} com as horas atualizadas e status recalculado
+   * <p>If the total completed hours reaches or exceeds the required hours, the student's
+   * counterpart status is automatically updated.
+   *
+   * @param hours the amount of hours to add
+   * @return a new instance of {@link Student} with updated hours and recalculated status
    */
   public Student addCompletedHours(BigDecimal hours) {
     BigDecimal newTotal = counterpartHours.getCompletedHours().add(hours);

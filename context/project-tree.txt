@@ -546,6 +546,7 @@
 │       │           │   ├── presenter/
 │       │           │   │   └── rest/
 │       │           │   └── service/
+│       │           ├── generate-context.sh
 │       │           ├── geo/
 │       │           │   ├── domain/
 │       │           │   │   └── vos/
@@ -583,6 +584,7 @@
 │       │           └── shared/
 │       └── resources/
 │           ├── application.properties
+│           ├── generate-context.sh
 │           ├── messages_en_US.properties
 │           └── messages_pt_BR.properties
 └── target/

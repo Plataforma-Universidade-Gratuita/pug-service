@@ -1,5 +1,5 @@
 PROJECT CONTEXT DUMP
-Project Name: academic
+Base: project_context_src-main-java-com-pug-academic
 Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/academic
 ================================================================================
 
@@ -796,10 +796,13 @@ public class Student extends DomainError {
   }
 
   /**
-   * Adiciona horas completadas ao progresso do estudante.
+   * Adds completed hours to the student's progress.
    *
-   * @param hours o valor de horas a ser adicionado
-   * @return uma nova instância de {@link Student} com as horas atualizadas e status recalculado
+   * <p>If the total completed hours reaches or exceeds the required hours, the student's
+   * counterpart status is automatically updated.
+   *
+   * @param hours the amount of hours to add
+   * @return a new instance of {@link Student} with updated hours and recalculated status
    */
   public Student addCompletedHours(BigDecimal hours) {
     BigDecimal newTotal = counterpartHours.getCompletedHours().add(hours);
@@ -1814,7 +1817,7 @@ public class StudentEntity {
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
 
-  /** A quantidade de horas já completadas pelo estudante. */
+  /** The amount of hours already completed by the student. */
   @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal completedHours;
 
@@ -2228,8 +2231,8 @@ import java.util.UUID;
 /**
  * Implementation of the {@link StudentQueries} interface.
  *
- * <p>Executa consultas de leitura para perfis de estudantes, utilizando JPQL com expressões de
- * construtor para projetar os dados diretamente em {@link StudentView}.
+ * <p>Executes read queries for student profiles, using JPQL with constructor expressions to project
+ * the data directly into {@link StudentView}.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -5379,15 +5382,15 @@ import java.util.UUID;
 public interface StudentService {
 
   /**
-   * Adiciona horas completadas ao progresso acadêmico de um estudante.
+   * Adds completed hours to a student's academic progress.
    *
-   * <p>Este método atualiza o registro do estudante, recalculando se o aluno atingiu o requisito
-   * total de horas de contrapartida.
+   * <p>This method updates the student's record, recalculating whether the student has reached the
+   * total required counterpart hours.
    *
-   * @param accountId o identificador da conta do estudante
-   * @param hours a quantidade de horas a adicionar
-   * @return o agregado {@link Student} atualizado
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o estudante não existir
+   * @param accountId the student's account identifier
+   * @param hours the amount of hours to add
+   * @return the updated {@link Student} aggregate
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
    */
   Student addCompletedHours(UUID accountId, BigDecimal hours);
 
