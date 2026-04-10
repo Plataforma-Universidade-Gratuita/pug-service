@@ -74,6 +74,10 @@ public class StudentEntity {
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
 
+  /** A quantidade de horas já completadas pelo estudante. */
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
   /** Flag indicating whether the required counterpart hours have been successfully completed. */
   @Column(name = "concluded", nullable = false)
   private Boolean concluded;

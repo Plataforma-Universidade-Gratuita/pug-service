@@ -3,6 +3,7 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,6 +17,19 @@ import java.util.UUID;
  * authentication credentials cascade correctly.
  */
 public interface StudentService {
+
+  /**
+   * Adiciona horas completadas ao progresso acadêmico de um estudante.
+   *
+   * <p>Este método atualiza o registro do estudante, recalculando se o aluno atingiu o requisito
+   * total de horas de contrapartida.
+   *
+   * @param accountId o identificador da conta do estudante
+   * @param hours a quantidade de horas a adicionar
+   * @return o agregado {@link Student} atualizado
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o estudante não existir
+   */
+  Student addCompletedHours(UUID accountId, BigDecimal hours);
 
   /**
    * Removes a student's enrollment by deleting the {@link Student} record.

@@ -17,6 +17,12 @@ public enum AcademicFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that an account ID was provided as null. */
   INVALID_ACCOUNT_ID_BLANK("error.domain.academic.accountId.blank", "accountId"),
 
+  /** Indicates that the completed hours are negative. */
+  INVALID_COMPLETED_HOURS_NEGATIVE("error.domain.number.negative", "completedHours"),
+
+  /** Indicates that the completed hours exceed the required total. */
+  INVALID_COMPLETED_HOURS_EXCEEDS("error.domain.academic.hours.exceeds", "completedHours"),
+
   /** Indicates that a course ID was provided as null. */
   INVALID_COURSE_BLANK("error.domain.academic.course.blank", "courseId"),
 

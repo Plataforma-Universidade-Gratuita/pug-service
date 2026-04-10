@@ -9,48 +9,54 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Value Object (VO) representing the Counterpart Hours required for a student's project.
+ * Immutable Value Object (VO) representing the Counterpart Hours required for a student's project
+ * and the progress made toward completion.
  *
  * <p>Extends {@link DomainError} to encapsulate validations relating to time requirements, ensuring
- * hours are properly quantified and avoiding negative/zero time constraints.
+ * hours remain within logically valid bounds (non-negative and not exceeding requirements).
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class CounterpartHours extends DomainError {
 
-  /** The required amount of hours the student must complete. */
+  /** The total hours the student is required to complete. */
   BigDecimal requiredHours;
 
-  /** A flag indicating whether the required hours have been fully completed. */
+  /** The total hours the student has completed to date. */
+  BigDecimal completedHours;
+
+  /** A flag indicating whether the required hours have been fully satisfied. */
   Boolean concluded;
 
   /**
    * Constructs a {@code CounterpartHours} instance.
    *
-   * @param requiredHours the quantified hours required
+   * @param requiredHours the hours required
+   * @param completedHours the hours completed
    * @param concluded the completion status
    */
   @Builder(toBuilder = true)
-  private CounterpartHours(BigDecimal requiredHours, Boolean concluded) {
+  private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
     this.requiredHours = requiredHours;
+    this.completedHours = completedHours;
     this.concluded = concluded;
   }
 
   /**
    * Factory method to create a new {@code CounterpartHours} instance.
    *
-   * <p>If the {@code concluded} flag is omitted (null), it defaults to {@code false}. The returned
-   * instance is immediately self-validated.
-   *
    * @param requiredHours the required hours
-   * @param concluded the completion status (defaults to false if null)
+   * @param completedHours the completed hours
+   * @param concluded the completion status
    * @return a self-validated {@link CounterpartHours} instance
    */
-  public static CounterpartHours factory(BigDecimal requiredHours, Boolean concluded) {
+  public static CounterpartHours factory(
+      BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
     CounterpartHours vo =
         CounterpartHours.builder()
-            .requiredHours(requiredHours)
+            .requiredHours(requiredHours != null ? requiredHours : BigDecimal.ZERO)
+            .completedHours(completedHours != null ? completedHours : BigDecimal.ZERO)
             .concluded(concluded != null ? concluded : Boolean.FALSE)
             .build();
     vo.collectValidationProblems();
@@ -63,23 +69,22 @@ public class CounterpartHours extends DomainError {
    * <p>Business rules applied:
    *
    * <ul>
-   *   <li>The required hours must not be null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_HOURS_BLANK})
-   *   <li>The required hours cannot be negative (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REQUIRED_HOURS_NEGATIVE})
-   *   <li>The required hours cannot be exactly zero (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REQUIRED_HOURS_ZERO})
+   *   <li>{@code requiredHours} must not be null and must be greater than zero.
+   *   <li>{@code completedHours} must not be negative.
+   *   <li>{@code completedHours} cannot be higher than {@code requiredHours}.
    * </ul>
    */
   private void collectValidationProblems() {
-    if (requiredHours == null) {
+    if (requiredHours == null || requiredHours.compareTo(BigDecimal.ZERO) <= 0) {
       addFieldError(AcademicFieldErrorCodes.INVALID_HOURS_BLANK);
-      return;
     }
-    if (requiredHours.compareTo(BigDecimal.ZERO) < 0) {
-      addFieldError(AcademicFieldErrorCodes.INVALID_REQUIRED_HOURS_NEGATIVE);
-    } else if (requiredHours.compareTo(BigDecimal.ZERO) == 0) {
-      addFieldError(AcademicFieldErrorCodes.INVALID_REQUIRED_HOURS_ZERO);
+    if (completedHours == null || completedHours.compareTo(BigDecimal.ZERO) < 0) {
+      addFieldError(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE);
+    }
+    if (requiredHours != null
+        && completedHours != null
+        && completedHours.compareTo(requiredHours) > 0) {
+      addFieldError(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS);
     }
   }
 }

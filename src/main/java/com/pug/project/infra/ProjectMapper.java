@@ -35,6 +35,7 @@ public final class ProjectMapper {
     e.setDescription(d.getDescription());
     e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
     e.setOfferedHours(d.getProjectInfo().getOfferedHours());
+    e.setCompletedHours(d.getProjectInfo().getCompletedHours());
     e.setClosedAt(d.getProjectInfo().getClosedAt());
     e.setStatus(d.getProjectStatus().name());
     e.setCreatedAt(d.getProjectInfo().getAuditInfo().getCreatedAt());
@@ -57,6 +58,7 @@ public final class ProjectMapper {
             .createdBy(e.getCreatedBy())
             .maxParticipants(e.getMaxParticipants())
             .offeredHours(e.getOfferedHours())
+            .completedHours(e.getCompletedHours())
             .closedAt(e.getClosedAt())
             .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
             .build();
@@ -92,6 +94,7 @@ public final class ProjectMapper {
         .createdBy(d.getProjectInfo().getCreatedBy())
         .maxParticipants(d.getProjectInfo().getMaxParticipants())
         .offeredHours(d.getProjectInfo().getOfferedHours())
+        .completedHours(d.getProjectInfo().getCompletedHours())
         .closedAt(d.getProjectInfo().getClosedAt())
         .status(d.getProjectStatus().name())
         .createdAt(d.getProjectInfo().getAuditInfo().getCreatedAt())
@@ -118,6 +121,7 @@ public final class ProjectMapper {
         p.getCreatedBy(),
         p.getMaxParticipants(),
         p.getOfferedHours(),
+        p.getCompletedHours(),
         ProjectStatus.valueOf(p.getStatus()),
         p.getClosedAt(),
         p.getCreatedAt(),

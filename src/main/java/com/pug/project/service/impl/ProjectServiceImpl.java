@@ -1,6 +1,5 @@
 package com.pug.project.service.impl;
 
-import com.pug.academic.service.SchoolService;
 import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
 import com.pug.project.domain.Project;
@@ -18,6 +17,7 @@ import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -38,7 +38,24 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject AuthService authService;
   @Inject EntityService entityService;
   @Inject EnrollmentService enrollmentService;
-  @Inject SchoolService schoolService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Project addCompletedHours(UUID id, BigDecimal hours) {
+    LOG.debugf("Adicionando %s horas completadas ao projeto: %s", hours, id);
+    Project current = getById(id);
+
+    Project updated = current.addCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Horas adicionadas ao projeto %s. Status atual: %s", id, updated.getProjectStatus());
+    return updated;
+  }
 
   /** {@inheritDoc} */
   @Transactional

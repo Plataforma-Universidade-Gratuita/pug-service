@@ -18,6 +18,7 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
@@ -42,6 +43,24 @@ public class StudentServiceImpl implements StudentService {
   @Inject CourseService courseService;
 
   @Inject EnrollmentService enrollmentService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Student addCompletedHours(UUID accountId, BigDecimal hours) {
+    LOG.debugf("Adicionando %s horas completadas ao estudante: %s", hours, accountId);
+    Student current = getById(accountId);
+
+    Student updated = current.addCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Horas adicionadas com sucesso ao estudante %s", accountId);
+    return updated;
+  }
 
   /** {@inheritDoc} */
   @Transactional

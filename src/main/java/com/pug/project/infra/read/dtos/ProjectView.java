@@ -20,6 +20,7 @@ import java.util.UUID;
  * @param creatorId the unique identifier of the staff account who created the project
  * @param maxParticipants the maximum number of students allowed to enroll
  * @param offeredHours the total counterpart hours the project offers
+ * @param completedHours the total counterpart hours that have been completed to date
  * @param status the current execution state of the project
  * @param closedAt the exact timestamp when the project reached a terminal state
  * @param createdAt the exact timestamp when the project record was created
@@ -33,6 +34,7 @@ public record ProjectView(
     UUID creatorId,
     Integer maxParticipants,
     BigDecimal offeredHours,
+    BigDecimal completedHours,
     ProjectStatus status,
     OffsetDateTime closedAt,
     OffsetDateTime createdAt,

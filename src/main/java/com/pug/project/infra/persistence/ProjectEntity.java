@@ -108,6 +108,12 @@ public class ProjectEntity extends BaseAuditedEntity {
   @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal offeredHours;
 
+  /** A quantidade de horas completadas no projeto até o momento. */
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
   /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   @NotBlank
   @Size(max = 16)

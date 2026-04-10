@@ -26,14 +26,14 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                   select new com.pug.project.infra.read.dtos.ProjectView(
-                     p.id, p.name, p.entityId, p.description, p.createdBy,
-                     p.maxParticipants, p.offeredHours,\s
-                     com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
-                     p.closedAt, p.createdAt, p.updatedAt
-                   )
-                   from ProjectEntity p
-                  \s""";
+                       select new com.pug.project.infra.read.dtos.ProjectView(
+                         p.id, p.name, p.entityId, p.description, p.createdBy,
+                         p.maxParticipants, p.offeredHours, p.completedHours,
+                         com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                         p.closedAt, p.createdAt, p.updatedAt
+                       )
+                       from ProjectEntity p
+                      \s""";
 
   private static final String ORDER_BY_NAME = " order by p.name asc";
 

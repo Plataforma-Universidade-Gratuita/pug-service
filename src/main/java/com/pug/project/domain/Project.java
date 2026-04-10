@@ -119,6 +119,7 @@ public class Project extends DomainError {
    * @param createdBy the UUID of the staff account who created the project
    * @param maxParticipants the maximum number of participants allowed
    * @param offeredHours the total hours offered for completing the project
+   * @param completedHours the hours already completed (usually 0 at creation)
    * @return a newly created and self-validated {@link Project} instance
    */
   public static Project factory(
@@ -127,8 +128,10 @@ public class Project extends DomainError {
       String description,
       UUID createdBy,
       Integer maxParticipants,
-      BigDecimal offeredHours) {
-    ProjectInfo infoVo = ProjectInfo.factory(createdBy, maxParticipants, offeredHours);
+      BigDecimal offeredHours,
+      BigDecimal completedHours) {
+    ProjectInfo infoVo =
+        ProjectInfo.factory(createdBy, maxParticipants, offeredHours, completedHours);
 
     Project project =
         Project.builder()
@@ -216,6 +219,39 @@ public class Project extends DomainError {
             .projectStatus(ProjectStatus.IN_PROGRESS)
             .projectInfo(projectInfo.update())
             .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Adiciona horas completadas ao progresso total do projeto.
+   *
+   * <p>Se o total de horas completadas atingir ou superar as horas oferecidas, o projeto é
+   * automaticamente marcado como 'COMPLETED'.
+   *
+   * @param hours o valor de horas a ser adicionado
+   * @return uma nova instância de {@link Project} com o progresso e status atualizados
+   */
+  public Project addCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = projectInfo.getCompletedHours().add(hours);
+
+    ProjectInfo updatedInfo =
+        ProjectInfo.factory(
+            projectInfo.getCreatedBy(),
+            projectInfo.getMaxParticipants(),
+            projectInfo.getOfferedHours(),
+            newTotal);
+
+    ProjectStatus newStatus = projectStatus;
+    ProjectInfo finalInfo = updatedInfo;
+
+    if (newTotal.compareTo(projectInfo.getOfferedHours()) >= 0) {
+      newStatus = ProjectStatus.COMPLETED;
+      finalInfo = updatedInfo.closeProject();
+    }
+
+    Project updated = toBuilder().projectInfo(finalInfo).projectStatus(newStatus).build();
+
     updated.collectValidationProblems();
     return updated;
   }

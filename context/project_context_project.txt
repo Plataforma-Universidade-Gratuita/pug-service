@@ -742,6 +742,12 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that a project name exceeds the maximum allowed length constraints. */
   INVALID_NAME_TOO_LONG("error.domain.projects.name.too.long", "name"),
 
+  /** Indicates that the completed hours are negative. */
+  INVALID_PROJECT_COMPLETED_HOURS_NEGATIVE("error.domain.number.negative", "completedHours"),
+
+  /** Indicates that the completed hours exceed the offered total. */
+  INVALID_PROJECT_COMPLETED_HOURS_EXCEEDS("error.domain.projects.hours.exceeds", "completedHours"),
+
   /** Indicates that the UUID of the creator is null. */
   INVALID_PROJECT_CREATED_BY_BLANK("error.domain.foreign.key.blank", "createdBy"),
 
@@ -959,6 +965,7 @@ public class Project extends DomainError {
    * @param createdBy the UUID of the staff account who created the project
    * @param maxParticipants the maximum number of participants allowed
    * @param offeredHours the total hours offered for completing the project
+   * @param completedHours the hours already completed (usually 0 at creation)
    * @return a newly created and self-validated {@link Project} instance
    */
   public static Project factory(
@@ -967,8 +974,10 @@ public class Project extends DomainError {
       String description,
       UUID createdBy,
       Integer maxParticipants,
-      BigDecimal offeredHours) {
-    ProjectInfo infoVo = ProjectInfo.factory(createdBy, maxParticipants, offeredHours);
+      BigDecimal offeredHours,
+      BigDecimal completedHours) {
+    ProjectInfo infoVo =
+        ProjectInfo.factory(createdBy, maxParticipants, offeredHours, completedHours);
 
     Project project =
         Project.builder()
@@ -1056,6 +1065,39 @@ public class Project extends DomainError {
             .projectStatus(ProjectStatus.IN_PROGRESS)
             .projectInfo(projectInfo.update())
             .build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Adiciona horas completadas ao progresso total do projeto.
+   *
+   * <p>Se o total de horas completadas atingir ou superar as horas oferecidas, o projeto é
+   * automaticamente marcado como 'COMPLETED'.
+   *
+   * @param hours o valor de horas a ser adicionado
+   * @return uma nova instância de {@link Project} com o progresso e status atualizados
+   */
+  public Project addCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = projectInfo.getCompletedHours().add(hours);
+
+    ProjectInfo updatedInfo =
+        ProjectInfo.factory(
+            projectInfo.getCreatedBy(),
+            projectInfo.getMaxParticipants(),
+            projectInfo.getOfferedHours(),
+            newTotal);
+
+    ProjectStatus newStatus = projectStatus;
+    ProjectInfo finalInfo = updatedInfo;
+
+    if (newTotal.compareTo(projectInfo.getOfferedHours()) >= 0) {
+      newStatus = ProjectStatus.COMPLETED;
+      finalInfo = updatedInfo.closeProject();
+    }
+
+    Project updated = toBuilder().projectInfo(finalInfo).projectStatus(newStatus).build();
+
     updated.collectValidationProblems();
     return updated;
   }
@@ -1666,8 +1708,8 @@ import lombok.Value;
  * Immutable Value Object (VO) representing the comprehensive logistical details of a Project.
  *
  * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to project
- * constraints, ensuring values like participant capacity and offered hours remain within logically
- * valid bounds.
+ * constraints, ensuring values like participant capacity, offered hours, and completion progress
+ * remain within logically valid bounds.
  */
 @Getter
 @Value
@@ -1683,6 +1725,9 @@ public class ProjectInfo extends DomainError {
   /** The total amount of counterpart hours the project offers to its participants. */
   BigDecimal offeredHours;
 
+  /** The total amount of counterpart hours already completed in the project. */
+  BigDecimal completedHours;
+
   /** The exact timestamp when the project was officially closed. */
   OffsetDateTime closedAt;
 
@@ -1695,6 +1740,7 @@ public class ProjectInfo extends DomainError {
    * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
    * @param offeredHours the hours offered by the project
+   * @param completedHours the hours completed in the project
    * @param closedAt the timestamp when the project was closed
    * @param auditInfo the audit tracking VO
    */
@@ -1703,11 +1749,13 @@ public class ProjectInfo extends DomainError {
       UUID createdBy,
       Integer maxParticipants,
       BigDecimal offeredHours,
+      BigDecimal completedHours,
       OffsetDateTime closedAt,
       AuditInfo auditInfo) {
     this.createdBy = createdBy;
     this.maxParticipants = maxParticipants;
     this.offeredHours = offeredHours;
+    this.completedHours = completedHours;
     this.closedAt = closedAt;
     this.auditInfo = auditInfo;
   }
@@ -1721,15 +1769,17 @@ public class ProjectInfo extends DomainError {
    * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
    * @param offeredHours the hours offered for the project
+   * @param completedHours the starting hours completed (usually 0)
    * @return a self-validated {@link ProjectInfo} instance
    */
   public static ProjectInfo factory(
-      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours) {
+      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours, BigDecimal completedHours) {
     ProjectInfo vo =
         ProjectInfo.builder()
             .createdBy(createdBy)
             .maxParticipants(maxParticipants)
-            .offeredHours(offeredHours)
+            .offeredHours(offeredHours != null ? offeredHours : BigDecimal.ZERO)
+            .completedHours(completedHours != null ? completedHours : BigDecimal.ZERO)
             .closedAt(null)
             .auditInfo(AuditInfo.factory())
             .build();
@@ -1804,13 +1854,12 @@ public class ProjectInfo extends DomainError {
    * <p>Business rules applied:
    *
    * <ul>
-   *   <li>The creator ID must not be null (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_PROJECT_CREATED_BY_BLANK}).
-   *   <li>The participant capacity, if provided, must not be negative (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_MAX_PARTICIPANTS_NEGATIVE}).
-   *   <li>The offered hours must not be negative (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_PROJECT_OFFERED_HOURS_NEGATIVE}).
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
+   *   <li>The creator ID must not be null.
+   *   <li>The participant capacity, if provided, must not be negative.
+   *   <li>The offered hours must not be negative.
+   *   <li>{@code completedHours} must not be negative.
+   *   <li>{@code completedHours} cannot exceed {@code offeredHours}.
+   *   <li>Ensures the {@code auditInfo} is not null.
    * </ul>
    */
   private void collectValidationProblems() {
@@ -1822,6 +1871,14 @@ public class ProjectInfo extends DomainError {
     }
     if (offeredHours != null && offeredHours.signum() < 0) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_OFFERED_HOURS_NEGATIVE);
+    }
+    if (completedHours != null && completedHours.compareTo(BigDecimal.ZERO) < 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_COMPLETED_HOURS_NEGATIVE);
+    }
+    if (offeredHours != null
+        && completedHours != null
+        && completedHours.compareTo(offeredHours) > 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_COMPLETED_HOURS_EXCEEDS);
     }
     if (auditInfo == null) {
       addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);
@@ -2894,6 +2951,12 @@ public class ProjectEntity extends BaseAuditedEntity {
   @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal offeredHours;
 
+  /** A quantidade de horas completadas no projeto até o momento. */
+  @NotNull
+  @DecimalMin("0.00")
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
   /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   @NotBlank
   @Size(max = 16)
@@ -3066,6 +3129,7 @@ public final class ProjectMapper {
     e.setDescription(d.getDescription());
     e.setMaxParticipants(d.getProjectInfo().getMaxParticipants());
     e.setOfferedHours(d.getProjectInfo().getOfferedHours());
+    e.setCompletedHours(d.getProjectInfo().getCompletedHours());
     e.setClosedAt(d.getProjectInfo().getClosedAt());
     e.setStatus(d.getProjectStatus().name());
     e.setCreatedAt(d.getProjectInfo().getAuditInfo().getCreatedAt());
@@ -3088,6 +3152,7 @@ public final class ProjectMapper {
             .createdBy(e.getCreatedBy())
             .maxParticipants(e.getMaxParticipants())
             .offeredHours(e.getOfferedHours())
+            .completedHours(e.getCompletedHours())
             .closedAt(e.getClosedAt())
             .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
             .build();
@@ -3123,6 +3188,7 @@ public final class ProjectMapper {
         .createdBy(d.getProjectInfo().getCreatedBy())
         .maxParticipants(d.getProjectInfo().getMaxParticipants())
         .offeredHours(d.getProjectInfo().getOfferedHours())
+        .completedHours(d.getProjectInfo().getCompletedHours())
         .closedAt(d.getProjectInfo().getClosedAt())
         .status(d.getProjectStatus().name())
         .createdAt(d.getProjectInfo().getAuditInfo().getCreatedAt())
@@ -3149,6 +3215,7 @@ public final class ProjectMapper {
         p.getCreatedBy(),
         p.getMaxParticipants(),
         p.getOfferedHours(),
+        p.getCompletedHours(),
         ProjectStatus.valueOf(p.getStatus()),
         p.getClosedAt(),
         p.getCreatedAt(),
@@ -3317,6 +3384,7 @@ import java.util.UUID;
  * @param creatorId the unique identifier of the staff account who created the project
  * @param maxParticipants the maximum number of students allowed to enroll
  * @param offeredHours the total counterpart hours the project offers
+ * @param completedHours the total counterpart hours that have been completed to date
  * @param status the current execution state of the project
  * @param closedAt the exact timestamp when the project reached a terminal state
  * @param createdAt the exact timestamp when the project record was created
@@ -3330,6 +3398,7 @@ public record ProjectView(
     UUID creatorId,
     Integer maxParticipants,
     BigDecimal offeredHours,
+    BigDecimal completedHours,
     ProjectStatus status,
     OffsetDateTime closedAt,
     OffsetDateTime createdAt,
@@ -3630,14 +3699,14 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                   select new com.pug.project.infra.read.dtos.ProjectView(
-                     p.id, p.name, p.entityId, p.description, p.createdBy,
-                     p.maxParticipants, p.offeredHours,\s
-                     com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
-                     p.closedAt, p.createdAt, p.updatedAt
-                   )
-                   from ProjectEntity p
-                  \s""";
+                       select new com.pug.project.infra.read.dtos.ProjectView(
+                         p.id, p.name, p.entityId, p.description, p.createdBy,
+                         p.maxParticipants, p.offeredHours, p.completedHours,
+                         com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                         p.closedAt, p.createdAt, p.updatedAt
+                       )
+                       from ProjectEntity p
+                      \s""";
 
   private static final String ORDER_BY_NAME = " order by p.name asc";
 
@@ -4184,7 +4253,8 @@ import java.util.UUID;
  * @param description the project description
  * @param createdBy the unique identifier of the creator
  * @param maxParticipants the maximum number of students allowed
- * @param offeredHours the total counterpart hours offered
+ * @param offeredHours the total counterpart hours the project offers
+ * @param completedHours the total counterpart hours already completed
  * @param status the current execution state
  * @param statusFormatted the localized project status string
  * @param closedAt the exact timestamp when the project was closed
@@ -4199,6 +4269,7 @@ public record ProjectResponse(
     UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
+    BigDecimal completedHours,
     ProjectStatus status,
     String statusFormatted,
     OffsetDateTime closedAt,
@@ -4898,6 +4969,7 @@ public final class ProjectPresenter {
         v.creatorId(),
         v.maxParticipants(),
         v.offeredHours(),
+        v.completedHours(),
         v.status(),
         statusFormatted,
         v.closedAt(),
@@ -5997,6 +6069,7 @@ import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.AttendanceRepository;
 import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.AttendanceStatus;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.AttendanceService;
 import com.pug.project.service.ProjectService;
@@ -6118,6 +6191,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     repo.update(validated);
+
+    if (validated.getStatus() == AttendanceStatus.PRESENT) {
+      studentService.addCompletedHours(
+          validated.getEnrollmentIdentifier().getStudentId(),
+          validated.getQrValidationInfo().getDuration());
+      projectService.addCompletedHours(
+          validated.getEnrollmentIdentifier().getProjectId(),
+          validated.getQrValidationInfo().getDuration());
+    }
+
     return getById(id);
   }
 
@@ -6690,7 +6773,6 @@ FILE: service/impl/ProjectServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.academic.service.SchoolService;
 import com.pug.identity.service.AuthService;
 import com.pug.partner.service.EntityService;
 import com.pug.project.domain.Project;
@@ -6708,6 +6790,7 @@ import com.pug.shared.exceptions.AppValidationException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -6728,7 +6811,24 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject AuthService authService;
   @Inject EntityService entityService;
   @Inject EnrollmentService enrollmentService;
-  @Inject SchoolService schoolService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Project addCompletedHours(UUID id, BigDecimal hours) {
+    LOG.debugf("Adicionando %s horas completadas ao projeto: %s", hours, id);
+    Project current = getById(id);
+
+    Project updated = current.addCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Horas adicionadas ao projeto %s. Status atual: %s", id, updated.getProjectStatus());
+    return updated;
+  }
 
   /** {@inheritDoc} */
   @Transactional
@@ -7056,6 +7156,7 @@ import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -7066,6 +7167,19 @@ import java.util.UUID;
  * enforces business invariants.
  */
 public interface ProjectService {
+
+  /**
+   * Adiciona horas completadas ao progresso de um projeto.
+   *
+   * <p>Este método atualiza o progresso do projeto. Caso as horas completadas atinjam ou superem o
+   * total oferecido, o projeto é automaticamente encerrado.
+   *
+   * @param id o identificador do projeto
+   * @param hours a quantidade de horas a adicionar
+   * @return o agregado {@link Project} atualizado
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o projeto não existir
+   */
+  Project addCompletedHours(UUID id, BigDecimal hours);
 
   /**
    * Removes a {@link Project} from the system by its unique identifier.
@@ -7364,33 +7478,24 @@ import java.util.UUID;
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Project}
  * Domain Aggregates.
- *
- * <p>This processor centralizes orchestration of {@link Project} factory methods and state‑mutation
- * behaviors, ensuring that application services remain focused on coordination, cross‑aggregate
- * rules, and error handling rather than low-level aggregate construction details.
  */
 public final class ProjectProcessor {
 
-  /** Private constructor to prevent instantiation of utility class. */
+  /** Private constructor to prevent instantiation. */
   private ProjectProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Project} domain aggregate.
    *
-   * <p>This method delegates to {@link Project#factory(String, UUID, String, UUID, Integer,
-   * BigDecimal)}, which immediately self-validates the created aggregate. The caller is responsible
-   * for inspecting {@link Project#hasFieldErrors()} and reacting appropriately (for example, by
-   * throwing an {@link com.pug.shared.exceptions.AppValidationException}) when validation problems
-   * are present.
+   * <p>New projects are initialized with {@code completedHours} set to zero.
    *
    * @param name the raw project name
-   * @param entityId the unique identifier of the partner entity offering the project
+   * @param entityId the unique identifier of the partner entity
    * @param description the optional detailed project description
-   * @param createdBy the unique identifier of the staff account that is creating the project
-   * @param maxParticipants the maximum number of students allowed to enroll (may be {@code null})
-   * @param offeredHours the total counterpart hours offered by the project
-   * @return a fully instantiated {@link Project} domain aggregate, potentially containing
-   *     validation errors
+   * @param createdBy the unique identifier of the staff account
+   * @param maxParticipants the maximum number of students allowed
+   * @param offeredHours the total counterpart hours offered
+   * @return a fully instantiated {@link Project} domain aggregate
    */
   public static Project processCreateInput(
       String name,
@@ -7399,35 +7504,23 @@ public final class ProjectProcessor {
       UUID createdBy,
       Integer maxParticipants,
       BigDecimal offeredHours) {
-    return Project.factory(name, entityId, description, createdBy, maxParticipants, offeredHours);
+
+    return Project.factory(
+        name, entityId, description, createdBy, maxParticipants, offeredHours, BigDecimal.ZERO);
   }
 
   /**
    * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
    *
-   * <p>This method applies partial updates to the provided {@code existingProject}. Only fields
-   * that are explicitly present in the input (non-{@code null} and, for strings, non-empty) will
-   * trigger a state mutation via the aggregate's domain behaviors:
+   * <p>Applies partial updates to name, description, participants, and offered hours.
    *
-   * <ul>
-   *   <li>{@code name} &rarr; {@link Project#rename(String)}
-   *   <li>{@code description} &rarr; {@link Project#changeDescription(String)}
-   *   <li>{@code maxParticipants} &rarr; {@link ProjectInfo#changeMaxParticipantsAllowed(Integer)}
-   *   <li>{@code offeredHours} &rarr; {@link ProjectInfo#changeOfferedHours(BigDecimal)}
-   * </ul>
-   *
-   * <p>Because {@link Project} is modeled as an immutable aggregate, this method returns a
-   * <em>new</em> {@link Project} instance reflecting the requested updates. The caller is
-   * responsible for checking {@link Project#hasFieldErrors()} on the returned instance.
-   *
-   * @param existingProject the current, reconstituted {@link Project} aggregate from the repository
-   * @param name the proposed new name for the project, or {@code null} to leave unchanged
+   * @param existingProject the current, reconstituted {@link Project} aggregate
+   * @param name the proposed new name, or {@code null} to leave unchanged
    * @param description the proposed new description, or {@code null} to leave unchanged
-   * @param maxParticipants the proposed new maximum number of participants, or {@code null} to
-   *     leave unchanged
+   * @param maxParticipants the proposed new maximum participants, or {@code null} to leave
+   *     unchanged
    * @param offeredHours the proposed new offered hours, or {@code null} to leave unchanged
-   * @return a new {@link Project} aggregate reflecting the requested updates, potentially
-   *     containing validation errors
+   * @return a new {@link Project} aggregate reflecting the requested updates
    */
   public static Project processUpdateInput(
       Project existingProject,

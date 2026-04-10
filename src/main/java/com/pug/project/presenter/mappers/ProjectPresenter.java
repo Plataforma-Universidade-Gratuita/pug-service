@@ -84,6 +84,7 @@ public final class ProjectPresenter {
         v.creatorId(),
         v.maxParticipants(),
         v.offeredHours(),
+        v.completedHours(),
         v.status(),
         statusFormatted,
         v.closedAt(),

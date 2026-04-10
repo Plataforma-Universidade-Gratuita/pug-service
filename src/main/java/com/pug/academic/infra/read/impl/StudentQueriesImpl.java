@@ -1,32 +1,24 @@
 package com.pug.academic.infra.read.impl;
 
-import static com.pug.academic.infra.StudentMapper.toView;
-
 import com.pug.academic.infra.read.StudentQueries;
-import com.pug.academic.infra.read.dtos.StudentAcc;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link StudentQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link StudentQueries} interface.
  *
- * <p>This application-scoped bean executes read-only operations for student profiles. Given the
- * deeply nested structure of a student enrollment crossing multiple domains (Student -> Account ->
- * User, Student -> Course -> School), these queries rely on explicitly declared JPQL {@code JOIN}
- * paths inside constructor expressions to build out the full {@link StudentView} DTO without
- * triggering N+1 select performance issues.
+ * <p>Executa consultas de leitura para perfis de estudantes, utilizando JPQL com expressões de
+ * construtor para projetar os dados diretamente em {@link StudentView}.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -38,17 +30,11 @@ public class StudentQueriesImpl implements StudentQueries {
       """
                   select new com.pug.academic.infra.read.dtos.StudentView(
                     s.accountId,
-                    acc.userId,
-                    acc.email,
-                    acc.accountType,
-                    acc.active,
                     s.academicRegistration,
                     s.campus,
-                    c.id,
-                    c.name,
-                    sch.id,
-                    sch.name,
+                    s.courseId,
                     s.requiredHours,
+                    s.completedHours,
                     s.concluded,
                     s.startDate,
                     s.dueDate,
@@ -56,13 +42,7 @@ public class StudentQueriesImpl implements StudentQueries {
                     s.updatedAt
                   )
                   from StudentEntity s
-                  join AccountEntity acc on acc.id = s.accountId
-                  join UserEntity u on u.id = acc.userId
-                  join CourseEntity c on c.id = s.courseId
-                  left join SchoolEntity sch on sch.id = c.schoolId
                   """;
-
-  private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
   /** {@inheritDoc} */
   @Override
@@ -70,9 +50,10 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(academicRegistration)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class);
-    q.setParameter("reg", academicRegistration);
-    return q.getResultStream().findFirst();
+    return em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class)
+        .setParameter("reg", academicRegistration)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -81,9 +62,14 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(cpf)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where u.cpf = :cpf", StudentView.class);
-    q.setParameter("cpf", cpf);
-    return q.getResultStream().findFirst();
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId"
+                + " join UserEntity u on u.id = acc.userId where u.cpf = :cpf",
+            StudentView.class)
+        .setParameter("cpf", cpf)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -92,9 +78,13 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
-    q.setParameter("email", email);
-    return q.getResultStream().findFirst();
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId where acc.email = :email",
+            StudentView.class)
+        .setParameter("email", email)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -103,9 +93,10 @@ public class StudentQueriesImpl implements StudentQueries {
     if (accountId == null) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
+    return em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class)
+        .setParameter("id", accountId)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -114,41 +105,38 @@ public class StudentQueriesImpl implements StudentQueries {
     if (courseId == null) {
       return List.of();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where s.courseId = :cid" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
-    q.setParameter("cid", courseId);
-    return q.getResultList();
+    return em.createQuery(
+            SELECT_BASE + " where s.courseId = :cid order by s.academicRegistration asc",
+            StudentView.class)
+        .setParameter("cid", courseId)
+        .getResultList();
   }
 
   /** {@inheritDoc} */
   @Override
   public List<StudentView> listAllStudents() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
+    return em.createQuery(SELECT_BASE + " order by s.academicRegistration asc", StudentView.class)
         .getResultList();
   }
 
   /** {@inheritDoc} */
   @Override
   public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
-    if (accountIds == null || accountIds.isEmpty()) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return List.of();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC,
-            StudentView.class);
-    q.setParameter("ids", accountIds);
-    return q.getResultList();
+    return em.createQuery(
+            SELECT_BASE + " where s.accountId in :ids order by s.academicRegistration asc",
+            StudentView.class)
+        .setParameter("ids", accountIds)
+        .getResultList();
   }
 
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link StudentAcc} tuple projection to map the relationships backwards across the
-   * Identity and Academic domains.
+   * <p>Utiliza Hibernate Search para localizar os usuários pelo nome e, em seguida, busca os
+   * estudantes correspondentes.
    */
   @Override
   public List<StudentView> searchByName(String key) {
@@ -157,42 +145,13 @@ public class StudentQueriesImpl implements StudentQueries {
       return List.of();
     }
 
-    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
+    List<UUID> userIds = CollectionUtils.toStream(userHits).map(UserEntity::getId).toList();
 
-    List<StudentAcc> rows =
-        em.createQuery(
-                """
-                                    select new com.pug.academic.infra.read.dtos.StudentAcc(
-                                    s, acc, c, sch)
-                                    from StudentEntity s
-                                    join AccountEntity acc on acc.id = s.accountId
-                                    join CourseEntity c on c.id = s.courseId
-                                    left join SchoolEntity sch on sch.id = c.schoolId
-                                    where acc.userId in :ids
-                                    """,
-                StudentAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
-
-    Map<UUID, List<StudentAcc>> byUser = new HashMap<>();
-    for (StudentAcc row : rows) {
-      if (row.acc() != null && row.acc().getUserId() != null) {
-        byUser.computeIfAbsent(row.acc().getUserId(), k -> new ArrayList<>()).add(row);
-      }
-    }
-
-    List<StudentView> out = new ArrayList<>();
-    for (UserEntity u : userHits) {
-      List<StudentAcc> pairs = byUser.get(u.getId());
-      if (pairs == null) {
-        continue;
-      }
-      for (StudentAcc row : pairs) {
-        if (row.s() != null && row.acc() != null && row.c() != null) {
-          out.add(toView(row.s(), row.acc(), row.c(), row.sch()));
-        }
-      }
-    }
-    return out;
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId where acc.userId in :ids",
+            StudentView.class)
+        .setParameter("ids", userIds)
+        .getResultList();
   }
 }

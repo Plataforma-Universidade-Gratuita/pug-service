@@ -9,6 +9,7 @@ import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -203,6 +204,26 @@ public class Student extends DomainError {
     Student updatedStudent = toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
+  }
+
+  /**
+   * Adiciona horas completadas ao progresso do estudante.
+   *
+   * @param hours o valor de horas a ser adicionado
+   * @return uma nova instância de {@link Student} com as horas atualizadas e status recalculado
+   */
+  public Student addCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = counterpartHours.getCompletedHours().add(hours);
+    boolean isNowConcluded = newTotal.compareTo(counterpartHours.getRequiredHours()) >= 0;
+
+    CounterpartHours updatedHours =
+        CounterpartHours.factory(counterpartHours.getRequiredHours(), newTotal, isNowConcluded);
+
+    Student updated =
+        toBuilder().counterpartHours(updatedHours).auditInfo(auditInfo.update()).build();
+
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**

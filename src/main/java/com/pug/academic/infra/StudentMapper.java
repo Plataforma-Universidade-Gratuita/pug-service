@@ -4,11 +4,8 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
-import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.persistence.StudentEntity;
 import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -38,7 +35,8 @@ public final class StudentMapper {
         .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
         .campus(e.getCampus())
         .courseId(e.getCourseId())
-        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getConcluded()))
+        .counterpartHours(
+            CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours(), e.getConcluded()))
         .period(Period.factory(e.getStartDate(), e.getDueDate()))
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
@@ -62,6 +60,7 @@ public final class StudentMapper {
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
+        .completedHours(d.getCounterpartHours().getCompletedHours())
         .concluded(d.getCounterpartHours().getConcluded())
         .startDate(d.getPeriod().getStartDate())
         .dueDate(d.getPeriod().getDueDate())
@@ -85,6 +84,7 @@ public final class StudentMapper {
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
+    e.setCompletedHours(d.getCounterpartHours().getCompletedHours());
     e.setConcluded(d.getCounterpartHours().getConcluded());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
@@ -96,36 +96,22 @@ public final class StudentMapper {
    * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
    * StudentView} DTO.
    *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the student's identity (account and user references) and academic details (course
-   * and school metadata) in a single, flat response ready for JSON serialization.
-   *
    * @param s the JPA entity representing the student's academic records
-   * @param acc the JPA entity representing the linked authentication account
-   * @param c the JPA entity representing the enrolled course
-   * @param sch the JPA entity representing the school offering the course
    * @return a fully populated, flattened {@link StudentView} DTO, or {@code null} if the student
    *     entity is null
    */
-  public static StudentView toView(
-      StudentEntity s, AccountEntity acc, CourseEntity c, SchoolEntity sch) {
+  public static StudentView toView(StudentEntity s) {
     if (s == null) {
       return null;
     }
 
     return new StudentView(
         s.getAccountId(),
-        acc != null ? acc.getUserId() : null,
-        acc != null ? acc.getEmail() : null,
-        acc != null ? acc.getAccountType() : null,
-        acc != null ? acc.getActive() : null,
         s.getAcademicRegistration(),
         s.getCampus(),
-        c != null ? c.getId() : null,
-        c != null ? c.getName() : null,
-        sch != null ? sch.getId() : null,
-        sch != null ? sch.getName() : null,
+        s.getCourseId(),
         s.getRequiredHours(),
+        s.getCompletedHours(),
         s.getConcluded(),
         s.getStartDate(),
         s.getDueDate(),

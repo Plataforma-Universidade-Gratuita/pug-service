@@ -9,33 +9,24 @@ import java.util.UUID;
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Project}
  * Domain Aggregates.
- *
- * <p>This processor centralizes orchestration of {@link Project} factory methods and state‑mutation
- * behaviors, ensuring that application services remain focused on coordination, cross‑aggregate
- * rules, and error handling rather than low-level aggregate construction details.
  */
 public final class ProjectProcessor {
 
-  /** Private constructor to prevent instantiation of utility class. */
+  /** Private constructor to prevent instantiation. */
   private ProjectProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Project} domain aggregate.
    *
-   * <p>This method delegates to {@link Project#factory(String, UUID, String, UUID, Integer,
-   * BigDecimal)}, which immediately self-validates the created aggregate. The caller is responsible
-   * for inspecting {@link Project#hasFieldErrors()} and reacting appropriately (for example, by
-   * throwing an {@link com.pug.shared.exceptions.AppValidationException}) when validation problems
-   * are present.
+   * <p>New projects are initialized with {@code completedHours} set to zero.
    *
    * @param name the raw project name
-   * @param entityId the unique identifier of the partner entity offering the project
+   * @param entityId the unique identifier of the partner entity
    * @param description the optional detailed project description
-   * @param createdBy the unique identifier of the staff account that is creating the project
-   * @param maxParticipants the maximum number of students allowed to enroll (may be {@code null})
-   * @param offeredHours the total counterpart hours offered by the project
-   * @return a fully instantiated {@link Project} domain aggregate, potentially containing
-   *     validation errors
+   * @param createdBy the unique identifier of the staff account
+   * @param maxParticipants the maximum number of students allowed
+   * @param offeredHours the total counterpart hours offered
+   * @return a fully instantiated {@link Project} domain aggregate
    */
   public static Project processCreateInput(
       String name,
@@ -44,35 +35,23 @@ public final class ProjectProcessor {
       UUID createdBy,
       Integer maxParticipants,
       BigDecimal offeredHours) {
-    return Project.factory(name, entityId, description, createdBy, maxParticipants, offeredHours);
+
+    return Project.factory(
+        name, entityId, description, createdBy, maxParticipants, offeredHours, BigDecimal.ZERO);
   }
 
   /**
    * Processes raw update inputs and conditionally mutates the state of an existing {@link Project}.
    *
-   * <p>This method applies partial updates to the provided {@code existingProject}. Only fields
-   * that are explicitly present in the input (non-{@code null} and, for strings, non-empty) will
-   * trigger a state mutation via the aggregate's domain behaviors:
+   * <p>Applies partial updates to name, description, participants, and offered hours.
    *
-   * <ul>
-   *   <li>{@code name} &rarr; {@link Project#rename(String)}
-   *   <li>{@code description} &rarr; {@link Project#changeDescription(String)}
-   *   <li>{@code maxParticipants} &rarr; {@link ProjectInfo#changeMaxParticipantsAllowed(Integer)}
-   *   <li>{@code offeredHours} &rarr; {@link ProjectInfo#changeOfferedHours(BigDecimal)}
-   * </ul>
-   *
-   * <p>Because {@link Project} is modeled as an immutable aggregate, this method returns a
-   * <em>new</em> {@link Project} instance reflecting the requested updates. The caller is
-   * responsible for checking {@link Project#hasFieldErrors()} on the returned instance.
-   *
-   * @param existingProject the current, reconstituted {@link Project} aggregate from the repository
-   * @param name the proposed new name for the project, or {@code null} to leave unchanged
+   * @param existingProject the current, reconstituted {@link Project} aggregate
+   * @param name the proposed new name, or {@code null} to leave unchanged
    * @param description the proposed new description, or {@code null} to leave unchanged
-   * @param maxParticipants the proposed new maximum number of participants, or {@code null} to
-   *     leave unchanged
+   * @param maxParticipants the proposed new maximum participants, or {@code null} to leave
+   *     unchanged
    * @param offeredHours the proposed new offered hours, or {@code null} to leave unchanged
-   * @return a new {@link Project} aggregate reflecting the requested updates, potentially
-   *     containing validation errors
+   * @return a new {@link Project} aggregate reflecting the requested updates
    */
   public static Project processUpdateInput(
       Project existingProject,

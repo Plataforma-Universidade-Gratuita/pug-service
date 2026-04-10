@@ -4,6 +4,7 @@ import com.pug.project.domain.Project;
 import com.pug.project.domain.enums.ProjectStatus;
 import com.pug.project.service.dtos.ProjectCreateCommand;
 import com.pug.project.service.dtos.ProjectUpdateCommand;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 /**
@@ -14,6 +15,19 @@ import java.util.UUID;
  * enforces business invariants.
  */
 public interface ProjectService {
+
+  /**
+   * Adiciona horas completadas ao progresso de um projeto.
+   *
+   * <p>Este método atualiza o progresso do projeto. Caso as horas completadas atinjam ou superem o
+   * total oferecido, o projeto é automaticamente encerrado.
+   *
+   * @param id o identificador do projeto
+   * @param hours a quantidade de horas a adicionar
+   * @return o agregado {@link Project} atualizado
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o projeto não existir
+   */
+  Project addCompletedHours(UUID id, BigDecimal hours);
 
   /**
    * Removes a {@link Project} from the system by its unique identifier.

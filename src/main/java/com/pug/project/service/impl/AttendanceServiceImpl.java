@@ -7,6 +7,7 @@ import com.pug.identity.service.AuthService;
 import com.pug.project.domain.Attendance;
 import com.pug.project.domain.AttendanceRepository;
 import com.pug.project.domain.Project;
+import com.pug.project.domain.enums.AttendanceStatus;
 import com.pug.project.domain.vos.EnrollmentIdentifier;
 import com.pug.project.service.AttendanceService;
 import com.pug.project.service.ProjectService;
@@ -128,6 +129,16 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     repo.update(validated);
+
+    if (validated.getStatus() == AttendanceStatus.PRESENT) {
+      studentService.addCompletedHours(
+          validated.getEnrollmentIdentifier().getStudentId(),
+          validated.getQrValidationInfo().getDuration());
+      projectService.addCompletedHours(
+          validated.getEnrollmentIdentifier().getProjectId(),
+          validated.getQrValidationInfo().getDuration());
+    }
+
     return getById(id);
   }
 

@@ -69,6 +69,12 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that a project name exceeds the maximum allowed length constraints. */
   INVALID_NAME_TOO_LONG("error.domain.projects.name.too.long", "name"),
 
+  /** Indicates that the completed hours are negative. */
+  INVALID_PROJECT_COMPLETED_HOURS_NEGATIVE("error.domain.number.negative", "completedHours"),
+
+  /** Indicates that the completed hours exceed the offered total. */
+  INVALID_PROJECT_COMPLETED_HOURS_EXCEEDS("error.domain.projects.hours.exceeds", "completedHours"),
+
   /** Indicates that the UUID of the creator is null. */
   INVALID_PROJECT_CREATED_BY_BLANK("error.domain.foreign.key.blank", "createdBy"),
 

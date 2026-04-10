@@ -11,16 +11,12 @@ import java.util.UUID;
  *
  * <p>This record consolidates identity and academic data into a single, flattened structure
  * optimized for the presentation layer. Instead of nesting the full account or course responses, it
- * exposes only the essential identifiers and scalar attributes required by the UI, allowing clients
- * to fetch detailed account or course information on demand via dedicated endpoints.
+ * exposes only the essential identifiers and scalar attributes required by the UI.
  *
  * @param accountId the unique identifier (UUIDv7) of the student's authentication account
  * @param academicRegistration the raw academic registration string
  * @param campus the formatted response object representing the student's assigned campus
  * @param courseId the unique identifier (UUIDv7) of the enrolled course
- * @param courseName the name of the enrolled course
- * @param schoolId the unique identifier (UUIDv7) of the school offering the course
- * @param schoolName the name of the school offering the course
  * @param requiredHours the total required counterpart hours the student must fulfill
  * @param completedHours the total counterpart hours the student has completed to date
  * @param missingHours the remaining counterpart hours left to fulfill the requirement
@@ -38,9 +34,6 @@ public record StudentResponse(
     String academicRegistration,
     CampusResponse campus,
     UUID courseId,
-    String courseName,
-    UUID schoolId,
-    String schoolName,
     BigDecimal requiredHours,
     BigDecimal completedHours,
     BigDecimal missingHours,

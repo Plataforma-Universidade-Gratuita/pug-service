@@ -338,6 +338,12 @@ public enum AcademicFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that an account ID was provided as null. */
   INVALID_ACCOUNT_ID_BLANK("error.domain.academic.accountId.blank", "accountId"),
 
+  /** Indicates that the completed hours are negative. */
+  INVALID_COMPLETED_HOURS_NEGATIVE("error.domain.number.negative", "completedHours"),
+
+  /** Indicates that the completed hours exceed the required total. */
+  INVALID_COMPLETED_HOURS_EXCEEDS("error.domain.academic.hours.exceeds", "completedHours"),
+
   /** Indicates that a course ID was provided as null. */
   INVALID_COURSE_BLANK("error.domain.academic.course.blank", "courseId"),
 
@@ -592,6 +598,7 @@ import com.pug.shared.domain.enums.Campi;
 import com.pug.shared.domain.enums.SharedFieldErrorCodes;
 import com.pug.shared.domain.vos.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -786,6 +793,26 @@ public class Student extends DomainError {
     Student updatedStudent = toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
+  }
+
+  /**
+   * Adiciona horas completadas ao progresso do estudante.
+   *
+   * @param hours o valor de horas a ser adicionado
+   * @return uma nova instância de {@link Student} com as horas atualizadas e status recalculado
+   */
+  public Student addCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = counterpartHours.getCompletedHours().add(hours);
+    boolean isNowConcluded = newTotal.compareTo(counterpartHours.getRequiredHours()) >= 0;
+
+    CounterpartHours updatedHours =
+        CounterpartHours.factory(counterpartHours.getRequiredHours(), newTotal, isNowConcluded);
+
+    Student updated =
+        toBuilder().counterpartHours(updatedHours).auditInfo(auditInfo.update()).build();
+
+    updated.collectValidationProblems();
+    return updated;
   }
 
   /**
@@ -1022,48 +1049,54 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Value Object (VO) representing the Counterpart Hours required for a student's project.
+ * Immutable Value Object (VO) representing the Counterpart Hours required for a student's project
+ * and the progress made toward completion.
  *
  * <p>Extends {@link DomainError} to encapsulate validations relating to time requirements, ensuring
- * hours are properly quantified and avoiding negative/zero time constraints.
+ * hours remain within logically valid bounds (non-negative and not exceeding requirements).
  */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class CounterpartHours extends DomainError {
 
-  /** The required amount of hours the student must complete. */
+  /** The total hours the student is required to complete. */
   BigDecimal requiredHours;
 
-  /** A flag indicating whether the required hours have been fully completed. */
+  /** The total hours the student has completed to date. */
+  BigDecimal completedHours;
+
+  /** A flag indicating whether the required hours have been fully satisfied. */
   Boolean concluded;
 
   /**
    * Constructs a {@code CounterpartHours} instance.
    *
-   * @param requiredHours the quantified hours required
+   * @param requiredHours the hours required
+   * @param completedHours the hours completed
    * @param concluded the completion status
    */
   @Builder(toBuilder = true)
-  private CounterpartHours(BigDecimal requiredHours, Boolean concluded) {
+  private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
     this.requiredHours = requiredHours;
+    this.completedHours = completedHours;
     this.concluded = concluded;
   }
 
   /**
    * Factory method to create a new {@code CounterpartHours} instance.
    *
-   * <p>If the {@code concluded} flag is omitted (null), it defaults to {@code false}. The returned
-   * instance is immediately self-validated.
-   *
    * @param requiredHours the required hours
-   * @param concluded the completion status (defaults to false if null)
+   * @param completedHours the completed hours
+   * @param concluded the completion status
    * @return a self-validated {@link CounterpartHours} instance
    */
-  public static CounterpartHours factory(BigDecimal requiredHours, Boolean concluded) {
+  public static CounterpartHours factory(
+      BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
     CounterpartHours vo =
         CounterpartHours.builder()
-            .requiredHours(requiredHours)
+            .requiredHours(requiredHours != null ? requiredHours : BigDecimal.ZERO)
+            .completedHours(completedHours != null ? completedHours : BigDecimal.ZERO)
             .concluded(concluded != null ? concluded : Boolean.FALSE)
             .build();
     vo.collectValidationProblems();
@@ -1076,23 +1109,22 @@ public class CounterpartHours extends DomainError {
    * <p>Business rules applied:
    *
    * <ul>
-   *   <li>The required hours must not be null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_HOURS_BLANK})
-   *   <li>The required hours cannot be negative (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REQUIRED_HOURS_NEGATIVE})
-   *   <li>The required hours cannot be exactly zero (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REQUIRED_HOURS_ZERO})
+   *   <li>{@code requiredHours} must not be null and must be greater than zero.
+   *   <li>{@code completedHours} must not be negative.
+   *   <li>{@code completedHours} cannot be higher than {@code requiredHours}.
    * </ul>
    */
   private void collectValidationProblems() {
-    if (requiredHours == null) {
+    if (requiredHours == null || requiredHours.compareTo(BigDecimal.ZERO) <= 0) {
       addFieldError(AcademicFieldErrorCodes.INVALID_HOURS_BLANK);
-      return;
     }
-    if (requiredHours.compareTo(BigDecimal.ZERO) < 0) {
-      addFieldError(AcademicFieldErrorCodes.INVALID_REQUIRED_HOURS_NEGATIVE);
-    } else if (requiredHours.compareTo(BigDecimal.ZERO) == 0) {
-      addFieldError(AcademicFieldErrorCodes.INVALID_REQUIRED_HOURS_ZERO);
+    if (completedHours == null || completedHours.compareTo(BigDecimal.ZERO) < 0) {
+      addFieldError(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE);
+    }
+    if (requiredHours != null
+        && completedHours != null
+        && completedHours.compareTo(requiredHours) > 0) {
+      addFieldError(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS);
     }
   }
 }
@@ -1782,6 +1814,10 @@ public class StudentEntity {
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
 
+  /** A quantidade de horas já completadas pelo estudante. */
+  @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
+  private BigDecimal completedHours;
+
   /** Flag indicating whether the required counterpart hours have been successfully completed. */
   @Column(name = "concluded", nullable = false)
   private Boolean concluded;
@@ -1912,40 +1948,10 @@ public record SchoolView(
 
 
 ================================================================================
-FILE: infra/read/dtos/StudentAcc.java
-================================================================================
-package com.pug.academic.infra.read.dtos;
-
-import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.identity.infra.persistence.AccountEntity;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
-/**
- * Internal Data Transfer Object (DTO) used exclusively for JPA tuple projections.
- *
- * <p>This record acts as an intermediate data structure during complex cross-domain queries. By
- * fetching the {@link StudentEntity} and all its required associations (Account, Course, School) in
- * a single query projection, it prevents N+1 select performance issues before the data is
- * ultimately mapped into the final, flattened, client-facing {@link
- * com.pug.academic.infra.read.dtos.StudentView}.
- *
- * @param s the retrieved student persistence entity
- * @param acc the retrieved authentication account persistence entity linked to the student
- * @param c the retrieved course persistence entity linked to the student
- * @param sch the retrieved school persistence entity linked to the course
- */
-@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public record StudentAcc(StudentEntity s, AccountEntity acc, CourseEntity c, SchoolEntity sch) {}
-
-
-================================================================================
 FILE: infra/read/dtos/StudentView.java
 ================================================================================
 package com.pug.academic.infra.read.dtos;
 
-import com.pug.shared.domain.enums.AccountType;
 import com.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -1956,22 +1962,14 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only, flattened view of an enrolled Student.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It consolidates identity and academic data into a single structure without nesting other
- * view types (such as {@code AccountView}, {@code CourseView} or {@code SchoolView}). Instead, it
- * exposes only the essential identifiers and scalar attributes required by the presentation layer.
+ * client. It exposes only the identifiers and scalar attributes intrinsic to the Student entity.
  *
  * @param accountId the unique identifier (UUIDv7) of the student's authentication account
- * @param userId the unique identifier (UUIDv7) of the user linked to the student's account
- * @param email the email address registered to the student's account
- * @param accountType the designated role of the account (typically {@link AccountType#STUDENT})
- * @param accountActive flag indicating whether the underlying account is currently active
  * @param academicRegistration the raw academic registration string of the student
  * @param campus the designated university campus where the student is enrolled
  * @param courseId the unique identifier (UUIDv7) of the enrolled course
- * @param courseName the name of the enrolled course
- * @param schoolId the unique identifier (UUIDv7) of the school offering the course
- * @param schoolName the name of the school offering the course
  * @param requiredHours the total counterpart hours the student is required to fulfill
+ * @param completedHours the total counterpart hours the student has completed
  * @param concluded flag indicating whether the required counterpart hours have been completed
  * @param startDate the date when the student's enrollment period begins
  * @param dueDate the date when the student's enrollment period expires
@@ -1980,17 +1978,11 @@ import java.util.UUID;
  */
 public record StudentView(
     UUID accountId,
-    UUID userId,
-    String email,
-    AccountType accountType,
-    Boolean accountActive,
     String academicRegistration,
     Campi campus,
     UUID courseId,
-    String courseName,
-    UUID schoolId,
-    String schoolName,
     BigDecimal requiredHours,
+    BigDecimal completedHours,
     Boolean concluded,
     LocalDate startDate,
     LocalDate dueDate,
@@ -2219,33 +2211,25 @@ FILE: infra/read/impl/StudentQueriesImpl.java
 ================================================================================
 package com.pug.academic.infra.read.impl;
 
-import static com.pug.academic.infra.StudentMapper.toView;
-
 import com.pug.academic.infra.read.StudentQueries;
-import com.pug.academic.infra.read.dtos.StudentAcc;
 import com.pug.academic.infra.read.dtos.StudentView;
 import com.pug.identity.infra.persistence.UserEntity;
 import com.pug.shared.infra.search.HibernateSearchUtils;
+import com.pug.shared.utils.CollectionUtils;
 import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link StudentQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link StudentQueries} interface.
  *
- * <p>This application-scoped bean executes read-only operations for student profiles. Given the
- * deeply nested structure of a student enrollment crossing multiple domains (Student -> Account ->
- * User, Student -> Course -> School), these queries rely on explicitly declared JPQL {@code JOIN}
- * paths inside constructor expressions to build out the full {@link StudentView} DTO without
- * triggering N+1 select performance issues.
+ * <p>Executa consultas de leitura para perfis de estudantes, utilizando JPQL com expressões de
+ * construtor para projetar os dados diretamente em {@link StudentView}.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -2257,17 +2241,11 @@ public class StudentQueriesImpl implements StudentQueries {
       """
                   select new com.pug.academic.infra.read.dtos.StudentView(
                     s.accountId,
-                    acc.userId,
-                    acc.email,
-                    acc.accountType,
-                    acc.active,
                     s.academicRegistration,
                     s.campus,
-                    c.id,
-                    c.name,
-                    sch.id,
-                    sch.name,
+                    s.courseId,
                     s.requiredHours,
+                    s.completedHours,
                     s.concluded,
                     s.startDate,
                     s.dueDate,
@@ -2275,13 +2253,7 @@ public class StudentQueriesImpl implements StudentQueries {
                     s.updatedAt
                   )
                   from StudentEntity s
-                  join AccountEntity acc on acc.id = s.accountId
-                  join UserEntity u on u.id = acc.userId
-                  join CourseEntity c on c.id = s.courseId
-                  left join SchoolEntity sch on sch.id = c.schoolId
                   """;
-
-  private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
   /** {@inheritDoc} */
   @Override
@@ -2289,9 +2261,10 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(academicRegistration)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class);
-    q.setParameter("reg", academicRegistration);
-    return q.getResultStream().findFirst();
+    return em.createQuery(SELECT_BASE + " where s.academicRegistration = :reg", StudentView.class)
+        .setParameter("reg", academicRegistration)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -2300,9 +2273,14 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(cpf)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where u.cpf = :cpf", StudentView.class);
-    q.setParameter("cpf", cpf);
-    return q.getResultStream().findFirst();
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId"
+                + " join UserEntity u on u.id = acc.userId where u.cpf = :cpf",
+            StudentView.class)
+        .setParameter("cpf", cpf)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -2311,9 +2289,13 @@ public class StudentQueriesImpl implements StudentQueries {
     if (StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where acc.email = :email", StudentView.class);
-    q.setParameter("email", email);
-    return q.getResultStream().findFirst();
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId where acc.email = :email",
+            StudentView.class)
+        .setParameter("email", email)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -2322,9 +2304,10 @@ public class StudentQueriesImpl implements StudentQueries {
     if (accountId == null) {
       return Optional.empty();
     }
-    var q = em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class);
-    q.setParameter("id", accountId);
-    return q.getResultStream().findFirst();
+    return em.createQuery(SELECT_BASE + " where s.accountId = :id", StudentView.class)
+        .setParameter("id", accountId)
+        .getResultStream()
+        .findFirst();
   }
 
   /** {@inheritDoc} */
@@ -2333,41 +2316,38 @@ public class StudentQueriesImpl implements StudentQueries {
     if (courseId == null) {
       return List.of();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where s.courseId = :cid" + ORDER_BY_PERSON_NAME_ASC, StudentView.class);
-    q.setParameter("cid", courseId);
-    return q.getResultList();
+    return em.createQuery(
+            SELECT_BASE + " where s.courseId = :cid order by s.academicRegistration asc",
+            StudentView.class)
+        .setParameter("cid", courseId)
+        .getResultList();
   }
 
   /** {@inheritDoc} */
   @Override
   public List<StudentView> listAllStudents() {
-    return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StudentView.class)
+    return em.createQuery(SELECT_BASE + " order by s.academicRegistration asc", StudentView.class)
         .getResultList();
   }
 
   /** {@inheritDoc} */
   @Override
   public List<StudentView> listViewsByAccountIds(List<UUID> accountIds) {
-    if (accountIds == null || accountIds.isEmpty()) {
+    if (CollectionUtils.isEmpty(accountIds)) {
       return List.of();
     }
-    var q =
-        em.createQuery(
-            SELECT_BASE + " where s.accountId in :ids" + ORDER_BY_PERSON_NAME_ASC,
-            StudentView.class);
-    q.setParameter("ids", accountIds);
-    return q.getResultList();
+    return em.createQuery(
+            SELECT_BASE + " where s.accountId in :ids order by s.academicRegistration asc",
+            StudentView.class)
+        .setParameter("ids", accountIds)
+        .getResultList();
   }
 
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the user's name, this method first resolves the
-   * matching users via the search index, extracts their UUIDs, and executes a subsequent query
-   * using the {@link StudentAcc} tuple projection to map the relationships backwards across the
-   * Identity and Academic domains.
+   * <p>Utiliza Hibernate Search para localizar os usuários pelo nome e, em seguida, busca os
+   * estudantes correspondentes.
    */
   @Override
   public List<StudentView> searchByName(String key) {
@@ -2376,43 +2356,14 @@ public class StudentQueriesImpl implements StudentQueries {
       return List.of();
     }
 
-    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
+    List<UUID> userIds = CollectionUtils.toStream(userHits).map(UserEntity::getId).toList();
 
-    List<StudentAcc> rows =
-        em.createQuery(
-                """
-                                    select new com.pug.academic.infra.read.dtos.StudentAcc(
-                                    s, acc, c, sch)
-                                    from StudentEntity s
-                                    join AccountEntity acc on acc.id = s.accountId
-                                    join CourseEntity c on c.id = s.courseId
-                                    left join SchoolEntity sch on sch.id = c.schoolId
-                                    where acc.userId in :ids
-                                    """,
-                StudentAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
-
-    Map<UUID, List<StudentAcc>> byUser = new HashMap<>();
-    for (StudentAcc row : rows) {
-      if (row.acc() != null && row.acc().getUserId() != null) {
-        byUser.computeIfAbsent(row.acc().getUserId(), k -> new ArrayList<>()).add(row);
-      }
-    }
-
-    List<StudentView> out = new ArrayList<>();
-    for (UserEntity u : userHits) {
-      List<StudentAcc> pairs = byUser.get(u.getId());
-      if (pairs == null) {
-        continue;
-      }
-      for (StudentAcc row : pairs) {
-        if (row.s() != null && row.acc() != null && row.c() != null) {
-          out.add(toView(row.s(), row.acc(), row.c(), row.sch()));
-        }
-      }
-    }
-    return out;
+    return em.createQuery(
+            SELECT_BASE
+                + " join AccountEntity acc on acc.id = s.accountId where acc.userId in :ids",
+            StudentView.class)
+        .setParameter("ids", userIds)
+        .getResultList();
   }
 }
 
@@ -2668,11 +2619,8 @@ import com.pug.academic.domain.Student;
 import com.pug.academic.domain.vos.AcademicRegistration;
 import com.pug.academic.domain.vos.CounterpartHours;
 import com.pug.academic.domain.vos.Period;
-import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.persistence.SchoolEntity;
 import com.pug.academic.infra.persistence.StudentEntity;
 import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.persistence.AccountEntity;
 import com.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -2702,7 +2650,8 @@ public final class StudentMapper {
         .academicRegistration(AcademicRegistration.factory(e.getAcademicRegistration()))
         .campus(e.getCampus())
         .courseId(e.getCourseId())
-        .counterpartHours(CounterpartHours.factory(e.getRequiredHours(), e.getConcluded()))
+        .counterpartHours(
+            CounterpartHours.factory(e.getRequiredHours(), e.getCompletedHours(), e.getConcluded()))
         .period(Period.factory(e.getStartDate(), e.getDueDate()))
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
@@ -2726,6 +2675,7 @@ public final class StudentMapper {
         .campus(d.getCampus())
         .courseId(d.getCourseId())
         .requiredHours(d.getCounterpartHours().getRequiredHours())
+        .completedHours(d.getCounterpartHours().getCompletedHours())
         .concluded(d.getCounterpartHours().getConcluded())
         .startDate(d.getPeriod().getStartDate())
         .dueDate(d.getPeriod().getDueDate())
@@ -2749,6 +2699,7 @@ public final class StudentMapper {
     e.setCampus(d.getCampus());
     e.setCourseId(d.getCourseId());
     e.setRequiredHours(d.getCounterpartHours().getRequiredHours());
+    e.setCompletedHours(d.getCounterpartHours().getCompletedHours());
     e.setConcluded(d.getCounterpartHours().getConcluded());
     e.setStartDate(d.getPeriod().getStartDate());
     e.setDueDate(d.getPeriod().getDueDate());
@@ -2760,36 +2711,22 @@ public final class StudentMapper {
    * Projects a deeply nested set of JPA entities across multiple domains into a flattened {@link
    * StudentView} DTO.
    *
-   * <p>Used heavily by the CQRS query layer to construct fully resolved data structures that
-   * encapsulate the student's identity (account and user references) and academic details (course
-   * and school metadata) in a single, flat response ready for JSON serialization.
-   *
    * @param s the JPA entity representing the student's academic records
-   * @param acc the JPA entity representing the linked authentication account
-   * @param c the JPA entity representing the enrolled course
-   * @param sch the JPA entity representing the school offering the course
    * @return a fully populated, flattened {@link StudentView} DTO, or {@code null} if the student
    *     entity is null
    */
-  public static StudentView toView(
-      StudentEntity s, AccountEntity acc, CourseEntity c, SchoolEntity sch) {
+  public static StudentView toView(StudentEntity s) {
     if (s == null) {
       return null;
     }
 
     return new StudentView(
         s.getAccountId(),
-        acc != null ? acc.getUserId() : null,
-        acc != null ? acc.getEmail() : null,
-        acc != null ? acc.getAccountType() : null,
-        acc != null ? acc.getActive() : null,
         s.getAcademicRegistration(),
         s.getCampus(),
-        c != null ? c.getId() : null,
-        c != null ? c.getName() : null,
-        sch != null ? sch.getId() : null,
-        sch != null ? sch.getName() : null,
+        s.getCourseId(),
         s.getRequiredHours(),
+        s.getCompletedHours(),
         s.getConcluded(),
         s.getStartDate(),
         s.getDueDate(),
@@ -3175,16 +3112,12 @@ import java.util.UUID;
  *
  * <p>This record consolidates identity and academic data into a single, flattened structure
  * optimized for the presentation layer. Instead of nesting the full account or course responses, it
- * exposes only the essential identifiers and scalar attributes required by the UI, allowing clients
- * to fetch detailed account or course information on demand via dedicated endpoints.
+ * exposes only the essential identifiers and scalar attributes required by the UI.
  *
  * @param accountId the unique identifier (UUIDv7) of the student's authentication account
  * @param academicRegistration the raw academic registration string
  * @param campus the formatted response object representing the student's assigned campus
  * @param courseId the unique identifier (UUIDv7) of the enrolled course
- * @param courseName the name of the enrolled course
- * @param schoolId the unique identifier (UUIDv7) of the school offering the course
- * @param schoolName the name of the school offering the course
  * @param requiredHours the total required counterpart hours the student must fulfill
  * @param completedHours the total counterpart hours the student has completed to date
  * @param missingHours the remaining counterpart hours left to fulfill the requirement
@@ -3202,9 +3135,6 @@ public record StudentResponse(
     String academicRegistration,
     CampusResponse campus,
     UUID courseId,
-    String courseName,
-    UUID schoolId,
-    String schoolName,
     BigDecimal requiredHours,
     BigDecimal completedHours,
     BigDecimal missingHours,
@@ -3467,10 +3397,6 @@ public final class StudentPresenter {
   /**
    * Maps an incoming REST creation request into an application layer student creation command.
    *
-   * <p>This helper is responsible for assembling the nested command structure required to create
-   * the underlying user, authentication account, and student enrollment in a single transaction. It
-   * expects the password to have been securely hashed beforehand.
-   *
    * @param req the validated {@link StudentCreateRequest} payload containing identity and
    *     enrollment details
    * @param hashedPassword the securely hashed password string to assign to the new account
@@ -3497,11 +3423,6 @@ public final class StudentPresenter {
 
   /**
    * Maps an incoming REST update request into an application layer student update command.
-   *
-   * <p>This helper is responsible for assembling the nested command structure required to update
-   * the underlying user and authentication account (if applicable), as well as the academic
-   * enrollment details. It expects the password (if provided) to have been securely hashed
-   * beforehand.
    *
    * @param req the validated {@link StudentUpdateRequest} payload containing the modified data
    * @param hashedPassword the securely hashed password string, or {@code null} if the password is
@@ -3553,10 +3474,11 @@ public final class StudentPresenter {
     String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
     BigDecimal requiredHours = v.requiredHours();
-    BigDecimal completedHours = BigDecimal.ZERO;
+    BigDecimal completedHours = v.completedHours();
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (requiredHours != null && Boolean.FALSE.equals(v.concluded())) {
-      missingHours = requiredHours.subtract(completedHours);
+
+    if (requiredHours != null && completedHours != null && Boolean.FALSE.equals(v.concluded())) {
+      missingHours = requiredHours.subtract(completedHours).max(BigDecimal.ZERO);
     }
 
     long remainingDays = 0;
@@ -3575,9 +3497,6 @@ public final class StudentPresenter {
         v.academicRegistration(),
         campus,
         v.courseId(),
-        v.courseName(),
-        v.schoolId(),
-        v.schoolName(),
         requiredHours,
         completedHours,
         missingHours,
@@ -4984,6 +4903,7 @@ import com.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
@@ -5008,6 +4928,24 @@ public class StudentServiceImpl implements StudentService {
   @Inject CourseService courseService;
 
   @Inject EnrollmentService enrollmentService;
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Student addCompletedHours(UUID accountId, BigDecimal hours) {
+    LOG.debugf("Adicionando %s horas completadas ao estudante: %s", hours, accountId);
+    Student current = getById(accountId);
+
+    Student updated = current.addCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Horas adicionadas com sucesso ao estudante %s", accountId);
+    return updated;
+  }
 
   /** {@inheritDoc} */
   @Transactional
@@ -5425,6 +5363,7 @@ package com.pug.academic.service;
 import com.pug.academic.domain.Student;
 import com.pug.academic.service.dtos.StudentCreateCommand;
 import com.pug.academic.service.dtos.StudentUpdateCommand;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -5438,6 +5377,19 @@ import java.util.UUID;
  * authentication credentials cascade correctly.
  */
 public interface StudentService {
+
+  /**
+   * Adiciona horas completadas ao progresso acadêmico de um estudante.
+   *
+   * <p>Este método atualiza o registro do estudante, recalculando se o aluno atingiu o requisito
+   * total de horas de contrapartida.
+   *
+   * @param accountId o identificador da conta do estudante
+   * @param hours a quantidade de horas a adicionar
+   * @return o agregado {@link Student} atualizado
+   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o estudante não existir
+   */
+  Student addCompletedHours(UUID accountId, BigDecimal hours);
 
   /**
    * Removes a student's enrollment by deleting the {@link Student} record.
@@ -5816,10 +5768,6 @@ public class StudentProcessor {
    * Processes a bulk list of student creation commands, combining them with their newly generated
    * account identifiers to instantiate pure Domain Aggregates.
    *
-   * <p>This method safely maps concurrent lists by index. It triggers the aggregate's internal
-   * validations, and if any student violates domain rules, an exception is thrown to abort the
-   * entire batch transaction.
-   *
    * @param cmds the {@link List} of bulk student creation commands
    * @param accountIds the {@link List} of newly provisioned {@link UUID} account identifiers
    * @return a {@link List} of instantiated and validated {@link Student} aggregates
@@ -5863,13 +5811,7 @@ public class StudentProcessor {
   /**
    * Processes raw creation inputs and constructs a new {@link Student} domain aggregate.
    *
-   * <p>This method translates the raw primitive representations into appropriate Value Objects
-   * (e.g., {@link AcademicRegistration}, {@link CounterpartHours}, {@link Period}) before passing
-   * them to the aggregate's factory method.
-   *
-   * <p><b>Note:</b> The returned {@link Student} object may contain accumulated domain validation
-   * failures. The caller is responsible for checking {@link Student#hasFieldErrors()} and handling
-   * them appropriately.
+   * <p>New students are initialized with {@code completedHours} as zero.
    *
    * @param accountId the unique identifier of the linked authentication account
    * @param regString the raw academic registration string
@@ -5878,8 +5820,7 @@ public class StudentProcessor {
    * @param requiredHours the quantified hours the student must complete
    * @param startDate the start date of the enrollment period
    * @param dueDate the due date of the enrollment period
-   * @return a fully instantiated {@link Student} domain aggregate, potentially containing
-   *     validation errors
+   * @return a fully instantiated {@link Student} domain aggregate
    */
   public static Student processCreateInput(
       UUID accountId,
@@ -5891,7 +5832,8 @@ public class StudentProcessor {
       LocalDate dueDate) {
 
     AcademicRegistration regVo = AcademicRegistration.factory(regString);
-    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, null);
+    // Inicializa com 0 horas completadas
+    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, BigDecimal.ZERO, false);
     Period periodVo = Period.factory(startDate, dueDate);
 
     return Student.factory(accountId, regVo, campus, courseId, hoursVo, periodVo);
@@ -5900,19 +5842,14 @@ public class StudentProcessor {
   /**
    * Processes raw update inputs and conditionally mutates the state of an existing {@link Student}.
    *
-   * <p>This method applies partial updates. Only fields that are explicitly provided will trigger a
-   * state mutation via the aggregate's domain behaviors. Because period dates rely on each other
-   * for validation, they are safely merged with existing state before evaluation.
-   *
-   * @param existingStudent the current, reconstituted {@link Student} aggregate from the repository
-   * @param regString the proposed new academic registration, or {@code null}/empty to skip updating
-   * @param campus the proposed new campus, or {@code null} to skip updating
-   * @param courseId the proposed new course ID, or {@code null} to skip updating
-   * @param requiredHours the proposed new required hours, or {@code null} to skip updating
-   * @param startDate the proposed new start date, or {@code null} to skip updating
-   * @param dueDate the proposed new due date, or {@code null} to skip updating
-   * @return a new {@link Student} domain aggregate reflecting the requested updates, potentially
-   *     containing validation errors
+   * @param existingStudent the current, reconstituted {@link Student} aggregate
+   * @param regString the proposed new academic registration, or {@code null}/empty to skip
+   * @param campus the proposed new campus, or {@code null} to skip
+   * @param courseId the proposed new course ID, or {@code null} to skip
+   * @param requiredHours the proposed new required hours, or {@code null} to skip
+   * @param startDate the proposed new start date, or {@code null} to skip
+   * @param dueDate the proposed new due date, or {@code null} to skip
+   * @return a new {@link Student} domain aggregate reflecting the requested updates
    */
   public static Student processUpdateInput(
       Student existingStudent,
@@ -5940,7 +5877,10 @@ public class StudentProcessor {
 
     if (requiredHours != null) {
       CounterpartHours newHours =
-          CounterpartHours.factory(requiredHours, updated.getCounterpartHours().getConcluded());
+          CounterpartHours.factory(
+              requiredHours,
+              updated.getCounterpartHours().getCompletedHours(),
+              updated.getCounterpartHours().getConcluded());
       updated = updated.updateRequiredHours(newHours);
     }
 

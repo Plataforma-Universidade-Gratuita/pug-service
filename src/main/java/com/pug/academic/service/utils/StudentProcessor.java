@@ -28,10 +28,6 @@ public class StudentProcessor {
    * Processes a bulk list of student creation commands, combining them with their newly generated
    * account identifiers to instantiate pure Domain Aggregates.
    *
-   * <p>This method safely maps concurrent lists by index. It triggers the aggregate's internal
-   * validations, and if any student violates domain rules, an exception is thrown to abort the
-   * entire batch transaction.
-   *
    * @param cmds the {@link List} of bulk student creation commands
    * @param accountIds the {@link List} of newly provisioned {@link UUID} account identifiers
    * @return a {@link List} of instantiated and validated {@link Student} aggregates
@@ -75,13 +71,7 @@ public class StudentProcessor {
   /**
    * Processes raw creation inputs and constructs a new {@link Student} domain aggregate.
    *
-   * <p>This method translates the raw primitive representations into appropriate Value Objects
-   * (e.g., {@link AcademicRegistration}, {@link CounterpartHours}, {@link Period}) before passing
-   * them to the aggregate's factory method.
-   *
-   * <p><b>Note:</b> The returned {@link Student} object may contain accumulated domain validation
-   * failures. The caller is responsible for checking {@link Student#hasFieldErrors()} and handling
-   * them appropriately.
+   * <p>New students are initialized with {@code completedHours} as zero.
    *
    * @param accountId the unique identifier of the linked authentication account
    * @param regString the raw academic registration string
@@ -90,8 +80,7 @@ public class StudentProcessor {
    * @param requiredHours the quantified hours the student must complete
    * @param startDate the start date of the enrollment period
    * @param dueDate the due date of the enrollment period
-   * @return a fully instantiated {@link Student} domain aggregate, potentially containing
-   *     validation errors
+   * @return a fully instantiated {@link Student} domain aggregate
    */
   public static Student processCreateInput(
       UUID accountId,
@@ -103,7 +92,8 @@ public class StudentProcessor {
       LocalDate dueDate) {
 
     AcademicRegistration regVo = AcademicRegistration.factory(regString);
-    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, null);
+    // Inicializa com 0 horas completadas
+    CounterpartHours hoursVo = CounterpartHours.factory(requiredHours, BigDecimal.ZERO, false);
     Period periodVo = Period.factory(startDate, dueDate);
 
     return Student.factory(accountId, regVo, campus, courseId, hoursVo, periodVo);
@@ -112,19 +102,14 @@ public class StudentProcessor {
   /**
    * Processes raw update inputs and conditionally mutates the state of an existing {@link Student}.
    *
-   * <p>This method applies partial updates. Only fields that are explicitly provided will trigger a
-   * state mutation via the aggregate's domain behaviors. Because period dates rely on each other
-   * for validation, they are safely merged with existing state before evaluation.
-   *
-   * @param existingStudent the current, reconstituted {@link Student} aggregate from the repository
-   * @param regString the proposed new academic registration, or {@code null}/empty to skip updating
-   * @param campus the proposed new campus, or {@code null} to skip updating
-   * @param courseId the proposed new course ID, or {@code null} to skip updating
-   * @param requiredHours the proposed new required hours, or {@code null} to skip updating
-   * @param startDate the proposed new start date, or {@code null} to skip updating
-   * @param dueDate the proposed new due date, or {@code null} to skip updating
-   * @return a new {@link Student} domain aggregate reflecting the requested updates, potentially
-   *     containing validation errors
+   * @param existingStudent the current, reconstituted {@link Student} aggregate
+   * @param regString the proposed new academic registration, or {@code null}/empty to skip
+   * @param campus the proposed new campus, or {@code null} to skip
+   * @param courseId the proposed new course ID, or {@code null} to skip
+   * @param requiredHours the proposed new required hours, or {@code null} to skip
+   * @param startDate the proposed new start date, or {@code null} to skip
+   * @param dueDate the proposed new due date, or {@code null} to skip
+   * @return a new {@link Student} domain aggregate reflecting the requested updates
    */
   public static Student processUpdateInput(
       Student existingStudent,
@@ -152,7 +137,10 @@ public class StudentProcessor {
 
     if (requiredHours != null) {
       CounterpartHours newHours =
-          CounterpartHours.factory(requiredHours, updated.getCounterpartHours().getConcluded());
+          CounterpartHours.factory(
+              requiredHours,
+              updated.getCounterpartHours().getCompletedHours(),
+              updated.getCounterpartHours().getConcluded());
       updated = updated.updateRequiredHours(newHours);
     }
 

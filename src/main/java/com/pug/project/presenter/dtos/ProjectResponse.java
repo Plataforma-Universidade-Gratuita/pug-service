@@ -15,7 +15,8 @@ import java.util.UUID;
  * @param description the project description
  * @param createdBy the unique identifier of the creator
  * @param maxParticipants the maximum number of students allowed
- * @param offeredHours the total counterpart hours offered
+ * @param offeredHours the total counterpart hours the project offers
+ * @param completedHours the total counterpart hours already completed
  * @param status the current execution state
  * @param statusFormatted the localized project status string
  * @param closedAt the exact timestamp when the project was closed
@@ -30,6 +31,7 @@ public record ProjectResponse(
     UUID createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
+    BigDecimal completedHours,
     ProjectStatus status,
     String statusFormatted,
     OffsetDateTime closedAt,

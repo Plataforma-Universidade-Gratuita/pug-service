@@ -16,8 +16,8 @@ import lombok.Value;
  * Immutable Value Object (VO) representing the comprehensive logistical details of a Project.
  *
  * <p>Extends {@link DomainError} to encapsulate and accumulate validations relating to project
- * constraints, ensuring values like participant capacity and offered hours remain within logically
- * valid bounds.
+ * constraints, ensuring values like participant capacity, offered hours, and completion progress
+ * remain within logically valid bounds.
  */
 @Getter
 @Value
@@ -33,6 +33,9 @@ public class ProjectInfo extends DomainError {
   /** The total amount of counterpart hours the project offers to its participants. */
   BigDecimal offeredHours;
 
+  /** The total amount of counterpart hours already completed in the project. */
+  BigDecimal completedHours;
+
   /** The exact timestamp when the project was officially closed. */
   OffsetDateTime closedAt;
 
@@ -45,6 +48,7 @@ public class ProjectInfo extends DomainError {
    * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
    * @param offeredHours the hours offered by the project
+   * @param completedHours the hours completed in the project
    * @param closedAt the timestamp when the project was closed
    * @param auditInfo the audit tracking VO
    */
@@ -53,11 +57,13 @@ public class ProjectInfo extends DomainError {
       UUID createdBy,
       Integer maxParticipants,
       BigDecimal offeredHours,
+      BigDecimal completedHours,
       OffsetDateTime closedAt,
       AuditInfo auditInfo) {
     this.createdBy = createdBy;
     this.maxParticipants = maxParticipants;
     this.offeredHours = offeredHours;
+    this.completedHours = completedHours;
     this.closedAt = closedAt;
     this.auditInfo = auditInfo;
   }
@@ -71,15 +77,17 @@ public class ProjectInfo extends DomainError {
    * @param createdBy the unique identifier of the creator
    * @param maxParticipants the maximum number of participants
    * @param offeredHours the hours offered for the project
+   * @param completedHours the starting hours completed (usually 0)
    * @return a self-validated {@link ProjectInfo} instance
    */
   public static ProjectInfo factory(
-      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours) {
+      UUID createdBy, Integer maxParticipants, BigDecimal offeredHours, BigDecimal completedHours) {
     ProjectInfo vo =
         ProjectInfo.builder()
             .createdBy(createdBy)
             .maxParticipants(maxParticipants)
-            .offeredHours(offeredHours)
+            .offeredHours(offeredHours != null ? offeredHours : BigDecimal.ZERO)
+            .completedHours(completedHours != null ? completedHours : BigDecimal.ZERO)
             .closedAt(null)
             .auditInfo(AuditInfo.factory())
             .build();
@@ -154,13 +162,12 @@ public class ProjectInfo extends DomainError {
    * <p>Business rules applied:
    *
    * <ul>
-   *   <li>The creator ID must not be null (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_PROJECT_CREATED_BY_BLANK}).
-   *   <li>The participant capacity, if provided, must not be negative (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_MAX_PARTICIPANTS_NEGATIVE}).
-   *   <li>The offered hours must not be negative (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_PROJECT_OFFERED_HOURS_NEGATIVE}).
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
+   *   <li>The creator ID must not be null.
+   *   <li>The participant capacity, if provided, must not be negative.
+   *   <li>The offered hours must not be negative.
+   *   <li>{@code completedHours} must not be negative.
+   *   <li>{@code completedHours} cannot exceed {@code offeredHours}.
+   *   <li>Ensures the {@code auditInfo} is not null.
    * </ul>
    */
   private void collectValidationProblems() {
@@ -172,6 +179,14 @@ public class ProjectInfo extends DomainError {
     }
     if (offeredHours != null && offeredHours.signum() < 0) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_OFFERED_HOURS_NEGATIVE);
+    }
+    if (completedHours != null && completedHours.compareTo(BigDecimal.ZERO) < 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_COMPLETED_HOURS_NEGATIVE);
+    }
+    if (offeredHours != null
+        && completedHours != null
+        && completedHours.compareTo(offeredHours) > 0) {
+      addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_COMPLETED_HOURS_EXCEEDS);
     }
     if (auditInfo == null) {
       addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);

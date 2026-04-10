@@ -37,10 +37,6 @@ public final class StudentPresenter {
   /**
    * Maps an incoming REST creation request into an application layer student creation command.
    *
-   * <p>This helper is responsible for assembling the nested command structure required to create
-   * the underlying user, authentication account, and student enrollment in a single transaction. It
-   * expects the password to have been securely hashed beforehand.
-   *
    * @param req the validated {@link StudentCreateRequest} payload containing identity and
    *     enrollment details
    * @param hashedPassword the securely hashed password string to assign to the new account
@@ -67,11 +63,6 @@ public final class StudentPresenter {
 
   /**
    * Maps an incoming REST update request into an application layer student update command.
-   *
-   * <p>This helper is responsible for assembling the nested command structure required to update
-   * the underlying user and authentication account (if applicable), as well as the academic
-   * enrollment details. It expects the password (if provided) to have been securely hashed
-   * beforehand.
    *
    * @param req the validated {@link StudentUpdateRequest} payload containing the modified data
    * @param hashedPassword the securely hashed password string, or {@code null} if the password is
@@ -123,10 +114,11 @@ public final class StudentPresenter {
     String dueDateFormatted = StringUtils.toStringFormatted(v.dueDate(), locale);
 
     BigDecimal requiredHours = v.requiredHours();
-    BigDecimal completedHours = BigDecimal.ZERO;
+    BigDecimal completedHours = v.completedHours();
     BigDecimal missingHours = BigDecimal.ZERO;
-    if (requiredHours != null && Boolean.FALSE.equals(v.concluded())) {
-      missingHours = requiredHours.subtract(completedHours);
+
+    if (requiredHours != null && completedHours != null && Boolean.FALSE.equals(v.concluded())) {
+      missingHours = requiredHours.subtract(completedHours).max(BigDecimal.ZERO);
     }
 
     long remainingDays = 0;
@@ -145,9 +137,6 @@ public final class StudentPresenter {
         v.academicRegistration(),
         campus,
         v.courseId(),
-        v.courseName(),
-        v.schoolId(),
-        v.schoolName(),
         requiredHours,
         completedHours,
         missingHours,

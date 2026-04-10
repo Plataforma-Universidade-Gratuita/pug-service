@@ -5,6 +5,7 @@ CREATE TABLE students
     campus                varchar(150)             NOT NULL,
     course_id             uuid                     NOT NULL,
     required_hours        DECIMAL(6, 2)            NOT NULL,
+    completed_hours       DECIMAL(6, 2) NOT NULL DEFAULT 0.00,
     start_date            date                     NOT NULL,
     due_date              date                     NOT NULL,
     concluded             boolean                  NOT NULL DEFAULT FALSE,
@@ -15,7 +16,8 @@ CREATE TABLE students
     FOREIGN KEY (course_id) REFERENCES courses (id),
     UNIQUE (academic_registration),
     CONSTRAINT chk_students_dates CHECK (due_date >= start_date),
-    CONSTRAINT chk_students_required_nonneg CHECK (required_hours > 0)
+    CONSTRAINT chk_students_required_nonneg CHECK (required_hours > 0),
+    CONSTRAINT chk_students_completed_hours_nonneg CHECK (completed_hours >= 0)
 );
 
 CREATE INDEX idx_students_course ON students (course_id);
