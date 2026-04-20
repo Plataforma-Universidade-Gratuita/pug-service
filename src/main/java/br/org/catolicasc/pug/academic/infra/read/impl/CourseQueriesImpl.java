@@ -33,9 +33,9 @@ public class CourseQueriesImpl implements CourseQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.academic.infra.read.dtos.CourseView(
+                  select new br.org.catolicasc.pug.academic.infra.read.dtos.CourseView(
                     c.id, c.name,
-                    new com.pug.academic.infra.read.dtos.SchoolView(
+                    new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView(
                     s.id, s.name, s.createdAt, s.updatedAt),
                     c.createdAt, c.updatedAt
                   )

@@ -37,7 +37,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
     }
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id = :id",
             SchoolView.class);
@@ -50,7 +50,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
   public List<SchoolView> listAllSchools() {
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
             SchoolView.class);
@@ -65,7 +65,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
     }
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id in :ids order by s.name asc",
             SchoolView.class);

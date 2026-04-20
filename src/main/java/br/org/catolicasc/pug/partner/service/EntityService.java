@@ -14,7 +14,7 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete) and strict domain-level retrievals. It enforces cross-cutting business rules (e.g., CNPJ
- * uniqueness) and coordinates with the {@link com.pug.geo.service.CityService} to ensure
+ * uniqueness) and coordinates with the {@link br.org.catolicasc.pug.geo.service.CityService} to ensure
  * geographical references are valid.
  */
 public interface EntityService {

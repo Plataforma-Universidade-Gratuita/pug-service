@@ -28,10 +28,10 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                       select new com.pug.project.infra.read.dtos.ProjectView(
+                       select new br.org.catolicasc.pug.project.infra.read.dtos.ProjectView(
                          p.id, p.name, p.entityId, p.description, p.createdBy,
                          p.maxParticipants, p.offeredHours, p.completedHours,
-                         com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                         br.org.catolicasc.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
                          p.closedAt, p.createdAt, p.updatedAt
                        )
                        from ProjectEntity p

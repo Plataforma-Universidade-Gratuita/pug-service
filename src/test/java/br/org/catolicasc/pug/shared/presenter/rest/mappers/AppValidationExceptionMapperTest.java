@@ -24,8 +24,8 @@ class AppValidationExceptionMapperTest {
 
     @Test
     @DisplayName("Should translate AppValidationException to HTTP 400 with structured JSON")
-    void testMapping() {
-        given()
+    void testMapping() {        given()
+
                 .when().get("/test-validation")
                 .then()
                 .statusCode(400)

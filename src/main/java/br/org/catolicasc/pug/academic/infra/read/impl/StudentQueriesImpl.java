@@ -28,7 +28,7 @@ public class StudentQueriesImpl implements StudentQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.academic.infra.read.dtos.StudentView(
+                  select new br.org.catolicasc.pug.academic.infra.read.dtos.StudentView(
                     s.accountId,
                     s.academicRegistration,
                     s.campus,

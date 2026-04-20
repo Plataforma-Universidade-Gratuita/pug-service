@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.identity.domain.vos;
 
+import br.com.caelum.stella.validation.CPFValidator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -20,7 +21,9 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Cpf extends DomainError {
 
-  /** The raw, numeric-only 11-digit string representing the CPF. */
+  /**
+   * The raw, numeric-only 11-digit string representing the CPF.
+   */
   String value;
 
   /**
@@ -68,64 +71,11 @@ public class Cpf extends DomainError {
       addFieldError(IdentityFieldErrorCodes.INVALID_CPF_BLANK);
       return;
     }
-    if (value.length() != 11 || allSameDigit(value) || !validCheckDigits(value)) {
+    CPFValidator validator = new CPFValidator(false);
+    try {
+      validator.assertValid(value);
+    } catch (Exception e) {
       addFieldError(IdentityFieldErrorCodes.INVALID_CPF_FORMAT);
     }
-  }
-
-  // --- Internal Validation Logic ---
-
-  /**
-   * Evaluates if all characters within the provided string are identical.
-   *
-   * <p>This is a requirement for CPF validation, as strings like "11111111111" pass the
-   * mathematical checksum but are structurally invalid CPFs.
-   *
-   * @param s the numeric string to evaluate
-   * @return {@code true} if all characters are the same repeated digit, {@code false} otherwise
-   */
-  private static boolean allSameDigit(String s) {
-    if (StringUtils.isEmpty(s)) {
-      return false;
-    }
-    char c = s.charAt(0);
-    for (int i = 1; i < s.length(); i++) {
-      if (s.charAt(i) != c) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Executes the standard Brazilian modulo-11 checksum algorithm to validate the last two digits
-   * (Verification Digits) of the CPF.
-   *
-   * @param s the 11-digit numeric string representing the CPF
-   * @return {@code true} if the calculated check digits match the provided string, {@code false}
-   *     otherwise
-   */
-  private static boolean validCheckDigits(String s) {
-    int d1 = calcDigit(s, 9);
-    int d2 = calcDigit(s, 10);
-    return (s.charAt(9) - '0') == d1 && (s.charAt(10) - '0') == d2;
-  }
-
-  /**
-   * Calculates a single CPF verification digit based on the modulo-11 algorithm.
-   *
-   * @param s the numeric string containing the base digits for calculation
-   * @param len the number of digits to consider (9 for the first verification digit, 10 for the
-   *     second)
-   * @return the mathematically calculated verification digit (0-9)
-   */
-  private static int calcDigit(String s, int len) {
-    int sum = 0;
-    for (int i = 0; i < len; i++) {
-      int num = s.charAt(i) - '0';
-      sum += num * (len + 1 - i);
-    }
-    int mod = sum % 11;
-    return (mod < 2) ? 0 : 11 - mod;
   }
 }

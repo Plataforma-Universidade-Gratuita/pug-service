@@ -29,7 +29,7 @@ public class EntityQueriesImpl implements EntityQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.partner.infra.read.dtos.EntityView(
+                  select new br.org.catolicasc.pug.partner.infra.read.dtos.EntityView(
                     e.id,
                     e.cnpj,
                     e.name,

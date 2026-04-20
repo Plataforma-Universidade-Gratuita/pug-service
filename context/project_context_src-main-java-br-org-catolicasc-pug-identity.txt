@@ -2292,7 +2292,7 @@ public class AccountQueriesImpl implements AccountQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AccountView(
+                  select new br.org.catolicasc.pug.identity.infra.read.dtos.AccountView(
                     a.id,
                     u.id,
                     a.email,
@@ -2418,8 +2418,8 @@ public class AdminQueriesImpl implements AdminQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AdminView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
+                  select new br.org.catolicasc.pug.identity.infra.read.dtos.AdminView(
+                    new br.org.catolicasc.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
                       u.id,
                       acc.email,
@@ -2499,7 +2499,7 @@ public class AdminQueriesImpl implements AdminQueries {
     List<AdminAcc> rows =
         em.createQuery(
                 """
-                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        select new br.org.catolicasc.pug.identity.infra.read.dtos.AdminAcc(a, acc)
                         from AdminEntity a join AccountEntity acc on acc.id = a.accountId
                         where acc.userId in :ids
                         """,
@@ -2572,7 +2572,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.cpf = :cpf",
             UserView.class);
@@ -2588,7 +2588,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.id = :id",
             UserView.class);
@@ -2601,7 +2601,7 @@ public class UserQueriesImpl implements UserQueries {
   public List<UserView> listAllUsers() {
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p order by p.name asc",
             UserView.class);

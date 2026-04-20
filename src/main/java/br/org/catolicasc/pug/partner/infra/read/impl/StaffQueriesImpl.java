@@ -36,8 +36,8 @@ public class StaffQueriesImpl implements StaffQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.partner.infra.read.dtos.StaffView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
+                  select new br.org.catolicasc.pug.partner.infra.read.dtos.StaffView(
+                    new br.org.catolicasc.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
                       acc.userId,
                       acc.email,
@@ -126,7 +126,7 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                                  select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
+                                  select new br.org.catolicasc.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
                                   from StaffEntity s
                                     join AccountEntity acc on acc.id = s.accountId
                                     join EntityEntity e on e.id = s.entityId

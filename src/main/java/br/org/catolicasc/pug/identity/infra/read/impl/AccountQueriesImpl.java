@@ -33,7 +33,7 @@ public class AccountQueriesImpl implements AccountQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AccountView(
+                  select new br.org.catolicasc.pug.identity.infra.read.dtos.AccountView(
                     a.id,
                     u.id,
                     a.email,

@@ -38,7 +38,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.cpf = :cpf",
             UserView.class);
@@ -54,7 +54,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.id = :id",
             UserView.class);
@@ -67,7 +67,7 @@ public class UserQueriesImpl implements UserQueries {
   public List<UserView> listAllUsers() {
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p order by p.name asc",
             UserView.class);

@@ -38,8 +38,8 @@ public class AdminQueriesImpl implements AdminQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AdminView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
+                  select new br.org.catolicasc.pug.identity.infra.read.dtos.AdminView(
+                    new br.org.catolicasc.pug.identity.infra.read.dtos.AccountView(
                       acc.id,
                       u.id,
                       acc.email,
@@ -119,7 +119,7 @@ public class AdminQueriesImpl implements AdminQueries {
     List<AdminAcc> rows =
         em.createQuery(
                 """
-                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        select new br.org.catolicasc.pug.identity.infra.read.dtos.AdminAcc(a, acc)
                         from AdminEntity a join AccountEntity acc on acc.id = a.accountId
                         where acc.userId in :ids
                         """,

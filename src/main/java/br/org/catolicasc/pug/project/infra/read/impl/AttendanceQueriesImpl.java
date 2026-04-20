@@ -23,9 +23,9 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   private static final String SELECT_BASE =
       """
-          select new com.pug.project.infra.read.dtos.AttendanceView(
+          select new br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView(
             a.id, a.projectId, a.studentId, a.duration, a.qrValidationHash,\s
-            com.pug.project.domain.enums.AttendanceStatus.valueOf(a.status),
+            br.org.catolicasc.pug.project.domain.enums.AttendanceStatus.valueOf(a.status),
             a.validatedBy, a.validatedAt, a.createdAt, a.updatedAt
           )
           from AttendanceEntity a
