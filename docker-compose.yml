@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: pug-postgres
+    ports:
+      - "5433:5432" # Use 5433 so it doesn't conflict if you run the Q4P stack
+    environment:
+      POSTGRES_USER: pug
+      POSTGRES_PASSWORD: pug
+      POSTGRES_DB: pug
+    networks:
+      - pug-network
+
+  mongodb:
+    image: mongo:7.0
+    container_name: pug-mongodb
+    ports:
+      - "27018:27017" # Use 27018 to avoid conflicts
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: pug
+      MONGO_INITDB_ROOT_PASSWORD: pug
+    networks:
+      - pug-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: pug-es
+    ports:
+      - "9201:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - pug-network
+
+networks:
+  pug-network:
+    driver: bridge

@@ -1,5 +1,5 @@
 PROJECT CONTEXT DUMP
-Project Name: resources
+Base: project_context_src-test-resources
 Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/test/resources
 ================================================================================
 
@@ -14,26 +14,33 @@ FILE: application.properties
 %test.quarkus.http.cors.enabled=true
 %test.quarkus.http.cors.origins=http://localhost:3000
 %test.quarkus.http.cors.methods=GET,POST,PUT,DELETE,OPTIONS
-# Datasource DevServices (PostgreSQL)
+# Datasource (PostgreSQL)
 %test.quarkus.datasource.devservices.enabled=true
 %test.quarkus.datasource.devservices.image-name=postgres:16
-%test.quarkus.datasource.devservices.reuse=false
-# Flyway & Hibernate ORM
-%test.quarkus.flyway.migrate-at-start=true
-%test.quarkus.hibernate-orm.log.sql=false
-%test.quarkus.hibernate-orm.log.bind-parameters=false
-# Hibernate Search & Elasticsearch DevServices
-# Added explicit image-name to match dev profile and avoid downloading two different ES images
+%test.quarkus.datasource.devservices.reuse=true
+%test.quarkus.datasource.devservices.timeout=PT5M
+# MongoDB
+%test.quarkus.mongodb.devservices.enabled=true
+%test.quarkus.mongodb.devservices.image-name=mongo:7.0
+%test.quarkus.mongodb.devservices.reuse=true
+%test.quarkus.mongodb.devservices.timeout=PT5M
+# Hibernate Search & Elasticsearch
 %test.quarkus.elasticsearch.devservices.enabled=true
 %test.quarkus.elasticsearch.devservices.image-name=docker.io/elastic/elasticsearch:9.1.5
+%test.quarkus.elasticsearch.devservices.reuse=true
+%test.quarkus.elasticsearch.devservices.timeout=PT5M
 %test.quarkus.hibernate-search-orm.schema-management.strategy=create-or-validate
 %test.quarkus.hibernate-search-orm.indexing.plan.synchronization.strategy=sync
+# Flyway
+%test.quarkus.flyway.migrate-at-start=true
+# Hibernate ORM Logging
+%test.quarkus.hibernate-orm.log.sql=false
+%test.quarkus.hibernate-orm.log.bind-parameters=false
 # Security & Auth (Isolated for Tests)
 %test.security.password.pepper=test-only-pepper-123
 %test.mp.jwt.verify.issuer=https://api.pug.test
 %test.smallrye.jwt.new-token.issuer=https://api.pug.test
 %test.smallrye.jwt.new-token.signature-algorithm=HS256
-# Base64 for 'test-only-secret-key-for-jwt-signature' (Must be at least 256-bit/32-bytes)
 %test.smallrye.jwt.sign.key=dGVzdC1vbmx5LXNlY3JldC1rZXktZm9yLWp3dC1zaWduYXR1cmU=
 %test.mp.jwt.verify.publickey=dGVzdC1vbmx5LXNlY3JldC1rZXktZm9yLWp3dC1zaWduYXR1cmU=
 # Logging

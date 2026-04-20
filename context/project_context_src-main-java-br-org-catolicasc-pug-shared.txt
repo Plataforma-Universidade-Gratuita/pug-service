@@ -1,17 +1,17 @@
 PROJECT CONTEXT DUMP
-Base: project_context_src-main-java-com-pug-shared
-Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/com/pug/shared
+Base: project_context_src-main-java-br-org-catolicasc-pug-shared
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/br/org/catolicasc/pug/shared
 ================================================================================
 
 
 ================================================================================
 FILE: domain/DomainError.java
 ================================================================================
-package com.pug.shared.domain;
+package br.org.catolicasc.pug.shared.domain;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
-import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
-import utils.shared.br.org.catolicasc.pug.StringUtils;
+import br.org.catolicasc.pug.shared.domain.enums.GenericFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -132,7 +132,7 @@ public abstract class DomainError {
 ================================================================================
 FILE: domain/enums/AccountType.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
 import lombok.Getter;
 
@@ -181,7 +181,7 @@ public enum AccountType implements GenericCodes {
 ================================================================================
 FILE: domain/enums/Campi.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -219,7 +219,7 @@ public enum Campi implements GenericCodes {
 ================================================================================
 FILE: domain/enums/GenericCodes.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
 /**
  * Interface representing a general business, system, or cross-cutting message code.
@@ -262,7 +262,7 @@ public interface GenericCodes {
 ================================================================================
 FILE: domain/enums/GenericFieldErrorCodes.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
 /**
  * Interface representing a specific validation error associated with a distinct domain or DTO
@@ -290,7 +290,7 @@ public interface GenericFieldErrorCodes extends GenericCodes {
 ================================================================================
 FILE: domain/enums/SharedErrorCodes.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
 import lombok.Getter;
 
@@ -342,15 +342,16 @@ public enum SharedErrorCodes implements GenericCodes {
 ================================================================================
 FILE: domain/enums/SharedFieldErrorCodes.java
 ================================================================================
-package com.pug.shared.domain.enums;
+package br.org.catolicasc.pug.shared.domain.enums;
 
+import br.org.catolicasc.pug.shared.domain.DomainError;
 import lombok.Getter;
 
 /**
  * Enumeration of common, field-specific validation error codes used across the application.
  *
  * <p>These codes implement {@link GenericFieldErrorCodes} and are typically accumulated inside
- * {@link domain.shared.br.org.catolicasc.pug.DomainError} instances. They represent standard constraints applied
+ * {@link DomainError} instances. They represent standard constraints applied
  * to generic entity properties (like IDs, names, or audit timestamps) that are shared among
  * multiple different domains.
  */
@@ -408,10 +409,10 @@ public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
 ================================================================================
 FILE: domain/vos/AuditInfo.java
 ================================================================================
-package com.pug.shared.domain.vos;
+package br.org.catolicasc.pug.shared.domain.vos;
 
-import domain.shared.br.org.catolicasc.pug.DomainError;
-import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.DomainError;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -524,10 +525,11 @@ public class AuditInfo extends DomainError {
 ================================================================================
 FILE: exceptions/AppValidationException.java
 ================================================================================
-package com.pug.shared.exceptions;
+package br.org.catolicasc.pug.shared.exceptions;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
-import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import br.org.catolicasc.pug.shared.domain.DomainError;
+import br.org.catolicasc.pug.shared.domain.enums.GenericFieldErrorCodes;
+import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.Serial;
 import java.util.Collections;
@@ -538,7 +540,7 @@ import lombok.Getter;
  * Exception thrown to indicate that application-level or domain-level validation has failed.
  *
  * <p>Typically, this exception is thrown when a domain entity extending {@link
- * domain.shared.br.org.catolicasc.pug.DomainError} accumulates one or more validation failures. By throwing this
+ * DomainError} accumulates one or more validation failures. By throwing this
  * exception, the current business flow is halted, allowing a global exception handler (e.g., in the
  * API layer) to intercept it and translate the encapsulated {@link GenericFieldErrorCodes} into a
  * structured, localized error response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
@@ -593,9 +595,9 @@ public final class AppValidationException extends RuntimeException {
 ================================================================================
 FILE: exceptions/BusinessRuleException.java
 ================================================================================
-package com.pug.shared.exceptions;
+package br.org.catolicasc.pug.shared.exceptions;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -631,9 +633,9 @@ public class BusinessRuleException extends RuntimeException {
 ================================================================================
 FILE: exceptions/DuplicateResourceException.java
 ================================================================================
-package com.pug.shared.exceptions;
+package br.org.catolicasc.pug.shared.exceptions;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -666,9 +668,9 @@ public class DuplicateResourceException extends RuntimeException {
 ================================================================================
 FILE: exceptions/ResourceNotFoundException.java
 ================================================================================
-package com.pug.shared.exceptions;
+package br.org.catolicasc.pug.shared.exceptions;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -701,9 +703,9 @@ public class ResourceNotFoundException extends RuntimeException {
 ================================================================================
 FILE: http/CorrelationFilter.java
 ================================================================================
-package com.pug.shared.http;
+package br.org.catolicasc.pug.shared.http;
 
-import utils.shared.br.org.catolicasc.pug.StringUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -763,7 +765,7 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
 ================================================================================
 FILE: i18n/I18n.java
 ================================================================================
-package com.pug.shared.i18n;
+package br.org.catolicasc.pug.shared.i18n;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import java.text.MessageFormat;
@@ -832,7 +834,7 @@ public class I18n {
 ================================================================================
 FILE: infra/audit/AuditListener.java
 ================================================================================
-package com.pug.shared.infra.audit;
+package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -883,7 +885,7 @@ public class AuditListener implements PanacheMongoRepository<AuditLog> {
 ================================================================================
 FILE: infra/audit/AuditLog.java
 ================================================================================
-package com.pug.shared.infra.audit;
+package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import java.time.OffsetDateTime;
@@ -939,10 +941,10 @@ public class AuditLog {
 ================================================================================
 FILE: infra/audit/AuditPublisher.java
 ================================================================================
-package com.pug.shared.infra.audit;
+package br.org.catolicasc.pug.shared.infra.audit;
 
-import service.identity.br.org.catolicasc.pug.AuthService;
-import utils.shared.br.org.catolicasc.pug.DiffUtils;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.shared.utils.DiffUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
@@ -1022,7 +1024,7 @@ public class AuditPublisher {
 ================================================================================
 FILE: infra/audit/DomainAuditEvent.java
 ================================================================================
-package com.pug.shared.infra.audit;
+package br.org.catolicasc.pug.shared.infra.audit;
 
 import java.util.Map;
 import java.util.UUID;
@@ -1053,7 +1055,7 @@ public record DomainAuditEvent(
 ================================================================================
 FILE: infra/audit/FieldChange.java
 ================================================================================
-package com.pug.shared.infra.audit;
+package br.org.catolicasc.pug.shared.infra.audit;
 
 /**
  * Represents a granular change for a specific domain field.
@@ -1070,7 +1072,7 @@ public record FieldChange(Object oldValue, Object newValue) {}
 ================================================================================
 FILE: infra/persistence/BaseAuditedEntity.java
 ================================================================================
-package com.pug.shared.infra.persistence;
+package br.org.catolicasc.pug.shared.infra.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
@@ -1118,7 +1120,7 @@ public abstract class BaseAuditedEntity extends BaseUuidV7Entity {
 ================================================================================
 FILE: infra/persistence/BaseUuidV7Entity.java
 ================================================================================
-package com.pug.shared.infra.persistence;
+package br.org.catolicasc.pug.shared.infra.persistence;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -1160,7 +1162,7 @@ public abstract class BaseUuidV7Entity {
 ================================================================================
 FILE: infra/search/EsAnalysis.java
 ================================================================================
-package com.pug.shared.infra.search;
+package br.org.catolicasc.pug.shared.infra.search;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurationContext;
@@ -1222,9 +1224,9 @@ public class EsAnalysis implements ElasticsearchAnalysisConfigurer {
 ================================================================================
 FILE: infra/search/HibernateSearchUtils.java
 ================================================================================
-package com.pug.shared.infra.search;
+package br.org.catolicasc.pug.shared.infra.search;
 
-import utils.shared.br.org.catolicasc.pug.StringUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import org.hibernate.search.mapper.orm.Search;
@@ -1336,7 +1338,7 @@ public final class HibernateSearchUtils {
 ================================================================================
 FILE: infra/search/SearchIndexer.java
 ================================================================================
-package com.pug.shared.infra.search;
+package br.org.catolicasc.pug.shared.infra.search;
 
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -1392,7 +1394,7 @@ public class SearchIndexer {
 ================================================================================
 FILE: presenter/dtos/AuditInfoResponse.java
 ================================================================================
-package com.pug.shared.presenter.dtos;
+package br.org.catolicasc.pug.shared.presenter.dtos;
 
 import java.time.OffsetDateTime;
 
@@ -1418,9 +1420,9 @@ public record AuditInfoResponse(
 ================================================================================
 FILE: presenter/dtos/CampusResponse.java
 ================================================================================
-package com.pug.shared.presenter.dtos;
+package br.org.catolicasc.pug.shared.presenter.dtos;
 
-import enums.domain.shared.br.org.catolicasc.pug.Campi;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
 
 /**
  * Data Transfer Object (DTO) representing an academic campus.
@@ -1438,13 +1440,13 @@ public record CampusResponse(Campi campus, String campusFormatted) {}
 ================================================================================
 FILE: presenter/mappers/SharedDataPresenter.java
 ================================================================================
-package com.pug.shared.presenter.mappers;
+package br.org.catolicasc.pug.shared.presenter.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.Campi;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
-import dtos.presenter.shared.br.org.catolicasc.pug.CampusResponse;
-import utils.shared.br.org.catolicasc.pug.StringUtils;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
+import br.org.catolicasc.pug.shared.presenter.dtos.CampusResponse;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 
@@ -1513,7 +1515,7 @@ public final class SharedDataPresenter {
 ================================================================================
 FILE: presenter/rest/ApiEnvelope.java
 ================================================================================
-package com.pug.shared.presenter.rest;
+package br.org.catolicasc.pug.shared.presenter.rest;
 
 import java.time.Instant;
 import org.jboss.logging.MDC;
@@ -1598,7 +1600,9 @@ public record ApiEnvelope<T>(
 ================================================================================
 FILE: presenter/rest/ApiError.java
 ================================================================================
-package com.pug.shared.presenter.rest;
+package br.org.catolicasc.pug.shared.presenter.rest;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
 
 /**
  * Standardized structure for representing errors returned by the REST API.
@@ -1608,7 +1612,7 @@ package com.pug.shared.presenter.rest;
  * (such as specific field validation failures).
  *
  * @param code The programmatic error identifier (e.g., "VALIDATION_ERROR"), typically derived from
- *     {@link enums.domain.shared.br.org.catolicasc.pug.GenericCodes#getCode()}. Intended for programmatic
+ *     {@link GenericCodes#getCode()}. Intended for programmatic
  *     handling by clients.
  * @param message The human-readable, localized error message translated for the end user.
  * @param details An optional structured object containing additional, granular context about the
@@ -1651,7 +1655,7 @@ public record ApiError(String code, String message, Details details) {
 ================================================================================
 FILE: presenter/rest/Details.java
 ================================================================================
-package com.pug.shared.presenter.rest;
+package br.org.catolicasc.pug.shared.presenter.rest;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 
@@ -1672,7 +1676,7 @@ public record Details(@JsonValue Object payload) {}
 ================================================================================
 FILE: presenter/rest/FieldErrorsResponse.java
 ================================================================================
-package com.pug.shared.presenter.rest;
+package br.org.catolicasc.pug.shared.presenter.rest;
 
 import java.util.List;
 
@@ -1701,17 +1705,17 @@ public record FieldErrorsResponse(String field, List<FieldErrorDetail> errors) {
 ================================================================================
 FILE: presenter/rest/mappers/AppValidationExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
-import enums.domain.shared.br.org.catolicasc.pug.SharedErrorCodes;
-import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
-import rest.presenter.shared.br.org.catolicasc.pug.Details;
-import rest.presenter.shared.br.org.catolicasc.pug.FieldErrorsResponse;
-import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import br.org.catolicasc.pug.shared.domain.enums.GenericFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
+import br.org.catolicasc.pug.shared.presenter.rest.Details;
+import br.org.catolicasc.pug.shared.presenter.rest.FieldErrorsResponse;
+import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -1771,12 +1775,12 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
 ================================================================================
 FILE: presenter/rest/mappers/BusinessRuleExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -1818,14 +1822,14 @@ public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRule
 ================================================================================
 FILE: presenter/rest/mappers/ConstraintViolationExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.SharedErrorCodes;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
-import rest.presenter.shared.br.org.catolicasc.pug.Details;
-import rest.presenter.shared.br.org.catolicasc.pug.FieldErrorsResponse;
+import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
+import br.org.catolicasc.pug.shared.presenter.rest.Details;
+import br.org.catolicasc.pug.shared.presenter.rest.FieldErrorsResponse;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -1909,12 +1913,12 @@ public class ConstraintViolationExceptionMapper
 ================================================================================
 FILE: presenter/rest/mappers/DuplicateResourceExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -1958,12 +1962,12 @@ public class DuplicateResourceExceptionMapper
 ================================================================================
 FILE: presenter/rest/mappers/NotAuthorizedExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.SharedErrorCodes;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
 import jakarta.ws.rs.core.MediaType;
@@ -2000,12 +2004,12 @@ public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthoriz
 ================================================================================
 FILE: presenter/rest/mappers/PersistenceExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.SharedErrorCodes;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
 import jakarta.ws.rs.core.MediaType;
@@ -2102,12 +2106,12 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
 ================================================================================
 FILE: presenter/rest/mappers/ResourceNotFoundExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -2149,12 +2153,12 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
 ================================================================================
 FILE: presenter/rest/mappers/UncaughtExceptionMapper.java
 ================================================================================
-package com.pug.shared.presenter.rest.mappers;
+package br.org.catolicasc.pug.shared.presenter.rest.mappers;
 
-import enums.domain.shared.br.org.catolicasc.pug.SharedErrorCodes;
-import i18n.shared.br.org.catolicasc.pug.I18n;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
-import rest.presenter.shared.br.org.catolicasc.pug.ApiError;
+import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -2204,7 +2208,7 @@ FILE: README.md
 
 ## Overview
 
-The **Shared** module provides cross-cutting infrastructure, utilities, and base domain abstractions used by all other bounded contexts. It is **not** a standalone business module — instead, it defines the foundational building blocks of the platform's architecture.
+The **Shared** module provides cross-cutting infrastructure, utilities, and base domain abstractions used by all other bounded contexts. It is **not** a standalone business module — instead, it defines the foundational building blocks of the platform's architecture, including the domain audit trail persisted to MongoDB.
 
 ## Components
 
@@ -2226,17 +2230,38 @@ classDiagram
         +Instant updatedAt
     }
 
-    class SharedErrorCodes {
+    class GenericCodes {
         <<interface>>
+        +getBundleKey() String
+        +getCode() String
+    }
+
+    class GenericFieldErrorCodes {
+        <<interface>>
+        +getFieldName() String
+    }
+
+    class SharedErrorCodes {
+        <<enumeration>>
+        BUSINESS_RULE_ERROR
+        DATA_INTEGRITY_ERROR
+        DUPLICATED_RESOURCE_ERROR
         INTERNAL_ERROR
-        VALIDATION_ERROR
+        RESOURCE_NOT_FOUND_ERROR
         UNAUTHORIZED_ERROR
+        VALIDATION_ERROR
     }
 
     class SharedFieldErrorCodes {
-        <<interface>>
-        INVALID_ID_BLANK
+        <<enumeration>>
+        INVALID_AUDIT_INFO_BLANK
+        INVALID_CAMPUS_BLANK
+        INVALID_CREATED_AT_BLANK
         INVALID_NAME_BLANK
+        INVALID_NAME_TOO_LONG
+        INVALID_ID_BLANK
+        INVALID_UPDATED_AT_BLANK
+        INVALID_UPDATED_AT_BEFORE_CREATED_AT
     }
 
     class AccountType {
@@ -2252,6 +2277,9 @@ classDiagram
         JOINVILLE
     }
 
+    GenericFieldErrorCodes --|> GenericCodes
+    SharedErrorCodes ..|> GenericCodes
+    SharedFieldErrorCodes ..|> GenericFieldErrorCodes
     DomainError --> AuditInfo
     DomainError ..> SharedFieldErrorCodes : uses
 ```
@@ -2288,6 +2316,19 @@ classDiagram
     RuntimeException <|-- ResourceNotFoundException
 ```
 
+Exception mappers translate these (and infrastructure-level exceptions) into standardized `ApiEnvelope` error responses:
+
+| Mapper | Handles | HTTP Status |
+|---|---|---|
+| `AppValidationExceptionMapper` | `AppValidationException` | 400 |
+| `ConstraintViolationExceptionMapper` | Jakarta Bean Validation | 400 |
+| `NotAuthorizedExceptionMapper` | `NotAuthorizedException` | 401 |
+| `ResourceNotFoundExceptionMapper` | `ResourceNotFoundException` | 404 |
+| `DuplicateResourceExceptionMapper` | `DuplicateResourceException` | 409 |
+| `PersistenceExceptionMapper` | JPA/Hibernate `PersistenceException` | 409 / 500 |
+| `BusinessRuleExceptionMapper` | `BusinessRuleException` | 422 |
+| `UncaughtExceptionMapper` | Any unhandled `Throwable` | 500 |
+
 ### REST API Infrastructure
 
 ```mermaid
@@ -2298,12 +2339,20 @@ classDiagram
         +ApiError error
         +Instant timestamp
         +String correlationId
+        +ok(data) ApiEnvelope
+        +created(data) ApiEnvelope
+        +error(err) ApiEnvelope
     }
 
     class ApiError {
         +String code
         +String message
-        +List~Details~ details
+        +Details details
+    }
+
+    class Details {
+        +Object payload
+        «@JsonValue — serialized inline»
     }
 
     class FieldErrorsResponse {
@@ -2317,7 +2366,8 @@ classDiagram
     }
 
     ApiEnvelope --> ApiError
-    ApiError --> FieldErrorsResponse
+    ApiError --> Details
+    Details --> FieldErrorsResponse : may contain
 ```
 
 ### Internationalization (i18n)
@@ -2330,6 +2380,74 @@ classDiagram
         +getMessage(code, locale, args) String
         -ResourceBundle messages_en_US
         -ResourceBundle messages_pt_BR
+    }
+```
+
+### Audit Infrastructure (MongoDB)
+
+```mermaid
+classDiagram
+    class AuditLog {
+        «MongoDB Document»
+        +String id
+        +String entityName
+        +UUID entityId
+        +String action
+        +Map changes
+        +UUID performedBy
+        +OffsetDateTime timestamp
+        +String correlationId
+    }
+
+    class AuditPublisher {
+        <<ApplicationScoped>>
+        +fireCreate(entityName, entityId)
+        +fireDelete(entityName, entityId)
+        +fireUpdate(entityName, entityId, oldObj, newObj)
+    }
+
+    class AuditListener {
+        <<ApplicationScoped>>
+        «@ObservesAsync»
+        +onAuditEvent(DomainAuditEvent)
+    }
+
+    class DomainAuditEvent {
+        <<record>>
+        +String entityName
+        +UUID entityId
+        +String action
+        +Map changes
+        +UUID performedBy
+        +String correlationId
+    }
+
+    class FieldChange {
+        <<record>>
+        +Object oldValue
+        +Object newValue
+    }
+
+    AuditPublisher ..> DomainAuditEvent : fires async
+    AuditListener ..> DomainAuditEvent : observes
+    AuditListener --> AuditLog : persists
+    AuditPublisher ..> FieldChange : via DiffUtils
+```
+
+### Presenter DTOs
+
+```mermaid
+classDiagram
+    class AuditInfoResponse {
+        <<record>>
+        +Instant createdAt
+        +Instant updatedAt
+    }
+
+    class CampusResponse {
+        <<record>>
+        +Campi campus
+        +String campusFormatted
     }
 ```
 
@@ -2389,6 +2507,12 @@ classDiagram
     class PresenterUtils {
         +resolveLocale(headers) Locale
     }
+
+    class DiffUtils {
+        +diff(oldObj, newObj) Map~String, FieldChange~
+        -hasChanged(oldVal, newVal) boolean
+        «Excludes sensitive fields: passwordHash, email, cpf, cnpj»
+    }
 ```
 
 ### Validation
@@ -2400,6 +2524,19 @@ classDiagram
         +Custom annotation
         +Validates UUIDv7 path parameters
     }
+
+    class UuidV7ForString {
+        +isValid(String, ctx) boolean
+        «Validates string-based UUID v7»
+    }
+
+    class UuidV7ForUuid {
+        +isValid(UUID, ctx) boolean
+        «Validates UUID object v7»
+    }
+
+    UuidV7 ..> UuidV7ForString : validated by
+    UuidV7 ..> UuidV7ForUuid : validated by
 ```
 
 ## Architecture Diagram
@@ -2408,27 +2545,60 @@ classDiagram
 shared/
 ├── domain/
 │   ├── DomainError              ← Self-validating base
-│   ├── enums/                   ← AccountType, Campi, error codes
+│   ├── enums/
+│   │   ├── AccountType, Campi   ← Shared domain enums
+│   │   ├── GenericCodes         ← Base interface for all error/code enums
+│   │   ├── GenericFieldErrorCodes ← Base interface for field-specific error codes
+│   │   ├── SharedErrorCodes     ← System-wide error codes
+│   │   └── SharedFieldErrorCodes ← Shared field validation codes
 │   └── vos/AuditInfo            ← Shared value object
 ├── exceptions/                  ← Custom exception hierarchy
 ├── http/CorrelationFilter       ← Request tracing
 ├── i18n/I18n                    ← Internationalization
 ├── infra/
+│   ├── audit/                   ← MongoDB-backed audit trail
+│   │   ├── AuditLog             ← MongoDB document entity
+│   │   ├── AuditListener        ← Async CDI event consumer
+│   │   ├── AuditPublisher       ← Event-firing service
+│   │   ├── DomainAuditEvent     ← CDI event payload record
+│   │   └── FieldChange          ← Old/new value pair record
 │   ├── persistence/             ← Base JPA entities
 │   └── search/                  ← Elasticsearch config + utilities
 ├── presenter/
-│   ├── dtos/                    ← Shared response DTOs
+│   ├── dtos/
+│   │   ├── AuditInfoResponse    ← Audit timestamps DTO
+│   │   └── CampusResponse       ← Campus enum + localized label DTO
 │   ├── mappers/                 ← SharedDataPresenter
-│   └── rest/                    ← ApiEnvelope, ApiError, exception mappers
-├── utils/                       ← String, Collection, Presenter utilities
-└── validation/                  ← Custom annotations
+│   └── rest/
+│       ├── ApiEnvelope          ← Standardized response wrapper
+│       ├── ApiError             ← Error payload structure
+│       ├── Details              ← Polymorphic error details wrapper
+│       ├── FieldErrorsResponse  ← Field-level error details
+│       └── mappers/             ← Exception → HTTP response mappers
+│           ├── AppValidationExceptionMapper
+│           ├── BusinessRuleExceptionMapper
+│           ├── ConstraintViolationExceptionMapper
+│           ├── DuplicateResourceExceptionMapper
+│           ├── NotAuthorizedExceptionMapper
+│           ├── PersistenceExceptionMapper
+│           ├── ResourceNotFoundExceptionMapper
+│           └── UncaughtExceptionMapper
+├── utils/
+│   ├── CollectionUtils          ← Collection helpers
+│   ├── DiffUtils                ← Reflection-based object differ for audit
+│   ├── PresenterUtils           ← Locale resolution
+│   └── StringUtils              ← String manipulation
+└── validation/
+    ├── UuidV7                   ← Custom annotation
+    ├── UuidV7ForString          ← String-based validator
+    └── UuidV7ForUuid            ← UUID-based validator
 ```
 
 
 ================================================================================
 FILE: utils/CollectionUtils.java
 ================================================================================
-package com.pug.shared.utils;
+package br.org.catolicasc.pug.shared.utils;
 
 import java.util.List;
 import java.util.Map;
@@ -2517,9 +2687,9 @@ public final class CollectionUtils {
 ================================================================================
 FILE: utils/DiffUtils.java
 ================================================================================
-package com.pug.shared.utils;
+package br.org.catolicasc.pug.shared.utils;
 
-import audit.infra.shared.br.org.catolicasc.pug.FieldChange;
+import br.org.catolicasc.pug.shared.infra.audit.FieldChange;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -2626,7 +2796,7 @@ public final class DiffUtils {
 ================================================================================
 FILE: utils/PresenterUtils.java
 ================================================================================
-package com.pug.shared.utils;
+package br.org.catolicasc.pug.shared.utils;
 
 import java.util.List;
 import java.util.Locale;
@@ -2667,7 +2837,7 @@ public final class PresenterUtils {
 ================================================================================
 FILE: utils/StringUtils.java
 ================================================================================
-package com.pug.shared.utils;
+package br.org.catolicasc.pug.shared.utils;
 
 import java.text.Normalizer;
 import java.time.LocalDate;
@@ -2769,7 +2939,7 @@ public final class StringUtils {
 ================================================================================
 FILE: validation/UuidV7.java
 ================================================================================
-package com.pug.shared.validation;
+package br.org.catolicasc.pug.shared.validation;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.PARAMETER;
@@ -2826,9 +2996,9 @@ public @interface UuidV7 {
 ================================================================================
 FILE: validation/UuidV7ForString.java
 ================================================================================
-package com.pug.shared.validation;
+package br.org.catolicasc.pug.shared.validation;
 
-import utils.shared.br.org.catolicasc.pug.StringUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.UUID;
@@ -2870,7 +3040,7 @@ public final class UuidV7ForString implements ConstraintValidator<UuidV7, String
 ================================================================================
 FILE: validation/UuidV7ForUuid.java
 ================================================================================
-package com.pug.shared.validation;
+package br.org.catolicasc.pug.shared.validation;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
