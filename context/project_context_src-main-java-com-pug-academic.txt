@@ -10,11 +10,11 @@ FILE: domain/Course.java
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -233,7 +233,7 @@ FILE: domain/enums/AcademicErrorCodes.java
 ================================================================================
 package com.pug.academic.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -321,7 +321,7 @@ FILE: domain/enums/AcademicFieldErrorCodes.java
 ================================================================================
 package com.pug.academic.domain.enums;
 
-import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
 import lombok.Getter;
 
 /**
@@ -329,7 +329,7 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "registration", "period").
- * These constants are primarily accumulated inside {@link com.pug.shared.domain.DomainError}
+ * These constants are primarily accumulated inside {@link domain.shared.br.org.catolicasc.pug.DomainError}
  * instances when value objects or entities fail their internal validations.
  */
 @Getter
@@ -407,10 +407,10 @@ FILE: domain/School.java
 package com.pug.academic.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
-import com.pug.shared.utils.StringUtils;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -589,14 +589,14 @@ FILE: domain/Student.java
 ================================================================================
 package com.pug.academic.domain;
 
-import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
-import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.CounterpartHours;
-import com.pug.academic.domain.vos.Period;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicFieldErrorCodes;
+import vos.domain.academic.br.org.catolicasc.pug.AcademicRegistration;
+import vos.domain.academic.br.org.catolicasc.pug.CounterpartHours;
+import vos.domain.academic.br.org.catolicasc.pug.Period;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -967,9 +967,9 @@ FILE: domain/vos/AcademicRegistration.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -1043,8 +1043,8 @@ FILE: domain/vos/CounterpartHours.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1138,8 +1138,8 @@ FILE: domain/vos/Period.java
 ================================================================================
 package com.pug.academic.domain.vos;
 
-import com.pug.academic.domain.enums.AcademicFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
 import java.time.LocalDate;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1227,12 +1227,12 @@ FILE: infra/CourseMapper.java
 ================================================================================
 package com.pug.academic.infra;
 
-import com.pug.academic.domain.Course;
-import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.academic.br.org.catolicasc.pug.Course;
+import persistence.infra.academic.br.org.catolicasc.pug.CourseEntity;
+import persistence.infra.academic.br.org.catolicasc.pug.SchoolEntity;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Course boundary layers.
@@ -1327,7 +1327,7 @@ FILE: infra/persistence/CourseEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -1349,7 +1349,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
  * JPA entity representing an Academic Course within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * com.pug.academic.domain.Course} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * domain.academic.br.org.catolicasc.pug.Course} domain aggregate. It inherits a time-ordered UUIDv7 primary key
  * and standard audit tracking fields from {@link BaseAuditedEntity}.
  *
  * <p>This entity is marked with {@code @Indexed}, allowing Hibernate Search to synchronize its
@@ -1399,10 +1399,10 @@ FILE: infra/persistence/impl/CourseRepositoryImpl.java
 ================================================================================
 package com.pug.academic.infra.persistence.impl;
 
-import com.pug.academic.domain.Course;
-import com.pug.academic.domain.CourseRepository;
-import com.pug.academic.infra.CourseMapper;
-import com.pug.academic.infra.persistence.CourseEntity;
+import domain.academic.br.org.catolicasc.pug.Course;
+import domain.academic.br.org.catolicasc.pug.CourseRepository;
+import infra.academic.br.org.catolicasc.pug.CourseMapper;
+import persistence.infra.academic.br.org.catolicasc.pug.CourseEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1486,10 +1486,10 @@ FILE: infra/persistence/impl/SchoolRepositoryImpl.java
 ================================================================================
 package com.pug.academic.infra.persistence.impl;
 
-import com.pug.academic.domain.School;
-import com.pug.academic.domain.SchoolRepository;
-import com.pug.academic.infra.SchoolMapper;
-import com.pug.academic.infra.persistence.SchoolEntity;
+import domain.academic.br.org.catolicasc.pug.School;
+import domain.academic.br.org.catolicasc.pug.SchoolRepository;
+import infra.academic.br.org.catolicasc.pug.SchoolMapper;
+import persistence.infra.academic.br.org.catolicasc.pug.SchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1564,12 +1564,12 @@ FILE: infra/persistence/impl/StudentRepositoryImpl.java
 ================================================================================
 package com.pug.academic.infra.persistence.impl;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.domain.StudentRepository;
-import com.pug.academic.infra.StudentMapper;
-import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.shared.utils.CollectionUtils;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.Student;
+import domain.academic.br.org.catolicasc.pug.StudentRepository;
+import infra.academic.br.org.catolicasc.pug.StudentMapper;
+import persistence.infra.academic.br.org.catolicasc.pug.StudentEntity;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1680,7 +1680,7 @@ FILE: infra/persistence/SchoolEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -1701,7 +1701,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
  * JPA entity representing an Academic School within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * com.pug.academic.domain.School} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * domain.academic.br.org.catolicasc.pug.School} domain aggregate. It inherits a time-ordered UUIDv7 primary key
  * and standard audit tracking fields from {@link BaseAuditedEntity}.
  */
 @Getter
@@ -1743,7 +1743,7 @@ FILE: infra/persistence/StudentEntity.java
 ================================================================================
 package com.pug.academic.infra.persistence;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -1768,7 +1768,7 @@ import lombok.ToString;
 /**
  * JPA entity representing an enrolled Student within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link com.pug.academic.domain.Student}
+ * <p>This class is the database-mapped counterpart to the {@link domain.academic.br.org.catolicasc.pug.Student}
  * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
  * key, effectively functioning as a one-to-one extension of an authentication account.
  */
@@ -1848,7 +1848,7 @@ FILE: infra/read/CourseQueries.java
 ================================================================================
 package com.pug.academic.infra.read;
 
-import com.pug.academic.infra.read.dtos.CourseView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -1955,7 +1955,7 @@ FILE: infra/read/dtos/StudentView.java
 ================================================================================
 package com.pug.academic.infra.read.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -1998,13 +1998,13 @@ FILE: infra/read/impl/CourseQueriesImpl.java
 ================================================================================
 package com.pug.academic.infra.read.impl;
 
-import static com.pug.academic.infra.CourseMapper.toView;
+import static infra.academic.br.org.catolicasc.pug.CourseMapper.toView;
 
-import com.pug.academic.infra.persistence.CourseEntity;
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.CourseQueries;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
+import persistence.infra.academic.br.org.catolicasc.pug.CourseEntity;
+import persistence.infra.academic.br.org.catolicasc.pug.SchoolEntity;
+import read.infra.academic.br.org.catolicasc.pug.CourseQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2031,9 +2031,9 @@ public class CourseQueriesImpl implements CourseQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.academic.infra.read.dtos.CourseView(
+                  select new dtos.read.infra.academic.br.org.catolicasc.pug.CourseView(
                     c.id, c.name,
-                    new com.pug.academic.infra.read.dtos.SchoolView(
+                    new dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView(
                     s.id, s.name, s.createdAt, s.updatedAt),
                     c.createdAt, c.updatedAt
                   )
@@ -2117,13 +2117,13 @@ FILE: infra/read/impl/SchoolQueriesImpl.java
 ================================================================================
 package com.pug.academic.infra.read.impl;
 
-import static com.pug.academic.infra.SchoolMapper.toView;
+import static infra.academic.br.org.catolicasc.pug.SchoolMapper.toView;
 
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.SchoolQueries;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.CollectionUtils;
+import persistence.infra.academic.br.org.catolicasc.pug.SchoolEntity;
+import read.infra.academic.br.org.catolicasc.pug.SchoolQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2154,7 +2154,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
     }
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id = :id",
             SchoolView.class);
@@ -2167,7 +2167,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
   public List<SchoolView> listAllSchools() {
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
             SchoolView.class);
@@ -2182,7 +2182,7 @@ public class SchoolQueriesImpl implements SchoolQueries {
     }
     var q =
         entityManager.createQuery(
-            "select new com.pug.academic.infra.read.dtos.SchoolView("
+            "select new dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id in :ids order by s.name asc",
             SchoolView.class);
@@ -2214,12 +2214,12 @@ FILE: infra/read/impl/StudentQueriesImpl.java
 ================================================================================
 package com.pug.academic.infra.read.impl;
 
-import com.pug.academic.infra.read.StudentQueries;
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.CollectionUtils;
-import com.pug.shared.utils.StringUtils;
+import read.infra.academic.br.org.catolicasc.pug.StudentQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2242,7 +2242,7 @@ public class StudentQueriesImpl implements StudentQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.academic.infra.read.dtos.StudentView(
+                  select new dtos.read.infra.academic.br.org.catolicasc.pug.StudentView(
                     s.accountId,
                     s.academicRegistration,
                     s.campus,
@@ -2376,7 +2376,7 @@ FILE: infra/read/SchoolQueries.java
 ================================================================================
 package com.pug.academic.infra.read;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2439,7 +2439,7 @@ FILE: infra/read/StudentQueries.java
 ================================================================================
 package com.pug.academic.infra.read;
 
-import com.pug.academic.infra.read.dtos.StudentView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2530,10 +2530,10 @@ FILE: infra/SchoolMapper.java
 ================================================================================
 package com.pug.academic.infra;
 
-import com.pug.academic.domain.School;
-import com.pug.academic.infra.persistence.SchoolEntity;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.academic.br.org.catolicasc.pug.School;
+import persistence.infra.academic.br.org.catolicasc.pug.SchoolEntity;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between School boundary layers.
@@ -2618,13 +2618,13 @@ FILE: infra/StudentMapper.java
 ================================================================================
 package com.pug.academic.infra;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.CounterpartHours;
-import com.pug.academic.domain.vos.Period;
-import com.pug.academic.infra.persistence.StudentEntity;
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.academic.br.org.catolicasc.pug.Student;
+import vos.domain.academic.br.org.catolicasc.pug.AcademicRegistration;
+import vos.domain.academic.br.org.catolicasc.pug.CounterpartHours;
+import vos.domain.academic.br.org.catolicasc.pug.Period;
+import persistence.infra.academic.br.org.catolicasc.pug.StudentEntity;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Student boundary layers.
@@ -2744,20 +2744,20 @@ FILE: presenter/CourseResource.java
 ================================================================================
 package com.pug.academic.presenter;
 
-import com.pug.academic.domain.Course;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.presenter.dtos.CourseCreateRequest;
-import com.pug.academic.presenter.dtos.CourseResponse;
-import com.pug.academic.presenter.dtos.CourseUpdateRequest;
-import com.pug.academic.presenter.mappers.CoursePresenter;
-import com.pug.academic.service.CourseReadService;
-import com.pug.academic.service.CourseService;
-import com.pug.academic.service.dtos.CourseCreateCommand;
-import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import domain.academic.br.org.catolicasc.pug.Course;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseUpdateRequest;
+import mappers.presenter.academic.br.org.catolicasc.pug.CoursePresenter;
+import service.academic.br.org.catolicasc.pug.CourseReadService;
+import service.academic.br.org.catolicasc.pug.CourseService;
+import dtos.service.academic.br.org.catolicasc.pug.CourseCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.CourseUpdateCommand;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2808,7 +2808,7 @@ public class CourseResource {
    * @param id the unique identifier (UUIDv7) of the course
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     CourseResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the course is not found
    */
   @GET
   @Path("/{id}")
@@ -2860,7 +2860,7 @@ public class CourseResource {
    * @param req the validated {@link CourseCreateRequest} payload
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link CourseResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the same name
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a course with the same name
    *     already exists
    */
   @POST
@@ -2948,7 +2948,7 @@ FILE: presenter/dtos/CourseResponse.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.util.UUID;
 
 /**
@@ -3013,7 +3013,7 @@ FILE: presenter/dtos/SchoolResponse.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.util.UUID;
 
 /**
@@ -3052,8 +3052,8 @@ FILE: presenter/dtos/StudentCreateRequest.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.validation.UuidV7;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -3104,8 +3104,8 @@ FILE: presenter/dtos/StudentResponse.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.dtos.CampusResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.CampusResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -3155,7 +3155,7 @@ FILE: presenter/dtos/StudentUpdateRequest.java
 ================================================================================
 package com.pug.academic.presenter.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -3198,14 +3198,14 @@ FILE: presenter/mappers/CoursePresenter.java
 ================================================================================
 package com.pug.academic.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.presenter.dtos.CourseCreateRequest;
-import com.pug.academic.presenter.dtos.CourseResponse;
-import com.pug.academic.presenter.dtos.CourseUpdateRequest;
-import com.pug.academic.service.dtos.CourseCreateCommand;
-import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.CourseUpdateRequest;
+import dtos.service.academic.br.org.catolicasc.pug.CourseCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.CourseUpdateCommand;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
 import java.util.Locale;
 
 /**
@@ -3282,14 +3282,14 @@ FILE: presenter/mappers/SchoolPresenter.java
 ================================================================================
 package com.pug.academic.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.presenter.dtos.SchoolCreateRequest;
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
-import com.pug.academic.service.dtos.SchoolCreateCommand;
-import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolUpdateRequest;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolUpdateCommand;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
 import java.util.Locale;
 
 /**
@@ -3363,22 +3363,22 @@ FILE: presenter/mappers/StudentPresenter.java
 ================================================================================
 package com.pug.academic.presenter.mappers;
 
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.academic.presenter.dtos.StudentCreateRequest;
-import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.academic.presenter.dtos.StudentUpdateRequest;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.dtos.CampusResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentUpdateRequest;
+import dtos.service.academic.br.org.catolicasc.pug.StudentCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.StudentUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserUpdateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.CampusResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
@@ -3549,20 +3549,20 @@ FILE: presenter/SchoolResource.java
 ================================================================================
 package com.pug.academic.presenter;
 
-import com.pug.academic.domain.School;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.presenter.dtos.SchoolCreateRequest;
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.academic.presenter.dtos.SchoolUpdateRequest;
-import com.pug.academic.presenter.mappers.SchoolPresenter;
-import com.pug.academic.service.SchoolReadService;
-import com.pug.academic.service.SchoolService;
-import com.pug.academic.service.dtos.SchoolCreateCommand;
-import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import domain.academic.br.org.catolicasc.pug.School;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolUpdateRequest;
+import mappers.presenter.academic.br.org.catolicasc.pug.SchoolPresenter;
+import service.academic.br.org.catolicasc.pug.SchoolReadService;
+import service.academic.br.org.catolicasc.pug.SchoolService;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolUpdateCommand;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -3613,7 +3613,7 @@ public class SchoolResource {
    * @param id the unique identifier (UUIDv7) of the school
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     SchoolResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the school is not found
    */
   @GET
   @Path("/{id}")
@@ -3659,7 +3659,7 @@ public class SchoolResource {
    * @param req the validated {@link SchoolCreateRequest} payload
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link SchoolResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact name
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a school with the exact name
    *     already exists
    */
   @POST
@@ -3725,23 +3725,23 @@ FILE: presenter/StudentResource.java
 ================================================================================
 package com.pug.academic.presenter;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.academic.presenter.dtos.StudentCreateRequest;
-import com.pug.academic.presenter.dtos.StudentResponse;
-import com.pug.academic.presenter.dtos.StudentUpdateRequest;
-import com.pug.academic.presenter.mappers.StudentPresenter;
-import com.pug.academic.service.StudentReadService;
-import com.pug.academic.service.StudentService;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.identity.service.AuthService;
-import com.pug.identity.service.PasswordService;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import domain.academic.br.org.catolicasc.pug.Student;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentCreateRequest;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentResponse;
+import dtos.presenter.academic.br.org.catolicasc.pug.StudentUpdateRequest;
+import mappers.presenter.academic.br.org.catolicasc.pug.StudentPresenter;
+import service.academic.br.org.catolicasc.pug.StudentReadService;
+import service.academic.br.org.catolicasc.pug.StudentService;
+import dtos.service.academic.br.org.catolicasc.pug.StudentCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.StudentUpdateCommand;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.identity.br.org.catolicasc.pug.PasswordService;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -3796,7 +3796,7 @@ public class StudentResource {
    * @param id the unique identifier (UUIDv7) of the student's account
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student is not found
    */
   @GET
   @Path("/{id}")
@@ -3813,7 +3813,7 @@ public class StudentResource {
    * @param cpf the raw 11-digit numeric CPF string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student is not found
    */
   @GET
   @Path("/by-cpf/{cpf}")
@@ -3830,7 +3830,7 @@ public class StudentResource {
    * @param email the exact email string of the student
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student is not found
    */
   @GET
   @Path("/by-email/{email}")
@@ -3847,7 +3847,7 @@ public class StudentResource {
    * @param registration the academic registration string
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student is not found
    */
   @GET
   @Path("/by-registration/{registration}")
@@ -3862,11 +3862,11 @@ public class StudentResource {
    * Retrieves the academic enrollment details of the currently authenticated student.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
-   * com.pug.identity.service.AuthService}, ensuring that callers can only access their own academic
+   * service.identity.br.org.catolicasc.pug.AuthService}, ensuring that callers can only access their own academic
    * record. This endpoint is restricted to users with the STUDENT role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     com.pug.academic.presenter.dtos.StudentResponse}
+   *     dtos.presenter.academic.br.org.catolicasc.pug.StudentResponse}
    * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
    *     contain the required {@code accountId} claim
    */
@@ -3924,7 +3924,7 @@ public class StudentResource {
    *     details
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link StudentResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the academic registration or
    *     email already exists
    */
   @POST
@@ -3952,7 +3952,7 @@ public class StudentResource {
    *     enrollment details
    * @return an HTTP 201 Created response containing the created {@link List} of {@link
    *     StudentResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if any academic registration or
    *     email already exists
    */
   @POST
@@ -4253,7 +4253,7 @@ FILE: service/CourseReadService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.infra.read.dtos.CourseView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
 import java.util.List;
 import java.util.UUID;
 
@@ -4271,7 +4271,7 @@ public interface CourseReadService {
    *
    * @param id the unique identifier (UUID) of the course
    * @return the populated {@link CourseView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no course matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no course matches the provided
    *     ID
    */
   CourseView getViewById(UUID id);
@@ -4312,9 +4312,9 @@ FILE: service/CourseService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.domain.Course;
-import com.pug.academic.service.dtos.CourseCreateCommand;
-import com.pug.academic.service.dtos.CourseUpdateCommand;
+import domain.academic.br.org.catolicasc.pug.Course;
+import dtos.service.academic.br.org.catolicasc.pug.CourseCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.CourseUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -4339,7 +4339,7 @@ public interface CourseService {
    * Checks whether any academic course associated with the specified school identifier exists.
    *
    * <p>This method is utilized to enforce relational integrity, ensuring that a {@link
-   * com.pug.academic.domain.School} cannot be deleted if it still has active courses linked to it.
+   * domain.academic.br.org.catolicasc.pug.School} cannot be deleted if it still has active courses linked to it.
    *
    * @param schoolId the unique identifier (UUID) of the school to check
    * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
@@ -4355,8 +4355,8 @@ public interface CourseService {
    *
    * @param id the unique identifier (UUID) of the course
    * @return the fully reconstituted {@link Course} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the course exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the course does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the course exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Course getById(UUID id);
@@ -4364,16 +4364,16 @@ public interface CourseService {
   /**
    * Instantiates and persists a new {@link Course} aggregate based on the provided command.
    *
-   * <p>This method ensures the referenced {@link com.pug.academic.domain.School} exists prior to
+   * <p>This method ensures the referenced {@link domain.academic.br.org.catolicasc.pug.School} exists prior to
    * persisting the new course to prevent orphaned references.
    *
    * @param cmd the structured command containing the data to create the new course
    * @return the fully instantiated and persisted {@link Course} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a course with the exact same
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a course with the exact same
    *     name already exists
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated school does not
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the associated school does not
    *     exist
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails (e.g., blank
    *     name)
    */
   Course save(CourseCreateCommand cmd);
@@ -4387,11 +4387,11 @@ public interface CourseService {
    * @param id the unique identifier (UUIDv7) of the course to update
    * @param cmd the structured command containing the new data for the course
    * @return the mutated and persisted {@link Course} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the course does not exist, or if
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the course does not exist, or if
    *     the new school does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated name conflicts with
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated name conflicts with
    *     an existing course
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails
    */
   Course update(UUID id, CourseUpdateCommand cmd);
 }
@@ -4408,7 +4408,7 @@ import java.util.UUID;
  * Data Transfer Object (DTO) acting as an application command to provision a new Course.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.academic.domain.Course} aggregate.
+ * a new {@link domain.academic.br.org.catolicasc.pug.Course} aggregate.
  *
  * @param name the raw name of the academic course
  * @param schoolId the unique identifier of the school offering this course
@@ -4444,7 +4444,7 @@ package com.pug.academic.service.dtos;
  * Data Transfer Object (DTO) acting as an application command to provision a new School.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.academic.domain.School} aggregate.
+ * a new {@link domain.academic.br.org.catolicasc.pug.School} aggregate.
  *
  * @param name the raw name of the academic school or department
  */
@@ -4472,8 +4472,8 @@ FILE: service/dtos/StudentCreateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.shared.domain.enums.Campi;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -4483,7 +4483,7 @@ import java.util.UUID;
  *
  * <p>This record acts as an aggregated payload that combines identity credentials with academic
  * enrollment details. It encapsulates the data required to instantiate a new {@link
- * com.pug.academic.domain.Student} aggregate and cascade the creation of the underlying
+ * domain.academic.br.org.catolicasc.pug.Student} aggregate and cascade the creation of the underlying
  * authentication account.
  *
  * @param accountCreateCommand the nested command containing data to create the authentication
@@ -4510,8 +4510,8 @@ FILE: service/dtos/StudentUpdateCommand.java
 ================================================================================
 package com.pug.academic.service.dtos;
 
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.shared.domain.enums.Campi;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -4548,11 +4548,11 @@ FILE: service/impl/CourseReadServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.infra.read.CourseQueries;
-import com.pug.academic.infra.read.dtos.CourseView;
-import com.pug.academic.service.CourseReadService;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.academic.br.org.catolicasc.pug.CourseQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.CourseView;
+import service.academic.br.org.catolicasc.pug.CourseReadService;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -4620,18 +4620,18 @@ FILE: service/impl/CourseServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.domain.Course;
-import com.pug.academic.domain.CourseRepository;
-import com.pug.academic.service.CourseService;
-import com.pug.academic.service.SchoolService;
-import com.pug.academic.service.StudentService;
-import com.pug.academic.service.dtos.CourseCreateCommand;
-import com.pug.academic.service.dtos.CourseUpdateCommand;
-import com.pug.academic.service.utils.CourseProcessor;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.Course;
+import domain.academic.br.org.catolicasc.pug.CourseRepository;
+import service.academic.br.org.catolicasc.pug.CourseService;
+import service.academic.br.org.catolicasc.pug.SchoolService;
+import service.academic.br.org.catolicasc.pug.StudentService;
+import dtos.service.academic.br.org.catolicasc.pug.CourseCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.CourseUpdateCommand;
+import utils.service.academic.br.org.catolicasc.pug.CourseProcessor;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -4788,11 +4788,11 @@ FILE: service/impl/SchoolReadServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.infra.read.SchoolQueries;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.service.SchoolReadService;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.academic.br.org.catolicasc.pug.SchoolQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import service.academic.br.org.catolicasc.pug.SchoolReadService;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -4850,18 +4850,18 @@ FILE: service/impl/SchoolServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.domain.School;
-import com.pug.academic.domain.SchoolRepository;
-import com.pug.academic.service.CourseService;
-import com.pug.academic.service.SchoolService;
-import com.pug.academic.service.dtos.SchoolCreateCommand;
-import com.pug.academic.service.dtos.SchoolUpdateCommand;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.academic.service.utils.SchoolProcessor;
-import com.pug.project.service.ProjectBySchoolService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.School;
+import domain.academic.br.org.catolicasc.pug.SchoolRepository;
+import service.academic.br.org.catolicasc.pug.CourseService;
+import service.academic.br.org.catolicasc.pug.SchoolService;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolUpdateCommand;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import utils.service.academic.br.org.catolicasc.pug.SchoolProcessor;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -5005,11 +5005,11 @@ FILE: service/impl/StudentReadServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.infra.read.StudentQueries;
-import com.pug.academic.infra.read.dtos.StudentView;
-import com.pug.academic.service.StudentReadService;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.academic.br.org.catolicasc.pug.StudentQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
+import service.academic.br.org.catolicasc.pug.StudentReadService;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -5125,22 +5125,22 @@ FILE: service/impl/StudentServiceImpl.java
 ================================================================================
 package com.pug.academic.service.impl;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.domain.StudentRepository;
-import com.pug.academic.service.CourseService;
-import com.pug.academic.service.StudentService;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.academic.service.dtos.StudentUpdateCommand;
-import com.pug.academic.service.utils.ExceptionHelper;
-import com.pug.academic.service.utils.StudentProcessor;
-import com.pug.identity.domain.Account;
-import com.pug.identity.service.AccountService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.project.service.EnrollmentService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.CollectionUtils;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.Student;
+import domain.academic.br.org.catolicasc.pug.StudentRepository;
+import service.academic.br.org.catolicasc.pug.CourseService;
+import service.academic.br.org.catolicasc.pug.StudentService;
+import dtos.service.academic.br.org.catolicasc.pug.StudentCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.StudentUpdateCommand;
+import utils.service.academic.br.org.catolicasc.pug.ExceptionHelper;
+import utils.service.academic.br.org.catolicasc.pug.StudentProcessor;
+import domain.identity.br.org.catolicasc.pug.Account;
+import service.identity.br.org.catolicasc.pug.AccountService;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import service.project.br.org.catolicasc.pug.EnrollmentService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -5381,7 +5381,7 @@ FILE: service/SchoolReadService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
 import java.util.List;
 import java.util.UUID;
 
@@ -5399,7 +5399,7 @@ public interface SchoolReadService {
    *
    * @param id the unique identifier (UUID) of the school
    * @return the populated {@link SchoolView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no school matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no school matches the provided
    *     ID
    */
   SchoolView getViewById(UUID id);
@@ -5432,9 +5432,9 @@ FILE: service/SchoolService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.domain.School;
-import com.pug.academic.service.dtos.SchoolCreateCommand;
-import com.pug.academic.service.dtos.SchoolUpdateCommand;
+import domain.academic.br.org.catolicasc.pug.School;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.SchoolUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -5464,8 +5464,8 @@ public interface SchoolService {
    *
    * @param id the unique identifier (UUID) of the school
    * @return the fully reconstituted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the school exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the school does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the school exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   School getById(UUID id);
@@ -5475,9 +5475,9 @@ public interface SchoolService {
    *
    * @param cmd the structured command containing the data to create the new school
    * @return the fully instantiated and persisted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a school with the exact same
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a school with the exact same
    *     name already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails
    */
   School save(SchoolCreateCommand cmd);
 
@@ -5490,10 +5490,10 @@ public interface SchoolService {
    * @param id the unique identifier (UUIDv7) of the school to update
    * @param cmd the structured command containing the new data for the school
    * @return the mutated and persisted {@link School} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the school does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated name conflicts with
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the school does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated name conflicts with
    *     an existing school
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the updated input data violates
    *     domain constraints
    */
   School update(UUID id, SchoolUpdateCommand cmd);
@@ -5505,7 +5505,7 @@ FILE: service/StudentReadService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.infra.read.dtos.StudentView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.StudentView;
 import java.util.List;
 import java.util.UUID;
 
@@ -5524,7 +5524,7 @@ public interface StudentReadService {
    *
    * @param academicRegistration the exact academic registration string
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no student matches the provided
    *     registration
    */
   StudentView getViewByAcademicRegistration(String academicRegistration);
@@ -5534,7 +5534,7 @@ public interface StudentReadService {
    *
    * @param accountId the unique identifier (UUID) of the student's account
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no student matches the provided
    *     ID
    */
   StudentView getViewByAccountId(UUID accountId);
@@ -5544,7 +5544,7 @@ public interface StudentReadService {
    *
    * @param cpf the exact 11-digit numeric CPF string of the student
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no student matches the provided
    *     CPF
    */
   StudentView getViewByCpf(String cpf);
@@ -5554,7 +5554,7 @@ public interface StudentReadService {
    *
    * @param email the exact email address of the student
    * @return the populated {@link StudentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no student matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no student matches the provided
    *     email
    */
   StudentView getViewByEmail(String email);
@@ -5608,9 +5608,9 @@ FILE: service/StudentService.java
 ================================================================================
 package com.pug.academic.service;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.academic.service.dtos.StudentUpdateCommand;
+import domain.academic.br.org.catolicasc.pug.Student;
+import dtos.service.academic.br.org.catolicasc.pug.StudentCreateCommand;
+import dtos.service.academic.br.org.catolicasc.pug.StudentUpdateCommand;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -5620,8 +5620,8 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete). It orchestrates the complex lifecycle relationship between a Student enrollment, their
- * underlying {@link com.pug.identity.domain.Account}, and the {@link
- * com.pug.academic.domain.Course} they are enrolled in, ensuring that academic records and
+ * underlying {@link domain.identity.br.org.catolicasc.pug.Account}, and the {@link
+ * domain.academic.br.org.catolicasc.pug.Course} they are enrolled in, ensuring that academic records and
  * authentication credentials cascade correctly.
  */
 public interface StudentService {
@@ -5635,7 +5635,7 @@ public interface StudentService {
    * @param accountId the student's account identifier
    * @param hours the amount of hours to add
    * @return the updated {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student does not exist
    */
   Student addCompletedHours(UUID accountId, BigDecimal hours);
 
@@ -5644,7 +5644,7 @@ public interface StudentService {
    *
    * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
    * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to student roles are wiped
+   * domain.identity.br.org.catolicasc.pug.Account} to ensure credentials tied strictly to student roles are wiped
    * out.
    *
    * @param accountId the unique identifier of the Student to delete (Account ID)
@@ -5657,7 +5657,7 @@ public interface StudentService {
    * Checks whether any active student enrollment associated with a specific course exists.
    *
    * <p>This method is utilized to enforce relational integrity, ensuring that an academic {@link
-   * com.pug.academic.domain.Course} cannot be deleted if it still has enrolled students.
+   * domain.academic.br.org.catolicasc.pug.Course} cannot be deleted if it still has enrolled students.
    *
    * @param courseId the unique identifier (UUID) of the course to check
    * @return {@code true} if at least one student is enrolled in the course, {@code false} otherwise
@@ -5672,8 +5672,8 @@ public interface StudentService {
    *
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the student exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the student exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Student getById(UUID accountId);
@@ -5683,16 +5683,16 @@ public interface StudentService {
    *
    * <p>This method performs a cascading save. It verifies that the specified course exists, then
    * delegates the creation of the underlying authentication account (and potentially the user
-   * identity) to the {@link com.pug.identity.service.AccountService} before saving the student's
+   * identity) to the {@link service.identity.br.org.catolicasc.pug.AccountService} before saving the student's
    * academic enrollment records.
    *
    * @param cmd the structured command containing the data to create the student and linked account
    * @return the fully instantiated and persisted {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the academic registration or
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the academic registration or
    *     account email already exists
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated course does not
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the associated course does not
    *     exist
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails at the
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails at the
    *     domain level
    */
   Student save(StudentCreateCommand cmd);
@@ -5706,11 +5706,11 @@ public interface StudentService {
    *
    * @param cmds a {@link List} of structured commands containing the data to create the students
    * @return a {@link List} of the fully instantiated and persisted {@link Student} aggregates
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any academic registration or
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if any academic registration or
    *     email already exists
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if any associated course does not
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if any associated course does not
    *     exist
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails for any
    *     record
    */
   List<Student> saveInBulk(List<StudentCreateCommand> cmds);
@@ -5727,11 +5727,11 @@ public interface StudentService {
    *     Account ID)
    * @param cmd the structured command containing the new data for the student and/or account
    * @return the mutated and persisted {@link Student} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the student does not exist, or
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the student does not exist, or
    *     the new course is not found
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated academic
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated academic
    *     registration or email conflicts with existing records
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails
    */
   Student update(UUID accountId, StudentUpdateCommand cmd);
 }
@@ -5742,8 +5742,8 @@ FILE: service/utils/CourseProcessor.java
 ================================================================================
 package com.pug.academic.service.utils;
 
-import com.pug.academic.domain.Course;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.Course;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.UUID;
 
 /**
@@ -5808,10 +5808,10 @@ FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.academic.service.utils;
 
-import com.pug.academic.domain.enums.AcademicErrorCodes;
-import com.pug.shared.exceptions.BusinessRuleException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import enums.domain.academic.br.org.catolicasc.pug.AcademicErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 import jakarta.ws.rs.NotAuthorizedException;
 
 /**
@@ -5938,8 +5938,8 @@ FILE: service/utils/SchoolProcessor.java
 ================================================================================
 package com.pug.academic.service.utils;
 
-import com.pug.academic.domain.School;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.School;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link School}
@@ -5988,14 +5988,14 @@ FILE: service/utils/StudentProcessor.java
 ================================================================================
 package com.pug.academic.service.utils;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.domain.vos.AcademicRegistration;
-import com.pug.academic.domain.vos.CounterpartHours;
-import com.pug.academic.domain.vos.Period;
-import com.pug.academic.service.dtos.StudentCreateCommand;
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.utils.StringUtils;
+import domain.academic.br.org.catolicasc.pug.Student;
+import vos.domain.academic.br.org.catolicasc.pug.AcademicRegistration;
+import vos.domain.academic.br.org.catolicasc.pug.CounterpartHours;
+import vos.domain.academic.br.org.catolicasc.pug.Period;
+import dtos.service.academic.br.org.catolicasc.pug.StudentCreateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;

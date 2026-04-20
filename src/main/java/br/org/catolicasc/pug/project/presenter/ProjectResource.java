@@ -1,0 +1,270 @@
+package br.org.catolicasc.pug.project.presenter;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
+import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.project.service.ProjectReadService;
+import br.org.catolicasc.pug.project.service.ProjectService;
+import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
+import br.org.catolicasc.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.PATCH;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.UriInfo;
+import java.net.URI;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+/**
+ * REST API Resource controller for managing Projects.
+ *
+ * <p>Methods are ordered strictly by HTTP verb (GET, POST, PUT, PATCH, DELETE) with single-item
+ * endpoints preceding collections.
+ */
+@ApplicationScoped
+@Path("/projects")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class ProjectResource {
+
+  @Inject ProjectService writeService;
+
+  @Inject ProjectReadService readService;
+
+  @Inject I18n i18n;
+
+  @Context UriInfo uri;
+
+  @Context HttpHeaders headers;
+
+  /**
+   * Retrieves a specific project by its unique UUID identifier.
+   *
+   * @param id the unique identifier (UUIDv7) of the project
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
+   *     ProjectResponse}
+   * @throws ResourceNotFoundException if the project is not found
+   */
+  @GET
+  @Path("/{id}")
+  @Authenticated
+  public Response get(@PathParam("id") @UuidV7 UUID id) {
+    ProjectView view = readService.getViewById(id);
+    ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a collection of projects.
+   *
+   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * project names. If the {@code entityId} parameter is provided, it filters the results by partner
+   * entity.
+   *
+   * @param query the optional search query string
+   * @param entityId the optional entity filter
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
+  @GET
+  @Authenticated
+  public Response list(
+      @QueryParam("q") String query, @QueryParam("entityId") @UuidV7 UUID entityId) {
+    List<ProjectView> views;
+
+    if (entityId != null) {
+      views = readService.listViewsByEntityId(entityId);
+    } else if (StringUtils.isNotEmpty(query)) {
+      views = readService.searchByName(query);
+    } else {
+      views = readService.listViews();
+    }
+
+    List<ProjectResponse> body =
+        views.stream()
+            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Retrieves a list of projects created by a specific account.
+   *
+   * @param accountId the unique identifier (UUIDv7) of the account
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     ProjectResponse}
+   */
+  @GET
+  @Path("/created-by/{accountId}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
+    List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
+    List<ProjectResponse> body =
+        views.stream()
+            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
+            .collect(Collectors.toList());
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Registers a new project within the platform.
+   *
+   * @param req the validated {@link ProjectCreateRequest}
+   * @return an HTTP 201 Created response containing the created {@link ProjectResponse}
+   * @throws DuplicateResourceException if a project with the same name
+   *     exists for the entity
+   */
+  @POST
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response create(@Valid ProjectCreateRequest req) {
+    ProjectCreateCommand cmd = ProjectPresenter.toCommand(req);
+    var created = writeService.save(cmd);
+    ProjectView view = readService.getViewById(created.getId());
+    ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
+
+    URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
+    return Response.created(location).entity(ApiEnvelope.created(body)).build();
+  }
+
+  /**
+   * Updates an existing project's details.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @param req the validated {@link ProjectUpdateRequest}
+   * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
+   */
+  @PUT
+  @Path("/{id}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
+    ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
+    writeService.update(id, cmd);
+    ProjectView view = readService.getViewById(id);
+    ProjectResponse body = ProjectPresenter.toResponse(view, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Cancels a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
+  @PATCH
+  @Path("/{id}/cancel")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response cancel(@PathParam("id") @UuidV7 UUID id) {
+    writeService.transitionStatus(id, ProjectStatus.CANCELED);
+    ProjectView view = readService.getViewById(id);
+    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Completes a project.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
+  @PATCH
+  @Path("/{id}/complete")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response complete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.transitionStatus(id, ProjectStatus.COMPLETED);
+    ProjectView view = readService.getViewById(id);
+    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Puts a project on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
+  @PATCH
+  @Path("/{id}/hold")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
+    writeService.transitionStatus(id, ProjectStatus.ON_HOLD);
+    ProjectView view = readService.getViewById(id);
+    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Resumes a project that is on hold.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
+  @PATCH
+  @Path("/{id}/retake")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response retake(@PathParam("id") @UuidV7 UUID id) {
+    writeService.transitionStatus(id, ProjectStatus.PLANNED);
+    ProjectView view = readService.getViewById(id);
+    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Starts a project, setting its status to IN_PROGRESS.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   */
+  @PATCH
+  @Path("/{id}/start")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response start(@PathParam("id") @UuidV7 UUID id) {
+    writeService.transitionStatus(id, ProjectStatus.IN_PROGRESS);
+    ProjectView view = readService.getViewById(id);
+    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
+  }
+
+  /**
+   * Permanently removes a project from the system.
+   *
+   * @param id the unique identifier (UUID) of the project
+   * @return an HTTP 200 OK response
+   */
+  @DELETE
+  @Path("/{id}")
+  @RolesAllowed({"ADMIN", "STAFF"})
+  public Response delete(@PathParam("id") @UuidV7 UUID id) {
+    writeService.delete(id);
+    return Response.ok(ApiEnvelope.ok(null)).build();
+  }
+
+  private Locale locale() {
+    return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
+  }
+}

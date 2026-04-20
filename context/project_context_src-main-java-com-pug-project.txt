@@ -10,15 +10,15 @@ FILE: domain/Attendance.java
 package com.pug.project.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.academic.domain.Student;
-import com.pug.project.domain.enums.AttendanceStatus;
-import com.pug.project.domain.enums.ProjectsErrorCodes;
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.project.domain.vos.AttendanceInfo;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.domain.vos.QrValidationInfo;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.BusinessRuleException;
+import domain.academic.br.org.catolicasc.pug.Student;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsErrorCodes;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import vos.domain.project.br.org.catolicasc.pug.AttendanceInfo;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import vos.domain.project.br.org.catolicasc.pug.QrValidationInfo;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -226,14 +226,14 @@ FILE: domain/Enrollment.java
 ================================================================================
 package com.pug.project.domain;
 
-import com.pug.academic.domain.Student;
-import com.pug.project.domain.enums.EnrollmentStatus;
-import com.pug.project.domain.enums.ProjectsErrorCodes;
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.domain.vos.EnrollmentInfo;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.exceptions.BusinessRuleException;
+import domain.academic.br.org.catolicasc.pug.Student;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsErrorCodes;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentInfo;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -321,7 +321,7 @@ public class Enrollment extends DomainError {
    *     for a valid transition)
    * @return a new {@link Enrollment} instance reflecting the updated status and lifecycle metadata,
    *     or {@code this} if the status is unchanged
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the requested transition violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the requested transition violates
    *     the enrollment lifecycle rules and {@link
    *     ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
    */
@@ -414,7 +414,7 @@ FILE: domain/EnrollmentRepository.java
 ================================================================================
 package com.pug.project.domain;
 
-import com.pug.project.domain.vos.EnrollmentIdentifier;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -470,7 +470,7 @@ public interface EnrollmentRepository {
    * in the repository.
    *
    * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
-   * com.pug.academic.domain.Student} cannot be deleted while they still have project enrollments.
+   * domain.academic.br.org.catolicasc.pug.Student} cannot be deleted while they still have project enrollments.
    *
    * @param studentId the unique identifier (UUID) of the student account
    * @return {@code true} if at least one enrollment is linked to the student, {@code false}
@@ -523,7 +523,7 @@ FILE: domain/enums/AttendanceStatus.java
 ================================================================================
 package com.pug.project.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -557,7 +557,7 @@ FILE: domain/enums/EnrollmentStatus.java
 ================================================================================
 package com.pug.project.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -603,7 +603,7 @@ FILE: domain/enums/ProjectsErrorCodes.java
 ================================================================================
 package com.pug.project.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -673,7 +673,7 @@ FILE: domain/enums/ProjectsFieldErrorCodes.java
 ================================================================================
 package com.pug.project.domain.enums;
 
-import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
 import lombok.Getter;
 
 /**
@@ -681,7 +681,7 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties. These constants are primarily
- * accumulated inside {@link com.pug.shared.domain.DomainError} instances when value objects or
+ * accumulated inside {@link domain.shared.br.org.catolicasc.pug.DomainError} instances when value objects or
  * entities fail their internal validations.
  */
 @Getter
@@ -806,7 +806,7 @@ FILE: domain/enums/ProjectStatus.java
 ================================================================================
 package com.pug.project.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -847,14 +847,14 @@ FILE: domain/Project.java
 package com.pug.project.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.project.domain.enums.ProjectsErrorCodes;
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.project.domain.vos.ProjectInfo;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.exceptions.BusinessRuleException;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsErrorCodes;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import vos.domain.project.br.org.catolicasc.pug.ProjectInfo;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -1133,8 +1133,8 @@ FILE: domain/ProjectBySchool.java
 ================================================================================
 package com.pug.project.domain;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -1357,10 +1357,10 @@ FILE: domain/vos/AttendanceInfo.java
 ================================================================================
 package com.pug.project.domain.vos;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -1475,8 +1475,8 @@ FILE: domain/vos/EnrollmentIdentifier.java
 ================================================================================
 package com.pug.project.domain.vos;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1556,10 +1556,10 @@ FILE: domain/vos/EnrollmentInfo.java
 ================================================================================
 package com.pug.project.domain.vos;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1692,10 +1692,10 @@ FILE: domain/vos/ProjectInfo.java
 ================================================================================
 package com.pug.project.domain.vos;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -1894,9 +1894,9 @@ FILE: domain/vos/QrValidationInfo.java
 ================================================================================
 package com.pug.project.domain.vos;
 
-import com.pug.project.domain.enums.ProjectsFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1977,14 +1977,14 @@ FILE: infra/AttendanceMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.project.domain.Attendance;
-import com.pug.project.domain.enums.AttendanceStatus;
-import com.pug.project.domain.vos.AttendanceInfo;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.domain.vos.QrValidationInfo;
-import com.pug.project.infra.persistence.AttendanceEntity;
-import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.project.br.org.catolicasc.pug.Attendance;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
+import vos.domain.project.br.org.catolicasc.pug.AttendanceInfo;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import vos.domain.project.br.org.catolicasc.pug.QrValidationInfo;
+import persistence.infra.project.br.org.catolicasc.pug.AttendanceEntity;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Attendance boundary layers.
@@ -2114,12 +2114,12 @@ FILE: infra/EnrollmentMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.enums.EnrollmentStatus;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.domain.vos.EnrollmentInfo;
-import com.pug.project.infra.persistence.EnrollmentEntity;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentInfo;
+import persistence.infra.project.br.org.catolicasc.pug.EnrollmentEntity;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Enrollment boundary layers.
@@ -2216,7 +2216,7 @@ FILE: infra/persistence/AttendanceEntity.java
 ================================================================================
 package com.pug.project.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -2240,7 +2240,7 @@ import lombok.experimental.SuperBuilder;
  * JPA entity representing a Student's Attendance record within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * com.pug.project.domain.Attendance} domain aggregate. It inherits a time-ordered UUIDv7 primary
+ * domain.project.br.org.catolicasc.pug.Attendance} domain aggregate. It inherits a time-ordered UUIDv7 primary
  * key and standard audit tracking fields from {@link BaseAuditedEntity}.
  */
 @Getter
@@ -2331,7 +2331,7 @@ import lombok.ToString;
 /**
  * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link com.pug.project.domain.Enrollment}
+ * <p>This class is the database-mapped counterpart to the {@link domain.project.br.org.catolicasc.pug.Enrollment}
  * domain aggregate. Because an enrollment is uniquely identified by the combination of a student
  * and a project, this entity utilizes a composite primary key ({@link EnrollmentsId}).
  */
@@ -2404,11 +2404,11 @@ FILE: infra/persistence/impl/AttendanceRepositoryImpl.java
 ================================================================================
 package com.pug.project.infra.persistence.impl;
 
-import com.pug.project.domain.Attendance;
-import com.pug.project.domain.AttendanceRepository;
-import com.pug.project.infra.AttendanceMapper;
-import com.pug.project.infra.persistence.AttendanceEntity;
-import com.pug.shared.utils.StringUtils;
+import domain.project.br.org.catolicasc.pug.Attendance;
+import domain.project.br.org.catolicasc.pug.AttendanceRepository;
+import infra.project.br.org.catolicasc.pug.AttendanceMapper;
+import persistence.infra.project.br.org.catolicasc.pug.AttendanceEntity;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -2516,11 +2516,11 @@ FILE: infra/persistence/impl/EnrollmentRepositoryImpl.java
 ================================================================================
 package com.pug.project.infra.persistence.impl;
 
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.EnrollmentRepository;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.infra.EnrollmentMapper;
-import com.pug.project.infra.persistence.EnrollmentEntity;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import domain.project.br.org.catolicasc.pug.EnrollmentRepository;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import infra.project.br.org.catolicasc.pug.EnrollmentMapper;
+import persistence.infra.project.br.org.catolicasc.pug.EnrollmentEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -2636,10 +2636,10 @@ FILE: infra/persistence/impl/ProjectBySchoolRepositoryImpl.java
 ================================================================================
 package com.pug.project.infra.persistence.impl;
 
-import com.pug.project.domain.ProjectBySchool;
-import com.pug.project.domain.ProjectBySchoolRepository;
-import com.pug.project.infra.ProjectBySchoolMapper;
-import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
+import domain.project.br.org.catolicasc.pug.ProjectBySchool;
+import domain.project.br.org.catolicasc.pug.ProjectBySchoolRepository;
+import infra.project.br.org.catolicasc.pug.ProjectBySchoolMapper;
+import persistence.infra.project.br.org.catolicasc.pug.ProjectsBySchoolsEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -2746,11 +2746,11 @@ FILE: infra/persistence/impl/ProjectRepositoryImpl.java
 ================================================================================
 package com.pug.project.infra.persistence.impl;
 
-import com.pug.project.domain.Project;
-import com.pug.project.domain.ProjectRepository;
-import com.pug.project.infra.ProjectMapper;
-import com.pug.project.infra.persistence.ProjectEntity;
-import com.pug.shared.utils.StringUtils;
+import domain.project.br.org.catolicasc.pug.Project;
+import domain.project.br.org.catolicasc.pug.ProjectRepository;
+import infra.project.br.org.catolicasc.pug.ProjectMapper;
+import persistence.infra.project.br.org.catolicasc.pug.ProjectEntity;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -2843,7 +2843,7 @@ FILE: infra/persistence/ProjectEntity.java
 ================================================================================
 package com.pug.project.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -2873,7 +2873,7 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
  * JPA entity representing a Project within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * com.pug.project.domain.Project} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * domain.project.br.org.catolicasc.pug.Project} domain aggregate. It inherits a time-ordered UUIDv7 primary key
  * and standard audit tracking fields from {@link BaseAuditedEntity}.
  */
 @Getter
@@ -2908,7 +2908,7 @@ public class ProjectEntity extends BaseAuditedEntity {
    * The title or name of the project.
    *
    * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   * {@link search.infra.shared.br.org.catolicasc.pug.EsAnalysis}. It projects into four distinct index fields:
    *
    * <ul>
    *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
@@ -3038,8 +3038,8 @@ FILE: infra/ProjectBySchoolMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.project.domain.ProjectBySchool;
-import com.pug.project.infra.persistence.ProjectsBySchoolsEntity;
+import domain.project.br.org.catolicasc.pug.ProjectBySchool;
+import persistence.infra.project.br.org.catolicasc.pug.ProjectsBySchoolsEntity;
 
 /**
  * Stateless utility class responsible for mapping between ProjectsBySchool boundary layers.
@@ -3094,12 +3094,12 @@ FILE: infra/ProjectMapper.java
 ================================================================================
 package com.pug.project.infra;
 
-import com.pug.project.domain.Project;
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.project.domain.vos.ProjectInfo;
-import com.pug.project.infra.persistence.ProjectEntity;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.project.br.org.catolicasc.pug.Project;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import vos.domain.project.br.org.catolicasc.pug.ProjectInfo;
+import persistence.infra.project.br.org.catolicasc.pug.ProjectEntity;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Project boundary layers.
@@ -3229,7 +3229,7 @@ FILE: infra/read/AttendanceQueries.java
 ================================================================================
 package com.pug.project.infra.read;
 
-import com.pug.project.infra.read.dtos.AttendanceView;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -3289,7 +3289,7 @@ FILE: infra/read/dtos/AttendanceView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.project.domain.enums.AttendanceStatus;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -3329,7 +3329,7 @@ FILE: infra/read/dtos/EnrollmentView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.project.domain.enums.EnrollmentStatus;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -3364,7 +3364,7 @@ FILE: infra/read/dtos/ProjectView.java
 ================================================================================
 package com.pug.project.infra.read.dtos;
 
-import com.pug.project.domain.enums.ProjectStatus;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -3410,13 +3410,13 @@ FILE: infra/read/EnrollmentQueries.java
 ================================================================================
 package com.pug.project.infra.read;
 
-import com.pug.project.infra.read.dtos.EnrollmentView;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Read-only interface for executing queries against {@link com.pug.project.domain.Enrollment}
+ * Read-only interface for executing queries against {@link domain.project.br.org.catolicasc.pug.Enrollment}
  * records.
  *
  * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
@@ -3481,8 +3481,8 @@ FILE: infra/read/impl/AttendanceQueriesImpl.java
 ================================================================================
 package com.pug.project.infra.read.impl;
 
-import com.pug.project.infra.read.AttendanceQueries;
-import com.pug.project.infra.read.dtos.AttendanceView;
+import read.infra.project.br.org.catolicasc.pug.AttendanceQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -3504,9 +3504,9 @@ public class AttendanceQueriesImpl implements AttendanceQueries {
 
   private static final String SELECT_BASE =
       """
-          select new com.pug.project.infra.read.dtos.AttendanceView(
+          select new dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView(
             a.id, a.projectId, a.studentId, a.duration, a.qrValidationHash,\s
-            com.pug.project.domain.enums.AttendanceStatus.valueOf(a.status),
+            enums.domain.project.br.org.catolicasc.pug.AttendanceStatus.valueOf(a.status),
             a.validatedBy, a.validatedAt, a.createdAt, a.updatedAt
           )
           from AttendanceEntity a
@@ -3579,8 +3579,8 @@ FILE: infra/read/impl/EnrollmentQueriesImpl.java
 ================================================================================
 package com.pug.project.infra.read.impl;
 
-import com.pug.project.infra.read.EnrollmentQueries;
-import com.pug.project.infra.read.dtos.EnrollmentView;
+import read.infra.project.br.org.catolicasc.pug.EnrollmentQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -3593,7 +3593,7 @@ import java.util.UUID;
  * Implementation of the {@link EnrollmentQueries} interface using JPA constructor expressions.
  *
  * <p>This application-scoped bean executes read-only operations for enrollments. It projects {@link
- * com.pug.project.infra.persistence.EnrollmentEntity} rows into lightweight {@link EnrollmentView}
+ * persistence.infra.project.br.org.catolicasc.pug.EnrollmentEntity} rows into lightweight {@link EnrollmentView}
  * DTOs containing only identifiers and lifecycle metadata, leaving project and student details to
  * be resolved on demand via dedicated endpoints.
  */
@@ -3605,10 +3605,10 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.project.infra.read.dtos.EnrollmentView(
+                  select new dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView(
                     en.id.projectId,
                     en.id.studentId,
-                    com.pug.project.domain.enums.EnrollmentStatus.valueOf(en.status),
+                    enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus.valueOf(en.status),
                     en.createdAt,
                     en.updatedAt,
                     en.acceptedAt,
@@ -3673,10 +3673,10 @@ FILE: infra/read/impl/ProjectQueriesImpl.java
 ================================================================================
 package com.pug.project.infra.read.impl;
 
-import com.pug.project.infra.persistence.ProjectEntity;
-import com.pug.project.infra.read.ProjectQueries;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
+import persistence.infra.project.br.org.catolicasc.pug.ProjectEntity;
+import read.infra.project.br.org.catolicasc.pug.ProjectQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -3689,7 +3689,7 @@ import java.util.UUID;
  * Implementation of the {@link ProjectQueries} interface.
  *
  * <p>Uses JPQL constructor expressions to join the project graph and {@link
- * com.pug.project.infra.persistence.ProjectsBySchoolsEntity} for school-based relational queries.
+ * persistence.infra.project.br.org.catolicasc.pug.ProjectsBySchoolsEntity} for school-based relational queries.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -3699,10 +3699,10 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   private static final String SELECT_BASE =
       """
-                       select new com.pug.project.infra.read.dtos.ProjectView(
+                       select new dtos.read.infra.project.br.org.catolicasc.pug.ProjectView(
                          p.id, p.name, p.entityId, p.description, p.createdBy,
                          p.maxParticipants, p.offeredHours, p.completedHours,
-                         com.pug.project.domain.enums.ProjectStatus.valueOf(p.status),
+                         enums.domain.project.br.org.catolicasc.pug.ProjectStatus.valueOf(p.status),
                          p.closedAt, p.createdAt, p.updatedAt
                        )
                        from ProjectEntity p
@@ -3765,7 +3765,7 @@ public class ProjectQueriesImpl implements ProjectQueries {
   /** {@inheritDoc} */
   @Override
   public List<ProjectView> searchByName(String query) {
-    String key = com.pug.shared.utils.StringUtils.fold(query);
+    String key = utils.shared.br.org.catolicasc.pug.StringUtils.fold(query);
     List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);
 
     if (hits.isEmpty()) {
@@ -3785,7 +3785,7 @@ FILE: infra/read/ProjectQueries.java
 ================================================================================
 package com.pug.project.infra.read;
 
-import com.pug.project.infra.read.dtos.ProjectView;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -3853,17 +3853,17 @@ FILE: presenter/AttendanceResource.java
 ================================================================================
 package com.pug.project.presenter;
 
-import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.project.presenter.dtos.AttendanceCreateRequest;
-import com.pug.project.presenter.dtos.AttendanceResponse;
-import com.pug.project.presenter.dtos.AttendanceValidateRequest;
-import com.pug.project.presenter.mappers.AttendancePresenter;
-import com.pug.project.service.AttendanceReadService;
-import com.pug.project.service.AttendanceService;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.validation.UuidV7;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceResponse;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceValidateRequest;
+import mappers.presenter.project.br.org.catolicasc.pug.AttendancePresenter;
+import service.project.br.org.catolicasc.pug.AttendanceReadService;
+import service.project.br.org.catolicasc.pug.AttendanceService;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -3914,7 +3914,7 @@ public class AttendanceResource {
    * @param id the unique identifier (UUIDv7) of the attendance
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     AttendanceResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the attendance is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the attendance is not found
    */
   @GET
   @Path("/{id}")
@@ -4027,7 +4027,7 @@ FILE: presenter/dtos/AttendanceCreateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.shared.validation.UuidV7;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -4051,8 +4051,8 @@ FILE: presenter/dtos/AttendanceResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.project.domain.enums.AttendanceStatus;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -4091,7 +4091,7 @@ FILE: presenter/dtos/AttendanceValidateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.project.domain.enums.AttendanceStatus;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -4113,7 +4113,7 @@ FILE: presenter/dtos/EnrollmentCreateRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.shared.validation.UuidV7;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
@@ -4136,8 +4136,8 @@ FILE: presenter/dtos/EnrollmentResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.project.domain.enums.EnrollmentStatus;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -4146,7 +4146,7 @@ import java.util.UUID;
  *
  * <p>This record provides a lightweight, identifier-centric view of an enrollment. Instead of
  * nesting the full {@link ProjectResponse} or {@link
- * com.pug.academic.presenter.dtos.StudentResponse}, it exposes only the {@code projectId} and
+ * dtos.presenter.academic.br.org.catolicasc.pug.StudentResponse}, it exposes only the {@code projectId} and
  * {@code studentId}, allowing API clients to resolve detailed project and student information on
  * demand via dedicated endpoints.
  *
@@ -4182,7 +4182,7 @@ FILE: presenter/dtos/ProjectBySchoolRequest.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.shared.validation.UuidV7;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
@@ -4192,9 +4192,9 @@ import java.util.UUID;
  * Data Transfer Object (DTO) used as the JSON request payload for assigning a Project to one or
  * more Schools.
  *
- * <p>This request does not create or update the {@link com.pug.project.domain.Project} itself; it
+ * <p>This request does not create or update the {@link domain.project.br.org.catolicasc.pug.Project} itself; it
  * is dedicated exclusively to managing the project–school association via {@link
- * com.pug.project.domain.ProjectBySchool}.
+ * domain.project.br.org.catolicasc.pug.ProjectBySchool}.
  *
  * @param projectId the unique identifier (UUIDv7) of the project to be associated
  * @param schoolIds the list of unique identifiers (UUIDv7) of the schools to link to the project
@@ -4238,8 +4238,8 @@ FILE: presenter/dtos/ProjectResponse.java
 ================================================================================
 package com.pug.project.presenter.dtos;
 
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -4307,20 +4307,20 @@ FILE: presenter/EnrollmentResource.java
 ================================================================================
 package com.pug.project.presenter;
 
-import com.pug.identity.service.AuthService;
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.infra.read.dtos.EnrollmentView;
-import com.pug.project.presenter.dtos.EnrollmentCreateRequest;
-import com.pug.project.presenter.dtos.EnrollmentResponse;
-import com.pug.project.presenter.mappers.EnrollmentPresenter;
-import com.pug.project.service.EnrollmentReadService;
-import com.pug.project.service.EnrollmentService;
-import com.pug.project.service.dtos.EnrollmentCreateCommand;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.validation.UuidV7;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
+import dtos.presenter.project.br.org.catolicasc.pug.EnrollmentCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.EnrollmentResponse;
+import mappers.presenter.project.br.org.catolicasc.pug.EnrollmentPresenter;
+import service.project.br.org.catolicasc.pug.EnrollmentReadService;
+import service.project.br.org.catolicasc.pug.EnrollmentService;
+import dtos.service.project.br.org.catolicasc.pug.EnrollmentCreateCommand;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -4374,7 +4374,7 @@ public class EnrollmentResource {
    * @param studentId the unique identifier (UUIDv7) of the student account
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     EnrollmentResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment is not found
    */
   @GET
   @Path("/{projectId}/{studentId}")
@@ -4399,7 +4399,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse} for the current student in the given project
    * @throws jakarta.ws.rs.NotAuthorizedException if the token is missing, invalid, or does not
    *     contain the required {@code accountId} claim
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment is not found
    */
   @GET
   @Path("/{projectId}/me")
@@ -4487,11 +4487,11 @@ public class EnrollmentResource {
    *     identifier
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link EnrollmentResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the student is already enrolled
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the student is already enrolled
    *     in the project
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the project or student does not
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the project or student does not
    *     exist
-   * @throws com.pug.shared.exceptions.AppValidationException if domain validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if domain validation fails
    */
   @POST
   @Authenticated
@@ -4695,16 +4695,16 @@ FILE: presenter/mappers/AttendancePresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.project.presenter.dtos.AttendanceCreateRequest;
-import com.pug.project.presenter.dtos.AttendanceResponse;
-import com.pug.project.presenter.dtos.AttendanceValidateRequest;
-import com.pug.project.service.dtos.AttendanceCreateCommand;
-import com.pug.project.service.dtos.AttendanceValidateCommand;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceResponse;
+import dtos.presenter.project.br.org.catolicasc.pug.AttendanceValidateRequest;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceValidateCommand;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.Locale;
 
 /**
@@ -4791,14 +4791,14 @@ FILE: presenter/mappers/EnrollmentPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.project.infra.read.dtos.EnrollmentView;
-import com.pug.project.presenter.dtos.EnrollmentCreateRequest;
-import com.pug.project.presenter.dtos.EnrollmentResponse;
-import com.pug.project.service.dtos.EnrollmentCreateCommand;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
+import dtos.presenter.project.br.org.catolicasc.pug.EnrollmentCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.EnrollmentResponse;
+import dtos.service.project.br.org.catolicasc.pug.EnrollmentCreateCommand;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.Locale;
 
 /**
@@ -4840,7 +4840,7 @@ public final class EnrollmentPresenter {
    *
    * <ul>
    *   <li>Copies the {@code projectId} and {@code studentId} identifiers directly from the view.
-   *   <li>Translates the {@link com.pug.project.domain.enums.EnrollmentStatus} enum into a
+   *   <li>Translates the {@link enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus} enum into a
    *       localized status label using {@link I18n}.
    *   <li>Formats the {@code acceptedAt} and {@code closingStatusAt} timestamps according to the
    *       provided {@link Locale}.
@@ -4885,16 +4885,16 @@ FILE: presenter/mappers/ProjectPresenter.java
 ================================================================================
 package com.pug.project.presenter.mappers;
 
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.presenter.dtos.ProjectCreateRequest;
-import com.pug.project.presenter.dtos.ProjectResponse;
-import com.pug.project.presenter.dtos.ProjectUpdateRequest;
-import com.pug.project.service.dtos.ProjectCreateCommand;
-import com.pug.project.service.dtos.ProjectUpdateCommand;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectResponse;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectUpdateRequest;
+import dtos.service.project.br.org.catolicasc.pug.ProjectCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.ProjectUpdateCommand;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.Locale;
 
 /**
@@ -4984,19 +4984,19 @@ FILE: presenter/ProjectBySchoolResource.java
 ================================================================================
 package com.pug.project.presenter;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.academic.presenter.dtos.SchoolResponse;
-import com.pug.academic.presenter.mappers.SchoolPresenter;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.presenter.dtos.ProjectBySchoolRequest;
-import com.pug.project.presenter.dtos.ProjectResponse;
-import com.pug.project.presenter.mappers.ProjectPresenter;
-import com.pug.project.service.ProjectBySchoolReadService;
-import com.pug.project.service.ProjectBySchoolService;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.validation.UuidV7;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import dtos.presenter.academic.br.org.catolicasc.pug.SchoolResponse;
+import mappers.presenter.academic.br.org.catolicasc.pug.SchoolPresenter;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectBySchoolRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectResponse;
+import mappers.presenter.project.br.org.catolicasc.pug.ProjectPresenter;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolReadService;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolService;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -5025,8 +5025,8 @@ import java.util.stream.Collectors;
  * REST API Resource controller for managing Project–School associations.
  *
  * <p>This resource is dedicated exclusively to linking existing {@link
- * com.pug.project.domain.Project} instances to existing {@link com.pug.academic.domain.School}
- * instances via the {@link com.pug.project.domain.ProjectBySchool} aggregate.
+ * domain.project.br.org.catolicasc.pug.Project} instances to existing {@link domain.academic.br.org.catolicasc.pug.School}
+ * instances via the {@link domain.project.br.org.catolicasc.pug.ProjectBySchool} aggregate.
  *
  * <p>Following CQRS principles:
  *
@@ -5191,21 +5191,21 @@ FILE: presenter/ProjectResource.java
 ================================================================================
 package com.pug.project.presenter;
 
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.presenter.dtos.ProjectCreateRequest;
-import com.pug.project.presenter.dtos.ProjectResponse;
-import com.pug.project.presenter.dtos.ProjectUpdateRequest;
-import com.pug.project.presenter.mappers.ProjectPresenter;
-import com.pug.project.service.ProjectReadService;
-import com.pug.project.service.ProjectService;
-import com.pug.project.service.dtos.ProjectCreateCommand;
-import com.pug.project.service.dtos.ProjectUpdateCommand;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectCreateRequest;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectResponse;
+import dtos.presenter.project.br.org.catolicasc.pug.ProjectUpdateRequest;
+import mappers.presenter.project.br.org.catolicasc.pug.ProjectPresenter;
+import service.project.br.org.catolicasc.pug.ProjectReadService;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import dtos.service.project.br.org.catolicasc.pug.ProjectCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.ProjectUpdateCommand;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -5260,7 +5260,7 @@ public class ProjectResource {
    * @param id the unique identifier (UUIDv7) of the project
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     ProjectResponse}
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the project is not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the project is not found
    */
   @GET
   @Path("/{id}")
@@ -5330,7 +5330,7 @@ public class ProjectResource {
    *
    * @param req the validated {@link ProjectCreateRequest}
    * @return an HTTP 201 Created response containing the created {@link ProjectResponse}
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a project with the same name
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a project with the same name
    *     exists for the entity
    */
   @POST
@@ -5809,13 +5809,13 @@ FILE: service/AttendanceReadService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.infra.read.dtos.AttendanceView;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying {@link
- * com.pug.project.domain.Attendance} data.
+ * domain.project.br.org.catolicasc.pug.Attendance} data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations, retrieving lightweight
  * {@link AttendanceView} Data Transfer Objects directly from the read infrastructure.
@@ -5827,7 +5827,7 @@ public interface AttendanceReadService {
    *
    * @param id the unique identifier (UUID) of the attendance
    * @return the populated {@link AttendanceView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no attendance matches the
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no attendance matches the
    *     provided ID
    */
   AttendanceView getViewById(UUID id);
@@ -5871,10 +5871,10 @@ FILE: service/AttendanceService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.domain.Attendance;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.service.dtos.AttendanceCreateCommand;
-import com.pug.project.service.dtos.AttendanceValidateCommand;
+import domain.project.br.org.catolicasc.pug.Attendance;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceValidateCommand;
 import java.util.UUID;
 
 /**
@@ -5961,7 +5961,7 @@ FILE: service/dtos/AttendanceValidateCommand.java
 ================================================================================
 package com.pug.project.service.dtos;
 
-import com.pug.project.domain.enums.AttendanceStatus;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to validate an existing Attendance.
@@ -5983,7 +5983,7 @@ import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to request a new {@link
- * com.pug.project.domain.Enrollment}.
+ * domain.project.br.org.catolicasc.pug.Enrollment}.
  *
  * <p>This record encapsulates the minimal data required by the application service to instantiate a
  * new enrollment aggregate, namely the identifier of the target project. The student account to be
@@ -5992,8 +5992,8 @@ import java.util.UUID;
  * own behalf.
  *
  * <p>This DTO does not perform any validation by itself; structural and business validations are
- * enforced in the {@link com.pug.project.service.EnrollmentService} and within the {@link
- * com.pug.project.domain.Enrollment} aggregate.
+ * enforced in the {@link service.project.br.org.catolicasc.pug.EnrollmentService} and within the {@link
+ * domain.project.br.org.catolicasc.pug.Enrollment} aggregate.
  *
  * @param projectId the unique identifier (UUID) of the project for which the enrollment is being
  *     requested
@@ -6013,7 +6013,7 @@ import java.util.UUID;
  * Data Transfer Object (DTO) acting as an application command to provision a new Project.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.project.domain.Project} aggregate.
+ * a new {@link domain.project.br.org.catolicasc.pug.Project} aggregate.
  *
  * @param description the optional detailed description of the project's objectives
  * @param entityId the unique identifier of the partner organization offering the project
@@ -6057,13 +6057,13 @@ FILE: service/EnrollmentReadService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.infra.read.dtos.EnrollmentView;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface dedicated exclusively to querying {@link
- * com.pug.project.domain.Enrollment} data.
+ * domain.project.br.org.catolicasc.pug.Enrollment} data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
  * domain logic and retrieves lightweight {@link EnrollmentView} Data Transfer Objects directly from
@@ -6080,7 +6080,7 @@ public interface EnrollmentReadService {
    * @param projectId the unique identifier (UUID) of the project
    * @param studentId the unique identifier (UUID) of the student account
    * @return the populated {@link EnrollmentView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no enrollment matches the
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no enrollment matches the
    *     provided identifiers
    */
   EnrollmentView getViewByIds(UUID projectId, UUID studentId);
@@ -6129,10 +6129,10 @@ FILE: service/EnrollmentService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.enums.EnrollmentStatus;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.service.dtos.EnrollmentCreateCommand;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import dtos.service.project.br.org.catolicasc.pug.EnrollmentCreateCommand;
 import java.util.UUID;
 
 /**
@@ -6150,14 +6150,14 @@ public interface EnrollmentService {
    *
    * <p>This operation transitions the underlying {@link Enrollment} from {@link
    * EnrollmentStatus#PENDING} to {@link EnrollmentStatus#APPROVED}, stamping the {@code acceptedAt}
-   * timestamp via {@link com.pug.project.domain.vos.EnrollmentInfo#accept()}. Any attempt to
+   * timestamp via {@link vos.domain.project.br.org.catolicasc.pug.EnrollmentInfo#accept()}. Any attempt to
    * approve an enrollment that is not currently pending is rejected at the domain level.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#APPROVED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code APPROVED}
    */
   Enrollment accept(EnrollmentIdentifier identifier);
@@ -6173,8 +6173,8 @@ public interface EnrollmentService {
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#CANCELED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code CANCELED}
    */
   Enrollment cancel(EnrollmentIdentifier identifier);
@@ -6190,8 +6190,8 @@ public interface EnrollmentService {
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#COMPLETED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code COMPLETED}
    */
   Enrollment complete(EnrollmentIdentifier identifier);
@@ -6214,7 +6214,7 @@ public interface EnrollmentService {
    * Checks if a student is enrolled in any project.
    *
    * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
-   * com.pug.academic.domain.Student} cannot be deleted while they still have historical enrollments
+   * domain.academic.br.org.catolicasc.pug.Student} cannot be deleted while they still have historical enrollments
    * registered in projects.
    *
    * @param studentId the unique identifier (UUID) of the student account
@@ -6227,7 +6227,7 @@ public interface EnrollmentService {
    * Checks whether any {@link Enrollment} exists for the specified project identifier.
    *
    * <p>This query is utilized by higher-level services (such as {@link ProjectService}) to enforce
-   * relational integrity, ensuring that a {@link com.pug.project.domain.Project} cannot be deleted
+   * relational integrity, ensuring that a {@link domain.project.br.org.catolicasc.pug.Project} cannot be deleted
    * while there are students enrolled in it.
    *
    * @param projectId the unique identifier (UUID) of the project to check
@@ -6247,8 +6247,8 @@ public interface EnrollmentService {
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#EXITED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code EXITED}
    */
   Enrollment exit(EnrollmentIdentifier identifier);
@@ -6257,15 +6257,15 @@ public interface EnrollmentService {
    * Retrieves a full {@link Enrollment} aggregate by its composite identifier.
    *
    * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g., prior
-   * to invoking {@link Enrollment#changeStatus(com.pug.project.domain.enums.EnrollmentStatus)}).
-   * For API responses, prefer using the {@link com.pug.project.service.EnrollmentReadService}
+   * to invoking {@link Enrollment#changeStatus(enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus)}).
+   * For API responses, prefer using the {@link service.project.br.org.catolicasc.pug.EnrollmentReadService}
    * projections.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the fully reconstituted {@link Enrollment} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the stored enrollment violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the stored enrollment violates
    *     strict domain invariants (e.g., invalid timestamps or identifiers)
    */
   Enrollment getByIds(EnrollmentIdentifier identifier);
@@ -6281,8 +6281,8 @@ public interface EnrollmentService {
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REJECTED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code REJECTED}
    */
   Enrollment reject(EnrollmentIdentifier identifier);
@@ -6299,8 +6299,8 @@ public interface EnrollmentService {
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
    *     enrollment (project + student)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REMOVED} state
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the enrollment does not exist
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the current status does not allow a
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the enrollment does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the current status does not allow a
    *     transition to {@code REMOVED}
    */
   Enrollment remove(EnrollmentIdentifier identifier);
@@ -6308,19 +6308,19 @@ public interface EnrollmentService {
   /**
    * Instantiates and requests a new {@link Enrollment}.
    *
-   * <p>This method verifies the existence of the associated {@link com.pug.project.domain.Project}
-   * and {@link com.pug.academic.domain.Student}, checks for duplicate enrollments for the same
+   * <p>This method verifies the existence of the associated {@link domain.project.br.org.catolicasc.pug.Project}
+   * and {@link domain.academic.br.org.catolicasc.pug.Student}, checks for duplicate enrollments for the same
    * (project, student) pair, and delegates the aggregate initialization to {@link
-   * com.pug.project.service.utils.EnrollmentProcessor}. The resulting aggregate is self-validated
+   * utils.service.project.br.org.catolicasc.pug.EnrollmentProcessor}. The resulting aggregate is self-validated
    * before being persisted.
    *
    * @param cmd the structured {@link EnrollmentCreateCommand} containing enrollment data
    * @return the fully instantiated and persisted {@link Enrollment} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an enrollment for the given
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if an enrollment for the given
    *     project and student already exists
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the associated project or
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the associated project or
    *     student does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the created enrollment violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the created enrollment violates
    *     domain constraints
    */
   Enrollment save(EnrollmentCreateCommand cmd);
@@ -6332,10 +6332,10 @@ FILE: service/impl/AttendanceReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.project.infra.read.AttendanceQueries;
-import com.pug.project.infra.read.dtos.AttendanceView;
-import com.pug.project.service.AttendanceReadService;
-import com.pug.project.service.utils.ExceptionHelper;
+import read.infra.project.br.org.catolicasc.pug.AttendanceQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.AttendanceView;
+import service.project.br.org.catolicasc.pug.AttendanceReadService;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -6407,23 +6407,23 @@ FILE: service/impl/AttendanceServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.service.StudentService;
-import com.pug.identity.service.AuthService;
-import com.pug.project.domain.Attendance;
-import com.pug.project.domain.AttendanceRepository;
-import com.pug.project.domain.Project;
-import com.pug.project.domain.enums.AttendanceStatus;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.service.AttendanceService;
-import com.pug.project.service.ProjectService;
-import com.pug.project.service.dtos.AttendanceCreateCommand;
-import com.pug.project.service.dtos.AttendanceValidateCommand;
-import com.pug.project.service.utils.AttendanceProcessor;
-import com.pug.project.service.utils.ExceptionHelper;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import domain.academic.br.org.catolicasc.pug.Student;
+import service.academic.br.org.catolicasc.pug.StudentService;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import domain.project.br.org.catolicasc.pug.Attendance;
+import domain.project.br.org.catolicasc.pug.AttendanceRepository;
+import domain.project.br.org.catolicasc.pug.Project;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import service.project.br.org.catolicasc.pug.AttendanceService;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.AttendanceValidateCommand;
+import utils.service.project.br.org.catolicasc.pug.AttendanceProcessor;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -6587,10 +6587,10 @@ FILE: service/impl/EnrollmentReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.project.infra.read.EnrollmentQueries;
-import com.pug.project.infra.read.dtos.EnrollmentView;
-import com.pug.project.service.EnrollmentReadService;
-import com.pug.project.service.utils.ExceptionHelper;
+import read.infra.project.br.org.catolicasc.pug.EnrollmentQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.EnrollmentView;
+import service.project.br.org.catolicasc.pug.EnrollmentReadService;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -6655,22 +6655,22 @@ FILE: service/impl/EnrollmentServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.academic.domain.Student;
-import com.pug.academic.service.StudentService;
-import com.pug.identity.service.AuthService;
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.EnrollmentRepository;
-import com.pug.project.domain.Project;
-import com.pug.project.domain.enums.EnrollmentStatus;
-import com.pug.project.domain.vos.EnrollmentIdentifier;
-import com.pug.project.service.EnrollmentService;
-import com.pug.project.service.ProjectService;
-import com.pug.project.service.dtos.EnrollmentCreateCommand;
-import com.pug.project.service.utils.EnrollmentProcessor;
-import com.pug.project.service.utils.ExceptionHelper;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import domain.academic.br.org.catolicasc.pug.Student;
+import service.academic.br.org.catolicasc.pug.StudentService;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import domain.project.br.org.catolicasc.pug.EnrollmentRepository;
+import domain.project.br.org.catolicasc.pug.Project;
+import enums.domain.project.br.org.catolicasc.pug.EnrollmentStatus;
+import vos.domain.project.br.org.catolicasc.pug.EnrollmentIdentifier;
+import service.project.br.org.catolicasc.pug.EnrollmentService;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import dtos.service.project.br.org.catolicasc.pug.EnrollmentCreateCommand;
+import utils.service.project.br.org.catolicasc.pug.EnrollmentProcessor;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -6861,12 +6861,12 @@ FILE: service/impl/ProjectBySchoolReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.academic.infra.read.SchoolQueries;
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.project.domain.ProjectBySchoolRepository;
-import com.pug.project.infra.read.ProjectQueries;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.service.ProjectBySchoolReadService;
+import read.infra.academic.br.org.catolicasc.pug.SchoolQueries;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import domain.project.br.org.catolicasc.pug.ProjectBySchoolRepository;
+import read.infra.project.br.org.catolicasc.pug.ProjectQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolReadService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.HashSet;
@@ -6936,14 +6936,14 @@ FILE: service/impl/ProjectBySchoolServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.project.domain.ProjectBySchool;
-import com.pug.project.domain.ProjectBySchoolRepository;
-import com.pug.project.service.ProjectBySchoolService;
-import com.pug.project.service.utils.ProjectBySchoolProcessor;
-import com.pug.project.service.utils.ProjectProcessor;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.CollectionUtils;
+import domain.project.br.org.catolicasc.pug.ProjectBySchool;
+import domain.project.br.org.catolicasc.pug.ProjectBySchoolRepository;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolService;
+import utils.service.project.br.org.catolicasc.pug.ProjectBySchoolProcessor;
+import utils.service.project.br.org.catolicasc.pug.ProjectProcessor;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -7095,11 +7095,11 @@ FILE: service/impl/ProjectReadServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.project.infra.read.ProjectQueries;
-import com.pug.project.infra.read.dtos.ProjectView;
-import com.pug.project.service.ProjectReadService;
-import com.pug.project.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.project.br.org.catolicasc.pug.ProjectQueries;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
+import service.project.br.org.catolicasc.pug.ProjectReadService;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -7179,21 +7179,21 @@ FILE: service/impl/ProjectServiceImpl.java
 ================================================================================
 package com.pug.project.service.impl;
 
-import com.pug.identity.service.AuthService;
-import com.pug.partner.service.EntityService;
-import com.pug.project.domain.Project;
-import com.pug.project.domain.ProjectRepository;
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.project.service.EnrollmentService;
-import com.pug.project.service.ProjectBySchoolService;
-import com.pug.project.service.ProjectService;
-import com.pug.project.service.dtos.ProjectCreateCommand;
-import com.pug.project.service.dtos.ProjectUpdateCommand;
-import com.pug.project.service.utils.ExceptionHelper;
-import com.pug.project.service.utils.ProjectProcessor;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.partner.br.org.catolicasc.pug.EntityService;
+import domain.project.br.org.catolicasc.pug.Project;
+import domain.project.br.org.catolicasc.pug.ProjectRepository;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import service.project.br.org.catolicasc.pug.EnrollmentService;
+import service.project.br.org.catolicasc.pug.ProjectBySchoolService;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import dtos.service.project.br.org.catolicasc.pug.ProjectCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.ProjectUpdateCommand;
+import utils.service.project.br.org.catolicasc.pug.ExceptionHelper;
+import utils.service.project.br.org.catolicasc.pug.ProjectProcessor;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -7387,8 +7387,8 @@ FILE: service/ProjectBySchoolReadService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.academic.infra.read.dtos.SchoolView;
-import com.pug.project.infra.read.dtos.ProjectView;
+import dtos.read.infra.academic.br.org.catolicasc.pug.SchoolView;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
 import java.util.Set;
 import java.util.UUID;
 
@@ -7397,7 +7397,7 @@ import java.util.UUID;
  * and schools.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations for the project–school
- * link. It leverages the underlying {@link com.pug.project.domain.ProjectBySchoolRepository} to
+ * link. It leverages the underlying {@link domain.project.br.org.catolicasc.pug.ProjectBySchoolRepository} to
  * resolve identifiers and then projects them into lightweight read models.
  */
 public interface ProjectBySchoolReadService {
@@ -7441,14 +7441,14 @@ FILE: service/ProjectBySchoolService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.domain.ProjectBySchool;
-import com.pug.project.domain.ProjectBySchoolRepository;
+import domain.project.br.org.catolicasc.pug.ProjectBySchool;
+import domain.project.br.org.catolicasc.pug.ProjectBySchoolRepository;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface for managing the association between {@link
- * com.pug.project.domain.Project} and {@link com.pug.academic.domain.School} aggregates via {@link
+ * domain.project.br.org.catolicasc.pug.Project} and {@link domain.academic.br.org.catolicasc.pug.School} aggregates via {@link
  * ProjectBySchool}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
@@ -7473,7 +7473,7 @@ public interface ProjectBySchoolService {
    * @param schoolIds the unique identifiers of the schools to link to the project
    * @return a {@link List} of fully instantiated and persisted {@link ProjectBySchool} aggregates
    *     corresponding to the provided school IDs
-   * @throws com.pug.shared.exceptions.AppValidationException if any created association violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if any created association violates
    *     domain constraints (e.g., null IDs)
    */
   List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds);
@@ -7521,7 +7521,7 @@ FILE: service/ProjectReadService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.infra.read.dtos.ProjectView;
+import dtos.read.infra.project.br.org.catolicasc.pug.ProjectView;
 import java.util.List;
 import java.util.UUID;
 
@@ -7539,7 +7539,7 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no project matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no project matches the provided
    *     ID
    */
   ProjectView getViewById(UUID id);
@@ -7585,10 +7585,10 @@ FILE: service/ProjectService.java
 ================================================================================
 package com.pug.project.service;
 
-import com.pug.project.domain.Project;
-import com.pug.project.domain.enums.ProjectStatus;
-import com.pug.project.service.dtos.ProjectCreateCommand;
-import com.pug.project.service.dtos.ProjectUpdateCommand;
+import domain.project.br.org.catolicasc.pug.Project;
+import enums.domain.project.br.org.catolicasc.pug.ProjectStatus;
+import dtos.service.project.br.org.catolicasc.pug.ProjectCreateCommand;
+import dtos.service.project.br.org.catolicasc.pug.ProjectUpdateCommand;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -7610,7 +7610,7 @@ public interface ProjectService {
    * @param id o identificador do projeto
    * @param hours a quantidade de horas a adicionar
    * @return o agregado {@link Project} atualizado
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException se o projeto não existir
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException se o projeto não existir
    */
   Project addCompletedHours(UUID id, BigDecimal hours);
 
@@ -7643,7 +7643,7 @@ public interface ProjectService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the {@link Project} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if not found
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if not found
    */
   Project getById(UUID id);
 
@@ -7661,7 +7661,7 @@ public interface ProjectService {
    * @param id the unique identifier (UUID) of the project
    * @param status the target {@link ProjectStatus}
    * @return the updated {@link Project}
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the status transition is invalid
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the status transition is invalid
    */
   Project transitionStatus(UUID id, ProjectStatus status);
 
@@ -7681,10 +7681,10 @@ FILE: service/utils/AttendanceProcessor.java
 ================================================================================
 package com.pug.project.service.utils;
 
-import com.pug.academic.domain.Student;
-import com.pug.project.domain.Attendance;
-import com.pug.project.domain.Project;
-import com.pug.project.domain.enums.AttendanceStatus;
+import domain.academic.br.org.catolicasc.pug.Student;
+import domain.project.br.org.catolicasc.pug.Attendance;
+import domain.project.br.org.catolicasc.pug.Project;
+import enums.domain.project.br.org.catolicasc.pug.AttendanceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -7737,9 +7737,9 @@ FILE: service/utils/EnrollmentProcessor.java
 ================================================================================
 package com.pug.project.service.utils;
 
-import com.pug.academic.domain.Student;
-import com.pug.project.domain.Enrollment;
-import com.pug.project.domain.Project;
+import domain.academic.br.org.catolicasc.pug.Student;
+import domain.project.br.org.catolicasc.pug.Enrollment;
+import domain.project.br.org.catolicasc.pug.Project;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Enrollment}
@@ -7759,7 +7759,7 @@ public final class EnrollmentProcessor {
    * The returned instance is immediately self-validated; any accumulated domain validation problems
    * can be inspected via {@link Enrollment#hasFieldErrors()} and {@link
    * Enrollment#getFieldErrors()} and should be translated into an {@link
-   * com.pug.shared.exceptions.AppValidationException} by the calling service when appropriate.
+   * exceptions.shared.br.org.catolicasc.pug.AppValidationException} by the calling service when appropriate.
    *
    * @param student the fully reconstituted {@link Student} aggregate to enroll
    * @param project the fully reconstituted {@link Project} aggregate representing the target
@@ -7778,10 +7778,10 @@ FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.project.service.utils;
 
-import com.pug.project.domain.enums.ProjectsErrorCodes;
-import com.pug.shared.exceptions.BusinessRuleException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import enums.domain.project.br.org.catolicasc.pug.ProjectsErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 
 /**
  * Utility class for centralizing the creation of common Project domain exceptions.
@@ -7862,7 +7862,7 @@ FILE: service/utils/ProjectBySchoolProcessor.java
 ================================================================================
 package com.pug.project.service.utils;
 
-import com.pug.project.domain.ProjectBySchool;
+import domain.project.br.org.catolicasc.pug.ProjectBySchool;
 import java.util.UUID;
 
 /**
@@ -7884,7 +7884,7 @@ public final class ProjectBySchoolProcessor {
    * <p>This method delegates to {@link ProjectBySchool#factory(UUID, UUID)}, which immediately
    * self-validates the created aggregate. The caller is responsible for inspecting {@link
    * ProjectBySchool#hasFieldErrors()} and handling any collected validation problems (for example,
-   * by throwing an {@link com.pug.shared.exceptions.AppValidationException}).
+   * by throwing an {@link exceptions.shared.br.org.catolicasc.pug.AppValidationException}).
    *
    * @param projectId the unique identifier of the project
    * @param schoolId the unique identifier of the school
@@ -7902,9 +7902,9 @@ FILE: service/utils/ProjectProcessor.java
 ================================================================================
 package com.pug.project.service.utils;
 
-import com.pug.project.domain.Project;
-import com.pug.project.domain.vos.ProjectInfo;
-import com.pug.shared.utils.StringUtils;
+import domain.project.br.org.catolicasc.pug.Project;
+import vos.domain.project.br.org.catolicasc.pug.ProjectInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.math.BigDecimal;
 import java.util.UUID;
 

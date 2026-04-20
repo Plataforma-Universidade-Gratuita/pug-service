@@ -10,13 +10,13 @@ FILE: domain/Account.java
 package com.pug.identity.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
-import com.pug.identity.domain.vos.Email;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityFieldErrorCodes;
+import vos.domain.identity.br.org.catolicasc.pug.Email;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -363,10 +363,10 @@ FILE: domain/Admin.java
 ================================================================================
 package com.pug.identity.domain;
 
-import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.Campi;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -538,7 +538,7 @@ FILE: domain/enums/IdentityErrorCodes.java
 ================================================================================
 package com.pug.identity.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -599,7 +599,7 @@ FILE: domain/enums/IdentityFieldErrorCodes.java
 ================================================================================
 package com.pug.identity.domain.enums;
 
-import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
 import lombok.Getter;
 
 /**
@@ -607,7 +607,7 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "cpf", "email"). These
- * constants are primarily accumulated inside {@link com.pug.shared.domain.DomainError} instances
+ * constants are primarily accumulated inside {@link domain.shared.br.org.catolicasc.pug.DomainError} instances
  * when value objects or entities fail their internal validations.
  */
 @Getter
@@ -682,12 +682,12 @@ FILE: domain/User.java
 package com.pug.identity.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityFieldErrorCodes;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -927,9 +927,9 @@ FILE: domain/vos/Cpf.java
 ================================================================================
 package com.pug.identity.domain.vos;
 
-import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -1063,9 +1063,9 @@ FILE: domain/vos/Email.java
 ================================================================================
 package com.pug.identity.domain.vos;
 
-import com.pug.identity.domain.enums.IdentityFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.Locale;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -1147,11 +1147,11 @@ FILE: infra/AccountMapper.java
 ================================================================================
 package com.pug.identity.infra;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.vos.Email;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.identity.br.org.catolicasc.pug.Account;
+import vos.domain.identity.br.org.catolicasc.pug.Email;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Account boundary layers.
@@ -1269,11 +1269,11 @@ FILE: infra/AdminMapper.java
 ================================================================================
 package com.pug.identity.infra;
 
-import com.pug.identity.domain.Admin;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.AdminEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.infra.read.dtos.AdminView;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.AdminEntity;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
 
 /**
  * Stateless utility class responsible for mapping between Administrator boundary layers.
@@ -1378,8 +1378,8 @@ FILE: infra/persistence/AccountEntity.java
 ================================================================================
 package com.pug.identity.infra.persistence;
 
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -1399,7 +1399,7 @@ import lombok.experimental.SuperBuilder;
 /**
  * JPA entity representing an authentication Account within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link com.pug.identity.domain.Account}
+ * <p>This class is the database-mapped counterpart to the {@link domain.identity.br.org.catolicasc.pug.Account}
  * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit fields from
  * {@link BaseAuditedEntity}. It maintains the credentials, role types, and the logical association
  * to a specific {@link UserEntity}.
@@ -1468,7 +1468,7 @@ FILE: infra/persistence/AdminEntity.java
 ================================================================================
 package com.pug.identity.infra.persistence;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -1489,7 +1489,7 @@ import lombok.ToString;
 /**
  * JPA entity representing Administrator privileges within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link com.pug.identity.domain.Admin}
+ * <p>This class is the database-mapped counterpart to the {@link domain.identity.br.org.catolicasc.pug.Admin}
  * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
  * key, effectively functioning as a one-to-one extension of an {@link AccountEntity} to grant
  * system administration rights.
@@ -1539,11 +1539,11 @@ FILE: infra/persistence/impl/AccountRepositoryImpl.java
 ================================================================================
 package com.pug.identity.infra.persistence.impl;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.AccountRepository;
-import com.pug.identity.infra.AccountMapper;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.shared.utils.CollectionUtils;
+import domain.identity.br.org.catolicasc.pug.Account;
+import domain.identity.br.org.catolicasc.pug.AccountRepository;
+import infra.identity.br.org.catolicasc.pug.AccountMapper;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1630,7 +1630,7 @@ public class AccountRepositoryImpl
   /** {@inheritDoc} */
   @Override
   public Optional<Account> findOptionalByEmail(String email) {
-    if (com.pug.shared.utils.StringUtils.isEmpty(email)) {
+    if (utils.shared.br.org.catolicasc.pug.StringUtils.isEmpty(email)) {
       return Optional.empty();
     }
     return find("email", email).firstResultOptional().map(AccountMapper::toDomain);
@@ -1703,10 +1703,10 @@ FILE: infra/persistence/impl/AdminRepositoryImpl.java
 ================================================================================
 package com.pug.identity.infra.persistence.impl;
 
-import com.pug.identity.domain.Admin;
-import com.pug.identity.domain.AdminRepository;
-import com.pug.identity.infra.AdminMapper;
-import com.pug.identity.infra.persistence.AdminEntity;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import domain.identity.br.org.catolicasc.pug.AdminRepository;
+import infra.identity.br.org.catolicasc.pug.AdminMapper;
+import persistence.infra.identity.br.org.catolicasc.pug.AdminEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1775,12 +1775,12 @@ FILE: infra/persistence/impl/UserRepositoryImpl.java
 ================================================================================
 package com.pug.identity.infra.persistence.impl;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.UserRepository;
-import com.pug.identity.infra.UserMapper;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.shared.utils.CollectionUtils;
-import com.pug.shared.utils.StringUtils;
+import domain.identity.br.org.catolicasc.pug.User;
+import domain.identity.br.org.catolicasc.pug.UserRepository;
+import infra.identity.br.org.catolicasc.pug.UserMapper;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1908,7 +1908,7 @@ FILE: infra/persistence/UserEntity.java
 ================================================================================
 package com.pug.identity.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -1931,7 +1931,7 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity representing a User within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link com.pug.identity.domain.User}
+ * <p>This class acts as the database-mapped counterpart to the {@link domain.identity.br.org.catolicasc.pug.User}
  * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit tracking
  * fields from {@link BaseAuditedEntity}. It enforces strict uniqueness on the CPF at the database
  * level.
@@ -1979,7 +1979,7 @@ public class UserEntity extends BaseAuditedEntity {
    * The full name of the user.
    *
    * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   * {@link search.infra.shared.br.org.catolicasc.pug.EsAnalysis}. It projects into four distinct index fields:
    *
    * <ul>
    *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
@@ -2002,7 +2002,7 @@ FILE: infra/read/AccountQueries.java
 ================================================================================
 package com.pug.identity.infra.read;
 
-import com.pug.identity.infra.read.dtos.AccountView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2073,7 +2073,7 @@ FILE: infra/read/AdminQueries.java
 ================================================================================
 package com.pug.identity.infra.read;
 
-import com.pug.identity.infra.read.dtos.AdminView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2143,7 +2143,7 @@ FILE: infra/read/dtos/AccountView.java
 ================================================================================
 package com.pug.identity.infra.read.dtos;
 
-import com.pug.shared.domain.enums.AccountType;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
@@ -2178,8 +2178,8 @@ FILE: infra/read/dtos/AdminAcc.java
 ================================================================================
 package com.pug.identity.infra.read.dtos;
 
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.AdminEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.AdminEntity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -2202,7 +2202,7 @@ FILE: infra/read/dtos/AdminView.java
 ================================================================================
 package com.pug.identity.infra.read.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.time.OffsetDateTime;
 
 /**
@@ -2253,14 +2253,14 @@ FILE: infra/read/impl/AccountQueriesImpl.java
 ================================================================================
 package com.pug.identity.infra.read.impl;
 
-import static com.pug.identity.infra.AccountMapper.toView;
+import static infra.identity.br.org.catolicasc.pug.AccountMapper.toView;
 
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.AccountQueries;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import read.infra.identity.br.org.catolicasc.pug.AccountQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2286,7 +2286,7 @@ public class AccountQueriesImpl implements AccountQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AccountView(
+                  select new dtos.read.infra.identity.br.org.catolicasc.pug.AccountView(
                     a.id,
                     u.id,
                     a.email,
@@ -2374,16 +2374,16 @@ FILE: infra/read/impl/AdminQueriesImpl.java
 ================================================================================
 package com.pug.identity.infra.read.impl;
 
-import static com.pug.identity.infra.AdminMapper.toView;
+import static infra.identity.br.org.catolicasc.pug.AdminMapper.toView;
 
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.persistence.AdminEntity;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.AdminQueries;
-import com.pug.identity.infra.read.dtos.AdminAcc;
-import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.AdminEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import read.infra.identity.br.org.catolicasc.pug.AdminQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminAcc;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2411,8 +2411,8 @@ public class AdminQueriesImpl implements AdminQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.identity.infra.read.dtos.AdminView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
+                  select new dtos.read.infra.identity.br.org.catolicasc.pug.AdminView(
+                    new dtos.read.infra.identity.br.org.catolicasc.pug.AccountView(
                       acc.id,
                       u.id,
                       acc.email,
@@ -2478,7 +2478,7 @@ public class AdminQueriesImpl implements AdminQueries {
    * <p>This implementation preserves the relevance order returned by the full-text search in {@link
    * UserEntity}. For each user found, the function loads the associated pairs ({@link AdminEntity},
    * {@link AccountEntity}) and projects them into {@link AdminView} using the mapper {@link
-   * com.pug.identity.infra.AdminMapper#toView(AdminEntity, AccountEntity)}.
+   * infra.identity.br.org.catolicasc.pug.AdminMapper#toView(AdminEntity, AccountEntity)}.
    */
   @Override
   public List<AdminView> searchByName(String key) {
@@ -2492,7 +2492,7 @@ public class AdminQueriesImpl implements AdminQueries {
     List<AdminAcc> rows =
         em.createQuery(
                 """
-                        select new com.pug.identity.infra.read.dtos.AdminAcc(a, acc)
+                        select new dtos.read.infra.identity.br.org.catolicasc.pug.AdminAcc(a, acc)
                         from AdminEntity a join AccountEntity acc on acc.id = a.accountId
                         where acc.userId in :ids
                         """,
@@ -2527,13 +2527,13 @@ FILE: infra/read/impl/UserQueriesImpl.java
 ================================================================================
 package com.pug.identity.infra.read.impl;
 
-import static com.pug.identity.infra.UserMapper.toView;
+import static infra.identity.br.org.catolicasc.pug.UserMapper.toView;
 
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.UserQueries;
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import read.infra.identity.br.org.catolicasc.pug.UserQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -2565,7 +2565,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new dtos.read.infra.identity.br.org.catolicasc.pug.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.cpf = :cpf",
             UserView.class);
@@ -2581,7 +2581,7 @@ public class UserQueriesImpl implements UserQueries {
     }
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new dtos.read.infra.identity.br.org.catolicasc.pug.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p where p.id = :id",
             UserView.class);
@@ -2594,7 +2594,7 @@ public class UserQueriesImpl implements UserQueries {
   public List<UserView> listAllUsers() {
     var q =
         em.createQuery(
-            "select new com.pug.identity.infra.read.dtos.UserView("
+            "select new dtos.read.infra.identity.br.org.catolicasc.pug.UserView("
                 + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
                 + "from UserEntity p order by p.name asc",
             UserView.class);
@@ -2624,7 +2624,7 @@ FILE: infra/read/UserQueries.java
 ================================================================================
 package com.pug.identity.infra.read;
 
-import com.pug.identity.infra.read.dtos.UserView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -2686,11 +2686,11 @@ FILE: infra/UserMapper.java
 ================================================================================
 package com.pug.identity.infra;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.identity.br.org.catolicasc.pug.User;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between User boundary layers.
@@ -2792,16 +2792,16 @@ FILE: presenter/AccountReadOnlyResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.identity.service.AccountReadService;
-import com.pug.identity.service.AuthService;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import dtos.presenter.identity.br.org.catolicasc.pug.AccountResponse;
+import mappers.presenter.identity.br.org.catolicasc.pug.AccountPresenter;
+import service.identity.br.org.catolicasc.pug.AccountReadService;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -2953,24 +2953,24 @@ FILE: presenter/AdminResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
-import com.pug.identity.domain.Admin;
-import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.presenter.dtos.AdminCreateRequest;
-import com.pug.identity.presenter.dtos.AdminResponse;
-import com.pug.identity.presenter.dtos.AdminUpdateRequest;
-import com.pug.identity.presenter.mappers.AdminPresenter;
-import com.pug.identity.service.AdminReadService;
-import com.pug.identity.service.AdminService;
-import com.pug.identity.service.AuthService;
-import com.pug.identity.service.PasswordService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminCreateRequest;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminResponse;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminUpdateRequest;
+import mappers.presenter.identity.br.org.catolicasc.pug.AdminPresenter;
+import service.identity.br.org.catolicasc.pug.AdminReadService;
+import service.identity.br.org.catolicasc.pug.AdminService;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.identity.br.org.catolicasc.pug.PasswordService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
@@ -3217,10 +3217,10 @@ FILE: presenter/AuthResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
-import com.pug.identity.presenter.dtos.auth.LoginRequest;
-import com.pug.identity.presenter.dtos.auth.TokenResponse;
-import com.pug.identity.service.AuthService;
-import com.pug.shared.presenter.rest.ApiEnvelope;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.LoginRequest;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.TokenResponse;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
 import jakarta.annotation.security.PermitAll;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -3268,8 +3268,8 @@ FILE: presenter/dtos/AccountResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.util.UUID;
 
 /**
@@ -3303,7 +3303,7 @@ FILE: presenter/dtos/AdminCreateRequest.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -3334,7 +3334,7 @@ FILE: presenter/dtos/AdminResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.CampusResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.CampusResponse;
 import java.time.OffsetDateTime;
 
 /**
@@ -3362,7 +3362,7 @@ FILE: presenter/dtos/AdminUpdateRequest.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -3411,7 +3411,7 @@ FILE: presenter/dtos/auth/TokenResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos.auth;
 
-import com.pug.shared.domain.enums.AccountType;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
 import java.util.UUID;
 
 /**
@@ -3434,7 +3434,7 @@ FILE: presenter/dtos/UserResponse.java
 ================================================================================
 package com.pug.identity.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.util.UUID;
 
 /**
@@ -3459,11 +3459,11 @@ FILE: presenter/mappers/AccountPresenter.java
 ================================================================================
 package com.pug.identity.presenter.mappers;
 
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import dtos.presenter.identity.br.org.catolicasc.pug.AccountResponse;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
 import java.util.Locale;
 
 /**
@@ -3514,22 +3514,22 @@ FILE: presenter/mappers/AdminPresenter.java
 ================================================================================
 package com.pug.identity.presenter.mappers;
 
-import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.presenter.dtos.AccountResponse;
-import com.pug.identity.presenter.dtos.AdminCreateRequest;
-import com.pug.identity.presenter.dtos.AdminResponse;
-import com.pug.identity.presenter.dtos.AdminUpdateRequest;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.AdminUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.dtos.CampusResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
+import dtos.presenter.identity.br.org.catolicasc.pug.AccountResponse;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminCreateRequest;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminResponse;
+import dtos.presenter.identity.br.org.catolicasc.pug.AdminUpdateRequest;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AdminCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AdminUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserUpdateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import dtos.presenter.shared.br.org.catolicasc.pug.CampusResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.Locale;
 
 /**
@@ -3611,10 +3611,10 @@ FILE: presenter/mappers/UserPresenter.java
 ================================================================================
 package com.pug.identity.presenter.mappers;
 
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.identity.presenter.dtos.UserResponse;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
+import dtos.presenter.identity.br.org.catolicasc.pug.UserResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
 import java.util.Locale;
 
 /**
@@ -3679,17 +3679,17 @@ FILE: presenter/UserReadOnlyResource.java
 ================================================================================
 package com.pug.identity.presenter;
 
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.identity.presenter.dtos.UserResponse;
-import com.pug.identity.presenter.mappers.UserPresenter;
-import com.pug.identity.service.AuthService;
-import com.pug.identity.service.UserReadService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
+import dtos.presenter.identity.br.org.catolicasc.pug.UserResponse;
+import mappers.presenter.identity.br.org.catolicasc.pug.UserPresenter;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.identity.br.org.catolicasc.pug.UserReadService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -4034,7 +4034,7 @@ FILE: service/AccountReadService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.infra.read.dtos.AccountView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
 import java.util.List;
 import java.util.UUID;
 
@@ -4052,7 +4052,7 @@ public interface AccountReadService {
    *
    * @param email the exact email address string of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no account matches the provided
    *     email
    */
   AccountView getViewByEmail(String email);
@@ -4062,7 +4062,7 @@ public interface AccountReadService {
    *
    * @param id the unique identifier (UUID) of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no account matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no account matches the provided
    *     ID
    */
   AccountView getViewById(UUID id);
@@ -4101,10 +4101,10 @@ FILE: service/AccountService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.User;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
+import domain.identity.br.org.catolicasc.pug.Account;
+import domain.identity.br.org.catolicasc.pug.User;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
 import java.util.List;
 import java.util.UUID;
 
@@ -4126,7 +4126,7 @@ public interface AccountService {
    *
    * @param id the unique identifier (UUID) of the account to deactivate
    * @return the deactivated {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the account does not exist
    */
   Account deactivate(UUID id);
 
@@ -4162,8 +4162,8 @@ public interface AccountService {
    *
    * @param email the email address of the account
    * @return the fully reconstituted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the account exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the account does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the account exists but its stored
    *     state violates domain constraints
    */
   Account getByEmail(String email);
@@ -4176,8 +4176,8 @@ public interface AccountService {
    *
    * @param id the unique identifier (UUID) of the account
    * @return the fully reconstituted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the account exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the account does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the account exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Account getById(UUID id);
@@ -4191,9 +4191,9 @@ public interface AccountService {
    *
    * @param cmd the structured command containing the data to create the new account and linked user
    * @return the fully instantiated and persisted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an account with the given email
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if an account with the given email
    *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails (e.g., blank
    *     email, invalid CPF)
    */
   Account save(AccountCreateCommand cmd);
@@ -4207,8 +4207,8 @@ public interface AccountService {
    *
    * @param cmds a {@link List} of structured commands for the batch accounts
    * @return a {@link List} of the fully instantiated and persisted {@link Account} aggregates
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any email already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if any email already exists
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails
    */
   List<Account> saveInBulk(List<AccountCreateCommand> cmds);
 
@@ -4222,10 +4222,10 @@ public interface AccountService {
    * @param id the unique identifier (UUIDv7) of the account to be updated
    * @param cmd the structured command containing the data to update the account
    * @return the mutated and persisted {@link Account} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the account does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the account does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated email conflicts
    *     with an existing account
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the updated input data violates
    *     domain constraints
    */
   Account update(UUID id, AccountUpdateCommand cmd);
@@ -4237,7 +4237,7 @@ FILE: service/AdminReadService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.infra.read.dtos.AdminView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
 import java.util.List;
 import java.util.UUID;
 
@@ -4255,7 +4255,7 @@ public interface AdminReadService {
    *
    * @param accountId the unique identifier (UUID) of the admin's account
    * @return the populated {@link AdminView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no admin matches the provided
    *     account ID
    */
   AdminView getViewByAccountId(UUID accountId);
@@ -4265,7 +4265,7 @@ public interface AdminReadService {
    *
    * @param email the exact email address string of the requested admin
    * @return the populated {@link AdminView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no admin matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no admin matches the provided
    *     email
    */
   AdminView getViewByEmail(String email);
@@ -4304,9 +4304,9 @@ FILE: service/AdminService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.domain.Admin;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.AdminUpdateCommand;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import dtos.service.identity.br.org.catolicasc.pug.AdminCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AdminUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -4314,7 +4314,7 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete) for administrative privileges. It orchestrates the complex lifecycle relationship between
- * an {@link Admin}, its underlying {@link com.pug.identity.domain.Account}, and the associated
+ * an {@link Admin}, its underlying {@link domain.identity.br.org.catolicasc.pug.Account}, and the associated
  * user, ensuring that granting or revoking admin rights cascades correctly through the system.
  */
 public interface AdminService {
@@ -4336,7 +4336,7 @@ public interface AdminService {
    *
    * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
    * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to admin roles are wiped
+   * domain.identity.br.org.catolicasc.pug.Account} to ensure credentials tied strictly to admin roles are wiped
    * out.
    *
    * @param accountId the unique identifier of the Admin to delete (Account ID)
@@ -4352,8 +4352,8 @@ public interface AdminService {
    *
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Admin} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the Admin exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the Admin does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the Admin exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Admin getByAccountId(UUID accountId);
@@ -4367,9 +4367,9 @@ public interface AdminService {
    *
    * @param cmd the structured command containing the data to create the admin and linked account
    * @return the fully instantiated and persisted {@link Admin} aggregate
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for account
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails for account
    *     or admin data
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the underlying account email
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the underlying account email
    *     already exists
    */
   Admin save(AdminCreateCommand cmd);
@@ -4385,9 +4385,9 @@ public interface AdminService {
    *     ID)
    * @param cmd the structured command containing the data to update the admin and/or account
    * @return the mutated and persisted {@link Admin} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Admin or linked Account does
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the Admin or linked Account does
    *     not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the updated input data violates
    *     domain constraints
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
@@ -4399,9 +4399,9 @@ FILE: service/AuthService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.presenter.dtos.auth.LoginRequest;
-import com.pug.identity.presenter.dtos.auth.TokenResponse;
-import com.pug.shared.domain.enums.AccountType;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.LoginRequest;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.TokenResponse;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
 import java.util.UUID;
 
 /**
@@ -4447,7 +4447,7 @@ public interface AuthService {
    * Authenticates a user based on their credentials and generates a JSON Web Token (JWT).
    *
    * <p>This method evaluates the provided email and plaintext password. If the credentials are
-   * valid and the underlying {@link com.pug.identity.domain.Account} is active, it issues a signed
+   * valid and the underlying {@link domain.identity.br.org.catolicasc.pug.Account} is active, it issues a signed
    * JWT containing the user's roles and identity claims.
    *
    * @param request the structured {@link LoginRequest} containing the user's email and plaintext
@@ -4484,15 +4484,15 @@ FILE: service/dtos/AccountCreateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
 
-import com.pug.shared.domain.enums.AccountType;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to create a new authentication
  * Account.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.identity.domain.Account} aggregate, alongside the nested command needed to
- * provision its underlying {@link com.pug.identity.domain.User}.
+ * a new {@link domain.identity.br.org.catolicasc.pug.Account} aggregate, alongside the nested command needed to
+ * provision its underlying {@link domain.identity.br.org.catolicasc.pug.User}.
  *
  * @param emailString the raw string representation of the requested email address
  * @param type the designated authorization role for the account
@@ -4529,14 +4529,14 @@ FILE: service/dtos/AdminCreateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to grant new Administrator
  * privileges.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.identity.domain.Admin} aggregate, cascading down to create the necessary
+ * a new {@link domain.identity.br.org.catolicasc.pug.Admin} aggregate, cascading down to create the necessary
  * authentication account and user identity in a single transaction.
  *
  * @param accountCommand the nested command containing the data to create the underlying
@@ -4551,7 +4551,7 @@ FILE: service/dtos/AdminUpdateCommand.java
 ================================================================================
 package com.pug.identity.service.dtos;
 
-import com.pug.shared.domain.enums.Campi;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to update an existing Administrator.
@@ -4575,7 +4575,7 @@ package com.pug.identity.service.dtos;
  * Data Transfer Object (DTO) acting as an application command to provision a new User identity.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.identity.domain.User} aggregate.
+ * a new {@link domain.identity.br.org.catolicasc.pug.User} aggregate.
  *
  * @param cpfString the raw 11-digit Brazilian CPF string belonging to the person
  * @param name the full name of the person
@@ -4604,11 +4604,11 @@ FILE: service/impl/AccountReadServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.infra.read.AccountQueries;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.identity.service.AccountReadService;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.identity.br.org.catolicasc.pug.AccountQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import service.identity.br.org.catolicasc.pug.AccountReadService;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -4692,21 +4692,21 @@ FILE: service/impl/AccountServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.AccountRepository;
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.AccountService;
-import com.pug.identity.service.UserService;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.utils.AccountProcessor;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.CollectionUtils;
+import domain.identity.br.org.catolicasc.pug.Account;
+import domain.identity.br.org.catolicasc.pug.AccountRepository;
+import domain.identity.br.org.catolicasc.pug.User;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import vos.domain.identity.br.org.catolicasc.pug.Email;
+import service.identity.br.org.catolicasc.pug.AccountService;
+import service.identity.br.org.catolicasc.pug.UserService;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import utils.service.identity.br.org.catolicasc.pug.AccountProcessor;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -4968,11 +4968,11 @@ FILE: service/impl/AdminReadServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.infra.read.AdminQueries;
-import com.pug.identity.infra.read.dtos.AdminView;
-import com.pug.identity.service.AdminReadService;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.identity.br.org.catolicasc.pug.AdminQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AdminView;
+import service.identity.br.org.catolicasc.pug.AdminReadService;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -5056,17 +5056,17 @@ FILE: service/impl/AdminServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.Admin;
-import com.pug.identity.domain.AdminRepository;
-import com.pug.identity.service.AccountService;
-import com.pug.identity.service.AdminService;
-import com.pug.identity.service.dtos.AdminCreateCommand;
-import com.pug.identity.service.dtos.AdminUpdateCommand;
-import com.pug.identity.service.utils.AdminProcessor;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import domain.identity.br.org.catolicasc.pug.Account;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import domain.identity.br.org.catolicasc.pug.AdminRepository;
+import service.identity.br.org.catolicasc.pug.AccountService;
+import service.identity.br.org.catolicasc.pug.AdminService;
+import dtos.service.identity.br.org.catolicasc.pug.AdminCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AdminUpdateCommand;
+import utils.service.identity.br.org.catolicasc.pug.AdminProcessor;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -5197,15 +5197,15 @@ FILE: service/impl/AuthServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.presenter.dtos.auth.LoginRequest;
-import com.pug.identity.presenter.dtos.auth.TokenResponse;
-import com.pug.identity.service.AccountService;
-import com.pug.identity.service.AuthService;
-import com.pug.identity.service.PasswordService;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import domain.identity.br.org.catolicasc.pug.Account;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.LoginRequest;
+import auth.dtos.presenter.identity.br.org.catolicasc.pug.TokenResponse;
+import service.identity.br.org.catolicasc.pug.AccountService;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.identity.br.org.catolicasc.pug.PasswordService;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -5362,7 +5362,7 @@ FILE: service/impl/PasswordServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.service.PasswordService;
+import service.identity.br.org.catolicasc.pug.PasswordService;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -5403,11 +5403,11 @@ FILE: service/impl/UserReadServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.infra.read.UserQueries;
-import com.pug.identity.infra.read.dtos.UserView;
-import com.pug.identity.service.UserReadService;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.identity.br.org.catolicasc.pug.UserQueries;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
+import service.identity.br.org.catolicasc.pug.UserReadService;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -5482,17 +5482,17 @@ FILE: service/impl/UserServiceImpl.java
 ================================================================================
 package com.pug.identity.service.impl;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.UserRepository;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.service.UserService;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.identity.service.utils.ExceptionHelper;
-import com.pug.identity.service.utils.UserProcessor;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
-import com.pug.shared.utils.CollectionUtils;
+import domain.identity.br.org.catolicasc.pug.User;
+import domain.identity.br.org.catolicasc.pug.UserRepository;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import service.identity.br.org.catolicasc.pug.UserService;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserUpdateCommand;
+import utils.service.identity.br.org.catolicasc.pug.ExceptionHelper;
+import utils.service.identity.br.org.catolicasc.pug.UserProcessor;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -5730,7 +5730,7 @@ FILE: service/UserReadService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.infra.read.dtos.UserView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.UserView;
 import java.util.List;
 import java.util.UUID;
 
@@ -5749,7 +5749,7 @@ public interface UserReadService {
    *
    * @param id the unique identifier (UUID) of the requested user
    * @return the populated {@link UserView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user matches the provided ID
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no user matches the provided ID
    */
   UserView getViewById(UUID id);
 
@@ -5758,7 +5758,7 @@ public interface UserReadService {
    *
    * @param cpf the raw 11-digit numeric CPF string of the requested user
    * @return the populated {@link UserView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no user matches the provided CPF
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no user matches the provided CPF
    */
   UserView getViewByCpf(String cpf);
 
@@ -5790,10 +5790,10 @@ FILE: service/UserService.java
 ================================================================================
 package com.pug.identity.service;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
+import domain.identity.br.org.catolicasc.pug.User;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserUpdateCommand;
 import java.util.List;
 import java.util.UUID;
 
@@ -5837,8 +5837,8 @@ public interface UserService {
    *
    * @param cpf the previously validated {@link Cpf} Value Object
    * @return the fully reconstituted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the user does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the user violates domain rules
    */
   User getByCpf(Cpf cpf);
 
@@ -5847,8 +5847,8 @@ public interface UserService {
    *
    * @param id the unique identifier (UUID) of the user
    * @return the fully reconstituted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the user violates domain rules
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the user does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the user violates domain rules
    */
   User getById(UUID id);
 
@@ -5865,9 +5865,9 @@ public interface UserService {
    *
    * @param cmd the structured command containing the data required to create a new user
    * @return the fully instantiated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if a user with the provided CPF
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if a user with the provided CPF
    *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if the input data violates domain
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the input data violates domain
    *     constraints
    */
   User save(UserCreateCommand cmd);
@@ -5880,8 +5880,8 @@ public interface UserService {
    *
    * @param cmds a {@link List} of structured commands for the batch users
    * @return a {@link List} of the fully instantiated and persisted {@link User} aggregates
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if any CPF already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails for any user
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if any CPF already exists
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails for any user
    */
   List<User> saveInBulk(List<UserCreateCommand> cmds);
 
@@ -5891,9 +5891,9 @@ public interface UserService {
    * @param id the unique identifier (UUIDv7) of the user to update
    * @param cmd the structured command containing the updated user data
    * @return the mutated and persisted {@link User} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the user cannot be found
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated CPF conflicts
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the user cannot be found
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated CPF conflicts
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the updated input data violates
    *     domain constraints
    */
   User update(UUID id, UserUpdateCommand cmd);
@@ -5905,14 +5905,14 @@ FILE: service/utils/AccountProcessor.java
 ================================================================================
 package com.pug.identity.service.utils;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.domain.vos.Email;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.utils.StringUtils;
+import domain.identity.br.org.catolicasc.pug.Account;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import vos.domain.identity.br.org.catolicasc.pug.Email;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -6051,8 +6051,8 @@ FILE: service/utils/AdminProcessor.java
 ================================================================================
 package com.pug.identity.service.utils;
 
-import com.pug.identity.domain.Admin;
-import com.pug.shared.domain.enums.Campi;
+import domain.identity.br.org.catolicasc.pug.Admin;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 import java.util.UUID;
 
 /**
@@ -6103,9 +6103,9 @@ FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.identity.service.utils;
 
-import com.pug.identity.domain.enums.IdentityErrorCodes;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import enums.domain.identity.br.org.catolicasc.pug.IdentityErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 import jakarta.ws.rs.NotAuthorizedException;
 
 /**
@@ -6190,12 +6190,12 @@ FILE: service/utils/UserProcessor.java
 ================================================================================
 package com.pug.identity.service.utils;
 
-import com.pug.identity.domain.User;
-import com.pug.identity.domain.vos.Cpf;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.utils.CollectionUtils;
-import com.pug.shared.utils.StringUtils;
+import domain.identity.br.org.catolicasc.pug.User;
+import vos.domain.identity.br.org.catolicasc.pug.Cpf;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import utils.shared.br.org.catolicasc.pug.CollectionUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 

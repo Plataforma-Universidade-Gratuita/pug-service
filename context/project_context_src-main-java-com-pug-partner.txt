@@ -10,12 +10,12 @@ FILE: domain/Entity.java
 package com.pug.partner.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
-import com.pug.partner.domain.vos.Cnpj;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.domain.enums.SharedFieldErrorCodes;
-import com.pug.shared.domain.vos.AuditInfo;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.partner.br.org.catolicasc.pug.PartnerFieldErrorCodes;
+import vos.domain.partner.br.org.catolicasc.pug.Cnpj;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import enums.domain.shared.br.org.catolicasc.pug.SharedFieldErrorCodes;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -47,7 +47,7 @@ public class Entity extends DomainError {
   String name;
 
   /**
-   * The unique identifier of the associated {@link com.pug.geo.domain.City} where the entity is
+   * The unique identifier of the associated {@link domain.geo.br.org.catolicasc.pug.City} where the entity is
    * located.
    */
   UUID cityId;
@@ -232,7 +232,7 @@ public interface EntityRepository {
    * Checks whether any Partner {@link Entity} exists that is associated with a specific city ID.
    *
    * <p>This is used to enforce referential integrity across bounded contexts, such as preventing
-   * the deletion of a {@link com.pug.geo.domain.City} that is currently assigned to one or more
+   * the deletion of a {@link domain.geo.br.org.catolicasc.pug.City} that is currently assigned to one or more
    * partner organizations.
    *
    * @param cityId the unique identifier of the city to check
@@ -289,7 +289,7 @@ FILE: domain/enums/PartnerErrorCodes.java
 ================================================================================
 package com.pug.partner.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -372,7 +372,7 @@ FILE: domain/enums/PartnerFieldErrorCodes.java
 ================================================================================
 package com.pug.partner.domain.enums;
 
-import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
 import lombok.Getter;
 
 /**
@@ -380,7 +380,7 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "cnpj", "address"). These
- * constants are primarily accumulated inside {@link com.pug.shared.domain.DomainError} instances
+ * constants are primarily accumulated inside {@link domain.shared.br.org.catolicasc.pug.DomainError} instances
  * when value objects or entities fail their internal validations.
  */
 @Getter
@@ -439,8 +439,8 @@ FILE: domain/Staff.java
 ================================================================================
 package com.pug.partner.domain;
 
-import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
+import enums.domain.partner.br.org.catolicasc.pug.PartnerFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -608,9 +608,9 @@ FILE: domain/vos/Cnpj.java
 ================================================================================
 package com.pug.partner.domain.vos;
 
-import com.pug.partner.domain.enums.PartnerFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.partner.br.org.catolicasc.pug.PartnerFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -723,10 +723,10 @@ FILE: infra/EntityMapper.java
 ================================================================================
 package com.pug.partner.infra;
 
-import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.vos.Cnpj;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.shared.domain.vos.AuditInfo;
+import domain.partner.br.org.catolicasc.pug.Entity;
+import vos.domain.partner.br.org.catolicasc.pug.Cnpj;
+import persistence.infra.partner.br.org.catolicasc.pug.EntityEntity;
+import vos.domain.shared.br.org.catolicasc.pug.AuditInfo;
 
 /**
  * Stateless utility class responsible for mapping between Partner Entity boundary layers.
@@ -817,7 +817,7 @@ FILE: infra/persistence/EntityEntity.java
 ================================================================================
 package com.pug.partner.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseAuditedEntity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -841,7 +841,7 @@ import org.hibernate.type.SqlTypes;
  * JPA entity representing a Partner Organization (Entity) within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * com.pug.partner.domain.Entity} domain aggregate. It inherits a time-ordered UUIDv7 primary key
+ * domain.partner.br.org.catolicasc.pug.Entity} domain aggregate. It inherits a time-ordered UUIDv7 primary key
  * and standard audit tracking fields from {@link BaseAuditedEntity}. It enforces strict uniqueness
  * on the CNPJ at the database level.
  *
@@ -883,7 +883,7 @@ public class EntityEntity extends BaseAuditedEntity {
    * The registered name or corporate reason of the partner entity.
    *
    * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   * {@link search.infra.shared.br.org.catolicasc.pug.EsAnalysis}. It projects into four distinct index fields:
    *
    * <ul>
    *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
@@ -900,7 +900,7 @@ public class EntityEntity extends BaseAuditedEntity {
   private String name;
 
   /**
-   * The unique identifier (UUID) of the associated {@link com.pug.geo.domain.City}.
+   * The unique identifier (UUID) of the associated {@link domain.geo.br.org.catolicasc.pug.City}.
    *
    * <p>Acts as a foreign key linking this partner organization to its geographical location.
    */
@@ -918,11 +918,11 @@ FILE: infra/persistence/impl/EntityRepositoryImpl.java
 ================================================================================
 package com.pug.partner.infra.persistence.impl;
 
-import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.EntityRepository;
-import com.pug.partner.infra.EntityMapper;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.shared.utils.StringUtils;
+import domain.partner.br.org.catolicasc.pug.Entity;
+import domain.partner.br.org.catolicasc.pug.EntityRepository;
+import infra.partner.br.org.catolicasc.pug.EntityMapper;
+import persistence.infra.partner.br.org.catolicasc.pug.EntityEntity;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1015,10 +1015,10 @@ FILE: infra/persistence/impl/StaffRepositoryImpl.java
 ================================================================================
 package com.pug.partner.infra.persistence.impl;
 
-import com.pug.partner.domain.Staff;
-import com.pug.partner.domain.StaffRepository;
-import com.pug.partner.infra.StaffMapper;
-import com.pug.partner.infra.persistence.StaffEntity;
+import domain.partner.br.org.catolicasc.pug.Staff;
+import domain.partner.br.org.catolicasc.pug.StaffRepository;
+import infra.partner.br.org.catolicasc.pug.StaffMapper;
+import persistence.infra.partner.br.org.catolicasc.pug.StaffEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -1119,7 +1119,7 @@ import lombok.ToString;
 /**
  * JPA entity representing Staff privileges within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link com.pug.partner.domain.Staff}
+ * <p>This class is the database-mapped counterpart to the {@link domain.partner.br.org.catolicasc.pug.Staff}
  * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
  * key, effectively functioning as a one-to-one extension of an authentication account to grant
  * staff-level access tied to a specific Partner Entity.
@@ -1196,10 +1196,10 @@ FILE: infra/read/dtos/StaffAcc.java
 ================================================================================
 package com.pug.partner.infra.read.dtos;
 
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.partner.infra.persistence.StaffEntity;
+import persistence.infra.geo.br.org.catolicasc.pug.CityEntity;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import persistence.infra.partner.br.org.catolicasc.pug.EntityEntity;
+import persistence.infra.partner.br.org.catolicasc.pug.StaffEntity;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 /**
@@ -1225,7 +1225,7 @@ FILE: infra/read/dtos/StaffView.java
 ================================================================================
 package com.pug.partner.infra.read.dtos;
 
-import com.pug.identity.infra.read.dtos.AccountView;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
 import java.util.UUID;
 
 /**
@@ -1249,7 +1249,7 @@ FILE: infra/read/EntityQueries.java
 ================================================================================
 package com.pug.partner.infra.read;
 
-import com.pug.partner.infra.read.dtos.EntityView;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -1328,11 +1328,11 @@ FILE: infra/read/impl/EntityQueriesImpl.java
 ================================================================================
 package com.pug.partner.infra.read.impl;
 
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.partner.infra.read.EntityQueries;
-import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import persistence.infra.partner.br.org.catolicasc.pug.EntityEntity;
+import read.infra.partner.br.org.catolicasc.pug.EntityQueries;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -1357,7 +1357,7 @@ public class EntityQueriesImpl implements EntityQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.partner.infra.read.dtos.EntityView(
+                  select new dtos.read.infra.partner.br.org.catolicasc.pug.EntityView(
                     e.id,
                     e.cnpj,
                     e.name,
@@ -1460,14 +1460,14 @@ FILE: infra/read/impl/StaffQueriesImpl.java
 ================================================================================
 package com.pug.partner.infra.read.impl;
 
-import static com.pug.partner.infra.StaffMapper.toView;
+import static infra.partner.br.org.catolicasc.pug.StaffMapper.toView;
 
-import com.pug.identity.infra.persistence.UserEntity;
-import com.pug.partner.infra.read.StaffQueries;
-import com.pug.partner.infra.read.dtos.StaffAcc;
-import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import persistence.infra.identity.br.org.catolicasc.pug.UserEntity;
+import read.infra.partner.br.org.catolicasc.pug.StaffQueries;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffAcc;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -1496,8 +1496,8 @@ public class StaffQueriesImpl implements StaffQueries {
 
   private static final String SELECT_BASE =
       """
-                  select new com.pug.partner.infra.read.dtos.StaffView(
-                    new com.pug.identity.infra.read.dtos.AccountView(
+                  select new dtos.read.infra.partner.br.org.catolicasc.pug.StaffView(
+                    new dtos.read.infra.identity.br.org.catolicasc.pug.AccountView(
                       acc.id,
                       acc.userId,
                       acc.email,
@@ -1586,7 +1586,7 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                                  select new com.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
+                                  select new dtos.read.infra.partner.br.org.catolicasc.pug.StaffAcc(s, acc, e, c)
                                   from StaffEntity s
                                     join AccountEntity acc on acc.id = s.accountId
                                     join EntityEntity e on e.id = s.entityId
@@ -1626,7 +1626,7 @@ FILE: infra/read/StaffQueries.java
 ================================================================================
 package com.pug.partner.infra.read;
 
-import com.pug.partner.infra.read.dtos.StaffView;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -1701,12 +1701,12 @@ FILE: infra/StaffMapper.java
 ================================================================================
 package com.pug.partner.infra;
 
-import com.pug.identity.infra.persistence.AccountEntity;
-import com.pug.identity.infra.read.dtos.AccountView;
-import com.pug.partner.domain.Staff;
-import com.pug.partner.infra.persistence.EntityEntity;
-import com.pug.partner.infra.persistence.StaffEntity;
-import com.pug.partner.infra.read.dtos.StaffView;
+import persistence.infra.identity.br.org.catolicasc.pug.AccountEntity;
+import dtos.read.infra.identity.br.org.catolicasc.pug.AccountView;
+import domain.partner.br.org.catolicasc.pug.Staff;
+import persistence.infra.partner.br.org.catolicasc.pug.EntityEntity;
+import persistence.infra.partner.br.org.catolicasc.pug.StaffEntity;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
 
 /**
  * Stateless utility class responsible for mapping between Staff boundary layers.
@@ -1811,7 +1811,7 @@ FILE: presenter/dtos/EntityResponse.java
 ================================================================================
 package com.pug.partner.presenter.dtos;
 
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
 import java.util.UUID;
 
 /**
@@ -1905,7 +1905,7 @@ FILE: presenter/dtos/StaffResponse.java
 ================================================================================
 package com.pug.partner.presenter.dtos;
 
-import com.pug.identity.presenter.dtos.AccountResponse;
+import dtos.presenter.identity.br.org.catolicasc.pug.AccountResponse;
 import java.util.UUID;
 
 /**
@@ -1960,21 +1960,21 @@ FILE: presenter/EntityResource.java
 ================================================================================
 package com.pug.partner.presenter;
 
-import com.pug.geo.presenter.mappers.CityPresenter;
-import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.partner.presenter.dtos.EntityCreateRequest;
-import com.pug.partner.presenter.dtos.EntityResponse;
-import com.pug.partner.presenter.dtos.EntityUpdateRequest;
-import com.pug.partner.presenter.mappers.EntityPresenter;
-import com.pug.partner.service.EntityReadService;
-import com.pug.partner.service.EntityService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import mappers.presenter.geo.br.org.catolicasc.pug.CityPresenter;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityCreateRequest;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityResponse;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityUpdateRequest;
+import mappers.presenter.partner.br.org.catolicasc.pug.EntityPresenter;
+import service.partner.br.org.catolicasc.pug.EntityReadService;
+import service.partner.br.org.catolicasc.pug.EntityService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2182,14 +2182,14 @@ FILE: presenter/mappers/EntityPresenter.java
 ================================================================================
 package com.pug.partner.presenter.mappers;
 
-import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.partner.presenter.dtos.EntityCreateRequest;
-import com.pug.partner.presenter.dtos.EntityResponse;
-import com.pug.partner.presenter.dtos.EntityUpdateRequest;
-import com.pug.partner.service.dtos.EntityCreateCommand;
-import com.pug.partner.service.dtos.EntityUpdateCommand;
-import com.pug.shared.presenter.dtos.AuditInfoResponse;
-import com.pug.shared.presenter.mappers.SharedDataPresenter;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityCreateRequest;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityResponse;
+import dtos.presenter.partner.br.org.catolicasc.pug.EntityUpdateRequest;
+import dtos.service.partner.br.org.catolicasc.pug.EntityCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.EntityUpdateCommand;
+import dtos.presenter.shared.br.org.catolicasc.pug.AuditInfoResponse;
+import mappers.presenter.shared.br.org.catolicasc.pug.SharedDataPresenter;
 import java.util.Locale;
 
 /**
@@ -2288,19 +2288,19 @@ FILE: presenter/mappers/StaffPresenter.java
 ================================================================================
 package com.pug.partner.presenter.mappers;
 
-import com.pug.identity.presenter.mappers.AccountPresenter;
-import com.pug.identity.service.dtos.AccountCreateCommand;
-import com.pug.identity.service.dtos.AccountUpdateCommand;
-import com.pug.identity.service.dtos.UserCreateCommand;
-import com.pug.identity.service.dtos.UserUpdateCommand;
-import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.partner.presenter.dtos.StaffCreateRequest;
-import com.pug.partner.presenter.dtos.StaffResponse;
-import com.pug.partner.presenter.dtos.StaffUpdateRequest;
-import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.partner.service.dtos.StaffUpdateCommand;
-import com.pug.shared.domain.enums.AccountType;
-import com.pug.shared.i18n.I18n;
+import mappers.presenter.identity.br.org.catolicasc.pug.AccountPresenter;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.UserUpdateCommand;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffCreateRequest;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffResponse;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffUpdateRequest;
+import dtos.service.partner.br.org.catolicasc.pug.StaffCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.StaffUpdateCommand;
+import enums.domain.shared.br.org.catolicasc.pug.AccountType;
+import i18n.shared.br.org.catolicasc.pug.I18n;
 import java.util.Locale;
 
 /**
@@ -2378,23 +2378,23 @@ FILE: presenter/StaffResource.java
 ================================================================================
 package com.pug.partner.presenter;
 
-import com.pug.identity.service.AuthService;
-import com.pug.identity.service.PasswordService;
-import com.pug.partner.domain.Staff;
-import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.partner.presenter.dtos.StaffCreateRequest;
-import com.pug.partner.presenter.dtos.StaffResponse;
-import com.pug.partner.presenter.dtos.StaffUpdateRequest;
-import com.pug.partner.presenter.mappers.StaffPresenter;
-import com.pug.partner.service.StaffReadService;
-import com.pug.partner.service.StaffService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
-import com.pug.shared.i18n.I18n;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.PresenterUtils;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import service.identity.br.org.catolicasc.pug.AuthService;
+import service.identity.br.org.catolicasc.pug.PasswordService;
+import domain.partner.br.org.catolicasc.pug.Staff;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffCreateRequest;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffResponse;
+import dtos.presenter.partner.br.org.catolicasc.pug.StaffUpdateRequest;
+import mappers.presenter.partner.br.org.catolicasc.pug.StaffPresenter;
+import service.partner.br.org.catolicasc.pug.StaffReadService;
+import service.partner.br.org.catolicasc.pug.StaffService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
+import i18n.shared.br.org.catolicasc.pug.I18n;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.PresenterUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -2488,7 +2488,7 @@ public class StaffResource {
    * Retrieves the staff profile details of the currently authenticated user.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
-   * com.pug.identity.service.AuthService}, ensuring that staff members can only request their own
+   * service.identity.br.org.catolicasc.pug.AuthService}, ensuring that staff members can only request their own
    * staff profile. Restricted to users with the STAFF role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
@@ -2808,7 +2808,7 @@ import java.util.UUID;
  * Data Transfer Object (DTO) acting as an application command to provision a new Partner Entity.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.partner.domain.Entity} aggregate.
+ * a new {@link domain.partner.br.org.catolicasc.pug.Entity} aggregate.
  *
  * @param cnpjString the raw 14-digit numeric CNPJ string belonging to the organization
  * @param name the registered name or corporate reason of the organization
@@ -2844,14 +2844,14 @@ FILE: service/dtos/StaffCreateCommand.java
 ================================================================================
 package com.pug.partner.service.dtos;
 
-import com.pug.identity.service.dtos.AccountCreateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountCreateCommand;
 import java.util.UUID;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to assign a new Staff member.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link com.pug.partner.domain.Staff} aggregate, cascading down to provision the necessary
+ * a new {@link domain.partner.br.org.catolicasc.pug.Staff} aggregate, cascading down to provision the necessary
  * authentication account (and potentially the user identity) in a single transaction.
  *
  * @param entityId the unique identifier of the partner organization the staff belongs to
@@ -2866,7 +2866,7 @@ FILE: service/dtos/StaffUpdateCommand.java
 ================================================================================
 package com.pug.partner.service.dtos;
 
-import com.pug.identity.service.dtos.AccountUpdateCommand;
+import dtos.service.identity.br.org.catolicasc.pug.AccountUpdateCommand;
 
 /**
  * Data Transfer Object (DTO) acting as an application command to update an existing Staff member's
@@ -2886,8 +2886,8 @@ FILE: service/EntityReadService.java
 ================================================================================
 package com.pug.partner.service;
 
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.partner.infra.read.dtos.EntityView;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
 import java.util.List;
 import java.util.UUID;
 
@@ -2905,7 +2905,7 @@ public interface EntityReadService {
    *
    * @param id the unique identifier (UUID) of the partner entity
    * @return the populated {@link EntityView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no entity matches the provided
    *     ID
    */
   EntityView getViewById(UUID id);
@@ -2915,7 +2915,7 @@ public interface EntityReadService {
    *
    * @param cnpj the raw 14-digit numeric CNPJ string
    * @return the populated {@link EntityView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no entity matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no entity matches the provided
    *     CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
@@ -2968,9 +2968,9 @@ FILE: service/EntityService.java
 ================================================================================
 package com.pug.partner.service;
 
-import com.pug.partner.domain.Entity;
-import com.pug.partner.service.dtos.EntityCreateCommand;
-import com.pug.partner.service.dtos.EntityUpdateCommand;
+import domain.partner.br.org.catolicasc.pug.Entity;
+import dtos.service.partner.br.org.catolicasc.pug.EntityCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.EntityUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -2987,7 +2987,7 @@ public interface EntityService {
    * Removes a Partner {@link Entity} from the system by its unique identifier.
    *
    * <p>This operation enforces data hygiene. Before the partner entity is deleted, the service
-   * cascades the deletion down to revoke all associated {@link com.pug.partner.domain.Staff}
+   * cascades the deletion down to revoke all associated {@link domain.partner.br.org.catolicasc.pug.Staff}
    * privileges.
    *
    * @param id the unique identifier (UUID) of the partner entity to delete
@@ -3014,8 +3014,8 @@ public interface EntityService {
    *
    * @param id the unique identifier (UUID) of the partner entity
    * @return the fully reconstituted {@link Entity} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the entity exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the entity does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the entity exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Entity getById(UUID id);
@@ -3028,11 +3028,11 @@ public interface EntityService {
    *
    * @param cmd the structured command containing the data to create the new partner entity
    * @return the fully instantiated and persisted {@link Entity} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if an entity with the given CNPJ
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if an entity with the given CNPJ
    *     already exists
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails (e.g., blank
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails (e.g., blank
    *     name, malformed CNPJ)
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the referenced City ID does not
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the referenced City ID does not
    *     exist
    */
   Entity save(EntityCreateCommand cmd);
@@ -3046,9 +3046,9 @@ public interface EntityService {
    * @param id the unique identifier (UUIDv7) of the partner entity to be updated
    * @param cmd the structured command containing the data to update the entity
    * @return the mutated and persisted {@link Entity} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the entity or referenced City
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the entity or referenced City
    *     does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the updated input data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the updated input data violates
    *     domain constraints
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
@@ -3060,13 +3060,13 @@ FILE: service/impl/EntityReadServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.geo.service.CityReadService;
-import com.pug.partner.infra.read.EntityQueries;
-import com.pug.partner.infra.read.dtos.EntityView;
-import com.pug.partner.service.EntityReadService;
-import com.pug.partner.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import service.geo.br.org.catolicasc.pug.CityReadService;
+import read.infra.partner.br.org.catolicasc.pug.EntityQueries;
+import dtos.read.infra.partner.br.org.catolicasc.pug.EntityView;
+import service.partner.br.org.catolicasc.pug.EntityReadService;
+import utils.service.partner.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -3159,19 +3159,19 @@ FILE: service/impl/EntityServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.geo.service.CityReadService;
-import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.EntityRepository;
-import com.pug.partner.domain.vos.Cnpj;
-import com.pug.partner.service.EntityService;
-import com.pug.partner.service.StaffService;
-import com.pug.partner.service.dtos.EntityCreateCommand;
-import com.pug.partner.service.dtos.EntityUpdateCommand;
-import com.pug.partner.service.utils.EntityProcessor;
-import com.pug.partner.service.utils.ExceptionHelper;
-import com.pug.project.service.ProjectService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import service.geo.br.org.catolicasc.pug.CityReadService;
+import domain.partner.br.org.catolicasc.pug.Entity;
+import domain.partner.br.org.catolicasc.pug.EntityRepository;
+import vos.domain.partner.br.org.catolicasc.pug.Cnpj;
+import service.partner.br.org.catolicasc.pug.EntityService;
+import service.partner.br.org.catolicasc.pug.StaffService;
+import dtos.service.partner.br.org.catolicasc.pug.EntityCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.EntityUpdateCommand;
+import utils.service.partner.br.org.catolicasc.pug.EntityProcessor;
+import utils.service.partner.br.org.catolicasc.pug.ExceptionHelper;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -3183,7 +3183,7 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
  * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link com.pug.geo.service.CityReadService}), and manages the lifecycle cascading to {@link
+ * via {@link service.geo.br.org.catolicasc.pug.CityReadService}), and manages the lifecycle cascading to {@link
  * StaffService} during deletion operations.
  */
 @ApplicationScoped
@@ -3330,11 +3330,11 @@ FILE: service/impl/StaffReadServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.partner.infra.read.StaffQueries;
-import com.pug.partner.infra.read.dtos.StaffView;
-import com.pug.partner.service.StaffReadService;
-import com.pug.partner.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.partner.br.org.catolicasc.pug.StaffQueries;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
+import service.partner.br.org.catolicasc.pug.StaffReadService;
+import utils.service.partner.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -3429,20 +3429,20 @@ FILE: service/impl/StaffServiceImpl.java
 ================================================================================
 package com.pug.partner.service.impl;
 
-import com.pug.identity.domain.Account;
-import com.pug.identity.service.AccountService;
-import com.pug.partner.domain.Staff;
-import com.pug.partner.domain.StaffRepository;
-import com.pug.partner.service.EntityService;
-import com.pug.partner.service.StaffService;
-import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.partner.service.dtos.StaffUpdateCommand;
-import com.pug.partner.service.utils.ExceptionHelper;
-import com.pug.partner.service.utils.StaffProcessor;
-import com.pug.project.service.AttendanceService;
-import com.pug.project.service.ProjectService;
-import com.pug.shared.exceptions.AppValidationException;
-import com.pug.shared.infra.audit.AuditPublisher;
+import domain.identity.br.org.catolicasc.pug.Account;
+import service.identity.br.org.catolicasc.pug.AccountService;
+import domain.partner.br.org.catolicasc.pug.Staff;
+import domain.partner.br.org.catolicasc.pug.StaffRepository;
+import service.partner.br.org.catolicasc.pug.EntityService;
+import service.partner.br.org.catolicasc.pug.StaffService;
+import dtos.service.partner.br.org.catolicasc.pug.StaffCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.StaffUpdateCommand;
+import utils.service.partner.br.org.catolicasc.pug.ExceptionHelper;
+import utils.service.partner.br.org.catolicasc.pug.StaffProcessor;
+import service.project.br.org.catolicasc.pug.AttendanceService;
+import service.project.br.org.catolicasc.pug.ProjectService;
+import exceptions.shared.br.org.catolicasc.pug.AppValidationException;
+import audit.infra.shared.br.org.catolicasc.pug.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -3627,7 +3627,7 @@ FILE: service/StaffReadService.java
 ================================================================================
 package com.pug.partner.service;
 
-import com.pug.partner.infra.read.dtos.StaffView;
+import dtos.read.infra.partner.br.org.catolicasc.pug.StaffView;
 import java.util.List;
 import java.util.UUID;
 
@@ -3645,7 +3645,7 @@ public interface StaffReadService {
    *
    * @param accountId the unique identifier (UUID) of the staff member's account
    * @return the populated {@link StaffView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided ID
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no staff matches the provided ID
    */
   StaffView getViewByAccountId(UUID accountId);
 
@@ -3654,7 +3654,7 @@ public interface StaffReadService {
    *
    * @param email the exact email address string of the requested staff member
    * @return the populated {@link StaffView} DTO
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if no staff matches the provided
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if no staff matches the provided
    *     email
    */
   StaffView getViewByEmail(String email);
@@ -3701,9 +3701,9 @@ FILE: service/StaffService.java
 ================================================================================
 package com.pug.partner.service;
 
-import com.pug.partner.domain.Staff;
-import com.pug.partner.service.dtos.StaffCreateCommand;
-import com.pug.partner.service.dtos.StaffUpdateCommand;
+import domain.partner.br.org.catolicasc.pug.Staff;
+import dtos.service.partner.br.org.catolicasc.pug.StaffCreateCommand;
+import dtos.service.partner.br.org.catolicasc.pug.StaffUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -3711,7 +3711,7 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Delete). It
  * orchestrates the lifecycle relationship between a Staff member, their underlying {@link
- * com.pug.identity.domain.Account}, and the {@link com.pug.partner.domain.Entity} they represent,
+ * domain.identity.br.org.catolicasc.pug.Account}, and the {@link domain.partner.br.org.catolicasc.pug.Entity} they represent,
  * ensuring that access rights cascade correctly across domains.
  */
 public interface StaffService {
@@ -3719,7 +3719,7 @@ public interface StaffService {
   /**
    * Deactivates a Staff member's account.
    *
-   * <p>This operation delegates to the underlying {@link com.pug.identity.service.AccountService}
+   * <p>This operation delegates to the underlying {@link service.identity.br.org.catolicasc.pug.AccountService}
    * to gracefully disable Login.bru and operational capabilities without permanently destroying the
    * account data, preserving referential integrity for historical records.
    *
@@ -3733,7 +3733,7 @@ public interface StaffService {
    *
    * <p>This operation enforces data hygiene. After the staff privileges are successfully revoked,
    * the service automatically triggers the deletion of the underlying {@link
-   * com.pug.identity.domain.Account} to ensure credentials tied strictly to organizational roles
+   * domain.identity.br.org.catolicasc.pug.Account} to ensure credentials tied strictly to organizational roles
    * are wiped out.
    *
    * @param accountId the unique identifier of the Staff to delete (Account ID)
@@ -3763,8 +3763,8 @@ public interface StaffService {
    *
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Staff} aggregate
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Staff record does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if the Staff exists but its stored
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the Staff record does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the Staff exists but its stored
    *     state violates strict domain invariants (data corruption)
    */
   Staff getByAccountId(UUID accountId);
@@ -3774,7 +3774,7 @@ public interface StaffService {
    *
    * <p>This method performs a cascading save. It verifies that the specified partner entity exists,
    * then delegates the creation of the underlying authentication account (and potentially the user)
-   * to the {@link com.pug.identity.service.AccountService} before appending the staff privileges.
+   * to the {@link service.identity.br.org.catolicasc.pug.AccountService} before appending the staff privileges.
    *
    * <p><b>Business Rule:</b> An authentication account may only be assigned as Staff to a single
    * partner organization at any given time.
@@ -3782,13 +3782,13 @@ public interface StaffService {
    * @param cmd the structured command containing the data to create the staff member and linked
    *     account
    * @return the fully instantiated and persisted {@link Staff} aggregate
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the account email already
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the account email already
    *     exists, or if the account is already assigned to this exact entity
-   * @throws com.pug.shared.exceptions.BusinessRuleException if the account is already assigned as
+   * @throws exceptions.shared.br.org.catolicasc.pug.BusinessRuleException if the account is already assigned as
    *     Staff to a different entity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the specified partner entity
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the specified partner entity
    *     does not exist
-   * @throws com.pug.shared.exceptions.AppValidationException if input validation fails
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if input validation fails
    */
   Staff save(StaffCreateCommand cmd);
 
@@ -3804,10 +3804,10 @@ public interface StaffService {
    * @param cmd the structured command containing the modified account and user data
    * @return the structurally unmodified {@link Staff} aggregate, returned for operational
    *     continuity
-   * @throws com.pug.shared.exceptions.ResourceNotFoundException if the Staff record does not exist
-   * @throws com.pug.shared.exceptions.DuplicateResourceException if the updated email conflicts
+   * @throws exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException if the Staff record does not exist
+   * @throws exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException if the updated email conflicts
    *     with an existing account in the system
-   * @throws com.pug.shared.exceptions.AppValidationException if the provided update data violates
+   * @throws exceptions.shared.br.org.catolicasc.pug.AppValidationException if the provided update data violates
    *     domain constraints
    */
   Staff update(UUID accountId, StaffUpdateCommand cmd);
@@ -3819,9 +3819,9 @@ FILE: service/utils/EntityProcessor.java
 ================================================================================
 package com.pug.partner.service.utils;
 
-import com.pug.partner.domain.Entity;
-import com.pug.partner.domain.vos.Cnpj;
-import com.pug.shared.utils.StringUtils;
+import domain.partner.br.org.catolicasc.pug.Entity;
+import vos.domain.partner.br.org.catolicasc.pug.Cnpj;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import java.util.UUID;
 
 /**
@@ -3902,10 +3902,10 @@ FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.partner.service.utils;
 
-import com.pug.partner.domain.enums.PartnerErrorCodes;
-import com.pug.shared.exceptions.BusinessRuleException;
-import com.pug.shared.exceptions.DuplicateResourceException;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import enums.domain.partner.br.org.catolicasc.pug.PartnerErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.BusinessRuleException;
+import exceptions.shared.br.org.catolicasc.pug.DuplicateResourceException;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 import jakarta.ws.rs.NotAuthorizedException;
 
 /**
@@ -4021,7 +4021,7 @@ FILE: service/utils/StaffProcessor.java
 ================================================================================
 package com.pug.partner.service.utils;
 
-import com.pug.partner.domain.Staff;
+import domain.partner.br.org.catolicasc.pug.Staff;
 import java.util.UUID;
 
 /**

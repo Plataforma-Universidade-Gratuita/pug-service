@@ -10,10 +10,10 @@ FILE: domain/City.java
 package com.pug.geo.domain;
 
 import com.github.f4b6a3.uuid.UuidCreator;
-import com.pug.geo.domain.enums.GeoFieldErrorCodes;
-import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.geo.br.org.catolicasc.pug.GeoFieldErrorCodes;
+import vos.domain.geo.br.org.catolicasc.pug.IbgeCode;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -177,7 +177,7 @@ FILE: domain/enums/GeoErrorCodes.java
 ================================================================================
 package com.pug.geo.domain.enums;
 
-import com.pug.shared.domain.enums.GenericCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericCodes;
 import lombok.Getter;
 
 /**
@@ -210,7 +210,7 @@ FILE: domain/enums/GeoFieldErrorCodes.java
 ================================================================================
 package com.pug.geo.domain.enums;
 
-import com.pug.shared.domain.enums.GenericFieldErrorCodes;
+import enums.domain.shared.br.org.catolicasc.pug.GenericFieldErrorCodes;
 import lombok.Getter;
 
 /**
@@ -218,7 +218,7 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "ibgeCode"). These constants
- * are primarily accumulated inside {@link com.pug.shared.domain.DomainError} instances when value
+ * are primarily accumulated inside {@link domain.shared.br.org.catolicasc.pug.DomainError} instances when value
  * objects or entities fail their internal validations.
  */
 @Getter
@@ -262,9 +262,9 @@ FILE: domain/vos/IbgeCode.java
 ================================================================================
 package com.pug.geo.domain.vos;
 
-import com.pug.geo.domain.enums.GeoFieldErrorCodes;
-import com.pug.shared.domain.DomainError;
-import com.pug.shared.utils.StringUtils;
+import enums.domain.geo.br.org.catolicasc.pug.GeoFieldErrorCodes;
+import domain.shared.br.org.catolicasc.pug.DomainError;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -338,10 +338,10 @@ FILE: infra/CityMapper.java
 ================================================================================
 package com.pug.geo.infra;
 
-import com.pug.geo.domain.City;
-import com.pug.geo.domain.vos.IbgeCode;
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.dtos.CityView;
+import domain.geo.br.org.catolicasc.pug.City;
+import vos.domain.geo.br.org.catolicasc.pug.IbgeCode;
+import persistence.infra.geo.br.org.catolicasc.pug.CityEntity;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
 
 /**
  * Stateless utility class responsible for mapping between Geographic boundary layers.
@@ -398,7 +398,7 @@ FILE: infra/persistence/CityEntity.java
 ================================================================================
 package com.pug.geo.infra.persistence;
 
-import com.pug.shared.infra.persistence.BaseUuidV7Entity;
+import persistence.infra.shared.br.org.catolicasc.pug.BaseUuidV7Entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -420,7 +420,7 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity representing a geographic City within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link com.pug.geo.domain.City}
+ * <p>This class acts as the database-mapped counterpart to the {@link domain.geo.br.org.catolicasc.pug.City}
  * domain aggregate. It inherits a time-ordered UUIDv7 primary key and enforces strict uniqueness on
  * the IBGE code at the database level.
  *
@@ -452,7 +452,7 @@ public class CityEntity extends BaseUuidV7Entity {
    * The name of the city.
    *
    * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link com.pug.shared.infra.search.EsAnalysis}. It projects into four distinct index fields:
+   * {@link search.infra.shared.br.org.catolicasc.pug.EsAnalysis}. It projects into four distinct index fields:
    *
    * <ul>
    *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
@@ -486,10 +486,10 @@ FILE: infra/persistence/impl/CityRepositoryImpl.java
 ================================================================================
 package com.pug.geo.infra.persistence.impl;
 
-import com.pug.geo.domain.City;
-import com.pug.geo.domain.CityRepository;
-import com.pug.geo.infra.CityMapper;
-import com.pug.geo.infra.persistence.CityEntity;
+import domain.geo.br.org.catolicasc.pug.City;
+import domain.geo.br.org.catolicasc.pug.CityRepository;
+import infra.geo.br.org.catolicasc.pug.CityMapper;
+import persistence.infra.geo.br.org.catolicasc.pug.CityEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
@@ -514,7 +514,7 @@ FILE: infra/read/CityQueries.java
 ================================================================================
 package com.pug.geo.infra.read;
 
-import com.pug.geo.infra.read.dtos.CityView;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -608,12 +608,12 @@ FILE: infra/read/impl/CityQueriesImpl.java
 ================================================================================
 package com.pug.geo.infra.read.impl;
 
-import com.pug.geo.infra.CityMapper;
-import com.pug.geo.infra.persistence.CityEntity;
-import com.pug.geo.infra.read.CityQueries;
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.shared.infra.search.HibernateSearchUtils;
-import com.pug.shared.utils.StringUtils;
+import infra.geo.br.org.catolicasc.pug.CityMapper;
+import persistence.infra.geo.br.org.catolicasc.pug.CityEntity;
+import read.infra.geo.br.org.catolicasc.pug.CityQueries;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import search.infra.shared.br.org.catolicasc.pug.HibernateSearchUtils;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -696,13 +696,13 @@ FILE: presenter/CityReadOnlyResource.java
 ================================================================================
 package com.pug.geo.presenter;
 
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.geo.presenter.mappers.CityPresenter;
-import com.pug.geo.service.CityReadService;
-import com.pug.shared.presenter.rest.ApiEnvelope;
-import com.pug.shared.utils.StringUtils;
-import com.pug.shared.validation.UuidV7;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import dtos.presenter.geo.br.org.catolicasc.pug.CityResponse;
+import mappers.presenter.geo.br.org.catolicasc.pug.CityPresenter;
+import service.geo.br.org.catolicasc.pug.CityReadService;
+import rest.presenter.shared.br.org.catolicasc.pug.ApiEnvelope;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
+import validation.shared.br.org.catolicasc.pug.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -825,9 +825,9 @@ FILE: presenter/mappers/CityPresenter.java
 ================================================================================
 package com.pug.geo.presenter.mappers;
 
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.geo.presenter.dtos.CityResponse;
-import com.pug.shared.domain.enums.Campi;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import dtos.presenter.geo.br.org.catolicasc.pug.CityResponse;
+import enums.domain.shared.br.org.catolicasc.pug.Campi;
 
 /**
  * Stateless utility class responsible for mapping internal geographic projections to external API
@@ -971,8 +971,8 @@ FILE: service/CityReadService.java
 ================================================================================
 package com.pug.geo.service;
 
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -1044,11 +1044,11 @@ FILE: service/impl/CityReadServiceImpl.java
 ================================================================================
 package com.pug.geo.service.impl;
 
-import com.pug.geo.infra.read.CityQueries;
-import com.pug.geo.infra.read.dtos.CityView;
-import com.pug.geo.service.CityReadService;
-import com.pug.geo.service.utils.ExceptionHelper;
-import com.pug.shared.utils.StringUtils;
+import read.infra.geo.br.org.catolicasc.pug.CityQueries;
+import dtos.read.infra.geo.br.org.catolicasc.pug.CityView;
+import service.geo.br.org.catolicasc.pug.CityReadService;
+import utils.service.geo.br.org.catolicasc.pug.ExceptionHelper;
+import utils.shared.br.org.catolicasc.pug.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -1132,8 +1132,8 @@ FILE: service/utils/ExceptionHelper.java
 ================================================================================
 package com.pug.geo.service.utils;
 
-import com.pug.geo.domain.enums.GeoErrorCodes;
-import com.pug.shared.exceptions.ResourceNotFoundException;
+import enums.domain.geo.br.org.catolicasc.pug.GeoErrorCodes;
+import exceptions.shared.br.org.catolicasc.pug.ResourceNotFoundException;
 
 /**
  * Utility class for centralizing the creation of common geographic domain exceptions.
