@@ -351,9 +351,9 @@ import lombok.Getter;
  * Enumeration of common, field-specific validation error codes used across the application.
  *
  * <p>These codes implement {@link GenericFieldErrorCodes} and are typically accumulated inside
- * {@link DomainError} instances. They represent standard constraints applied
- * to generic entity properties (like IDs, names, or audit timestamps) that are shared among
- * multiple different domains.
+ * {@link DomainError} instances. They represent standard constraints applied to generic entity
+ * properties (like IDs, names, or audit timestamps) that are shared among multiple different
+ * domains.
  */
 @Getter
 public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
@@ -539,11 +539,11 @@ import lombok.Getter;
 /**
  * Exception thrown to indicate that application-level or domain-level validation has failed.
  *
- * <p>Typically, this exception is thrown when a domain entity extending {@link
- * DomainError} accumulates one or more validation failures. By throwing this
- * exception, the current business flow is halted, allowing a global exception handler (e.g., in the
- * API layer) to intercept it and translate the encapsulated {@link GenericFieldErrorCodes} into a
- * structured, localized error response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
+ * <p>Typically, this exception is thrown when a domain entity extending {@link DomainError}
+ * accumulates one or more validation failures. By throwing this exception, the current business
+ * flow is halted, allowing a global exception handler (e.g., in the API layer) to intercept it and
+ * translate the encapsulated {@link GenericFieldErrorCodes} into a structured, localized error
+ * response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
  */
 @Getter
 public final class AppValidationException extends RuntimeException {
@@ -1612,8 +1612,7 @@ import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
  * (such as specific field validation failures).
  *
  * @param code The programmatic error identifier (e.g., "VALIDATION_ERROR"), typically derived from
- *     {@link GenericCodes#getCode()}. Intended for programmatic
- *     handling by clients.
+ *     {@link GenericCodes#getCode()}. Intended for programmatic handling by clients.
  * @param message The human-readable, localized error message translated for the end user.
  * @param details An optional structured object containing additional, granular context about the
  *     error (e.g., a list of {@link FieldErrorsResponse} objects).

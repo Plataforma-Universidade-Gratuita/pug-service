@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.shared.utils;
 
 import br.org.catolicasc.pug.shared.infra.audit.FieldChange;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ import java.util.Set;
  * <p>This class provides mechanisms to inspect two domain objects and determine which specific
  * fields have changed, making it ideal for auditing state transitions in an immutable domain model.
  */
+@SuppressFBWarnings("DP_DO_INSIDE_DO_PRIVILEGED")
 public final class DiffUtils {
 
   /** Private constructor to prevent instantiation of utility class. */

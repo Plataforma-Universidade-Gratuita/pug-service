@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
@@ -23,4 +24,13 @@ public record DomainAuditEvent(
     String action,
     Map<String, Object> changes,
     UUID performedBy,
-    String correlationId) {}
+    String correlationId) {
+
+  public DomainAuditEvent {
+    changes = (changes != null) ? Map.copyOf(changes) : null;
+  }
+
+  public Map<String, Object> changes() {
+    return changes != null ? Collections.unmodifiableMap(changes) : null;
+  }
+}

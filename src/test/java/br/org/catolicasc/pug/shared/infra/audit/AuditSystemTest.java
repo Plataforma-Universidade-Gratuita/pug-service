@@ -7,6 +7,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.Duration;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +16,11 @@ class AuditSystemTest {
 
   @Inject AuditPublisher auditPublisher;
   @Inject AuditListener auditListener;
+
+  @AfterEach
+  void cleanup() {
+    auditListener.deleteAll();
+  }
 
   @Test
   @DisplayName("AuditPublisher should fire event and AuditListener should persist it")

@@ -2,9 +2,10 @@ package br.org.catolicasc.pug.identity.infra.persistence.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.builders.AccountBuilder;
+import br.org.catolicasc.pug.builders.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.domain.vos.Email;
-import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.identity.domain.User;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
@@ -25,15 +26,16 @@ class AccountRepositoryImplTest {
   @Transactional
   @DisplayName("Should detect orphaned user IDs correctly")
   void testOrphanDetection() {
-    UUID userId1 = UUID.randomUUID();
-    UUID userId2 = UUID.randomUUID();
+    User user1 = UserBuilder.aUser().withCpf("11144477735").build();
+    userRepository.persist(user1);
 
-    Account acc = Account.factory(userId1, Email.factory("a@a.com"), AccountType.STUDENT, "pass");
+    Account acc = AccountBuilder.anAccount().forUser(user1.getId()).build();
     repository.persist(acc);
     em.flush();
 
-    var orphans = repository.findAllOrphanUserIdsByUserIds(List.of(userId1, userId2));
+    UUID orphanId = UUID.randomUUID();
+    var orphans = repository.findAllOrphanUserIdsByUserIds(List.of(user1.getId(), orphanId));
 
-    assertThat(orphans).containsExactly(userId2);
+    assertThat(orphans).containsExactly(orphanId);
   }
 }

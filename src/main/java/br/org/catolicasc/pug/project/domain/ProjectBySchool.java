@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.domain;
 
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProjectBySchool extends DomainError {
 
   /** The unique identifier of the project. */

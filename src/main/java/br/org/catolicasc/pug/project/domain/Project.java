@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -28,6 +29,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Project extends DomainError {
 
   /** The unique identifier for the project (UUIDv7). */

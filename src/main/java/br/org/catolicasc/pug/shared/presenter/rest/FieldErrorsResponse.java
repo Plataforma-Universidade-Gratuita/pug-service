@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.shared.presenter.rest;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -13,6 +14,14 @@ import java.util.List;
  *     field.
  */
 public record FieldErrorsResponse(String field, List<FieldErrorDetail> errors) {
+
+  public FieldErrorsResponse {
+    errors = (errors != null) ? List.copyOf(errors) : null;
+  }
+
+  public List<FieldErrorDetail> errors() {
+    return errors != null ? Collections.unmodifiableList(errors) : null;
+  }
 
   /**
    * Represents the specific error code and its corresponding localized message.

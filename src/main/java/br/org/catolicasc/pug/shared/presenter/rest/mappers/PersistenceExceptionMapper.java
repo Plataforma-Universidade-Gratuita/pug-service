@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import java.util.Locale;
 import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.exception.DataException;
 import org.slf4j.Logger;
@@ -65,7 +66,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
       LOG.warn("Database constraint violation with null constraint name", ex);
       return buildResponse(SharedErrorCodes.DATA_INTEGRITY_ERROR, Response.Status.CONFLICT);
     }
-    String lowerName = constraintName.toLowerCase();
+    String lowerName = constraintName.toLowerCase(Locale.ROOT);
     if (lowerName.contains("uq_") || lowerName.endsWith("_key") || lowerName.contains("unique")) {
       LOG.info("Unique constraint violation intercepted: {}", constraintName);
       return buildResponse(SharedErrorCodes.DUPLICATED_RESOURCE_ERROR, Response.Status.CONFLICT);

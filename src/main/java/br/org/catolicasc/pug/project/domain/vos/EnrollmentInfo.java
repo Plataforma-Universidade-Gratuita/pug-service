@@ -4,6 +4,7 @@ import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.time.OffsetDateTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,6 +20,7 @@ import lombok.Value;
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class EnrollmentInfo extends DomainError {
 
   /** The exact timestamp when the enrollment was formally accepted. */

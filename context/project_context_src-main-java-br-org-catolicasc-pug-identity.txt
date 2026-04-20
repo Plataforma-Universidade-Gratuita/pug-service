@@ -9,7 +9,6 @@ FILE: domain/Account.java
 ================================================================================
 package br.org.catolicasc.pug.identity.domain;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.shared.domain.DomainError;
@@ -17,6 +16,7 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -608,8 +608,8 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "cpf", "email"). These
- * constants are primarily accumulated inside {@link DomainError} instances
- * when value objects or entities fail their internal validations.
+ * constants are primarily accumulated inside {@link DomainError} instances when value objects or
+ * entities fail their internal validations.
  */
 @Getter
 public enum IdentityFieldErrorCodes implements GenericFieldErrorCodes {
@@ -682,13 +682,13 @@ FILE: domain/User.java
 ================================================================================
 package br.org.catolicasc.pug.identity.domain;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -928,6 +928,7 @@ FILE: domain/vos/Cpf.java
 ================================================================================
 package br.org.catolicasc.pug.identity.domain.vos;
 
+import br.com.caelum.stella.validation.CPFValidator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -996,65 +997,12 @@ public class Cpf extends DomainError {
       addFieldError(IdentityFieldErrorCodes.INVALID_CPF_BLANK);
       return;
     }
-    if (value.length() != 11 || allSameDigit(value) || !validCheckDigits(value)) {
+    CPFValidator validator = new CPFValidator(false);
+    try {
+      validator.assertValid(value);
+    } catch (Exception e) {
       addFieldError(IdentityFieldErrorCodes.INVALID_CPF_FORMAT);
     }
-  }
-
-  // --- Internal Validation Logic ---
-
-  /**
-   * Evaluates if all characters within the provided string are identical.
-   *
-   * <p>This is a requirement for CPF validation, as strings like "11111111111" pass the
-   * mathematical checksum but are structurally invalid CPFs.
-   *
-   * @param s the numeric string to evaluate
-   * @return {@code true} if all characters are the same repeated digit, {@code false} otherwise
-   */
-  private static boolean allSameDigit(String s) {
-    if (StringUtils.isEmpty(s)) {
-      return false;
-    }
-    char c = s.charAt(0);
-    for (int i = 1; i < s.length(); i++) {
-      if (s.charAt(i) != c) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Executes the standard Brazilian modulo-11 checksum algorithm to validate the last two digits
-   * (Verification Digits) of the CPF.
-   *
-   * @param s the 11-digit numeric string representing the CPF
-   * @return {@code true} if the calculated check digits match the provided string, {@code false}
-   *     otherwise
-   */
-  private static boolean validCheckDigits(String s) {
-    int d1 = calcDigit(s, 9);
-    int d2 = calcDigit(s, 10);
-    return (s.charAt(9) - '0') == d1 && (s.charAt(10) - '0') == d2;
-  }
-
-  /**
-   * Calculates a single CPF verification digit based on the modulo-11 algorithm.
-   *
-   * @param s the numeric string containing the base digits for calculation
-   * @param len the number of digits to consider (9 for the first verification digit, 10 for the
-   *     second)
-   * @return the mathematically calculated verification digit (0-9)
-   */
-  private static int calcDigit(String s, int len) {
-    int sum = 0;
-    for (int i = 0; i < len; i++) {
-      int num = s.charAt(i) - '0';
-      sum += num * (len + 1 - i);
-    }
-    int mod = sum % 11;
-    return (mod < 2) ? 0 : 11 - mod;
   }
 }
 
@@ -1401,10 +1349,10 @@ import lombok.experimental.SuperBuilder;
 /**
  * JPA entity representing an authentication Account within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Account}
- * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit fields from
- * {@link BaseAuditedEntity}. It maintains the credentials, role types, and the logical association
- * to a specific {@link UserEntity}.
+ * <p>This class is the database-mapped counterpart to the {@link Account} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and standard audit fields from {@link
+ * BaseAuditedEntity}. It maintains the credentials, role types, and the logical association to a
+ * specific {@link UserEntity}.
  */
 @Getter
 @Setter
@@ -1492,10 +1440,9 @@ import lombok.ToString;
 /**
  * JPA entity representing Administrator privileges within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Admin}
- * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
- * key, effectively functioning as a one-to-one extension of an {@link AccountEntity} to grant
- * system administration rights.
+ * <p>This class is the database-mapped counterpart to the {@link Admin} domain aggregate. Instead
+ * of a standalone ID, it uses the linked account's UUID as its primary key, effectively functioning
+ * as a one-to-one extension of an {@link AccountEntity} to grant system administration rights.
  */
 @Getter
 @Setter
@@ -1937,10 +1884,9 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity representing a User within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link User}
- * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit tracking
- * fields from {@link BaseAuditedEntity}. It enforces strict uniqueness on the CPF at the database
- * level.
+ * <p>This class acts as the database-mapped counterpart to the {@link User} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
+ * BaseAuditedEntity}. It enforces strict uniqueness on the CPF at the database level.
  *
  * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
  * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to
@@ -4043,7 +3989,6 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -4061,8 +4006,7 @@ public interface AccountReadService {
    *
    * @param email the exact email address string of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws ResourceNotFoundException if no account matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no account matches the provided email
    */
   AccountView getViewByEmail(String email);
 
@@ -4071,8 +4015,7 @@ public interface AccountReadService {
    *
    * @param id the unique identifier (UUID) of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws ResourceNotFoundException if no account matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no account matches the provided ID
    */
   AccountView getViewById(UUID id);
 
@@ -4110,13 +4053,13 @@ FILE: service/AccountService.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -4175,8 +4118,8 @@ public interface AccountService {
    * @param email the email address of the account
    * @return the fully reconstituted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws AppValidationException if the account exists but its stored
-   *     state violates domain constraints
+   * @throws AppValidationException if the account exists but its stored state violates domain
+   *     constraints
    */
   Account getByEmail(String email);
 
@@ -4189,8 +4132,8 @@ public interface AccountService {
    * @param id the unique identifier (UUID) of the account
    * @return the fully reconstituted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws AppValidationException if the account exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the account exists but its stored state violates strict
+   *     domain invariants (data corruption)
    */
   Account getById(UUID id);
 
@@ -4203,10 +4146,8 @@ public interface AccountService {
    *
    * @param cmd the structured command containing the data to create the new account and linked user
    * @return the fully instantiated and persisted {@link Account} aggregate
-   * @throws DuplicateResourceException if an account with the given email
-   *     already exists
-   * @throws AppValidationException if input validation fails (e.g., blank
-   *     email, invalid CPF)
+   * @throws DuplicateResourceException if an account with the given email already exists
+   * @throws AppValidationException if input validation fails (e.g., blank email, invalid CPF)
    */
   Account save(AccountCreateCommand cmd);
 
@@ -4235,10 +4176,8 @@ public interface AccountService {
    * @param cmd the structured command containing the data to update the account
    * @return the mutated and persisted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws DuplicateResourceException if the updated email conflicts
-   *     with an existing account
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws DuplicateResourceException if the updated email conflicts with an existing account
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   Account update(UUID id, AccountUpdateCommand cmd);
 }
@@ -4251,7 +4190,6 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -4269,8 +4207,7 @@ public interface AdminReadService {
    *
    * @param accountId the unique identifier (UUID) of the admin's account
    * @return the populated {@link AdminView} DTO
-   * @throws ResourceNotFoundException if no admin matches the provided
-   *     account ID
+   * @throws ResourceNotFoundException if no admin matches the provided account ID
    */
   AdminView getViewByAccountId(UUID accountId);
 
@@ -4279,8 +4216,7 @@ public interface AdminReadService {
    *
    * @param email the exact email address string of the requested admin
    * @return the populated {@link AdminView} DTO
-   * @throws ResourceNotFoundException if no admin matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no admin matches the provided email
    */
   AdminView getViewByEmail(String email);
 
@@ -4319,12 +4255,12 @@ FILE: service/AdminService.java
 package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
 
 /**
@@ -4332,8 +4268,8 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete) for administrative privileges. It orchestrates the complex lifecycle relationship between
- * an {@link Admin}, its underlying {@link Account}, and the associated
- * user, ensuring that granting or revoking admin rights cascades correctly through the system.
+ * an {@link Admin}, its underlying {@link Account}, and the associated user, ensuring that granting
+ * or revoking admin rights cascades correctly through the system.
  */
 public interface AdminService {
 
@@ -4353,9 +4289,8 @@ public interface AdminService {
    * Revokes administrative privileges by deleting the {@link Admin} record.
    *
    * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
-   * the service automatically triggers the deletion of the underlying {@link
-   * Account} to ensure credentials tied strictly to admin roles are wiped
-   * out.
+   * the service automatically triggers the deletion of the underlying {@link Account} to ensure
+   * credentials tied strictly to admin roles are wiped out.
    *
    * @param accountId the unique identifier of the Admin to delete (Account ID)
    * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
@@ -4371,8 +4306,8 @@ public interface AdminService {
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Admin} aggregate
    * @throws ResourceNotFoundException if the Admin does not exist
-   * @throws AppValidationException if the Admin exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the Admin exists but its stored state violates strict domain
+   *     invariants (data corruption)
    */
   Admin getByAccountId(UUID accountId);
 
@@ -4385,10 +4320,8 @@ public interface AdminService {
    *
    * @param cmd the structured command containing the data to create the admin and linked account
    * @return the fully instantiated and persisted {@link Admin} aggregate
-   * @throws AppValidationException if input validation fails for account
-   *     or admin data
-   * @throws DuplicateResourceException if the underlying account email
-   *     already exists
+   * @throws AppValidationException if input validation fails for account or admin data
+   * @throws DuplicateResourceException if the underlying account email already exists
    */
   Admin save(AdminCreateCommand cmd);
 
@@ -4403,10 +4336,8 @@ public interface AdminService {
    *     ID)
    * @param cmd the structured command containing the data to update the admin and/or account
    * @return the mutated and persisted {@link Admin} aggregate
-   * @throws ResourceNotFoundException if the Admin or linked Account does
-   *     not exist
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws ResourceNotFoundException if the Admin or linked Account does not exist
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
 }
@@ -4466,8 +4397,8 @@ public interface AuthService {
    * Authenticates a user based on their credentials and generates a JSON Web Token (JWT).
    *
    * <p>This method evaluates the provided email and plaintext password. If the credentials are
-   * valid and the underlying {@link Account} is active, it issues a signed
-   * JWT containing the user's roles and identity claims.
+   * valid and the underlying {@link Account} is active, it issues a signed JWT containing the
+   * user's roles and identity claims.
    *
    * @param request the structured {@link LoginRequest} containing the user's email and plaintext
    *     password
@@ -4512,8 +4443,8 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
  * Account.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link Account} aggregate, alongside the nested command needed to
- * provision its underlying {@link User}.
+ * a new {@link Account} aggregate, alongside the nested command needed to provision its underlying
+ * {@link User}.
  *
  * @param emailString the raw string representation of the requested email address
  * @param type the designated authorization role for the account
@@ -4558,8 +4489,8 @@ import br.org.catolicasc.pug.shared.domain.enums.Campi;
  * privileges.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link Admin} aggregate, cascading down to create the necessary
- * authentication account and user identity in a single transaction.
+ * a new {@link Admin} aggregate, cascading down to create the necessary authentication account and
+ * user identity in a single transaction.
  *
  * @param accountCommand the nested command containing the data to create the underlying
  *     authentication account
@@ -5756,7 +5687,6 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -5816,13 +5746,13 @@ FILE: service/UserService.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -5894,10 +5824,8 @@ public interface UserService {
    *
    * @param cmd the structured command containing the data required to create a new user
    * @return the fully instantiated and persisted {@link User} aggregate
-   * @throws DuplicateResourceException if a user with the provided CPF
-   *     already exists
-   * @throws AppValidationException if the input data violates domain
-   *     constraints
+   * @throws DuplicateResourceException if a user with the provided CPF already exists
+   * @throws AppValidationException if the input data violates domain constraints
    */
   User save(UserCreateCommand cmd);
 
@@ -5922,8 +5850,7 @@ public interface UserService {
    * @return the mutated and persisted {@link User} aggregate
    * @throws ResourceNotFoundException if the user cannot be found
    * @throws DuplicateResourceException if the updated CPF conflicts
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   User update(UUID id, UserUpdateCommand cmd);
 }

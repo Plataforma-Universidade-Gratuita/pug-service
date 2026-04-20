@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
 import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import lombok.Builder;
@@ -15,7 +16,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
  * specific user account and request correlation ID for auditability and distributed tracing.
  */
 @Getter
-@Builder
+@Builder(toBuilder = true, builderClassName = "AuditLogBuilder")
 @MongoEntity(collection = "audit_logs")
 public class AuditLog {
 
@@ -48,4 +49,16 @@ public class AuditLog {
    * requests.
    */
   private String correlationId;
+
+  public Map<String, Object> getChanges() {
+    return changes != null ? Collections.unmodifiableMap(changes) : null;
+  }
+
+  /** Custom builder method to ensure immutability of the changes map. */
+  public static class AuditLogBuilder {
+    public AuditLogBuilder changes(Map<String, Object> changes) {
+      this.changes = (changes != null) ? new java.util.HashMap<>(changes) : null;
+      return this;
+    }
+  }
 }

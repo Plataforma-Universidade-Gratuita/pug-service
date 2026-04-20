@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.project.domain.vos;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -19,6 +20,7 @@ import lombok.Value;
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class QrValidationInfo extends DomainError {
 
   /** The duration of time spent on this attendance. */

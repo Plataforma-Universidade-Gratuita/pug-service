@@ -4,6 +4,7 @@ import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -22,6 +23,7 @@ import lombok.Value;
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProjectInfo extends DomainError {
 
   /** The unique identifier (Account ID) of the staff member who created the project. */

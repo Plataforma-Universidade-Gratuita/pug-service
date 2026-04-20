@@ -19,4 +19,14 @@ import java.util.UUID;
  * @param schoolIds the list of unique identifiers (UUIDv7) of the schools to link to the project
  */
 public record ProjectBySchoolRequest(
-    @NotNull @UuidV7 UUID projectId, @NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {}
+    @NotNull @UuidV7 UUID projectId, @NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {
+
+  public ProjectBySchoolRequest {
+    schoolIds = (schoolIds != null) ? List.copyOf(schoolIds) : null;
+  }
+
+  @Override
+  public List<UUID> schoolIds() {
+    return schoolIds;
+  }
+}

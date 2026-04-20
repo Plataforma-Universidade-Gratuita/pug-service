@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.project.domain.vos.QrValidationInfo;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import com.github.f4b6a3.uuid.UuidCreator;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -30,6 +31,7 @@ import lombok.Getter;
 @Builder(toBuilder = true)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Attendance extends DomainError {
 
   /** The unique identifier for the attendance record (UUIDv7). */

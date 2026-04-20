@@ -10,6 +10,7 @@
 │           └── quarkus-cli-catalog.json
 ├── README.md
 ├── context/
+├── docker-compose.yml
 ├── generate-dir-tree.sh
 ├── mvnw
 ├── mvnw.cmd
@@ -73,7 +74,6 @@
 │       ├── attendance/
 │       ├── enrollment/
 │       └── project/
-├── spotbugs-exclude.xml
 ├── src/
 │   ├── main/
 │   │   ├── java/
@@ -374,6 +374,7 @@
 │   │   │                   │   │       ├── EnrollmentInfo.java
 │   │   │                   │   │       ├── ProjectInfo.java
 │   │   │                   │   │       └── QrValidationInfo.java
+│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AttendanceMapper.java
 │   │   │                   │   │   ├── EnrollmentMapper.java
@@ -551,6 +552,7 @@
 │       │       └── org/
 │       │           └── catolicasc/
 │       │               └── pug/
+│       │                   ├── MongoTestInitializer.java
 │       │                   ├── academic/
 │       │                   │   ├── domain/
 │       │                   │   │   ├── enums/
@@ -569,6 +571,10 @@
 │       │                   │       ├── dtos/
 │       │                   │       ├── impl/
 │       │                   │       └── utils/
+│       │                   ├── builders/
+│       │                   │   ├── AccountBuilder.java
+│       │                   │   ├── AdminBuilder.java
+│       │                   │   └── UserBuilder.java
 │       │                   ├── generate-context.sh
 │       │                   ├── geo/
 │       │                   │   ├── domain/
@@ -590,22 +596,44 @@
 │       │                   │       └── utils/
 │       │                   ├── identity/
 │       │                   │   ├── domain/
+│       │                   │   │   ├── AccountTest.java
+│       │                   │   │   ├── AdminTest.java
+│       │                   │   │   ├── UserTest.java
 │       │                   │   │   ├── enums/
+│       │                   │   │   │   └── IdentityEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
+│       │                   │   │       ├── CpfTest.java
+│       │                   │   │       └── EmailTest.java
 │       │                   │   ├── infra/
+│       │                   │   │   ├── AccountMapperTest.java
+│       │                   │   │   ├── AdminMapperTest.java
+│       │                   │   │   ├── UserMapperTest.java
 │       │                   │   │   ├── persistence/
-│       │                   │   │   │   ├── .gitkeep
 │       │                   │   │   │   └── impl/
+│       │                   │   │   │       ├── AccountRepositoryImplTest.java
+│       │                   │   │   │       ├── AdminRepositoryImplTest.java
+│       │                   │   │   │       └── UserRepositoryImplTest.java
 │       │                   │   │   └── read/
-│       │                   │   │       ├── dtos/
 │       │                   │   │       └── impl/
+│       │                   │   │           ├── AccountQueriesImplTest.java
+│       │                   │   │           ├── AdminQueriesImplTest.java
+│       │                   │   │           └── UserQueriesImplTest.java
 │       │                   │   ├── presenter/
-│       │                   │   │   ├── dtos/
 │       │                   │   │   └── mappers/
 │       │                   │   └── service/
-│       │                   │       ├── dtos/
 │       │                   │       ├── impl/
+│       │                   │       │   ├── AccountReadServiceImplTest.java
+│       │                   │       │   ├── AccountServiceImplTest.java
+│       │                   │       │   ├── AdminReadServiceImplTest.java
+│       │                   │       │   ├── AdminServiceImplTest.java
+│       │                   │       │   ├── AuthServiceImplTest.java
+│       │                   │       │   ├── PasswordServiceImplTest.java
+│       │                   │       │   ├── UserReadServiceImplTest.java
+│       │                   │       │   └── UserServiceImplTest.java
 │       │                   │       └── utils/
+│       │                   │           ├── AccountProcessorTest.java
+│       │                   │           ├── AdminProcessorTest.java
+│       │                   │           └── UserProcessorTest.java
 │       │                   ├── partner/
 │       │                   │   ├── domain/
 │       │                   │   │   ├── enums/
@@ -644,23 +672,40 @@
 │       │                   │       └── utils/
 │       │                   └── shared/
 │       │                       ├── domain/
-│       │                       │   ├── enums/
-│       │                       │   └── vos/
+│       │                       │   ├── DomainErrorAndAuditInfoTest.java
+│       │                       │   └── enums/
+│       │                       │       └── EnumBundleKeysTest.java
 │       │                       ├── exceptions/
+│       │                       │   └── AppValidationExceptionTest.java
 │       │                       ├── http/
+│       │                       │   └── CorrelationFilterTest.java
 │       │                       ├── i18n/
+│       │                       │   └── I18nTest.java
 │       │                       ├── infra/
 │       │                       │   ├── audit/
-│       │                       │   ├── persistance/
+│       │                       │   │   ├── AuditSystemTest.java
+│       │                       │   │   └── MockAuthService.java
 │       │                       │   └── search/
+│       │                       │       └── HibernateSearchTest.java
 │       │                       ├── presenter/
-│       │                       │   ├── dtos/
 │       │                       │   ├── mappers/
+│       │                       │   │   └── SharedDataPresenterTest.java
 │       │                       │   └── rest/
-│       │                       │       ├── .gitkeep
 │       │                       │       └── mappers/
+│       │                       │           ├── AppValidationExceptionMapperTest.java
+│       │                       │           ├── BusinessRuleExceptionMapperTest.java
+│       │                       │           ├── ConstraintViolationMapperTest.java
+│       │                       │           ├── DuplicateResourceExceptionMapperTest.java
+│       │                       │           ├── NotAuthorizedExceptionMapperTest.java
+│       │                       │           ├── ResourceNotFoundExceptionMapperTest.java
+│       │                       │           └── SystemExceptionMappersTest.java
 │       │                       ├── utils/
+│       │                       │   ├── CollectionUtilsTest.java
+│       │                       │   ├── DiffUtilsTest.java
+│       │                       │   ├── PresenterUtilsTest.java
+│       │                       │   └── StringUtilsTest.java
 │       │                       └── validation/
+│       │                           └── UuidV7Test.java
 │       └── resources/
 │           ├── application.properties
 │           ├── generate-context.sh

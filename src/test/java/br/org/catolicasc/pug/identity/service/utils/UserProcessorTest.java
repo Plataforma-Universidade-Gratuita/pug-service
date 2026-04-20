@@ -27,8 +27,6 @@ class UserProcessorTest {
   void shouldThrowOnInvalidBulk() {
     List<UserCreateCommand> cmds = List.of(new UserCreateCommand("111", "Name"));
 
-    assertThat(UserProcessor.processBulkCreateInput(cmds)).isEmpty();
-
     org.junit.jupiter.api.Assertions.assertThrows(
         AppValidationException.class,
         () -> {
