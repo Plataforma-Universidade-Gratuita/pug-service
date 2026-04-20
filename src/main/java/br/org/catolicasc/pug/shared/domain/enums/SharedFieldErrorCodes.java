@@ -7,9 +7,9 @@ import lombok.Getter;
  * Enumeration of common, field-specific validation error codes used across the application.
  *
  * <p>These codes implement {@link GenericFieldErrorCodes} and are typically accumulated inside
- * {@link DomainError} instances. They represent standard constraints applied
- * to generic entity properties (like IDs, names, or audit timestamps) that are shared among
- * multiple different domains.
+ * {@link DomainError} instances. They represent standard constraints applied to generic entity
+ * properties (like IDs, names, or audit timestamps) that are shared among multiple different
+ * domains.
  */
 @Getter
 public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {

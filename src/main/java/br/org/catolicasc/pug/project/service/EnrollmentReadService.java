@@ -3,13 +3,11 @@ package br.org.catolicasc.pug.project.service;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Application service interface dedicated exclusively to querying {@link
- * Enrollment} data.
+ * Application service interface dedicated exclusively to querying {@link Enrollment} data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
  * domain logic and retrieves lightweight {@link EnrollmentView} Data Transfer Objects directly from
@@ -26,8 +24,7 @@ public interface EnrollmentReadService {
    * @param projectId the unique identifier (UUID) of the project
    * @param studentId the unique identifier (UUID) of the student account
    * @return the populated {@link EnrollmentView} DTO
-   * @throws ResourceNotFoundException if no enrollment matches the
-   *     provided identifiers
+   * @throws ResourceNotFoundException if no enrollment matches the provided identifiers
    */
   EnrollmentView getViewByIds(UUID projectId, UUID studentId);
 

@@ -1,12 +1,12 @@
 package br.org.catolicasc.pug.identity.domain;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;

@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.project.service.dtos;
 
 import br.org.catolicasc.pug.project.domain.Project;
-
 import java.math.BigDecimal;
 import java.util.UUID;
 

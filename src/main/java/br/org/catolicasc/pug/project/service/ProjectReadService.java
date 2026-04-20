@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +19,7 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
-   * @throws ResourceNotFoundException if no project matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no project matches the provided ID
    */
   ProjectView getViewById(UUID id);
 

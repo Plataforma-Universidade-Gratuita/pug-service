@@ -126,13 +126,14 @@ public class StaffQueriesImpl implements StaffQueries {
     var rows =
         em.createQuery(
                 """
-                                  select new br.org.catolicasc.pug.partner.infra.read.dtos.StaffAcc(s, acc, e, c)
-                                  from StaffEntity s
-                                    join AccountEntity acc on acc.id = s.accountId
-                                    join EntityEntity e on e.id = s.entityId
-                                    join CityEntity c on c.id = e.cityId
-                                  where acc.userId in :ids
-                                  """,
+                        select new br.org.catolicasc.pug.partner.infra.read.dtos.StaffAcc(
+                        s, acc, e, c)
+                        from StaffEntity s
+                          join AccountEntity acc on acc.id = s.accountId
+                          join EntityEntity e on e.id = s.entityId
+                          join CityEntity c on c.id = e.cityId
+                        where acc.userId in :ids
+                        """,
                 StaffAcc.class)
             .setParameter("ids", userIds)
             .getResultList();

@@ -11,9 +11,8 @@ import java.util.UUID;
  * Data Transfer Object (DTO) acting as an application command to enroll a new Student.
  *
  * <p>This record acts as an aggregated payload that combines identity credentials with academic
- * enrollment details. It encapsulates the data required to instantiate a new {@link
- * Student} aggregate and cascade the creation of the underlying
- * authentication account.
+ * enrollment details. It encapsulates the data required to instantiate a new {@link Student}
+ * aggregate and cascade the creation of the underlying authentication account.
  *
  * @param accountCreateCommand the nested command containing data to create the authentication
  *     account

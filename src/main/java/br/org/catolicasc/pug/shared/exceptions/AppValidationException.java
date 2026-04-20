@@ -12,11 +12,11 @@ import lombok.Getter;
 /**
  * Exception thrown to indicate that application-level or domain-level validation has failed.
  *
- * <p>Typically, this exception is thrown when a domain entity extending {@link
- * DomainError} accumulates one or more validation failures. By throwing this
- * exception, the current business flow is halted, allowing a global exception handler (e.g., in the
- * API layer) to intercept it and translate the encapsulated {@link GenericFieldErrorCodes} into a
- * structured, localized error response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
+ * <p>Typically, this exception is thrown when a domain entity extending {@link DomainError}
+ * accumulates one or more validation failures. By throwing this exception, the current business
+ * flow is halted, allowing a global exception handler (e.g., in the API layer) to intercept it and
+ * translate the encapsulated {@link GenericFieldErrorCodes} into a structured, localized error
+ * response (such as HTTP 400 Bad Request or 422 Unprocessable Entity).
  */
 @Getter
 public final class AppValidationException extends RuntimeException {

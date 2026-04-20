@@ -25,9 +25,9 @@ import lombok.ToString;
 /**
  * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Enrollment}
- * domain aggregate. Because an enrollment is uniquely identified by the combination of a student
- * and a project, this entity utilizes a composite primary key ({@link EnrollmentsId}).
+ * <p>This class is the database-mapped counterpart to the {@link Enrollment} domain aggregate.
+ * Because an enrollment is uniquely identified by the combination of a student and a project, this
+ * entity utilizes a composite primary key ({@link EnrollmentsId}).
  */
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 @Getter

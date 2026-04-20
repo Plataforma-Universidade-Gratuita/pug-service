@@ -7,8 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Read-only interface for executing queries against {@link Enrollment}
- * records.
+ * Read-only interface for executing queries against {@link Enrollment} records.
  *
  * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
  * retrieving enrollment data directly into lightweight, read-optimized {@link EnrollmentView}

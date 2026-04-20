@@ -22,9 +22,9 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 /**
  * JPA entity representing an Academic Course within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link
- * Course} domain aggregate. It inherits a time-ordered UUIDv7 primary key
- * and standard audit tracking fields from {@link BaseAuditedEntity}.
+ * <p>This class acts as the database-mapped counterpart to the {@link Course} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
+ * BaseAuditedEntity}.
  *
  * <p>This entity is marked with {@code @Indexed}, allowing Hibernate Search to synchronize its
  * state with underlying Elasticsearch/OpenSearch indices to support advanced full-text queries.

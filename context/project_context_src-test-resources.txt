@@ -11,7 +11,6 @@ FILE: application.properties
 %test.quarkus.http.test-port=0
 %test.quarkus.http.test-ssl-port=0
 # CORS
-%test.quarkus.http.cors.enabled=true
 %test.quarkus.http.cors.origins=http://localhost:3000
 %test.quarkus.http.cors.methods=GET,POST,PUT,DELETE,OPTIONS
 # Datasource (PostgreSQL)
@@ -58,5 +57,5 @@ hello=Test Hello, {0}!
 ================================================================================
 FILE: messages_pt_BR.properties
 ================================================================================
-hello=Test Olá, {0}!
+hello=Test Olï¿½, {0}!
 

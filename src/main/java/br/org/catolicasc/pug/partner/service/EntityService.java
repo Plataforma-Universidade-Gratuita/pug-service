@@ -1,12 +1,12 @@
 package br.org.catolicasc.pug.partner.service;
 
+import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
+import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-import br.org.catolicasc.pug.partner.domain.Entity;
-import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
 import java.util.UUID;
 
 /**
@@ -14,8 +14,8 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete) and strict domain-level retrievals. It enforces cross-cutting business rules (e.g., CNPJ
- * uniqueness) and coordinates with the {@link br.org.catolicasc.pug.geo.service.CityService} to ensure
- * geographical references are valid.
+ * uniqueness) and coordinates with the {@link br.org.catolicasc.pug.geo.service.CityService} to
+ * ensure geographical references are valid.
  */
 public interface EntityService {
 
@@ -23,8 +23,7 @@ public interface EntityService {
    * Removes a Partner {@link Entity} from the system by its unique identifier.
    *
    * <p>This operation enforces data hygiene. Before the partner entity is deleted, the service
-   * cascades the deletion down to revoke all associated {@link Staff}
-   * privileges.
+   * cascades the deletion down to revoke all associated {@link Staff} privileges.
    *
    * @param id the unique identifier (UUID) of the partner entity to delete
    * @return {@code true} if the entity was successfully deleted, {@code false} if it was not found
@@ -51,8 +50,8 @@ public interface EntityService {
    * @param id the unique identifier (UUID) of the partner entity
    * @return the fully reconstituted {@link Entity} aggregate
    * @throws ResourceNotFoundException if the entity does not exist
-   * @throws AppValidationException if the entity exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the entity exists but its stored state violates strict domain
+   *     invariants (data corruption)
    */
   Entity getById(UUID id);
 
@@ -64,12 +63,9 @@ public interface EntityService {
    *
    * @param cmd the structured command containing the data to create the new partner entity
    * @return the fully instantiated and persisted {@link Entity} aggregate
-   * @throws DuplicateResourceException if an entity with the given CNPJ
-   *     already exists
-   * @throws AppValidationException if input validation fails (e.g., blank
-   *     name, malformed CNPJ)
-   * @throws ResourceNotFoundException if the referenced City ID does not
-   *     exist
+   * @throws DuplicateResourceException if an entity with the given CNPJ already exists
+   * @throws AppValidationException if input validation fails (e.g., blank name, malformed CNPJ)
+   * @throws ResourceNotFoundException if the referenced City ID does not exist
    */
   Entity save(EntityCreateCommand cmd);
 
@@ -82,10 +78,8 @@ public interface EntityService {
    * @param id the unique identifier (UUIDv7) of the partner entity to be updated
    * @param cmd the structured command containing the data to update the entity
    * @return the mutated and persisted {@link Entity} aggregate
-   * @throws ResourceNotFoundException if the entity or referenced City
-   *     does not exist
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws ResourceNotFoundException if the entity or referenced City does not exist
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   Entity update(UUID id, EntityUpdateCommand cmd);
 }

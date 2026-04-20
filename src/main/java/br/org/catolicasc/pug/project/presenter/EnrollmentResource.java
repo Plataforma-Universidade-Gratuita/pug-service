@@ -1,8 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
@@ -13,6 +10,9 @@ import br.org.catolicasc.pug.project.presenter.mappers.EnrollmentPresenter;
 import br.org.catolicasc.pug.project.service.EnrollmentReadService;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -183,10 +183,8 @@ public class EnrollmentResource {
    *     identifier
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link EnrollmentResponse}
-   * @throws DuplicateResourceException if the student is already enrolled
-   *     in the project
-   * @throws ResourceNotFoundException if the project or student does not
-   *     exist
+   * @throws DuplicateResourceException if the student is already enrolled in the project
+   * @throws ResourceNotFoundException if the project or student does not exist
    * @throws AppValidationException if domain validation fails
    */
   @POST

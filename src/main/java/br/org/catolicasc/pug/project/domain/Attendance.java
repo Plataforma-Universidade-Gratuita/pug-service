@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.domain;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
@@ -10,6 +9,7 @@ import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.domain.vos.QrValidationInfo;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;

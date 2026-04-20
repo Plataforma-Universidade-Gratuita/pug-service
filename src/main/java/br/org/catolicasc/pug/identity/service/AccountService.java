@@ -1,12 +1,12 @@
 package br.org.catolicasc.pug.identity.service;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -65,8 +65,8 @@ public interface AccountService {
    * @param email the email address of the account
    * @return the fully reconstituted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws AppValidationException if the account exists but its stored
-   *     state violates domain constraints
+   * @throws AppValidationException if the account exists but its stored state violates domain
+   *     constraints
    */
   Account getByEmail(String email);
 
@@ -79,8 +79,8 @@ public interface AccountService {
    * @param id the unique identifier (UUID) of the account
    * @return the fully reconstituted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws AppValidationException if the account exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the account exists but its stored state violates strict
+   *     domain invariants (data corruption)
    */
   Account getById(UUID id);
 
@@ -93,10 +93,8 @@ public interface AccountService {
    *
    * @param cmd the structured command containing the data to create the new account and linked user
    * @return the fully instantiated and persisted {@link Account} aggregate
-   * @throws DuplicateResourceException if an account with the given email
-   *     already exists
-   * @throws AppValidationException if input validation fails (e.g., blank
-   *     email, invalid CPF)
+   * @throws DuplicateResourceException if an account with the given email already exists
+   * @throws AppValidationException if input validation fails (e.g., blank email, invalid CPF)
    */
   Account save(AccountCreateCommand cmd);
 
@@ -125,10 +123,8 @@ public interface AccountService {
    * @param cmd the structured command containing the data to update the account
    * @return the mutated and persisted {@link Account} aggregate
    * @throws ResourceNotFoundException if the account does not exist
-   * @throws DuplicateResourceException if the updated email conflicts
-   *     with an existing account
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws DuplicateResourceException if the updated email conflicts with an existing account
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   Account update(UUID id, AccountUpdateCommand cmd);
 }

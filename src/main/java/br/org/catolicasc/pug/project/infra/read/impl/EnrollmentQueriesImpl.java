@@ -15,9 +15,9 @@ import java.util.UUID;
  * Implementation of the {@link EnrollmentQueries} interface using JPA constructor expressions.
  *
  * <p>This application-scoped bean executes read-only operations for enrollments. It projects {@link
- * EnrollmentEntity} rows into lightweight {@link EnrollmentView}
- * DTOs containing only identifiers and lifecycle metadata, leaving project and student details to
- * be resolved on demand via dedicated endpoints.
+ * EnrollmentEntity} rows into lightweight {@link EnrollmentView} DTOs containing only identifiers
+ * and lifecycle metadata, leaving project and student details to be resolved on demand via
+ * dedicated endpoints.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)

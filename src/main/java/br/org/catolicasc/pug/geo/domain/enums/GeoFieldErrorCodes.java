@@ -9,8 +9,8 @@ import lombok.Getter;
  *
  * <p>This enum implements {@link GenericFieldErrorCodes} to provide a standardized contract for
  * localized error messages mapped to specific domain properties (e.g., "ibgeCode"). These constants
- * are primarily accumulated inside {@link DomainError} instances when value
- * objects or entities fail their internal validations.
+ * are primarily accumulated inside {@link DomainError} instances when value objects or entities
+ * fail their internal validations.
  */
 @Getter
 public enum GeoFieldErrorCodes implements GenericFieldErrorCodes {

@@ -3,13 +3,11 @@ package br.org.catolicasc.pug.project.service;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Application service interface dedicated exclusively to querying {@link
- * Attendance} data.
+ * Application service interface dedicated exclusively to querying {@link Attendance} data.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations, retrieving lightweight
  * {@link AttendanceView} Data Transfer Objects directly from the read infrastructure.
@@ -21,8 +19,7 @@ public interface AttendanceReadService {
    *
    * @param id the unique identifier (UUID) of the attendance
    * @return the populated {@link AttendanceView} DTO
-   * @throws ResourceNotFoundException if no attendance matches the
-   *     provided ID
+   * @throws ResourceNotFoundException if no attendance matches the provided ID
    */
   AttendanceView getViewById(UUID id);
 

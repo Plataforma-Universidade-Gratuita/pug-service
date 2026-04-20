@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +19,7 @@ public interface AccountReadService {
    *
    * @param email the exact email address string of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws ResourceNotFoundException if no account matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no account matches the provided email
    */
   AccountView getViewByEmail(String email);
 
@@ -30,8 +28,7 @@ public interface AccountReadService {
    *
    * @param id the unique identifier (UUID) of the requested account
    * @return the populated {@link AccountView} DTO
-   * @throws ResourceNotFoundException if no account matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no account matches the provided ID
    */
   AccountView getViewById(UUID id);
 

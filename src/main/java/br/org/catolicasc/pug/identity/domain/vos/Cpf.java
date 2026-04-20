@@ -21,9 +21,7 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Cpf extends DomainError {
 
-  /**
-   * The raw, numeric-only 11-digit string representing the CPF.
-   */
+  /** The raw, numeric-only 11-digit string representing the CPF. */
   String value;
 
   /**

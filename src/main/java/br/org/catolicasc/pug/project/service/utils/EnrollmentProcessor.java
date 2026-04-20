@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.project.service.utils;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 
 /**
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Enrollment}
@@ -22,8 +22,8 @@ public final class EnrollmentProcessor {
    * delegates the initialization of the enrollment to {@link Enrollment#factory(Student, Project)}.
    * The returned instance is immediately self-validated; any accumulated domain validation problems
    * can be inspected via {@link Enrollment#hasFieldErrors()} and {@link
-   * Enrollment#getFieldErrors()} and should be translated into an {@link
-   * AppValidationException} by the calling service when appropriate.
+   * Enrollment#getFieldErrors()} and should be translated into an {@link AppValidationException} by
+   * the calling service when appropriate.
    *
    * @param student the fully reconstituted {@link Student} aggregate to enroll
    * @param project the fully reconstituted {@link Project} aggregate representing the target

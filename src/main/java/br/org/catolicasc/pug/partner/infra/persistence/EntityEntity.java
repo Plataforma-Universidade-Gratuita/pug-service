@@ -26,9 +26,9 @@ import org.hibernate.type.SqlTypes;
  * JPA entity representing a Partner Organization (Entity) within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link
- * br.org.catolicasc.pug.partner.domain.Entity} domain aggregate. It inherits a time-ordered UUIDv7 primary key
- * and standard audit tracking fields from {@link BaseAuditedEntity}. It enforces strict uniqueness
- * on the CNPJ at the database level.
+ * br.org.catolicasc.pug.partner.domain.Entity} domain aggregate. It inherits a time-ordered UUIDv7
+ * primary key and standard audit tracking fields from {@link BaseAuditedEntity}. It enforces strict
+ * uniqueness on the CNPJ at the database level.
  *
  * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
  * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to

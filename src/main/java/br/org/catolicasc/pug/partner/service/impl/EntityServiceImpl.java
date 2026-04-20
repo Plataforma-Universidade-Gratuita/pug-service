@@ -24,8 +24,8 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
  * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link CityReadService}), and manages the lifecycle cascading to {@link
- * StaffService} during deletion operations.
+ * via {@link CityReadService}), and manages the lifecycle cascading to {@link StaffService} during
+ * deletion operations.
  */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {

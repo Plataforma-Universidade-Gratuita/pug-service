@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.partner.domain;
 
 import br.org.catolicasc.pug.geo.domain.City;
-
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,8 +25,7 @@ public interface EntityRepository {
    * Checks whether any Partner {@link Entity} exists that is associated with a specific city ID.
    *
    * <p>This is used to enforce referential integrity across bounded contexts, such as preventing
-   * the deletion of a {@link City} that is currently assigned to one or more
-   * partner organizations.
+   * the deletion of a {@link City} that is currently assigned to one or more partner organizations.
    *
    * @param cityId the unique identifier of the city to check
    * @return {@code true} if at least one entity is located in the given city, {@code false}

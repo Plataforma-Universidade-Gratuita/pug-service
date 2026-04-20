@@ -50,8 +50,8 @@ public final class EnrollmentPresenter {
    *
    * <ul>
    *   <li>Copies the {@code projectId} and {@code studentId} identifiers directly from the view.
-   *   <li>Translates the {@link EnrollmentStatus} enum into a
-   *       localized status label using {@link I18n}.
+   *   <li>Translates the {@link EnrollmentStatus} enum into a localized status label using {@link
+   *       I18n}.
    *   <li>Formats the {@code acceptedAt} and {@code closingStatusAt} timestamps according to the
    *       provided {@link Locale}.
    *   <li>Builds a standard {@link AuditInfoResponse} using {@link SharedDataPresenter} to expose

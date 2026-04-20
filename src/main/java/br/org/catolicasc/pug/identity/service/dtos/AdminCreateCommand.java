@@ -8,8 +8,8 @@ import br.org.catolicasc.pug.shared.domain.enums.Campi;
  * privileges.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link Admin} aggregate, cascading down to create the necessary
- * authentication account and user identity in a single transaction.
+ * a new {@link Admin} aggregate, cascading down to create the necessary authentication account and
+ * user identity in a single transaction.
  *
  * @param accountCommand the nested command containing the data to create the underlying
  *     authentication account

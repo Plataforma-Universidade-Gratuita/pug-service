@@ -24,9 +24,9 @@ import lombok.experimental.SuperBuilder;
 /**
  * JPA entity representing a Student's Attendance record within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link
- * Attendance} domain aggregate. It inherits a time-ordered UUIDv7 primary
- * key and standard audit tracking fields from {@link BaseAuditedEntity}.
+ * <p>This class acts as the database-mapped counterpart to the {@link Attendance} domain aggregate.
+ * It inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
+ * BaseAuditedEntity}.
  */
 @Getter
 @Setter

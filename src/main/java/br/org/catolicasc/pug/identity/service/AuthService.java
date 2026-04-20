@@ -49,8 +49,8 @@ public interface AuthService {
    * Authenticates a user based on their credentials and generates a JSON Web Token (JWT).
    *
    * <p>This method evaluates the provided email and plaintext password. If the credentials are
-   * valid and the underlying {@link Account} is active, it issues a signed
-   * JWT containing the user's roles and identity claims.
+   * valid and the underlying {@link Account} is active, it issues a signed JWT containing the
+   * user's roles and identity claims.
    *
    * @param request the structured {@link LoginRequest} containing the user's email and plaintext
    *     password

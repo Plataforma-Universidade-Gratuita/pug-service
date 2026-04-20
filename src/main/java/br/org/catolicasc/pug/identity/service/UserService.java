@@ -1,12 +1,12 @@
 package br.org.catolicasc.pug.identity.service;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.List;
 import java.util.UUID;
 
@@ -78,10 +78,8 @@ public interface UserService {
    *
    * @param cmd the structured command containing the data required to create a new user
    * @return the fully instantiated and persisted {@link User} aggregate
-   * @throws DuplicateResourceException if a user with the provided CPF
-   *     already exists
-   * @throws AppValidationException if the input data violates domain
-   *     constraints
+   * @throws DuplicateResourceException if a user with the provided CPF already exists
+   * @throws AppValidationException if the input data violates domain constraints
    */
   User save(UserCreateCommand cmd);
 
@@ -106,8 +104,7 @@ public interface UserService {
    * @return the mutated and persisted {@link User} aggregate
    * @throws ResourceNotFoundException if the user cannot be found
    * @throws DuplicateResourceException if the updated CPF conflicts
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   User update(UUID id, UserUpdateCommand cmd);
 }

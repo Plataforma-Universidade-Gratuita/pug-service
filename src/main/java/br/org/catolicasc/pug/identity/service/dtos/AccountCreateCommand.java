@@ -9,8 +9,8 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
  * Account.
  *
  * <p>This record encapsulates the raw input data required by the application service to instantiate
- * a new {@link Account} aggregate, alongside the nested command needed to
- * provision its underlying {@link User}.
+ * a new {@link Account} aggregate, alongside the nested command needed to provision its underlying
+ * {@link User}.
  *
  * @param emailString the raw string representation of the requested email address
  * @param type the designated authorization role for the account

@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service.utils;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.project.domain.ProjectBySchool;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import java.util.UUID;
 
 /**

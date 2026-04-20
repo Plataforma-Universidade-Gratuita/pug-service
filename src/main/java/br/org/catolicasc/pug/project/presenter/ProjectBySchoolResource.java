@@ -43,9 +43,8 @@ import java.util.stream.Collectors;
 /**
  * REST API Resource controller for managing Project–School associations.
  *
- * <p>This resource is dedicated exclusively to linking existing {@link
- * Project} instances to existing {@link School}
- * instances via the {@link ProjectBySchool} aggregate.
+ * <p>This resource is dedicated exclusively to linking existing {@link Project} instances to
+ * existing {@link School} instances via the {@link ProjectBySchool} aggregate.
  *
  * <p>Following CQRS principles:
  *

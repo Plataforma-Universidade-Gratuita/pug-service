@@ -1,7 +1,5 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
@@ -12,6 +10,8 @@ import br.org.catolicasc.pug.academic.service.CourseReadService;
 import br.org.catolicasc.pug.academic.service.CourseService;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -118,8 +118,7 @@ public class CourseResource {
    * @param req the validated {@link CourseCreateRequest} payload
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link CourseResponse}
-   * @throws DuplicateResourceException if a course with the same name
-   *     already exists
+   * @throws DuplicateResourceException if a course with the same name already exists
    */
   @POST
   @RolesAllowed("ADMIN")

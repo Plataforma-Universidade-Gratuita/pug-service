@@ -10,8 +10,7 @@ import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
  * (such as specific field validation failures).
  *
  * @param code The programmatic error identifier (e.g., "VALIDATION_ERROR"), typically derived from
- *     {@link GenericCodes#getCode()}. Intended for programmatic
- *     handling by clients.
+ *     {@link GenericCodes#getCode()}. Intended for programmatic handling by clients.
  * @param message The human-readable, localized error message translated for the end user.
  * @param details An optional structured object containing additional, granular context about the
  *     error (e.g., a list of {@link FieldErrorsResponse} objects).

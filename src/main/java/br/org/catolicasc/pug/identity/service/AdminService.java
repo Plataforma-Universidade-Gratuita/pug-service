@@ -1,12 +1,12 @@
 package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
 
 /**
@@ -14,8 +14,8 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete) for administrative privileges. It orchestrates the complex lifecycle relationship between
- * an {@link Admin}, its underlying {@link Account}, and the associated
- * user, ensuring that granting or revoking admin rights cascades correctly through the system.
+ * an {@link Admin}, its underlying {@link Account}, and the associated user, ensuring that granting
+ * or revoking admin rights cascades correctly through the system.
  */
 public interface AdminService {
 
@@ -35,9 +35,8 @@ public interface AdminService {
    * Revokes administrative privileges by deleting the {@link Admin} record.
    *
    * <p>This operation enforces data hygiene. After the admin privileges are successfully revoked,
-   * the service automatically triggers the deletion of the underlying {@link
-   * Account} to ensure credentials tied strictly to admin roles are wiped
-   * out.
+   * the service automatically triggers the deletion of the underlying {@link Account} to ensure
+   * credentials tied strictly to admin roles are wiped out.
    *
    * @param accountId the unique identifier of the Admin to delete (Account ID)
    * @return {@code true} if the Admin was successfully deleted, {@code false} if it was not found
@@ -53,8 +52,8 @@ public interface AdminService {
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Admin} aggregate
    * @throws ResourceNotFoundException if the Admin does not exist
-   * @throws AppValidationException if the Admin exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the Admin exists but its stored state violates strict domain
+   *     invariants (data corruption)
    */
   Admin getByAccountId(UUID accountId);
 
@@ -67,10 +66,8 @@ public interface AdminService {
    *
    * @param cmd the structured command containing the data to create the admin and linked account
    * @return the fully instantiated and persisted {@link Admin} aggregate
-   * @throws AppValidationException if input validation fails for account
-   *     or admin data
-   * @throws DuplicateResourceException if the underlying account email
-   *     already exists
+   * @throws AppValidationException if input validation fails for account or admin data
+   * @throws DuplicateResourceException if the underlying account email already exists
    */
   Admin save(AdminCreateCommand cmd);
 
@@ -85,10 +82,8 @@ public interface AdminService {
    *     ID)
    * @param cmd the structured command containing the data to update the admin and/or account
    * @return the mutated and persisted {@link Admin} aggregate
-   * @throws ResourceNotFoundException if the Admin or linked Account does
-   *     not exist
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws ResourceNotFoundException if the Admin or linked Account does not exist
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   Admin update(UUID accountId, AdminUpdateCommand cmd);
 }

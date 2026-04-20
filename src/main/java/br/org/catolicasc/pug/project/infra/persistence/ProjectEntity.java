@@ -31,9 +31,9 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
 /**
  * JPA entity representing a Project within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link
- * Project} domain aggregate. It inherits a time-ordered UUIDv7 primary key
- * and standard audit tracking fields from {@link BaseAuditedEntity}.
+ * <p>This class acts as the database-mapped counterpart to the {@link Project} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
+ * BaseAuditedEntity}.
  */
 @Getter
 @Setter

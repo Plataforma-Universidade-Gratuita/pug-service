@@ -1,11 +1,11 @@
 package br.org.catolicasc.pug.academic.service;
 
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
 
 /**
@@ -36,8 +36,8 @@ public interface SchoolService {
    * @param id the unique identifier (UUID) of the school
    * @return the fully reconstituted {@link School} aggregate
    * @throws ResourceNotFoundException if the school does not exist
-   * @throws AppValidationException if the school exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the school exists but its stored state violates strict domain
+   *     invariants (data corruption)
    */
   School getById(UUID id);
 
@@ -46,8 +46,7 @@ public interface SchoolService {
    *
    * @param cmd the structured command containing the data to create the new school
    * @return the fully instantiated and persisted {@link School} aggregate
-   * @throws DuplicateResourceException if a school with the exact same
-   *     name already exists
+   * @throws DuplicateResourceException if a school with the exact same name already exists
    * @throws AppValidationException if input validation fails
    */
   School save(SchoolCreateCommand cmd);
@@ -62,10 +61,8 @@ public interface SchoolService {
    * @param cmd the structured command containing the new data for the school
    * @return the mutated and persisted {@link School} aggregate
    * @throws ResourceNotFoundException if the school does not exist
-   * @throws DuplicateResourceException if the updated name conflicts with
-   *     an existing school
-   * @throws AppValidationException if the updated input data violates
-   *     domain constraints
+   * @throws DuplicateResourceException if the updated name conflicts with an existing school
+   * @throws AppValidationException if the updated input data violates domain constraints
    */
   School update(UUID id, SchoolUpdateCommand cmd);
 }

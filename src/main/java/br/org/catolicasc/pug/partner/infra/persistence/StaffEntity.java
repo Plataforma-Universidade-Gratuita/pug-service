@@ -19,10 +19,10 @@ import lombok.ToString;
 /**
  * JPA entity representing Staff privileges within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Staff}
- * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
- * key, effectively functioning as a one-to-one extension of an authentication account to grant
- * staff-level access tied to a specific Partner Entity.
+ * <p>This class is the database-mapped counterpart to the {@link Staff} domain aggregate. Instead
+ * of a standalone ID, it uses the linked account's UUID as its primary key, effectively functioning
+ * as a one-to-one extension of an authentication account to grant staff-level access tied to a
+ * specific Partner Entity.
  */
 @Getter
 @Setter

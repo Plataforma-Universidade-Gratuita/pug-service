@@ -6,12 +6,12 @@ import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.project.service.ProjectReadService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -141,8 +141,7 @@ public class ProjectResource {
    *
    * @param req the validated {@link ProjectCreateRequest}
    * @return an HTTP 201 Created response containing the created {@link ProjectResponse}
-   * @throws DuplicateResourceException if a project with the same name
-   *     exists for the entity
+   * @throws DuplicateResourceException if a project with the same name exists for the entity
    */
   @POST
   @RolesAllowed({"ADMIN", "STAFF"})

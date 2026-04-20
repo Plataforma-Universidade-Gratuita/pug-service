@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.partner.service;
 
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -29,8 +28,7 @@ public interface StaffReadService {
    *
    * @param email the exact email address string of the requested staff member
    * @return the populated {@link StaffView} DTO
-   * @throws ResourceNotFoundException if no staff matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no staff matches the provided email
    */
   StaffView getViewByEmail(String email);
 

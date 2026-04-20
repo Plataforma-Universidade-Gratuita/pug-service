@@ -2,16 +2,15 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.project.domain.ProjectBySchool;
 import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Application service interface for managing the association between {@link
- * Project} and {@link School} aggregates via {@link
- * ProjectBySchool}.
+ * Application service interface for managing the association between {@link Project} and {@link
+ * School} aggregates via {@link ProjectBySchool}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
  * project–school link: creation and deletion of associations. It orchestrates validation and
@@ -35,8 +34,8 @@ public interface ProjectBySchoolService {
    * @param schoolIds the unique identifiers of the schools to link to the project
    * @return a {@link List} of fully instantiated and persisted {@link ProjectBySchool} aggregates
    *     corresponding to the provided school IDs
-   * @throws AppValidationException if any created association violates
-   *     domain constraints (e.g., null IDs)
+   * @throws AppValidationException if any created association violates domain constraints (e.g.,
+   *     null IDs)
    */
   List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds);
 

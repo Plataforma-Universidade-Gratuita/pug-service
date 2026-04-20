@@ -24,9 +24,9 @@ import org.hibernate.type.SqlTypes;
 /**
  * JPA entity representing a geographic City within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link City}
- * domain aggregate. It inherits a time-ordered UUIDv7 primary key and enforces strict uniqueness on
- * the IBGE code at the database level.
+ * <p>This class acts as the database-mapped counterpart to the {@link City} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and enforces strict uniqueness on the IBGE code at the
+ * database level.
  *
  * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
  * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to

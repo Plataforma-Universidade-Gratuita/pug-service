@@ -1,7 +1,5 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
@@ -12,6 +10,8 @@ import br.org.catolicasc.pug.academic.service.SchoolReadService;
 import br.org.catolicasc.pug.academic.service.SchoolService;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -112,8 +112,7 @@ public class SchoolResource {
    * @param req the validated {@link SchoolCreateRequest} payload
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link SchoolResponse}
-   * @throws DuplicateResourceException if a school with the exact name
-   *     already exists
+   * @throws DuplicateResourceException if a school with the exact name already exists
    */
   @POST
   @RolesAllowed("ADMIN")

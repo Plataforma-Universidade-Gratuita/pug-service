@@ -12,9 +12,8 @@ import java.util.UUID;
  * Data Transfer Object (DTO) used as the JSON request payload for assigning a Project to one or
  * more Schools.
  *
- * <p>This request does not create or update the {@link Project} itself; it
- * is dedicated exclusively to managing the project–school association via {@link
- * ProjectBySchool}.
+ * <p>This request does not create or update the {@link Project} itself; it is dedicated exclusively
+ * to managing the project–school association via {@link ProjectBySchool}.
  *
  * @param projectId the unique identifier (UUIDv7) of the project to be associated
  * @param schoolIds the list of unique identifiers (UUIDv7) of the schools to link to the project

@@ -26,9 +26,9 @@ import lombok.ToString;
 /**
  * JPA entity representing an enrolled Student within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Student}
- * domain aggregate. Instead of a standalone ID, it uses the linked account's UUID as its primary
- * key, effectively functioning as a one-to-one extension of an authentication account.
+ * <p>This class is the database-mapped counterpart to the {@link Student} domain aggregate. Instead
+ * of a standalone ID, it uses the linked account's UUID as its primary key, effectively functioning
+ * as a one-to-one extension of an authentication account.
  */
 @Getter
 @Setter

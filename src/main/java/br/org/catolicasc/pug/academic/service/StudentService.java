@@ -1,14 +1,14 @@
 package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -18,9 +18,8 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
  * Delete). It orchestrates the complex lifecycle relationship between a Student enrollment, their
- * underlying {@link Account}, and the {@link
- * Course} they are enrolled in, ensuring that academic records and
- * authentication credentials cascade correctly.
+ * underlying {@link Account}, and the {@link Course} they are enrolled in, ensuring that academic
+ * records and authentication credentials cascade correctly.
  */
 public interface StudentService {
 
@@ -41,9 +40,8 @@ public interface StudentService {
    * Removes a student's enrollment by deleting the {@link Student} record.
    *
    * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,
-   * the service automatically triggers the deletion of the underlying {@link
-   * Account} to ensure credentials tied strictly to student roles are wiped
-   * out.
+   * the service automatically triggers the deletion of the underlying {@link Account} to ensure
+   * credentials tied strictly to student roles are wiped out.
    *
    * @param accountId the unique identifier of the Student to delete (Account ID)
    * @return {@code true} if the student was successfully deleted, {@code false} if they were not
@@ -71,8 +69,8 @@ public interface StudentService {
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Student} aggregate
    * @throws ResourceNotFoundException if the student does not exist
-   * @throws AppValidationException if the student exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the student exists but its stored state violates strict
+   *     domain invariants (data corruption)
    */
   Student getById(UUID accountId);
 
@@ -81,17 +79,14 @@ public interface StudentService {
    *
    * <p>This method performs a cascading save. It verifies that the specified course exists, then
    * delegates the creation of the underlying authentication account (and potentially the user
-   * identity) to the {@link AccountService} before saving the student's
-   * academic enrollment records.
+   * identity) to the {@link AccountService} before saving the student's academic enrollment
+   * records.
    *
    * @param cmd the structured command containing the data to create the student and linked account
    * @return the fully instantiated and persisted {@link Student} aggregate
-   * @throws DuplicateResourceException if the academic registration or
-   *     account email already exists
-   * @throws ResourceNotFoundException if the associated course does not
-   *     exist
-   * @throws AppValidationException if input validation fails at the
-   *     domain level
+   * @throws DuplicateResourceException if the academic registration or account email already exists
+   * @throws ResourceNotFoundException if the associated course does not exist
+   * @throws AppValidationException if input validation fails at the domain level
    */
   Student save(StudentCreateCommand cmd);
 
@@ -104,12 +99,9 @@ public interface StudentService {
    *
    * @param cmds a {@link List} of structured commands containing the data to create the students
    * @return a {@link List} of the fully instantiated and persisted {@link Student} aggregates
-   * @throws DuplicateResourceException if any academic registration or
-   *     email already exists
-   * @throws ResourceNotFoundException if any associated course does not
-   *     exist
-   * @throws AppValidationException if input validation fails for any
-   *     record
+   * @throws DuplicateResourceException if any academic registration or email already exists
+   * @throws ResourceNotFoundException if any associated course does not exist
+   * @throws AppValidationException if input validation fails for any record
    */
   List<Student> saveInBulk(List<StudentCreateCommand> cmds);
 
@@ -125,10 +117,9 @@ public interface StudentService {
    *     Account ID)
    * @param cmd the structured command containing the new data for the student and/or account
    * @return the mutated and persisted {@link Student} aggregate
-   * @throws ResourceNotFoundException if the student does not exist, or
-   *     the new course is not found
-   * @throws DuplicateResourceException if the updated academic
-   *     registration or email conflicts with existing records
+   * @throws ResourceNotFoundException if the student does not exist, or the new course is not found
+   * @throws DuplicateResourceException if the updated academic registration or email conflicts with
+   *     existing records
    * @throws AppValidationException if input validation fails
    */
   Student update(UUID accountId, StudentUpdateCommand cmd);

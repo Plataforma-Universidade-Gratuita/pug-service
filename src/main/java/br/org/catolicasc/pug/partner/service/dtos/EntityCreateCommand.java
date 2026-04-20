@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.partner.service.dtos;
 
 import br.org.catolicasc.pug.partner.domain.Entity;
-
 import java.util.UUID;
 
 /**

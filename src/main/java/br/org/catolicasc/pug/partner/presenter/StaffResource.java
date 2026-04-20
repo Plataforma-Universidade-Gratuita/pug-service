@@ -110,8 +110,8 @@ public class StaffResource {
    * Retrieves the staff profile details of the currently authenticated user.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
-   * AuthService}, ensuring that staff members can only request their own
-   * staff profile. Restricted to users with the STAFF role.
+   * AuthService}, ensuring that staff members can only request their own staff profile. Restricted
+   * to users with the STAFF role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StaffResponse}

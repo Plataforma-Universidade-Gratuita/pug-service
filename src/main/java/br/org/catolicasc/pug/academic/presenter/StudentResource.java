@@ -1,7 +1,5 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
 import br.org.catolicasc.pug.academic.presenter.dtos.StudentCreateRequest;
@@ -14,6 +12,8 @@ import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -139,8 +139,8 @@ public class StudentResource {
    * Retrieves the academic enrollment details of the currently authenticated student.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
-   * AuthService}, ensuring that callers can only access their own academic
-   * record. This endpoint is restricted to users with the STUDENT role.
+   * AuthService}, ensuring that callers can only access their own academic record. This endpoint is
+   * restricted to users with the STUDENT role.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     StudentResponse}
@@ -201,8 +201,7 @@ public class StudentResource {
    *     details
    * @return an HTTP 201 Created response containing a {@code Location} header and the created
    *     {@link StudentResponse}
-   * @throws DuplicateResourceException if the academic registration or
-   *     email already exists
+   * @throws DuplicateResourceException if the academic registration or email already exists
    */
   @POST
   @RolesAllowed("ADMIN")
@@ -229,8 +228,7 @@ public class StudentResource {
    *     enrollment details
    * @return an HTTP 201 Created response containing the created {@link List} of {@link
    *     StudentResponse}
-   * @throws DuplicateResourceException if any academic registration or
-   *     email already exists
+   * @throws DuplicateResourceException if any academic registration or email already exists
    */
   @POST
   @Path("/bulk")

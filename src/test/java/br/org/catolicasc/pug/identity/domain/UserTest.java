@@ -10,22 +10,22 @@ import org.junit.jupiter.api.Test;
 @DisplayName("User Aggregate Tests")
 class UserTest {
 
-    @Test
-    @DisplayName("Should create valid User")
-    void shouldCreateUser() {
-        User user = User.factory(Cpf.factory("11144477735"), "John Doe");
-        assertThat(user.hasFieldErrors()).isFalse();
-    }
+  @Test
+  @DisplayName("Should create valid User")
+  void shouldCreateUser() {
+    User user = User.factory(Cpf.factory("11144477735"), "John Doe");
+    assertThat(user.hasFieldErrors()).isFalse();
+  }
 
-    @Test
-    @DisplayName("Should collect errors when data is invalid")
-    void shouldCollectValidationErrors() {
-        User user = User.factory(Cpf.factory("111"), "");
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    User user = User.factory(Cpf.factory("111"), "");
 
-        assertThat(user.hasFieldErrors()).isTrue();
-        assertThat(user.getFieldErrors()).contains(
-                IdentityFieldErrorCodes.INVALID_CPF_FORMAT,
-                IdentityFieldErrorCodes.INVALID_USER_ID_BLANK
-        );
-    }
+    assertThat(user.hasFieldErrors()).isTrue();
+    assertThat(user.getFieldErrors())
+        .contains(
+            IdentityFieldErrorCodes.INVALID_CPF_FORMAT,
+            IdentityFieldErrorCodes.INVALID_USER_ID_BLANK);
+  }
 }

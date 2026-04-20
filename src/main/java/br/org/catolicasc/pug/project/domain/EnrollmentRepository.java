@@ -56,8 +56,8 @@ public interface EnrollmentRepository {
    * Checks whether any {@link Enrollment} associated with the specified student identifier exists
    * in the repository.
    *
-   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
-   * Student} cannot be deleted while they still have project enrollments.
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link Student}
+   * cannot be deleted while they still have project enrollments.
    *
    * @param studentId the unique identifier (UUID) of the student account
    * @return {@code true} if at least one enrollment is linked to the student, {@code false}

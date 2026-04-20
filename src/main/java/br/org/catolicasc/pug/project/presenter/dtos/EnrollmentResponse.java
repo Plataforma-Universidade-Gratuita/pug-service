@@ -10,10 +10,9 @@ import java.util.UUID;
  * Data Transfer Object (DTO) used as the standardized API JSON response for Enrollment records.
  *
  * <p>This record provides a lightweight, identifier-centric view of an enrollment. Instead of
- * nesting the full {@link ProjectResponse} or {@link
- * StudentResponse}, it exposes only the {@code projectId} and
- * {@code studentId}, allowing API clients to resolve detailed project and student information on
- * demand via dedicated endpoints.
+ * nesting the full {@link ProjectResponse} or {@link StudentResponse}, it exposes only the {@code
+ * projectId} and {@code studentId}, allowing API clients to resolve detailed project and student
+ * information on demand via dedicated endpoints.
  *
  * @param projectId the unique identifier (UUIDv7) of the associated project
  * @param studentId the unique identifier (UUIDv7) of the associated student account

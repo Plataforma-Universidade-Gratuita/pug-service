@@ -95,9 +95,8 @@ public class Enrollment extends DomainError {
    *     for a valid transition)
    * @return a new {@link Enrollment} instance reflecting the updated status and lifecycle metadata,
    *     or {@code this} if the status is unchanged
-   * @throws BusinessRuleException if the requested transition violates
-   *     the enrollment lifecycle rules and {@link
-   *     ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
+   * @throws BusinessRuleException if the requested transition violates the enrollment lifecycle
+   *     rules and {@link ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
    */
   public Enrollment changeStatus(EnrollmentStatus newStatus) {
     if (status == newStatus) {

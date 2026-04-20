@@ -22,10 +22,10 @@ import lombok.experimental.SuperBuilder;
 /**
  * JPA entity representing an authentication Account within the persistence layer.
  *
- * <p>This class is the database-mapped counterpart to the {@link Account}
- * domain aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit fields from
- * {@link BaseAuditedEntity}. It maintains the credentials, role types, and the logical association
- * to a specific {@link UserEntity}.
+ * <p>This class is the database-mapped counterpart to the {@link Account} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and standard audit fields from {@link
+ * BaseAuditedEntity}. It maintains the credentials, role types, and the logical association to a
+ * specific {@link UserEntity}.
  */
 @Getter
 @Setter

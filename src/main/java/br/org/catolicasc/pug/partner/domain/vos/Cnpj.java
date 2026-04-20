@@ -21,9 +21,7 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Cnpj extends DomainError {
 
-  /**
-   * The raw, numeric-only 14-digit string representing the CNPJ.
-   */
+  /** The raw, numeric-only 14-digit string representing the CNPJ. */
   String value;
 
   /**

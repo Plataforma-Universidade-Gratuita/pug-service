@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +19,7 @@ public interface AdminReadService {
    *
    * @param accountId the unique identifier (UUID) of the admin's account
    * @return the populated {@link AdminView} DTO
-   * @throws ResourceNotFoundException if no admin matches the provided
-   *     account ID
+   * @throws ResourceNotFoundException if no admin matches the provided account ID
    */
   AdminView getViewByAccountId(UUID accountId);
 
@@ -30,8 +28,7 @@ public interface AdminReadService {
    *
    * @param email the exact email address string of the requested admin
    * @return the populated {@link AdminView} DTO
-   * @throws ResourceNotFoundException if no admin matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no admin matches the provided email
    */
   AdminView getViewByEmail(String email);
 

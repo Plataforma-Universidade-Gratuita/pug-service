@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +20,7 @@ public interface StudentReadService {
    *
    * @param academicRegistration the exact academic registration string
    * @return the populated {@link StudentView} DTO
-   * @throws ResourceNotFoundException if no student matches the provided
-   *     registration
+   * @throws ResourceNotFoundException if no student matches the provided registration
    */
   StudentView getViewByAcademicRegistration(String academicRegistration);
 
@@ -31,8 +29,7 @@ public interface StudentReadService {
    *
    * @param accountId the unique identifier (UUID) of the student's account
    * @return the populated {@link StudentView} DTO
-   * @throws ResourceNotFoundException if no student matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no student matches the provided ID
    */
   StudentView getViewByAccountId(UUID accountId);
 
@@ -41,8 +38,7 @@ public interface StudentReadService {
    *
    * @param cpf the exact 11-digit numeric CPF string of the student
    * @return the populated {@link StudentView} DTO
-   * @throws ResourceNotFoundException if no student matches the provided
-   *     CPF
+   * @throws ResourceNotFoundException if no student matches the provided CPF
    */
   StudentView getViewByCpf(String cpf);
 
@@ -51,8 +47,7 @@ public interface StudentReadService {
    *
    * @param email the exact email address of the student
    * @return the populated {@link StudentView} DTO
-   * @throws ResourceNotFoundException if no student matches the provided
-   *     email
+   * @throws ResourceNotFoundException if no student matches the provided email
    */
   StudentView getViewByEmail(String email);
 

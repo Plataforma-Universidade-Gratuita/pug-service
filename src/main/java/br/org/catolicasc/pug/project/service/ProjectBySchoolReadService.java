@@ -11,8 +11,8 @@ import java.util.UUID;
  * and schools.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations for the project–school
- * link. It leverages the underlying {@link ProjectBySchoolRepository} to
- * resolve identifiers and then projects them into lightweight read models.
+ * link. It leverages the underlying {@link ProjectBySchoolRepository} to resolve identifiers and
+ * then projects them into lightweight read models.
  */
 public interface ProjectBySchoolReadService {
 

@@ -1,13 +1,13 @@
 package br.org.catolicasc.pug.partner.domain;
 
 import br.org.catolicasc.pug.geo.domain.City;
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
 import lombok.Builder;
@@ -38,10 +38,7 @@ public class Entity extends DomainError {
   /** The registered name or corporate reason of the partner entity. */
   String name;
 
-  /**
-   * The unique identifier of the associated {@link City} where the entity is
-   * located.
-   */
+  /** The unique identifier of the associated {@link City} where the entity is located. */
   UUID cityId;
 
   /** The physical street address of the partner entity. */

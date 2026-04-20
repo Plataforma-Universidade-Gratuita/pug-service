@@ -3,7 +3,6 @@ package br.org.catolicasc.pug.partner.service;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -21,8 +20,7 @@ public interface EntityReadService {
    *
    * @param id the unique identifier (UUID) of the partner entity
    * @return the populated {@link EntityView} DTO
-   * @throws ResourceNotFoundException if no entity matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no entity matches the provided ID
    */
   EntityView getViewById(UUID id);
 
@@ -31,8 +29,7 @@ public interface EntityReadService {
    *
    * @param cnpj the raw 14-digit numeric CNPJ string
    * @return the populated {@link EntityView} DTO
-   * @throws ResourceNotFoundException if no entity matches the provided
-   *     CNPJ
+   * @throws ResourceNotFoundException if no entity matches the provided CNPJ
    */
   EntityView getViewByCnpj(String cnpj);
 

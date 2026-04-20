@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.infra.read.impl;
 
-import br.org.catolicasc.pug.project.infra.persistence.ProjectsBySchoolsEntity;
 import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
+import br.org.catolicasc.pug.project.infra.persistence.ProjectsBySchoolsEntity;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;

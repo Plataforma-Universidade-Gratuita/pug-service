@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.academic.service.dtos;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-
 import java.util.UUID;
 
 /**

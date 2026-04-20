@@ -3,31 +3,31 @@ package br.org.catolicasc.pug.partner.service;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.partner.domain.Staff;
+import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
 import java.util.UUID;
 
 /**
  * Application service interface for managing the state of {@link Staff} domain aggregates.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Delete). It
- * orchestrates the lifecycle relationship between a Staff member, their underlying {@link
- * Account}, and the {@link Entity} they represent,
- * ensuring that access rights cascade correctly across domains.
+ * orchestrates the lifecycle relationship between a Staff member, their underlying {@link Account},
+ * and the {@link Entity} they represent, ensuring that access rights cascade correctly across
+ * domains.
  */
 public interface StaffService {
 
   /**
    * Deactivates a Staff member's account.
    *
-   * <p>This operation delegates to the underlying {@link AccountService}
-   * to gracefully disable Login.bru and operational capabilities without permanently destroying the
-   * account data, preserving referential integrity for historical records.
+   * <p>This operation delegates to the underlying {@link AccountService} to gracefully disable
+   * Login.bru and operational capabilities without permanently destroying the account data,
+   * preserving referential integrity for historical records.
    *
    * @param accountId the unique identifier of the Staff to deactivate (Account ID)
    * @return {@code true} if the deactivation was successful, {@code false} if it was not found
@@ -38,9 +38,8 @@ public interface StaffService {
    * Revokes staff privileges by deleting the {@link Staff} record.
    *
    * <p>This operation enforces data hygiene. After the staff privileges are successfully revoked,
-   * the service automatically triggers the deletion of the underlying {@link
-   * Account} to ensure credentials tied strictly to organizational roles
-   * are wiped out.
+   * the service automatically triggers the deletion of the underlying {@link Account} to ensure
+   * credentials tied strictly to organizational roles are wiped out.
    *
    * @param accountId the unique identifier of the Staff to delete (Account ID)
    * @return {@code true} if the staff record was successfully deleted, {@code false} if it was not
@@ -70,8 +69,8 @@ public interface StaffService {
    * @param accountId the unique identifier (UUID) of the linked account
    * @return the fully reconstituted {@link Staff} aggregate
    * @throws ResourceNotFoundException if the Staff record does not exist
-   * @throws AppValidationException if the Staff exists but its stored
-   *     state violates strict domain invariants (data corruption)
+   * @throws AppValidationException if the Staff exists but its stored state violates strict domain
+   *     invariants (data corruption)
    */
   Staff getByAccountId(UUID accountId);
 
@@ -88,12 +87,10 @@ public interface StaffService {
    * @param cmd the structured command containing the data to create the staff member and linked
    *     account
    * @return the fully instantiated and persisted {@link Staff} aggregate
-   * @throws DuplicateResourceException if the account email already
-   *     exists, or if the account is already assigned to this exact entity
-   * @throws BusinessRuleException if the account is already assigned as
-   *     Staff to a different entity
-   * @throws ResourceNotFoundException if the specified partner entity
-   *     does not exist
+   * @throws DuplicateResourceException if the account email already exists, or if the account is
+   *     already assigned to this exact entity
+   * @throws BusinessRuleException if the account is already assigned as Staff to a different entity
+   * @throws ResourceNotFoundException if the specified partner entity does not exist
    * @throws AppValidationException if input validation fails
    */
   Staff save(StaffCreateCommand cmd);
@@ -111,10 +108,9 @@ public interface StaffService {
    * @return the structurally unmodified {@link Staff} aggregate, returned for operational
    *     continuity
    * @throws ResourceNotFoundException if the Staff record does not exist
-   * @throws DuplicateResourceException if the updated email conflicts
-   *     with an existing account in the system
-   * @throws AppValidationException if the provided update data violates
-   *     domain constraints
+   * @throws DuplicateResourceException if the updated email conflicts with an existing account in
+   *     the system
+   * @throws AppValidationException if the provided update data violates domain constraints
    */
   Staff update(UUID accountId, StaffUpdateCommand cmd);
 }

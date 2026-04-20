@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -20,8 +19,7 @@ public interface SchoolReadService {
    *
    * @param id the unique identifier (UUID) of the school
    * @return the populated {@link SchoolView} DTO
-   * @throws ResourceNotFoundException if no school matches the provided
-   *     ID
+   * @throws ResourceNotFoundException if no school matches the provided ID
    */
   SchoolView getViewById(UUID id);
 

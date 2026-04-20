@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.domain;
 
-import com.github.f4b6a3.uuid.UuidCreator;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
@@ -9,6 +8,7 @@ import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
