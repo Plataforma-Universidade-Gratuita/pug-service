@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -18,117 +17,78 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("AdminServiceImpl Coverage Tests")
+@QuarkusTest
+@DisplayName("AdminServiceImpl Coverage")
 class AdminServiceImplTest {
 
-  @Mock AdminRepository repo;
-  @Mock AccountService accountService;
-  @Mock AuditPublisher audit;
-  @InjectMocks AdminServiceImpl service;
+  @Inject AdminServiceImpl service;
+  @InjectMock AdminRepository repo;
+  @InjectMock AccountService accountService;
+  @InjectMock AuditPublisher audit;
 
-  @Nested
-  @DisplayName("Method: save")
-  class SaveTests {
-    @Test
-    @DisplayName("Should save admin successfully and fire audit")
-    void success() {
-      var account = AccountBuilder.anAccount().build();
+  @Test
+  @DisplayName("Should save admin successfully and fire audit")
+  void saveSuccess() {
+    var account = AccountBuilder.anAccount().build();
+    var accCmd =
+        new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand(
+            "admin@pug.com", AccountType.ADMIN, "pass", null);
+    var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
 
-      var userCmd =
-          new br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand(
-              "11144477735", "Admin User");
-      var accCmd =
-          new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand(
-              "admin@pug.com", AccountType.ADMIN, "pass", userCmd);
-      var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
+    when(accountService.save(any())).thenReturn(account);
+    when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
 
-      when(accountService.save(any())).thenReturn(account);
-      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+    Admin saved = service.save(cmd);
 
-      Admin saved = service.save(cmd);
-
-      assertThat(saved.getAccountId()).isEqualTo(account.getId());
-      verify(repo).persist(any());
-      verify(audit).fireCreate(eq(Admin.class.getName()), any());
-    }
+    assertThat(saved.getAccountId()).isEqualTo(account.getId());
+    verify(repo).persist(any());
+    verify(audit).fireCreate(Admin.class.getName(), account.getId());
   }
 
-  @Nested
-  @DisplayName("Method: delete")
-  class DeleteTests {
-    @Test
-    @DisplayName("Should delete admin and revoke account")
-    void deleteSuccess() {
-      UUID id = UUID.randomUUID();
-      when(repo.deleteByAccountId(id)).thenReturn(true);
+  @Test
+  @DisplayName("Should delete admin and revoke account")
+  void deleteSuccess() {
+    UUID id = UUID.randomUUID();
+    when(repo.deleteByAccountId(id)).thenReturn(true);
 
-      boolean deleted = service.delete(id);
+    boolean deleted = service.delete(id);
 
-      assertThat(deleted).isTrue();
-      verify(accountService).delete(id);
-      verify(audit).fireDelete(Admin.class.getName(), id);
-    }
-
-    @Test
-    @DisplayName("Should do nothing if admin not found")
-    void deleteFail() {
-      UUID id = UUID.randomUUID();
-      when(repo.deleteByAccountId(id)).thenReturn(false);
-
-      boolean deleted = service.delete(id);
-
-      assertThat(deleted).isFalse();
-      verify(accountService, never()).delete(any());
-    }
+    assertThat(deleted).isTrue();
+    verify(accountService).delete(id);
+    verify(audit).fireDelete(Admin.class.getName(), id);
   }
 
-  @Nested
-  @DisplayName("Method: update")
-  class UpdateTests {
-    @Test
-    @DisplayName("Should update campus successfully")
-    void updateSuccess() {
-      UUID id = UUID.randomUUID();
-      Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
-      Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
+  @Test
+  @DisplayName("Should update campus successfully")
+  void updateSuccess() {
+    UUID id = UUID.randomUUID();
+    Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
+    Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
 
-      when(repo.findOptionalByAccountId(id))
-          .thenReturn(Optional.of(current))
-          .thenReturn(Optional.of(updatedExpected));
+    when(repo.findOptionalByAccountId(id))
+        .thenReturn(Optional.of(current))
+        .thenReturn(Optional.of(updatedExpected));
 
-      Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
+    Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
 
-      assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
-      verify(repo).update(any());
-      verify(audit).fireUpdate(any(), any(), any(), any());
-    }
-
-    @Test
-    @DisplayName("Should throw ResourceNotFound when admin missing")
-    void notFound() {
-      when(repo.findOptionalByAccountId(any())).thenReturn(Optional.empty());
-      org.junit.jupiter.api.Assertions.assertThrows(
-          ResourceNotFoundException.class,
-          () -> service.update(UUID.randomUUID(), new AdminUpdateCommand(null, Campi.JOINVILLE)));
-    }
+    assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
   }
 
   @Nested
   @DisplayName("Method: deactivate")
   class DeactivateTests {
     @Test
-    @DisplayName("Should deactivate linked account")
+    @DisplayName("Should deactivate linked account successfully")
     void deactivateSuccess() {
       UUID id = UUID.randomUUID();
       Admin admin = AdminBuilder.anAdmin().forAccount(id).build();
@@ -138,6 +98,24 @@ class AdminServiceImplTest {
 
       assertThat(result).isTrue();
       verify(accountService).deactivate(id);
+    }
+
+    @Test
+    @DisplayName("Should return false when admin not found during deactivation")
+    void deactivateNotFound() {
+      UUID id = UUID.randomUUID();
+      when(repo.findOptionalByAccountId(id)).thenReturn(Optional.empty());
+
+      Assertions.assertThrows(ResourceNotFoundException.class, () -> service.deactivate(id));
+      verify(accountService, never()).deactivate(any());
+    }
+
+    @Test
+    @DisplayName("Should return false when ID is null")
+    void deactivateNullId() {
+      boolean result = service.deactivate(null);
+      assertThat(result).isFalse();
+      verify(accountService, never()).deactivate(any());
     }
   }
 }

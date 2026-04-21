@@ -1,0 +1,769 @@
+./
+├── .dockerignore
+├── .git/
+├── .gitignore
+├── .idea/
+├── .mvn/
+├── .quarkus/
+│   └── cli/
+│       └── plugins/
+│           └── quarkus-cli-catalog.json
+├── README.md
+├── context/
+├── docker-compose.yml
+├── generate-dir-tree.sh
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+├── requests/
+│   ├── academic/
+│   │   ├── course/
+│   │   │   ├── Create Course.bru
+│   │   │   ├── Delete Course.bru
+│   │   │   ├── Get Course.bru
+│   │   │   ├── List Course.bru
+│   │   │   └── Update Course.bru
+│   │   ├── school/
+│   │   │   ├── Create School.bru
+│   │   │   ├── Delete School.bru
+│   │   │   ├── Get School.bru
+│   │   │   ├── List School.bru
+│   │   │   └── Update School.bru
+│   │   └── student/
+│   │       ├── Create Student Bulk.bru
+│   │       ├── Create Student.bru
+│   │       ├── Delete Student.bru
+│   │       ├── Get Student By ID.bru
+│   │       ├── Get Student By Various Filters.bru
+│   │       ├── List Students.bru
+│   │       └── Update Student.bru
+│   ├── bruno.json
+│   ├── environments/
+│   │   └── Local.bru
+│   ├── geo/
+│   │   └── city/
+│   │       ├── Get City by IBGE.bru
+│   │       ├── Get City by ID.bru
+│   │       └── List or Search Cities.bru
+│   ├── identity/
+│   │   ├── account/
+│   │   │   ├── Get Account By ID.bru
+│   │   │   ├── Get Accounts By Filters.bru
+│   │   │   └── List or Search Accounts.bru
+│   │   ├── admin/
+│   │   │   ├── Create Admin.bru
+│   │   │   ├── Deactivate Admin.bru
+│   │   │   ├── Delete Admin.bru
+│   │   │   ├── Get Admin By ID.bru
+│   │   │   ├── Get Admin By Various Filters.bru
+│   │   │   ├── List or Search Admins.bru
+│   │   │   └── Update Admin.bru
+│   │   ├── auth/
+│   │   │   └── Login.bru
+│   │   └── user/
+│   │       ├── Get User By CPF.bru
+│   │       ├── Get User By ID.bru
+│   │       └── List or Search Users.bru
+│   ├── partner/
+│   │   ├── entity/
+│   │   │   ├── Create Entity.bru
+│   │   │   └── List Entities.bru
+│   │   └── staff/
+│   │       └── Create Staff.bru
+│   └── project/
+│       ├── attendance/
+│       ├── enrollment/
+│       └── project/
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── br/
+│   │   │       └── org/
+│   │   │           └── catolicasc/
+│   │   │               └── pug/
+│   │   │                   ├── academic/
+│   │   │                   │   ├── README.md
+│   │   │                   │   ├── domain/
+│   │   │                   │   │   ├── Course.java
+│   │   │                   │   │   ├── CourseRepository.java
+│   │   │                   │   │   ├── School.java
+│   │   │                   │   │   ├── SchoolRepository.java
+│   │   │                   │   │   ├── Student.java
+│   │   │                   │   │   ├── StudentRepository.java
+│   │   │                   │   │   ├── enums/
+│   │   │                   │   │   │   ├── AcademicErrorCodes.java
+│   │   │                   │   │   │   └── AcademicFieldErrorCodes.java
+│   │   │                   │   │   └── vos/
+│   │   │                   │   │       ├── AcademicRegistration.java
+│   │   │                   │   │       ├── CounterpartHours.java
+│   │   │                   │   │       └── Period.java
+│   │   │                   │   ├── infra/
+│   │   │                   │   │   ├── CourseMapper.java
+│   │   │                   │   │   ├── SchoolMapper.java
+│   │   │                   │   │   ├── StudentMapper.java
+│   │   │                   │   │   ├── persistence/
+│   │   │                   │   │   │   ├── CourseEntity.java
+│   │   │                   │   │   │   ├── SchoolEntity.java
+│   │   │                   │   │   │   ├── StudentEntity.java
+│   │   │                   │   │   │   └── impl/
+│   │   │                   │   │   │       ├── CourseRepositoryImpl.java
+│   │   │                   │   │   │       ├── SchoolRepositoryImpl.java
+│   │   │                   │   │   │       └── StudentRepositoryImpl.java
+│   │   │                   │   │   └── read/
+│   │   │                   │   │       ├── CourseQueries.java
+│   │   │                   │   │       ├── SchoolQueries.java
+│   │   │                   │   │       ├── StudentQueries.java
+│   │   │                   │   │       ├── dtos/
+│   │   │                   │   │       │   ├── CourseView.java
+│   │   │                   │   │       │   ├── SchoolView.java
+│   │   │                   │   │       │   └── StudentView.java
+│   │   │                   │   │       └── impl/
+│   │   │                   │   │           ├── CourseQueriesImpl.java
+│   │   │                   │   │           ├── SchoolQueriesImpl.java
+│   │   │                   │   │           └── StudentQueriesImpl.java
+│   │   │                   │   ├── presenter/
+│   │   │                   │   │   ├── CourseResource.java
+│   │   │                   │   │   ├── SchoolResource.java
+│   │   │                   │   │   ├── StudentResource.java
+│   │   │                   │   │   ├── dtos/
+│   │   │                   │   │   │   ├── CourseCreateRequest.java
+│   │   │                   │   │   │   ├── CourseResponse.java
+│   │   │                   │   │   │   ├── CourseUpdateRequest.java
+│   │   │                   │   │   │   ├── SchoolCreateRequest.java
+│   │   │                   │   │   │   ├── SchoolResponse.java
+│   │   │                   │   │   │   ├── SchoolUpdateRequest.java
+│   │   │                   │   │   │   ├── StudentCreateRequest.java
+│   │   │                   │   │   │   ├── StudentResponse.java
+│   │   │                   │   │   │   └── StudentUpdateRequest.java
+│   │   │                   │   │   └── mappers/
+│   │   │                   │   │       ├── CoursePresenter.java
+│   │   │                   │   │       ├── SchoolPresenter.java
+│   │   │                   │   │       └── StudentPresenter.java
+│   │   │                   │   └── service/
+│   │   │                   │       ├── CourseReadService.java
+│   │   │                   │       ├── CourseService.java
+│   │   │                   │       ├── SchoolReadService.java
+│   │   │                   │       ├── SchoolService.java
+│   │   │                   │       ├── StudentReadService.java
+│   │   │                   │       ├── StudentService.java
+│   │   │                   │       ├── dtos/
+│   │   │                   │       │   ├── CourseCreateCommand.java
+│   │   │                   │       │   ├── CourseUpdateCommand.java
+│   │   │                   │       │   ├── SchoolCreateCommand.java
+│   │   │                   │       │   ├── SchoolUpdateCommand.java
+│   │   │                   │       │   ├── StudentCreateCommand.java
+│   │   │                   │       │   └── StudentUpdateCommand.java
+│   │   │                   │       ├── impl/
+│   │   │                   │       │   ├── CourseReadServiceImpl.java
+│   │   │                   │       │   ├── CourseServiceImpl.java
+│   │   │                   │       │   ├── SchoolReadServiceImpl.java
+│   │   │                   │       │   ├── SchoolServiceImpl.java
+│   │   │                   │       │   ├── StudentReadServiceImpl.java
+│   │   │                   │       │   └── StudentServiceImpl.java
+│   │   │                   │       └── utils/
+│   │   │                   │           ├── CourseProcessor.java
+│   │   │                   │           ├── ExceptionHelper.java
+│   │   │                   │           ├── SchoolProcessor.java
+│   │   │                   │           └── StudentProcessor.java
+│   │   │                   ├── geo/
+│   │   │                   │   ├── README.md
+│   │   │                   │   ├── domain/
+│   │   │                   │   │   ├── City.java
+│   │   │                   │   │   ├── CityRepository.java
+│   │   │                   │   │   ├── enums/
+│   │   │                   │   │   │   ├── GeoErrorCodes.java
+│   │   │                   │   │   │   └── GeoFieldErrorCodes.java
+│   │   │                   │   │   └── vos/
+│   │   │                   │   │       └── IbgeCode.java
+│   │   │                   │   ├── infra/
+│   │   │                   │   │   ├── CityMapper.java
+│   │   │                   │   │   ├── persistence/
+│   │   │                   │   │   │   ├── CityEntity.java
+│   │   │                   │   │   │   └── impl/
+│   │   │                   │   │   │       └── CityRepositoryImpl.java
+│   │   │                   │   │   └── read/
+│   │   │                   │   │       ├── CityQueries.java
+│   │   │                   │   │       ├── dtos/
+│   │   │                   │   │       │   └── CityView.java
+│   │   │                   │   │       └── impl/
+│   │   │                   │   │           └── CityQueriesImpl.java
+│   │   │                   │   ├── presenter/
+│   │   │                   │   │   ├── CityReadOnlyResource.java
+│   │   │                   │   │   ├── dtos/
+│   │   │                   │   │   │   └── CityResponse.java
+│   │   │                   │   │   └── mappers/
+│   │   │                   │   │       └── CityPresenter.java
+│   │   │                   │   └── service/
+│   │   │                   │       ├── CityReadService.java
+│   │   │                   │       ├── impl/
+│   │   │                   │       │   └── CityReadServiceImpl.java
+│   │   │                   │       └── utils/
+│   │   │                   │           └── ExceptionHelper.java
+│   │   │                   ├── identity/
+│   │   │                   │   ├── README.md
+│   │   │                   │   ├── domain/
+│   │   │                   │   │   ├── Account.java
+│   │   │                   │   │   ├── AccountRepository.java
+│   │   │                   │   │   ├── Admin.java
+│   │   │                   │   │   ├── AdminRepository.java
+│   │   │                   │   │   ├── User.java
+│   │   │                   │   │   ├── UserRepository.java
+│   │   │                   │   │   ├── enums/
+│   │   │                   │   │   │   ├── IdentityErrorCodes.java
+│   │   │                   │   │   │   └── IdentityFieldErrorCodes.java
+│   │   │                   │   │   └── vos/
+│   │   │                   │   │       ├── Cpf.java
+│   │   │                   │   │       └── Email.java
+│   │   │                   │   ├── generate-context.sh
+│   │   │                   │   ├── infra/
+│   │   │                   │   │   ├── AccountMapper.java
+│   │   │                   │   │   ├── AdminMapper.java
+│   │   │                   │   │   ├── UserMapper.java
+│   │   │                   │   │   ├── persistence/
+│   │   │                   │   │   │   ├── AccountEntity.java
+│   │   │                   │   │   │   ├── AdminEntity.java
+│   │   │                   │   │   │   ├── UserEntity.java
+│   │   │                   │   │   │   └── impl/
+│   │   │                   │   │   │       ├── AccountRepositoryImpl.java
+│   │   │                   │   │   │       ├── AdminRepositoryImpl.java
+│   │   │                   │   │   │       └── UserRepositoryImpl.java
+│   │   │                   │   │   └── read/
+│   │   │                   │   │       ├── AccountQueries.java
+│   │   │                   │   │       ├── AdminQueries.java
+│   │   │                   │   │       ├── UserQueries.java
+│   │   │                   │   │       ├── dtos/
+│   │   │                   │   │       │   ├── AccountView.java
+│   │   │                   │   │       │   ├── AdminAcc.java
+│   │   │                   │   │       │   ├── AdminView.java
+│   │   │                   │   │       │   └── UserView.java
+│   │   │                   │   │       └── impl/
+│   │   │                   │   │           ├── AccountQueriesImpl.java
+│   │   │                   │   │           ├── AdminQueriesImpl.java
+│   │   │                   │   │           └── UserQueriesImpl.java
+│   │   │                   │   ├── presenter/
+│   │   │                   │   │   ├── AccountReadOnlyResource.java
+│   │   │                   │   │   ├── AdminResource.java
+│   │   │                   │   │   ├── AuthResource.java
+│   │   │                   │   │   ├── UserReadOnlyResource.java
+│   │   │                   │   │   ├── dtos/
+│   │   │                   │   │   │   ├── AccountResponse.java
+│   │   │                   │   │   │   ├── AdminCreateRequest.java
+│   │   │                   │   │   │   ├── AdminResponse.java
+│   │   │                   │   │   │   ├── AdminUpdateRequest.java
+│   │   │                   │   │   │   ├── UserResponse.java
+│   │   │                   │   │   │   └── auth/
+│   │   │                   │   │   │       ├── LoginRequest.java
+│   │   │                   │   │   │       └── TokenResponse.java
+│   │   │                   │   │   └── mappers/
+│   │   │                   │   │       ├── AccountPresenter.java
+│   │   │                   │   │       ├── AdminPresenter.java
+│   │   │                   │   │       └── UserPresenter.java
+│   │   │                   │   └── service/
+│   │   │                   │       ├── AccountReadService.java
+│   │   │                   │       ├── AccountService.java
+│   │   │                   │       ├── AdminReadService.java
+│   │   │                   │       ├── AdminService.java
+│   │   │                   │       ├── AuthService.java
+│   │   │                   │       ├── PasswordService.java
+│   │   │                   │       ├── UserReadService.java
+│   │   │                   │       ├── UserService.java
+│   │   │                   │       ├── dtos/
+│   │   │                   │       │   ├── AccountCreateCommand.java
+│   │   │                   │       │   ├── AccountUpdateCommand.java
+│   │   │                   │       │   ├── AdminCreateCommand.java
+│   │   │                   │       │   ├── AdminUpdateCommand.java
+│   │   │                   │       │   ├── UserCreateCommand.java
+│   │   │                   │       │   └── UserUpdateCommand.java
+│   │   │                   │       ├── impl/
+│   │   │                   │       │   ├── AccountReadServiceImpl.java
+│   │   │                   │       │   ├── AccountServiceImpl.java
+│   │   │                   │       │   ├── AdminReadServiceImpl.java
+│   │   │                   │       │   ├── AdminServiceImpl.java
+│   │   │                   │       │   ├── AuthServiceImpl.java
+│   │   │                   │       │   ├── PasswordServiceImpl.java
+│   │   │                   │       │   ├── UserReadServiceImpl.java
+│   │   │                   │       │   └── UserServiceImpl.java
+│   │   │                   │       └── utils/
+│   │   │                   │           ├── AccountProcessor.java
+│   │   │                   │           ├── AdminProcessor.java
+│   │   │                   │           ├── ExceptionHelper.java
+│   │   │                   │           └── UserProcessor.java
+│   │   │                   ├── partner/
+│   │   │                   │   ├── README.md
+│   │   │                   │   ├── domain/
+│   │   │                   │   │   ├── Entity.java
+│   │   │                   │   │   ├── EntityRepository.java
+│   │   │                   │   │   ├── Staff.java
+│   │   │                   │   │   ├── StaffRepository.java
+│   │   │                   │   │   ├── enums/
+│   │   │                   │   │   │   ├── PartnerErrorCodes.java
+│   │   │                   │   │   │   └── PartnerFieldErrorCodes.java
+│   │   │                   │   │   └── vos/
+│   │   │                   │   │       └── Cnpj.java
+│   │   │                   │   ├── infra/
+│   │   │                   │   │   ├── EntityMapper.java
+│   │   │                   │   │   ├── StaffMapper.java
+│   │   │                   │   │   ├── persistence/
+│   │   │                   │   │   │   ├── EntityEntity.java
+│   │   │                   │   │   │   ├── StaffEntity.java
+│   │   │                   │   │   │   └── impl/
+│   │   │                   │   │   │       ├── EntityRepositoryImpl.java
+│   │   │                   │   │   │       └── StaffRepositoryImpl.java
+│   │   │                   │   │   └── read/
+│   │   │                   │   │       ├── EntityQueries.java
+│   │   │                   │   │       ├── StaffQueries.java
+│   │   │                   │   │       ├── dtos/
+│   │   │                   │   │       │   ├── EntityView.java
+│   │   │                   │   │       │   ├── StaffAcc.java
+│   │   │                   │   │       │   └── StaffView.java
+│   │   │                   │   │       └── impl/
+│   │   │                   │   │           ├── EntityQueriesImpl.java
+│   │   │                   │   │           └── StaffQueriesImpl.java
+│   │   │                   │   ├── presenter/
+│   │   │                   │   │   ├── EntityResource.java
+│   │   │                   │   │   ├── StaffResource.java
+│   │   │                   │   │   ├── dtos/
+│   │   │                   │   │   │   ├── EntityCreateRequest.java
+│   │   │                   │   │   │   ├── EntityResponse.java
+│   │   │                   │   │   │   ├── EntityUpdateRequest.java
+│   │   │                   │   │   │   ├── StaffCreateRequest.java
+│   │   │                   │   │   │   ├── StaffResponse.java
+│   │   │                   │   │   │   └── StaffUpdateRequest.java
+│   │   │                   │   │   └── mappers/
+│   │   │                   │   │       ├── EntityPresenter.java
+│   │   │                   │   │       └── StaffPresenter.java
+│   │   │                   │   └── service/
+│   │   │                   │       ├── EntityReadService.java
+│   │   │                   │       ├── EntityService.java
+│   │   │                   │       ├── StaffReadService.java
+│   │   │                   │       ├── StaffService.java
+│   │   │                   │       ├── dtos/
+│   │   │                   │       │   ├── EntityCreateCommand.java
+│   │   │                   │       │   ├── EntityUpdateCommand.java
+│   │   │                   │       │   ├── StaffCreateCommand.java
+│   │   │                   │       │   └── StaffUpdateCommand.java
+│   │   │                   │       ├── impl/
+│   │   │                   │       │   ├── EntityReadServiceImpl.java
+│   │   │                   │       │   ├── EntityServiceImpl.java
+│   │   │                   │       │   ├── StaffReadServiceImpl.java
+│   │   │                   │       │   └── StaffServiceImpl.java
+│   │   │                   │       └── utils/
+│   │   │                   │           ├── EntityProcessor.java
+│   │   │                   │           ├── ExceptionHelper.java
+│   │   │                   │           └── StaffProcessor.java
+│   │   │                   ├── project/
+│   │   │                   │   ├── README.md
+│   │   │                   │   ├── domain/
+│   │   │                   │   │   ├── Attendance.java
+│   │   │                   │   │   ├── AttendanceRepository.java
+│   │   │                   │   │   ├── Enrollment.java
+│   │   │                   │   │   ├── EnrollmentRepository.java
+│   │   │                   │   │   ├── Project.java
+│   │   │                   │   │   ├── ProjectRepository.java
+│   │   │                   │   │   ├── ProjectSchool.java
+│   │   │                   │   │   ├── ProjectSchoolRepository.java
+│   │   │                   │   │   ├── enums/
+│   │   │                   │   │   │   ├── AttendanceStatus.java
+│   │   │                   │   │   │   ├── EnrollmentStatus.java
+│   │   │                   │   │   │   ├── ProjectStatus.java
+│   │   │                   │   │   │   ├── ProjectsErrorCodes.java
+│   │   │                   │   │   │   └── ProjectsFieldErrorCodes.java
+│   │   │                   │   │   └── vos/
+│   │   │                   │   │       ├── AttendanceInfo.java
+│   │   │                   │   │       ├── EnrollmentIdentifier.java
+│   │   │                   │   │       ├── EnrollmentInfo.java
+│   │   │                   │   │       ├── ProjectInfo.java
+│   │   │                   │   │       └── QrValidationInfo.java
+│   │   │                   │   ├── infra/
+│   │   │                   │   │   ├── AttendanceMapper.java
+│   │   │                   │   │   ├── EnrollmentMapper.java
+│   │   │                   │   │   ├── ProjectMapper.java
+│   │   │                   │   │   ├── ProjectSchoolMapper.java
+│   │   │                   │   │   ├── persistence/
+│   │   │                   │   │   │   ├── AttendanceEntity.java
+│   │   │                   │   │   │   ├── EnrollmentEntity.java
+│   │   │                   │   │   │   ├── ProjectEntity.java
+│   │   │                   │   │   │   ├── ProjectSchoolEntity.java
+│   │   │                   │   │   │   └── impl/
+│   │   │                   │   │   │       ├── AttendanceRepositoryImpl.java
+│   │   │                   │   │   │       ├── EnrollmentRepositoryImpl.java
+│   │   │                   │   │   │       ├── ProjectRepositoryImpl.java
+│   │   │                   │   │   │       └── ProjectSchoolRepositoryImpl.java
+│   │   │                   │   │   └── read/
+│   │   │                   │   │       ├── AttendanceQueries.java
+│   │   │                   │   │       ├── EnrollmentQueries.java
+│   │   │                   │   │       ├── ProjectQueries.java
+│   │   │                   │   │       ├── dtos/
+│   │   │                   │   │       │   ├── AttendanceView.java
+│   │   │                   │   │       │   ├── EnrollmentView.java
+│   │   │                   │   │       │   └── ProjectView.java
+│   │   │                   │   │       └── impl/
+│   │   │                   │   │           ├── AttendanceQueriesImpl.java
+│   │   │                   │   │           ├── EnrollmentQueriesImpl.java
+│   │   │                   │   │           └── ProjectQueriesImpl.java
+│   │   │                   │   ├── presenter/
+│   │   │                   │   │   ├── AttendanceResource.java
+│   │   │                   │   │   ├── EnrollmentResource.java
+│   │   │                   │   │   ├── ProjectResource.java
+│   │   │                   │   │   ├── ProjectSchoolResource.java
+│   │   │                   │   │   ├── dtos/
+│   │   │                   │   │   │   ├── AttendanceCreateRequest.java
+│   │   │                   │   │   │   ├── AttendanceResponse.java
+│   │   │                   │   │   │   ├── AttendanceValidateRequest.java
+│   │   │                   │   │   │   ├── EnrollmentCreateRequest.java
+│   │   │                   │   │   │   ├── EnrollmentResponse.java
+│   │   │                   │   │   │   ├── ProjectCreateRequest.java
+│   │   │                   │   │   │   ├── ProjectResponse.java
+│   │   │                   │   │   │   ├── ProjectSchoolRequest.java
+│   │   │                   │   │   │   └── ProjectUpdateRequest.java
+│   │   │                   │   │   └── mappers/
+│   │   │                   │   │       ├── AttendancePresenter.java
+│   │   │                   │   │       ├── EnrollmentPresenter.java
+│   │   │                   │   │       └── ProjectPresenter.java
+│   │   │                   │   └── service/
+│   │   │                   │       ├── AttendanceReadService.java
+│   │   │                   │       ├── AttendanceService.java
+│   │   │                   │       ├── EnrollmentReadService.java
+│   │   │                   │       ├── EnrollmentService.java
+│   │   │                   │       ├── ProjectReadService.java
+│   │   │                   │       ├── ProjectSchoolReadService.java
+│   │   │                   │       ├── ProjectSchoolService.java
+│   │   │                   │       ├── ProjectService.java
+│   │   │                   │       ├── dtos/
+│   │   │                   │       │   ├── AttendanceCreateCommand.java
+│   │   │                   │       │   ├── AttendanceValidateCommand.java
+│   │   │                   │       │   ├── EnrollmentCreateCommand.java
+│   │   │                   │       │   ├── ProjectCreateCommand.java
+│   │   │                   │       │   └── ProjectUpdateCommand.java
+│   │   │                   │       ├── impl/
+│   │   │                   │       │   ├── AttendanceReadServiceImpl.java
+│   │   │                   │       │   ├── AttendanceServiceImpl.java
+│   │   │                   │       │   ├── EnrollmentReadServiceImpl.java
+│   │   │                   │       │   ├── EnrollmentServiceImpl.java
+│   │   │                   │       │   ├── ProjectReadServiceImpl.java
+│   │   │                   │       │   ├── ProjectSchoolReadServiceImpl.java
+│   │   │                   │       │   ├── ProjectSchoolServiceImpl.java
+│   │   │                   │       │   └── ProjectServiceImpl.java
+│   │   │                   │       └── utils/
+│   │   │                   │           ├── AttendanceProcessor.java
+│   │   │                   │           ├── EnrollmentProcessor.java
+│   │   │                   │           ├── ExceptionHelper.java
+│   │   │                   │           ├── ProjectProcessor.java
+│   │   │                   │           └── ProjectSchoolProcessor.java
+│   │   │                   └── shared/
+│   │   │                       ├── README.md
+│   │   │                       ├── domain/
+│   │   │                       │   ├── DomainError.java
+│   │   │                       │   ├── enums/
+│   │   │                       │   │   ├── AccountType.java
+│   │   │                       │   │   ├── Campi.java
+│   │   │                       │   │   ├── GenericCodes.java
+│   │   │                       │   │   ├── GenericFieldErrorCodes.java
+│   │   │                       │   │   ├── SharedErrorCodes.java
+│   │   │                       │   │   └── SharedFieldErrorCodes.java
+│   │   │                       │   └── vos/
+│   │   │                       │       └── AuditInfo.java
+│   │   │                       ├── exceptions/
+│   │   │                       │   ├── AppValidationException.java
+│   │   │                       │   ├── BusinessRuleException.java
+│   │   │                       │   ├── DuplicateResourceException.java
+│   │   │                       │   └── ResourceNotFoundException.java
+│   │   │                       ├── generate-context.sh
+│   │   │                       ├── http/
+│   │   │                       │   └── CorrelationFilter.java
+│   │   │                       ├── i18n/
+│   │   │                       │   └── I18n.java
+│   │   │                       ├── infra/
+│   │   │                       │   ├── audit/
+│   │   │                       │   │   ├── AuditListener.java
+│   │   │                       │   │   ├── AuditLog.java
+│   │   │                       │   │   ├── AuditPublisher.java
+│   │   │                       │   │   ├── DomainAuditEvent.java
+│   │   │                       │   │   └── FieldChange.java
+│   │   │                       │   ├── persistence/
+│   │   │                       │   │   ├── BaseAuditedEntity.java
+│   │   │                       │   │   └── BaseUuidV7Entity.java
+│   │   │                       │   └── search/
+│   │   │                       │       ├── EsAnalysis.java
+│   │   │                       │       ├── HibernateSearchUtils.java
+│   │   │                       │       └── SearchIndexer.java
+│   │   │                       ├── presenter/
+│   │   │                       │   ├── dtos/
+│   │   │                       │   │   ├── AuditInfoResponse.java
+│   │   │                       │   │   └── CampusResponse.java
+│   │   │                       │   ├── mappers/
+│   │   │                       │   │   └── SharedDataPresenter.java
+│   │   │                       │   └── rest/
+│   │   │                       │       ├── ApiEnvelope.java
+│   │   │                       │       ├── ApiError.java
+│   │   │                       │       ├── Details.java
+│   │   │                       │       ├── FieldErrorsResponse.java
+│   │   │                       │       └── mappers/
+│   │   │                       │           ├── AppValidationExceptionMapper.java
+│   │   │                       │           ├── BusinessRuleExceptionMapper.java
+│   │   │                       │           ├── ConstraintViolationExceptionMapper.java
+│   │   │                       │           ├── DuplicateResourceExceptionMapper.java
+│   │   │                       │           ├── NotAuthorizedExceptionMapper.java
+│   │   │                       │           ├── PersistenceExceptionMapper.java
+│   │   │                       │           ├── ResourceNotFoundExceptionMapper.java
+│   │   │                       │           └── UncaughtExceptionMapper.java
+│   │   │                       ├── utils/
+│   │   │                       │   ├── CollectionUtils.java
+│   │   │                       │   ├── DiffUtils.java
+│   │   │                       │   ├── PresenterUtils.java
+│   │   │                       │   └── StringUtils.java
+│   │   │                       └── validation/
+│   │   │                           ├── UuidV7.java
+│   │   │                           ├── UuidV7ForString.java
+│   │   │                           └── UuidV7ForUuid.java
+│   │   └── resources/
+│   │       ├── META-INF/
+│   │       │   └── resources/
+│   │       │       └── .gitkeep
+│   │       ├── ValidationMessages_en_US.properties
+│   │       ├── ValidationMessages_pt_BR.properties
+│   │       ├── application-dev.properties
+│   │       ├── application-prod.properties
+│   │       ├── application.properties
+│   │       ├── db/
+│   │       │   └── migration/
+│   │       │       ├── V000__generate_uuid_v7_from_db.sql
+│   │       │       ├── V001__create_users_table.sql
+│   │       │       ├── V002__create_accounts_table.sql
+│   │       │       ├── V003__create_cities_table.sql
+│   │       │       ├── V004__create_admins_table.sql
+│   │       │       ├── V005__create_entities_table.sql
+│   │       │       ├── V006__create_staff_table.sql
+│   │       │       ├── V007__create_schools_table.sql
+│   │       │       ├── V008__create_courses_table.sql
+│   │       │       ├── V009__create_students_table.sql
+│   │       │       ├── V010__create_projects_table.sql
+│   │       │       ├── V011__create_project_school_table.sql
+│   │       │       ├── V012__create_enrollments_table.sql
+│   │       │       ├── V013__create_attendances_table.sql
+│   │       │       └── V014__seed_system_user.sql
+│   │       ├── generate-context.sh
+│   │       ├── messages_en_US.properties
+│   │       └── messages_pt_BR.properties
+│   └── test/
+│       ├── README.md
+│       ├── java/
+│       │   └── br/
+│       │       └── org/
+│       │           └── catolicasc/
+│       │               └── pug/
+│       │                   ├── academic/
+│       │                   │   ├── domain/
+│       │                   │   │   ├── CourseTest.java
+│       │                   │   │   ├── SchoolTest.java
+│       │                   │   │   ├── StudentTest.java
+│       │                   │   │   ├── enums/
+│       │                   │   │   │   └── AcademicEnumBundleKeysTest.java
+│       │                   │   │   └── vos/
+│       │                   │   │       ├── AcademicRegistrationTest.java
+│       │                   │   │       ├── CounterpartHoursTest.java
+│       │                   │   │       └── PeriodTest.java
+│       │                   │   ├── infra/
+│       │                   │   │   ├── CourseMapperTest.java
+│       │                   │   │   ├── SchoolMapperTest.java
+│       │                   │   │   ├── StudentMapperTest.java
+│       │                   │   │   ├── persistence/
+│       │                   │   │   │   └── impl/
+│       │                   │   │   │       ├── CourseRepositoryImplTest.java
+│       │                   │   │   │       ├── SchoolRepositoryImplTest.java
+│       │                   │   │   │       └── StudentRepositoryImplTest.java
+│       │                   │   │   └── read/
+│       │                   │   │       └── impl/
+│       │                   │   │           ├── CourseQueriesImplTest.java
+│       │                   │   │           ├── SchoolQueriesImplTest.java
+│       │                   │   │           └── StudentQueriesImplTest.java
+│       │                   │   ├── presenter/
+│       │                   │   │   ├── dtos/
+│       │                   │   │   └── mappers/
+│       │                   │   └── service/
+│       │                   │       ├── dtos/
+│       │                   │       ├── impl/
+│       │                   │       └── utils/
+│       │                   ├── geo/
+│       │                   │   ├── domain/
+│       │                   │   │   ├── CityTest.java
+│       │                   │   │   ├── enums/
+│       │                   │   │   │   └── GeoEnumBundleKeysTest.java
+│       │                   │   │   └── vos/
+│       │                   │   │       └── IbgeCodeTest.java
+│       │                   │   ├── infra/
+│       │                   │   │   ├── CityMapperTest.java
+│       │                   │   │   ├── persistence/
+│       │                   │   │   │   └── impl/
+│       │                   │   │   │       └── CityRepositoryImplTest.java
+│       │                   │   │   └── read/
+│       │                   │   │       └── impl/
+│       │                   │   │           └── CityQueriesImplTest.java
+│       │                   │   ├── presenter/
+│       │                   │   │   ├── dtos/
+│       │                   │   │   └── mappers/
+│       │                   │   └── service/
+│       │                   │       ├── dtos/
+│       │                   │       ├── impl/
+│       │                   │       └── utils/
+│       │                   ├── helpers/
+│       │                   │   ├── MongoTestInitializer.java
+│       │                   │   ├── TestDataFactory.java
+│       │                   │   ├── TestNameGenerator.java
+│       │                   │   ├── builders/
+│       │                   │   │   ├── AccountBuilder.java
+│       │                   │   │   ├── AdminBuilder.java
+│       │                   │   │   ├── AttendanceBuilder.java
+│       │                   │   │   ├── CourseBuilder.java
+│       │                   │   │   ├── EnrollmentBuilder.java
+│       │                   │   │   ├── EntityBuilder.java
+│       │                   │   │   ├── ProjectBuilder.java
+│       │                   │   │   ├── SchoolBuilder.java
+│       │                   │   │   ├── StaffBuilder.java
+│       │                   │   │   ├── StudentBuilder.java
+│       │                   │   │   └── UserBuilder.java
+│       │                   │   └── generate-context.sh
+│       │                   ├── identity/
+│       │                   │   ├── domain/
+│       │                   │   │   ├── AccountTest.java
+│       │                   │   │   ├── AdminTest.java
+│       │                   │   │   ├── UserTest.java
+│       │                   │   │   ├── enums/
+│       │                   │   │   │   └── IdentityEnumBundleKeysTest.java
+│       │                   │   │   └── vos/
+│       │                   │   │       ├── CpfTest.java
+│       │                   │   │       └── EmailTest.java
+│       │                   │   ├── generate-context.sh
+│       │                   │   ├── infra/
+│       │                   │   │   ├── AccountMapperTest.java
+│       │                   │   │   ├── AdminMapperTest.java
+│       │                   │   │   ├── UserMapperTest.java
+│       │                   │   │   ├── persistence/
+│       │                   │   │   │   └── impl/
+│       │                   │   │   │       ├── AccountRepositoryImplTest.java
+│       │                   │   │   │       ├── AdminRepositoryImplTest.java
+│       │                   │   │   │       └── UserRepositoryImplTest.java
+│       │                   │   │   └── read/
+│       │                   │   │       └── impl/
+│       │                   │   │           ├── AccountQueriesImplTest.java
+│       │                   │   │           ├── AdminQueriesImplTest.java
+│       │                   │   │           └── UserQueriesImplTest.java
+│       │                   │   ├── presenter/
+│       │                   │   │   └── mappers/
+│       │                   │   └── service/
+│       │                   │       ├── impl/
+│       │                   │       │   ├── AccountReadServiceImplTest.java
+│       │                   │       │   ├── AccountServiceImplTest.java
+│       │                   │       │   ├── AdminReadServiceImplTest.java
+│       │                   │       │   ├── AdminServiceImplTest.java
+│       │                   │       │   ├── UserReadServiceImplTest.java
+│       │                   │       │   └── UserServiceImplTest.java
+│       │                   │       └── utils/
+│       │                   │           ├── AccountProcessorTest.java
+│       │                   │           ├── AdminProcessorTest.java
+│       │                   │           └── UserProcessorTest.java
+│       │                   ├── partner/
+│       │                   │   ├── domain/
+│       │                   │   │   ├── EntityTest.java
+│       │                   │   │   ├── StaffTest.java
+│       │                   │   │   ├── enums/
+│       │                   │   │   │   └── PartnerEnumBundleKeysTest.java
+│       │                   │   │   └── vos/
+│       │                   │   │       └── CnpjTest.java
+│       │                   │   ├── infra/
+│       │                   │   │   ├── EntityMapperTest.java
+│       │                   │   │   ├── StaffMapperTest.java
+│       │                   │   │   ├── persistence/
+│       │                   │   │   │   └── impl/
+│       │                   │   │   │       ├── EntityRepositoryImplTest.java
+│       │                   │   │   │       └── StaffRepositoryImplTest.java
+│       │                   │   │   └── read/
+│       │                   │   │       └── impl/
+│       │                   │   │           ├── EntityQueriesImplTest.java
+│       │                   │   │           └── StaffQueriesImplTest.java
+│       │                   │   ├── presenter/
+│       │                   │   │   ├── EntityResourceSecurityTest.java
+│       │                   │   │   ├── StaffResourceSecurityTest.java
+│       │                   │   │   ├── dtos/
+│       │                   │   │   └── mappers/
+│       │                   │   └── service/
+│       │                   │       ├── dtos/
+│       │                   │       ├── impl/
+│       │                   │       └── utils/
+│       │                   ├── project/
+│       │                   │   ├── domain/
+│       │                   │   │   ├── AttendanceTest.java
+│       │                   │   │   ├── EnrollmentTest.java
+│       │                   │   │   ├── ProjectSchoolTest.java
+│       │                   │   │   ├── ProjectTest.java
+│       │                   │   │   ├── enums/
+│       │                   │   │   │   └── ProjectEnumBundleKeysTest.java
+│       │                   │   │   └── vos/
+│       │                   │   │       ├── AttendanceInfoTest.java
+│       │                   │   │       ├── EnrollmentIdentifierTest.java
+│       │                   │   │       ├── EnrollmentInfoTest.java
+│       │                   │   │       ├── ProjectInfoTest.java
+│       │                   │   │       └── QrValidationInfoTest.java
+│       │                   │   ├── infra/
+│       │                   │   │   ├── AttendanceMapperTest.java
+│       │                   │   │   ├── EnrollmentMapperTest.java
+│       │                   │   │   ├── ProjectMapperTest.java
+│       │                   │   │   ├── persistence/
+│       │                   │   │   │   └── impl/
+│       │                   │   │   │       ├── AttendanceRepositoryImplTest.java
+│       │                   │   │   │       ├── EnrollmentRepositoryImplTest.java
+│       │                   │   │   │       └── ProjectRepositoryImplTest.java
+│       │                   │   │   └── read/
+│       │                   │   │       └── impl/
+│       │                   │   │           ├── AttendanceQueriesImplTest.java
+│       │                   │   │           ├── EnrollmentQueriesImplTest.java
+│       │                   │   │           └── ProjectQueriesImplTest.java
+│       │                   │   ├── presenter/
+│       │                   │   │   ├── dtos/
+│       │                   │   │   └── mappers/
+│       │                   │   └── service/
+│       │                   │       ├── dtos/
+│       │                   │       ├── impl/
+│       │                   │       └── utils/
+│       │                   └── shared/
+│       │                       ├── domain/
+│       │                       │   ├── DomainErrorAndAuditInfoTest.java
+│       │                       │   └── enums/
+│       │                       │       └── EnumBundleKeysTest.java
+│       │                       ├── exceptions/
+│       │                       │   └── AppValidationExceptionTest.java
+│       │                       ├── http/
+│       │                       │   └── CorrelationFilterTest.java
+│       │                       ├── i18n/
+│       │                       │   └── I18nTest.java
+│       │                       ├── infra/
+│       │                       │   ├── audit/
+│       │                       │   │   ├── AuditSystemTest.java
+│       │                       │   │   └── MockAuthService.java
+│       │                       │   └── search/
+│       │                       │       └── HibernateSearchTest.java
+│       │                       ├── presenter/
+│       │                       │   ├── mappers/
+│       │                       │   │   └── SharedDataPresenterTest.java
+│       │                       │   └── rest/
+│       │                       │       └── mappers/
+│       │                       │           ├── AppValidationExceptionMapperTest.java
+│       │                       │           ├── BusinessRuleExceptionMapperTest.java
+│       │                       │           ├── ConstraintViolationMapperTest.java
+│       │                       │           ├── DuplicateResourceExceptionMapperTest.java
+│       │                       │           ├── NotAuthorizedExceptionMapperTest.java
+│       │                       │           ├── ResourceNotFoundExceptionMapperTest.java
+│       │                       │           └── SystemExceptionMappersTest.java
+│       │                       ├── utils/
+│       │                       │   ├── CollectionUtilsTest.java
+│       │                       │   ├── DiffUtilsTest.java
+│       │                       │   ├── PresenterUtilsTest.java
+│       │                       │   └── StringUtilsTest.java
+│       │                       └── validation/
+│       │                           └── UuidV7Test.java
+│       └── resources/
+│           ├── application.properties
+│           ├── generate-context.sh
+│           ├── messages_en_US.properties
+│           └── messages_pt_BR.properties
+└── target/

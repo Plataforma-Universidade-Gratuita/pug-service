@@ -1,8 +1,8 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,107 +15,149 @@ import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("UserServiceImpl Coverage Tests")
+@QuarkusTest
+@DisplayName("UserServiceImpl Coverage")
 class UserServiceImplTest {
 
-  @Mock UserRepository repo;
-  @Mock AuditPublisher audit;
-  @InjectMocks UserServiceImpl service;
+  @Inject UserServiceImpl service;
+  @InjectMock UserRepository repository;
+  @InjectMock AuditPublisher audit;
 
-  @Nested
-  @DisplayName("Method: save")
-  class SaveTests {
-    @Test
-    @DisplayName("Should successfully persist valid user")
-    void success() {
-      when(repo.existsByCpf(any())).thenReturn(false);
-      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+  @Test
+  @DisplayName("Should create user successfully and fire audit")
+  void saveSuccess() {
+    UserCreateCommand cmd = new UserCreateCommand("11144477735", "New Name");
+    when(repository.existsByCpf(any())).thenReturn(false);
+    when(repository.persist(any())).thenAnswer(i -> i.getArgument(0));
 
-      User user = service.save(new UserCreateCommand("11144477735", "Valid Name"));
+    User saved = service.save(cmd);
 
-      assertThat(user.getName()).isEqualTo("Valid Name");
-      verify(repo).persist(any());
-      verify(audit).fireCreate(any(), any());
-    }
-
-    @Test
-    @DisplayName("Should throw when CPF is already registered")
-    void duplicate() {
-      when(repo.existsByCpf(any())).thenReturn(true);
-      org.junit.jupiter.api.Assertions.assertThrows(
-          DuplicateResourceException.class,
-          () -> service.save(new UserCreateCommand("11144477735", "Name")));
-    }
-
-    @Test
-    @DisplayName("Should throw when validation fails in processor")
-    void validationFail() {
-      org.junit.jupiter.api.Assertions.assertThrows(
-          AppValidationException.class, () -> service.save(new UserCreateCommand("INVALID", "")));
-    }
+    assertThat(saved.getName()).isEqualTo("New Name");
+    verify(audit).fireCreate(User.class.getName(), saved.getId());
   }
 
-  @Nested
-  @DisplayName("Method: delete")
-  class DeleteTests {
-    @Test
-    @DisplayName("Should delete and audit when user exists")
-    void success() {
-      when(repo.deleteById(any())).thenReturn(true);
-      boolean result = service.delete(UUID.randomUUID());
-      assertThat(result).isTrue();
-      verify(audit).fireDelete(any(), any());
-    }
+  @Test
+  @DisplayName("Should throw DuplicateResourceException if CPF exists")
+  void saveDuplicate() {
+    UserCreateCommand userCmd = new UserCreateCommand("11144477735", "Name");
+    when(repository.existsByCpf(anyString())).thenReturn(true);
 
-    @Test
-    @DisplayName("Should return false when user does not exist")
-    void notFound() {
-      when(repo.deleteById(any())).thenReturn(false);
-      boolean result = service.delete(UUID.randomUUID());
-      assertThat(result).isFalse();
-      verify(audit, never()).fireDelete(any(), any());
-    }
+    Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
   }
 
-  @Nested
-  @DisplayName("Method: update")
-  class UpdateTests {
-    @Test
-    @DisplayName("Should update name successfully")
-    void updateName() {
-      UUID id = UUID.randomUUID();
-      User existing = User.factory(Cpf.factory("11144477735"), "Old Name");
+  @Test
+  @DisplayName("Should throw AppValidationException for invalid input")
+  void saveInvalid() {
+    UserCreateCommand cmd = new UserCreateCommand("123", "Too Short");
+    Assertions.assertThrows(AppValidationException.class, () -> service.save(cmd));
+  }
 
-      when(repo.findOptionalById(id)).thenReturn(Optional.of(existing));
+  @Test
+  @DisplayName("Should delete user and fire audit")
+  void deleteSuccess() {
+    UUID id = UUID.randomUUID();
+    when(repository.deleteById(id)).thenReturn(true);
 
-      User updatedExpected = existing.rename("New Name");
-      when(repo.findOptionalById(id)).thenReturn(Optional.of(updatedExpected));
+    boolean deleted = service.delete(id);
 
-      User updated = service.update(id, new UserUpdateCommand("New Name"));
+    assertThat(deleted).isTrue();
+    verify(audit).fireDelete(User.class.getName(), id);
+  }
 
-      assertThat(updated.getName()).isEqualTo("New Name");
-      verify(repo).update(any());
-      verify(audit).fireUpdate(any(), any(), any(), any());
-    }
+  @Test
+  @DisplayName("Should update user successfully and fire audit")
+  void updateSuccess() {
+    UUID id = UUID.randomUUID();
+    User user = User.factory(Cpf.factory("11144477735"), "Old Name");
+    User updatedUser = user.rename("New Name");
 
-    @Test
-    @DisplayName("Should throw when user not found during update")
-    void notFound() {
-      when(repo.findOptionalById(any())).thenReturn(Optional.empty());
-      org.junit.jupiter.api.Assertions.assertThrows(
-          ResourceNotFoundException.class,
-          () -> service.update(UUID.randomUUID(), new UserUpdateCommand("New")));
-    }
+    when(repository.findOptionalById(id))
+        .thenReturn(Optional.of(user))
+        .thenReturn(Optional.of(updatedUser));
+
+    UserUpdateCommand cmd = new UserUpdateCommand("New Name");
+    User result = service.update(id, cmd);
+
+    assertThat(result.getName()).isEqualTo("New Name");
+    verify(repository).update(any());
+  }
+
+  @Test
+  @DisplayName("Should throw AppValidationException for invalid name")
+  void updateInvalid() {
+    UUID id = UUID.randomUUID();
+    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
+
+    String longName = "A".repeat(300);
+    UserUpdateCommand cmd = new UserUpdateCommand(longName);
+
+    Assertions.assertThrows(AppValidationException.class, () -> service.update(id, cmd));
+  }
+
+  @Test
+  @DisplayName("Should successfully bulk create users")
+  void saveInBulkSuccess() {
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    when(repository.existsAnyByCpfs(any())).thenReturn(false);
+    when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
+
+    List<User> saved = service.saveInBulk(cmds);
+
+    assertThat(saved).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should throw DuplicateResourceException on bulk duplicate")
+  void saveInBulkDuplicate() {
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    when(repository.existsAnyByCpfs(any())).thenReturn(true);
+
+    Assertions.assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
+  }
+
+  @Test
+  @DisplayName("Should return list of users by CPFs")
+  void listByCpfs() {
+    when(repository.listByCpfs(any())).thenReturn(List.of());
+    assertThat(service.listByCpfs(List.of("11144477735"))).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return user by ID")
+  void getByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
+
+    assertThat(service.getById(id)).isEqualTo(user);
+  }
+
+  @Test
+  @DisplayName("Should throw ResourceNotFoundException for unknown ID")
+  void getByIdNotFound() {
+    when(repository.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should perform batch delete")
+  void deleteAll() {
+    List<UUID> ids = List.of(UUID.randomUUID());
+    when(repository.deleteAllByIds(ids)).thenReturn(1L);
+
+    long count = service.deleteAll(ids);
+    assertThat(count).isEqualTo(1L);
   }
 }

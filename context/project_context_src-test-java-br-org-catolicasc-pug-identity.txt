@@ -1,0 +1,1387 @@
+PROJECT CONTEXT DUMP
+Base: project_context_src-test-java-br-org-catolicasc-pug-identity
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/test/java/br/org/catolicasc/pug/identity
+================================================================================
+
+
+================================================================================
+FILE: domain/AccountTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
+import br.org.catolicasc.pug.identity.domain.vos.Email;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Account Aggregate Tests")
+class AccountTest {
+
+  @Test
+  @DisplayName("Should collect errors for missing fields")
+  void shouldCollectErrors() {
+    Account account = Account.factory(null, null, null, "");
+
+    assertThat(account.hasFieldErrors()).isTrue();
+    assertThat(account.getFieldErrors())
+        .contains(
+            IdentityFieldErrorCodes.INVALID_USER_ID_BLANK,
+            IdentityFieldErrorCodes.INVALID_EMAIL_BLANK,
+            IdentityFieldErrorCodes.INVALID_ACCOUNT_TYPE_BLANK,
+            IdentityFieldErrorCodes.INVALID_PASSWORD_HASH_BLANK);
+  }
+
+  @Test
+  @DisplayName("Should deactivate account correctly")
+  void shouldDeactivate() throws InterruptedException {
+    Account acc =
+        Account.factory(
+            UUID.randomUUID(), Email.factory("test@pug.com"), AccountType.ADMIN, "secret");
+    Thread.sleep(1);
+    Account deactivated = acc.deactivate();
+
+    assertThat(deactivated.getActive()).isFalse();
+    assertThat(deactivated.getAuditInfo().getUpdatedAt())
+        .isAfter(acc.getAuditInfo().getCreatedAt());
+  }
+}
+
+
+================================================================================
+FILE: domain/AdminTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Admin Aggregate Tests")
+class AdminTest {
+
+  @Test
+  @DisplayName("Should create valid Admin")
+  void shouldCreateAdmin() {
+    Admin admin = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+    assertThat(admin.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should collect errors for Admin creation")
+  void shouldCollectErrors() {
+    Admin admin = Admin.factory(null, null);
+
+    assertThat(admin.hasFieldErrors()).isTrue();
+    assertThat(admin.getFieldErrors())
+        .contains(
+            IdentityFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK,
+            SharedFieldErrorCodes.INVALID_CAMPUS_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/IdentityEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Identity Enum Bundle Key Integrity Tests")
+class IdentityEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all identity enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(
+            mapEnum(IdentityErrorCodes.values(), "IdentityErrorCodes"),
+            mapEnum(IdentityFieldErrorCodes.values(), "IdentityFieldErrorCodes"))
+        .flatMap(values -> values)
+        .flatMap(
+            args ->
+                Stream.of(
+                    Arguments.of(args.get()[0], args.get()[1], ptBr),
+                    Arguments.of(args.get()[0], args.get()[1], enUs)));
+  }
+
+  private static Stream<Arguments> mapEnum(GenericCodes[] values, String name) {
+    return Stream.of(values).map(e -> Arguments.of(name + "." + e.toString(), e));
+  }
+}
+
+
+================================================================================
+FILE: domain/UserTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
+import br.org.catolicasc.pug.identity.domain.vos.Cpf;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("User Aggregate Tests")
+class UserTest {
+
+  @Test
+  @DisplayName("Should create valid User")
+  void shouldCreateUser() {
+    User user = User.factory(Cpf.factory("11144477735"), "John Doe");
+    assertThat(user.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    User user = User.factory(Cpf.factory("111"), "");
+
+    assertThat(user.hasFieldErrors()).isTrue();
+    assertThat(user.getFieldErrors())
+        .contains(
+            IdentityFieldErrorCodes.INVALID_CPF_FORMAT,
+            IdentityFieldErrorCodes.INVALID_USER_ID_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/CpfTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Cpf Value Object Tests")
+class CpfTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid CPF from raw numeric string")
+    void shouldCreateValidCpf() {
+      Cpf cpf = Cpf.factory("11144477735");
+
+      assertThat(cpf.hasFieldErrors()).isFalse();
+      assertThat(cpf.getValue()).isEqualTo("11144477735");
+    }
+
+    @Test
+    @DisplayName("Should sanitize input (remove formatting)")
+    void shouldSanitizeInput() {
+      Cpf cpf = Cpf.factory("111.444.777-35");
+
+      assertThat(cpf.hasFieldErrors()).isFalse();
+      assertThat(cpf.getValue()).isEqualTo("11144477735");
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null inputs")
+    void shouldRejectEmpty() {
+      Cpf cpf = Cpf.factory("   ");
+      assertThat(cpf.hasFieldErrors()).isTrue();
+      assertThat(cpf.getFieldErrors()).contains(IdentityFieldErrorCodes.INVALID_CPF_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject invalid checksum or repeated digits")
+    void shouldRejectInvalidFormat() {
+      assertThat(Cpf.factory("11111111111").hasFieldErrors()).isTrue();
+      assertThat(Cpf.factory("12345678901").hasFieldErrors()).isTrue();
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EmailTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Email Value Object Tests")
+class EmailTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Email and normalize it")
+    void shouldCreateAndNormalize() {
+      Email email = Email.factory("  MATEUS@PUG.COM  ");
+      assertThat(email.hasFieldErrors()).isFalse();
+      assertThat(email.getValue()).isEqualTo("mateus@pug.com");
+    }
+
+    @Test
+    @DisplayName("Should reject invalid email formats")
+    void shouldRejectInvalidFormat() {
+      Email email = Email.factory("invalid-email");
+      assertThat(email.hasFieldErrors()).isTrue();
+      assertThat(email.getFieldErrors()).contains(IdentityFieldErrorCodes.INVALID_EMAIL_FORMAT);
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null emails")
+    void shouldRejectEmpty() {
+      Email email = Email.factory(null);
+      assertThat(email.hasFieldErrors()).isTrue();
+      assertThat(email.getFieldErrors()).contains(IdentityFieldErrorCodes.INVALID_EMAIL_BLANK);
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/AccountMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.vos.Email;
+import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AccountMapper Tests")
+class AccountMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Account")
+  void shouldPerformRoundTrip() {
+    Account account =
+        Account.factory(
+            UUID.randomUUID(), Email.factory("test@pug.com"), AccountType.ADMIN, "hashed-password");
+
+    AccountEntity entity = AccountMapper.toEntity(account);
+    Account mappedAccount = AccountMapper.toDomain(entity);
+
+    assertThat(mappedAccount.getId()).isEqualTo(account.getId());
+    assertThat(mappedAccount.getEmail()).isEqualTo(account.getEmail());
+    assertThat(mappedAccount.getUserId()).isEqualTo(account.getUserId());
+  }
+}
+
+
+================================================================================
+FILE: infra/AdminMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.Admin;
+import br.org.catolicasc.pug.identity.infra.persistence.AdminEntity;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AdminMapper Tests")
+class AdminMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Admin")
+  void shouldPerformRoundTrip() {
+    Admin admin = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+
+    AdminEntity entity = AdminMapper.toEntity(admin);
+    Admin mappedAdmin = AdminMapper.toDomain(entity);
+
+    assertThat(mappedAdmin).isEqualTo(admin);
+    assertThat(mappedAdmin.getCampus()).isEqualTo(admin.getCampus());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/AccountRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AccountRepositoryImplTest {
+
+  @Inject AccountRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+  @Inject EntityManager em;
+
+  @Test
+  @Transactional
+  @DisplayName("Should detect orphaned user IDs correctly")
+  void testOrphanDetection() {
+    User user1 = factory.createUser();
+    factory.createAccount(user1, AccountType.STUDENT);
+    em.flush();
+
+    UUID orphanId = UUID.randomUUID();
+    var orphans = repository.findAllOrphanUserIdsByUserIds(List.of(user1.getId(), orphanId));
+
+    assertThat(orphans).containsExactly(orphanId);
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/AdminRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AdminRepositoryImplTest {
+
+  @Inject AdminRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+  @Inject EntityManager em;
+
+  private Account account;
+
+  @BeforeEach
+  @Transactional
+  void setup() {
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(account);
+    em.flush();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and delete admin privilege")
+  void testRevokePrivilege() {
+    boolean deleted = repository.deleteByAccountId(account.getId());
+    assertThat(deleted).isTrue();
+
+    assertThat(repository.findOptionalByAccountId(account.getId())).isEmpty();
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/UserRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.User;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class UserRepositoryImplTest {
+
+  @Inject UserRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+
+  @Test
+  @Transactional
+  @DisplayName("Should verify existence by CPF")
+  void testExistsByCpf() {
+    assertThat(repository.existsByCpf("11111111111")).isFalse();
+
+    User user = factory.createUser();
+    assertThat(repository.existsByCpf(user.getCpf().getValue())).isTrue();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find user")
+  void shouldPersistAndFind() {
+    User user = factory.createUser();
+    assertThat(repository.existsByCpf(user.getCpf().getValue())).isTrue();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/AccountQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AccountQueriesImplTest {
+
+  @Inject AccountQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Account account;
+
+  @BeforeEach
+  void setup() {
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.STUDENT);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should project account data joined with user name")
+  void shouldProjectView() {
+    var view = queries.findOptionalByEmail(account.getEmail().getValue());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().email()).isEqualTo(account.getEmail().getValue());
+    assertThat(view.get().id()).isEqualTo(account.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list accounts sorted by user name")
+  void shouldListSorted() {
+    var list = queries.listAllAccounts();
+    assertThat(list).isNotEmpty();
+    assertThat(list).anyMatch(a -> a.id().equals(account.getId()));
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/AdminQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.Admin;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AdminQueriesImplTest {
+
+  @Inject AdminQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Admin admin;
+  private Account account;
+
+  @BeforeEach
+  void setup() {
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.ADMIN);
+    admin = factory.createAdmin(account); // Certifique-se de ter este método na factory
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should project full nested AdminView for system admin")
+  void shouldGetAdminView() {
+    var adminView = queries.findOptionalById(account.getId());
+
+    assertThat(adminView).isPresent();
+    assertThat(adminView.get().campus()).isEqualTo(admin.getCampus());
+    assertThat(adminView.get().accountView().email()).isEqualTo(account.getEmail().getValue());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list system admin via AdminQueries")
+  void shouldListAdmins() {
+    var admins = queries.listAllAdmins();
+    assertThat(admins).anyMatch(a -> a.accountView().id().equals(account.getId()));
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/UserQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.User;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class UserQueriesImplTest {
+
+  @Inject UserQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private User user;
+
+  @BeforeEach
+  void setup() {
+    user = factory.createUser();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should retrieve user by CPF")
+  void shouldFindUser() {
+    var found = queries.findOptionalByCpf(user.getCpf().getValue());
+
+    assertThat(found).isPresent();
+    assertThat(found.get().name()).isEqualTo(user.getName());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all users")
+  void shouldListAll() {
+    var users = queries.listAllUsers();
+    assertThat(users).anyMatch(u -> u.id().equals(user.getId()));
+  }
+}
+
+
+================================================================================
+FILE: infra/UserMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.domain.vos.Cpf;
+import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("UserMapper Tests")
+class UserMapperTest {
+
+  @Test
+  @DisplayName("Should perform a perfect round-trip (Domain -> Entity -> Domain)")
+  void shouldPerformRoundTrip() {
+    User user = User.factory(Cpf.factory("11144477735"), "System Administrator");
+
+    UserEntity entity = UserMapper.toEntity(user);
+    User mappedUser = UserMapper.toDomain(entity);
+
+    assertThat(mappedUser).isEqualTo(user);
+    assertThat(mappedUser.getCpf().getValue()).isEqualTo(user.getCpf().getValue());
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AccountReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AccountReadServiceImpl Coverage Tests")
+class AccountReadServiceImplTest {
+
+  @Mock AccountQueries queries;
+  @InjectMocks AccountReadServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: getViewById")
+  class GetByIdTests {
+    @Test
+    @DisplayName("Should return view when account exists")
+    void success() {
+      UUID id = UUID.randomUUID();
+      AccountView view =
+          new AccountView(id, UUID.randomUUID(), "test@pug.com", null, null, null, true);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+      assertThat(service.getViewById(id)).isEqualTo(view);
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when missing")
+    void notFound() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: search")
+  class SearchTests {
+    @Test
+    @DisplayName("Should fold query and call searchByName")
+    void shouldFoldAndSearch() {
+      when(queries.searchByName("sao paulo")).thenReturn(List.of());
+
+      service.search("  São Paulo  ");
+
+      verify(queries).searchByName("sao paulo");
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AccountServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.AccountRepository;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.domain.vos.Cpf;
+import br.org.catolicasc.pug.identity.service.UserService;
+import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AccountServiceImpl Coverage Tests")
+class AccountServiceImplTest {
+
+  @Mock AccountRepository repo;
+  @Mock UserService userService;
+  @Mock AuditPublisher audit;
+  @InjectMocks AccountServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should provision new user and account when user does not exist")
+    void shouldProvisionNewUserAndAccount() {
+      UserCreateCommand userCmd = new UserCreateCommand("11144477735", "New User");
+      AccountCreateCommand cmd =
+          new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
+
+      when(userService.existsByCpf(any())).thenReturn(false);
+      User createdUser = User.factory(Cpf.factory("11144477735"), "New User");
+      when(userService.save(any())).thenReturn(createdUser);
+      when(repo.persist(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+
+      Account saved = service.save(cmd);
+
+      assertThat(saved.getUserId()).isEqualTo(createdUser.getId());
+      verify(repo).persist(any());
+      verify(audit).fireCreate(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw DuplicateResourceException if email exists")
+    void shouldThrowOnDuplicateEmail() {
+      User user = User.factory(Cpf.factory("11144477735"), "Name");
+      when(userService.existsByCpf(any())).thenReturn(true);
+      when(userService.getByCpf(any())).thenReturn(user);
+      when(repo.existsByEmail(any())).thenReturn(true);
+
+      AccountCreateCommand cmd =
+          new AccountCreateCommand(
+              "exists@pug.com",
+              AccountType.STUDENT,
+              "p",
+              new UserCreateCommand("11144477735", "N"));
+
+      org.junit.jupiter.api.Assertions.assertThrows(
+          DuplicateResourceException.class, () -> service.save(cmd));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete account and prune orphan user")
+    void shouldDeleteAndPrune() {
+      Account acc =
+          Account.factory(
+              UUID.randomUUID(),
+              br.org.catolicasc.pug.identity.domain.vos.Email.factory("a@a.com"),
+              AccountType.STUDENT,
+              "p");
+      when(repo.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
+      when(repo.countAllAccountsByUserId(acc.getUserId())).thenReturn(1L);
+      when(repo.deleteById(acc.getId())).thenReturn(true);
+
+      boolean deleted = service.delete(acc.getId());
+
+      assertThat(deleted).isTrue();
+      verify(userService).delete(acc.getUserId());
+      verify(audit).fireDelete(any(), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: getById")
+  class GetTests {
+    @Test
+    @DisplayName("Should throw ResourceNotFound when missing")
+    void shouldThrowMissing() {
+      when(repo.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AdminReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AdminReadServiceImpl Coverage Tests")
+class AdminReadServiceImplTest {
+
+  @Mock AdminQueries queries;
+  @InjectMocks AdminReadServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: getViewByAccountId")
+  class GetByAccountIdTests {
+    @Test
+    @DisplayName("Should return admin view successfully")
+    void success() {
+      UUID id = UUID.randomUUID();
+      AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+      assertThat(service.getViewByAccountId(id)).isEqualTo(view);
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when missing")
+    void notFound() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: search")
+  class SearchTests {
+    @Test
+    @DisplayName("Should normalize search query")
+    void searchNormalization() {
+      service.search(" Joinville ");
+      verify(queries).searchByName("joinville");
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AdminServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.helpers.builders.AccountBuilder;
+import br.org.catolicasc.pug.helpers.builders.AdminBuilder;
+import br.org.catolicasc.pug.identity.domain.Admin;
+import br.org.catolicasc.pug.identity.domain.AdminRepository;
+import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("AdminServiceImpl Coverage Tests")
+class AdminServiceImplTest {
+
+  @Mock AdminRepository repo;
+  @Mock AccountService accountService;
+  @Mock AuditPublisher audit;
+  @InjectMocks AdminServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should save admin successfully and fire audit")
+    void success() {
+      var account = AccountBuilder.anAccount().build();
+
+      var userCmd =
+          new br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand(
+              "11144477735", "Admin User");
+      var accCmd =
+          new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand(
+              "admin@pug.com", AccountType.ADMIN, "pass", userCmd);
+      var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
+
+      when(accountService.save(any())).thenReturn(account);
+      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+
+      Admin saved = service.save(cmd);
+
+      assertThat(saved.getAccountId()).isEqualTo(account.getId());
+      verify(repo).persist(any());
+      verify(audit).fireCreate(eq(Admin.class.getName()), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete admin and revoke account")
+    void deleteSuccess() {
+      UUID id = UUID.randomUUID();
+      when(repo.deleteByAccountId(id)).thenReturn(true);
+
+      boolean deleted = service.delete(id);
+
+      assertThat(deleted).isTrue();
+      verify(accountService).delete(id);
+      verify(audit).fireDelete(Admin.class.getName(), id);
+    }
+
+    @Test
+    @DisplayName("Should do nothing if admin not found")
+    void deleteFail() {
+      UUID id = UUID.randomUUID();
+      when(repo.deleteByAccountId(id)).thenReturn(false);
+
+      boolean deleted = service.delete(id);
+
+      assertThat(deleted).isFalse();
+      verify(accountService, never()).delete(any());
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: update")
+  class UpdateTests {
+    @Test
+    @DisplayName("Should update campus successfully")
+    void updateSuccess() {
+      UUID id = UUID.randomUUID();
+      Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
+      Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
+
+      when(repo.findOptionalByAccountId(id))
+          .thenReturn(Optional.of(current))
+          .thenReturn(Optional.of(updatedExpected));
+
+      Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
+
+      assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
+      verify(repo).update(any());
+      verify(audit).fireUpdate(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFound when admin missing")
+    void notFound() {
+      when(repo.findOptionalByAccountId(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class,
+          () -> service.update(UUID.randomUUID(), new AdminUpdateCommand(null, Campi.JOINVILLE)));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: deactivate")
+  class DeactivateTests {
+    @Test
+    @DisplayName("Should deactivate linked account")
+    void deactivateSuccess() {
+      UUID id = UUID.randomUUID();
+      Admin admin = AdminBuilder.anAdmin().forAccount(id).build();
+      when(repo.findOptionalByAccountId(id)).thenReturn(Optional.of(admin));
+
+      boolean result = service.deactivate(id);
+
+      assertThat(result).isTrue();
+      verify(accountService).deactivate(id);
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/impl/UserReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.infra.read.UserQueries;
+import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("UserReadServiceImpl Tests")
+class UserReadServiceImplTest {
+
+  @Mock UserQueries queries;
+  @InjectMocks UserReadServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: getViewById")
+  class GetViewByIdTests {
+    @Test
+    @DisplayName("Should return view when user exists")
+    void shouldReturnView() {
+      UUID id = UUID.randomUUID();
+      UserView view = new UserView(id, "11144477735", "Name", null, null);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+      assertThat(service.getViewById(id)).isEqualTo(view);
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when user missing")
+    void shouldThrowException() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/impl/UserServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.domain.UserRepository;
+import br.org.catolicasc.pug.identity.domain.vos.Cpf;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+@ExtendWith(MockitoExtension.class)
+@DisplayName("UserServiceImpl Coverage Tests")
+class UserServiceImplTest {
+
+  @Mock UserRepository repo;
+  @Mock AuditPublisher audit;
+  @InjectMocks UserServiceImpl service;
+
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should successfully persist valid user")
+    void success() {
+      when(repo.existsByCpf(any())).thenReturn(false);
+      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+
+      User user = service.save(new UserCreateCommand("11144477735", "Valid Name"));
+
+      assertThat(user.getName()).isEqualTo("Valid Name");
+      verify(repo).persist(any());
+      verify(audit).fireCreate(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw when CPF is already registered")
+    void duplicate() {
+      when(repo.existsByCpf(any())).thenReturn(true);
+      org.junit.jupiter.api.Assertions.assertThrows(
+          DuplicateResourceException.class,
+          () -> service.save(new UserCreateCommand("11144477735", "Name")));
+    }
+
+    @Test
+    @DisplayName("Should throw when validation fails in processor")
+    void validationFail() {
+      org.junit.jupiter.api.Assertions.assertThrows(
+          AppValidationException.class, () -> service.save(new UserCreateCommand("INVALID", "")));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete and audit when user exists")
+    void success() {
+      when(repo.deleteById(any())).thenReturn(true);
+      boolean result = service.delete(UUID.randomUUID());
+      assertThat(result).isTrue();
+      verify(audit).fireDelete(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return false when user does not exist")
+    void notFound() {
+      when(repo.deleteById(any())).thenReturn(false);
+      boolean result = service.delete(UUID.randomUUID());
+      assertThat(result).isFalse();
+      verify(audit, never()).fireDelete(any(), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: update")
+  class UpdateTests {
+    @Test
+    @DisplayName("Should update name successfully")
+    void updateName() {
+      UUID id = UUID.randomUUID();
+      User existing = User.factory(Cpf.factory("11144477735"), "Old Name");
+
+      when(repo.findOptionalById(id)).thenReturn(Optional.of(existing));
+
+      User updatedExpected = existing.rename("New Name");
+      when(repo.findOptionalById(id)).thenReturn(Optional.of(updatedExpected));
+
+      User updated = service.update(id, new UserUpdateCommand("New Name"));
+
+      assertThat(updated.getName()).isEqualTo("New Name");
+      verify(repo).update(any());
+      verify(audit).fireUpdate(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw when user not found during update")
+    void notFound() {
+      when(repo.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class,
+          () -> service.update(UUID.randomUUID(), new UserUpdateCommand("New")));
+    }
+  }
+}
+
+
+================================================================================
+FILE: service/utils/AccountProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AccountProcessor Tests")
+class AccountProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input and build valid Account")
+  void shouldBuildAccount() {
+    Account account =
+        AccountProcessor.processCreateInput(
+            UUID.randomUUID(), "test@pug.com", "ADMIN", "password-hash");
+
+    assertThat(account.hasFieldErrors()).isFalse();
+    assertThat(account.getAccountType()).isEqualTo(AccountType.ADMIN);
+  }
+
+  @Test
+  @DisplayName("Should mutate account state correctly via update")
+  void shouldUpdateAccount() {
+    Account acc =
+        Account.factory(
+            UUID.randomUUID(),
+            br.org.catolicasc.pug.identity.domain.vos.Email.factory("old@test.com"),
+            AccountType.STUDENT,
+            "hash");
+
+    Account updated = AccountProcessor.processUpdateInput(acc, "new@test.com", null);
+
+    assertThat(updated.getEmail().getValue()).isEqualTo("new@test.com");
+    assertThat(updated.getPasswordHash()).isEqualTo("hash");
+  }
+}
+
+
+================================================================================
+FILE: service/utils/AdminProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.Admin;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AdminProcessor Tests")
+class AdminProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input successfully")
+  void shouldProcessCreateInput() {
+    UUID accountId = UUID.randomUUID();
+    Admin admin = AdminProcessor.processCreateInput(accountId, Campi.JOINVILLE);
+
+    assertThat(admin.hasFieldErrors()).isFalse();
+    assertThat(admin.getAccountId()).isEqualTo(accountId);
+    assertThat(admin.getCampus()).isEqualTo(Campi.JOINVILLE);
+  }
+
+  @Test
+  @DisplayName("Should mutate campus correctly via update")
+  void shouldUpdateAdmin() {
+    Admin existing = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+
+    Admin updated = AdminProcessor.processUpdateInput(existing, Campi.JOINVILLE);
+
+    assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
+    assertThat(updated.getAccountId()).isEqualTo(existing.getAccountId());
+  }
+
+  @Test
+  @DisplayName("Should skip update when new campus is null")
+  void shouldSkipUpdateIfNull() {
+    Admin existing = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+
+    Admin updated = AdminProcessor.processUpdateInput(existing, null);
+
+    assertThat(updated).isEqualTo(existing);
+  }
+}
+
+
+================================================================================
+FILE: service/utils/UserProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("UserProcessor Tests")
+class UserProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input successfully")
+  void shouldProcessCreateInput() {
+    User user = UserProcessor.processCreateInput("11144477735", "Test User");
+
+    assertThat(user.hasFieldErrors()).isFalse();
+    assertThat(user.getName()).isEqualTo("Test User");
+    assertThat(user.getCpf().getValue()).isEqualTo("11144477735");
+  }
+
+  @Test
+  @DisplayName("Should throw AppValidationException on invalid bulk input")
+  void shouldThrowOnInvalidBulk() {
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("111", "Name"));
+
+    org.junit.jupiter.api.Assertions.assertThrows(
+        AppValidationException.class,
+        () -> {
+          UserProcessor.processBulkCreateInput(cmds);
+        });
+  }
+}
+

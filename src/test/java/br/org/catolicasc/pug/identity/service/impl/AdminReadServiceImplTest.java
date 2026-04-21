@@ -9,53 +9,96 @@ import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("AdminReadServiceImpl Coverage Tests")
+@QuarkusTest
+@DisplayName("AdminReadServiceImpl Coverage")
 class AdminReadServiceImplTest {
 
-  @Mock AdminQueries queries;
-  @InjectMocks AdminReadServiceImpl service;
+  @Inject AdminReadServiceImpl service;
+  @InjectMock AdminQueries queries;
 
-  @Nested
-  @DisplayName("Method: getViewByAccountId")
-  class GetByAccountIdTests {
-    @Test
-    @DisplayName("Should return admin view successfully")
-    void success() {
-      UUID id = UUID.randomUUID();
-      AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
-      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Test
+  @DisplayName("Should return admin view successfully")
+  void getViewByAccountIdSuccess() {
+    UUID id = UUID.randomUUID();
+    AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-      assertThat(service.getViewByAccountId(id)).isEqualTo(view);
-    }
-
-    @Test
-    @DisplayName("Should throw ResourceNotFoundException when missing")
-    void notFound() {
-      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-      org.junit.jupiter.api.Assertions.assertThrows(
-          ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
-    }
+    assertThat(service.getViewByAccountId(id)).isEqualTo(view);
   }
 
-  @Nested
-  @DisplayName("Method: search")
-  class SearchTests {
-    @Test
-    @DisplayName("Should normalize search query")
-    void searchNormalization() {
-      service.search(" Joinville ");
-      verify(queries).searchByName("joinville");
-    }
+  @Test
+  @DisplayName("Should throw ResourceNotFound when admin missing")
+  void notFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should normalize search query")
+  void searchNormalization() {
+    service.search(" Joinville ");
+    verify(queries).searchByName("joinville");
+  }
+
+  @Test
+  @DisplayName("Should return admin view by email successfully")
+  void getViewByEmailSuccess() {
+    String email = "admin@pug.com";
+    AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
+    when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByEmail(email)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw ResourceNotFound for invalid email lookup")
+  void getViewByEmailNotFound() {
+    when(queries.findOptionalByEmail("missing@pug.com")).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should throw ResourceNotFound for null or empty email")
+  void getViewByEmailInvalid(String email) {
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail(email));
+  }
+
+  @Test
+  @DisplayName("Should list all admin views")
+  void listViews() {
+    when(queries.listAllAdmins())
+        .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should list admin views by CPF successfully")
+  void listViewsByCpfSuccess() {
+    String cpf = "11144477735";
+    when(queries.listByCpf(cpf))
+        .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
+
+    assertThat(service.listViewsByCpf(cpf)).hasSize(1);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should return empty list for null or empty CPF list lookup")
+  void listViewsByCpfInvalid(String cpf) {
+    assertThat(service.listViewsByCpf(cpf)).isEmpty();
   }
 }

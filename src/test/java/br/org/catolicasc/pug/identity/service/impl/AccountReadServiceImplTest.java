@@ -1,65 +1,125 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("AccountReadServiceImpl Coverage Tests")
+@QuarkusTest
+@DisplayName("AccountReadServiceImpl Coverage")
 class AccountReadServiceImplTest {
 
-  @Mock AccountQueries queries;
-  @InjectMocks AccountReadServiceImpl service;
+  @Inject AccountReadServiceImpl service;
+  @InjectMock AccountQueries queries;
 
-  @Nested
-  @DisplayName("Method: getViewById")
-  class GetByIdTests {
-    @Test
-    @DisplayName("Should return view when account exists")
-    void success() {
-      UUID id = UUID.randomUUID();
-      AccountView view =
-          new AccountView(id, UUID.randomUUID(), "test@pug.com", null, null, null, true);
-      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Test
+  @DisplayName("Should return account view by ID")
+  void getByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    AccountView view =
+        new AccountView(
+            id,
+            UUID.randomUUID(),
+            "test@pug.com",
+            AccountType.STUDENT,
+            OffsetDateTime.now(),
+            OffsetDateTime.now(),
+            true);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-      assertThat(service.getViewById(id)).isEqualTo(view);
-    }
-
-    @Test
-    @DisplayName("Should throw ResourceNotFoundException when missing")
-    void notFound() {
-      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-      org.junit.jupiter.api.Assertions.assertThrows(
-          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
-    }
+    assertThat(service.getViewById(id)).isEqualTo(view);
   }
 
-  @Nested
-  @DisplayName("Method: search")
-  class SearchTests {
-    @Test
-    @DisplayName("Should fold query and call searchByName")
-    void shouldFoldAndSearch() {
-      when(queries.searchByName("sao paulo")).thenReturn(List.of());
+  @Test
+  @DisplayName("Should throw exception when ID not found")
+  void getByIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
 
-      service.search("  São Paulo  ");
+  @Test
+  @DisplayName("Should search accounts by query")
+  void search() {
+    when(queries.searchByName("test")).thenReturn(List.of());
+    assertThat(service.search("  Test  ")).isEmpty();
+  }
 
-      verify(queries).searchByName("sao paulo");
-    }
+  @Test
+  @DisplayName("Should return account view by email successfully")
+  void getViewByEmailSuccess() {
+    String email = "test@pug.com";
+    AccountView view =
+        new AccountView(
+            UUID.randomUUID(), UUID.randomUUID(), email, AccountType.STUDENT, null, null, true);
+    when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByEmail(email)).isEqualTo(view);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should throw ResourceNotFound for null/empty email")
+  void getViewByEmailInvalid(String email) {
+    Assertions.assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail(email));
+  }
+
+  @Test
+  @DisplayName("Should list all account views")
+  void listViews() {
+    when(queries.listAllAccounts())
+        .thenReturn(
+            List.of(
+                new AccountView(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "a@a.com",
+                    AccountType.STUDENT,
+                    null,
+                    null,
+                    true)));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should return empty list for null/empty CPF list lookup")
+  void listViewsByCpfInvalid(String cpf) {
+    assertThat(service.listViewsByCpf(cpf)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list account views by CPF successfully")
+  void listViewsByCpfSuccess() {
+    String cpf = "11144477735";
+    when(queries.listByCpf(cpf))
+        .thenReturn(
+            List.of(
+                new AccountView(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "a@a.com",
+                    AccountType.STUDENT,
+                    null,
+                    null,
+                    true)));
+
+    assertThat(service.listViewsByCpf(cpf)).hasSize(1);
   }
 }

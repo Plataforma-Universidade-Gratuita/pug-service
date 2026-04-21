@@ -1,48 +1,69 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("UserReadServiceImpl Tests")
+@QuarkusTest
+@DisplayName("UserReadServiceImpl Coverage")
 class UserReadServiceImplTest {
 
-  @Mock UserQueries queries;
-  @InjectMocks UserReadServiceImpl service;
+  @Inject UserReadServiceImpl service;
+  @InjectMock UserQueries queries;
 
-  @Nested
-  @DisplayName("Method: getViewById")
-  class GetViewByIdTests {
-    @Test
-    @DisplayName("Should return view when user exists")
-    void shouldReturnView() {
-      UUID id = UUID.randomUUID();
-      UserView view = new UserView(id, "11144477735", "Name", null, null);
-      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Test
+  @DisplayName("Should return user view by ID")
+  void getByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    UserView view = new UserView(id, "11144477735", "Test User", null, null);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-      assertThat(service.getViewById(id)).isEqualTo(view);
-    }
+    assertThat(service.getViewById(id)).isEqualTo(view);
+  }
 
-    @Test
-    @DisplayName("Should throw ResourceNotFoundException when user missing")
-    void shouldThrowException() {
-      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-      org.junit.jupiter.api.Assertions.assertThrows(
-          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
-    }
+  @Test
+  @DisplayName("Should throw ResourceNotFound for unknown ID")
+  void getByIdNotFound() {
+    when(queries.findOptionalById(UUID.randomUUID())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should return user view by CPF")
+  void getByCpfSuccess() {
+    String cpf = "11144477735";
+    UserView view = new UserView(UUID.randomUUID(), cpf, "Test User", null, null);
+    when(queries.findOptionalByCpf(cpf)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByCpf(cpf)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should list all users")
+  void listAll() {
+    when(queries.listAllUsers())
+        .thenReturn(List.of(new UserView(UUID.randomUUID(), "111", "User", null, null)));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should search users by name")
+  void search() {
+    when(queries.searchByName("ana"))
+        .thenReturn(List.of(new UserView(UUID.randomUUID(), "111", "Ana", null, null)));
+    assertThat(service.search("  Ana  ")).isNotEmpty();
   }
 }

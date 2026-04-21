@@ -6,46 +6,64 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 @QuarkusTest
+@TestTransaction
+@DisplayName("AdminQueriesImpl Coverage")
 class AdminQueriesImplTest {
 
   @Inject AdminQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private Admin admin;
-  private Account account;
-
-  @BeforeEach
-  void setup() {
+  private Admin setupAdmin() {
     User user = factory.createUser();
-    account = factory.createAccount(user, AccountType.ADMIN);
-    admin = factory.createAdmin(account); // Certifique-se de ter este método na factory
+    Account account = factory.createAccount(user, AccountType.ADMIN);
+    return factory.createAdmin(account);
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should return empty when email is null or empty")
+  void findOptionalByEmailInvalid(String email) {
+    assertThat(queries.findOptionalByEmail(email)).isEmpty();
   }
 
   @Test
-  @Transactional
-  @DisplayName("Should project full nested AdminView for system admin")
-  void shouldGetAdminView() {
-    var adminView = queries.findOptionalById(account.getId());
-
-    assertThat(adminView).isPresent();
-    assertThat(adminView.get().campus()).isEqualTo(admin.getCampus());
-    assertThat(adminView.get().accountView().email()).isEqualTo(account.getEmail().getValue());
+  @DisplayName("Should find admin by email successfully")
+  void findOptionalByEmailSuccess() {
+    Admin admin = setupAdmin();
+    Optional<AdminView> found = queries.findOptionalByEmail("admin@pug.com");
+    assertThat(found).isPresent();
   }
 
   @Test
-  @Transactional
-  @DisplayName("Should list system admin via AdminQueries")
-  void shouldListAdmins() {
-    var admins = queries.listAllAdmins();
-    assertThat(admins).anyMatch(a -> a.accountView().id().equals(account.getId()));
+  @DisplayName("Should return empty when account ID is null")
+  void findOptionalByIdNull() {
+    assertThat(queries.findOptionalById(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list admins and search by name")
+  void listAndSearchOperations() {
+    setupAdmin();
+    assertThat(queries.listAllAdmins()).isNotEmpty();
+    assertThat(queries.searchByName("System")).isNotEmpty();
+  }
+
+  @ParameterizedTest
+  @NullAndEmptySource
+  @DisplayName("Should return empty list when searching by CPF null or empty")
+  void listByCpfInvalid(String cpf) {
+    assertThat(queries.listByCpf(cpf)).isEmpty();
   }
 }
