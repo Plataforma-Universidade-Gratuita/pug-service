@@ -175,6 +175,7 @@
 │   │   │                   │   │   │   └── GeoFieldErrorCodes.java
 │   │   │                   │   │   └── vos/
 │   │   │                   │   │       └── IbgeCode.java
+│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── CityMapper.java
 │   │   │                   │   │   ├── persistence/
@@ -214,7 +215,6 @@
 │   │   │                   │   │   └── vos/
 │   │   │                   │   │       ├── Cpf.java
 │   │   │                   │   │       └── Email.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AccountMapper.java
 │   │   │                   │   │   ├── AdminMapper.java
@@ -591,6 +591,7 @@
 │       │                   │   │   │   └── GeoEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
 │       │                   │   │       └── IbgeCodeTest.java
+│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── CityMapperTest.java
 │       │                   │   │   ├── persistence/
@@ -607,6 +608,7 @@
 │       │                   │       ├── impl/
 │       │                   │       └── utils/
 │       │                   ├── helpers/
+│       │                   │   ├── BaseSearchTest.java
 │       │                   │   ├── MongoTestInitializer.java
 │       │                   │   ├── TestDataFactory.java
 │       │                   │   ├── TestNameGenerator.java
@@ -649,13 +651,21 @@
 │       │                   │   │           ├── AdminQueriesImplTest.java
 │       │                   │   │           └── UserQueriesImplTest.java
 │       │                   │   ├── presenter/
+│       │                   │   │   ├── AccountReadOnlyResourceTest.java
+│       │                   │   │   ├── AdminResourceTest.java
+│       │                   │   │   ├── UserReadOnlyResourceTest.java
 │       │                   │   │   └── mappers/
+│       │                   │   │       ├── AccountPresenterTest.java
+│       │                   │   │       ├── AdminPresenterTest.java
+│       │                   │   │       └── UserPresenterTest.java
 │       │                   │   └── service/
 │       │                   │       ├── impl/
 │       │                   │       │   ├── AccountReadServiceImplTest.java
 │       │                   │       │   ├── AccountServiceImplTest.java
 │       │                   │       │   ├── AdminReadServiceImplTest.java
 │       │                   │       │   ├── AdminServiceImplTest.java
+│       │                   │       │   ├── AuthServiceImplTest.java
+│       │                   │       │   ├── PasswordServiceImplTest.java
 │       │                   │       │   ├── UserReadServiceImplTest.java
 │       │                   │       │   └── UserServiceImplTest.java
 │       │                   │       └── utils/
