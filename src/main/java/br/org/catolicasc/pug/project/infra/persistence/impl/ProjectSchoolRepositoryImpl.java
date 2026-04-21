@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.project.infra.persistence.impl;
 
-import br.org.catolicasc.pug.project.domain.ProjectBySchool;
-import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
-import br.org.catolicasc.pug.project.infra.ProjectBySchoolMapper;
-import br.org.catolicasc.pug.project.infra.persistence.ProjectsBySchoolsEntity;
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
+import br.org.catolicasc.pug.project.infra.ProjectSchoolMapper;
+import br.org.catolicasc.pug.project.infra.persistence.ProjectSchoolEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -12,22 +12,21 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Implementation of the {@link ProjectBySchoolRepository} utilizing Hibernate ORM with Panache. */
+/** Implementation of the {@link ProjectSchoolRepository} utilizing Hibernate ORM with Panache. */
 @ApplicationScoped
-public class ProjectBySchoolRepositoryImpl
-    implements ProjectBySchoolRepository,
-        PanacheRepositoryBase<
-            ProjectsBySchoolsEntity, ProjectsBySchoolsEntity.ProjectsBySchoolsId> {
+public class ProjectSchoolRepositoryImpl
+    implements ProjectSchoolRepository,
+        PanacheRepositoryBase<ProjectSchoolEntity, ProjectSchoolEntity.ProjectsBySchoolsId> {
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean delete(ProjectBySchool association) {
+  public boolean delete(ProjectSchool association) {
     if (association == null) {
       return false;
     }
 
-    ProjectsBySchoolsEntity entity = ProjectBySchoolMapper.toEntity(association);
+    ProjectSchoolEntity entity = ProjectSchoolMapper.toEntity(association);
     if (entity == null || entity.getId() == null) {
       return false;
     }
@@ -69,9 +68,9 @@ public class ProjectBySchoolRepositoryImpl
     }
 
     return find("id.projectId", projectId).stream()
-        .map(ProjectsBySchoolsEntity::getId)
+        .map(ProjectSchoolEntity::getId)
         .filter(Objects::nonNull)
-        .map(ProjectsBySchoolsEntity.ProjectsBySchoolsId::getSchoolId)
+        .map(ProjectSchoolEntity.ProjectsBySchoolsId::getSchoolId)
         .collect(Collectors.toSet());
   }
 
@@ -83,23 +82,23 @@ public class ProjectBySchoolRepositoryImpl
     }
 
     return find("id.schoolId", schoolId).stream()
-        .map(ProjectsBySchoolsEntity::getId)
+        .map(ProjectSchoolEntity::getId)
         .filter(Objects::nonNull)
-        .map(ProjectsBySchoolsEntity.ProjectsBySchoolsId::getProjectId)
+        .map(ProjectSchoolEntity.ProjectsBySchoolsId::getProjectId)
         .collect(Collectors.toSet());
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public ProjectBySchool persist(ProjectBySchool association) {
+  public ProjectSchool persist(ProjectSchool association) {
     if (association == null) {
       return null;
     }
 
-    ProjectsBySchoolsEntity entity = ProjectBySchoolMapper.toEntity(association);
+    ProjectSchoolEntity entity = ProjectSchoolMapper.toEntity(association);
     persistAndFlush(entity);
 
-    return ProjectBySchoolMapper.toDomain(entity);
+    return ProjectSchoolMapper.toDomain(entity);
   }
 }

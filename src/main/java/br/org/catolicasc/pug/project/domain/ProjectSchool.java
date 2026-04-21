@@ -22,7 +22,7 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public class ProjectBySchool extends DomainError {
+public class ProjectSchool extends DomainError {
 
   /** The unique identifier of the project. */
   private final UUID projectId;
@@ -35,11 +35,11 @@ public class ProjectBySchool extends DomainError {
    *
    * @param projectId the unique identifier of the project
    * @param schoolId the unique identifier of the school
-   * @return a self-validated {@link ProjectBySchool} instance
+   * @return a self-validated {@link ProjectSchool} instance
    */
-  public static ProjectBySchool factory(UUID projectId, UUID schoolId) {
-    ProjectBySchool association =
-        ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+  public static ProjectSchool factory(UUID projectId, UUID schoolId) {
+    ProjectSchool association =
+        ProjectSchool.builder().projectId(projectId).schoolId(schoolId).build();
     association.collectValidationProblems();
     return association;
   }

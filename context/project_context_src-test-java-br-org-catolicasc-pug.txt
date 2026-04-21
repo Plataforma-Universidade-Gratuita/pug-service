@@ -5,6 +5,470 @@ Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/te
 
 
 ================================================================================
+FILE: academic/domain/CourseTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Course Aggregate Tests")
+class CourseTest {
+
+  @Test
+  @DisplayName("Should create valid Course")
+  void shouldCreateCourse() {
+    UUID schoolId = UUID.randomUUID();
+    Course course = Course.factory("Software Engineering", schoolId);
+
+    assertThat(course.hasFieldErrors()).isFalse();
+    assertThat(course.getName()).isEqualTo("Software Engineering");
+    assertThat(course.getSchoolId()).isEqualTo(schoolId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    Course course = Course.factory("   ", null);
+
+    assertThat(course.hasFieldErrors()).isTrue();
+    assertThat(course.getFieldErrors())
+        .contains(
+            SharedFieldErrorCodes.INVALID_NAME_BLANK, AcademicFieldErrorCodes.INVALID_SCHOOL_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename course successfully")
+    void shouldRename() {
+      Course course = Course.factory("Original Name", UUID.randomUUID());
+      Course renamed = course.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(course.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should move course to another school successfully")
+    void shouldMoveToSchool() {
+      UUID originalSchool = UUID.randomUUID();
+      UUID newSchool = UUID.randomUUID();
+      Course course = Course.factory("Course Name", originalSchool);
+
+      Course moved = course.moveToSchool(newSchool);
+
+      assertThat(moved.getSchoolId()).isEqualTo(newSchool);
+      assertThat(moved.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(course.getAuditInfo().getCreatedAt());
+    }
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/enums/AcademicEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Academic Enum Bundle Key Integrity Tests")
+class AcademicEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all academic enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(AcademicErrorCodes.values(), AcademicFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/SchoolTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("School Aggregate Tests")
+class SchoolTest {
+
+  @Test
+  @DisplayName("Should create valid School")
+  void shouldCreateSchool() {
+    School school = School.factory("School of Engineering");
+
+    assertThat(school.hasFieldErrors()).isFalse();
+    assertThat(school.getName()).isEqualTo("School of Engineering");
+    assertThat(school.getAuditInfo()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Should collect errors for blank name")
+  void shouldCollectValidationErrors() {
+    School school = School.factory("   ");
+
+    assertThat(school.hasFieldErrors()).isTrue();
+    assertThat(school.getFieldErrors()).contains(SharedFieldErrorCodes.INVALID_NAME_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename school successfully")
+    void shouldRename() {
+      School school = School.factory("Old Name");
+      School renamed = school.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getId()).isEqualTo(school.getId());
+      assertThat(renamed.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(school.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should be idempotent when renaming to the same name")
+    void shouldBeIdempotent() {
+      School school = School.factory("Same Name");
+      School renamed = school.rename("Same Name");
+
+      assertThat(renamed).isSameAs(school);
+    }
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/StudentTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
+import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
+import br.org.catolicasc.pug.academic.domain.vos.Period;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Student Aggregate Tests")
+class StudentTest {
+
+  private final AcademicRegistration validReg = AcademicRegistration.factory("12345");
+  private final CounterpartHours validHours =
+      CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false);
+  private final Period validPeriod = Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6));
+
+  @Test
+  @DisplayName("Should create valid Student")
+  void shouldCreateStudent() {
+    UUID accountId = UUID.randomUUID();
+    UUID courseId = UUID.randomUUID();
+
+    Student student =
+        Student.factory(
+            accountId, validReg, Campi.JARAGUA_DO_SUL, courseId, validHours, validPeriod);
+
+    assertThat(student.hasFieldErrors()).isFalse();
+    assertThat(student.getAccountId()).isEqualTo(accountId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when all fields are invalid")
+  void shouldCollectValidationErrors() {
+    Student student = Student.factory(null, null, null, null, null, null);
+
+    assertThat(student.hasFieldErrors()).isTrue();
+    assertThat(student.getFieldErrors())
+        .contains(
+            AcademicFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK,
+            AcademicFieldErrorCodes.INVALID_REGISTRATION_BLANK,
+            SharedFieldErrorCodes.INVALID_CAMPUS_BLANK,
+            AcademicFieldErrorCodes.INVALID_COURSE_BLANK,
+            AcademicFieldErrorCodes.INVALID_HOURS_BLANK,
+            AcademicFieldErrorCodes.INVALID_PERIOD_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should add completed hours and update status")
+    void shouldAddHours() throws InterruptedException {
+      Student student =
+          Student.factory(
+              UUID.randomUUID(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UUID.randomUUID(),
+              validHours,
+              validPeriod);
+      Thread.sleep(10);
+      Student updated = student.addCompletedHours(new BigDecimal("50"));
+
+      assertThat(updated.getCounterpartHours().getCompletedHours()).isEqualTo(new BigDecimal("50"));
+      assertThat(updated.getAuditInfo().getUpdatedAt())
+          .isAfter(student.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should update course successfully")
+    void shouldChangeCourse() {
+      Student student =
+          Student.factory(
+              UUID.randomUUID(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UUID.randomUUID(),
+              validHours,
+              validPeriod);
+      UUID newCourse = UUID.randomUUID();
+
+      Student updated = student.changeCourse(newCourse);
+
+      assertThat(updated.getCourseId()).isEqualTo(newCourse);
+    }
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/vos/AcademicRegistrationTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AcademicRegistration Value Object Tests")
+class AcademicRegistrationTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid AcademicRegistration from string")
+    void shouldCreateValidRegistration() {
+      AcademicRegistration reg = AcademicRegistration.factory("123456789012345");
+
+      assertThat(reg.hasFieldErrors()).isFalse();
+      assertThat(reg.getValue()).isEqualTo("123456789012345");
+    }
+
+    @Test
+    @DisplayName("Should trim whitespace")
+    void shouldTrimWhitespace() {
+      AcademicRegistration reg = AcademicRegistration.factory("  REG123  ");
+      assertThat(reg.hasFieldErrors()).isFalse();
+      assertThat(reg.getValue()).isEqualTo("REG123");
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null inputs")
+    void shouldRejectEmpty() {
+      AcademicRegistration reg = AcademicRegistration.factory("   ");
+      assertThat(reg.hasFieldErrors()).isTrue();
+      assertThat(reg.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_REGISTRATION_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject registration exceeding 15 characters")
+    void shouldRejectTooLong() {
+      AcademicRegistration reg = AcademicRegistration.factory("1234567890123456");
+      assertThat(reg.hasFieldErrors()).isTrue();
+      assertThat(reg.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_REGISTRATION_TOO_LONG);
+    }
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/vos/CounterpartHoursTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("CounterpartHours Value Object Tests")
+class CounterpartHoursTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid CounterpartHours")
+    void shouldCreateValidHours() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100.00"), BigDecimal.ZERO, false);
+
+      assertThat(hours.hasFieldErrors()).isFalse();
+      assertThat(hours.getRequiredHours()).isEqualTo(new BigDecimal("100.00"));
+      assertThat(hours.getConcluded()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should reject non-positive required hours")
+    void shouldRejectInvalidRequired() {
+      CounterpartHours hours = CounterpartHours.factory(BigDecimal.ZERO, BigDecimal.ZERO, false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_HOURS_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject negative completed hours")
+    void shouldRejectNegativeCompleted() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("-1"), false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE);
+    }
+
+    @Test
+    @DisplayName("Should reject completed hours exceeding required hours")
+    void shouldRejectExceedingHours() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("150"), false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS);
+    }
+  }
+}
+
+
+================================================================================
+FILE: academic/domain/vos/PeriodTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import java.time.LocalDate;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Period Value Object Tests")
+class PeriodTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Period")
+    void shouldCreateValidPeriod() {
+      LocalDate start = LocalDate.of(2026, 1, 1);
+      LocalDate end = LocalDate.of(2026, 6, 30);
+      Period period = Period.factory(start, end);
+
+      assertThat(period.hasFieldErrors()).isFalse();
+      assertThat(period.getStartDate()).isEqualTo(start);
+      assertThat(period.getDueDate()).isEqualTo(end);
+    }
+
+    @Test
+    @DisplayName("Should reject when dates are null")
+    void shouldRejectNullDates() {
+      Period period = Period.factory(null, null);
+
+      assertThat(period.hasFieldErrors()).isTrue();
+      assertThat(period.getFieldErrors())
+          .contains(
+              AcademicFieldErrorCodes.INVALID_START_DATE_BLANK,
+              AcademicFieldErrorCodes.INVALID_DUE_DATE_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject when due date is before start date")
+    void shouldRejectChronologicalInvalid() {
+      LocalDate start = LocalDate.of(2026, 6, 30);
+      LocalDate end = LocalDate.of(2026, 1, 1);
+      Period period = Period.factory(start, end);
+
+      assertThat(period.hasFieldErrors()).isTrue();
+      assertThat(period.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_PERIOD_RANGE);
+    }
+  }
+}
+
+
+================================================================================
 FILE: academic/infra/persistence/.gitkeep
 ================================================================================
 
@@ -88,6 +552,82 @@ public class AdminBuilder {
 
 
 ================================================================================
+FILE: builders/ProjectBuilder.java
+================================================================================
+package br.org.catolicasc.pug.builders;
+
+import br.org.catolicasc.pug.project.domain.Project;
+import java.math.BigDecimal;
+import java.util.UUID;
+
+public class ProjectBuilder {
+  private String name = "Default Project";
+  private UUID entityId = UUID.randomUUID();
+  private UUID creatorId = UUID.randomUUID();
+  private BigDecimal offeredHours = new BigDecimal("40.0");
+
+  private ProjectBuilder() {}
+
+  public static ProjectBuilder aProject() {
+    return new ProjectBuilder();
+  }
+
+  public ProjectBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  public Project build() {
+    return Project.factory(
+        name, entityId, "Project description", creatorId, 20, offeredHours, BigDecimal.ZERO);
+  }
+}
+
+
+================================================================================
+FILE: builders/StudentBuilder.java
+================================================================================
+package br.org.catolicasc.pug.builders;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
+import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
+import br.org.catolicasc.pug.academic.domain.vos.Period;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+
+public class StudentBuilder {
+  private UUID accountId = UUID.randomUUID();
+  private String registration = "123456";
+  private Campi campus = Campi.JARAGUA_DO_SUL;
+  private UUID courseId = UUID.randomUUID();
+
+  private StudentBuilder() {}
+
+  public static StudentBuilder aStudent() {
+    return new StudentBuilder();
+  }
+
+  public StudentBuilder withAccountId(UUID accountId) {
+    this.accountId = accountId;
+    return this;
+  }
+
+  public Student build() {
+    return Student.factory(
+        accountId,
+        AcademicRegistration.factory(registration),
+        campus,
+        courseId,
+        CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false),
+        Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
+  }
+}
+
+
+================================================================================
 FILE: builders/UserBuilder.java
 ================================================================================
 package br.org.catolicasc.pug.builders;
@@ -117,6 +657,175 @@ public class UserBuilder {
 
   public User build() {
     return User.factory(Cpf.factory(cpf), name);
+  }
+}
+
+
+================================================================================
+FILE: geo/domain/CityTest.java
+================================================================================
+package br.org.catolicasc.pug.geo.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.geo.domain.enums.GeoFieldErrorCodes;
+import br.org.catolicasc.pug.geo.domain.vos.IbgeCode;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("City Aggregate Tests")
+class CityTest {
+
+  @Test
+  @DisplayName("Should create valid City")
+  void shouldCreateCity() {
+    City city = City.factory("Joinville", IbgeCode.factory("4209106"));
+
+    assertThat(city.hasFieldErrors()).isFalse();
+    assertThat(city.getName()).isEqualTo("Joinville");
+    assertThat(city.getIbgeCode().getCode()).isEqualTo("4209106");
+  }
+
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    City city = City.factory("  ", null);
+
+    assertThat(city.hasFieldErrors()).isTrue();
+    assertThat(city.getFieldErrors())
+        .contains(
+            GeoFieldErrorCodes.INVALID_IBGE_CODE_BLANK,
+            br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes.INVALID_NAME_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename city successfully")
+    void shouldRename() {
+      City city = City.factory("Old Name", IbgeCode.factory("4209106"));
+      City renamed = city.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getId()).isEqualTo(city.getId());
+    }
+
+    @Test
+    @DisplayName("Should update IBGE code successfully")
+    void shouldUpdateIbge() {
+      City city = City.factory("Joinville", IbgeCode.factory("4209106"));
+      City updated = city.changeIbgeCode(IbgeCode.factory("4209107"));
+
+      assertThat(updated.getIbgeCode().getCode()).isEqualTo("4209107");
+    }
+  }
+}
+
+
+================================================================================
+FILE: geo/domain/enums/GeoEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.geo.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Geo Enum Bundle Key Integrity Tests")
+class GeoEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all geo enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(GeoErrorCodes.values(), GeoFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: geo/domain/vos/IbgeCodeTest.java
+================================================================================
+package br.org.catolicasc.pug.geo.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.geo.domain.enums.GeoFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("IbgeCode Value Object Tests")
+class IbgeCodeTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid IbgeCode from 7-digit numeric string")
+    void shouldCreateValidIbgeCode() {
+      IbgeCode ibge = IbgeCode.factory("4209106");
+
+      assertThat(ibge.hasFieldErrors()).isFalse();
+      assertThat(ibge.getCode()).isEqualTo("4209106");
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null inputs")
+    void shouldRejectEmpty() {
+      IbgeCode ibge = IbgeCode.factory("   ");
+      assertThat(ibge.hasFieldErrors()).isTrue();
+      assertThat(ibge.getFieldErrors()).contains(GeoFieldErrorCodes.INVALID_IBGE_CODE_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject non-numeric characters")
+    void shouldRejectNonNumeric() {
+      IbgeCode ibge = IbgeCode.factory("420910A");
+      assertThat(ibge.hasFieldErrors()).isTrue();
+      assertThat(ibge.getFieldErrors()).contains(GeoFieldErrorCodes.INVALID_IBGE_CODE_FORMAT);
+    }
+
+    @Test
+    @DisplayName("Should reject code with length other than 7")
+    void shouldRejectInvalidLength() {
+      IbgeCode ibge = IbgeCode.factory("420910");
+      assertThat(ibge.hasFieldErrors()).isTrue();
+      assertThat(ibge.getFieldErrors()).contains(GeoFieldErrorCodes.INVALID_IBGE_CODE_FORMAT);
+    }
   }
 }
 
@@ -749,9 +1458,17 @@ FILE: identity/service/impl/AccountReadServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -760,65 +1477,61 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AccountReadServiceImpl Coverage Tests")
 class AccountReadServiceImplTest {
 
-    @Mock
-    AccountQueries queries;
-    @InjectMocks
-    AccountReadServiceImpl service;
+  @Mock AccountQueries queries;
+  @InjectMocks AccountReadServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: getViewById")
-    class GetByIdTests {
-        @Test
-        @DisplayName("Should return view when account exists")
-        void success() {
-            UUID id = UUID.randomUUID();
-            AccountView view = new AccountView(id, UUID.randomUUID(), "test@pug.com", null, null, null, true);
-            when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Nested
+  @DisplayName("Method: getViewById")
+  class GetByIdTests {
+    @Test
+    @DisplayName("Should return view when account exists")
+    void success() {
+      UUID id = UUID.randomUUID();
+      AccountView view =
+          new AccountView(id, UUID.randomUUID(), "test@pug.com", null, null, null, true);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-            assertThat(service.getViewById(id)).isEqualTo(view);
-        }
-
-        @Test
-        @DisplayName("Should throw ResourceNotFoundException when missing")
-        void notFound() {
-            when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.getViewById(UUID.randomUUID()));
-        }
+      assertThat(service.getViewById(id)).isEqualTo(view);
     }
 
-    @Nested
-    @DisplayName("Method: search")
-    class SearchTests {
-        @Test
-        @DisplayName("Should fold query and call searchByName")
-        void shouldFoldAndSearch() {
-            when(queries.searchByName("sao paulo")).thenReturn(List.of());
-
-            service.search("  São Paulo  ");
-
-            verify(queries).searchByName("sao paulo");
-        }
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when missing")
+    void notFound() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
     }
+  }
+
+  @Nested
+  @DisplayName("Method: search")
+  class SearchTests {
+    @Test
+    @DisplayName("Should fold query and call searchByName")
+    void shouldFoldAndSearch() {
+      when(queries.searchByName("sao paulo")).thenReturn(List.of());
+
+      service.search("  São Paulo  ");
+
+      verify(queries).searchByName("sao paulo");
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/impl/AccountServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.AccountRepository;
@@ -831,6 +1544,8 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -839,103 +1554,111 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AccountServiceImpl Coverage Tests")
 class AccountServiceImplTest {
 
-    @Mock
-    AccountRepository repo;
-    @Mock
-    UserService userService;
-    @Mock
-    AuditPublisher audit;
-    @InjectMocks
-    AccountServiceImpl service;
+  @Mock AccountRepository repo;
+  @Mock UserService userService;
+  @Mock AuditPublisher audit;
+  @InjectMocks AccountServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: save")
-    class SaveTests {
-        @Test
-        @DisplayName("Should provision new user and account when user does not exist")
-        void shouldProvisionNewUserAndAccount() {
-            UserCreateCommand userCmd = new UserCreateCommand("11144477735", "New User");
-            AccountCreateCommand cmd = new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should provision new user and account when user does not exist")
+    void shouldProvisionNewUserAndAccount() {
+      UserCreateCommand userCmd = new UserCreateCommand("11144477735", "New User");
+      AccountCreateCommand cmd =
+          new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
 
-            when(userService.existsByCpf(any())).thenReturn(false);
-            User createdUser = User.factory(Cpf.factory("11144477735"), "New User");
-            when(userService.save(any())).thenReturn(createdUser);
-            when(repo.persist(any(Account.class))).thenAnswer(i -> i.getArgument(0));
+      when(userService.existsByCpf(any())).thenReturn(false);
+      User createdUser = User.factory(Cpf.factory("11144477735"), "New User");
+      when(userService.save(any())).thenReturn(createdUser);
+      when(repo.persist(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
-            Account saved = service.save(cmd);
+      Account saved = service.save(cmd);
 
-            assertThat(saved.getUserId()).isEqualTo(createdUser.getId());
-            verify(repo).persist(any());
-            verify(audit).fireCreate(any(), any());
-        }
-
-        @Test
-        @DisplayName("Should throw DuplicateResourceException if email exists")
-        void shouldThrowOnDuplicateEmail() {
-            User user = User.factory(Cpf.factory("11144477735"), "Name");
-            when(userService.existsByCpf(any())).thenReturn(true);
-            when(userService.getByCpf(any())).thenReturn(user);
-            when(repo.existsByEmail(any())).thenReturn(true);
-
-            AccountCreateCommand cmd = new AccountCreateCommand("exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand("11144477735", "N"));
-
-            org.junit.jupiter.api.Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
-        }
+      assertThat(saved.getUserId()).isEqualTo(createdUser.getId());
+      verify(repo).persist(any());
+      verify(audit).fireCreate(any(), any());
     }
 
-    @Nested
-    @DisplayName("Method: delete")
-    class DeleteTests {
-        @Test
-        @DisplayName("Should delete account and prune orphan user")
-        void shouldDeleteAndPrune() {
-            Account acc = Account.factory(UUID.randomUUID(), br.org.catolicasc.pug.identity.domain.vos.Email.factory("a@a.com"), AccountType.STUDENT, "p");
-            when(repo.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
-            when(repo.countAllAccountsByUserId(acc.getUserId())).thenReturn(1L);
-            when(repo.deleteById(acc.getId())).thenReturn(true);
+    @Test
+    @DisplayName("Should throw DuplicateResourceException if email exists")
+    void shouldThrowOnDuplicateEmail() {
+      User user = User.factory(Cpf.factory("11144477735"), "Name");
+      when(userService.existsByCpf(any())).thenReturn(true);
+      when(userService.getByCpf(any())).thenReturn(user);
+      when(repo.existsByEmail(any())).thenReturn(true);
 
-            boolean deleted = service.delete(acc.getId());
+      AccountCreateCommand cmd =
+          new AccountCreateCommand(
+              "exists@pug.com",
+              AccountType.STUDENT,
+              "p",
+              new UserCreateCommand("11144477735", "N"));
 
-            assertThat(deleted).isTrue();
-            verify(userService).delete(acc.getUserId());
-            verify(audit).fireDelete(any(), any());
-        }
+      org.junit.jupiter.api.Assertions.assertThrows(
+          DuplicateResourceException.class, () -> service.save(cmd));
     }
+  }
 
-    @Nested
-    @DisplayName("Method: getById")
-    class GetTests {
-        @Test
-        @DisplayName("Should throw ResourceNotFound when missing")
-        void shouldThrowMissing() {
-            when(repo.findOptionalById(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.getById(UUID.randomUUID()));
-        }
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete account and prune orphan user")
+    void shouldDeleteAndPrune() {
+      Account acc =
+          Account.factory(
+              UUID.randomUUID(),
+              br.org.catolicasc.pug.identity.domain.vos.Email.factory("a@a.com"),
+              AccountType.STUDENT,
+              "p");
+      when(repo.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
+      when(repo.countAllAccountsByUserId(acc.getUserId())).thenReturn(1L);
+      when(repo.deleteById(acc.getId())).thenReturn(true);
+
+      boolean deleted = service.delete(acc.getId());
+
+      assertThat(deleted).isTrue();
+      verify(userService).delete(acc.getUserId());
+      verify(audit).fireDelete(any(), any());
     }
+  }
+
+  @Nested
+  @DisplayName("Method: getById")
+  class GetTests {
+    @Test
+    @DisplayName("Should throw ResourceNotFound when missing")
+    void shouldThrowMissing() {
+      when(repo.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/impl/AdminReadServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -944,61 +1667,59 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AdminReadServiceImpl Coverage Tests")
 class AdminReadServiceImplTest {
 
-    @Mock
-    AdminQueries queries;
-    @InjectMocks
-    AdminReadServiceImpl service;
+  @Mock AdminQueries queries;
+  @InjectMocks AdminReadServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: getViewByAccountId")
-    class GetByAccountIdTests {
-        @Test
-        @DisplayName("Should return admin view successfully")
-        void success() {
-            UUID id = UUID.randomUUID();
-            AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
-            when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Nested
+  @DisplayName("Method: getViewByAccountId")
+  class GetByAccountIdTests {
+    @Test
+    @DisplayName("Should return admin view successfully")
+    void success() {
+      UUID id = UUID.randomUUID();
+      AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-            assertThat(service.getViewByAccountId(id)).isEqualTo(view);
-        }
-
-        @Test
-        @DisplayName("Should throw ResourceNotFoundException when missing")
-        void notFound() {
-            when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.getViewByAccountId(UUID.randomUUID()));
-        }
+      assertThat(service.getViewByAccountId(id)).isEqualTo(view);
     }
 
-    @Nested
-    @DisplayName("Method: search")
-    class SearchTests {
-        @Test
-        @DisplayName("Should normalize search query")
-        void searchNormalization() {
-            service.search(" Joinville ");
-            verify(queries).searchByName("joinville");
-        }
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when missing")
+    void notFound() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
     }
+  }
+
+  @Nested
+  @DisplayName("Method: search")
+  class SearchTests {
+    @Test
+    @DisplayName("Should normalize search query")
+    void searchNormalization() {
+      service.search(" Joinville ");
+      verify(queries).searchByName("joinville");
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/impl/AdminServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.builders.AccountBuilder;
 import br.org.catolicasc.pug.builders.AdminBuilder;
@@ -1011,6 +1732,8 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -1018,253 +1741,136 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AdminServiceImpl Coverage Tests")
 class AdminServiceImplTest {
 
-    @Mock
-    AdminRepository repo;
-    @Mock
-    AccountService accountService;
-    @Mock
-    AuditPublisher audit;
-    @InjectMocks
-    AdminServiceImpl service;
+  @Mock AdminRepository repo;
+  @Mock AccountService accountService;
+  @Mock AuditPublisher audit;
+  @InjectMocks AdminServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: save")
-    class SaveTests {
-        @Test
-        @DisplayName("Should save admin successfully and fire audit")
-        void success() {
-            var account = AccountBuilder.anAccount().build();
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should save admin successfully and fire audit")
+    void success() {
+      var account = AccountBuilder.anAccount().build();
 
-            var userCmd = new br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand("11144477735", "Admin User");
-            var accCmd = new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand("admin@pug.com", AccountType.ADMIN, "pass", userCmd);
-            var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
+      var userCmd =
+          new br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand(
+              "11144477735", "Admin User");
+      var accCmd =
+          new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand(
+              "admin@pug.com", AccountType.ADMIN, "pass", userCmd);
+      var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
 
-            when(accountService.save(any())).thenReturn(account);
-            when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+      when(accountService.save(any())).thenReturn(account);
+      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
 
-            Admin saved = service.save(cmd);
+      Admin saved = service.save(cmd);
 
-            assertThat(saved.getAccountId()).isEqualTo(account.getId());
-            verify(repo).persist(any());
-            verify(audit).fireCreate(eq(Admin.class.getName()), any());
-        }
+      assertThat(saved.getAccountId()).isEqualTo(account.getId());
+      verify(repo).persist(any());
+      verify(audit).fireCreate(eq(Admin.class.getName()), any());
     }
+  }
 
-    @Nested
-    @DisplayName("Method: delete")
-    class DeleteTests {
-        @Test
-        @DisplayName("Should delete admin and revoke account")
-        void deleteSuccess() {
-            UUID id = UUID.randomUUID();
-            when(repo.deleteByAccountId(id)).thenReturn(true);
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete admin and revoke account")
+    void deleteSuccess() {
+      UUID id = UUID.randomUUID();
+      when(repo.deleteByAccountId(id)).thenReturn(true);
 
-            boolean deleted = service.delete(id);
+      boolean deleted = service.delete(id);
 
-            assertThat(deleted).isTrue();
-            verify(accountService).delete(id);
-            verify(audit).fireDelete(Admin.class.getName(), id);
-        }
-
-        @Test
-        @DisplayName("Should do nothing if admin not found")
-        void deleteFail() {
-            UUID id = UUID.randomUUID();
-            when(repo.deleteByAccountId(id)).thenReturn(false);
-
-            boolean deleted = service.delete(id);
-
-            assertThat(deleted).isFalse();
-            verify(accountService, never()).delete(any());
-        }
-    }
-
-    @Nested
-    @DisplayName("Method: update")
-    class UpdateTests {
-        @Test
-        @DisplayName("Should update campus successfully")
-        void updateSuccess() {
-            UUID id = UUID.randomUUID();
-            Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
-            Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
-
-            when(repo.findOptionalByAccountId(id))
-                    .thenReturn(Optional.of(current))
-                    .thenReturn(Optional.of(updatedExpected));
-
-            Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
-
-            assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
-            verify(repo).update(any());
-            verify(audit).fireUpdate(any(), any(), any(), any());
-        }
-
-        @Test
-        @DisplayName("Should throw ResourceNotFound when admin missing")
-        void notFound() {
-            when(repo.findOptionalByAccountId(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.update(UUID.randomUUID(), new AdminUpdateCommand(null, Campi.JOINVILLE)));
-        }
-    }
-
-    @Nested
-    @DisplayName("Method: deactivate")
-    class DeactivateTests {
-        @Test
-        @DisplayName("Should deactivate linked account")
-        void deactivateSuccess() {
-            UUID id = UUID.randomUUID();
-            Admin admin = AdminBuilder.anAdmin().forAccount(id).build();
-            when(repo.findOptionalByAccountId(id)).thenReturn(Optional.of(admin));
-
-            boolean result = service.deactivate(id);
-
-            assertThat(result).isTrue();
-            verify(accountService).deactivate(id);
-        }
-    }
-}
-
-================================================================================
-FILE: identity/service/impl/AuthServiceImplTest.java
-================================================================================
-package br.org.catolicasc.pug.identity.service.impl;
-
-import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
-import br.org.catolicasc.pug.identity.service.AccountService;
-import br.org.catolicasc.pug.identity.service.PasswordService;
-import br.org.catolicasc.pug.builders.AccountBuilder;
-import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.ws.rs.NotAuthorizedException;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-
-@ExtendWith(MockitoExtension.class)
-@DisplayName("AuthServiceImpl Coverage Tests")
-class AuthServiceImplTest {
-
-    @Mock
-    AccountService accountService;
-    @Mock
-    PasswordService passwordService;
-    @Mock
-    SecurityIdentity identity;
-    @InjectMocks
-    AuthServiceImpl service;
-
-    @Nested
-    @DisplayName("Method: login")
-    class LoginTests {
-        @Test
-        @DisplayName("Should return token when credentials valid")
-        void success() {
-            Account acc = AccountBuilder.anAccount().withEmail("test@pug.com").asAdmin().build();
-            when(accountService.getByEmail("test@pug.com")).thenReturn(acc);
-            when(passwordService.verify(any(), any())).thenReturn(true);
-
-            service.lifespan = 3600;
-
-            TokenResponse res = service.login(new LoginRequest("test@pug.com", "pass"));
-
-            assertThat(res.token()).isNotBlank();
-            assertThat(res.accountId()).isEqualTo(acc.getId());
-        }
-
-        @Test
-        @DisplayName("Should throw NotAuthorized when password mismatch")
-        void failOnWrongPassword() {
-            Account acc = AccountBuilder.anAccount().build();
-            when(accountService.getByEmail(any())).thenReturn(acc);
-            when(passwordService.verify(any(), any())).thenReturn(false);
-
-            org.junit.jupiter.api.Assertions.assertThrows(NotAuthorizedException.class,
-                    () -> service.login(new LoginRequest("test@pug.com", "wrong")));
-        }
-
-        @Test
-        @DisplayName("Should throw NotAuthorized when account inactive")
-        void failOnInactive() {
-            Account acc = AccountBuilder.anAccount().build().toBuilder().active(false).build();
-            when(accountService.getByEmail(any())).thenReturn(acc);
-
-            org.junit.jupiter.api.Assertions.assertThrows(NotAuthorizedException.class,
-                    () -> service.login(new LoginRequest("test@pug.com", "pass")));
-        }
-    }
-}
-
-================================================================================
-FILE: identity/service/impl/PasswordServiceImplTest.java
-================================================================================
-package br.org.catolicasc.pug.identity.service.impl;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-@DisplayName("PasswordServiceImpl Tests")
-class PasswordServiceImplTest {
-
-    private PasswordServiceImpl service;
-
-    @BeforeEach
-    void setup() {
-        service = new PasswordServiceImpl();
-        // Manually inject the pepper
-        ReflectionTestUtils.setField(service, "pepper", "test-pepper");
+      assertThat(deleted).isTrue();
+      verify(accountService).delete(id);
+      verify(audit).fireDelete(Admin.class.getName(), id);
     }
 
     @Test
-    @DisplayName("Should hash and verify password correctly")
-    void testHashAndVerify() {
-        String raw = "my-password";
-        String hashed = service.hash(raw);
+    @DisplayName("Should do nothing if admin not found")
+    void deleteFail() {
+      UUID id = UUID.randomUUID();
+      when(repo.deleteByAccountId(id)).thenReturn(false);
 
-        assertThat(hashed).isNotEqualTo(raw);
-        assertThat(service.verify(hashed, raw)).isTrue();
-        assertThat(service.verify(hashed, "wrong-password")).isFalse();
+      boolean deleted = service.delete(id);
+
+      assertThat(deleted).isFalse();
+      verify(accountService, never()).delete(any());
     }
+  }
+
+  @Nested
+  @DisplayName("Method: update")
+  class UpdateTests {
+    @Test
+    @DisplayName("Should update campus successfully")
+    void updateSuccess() {
+      UUID id = UUID.randomUUID();
+      Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
+      Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
+
+      when(repo.findOptionalByAccountId(id))
+          .thenReturn(Optional.of(current))
+          .thenReturn(Optional.of(updatedExpected));
+
+      Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
+
+      assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
+      verify(repo).update(any());
+      verify(audit).fireUpdate(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFound when admin missing")
+    void notFound() {
+      when(repo.findOptionalByAccountId(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class,
+          () -> service.update(UUID.randomUUID(), new AdminUpdateCommand(null, Campi.JOINVILLE)));
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: deactivate")
+  class DeactivateTests {
+    @Test
+    @DisplayName("Should deactivate linked account")
+    void deactivateSuccess() {
+      UUID id = UUID.randomUUID();
+      Admin admin = AdminBuilder.anAdmin().forAccount(id).build();
+      when(repo.findOptionalByAccountId(id)).thenReturn(Optional.of(admin));
+
+      boolean result = service.deactivate(id);
+
+      assertThat(result).isTrue();
+      verify(accountService).deactivate(id);
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/impl/UserReadServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -1273,49 +1879,47 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserReadServiceImpl Tests")
 class UserReadServiceImplTest {
 
-    @Mock
-    UserQueries queries;
-    @InjectMocks
-    UserReadServiceImpl service;
+  @Mock UserQueries queries;
+  @InjectMocks UserReadServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: getViewById")
-    class GetViewByIdTests {
-        @Test
-        @DisplayName("Should return view when user exists")
-        void shouldReturnView() {
-            UUID id = UUID.randomUUID();
-            UserView view = new UserView(id, "11144477735", "Name", null, null);
-            when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+  @Nested
+  @DisplayName("Method: getViewById")
+  class GetViewByIdTests {
+    @Test
+    @DisplayName("Should return view when user exists")
+    void shouldReturnView() {
+      UUID id = UUID.randomUUID();
+      UserView view = new UserView(id, "11144477735", "Name", null, null);
+      when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
-            assertThat(service.getViewById(id)).isEqualTo(view);
-        }
-
-        @Test
-        @DisplayName("Should throw ResourceNotFoundException when user missing")
-        void shouldThrowException() {
-            when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.getViewById(UUID.randomUUID()));
-        }
+      assertThat(service.getViewById(id)).isEqualTo(view);
     }
+
+    @Test
+    @DisplayName("Should throw ResourceNotFoundException when user missing")
+    void shouldThrowException() {
+      when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/impl/UserServiceImplTest.java
 ================================================================================
 package br.org.catolicasc.pug.identity.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.UserRepository;
@@ -1326,6 +1930,8 @@ import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -1334,110 +1940,101 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserServiceImpl Coverage Tests")
 class UserServiceImplTest {
 
-    @Mock
-    UserRepository repo;
-    @Mock
-    AuditPublisher audit;
-    @InjectMocks
-    UserServiceImpl service;
+  @Mock UserRepository repo;
+  @Mock AuditPublisher audit;
+  @InjectMocks UserServiceImpl service;
 
-    @Nested
-    @DisplayName("Method: save")
-    class SaveTests {
-        @Test
-        @DisplayName("Should successfully persist valid user")
-        void success() {
-            when(repo.existsByCpf(any())).thenReturn(false);
-            when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
+  @Nested
+  @DisplayName("Method: save")
+  class SaveTests {
+    @Test
+    @DisplayName("Should successfully persist valid user")
+    void success() {
+      when(repo.existsByCpf(any())).thenReturn(false);
+      when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
 
-            User user = service.save(new UserCreateCommand("11144477735", "Valid Name"));
+      User user = service.save(new UserCreateCommand("11144477735", "Valid Name"));
 
-            assertThat(user.getName()).isEqualTo("Valid Name");
-            verify(repo).persist(any());
-            verify(audit).fireCreate(any(), any());
-        }
-
-        @Test
-        @DisplayName("Should throw when CPF is already registered")
-        void duplicate() {
-            when(repo.existsByCpf(any())).thenReturn(true);
-            org.junit.jupiter.api.Assertions.assertThrows(DuplicateResourceException.class,
-                    () -> service.save(new UserCreateCommand("11144477735", "Name")));
-        }
-
-        @Test
-        @DisplayName("Should throw when validation fails in processor")
-        void validationFail() {
-            org.junit.jupiter.api.Assertions.assertThrows(AppValidationException.class,
-                    () -> service.save(new UserCreateCommand("INVALID", "")));
-        }
+      assertThat(user.getName()).isEqualTo("Valid Name");
+      verify(repo).persist(any());
+      verify(audit).fireCreate(any(), any());
     }
 
-    @Nested
-    @DisplayName("Method: delete")
-    class DeleteTests {
-        @Test
-        @DisplayName("Should delete and audit when user exists")
-        void success() {
-            when(repo.deleteById(any())).thenReturn(true);
-            boolean result = service.delete(UUID.randomUUID());
-            assertThat(result).isTrue();
-            verify(audit).fireDelete(any(), any());
-        }
-
-        @Test
-        @DisplayName("Should return false when user does not exist")
-        void notFound() {
-            when(repo.deleteById(any())).thenReturn(false);
-            boolean result = service.delete(UUID.randomUUID());
-            assertThat(result).isFalse();
-            verify(audit, never()).fireDelete(any(), any());
-        }
+    @Test
+    @DisplayName("Should throw when CPF is already registered")
+    void duplicate() {
+      when(repo.existsByCpf(any())).thenReturn(true);
+      org.junit.jupiter.api.Assertions.assertThrows(
+          DuplicateResourceException.class,
+          () -> service.save(new UserCreateCommand("11144477735", "Name")));
     }
 
-    @Nested
-    @DisplayName("Method: update")
-    class UpdateTests {
-        @Test
-        @DisplayName("Should update name successfully")
-        void updateName() {
-            UUID id = UUID.randomUUID();
-            User existing = User.factory(Cpf.factory("11144477735"), "Old Name");
-
-            when(repo.findOptionalById(id)).thenReturn(Optional.of(existing));
-
-            User updatedExpected = existing.rename("New Name");
-            when(repo.findOptionalById(id)).thenReturn(Optional.of(updatedExpected));
-
-            User updated = service.update(id, new UserUpdateCommand("New Name"));
-
-            assertThat(updated.getName()).isEqualTo("New Name");
-            verify(repo).update(any());
-            verify(audit).fireUpdate(any(), any(), any(), any());
-        }
-
-        @Test
-        @DisplayName("Should throw when user not found during update")
-        void notFound() {
-            when(repo.findOptionalById(any())).thenReturn(Optional.empty());
-            org.junit.jupiter.api.Assertions.assertThrows(ResourceNotFoundException.class,
-                    () -> service.update(UUID.randomUUID(), new UserUpdateCommand("New")));
-        }
+    @Test
+    @DisplayName("Should throw when validation fails in processor")
+    void validationFail() {
+      org.junit.jupiter.api.Assertions.assertThrows(
+          AppValidationException.class, () -> service.save(new UserCreateCommand("INVALID", "")));
     }
+  }
+
+  @Nested
+  @DisplayName("Method: delete")
+  class DeleteTests {
+    @Test
+    @DisplayName("Should delete and audit when user exists")
+    void success() {
+      when(repo.deleteById(any())).thenReturn(true);
+      boolean result = service.delete(UUID.randomUUID());
+      assertThat(result).isTrue();
+      verify(audit).fireDelete(any(), any());
+    }
+
+    @Test
+    @DisplayName("Should return false when user does not exist")
+    void notFound() {
+      when(repo.deleteById(any())).thenReturn(false);
+      boolean result = service.delete(UUID.randomUUID());
+      assertThat(result).isFalse();
+      verify(audit, never()).fireDelete(any(), any());
+    }
+  }
+
+  @Nested
+  @DisplayName("Method: update")
+  class UpdateTests {
+    @Test
+    @DisplayName("Should update name successfully")
+    void updateName() {
+      UUID id = UUID.randomUUID();
+      User existing = User.factory(Cpf.factory("11144477735"), "Old Name");
+
+      when(repo.findOptionalById(id)).thenReturn(Optional.of(existing));
+
+      User updatedExpected = existing.rename("New Name");
+      when(repo.findOptionalById(id)).thenReturn(Optional.of(updatedExpected));
+
+      User updated = service.update(id, new UserUpdateCommand("New Name"));
+
+      assertThat(updated.getName()).isEqualTo("New Name");
+      verify(repo).update(any());
+      verify(audit).fireUpdate(any(), any(), any(), any());
+    }
+
+    @Test
+    @DisplayName("Should throw when user not found during update")
+    void notFound() {
+      when(repo.findOptionalById(any())).thenReturn(Optional.empty());
+      org.junit.jupiter.api.Assertions.assertThrows(
+          ResourceNotFoundException.class,
+          () -> service.update(UUID.randomUUID(), new UserUpdateCommand("New")));
+    }
+  }
 }
+
 
 ================================================================================
 FILE: identity/service/utils/AccountProcessorTest.java
@@ -1600,8 +2197,724 @@ public class MongoTestInitializer {
 
 
 ================================================================================
+FILE: partner/domain/EntityTest.java
+================================================================================
+package br.org.catolicasc.pug.partner.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
+import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Entity Aggregate Tests")
+class EntityTest {
+
+  private final Cnpj validCnpj = Cnpj.factory("84429695000111");
+  private final UUID validCityId = UUID.randomUUID();
+
+  @Test
+  @DisplayName("Should create valid Entity")
+  void shouldCreateEntity() {
+    Entity entity =
+        Entity.factory(validCnpj, "WEG S.A.", validCityId, "Av. Pref. Waldemar Grubba, 3000");
+
+    assertThat(entity.hasFieldErrors()).isFalse();
+    assertThat(entity.getName()).isEqualTo("WEG S.A.");
+  }
+
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    Entity entity = Entity.factory(null, " ", null, "");
+
+    assertThat(entity.hasFieldErrors()).isTrue();
+    assertThat(entity.getFieldErrors())
+        .contains(
+            PartnerFieldErrorCodes.INVALID_CNPJ_BLANK,
+            SharedFieldErrorCodes.INVALID_NAME_BLANK,
+            PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK,
+            PartnerFieldErrorCodes.INVALID_ADDRESS_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename entity successfully")
+    void shouldRename() {
+      Entity entity = Entity.factory(validCnpj, "Original Name", validCityId, "Address");
+      Entity renamed = entity.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(entity.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should update address successfully")
+    void shouldMoveAddress() {
+      Entity entity = Entity.factory(validCnpj, "Name", validCityId, "Old Address");
+      Entity moved = entity.moveToAddress("New Address");
+
+      assertThat(moved.getAddress()).isEqualTo("New Address");
+    }
+
+    @Test
+    @DisplayName("Should move to another city successfully")
+    void shouldMoveCity() {
+      UUID newCityId = UUID.randomUUID();
+      Entity entity = Entity.factory(validCnpj, "Name", validCityId, "Address");
+      Entity moved = entity.moveToCity(newCityId);
+
+      assertThat(moved.getCityId()).isEqualTo(newCityId);
+    }
+  }
+}
+
+
+================================================================================
+FILE: partner/domain/enums/PartnerEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.partner.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Partner Enum Bundle Key Integrity Tests")
+class PartnerEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all partner enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(PartnerErrorCodes.values(), PartnerFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: partner/domain/StaffTest.java
+================================================================================
+package br.org.catolicasc.pug.partner.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Staff Aggregate Tests")
+class StaffTest {
+
+  @Test
+  @DisplayName("Should create valid Staff assignment")
+  void shouldCreateStaff() {
+    UUID accountId = UUID.randomUUID();
+    UUID entityId = UUID.randomUUID();
+
+    Staff staff = Staff.factory(accountId, entityId);
+
+    assertThat(staff.hasFieldErrors()).isFalse();
+    assertThat(staff.getAccountId()).isEqualTo(accountId);
+    assertThat(staff.getEntityId()).isEqualTo(entityId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when IDs are missing")
+  void shouldCollectValidationErrors() {
+    Staff staff = Staff.factory(null, null);
+
+    assertThat(staff.hasFieldErrors()).isTrue();
+    assertThat(staff.getFieldErrors())
+        .contains(
+            PartnerFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK,
+            PartnerFieldErrorCodes.INVALID_ENTITY_ID_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: partner/domain/vos/CnpjTest.java
+================================================================================
+package br.org.catolicasc.pug.partner.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Cnpj Value Object Tests")
+class CnpjTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid CNPJ from raw numeric string")
+    void shouldCreateValidCnpj() {
+      Cnpj cnpj = Cnpj.factory("84429695000111");
+
+      assertThat(cnpj.hasFieldErrors()).isFalse();
+      assertThat(cnpj.getValue()).isEqualTo("84429695000111");
+    }
+
+    @Test
+    @DisplayName("Should sanitize input (remove punctuation)")
+    void shouldSanitizeInput() {
+      Cnpj cnpj = Cnpj.factory("84.429.695/0001-11");
+
+      assertThat(cnpj.hasFieldErrors()).isFalse();
+      assertThat(cnpj.getValue()).isEqualTo("84429695000111");
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null inputs")
+    void shouldRejectEmpty() {
+      Cnpj cnpj = Cnpj.factory("   ");
+      assertThat(cnpj.hasFieldErrors()).isTrue();
+      assertThat(cnpj.getFieldErrors()).contains(PartnerFieldErrorCodes.INVALID_CNPJ_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject invalid CNPJ format/checksum")
+    void shouldRejectInvalidFormat() {
+      Cnpj cnpj = Cnpj.factory("12345678901234");
+      assertThat(cnpj.hasFieldErrors()).isTrue();
+      assertThat(cnpj.getFieldErrors()).contains(PartnerFieldErrorCodes.INVALID_CNPJ_FORMAT);
+    }
+  }
+}
+
+
+================================================================================
 FILE: partner/infra/persistence/.gitkeep
 ================================================================================
+
+
+================================================================================
+FILE: project/domain/AttendanceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.builders.ProjectBuilder;
+import br.org.catolicasc.pug.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Attendance Aggregate Tests")
+class AttendanceTest {
+
+  private final Project project = ProjectBuilder.aProject().build();
+  private final Student student = StudentBuilder.aStudent().build();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Attendance in WAITING status")
+    void shouldCreateValidAttendance() {
+      Attendance attendance =
+          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+
+      assertThat(attendance.hasFieldErrors()).isFalse();
+      assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
+      assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("qr-hash-123");
+    }
+
+    @Test
+    @DisplayName("Should collect errors for missing fields")
+    void shouldCollectErrors() {
+      Attendance attendance = Attendance.factory(null, null, null, " ");
+
+      assertThat(attendance.hasFieldErrors()).isTrue();
+      assertThat(attendance.getFieldErrors())
+          .contains(
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID,
+              ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
+    }
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should transition status to PRESENT when validated")
+    void shouldValidatePresence() {
+      Attendance attendance =
+          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+
+      UUID staffId = UUID.randomUUID();
+      Attendance updated = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
+
+      assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+      assertThat(updated.getAttendanceInfo().getValidatedBy()).isEqualTo(staffId);
+      assertThat(updated.getAttendanceInfo().getValidatedAt()).isNotNull();
+    }
+  }
+}
+
+
+================================================================================
+FILE: project/domain/EnrollmentTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.builders.ProjectBuilder;
+import br.org.catolicasc.pug.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Enrollment Aggregate Tests")
+class EnrollmentTest {
+
+  private final Student student = StudentBuilder.aStudent().build();
+  private final Project project = ProjectBuilder.aProject().build();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Enrollment in PENDING status")
+    void shouldCreateValidEnrollment() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      assertThat(enrollment.hasFieldErrors()).isFalse();
+      assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
+      assertThat(enrollment.getIdentifier()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should collect errors when data is null")
+    void shouldCollectValidationErrors() {
+      Enrollment enrollment = Enrollment.factory(null, null);
+
+      assertThat(enrollment.hasFieldErrors()).isTrue();
+      assertThat(enrollment.getFieldErrors())
+          .contains(
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    }
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should transition from PENDING to APPROVED successfully")
+    void shouldApproveEnrollment() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED);
+
+      assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+      assertThat(approved.getEnrollmentInfo().getAcceptedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should throw BusinessRuleException when transitioning invalidly")
+    void shouldRejectInvalidTransition() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      Assertions.assertThrows(
+          BusinessRuleException.class, () -> enrollment.changeStatus(EnrollmentStatus.COMPLETED));
+    }
+
+    @Test
+    @DisplayName("Should transition from APPROVED to COMPLETED (closing status)")
+    void shouldCloseEnrollment() {
+      Enrollment enrollment =
+          Enrollment.factory(student, project).changeStatus(EnrollmentStatus.APPROVED);
+
+      Enrollment completed = enrollment.changeStatus(EnrollmentStatus.COMPLETED);
+
+      assertThat(completed.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+      assertThat(completed.getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+    }
+  }
+}
+
+
+================================================================================
+FILE: project/domain/enums/ProjectEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Project Enum Bundle Key Integrity Tests")
+class ProjectEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all project enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(
+            AttendanceStatus.values(),
+            EnrollmentStatus.values(),
+            ProjectStatus.values(),
+            ProjectsErrorCodes.values(),
+            ProjectsFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: project/domain/ProjectSchoolTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectBySchool Aggregate Tests")
+class ProjectSchoolTest {
+
+  @Test
+  @DisplayName("Should create valid association")
+  void shouldCreateValidAssociation() {
+    UUID projectId = UUID.randomUUID();
+    UUID schoolId = UUID.randomUUID();
+
+    ProjectSchool pbs = ProjectSchool.factory(projectId, schoolId);
+
+    assertThat(pbs.hasFieldErrors()).isFalse();
+    assertThat(pbs.getProjectId()).isEqualTo(projectId);
+    assertThat(pbs.getSchoolId()).isEqualTo(schoolId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when IDs are missing")
+  void shouldCollectValidationErrors() {
+    ProjectSchool pbs = ProjectSchool.factory(null, null);
+
+    assertThat(pbs.hasFieldErrors()).isTrue();
+    assertThat(pbs.getFieldErrors())
+        .contains(
+            ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
+            ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: project/domain/ProjectTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Project Aggregate Tests")
+class ProjectTest {
+
+  private final UUID entityId = UUID.randomUUID();
+  private final UUID creatorId = UUID.randomUUID();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Project in PLANNED status")
+    void shouldCreateValidProject() {
+      Project project =
+          Project.factory(
+              "Project Alpha",
+              entityId,
+              "Description",
+              creatorId,
+              10,
+              new BigDecimal("40.0"),
+              BigDecimal.ZERO);
+
+      assertThat(project.hasFieldErrors()).isFalse();
+      assertThat(project.getProjectStatus()).isEqualTo(ProjectStatus.PLANNED);
+    }
+  }
+
+  @Nested
+  @DisplayName("Lifecycle Transitions")
+  class TransitionTests {
+
+    @Test
+    @DisplayName("Should start PLANNED project to IN_PROGRESS")
+    void shouldStartProject() {
+      Project project =
+          Project.factory("Name", entityId, "Desc", creatorId, 10, BigDecimal.TEN, BigDecimal.ZERO);
+
+      Project started = project.start();
+      assertThat(started.getProjectStatus()).isEqualTo(ProjectStatus.IN_PROGRESS);
+    }
+
+    @Test
+    @DisplayName("Should fail to cancel COMPLETED project")
+    void shouldFailToCancelCompleted() {
+      Project project =
+          Project.factory("Name", entityId, "Desc", creatorId, 10, BigDecimal.TEN, BigDecimal.ZERO);
+
+      Project completed = project.start().complete();
+
+      Assertions.assertThrows(BusinessRuleException.class, completed::cancel);
+    }
+  }
+
+  @Nested
+  @DisplayName("Progress Management")
+  class ProgressTests {
+
+    @Test
+    @DisplayName("Should complete project when hours are reached")
+    void shouldCompleteOnHoursReached() {
+      Project project =
+          Project.factory(
+              "Name", entityId, "Desc", creatorId, 10, new BigDecimal("10.0"), BigDecimal.ZERO);
+
+      Project inProgress = project.start();
+      Project completed = inProgress.addCompletedHours(new BigDecimal("10.0"));
+
+      assertThat(completed.getProjectStatus()).isEqualTo(ProjectStatus.COMPLETED);
+    }
+  }
+}
+
+
+================================================================================
+FILE: project/domain/vos/AttendanceInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AttendanceInfo VO Tests")
+class AttendanceInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    AttendanceInfo info = AttendanceInfo.factory(UUID.randomUUID(), OffsetDateTime.now());
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should reject mismatched validator/timestamp")
+  void shouldRejectMismatched() {
+    AttendanceInfo info = AttendanceInfo.factory(UUID.randomUUID(), null);
+    assertThat(info.hasFieldErrors()).isTrue();
+    assertThat(info.getFieldErrors())
+        .contains(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: project/domain/vos/EnrollmentIdentifierTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentIdentifier VO Tests")
+class EnrollmentIdentifierTest {
+  @Test
+  @DisplayName("Should create valid identifier")
+  void shouldCreate() {
+    EnrollmentIdentifier id = EnrollmentIdentifier.factory(UUID.randomUUID(), UUID.randomUUID());
+    assertThat(id.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: project/domain/vos/EnrollmentInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentInfo VO Tests")
+class EnrollmentInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    EnrollmentInfo info = EnrollmentInfo.factory();
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: project/domain/vos/ProjectInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectInfo VO Tests")
+class ProjectInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    ProjectInfo info =
+        ProjectInfo.factory(UUID.randomUUID(), 10, new BigDecimal("40"), BigDecimal.ZERO);
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: project/domain/vos/QrValidationInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("QrValidationInfo VO Tests")
+class QrValidationInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    QrValidationInfo info = QrValidationInfo.factory(new BigDecimal("1.0"), "hash-123");
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should reject invalid duration")
+  void shouldReject() {
+    QrValidationInfo info = QrValidationInfo.factory(BigDecimal.ZERO, " ");
+    assertThat(info.hasFieldErrors()).isTrue();
+    assertThat(info.getFieldErrors())
+        .contains(
+            ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID,
+            ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
+  }
+}
 
 
 ================================================================================

@@ -101,6 +101,7 @@
 │   │   │                   │   │   ├── CourseMapper.java
 │   │   │                   │   │   ├── SchoolMapper.java
 │   │   │                   │   │   ├── StudentMapper.java
+│   │   │                   │   │   ├── generate-context.sh
 │   │   │                   │   │   ├── persistence/
 │   │   │                   │   │   │   ├── CourseEntity.java
 │   │   │                   │   │   │   ├── SchoolEntity.java
@@ -177,6 +178,7 @@
 │   │   │                   │   │       └── IbgeCode.java
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── CityMapper.java
+│   │   │                   │   │   ├── generate-context.sh
 │   │   │                   │   │   ├── persistence/
 │   │   │                   │   │   │   ├── CityEntity.java
 │   │   │                   │   │   │   └── impl/
@@ -214,11 +216,11 @@
 │   │   │                   │   │   └── vos/
 │   │   │                   │   │       ├── Cpf.java
 │   │   │                   │   │       └── Email.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AccountMapper.java
 │   │   │                   │   │   ├── AdminMapper.java
 │   │   │                   │   │   ├── UserMapper.java
+│   │   │                   │   │   ├── generate-context.sh
 │   │   │                   │   │   ├── persistence/
 │   │   │                   │   │   │   ├── AccountEntity.java
 │   │   │                   │   │   │   ├── AdminEntity.java
@@ -303,6 +305,7 @@
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── EntityMapper.java
 │   │   │                   │   │   ├── StaffMapper.java
+│   │   │                   │   │   ├── generate-context.sh
 │   │   │                   │   │   ├── persistence/
 │   │   │                   │   │   │   ├── EntityEntity.java
 │   │   │                   │   │   │   ├── StaffEntity.java
@@ -359,9 +362,9 @@
 │   │   │                   │   │   ├── Enrollment.java
 │   │   │                   │   │   ├── EnrollmentRepository.java
 │   │   │                   │   │   ├── Project.java
-│   │   │                   │   │   ├── ProjectBySchool.java
-│   │   │                   │   │   ├── ProjectBySchoolRepository.java
 │   │   │                   │   │   ├── ProjectRepository.java
+│   │   │                   │   │   ├── ProjectSchool.java
+│   │   │                   │   │   ├── ProjectSchoolRepository.java
 │   │   │                   │   │   ├── enums/
 │   │   │                   │   │   │   ├── AttendanceStatus.java
 │   │   │                   │   │   │   ├── EnrollmentStatus.java
@@ -374,22 +377,22 @@
 │   │   │                   │   │       ├── EnrollmentInfo.java
 │   │   │                   │   │       ├── ProjectInfo.java
 │   │   │                   │   │       └── QrValidationInfo.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AttendanceMapper.java
 │   │   │                   │   │   ├── EnrollmentMapper.java
-│   │   │                   │   │   ├── ProjectBySchoolMapper.java
 │   │   │                   │   │   ├── ProjectMapper.java
+│   │   │                   │   │   ├── ProjectSchoolMapper.java
+│   │   │                   │   │   ├── generate-context.sh
 │   │   │                   │   │   ├── persistence/
 │   │   │                   │   │   │   ├── AttendanceEntity.java
 │   │   │                   │   │   │   ├── EnrollmentEntity.java
 │   │   │                   │   │   │   ├── ProjectEntity.java
-│   │   │                   │   │   │   ├── ProjectsBySchoolsEntity.java
+│   │   │                   │   │   │   ├── ProjectSchoolEntity.java
 │   │   │                   │   │   │   └── impl/
 │   │   │                   │   │   │       ├── AttendanceRepositoryImpl.java
 │   │   │                   │   │   │       ├── EnrollmentRepositoryImpl.java
-│   │   │                   │   │   │       ├── ProjectBySchoolRepositoryImpl.java
-│   │   │                   │   │   │       └── ProjectRepositoryImpl.java
+│   │   │                   │   │   │       ├── ProjectRepositoryImpl.java
+│   │   │                   │   │   │       └── ProjectSchoolRepositoryImpl.java
 │   │   │                   │   │   └── read/
 │   │   │                   │   │       ├── AttendanceQueries.java
 │   │   │                   │   │       ├── EnrollmentQueries.java
@@ -405,17 +408,17 @@
 │   │   │                   │   ├── presenter/
 │   │   │                   │   │   ├── AttendanceResource.java
 │   │   │                   │   │   ├── EnrollmentResource.java
-│   │   │                   │   │   ├── ProjectBySchoolResource.java
 │   │   │                   │   │   ├── ProjectResource.java
+│   │   │                   │   │   ├── ProjectSchoolResource.java
 │   │   │                   │   │   ├── dtos/
 │   │   │                   │   │   │   ├── AttendanceCreateRequest.java
 │   │   │                   │   │   │   ├── AttendanceResponse.java
 │   │   │                   │   │   │   ├── AttendanceValidateRequest.java
 │   │   │                   │   │   │   ├── EnrollmentCreateRequest.java
 │   │   │                   │   │   │   ├── EnrollmentResponse.java
-│   │   │                   │   │   │   ├── ProjectBySchoolRequest.java
 │   │   │                   │   │   │   ├── ProjectCreateRequest.java
 │   │   │                   │   │   │   ├── ProjectResponse.java
+│   │   │                   │   │   │   ├── ProjectSchoolRequest.java
 │   │   │                   │   │   │   └── ProjectUpdateRequest.java
 │   │   │                   │   │   └── mappers/
 │   │   │                   │   │       ├── AttendancePresenter.java
@@ -426,9 +429,9 @@
 │   │   │                   │       ├── AttendanceService.java
 │   │   │                   │       ├── EnrollmentReadService.java
 │   │   │                   │       ├── EnrollmentService.java
-│   │   │                   │       ├── ProjectBySchoolReadService.java
-│   │   │                   │       ├── ProjectBySchoolService.java
 │   │   │                   │       ├── ProjectReadService.java
+│   │   │                   │       ├── ProjectSchoolReadService.java
+│   │   │                   │       ├── ProjectSchoolService.java
 │   │   │                   │       ├── ProjectService.java
 │   │   │                   │       ├── dtos/
 │   │   │                   │       │   ├── AttendanceCreateCommand.java
@@ -441,16 +444,16 @@
 │   │   │                   │       │   ├── AttendanceServiceImpl.java
 │   │   │                   │       │   ├── EnrollmentReadServiceImpl.java
 │   │   │                   │       │   ├── EnrollmentServiceImpl.java
-│   │   │                   │       │   ├── ProjectBySchoolReadServiceImpl.java
-│   │   │                   │       │   ├── ProjectBySchoolServiceImpl.java
 │   │   │                   │       │   ├── ProjectReadServiceImpl.java
+│   │   │                   │       │   ├── ProjectSchoolReadServiceImpl.java
+│   │   │                   │       │   ├── ProjectSchoolServiceImpl.java
 │   │   │                   │       │   └── ProjectServiceImpl.java
 │   │   │                   │       └── utils/
 │   │   │                   │           ├── AttendanceProcessor.java
 │   │   │                   │           ├── EnrollmentProcessor.java
 │   │   │                   │           ├── ExceptionHelper.java
-│   │   │                   │           ├── ProjectBySchoolProcessor.java
-│   │   │                   │           └── ProjectProcessor.java
+│   │   │                   │           ├── ProjectProcessor.java
+│   │   │                   │           └── ProjectSchoolProcessor.java
 │   │   │                   └── shared/
 │   │   │                       ├── README.md
 │   │   │                       ├── domain/
@@ -469,7 +472,6 @@
 │   │   │                       │   ├── BusinessRuleException.java
 │   │   │                       │   ├── DuplicateResourceException.java
 │   │   │                       │   └── ResourceNotFoundException.java
-│   │   │                       ├── generate-context.sh
 │   │   │                       ├── http/
 │   │   │                       │   └── CorrelationFilter.java
 │   │   │                       ├── i18n/
@@ -539,7 +541,7 @@
 │   │       │       ├── V008__create_courses_table.sql
 │   │       │       ├── V009__create_students_table.sql
 │   │       │       ├── V010__create_projects_table.sql
-│   │       │       ├── V011__create_projects_by_schools_table.sql
+│   │       │       ├── V011__create_project_school_table.sql
 │   │       │       ├── V012__create_enrollments_table.sql
 │   │       │       ├── V013__create_attendances_table.sql
 │   │       │       └── V014__seed_system_user.sql
@@ -547,6 +549,7 @@
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
+│       ├── README.md
 │       ├── java/
 │       │   └── br/
 │       │       └── org/
@@ -555,8 +558,15 @@
 │       │                   ├── MongoTestInitializer.java
 │       │                   ├── academic/
 │       │                   │   ├── domain/
+│       │                   │   │   ├── CourseTest.java
+│       │                   │   │   ├── SchoolTest.java
+│       │                   │   │   ├── StudentTest.java
 │       │                   │   │   ├── enums/
+│       │                   │   │   │   └── AcademicEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
+│       │                   │   │       ├── AcademicRegistrationTest.java
+│       │                   │   │       ├── CounterpartHoursTest.java
+│       │                   │   │       └── PeriodTest.java
 │       │                   │   ├── infra/
 │       │                   │   │   ├── persistence/
 │       │                   │   │   │   ├── .gitkeep
@@ -574,12 +584,17 @@
 │       │                   ├── builders/
 │       │                   │   ├── AccountBuilder.java
 │       │                   │   ├── AdminBuilder.java
+│       │                   │   ├── ProjectBuilder.java
+│       │                   │   ├── StudentBuilder.java
 │       │                   │   └── UserBuilder.java
 │       │                   ├── generate-context.sh
 │       │                   ├── geo/
 │       │                   │   ├── domain/
+│       │                   │   │   ├── CityTest.java
 │       │                   │   │   ├── enums/
+│       │                   │   │   │   └── GeoEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
+│       │                   │   │       └── IbgeCodeTest.java
 │       │                   │   ├── infra/
 │       │                   │   │   ├── persistence/
 │       │                   │   │   │   ├── .gitkeep
@@ -626,8 +641,6 @@
 │       │                   │       │   ├── AccountServiceImplTest.java
 │       │                   │       │   ├── AdminReadServiceImplTest.java
 │       │                   │       │   ├── AdminServiceImplTest.java
-│       │                   │       │   ├── AuthServiceImplTest.java
-│       │                   │       │   ├── PasswordServiceImplTest.java
 │       │                   │       │   ├── UserReadServiceImplTest.java
 │       │                   │       │   └── UserServiceImplTest.java
 │       │                   │       └── utils/
@@ -636,8 +649,12 @@
 │       │                   │           └── UserProcessorTest.java
 │       │                   ├── partner/
 │       │                   │   ├── domain/
+│       │                   │   │   ├── EntityTest.java
+│       │                   │   │   ├── StaffTest.java
 │       │                   │   │   ├── enums/
+│       │                   │   │   │   └── PartnerEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
+│       │                   │   │       └── CnpjTest.java
 │       │                   │   ├── infra/
 │       │                   │   │   ├── persistence/
 │       │                   │   │   │   ├── .gitkeep
@@ -654,8 +671,18 @@
 │       │                   │       └── utils/
 │       │                   ├── project/
 │       │                   │   ├── domain/
+│       │                   │   │   ├── AttendanceTest.java
+│       │                   │   │   ├── EnrollmentTest.java
+│       │                   │   │   ├── ProjectSchoolTest.java
+│       │                   │   │   ├── ProjectTest.java
 │       │                   │   │   ├── enums/
+│       │                   │   │   │   └── ProjectEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
+│       │                   │   │       ├── AttendanceInfoTest.java
+│       │                   │   │       ├── EnrollmentIdentifierTest.java
+│       │                   │   │       ├── EnrollmentInfoTest.java
+│       │                   │   │       ├── ProjectInfoTest.java
+│       │                   │   │       └── QrValidationInfoTest.java
 │       │                   │   ├── infra/
 │       │                   │   │   ├── persistence/
 │       │                   │   │   │   ├── .gitkeep

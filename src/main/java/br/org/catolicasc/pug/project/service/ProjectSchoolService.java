@@ -2,21 +2,21 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.ProjectBySchool;
-import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import java.util.List;
 import java.util.UUID;
 
 /**
  * Application service interface for managing the association between {@link Project} and {@link
- * School} aggregates via {@link ProjectBySchool}.
+ * School} aggregates via {@link ProjectSchool}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
  * project–school link: creation and deletion of associations. It orchestrates validation and
- * delegates persistence concerns to the {@link ProjectBySchoolRepository}.
+ * delegates persistence concerns to the {@link ProjectSchoolRepository}.
  */
-public interface ProjectBySchoolService {
+public interface ProjectSchoolService {
 
   /**
    * Creates new associations between a project and one or more schools.
@@ -24,20 +24,20 @@ public interface ProjectBySchoolService {
    * <p>This operation:
    *
    * <ul>
-   *   <li>Constructs a {@link ProjectBySchool} aggregate for each provided school ID via its
-   *       factory method,
+   *   <li>Constructs a {@link ProjectSchool} aggregate for each provided school ID via its factory
+   *       method,
    *   <li>validates structural constraints for every association (non-null IDs), and
    *   <li>persists all valid associations using the underlying repository.
    * </ul>
    *
    * @param projectId the unique identifier of the project to link
    * @param schoolIds the unique identifiers of the schools to link to the project
-   * @return a {@link List} of fully instantiated and persisted {@link ProjectBySchool} aggregates
+   * @return a {@link List} of fully instantiated and persisted {@link ProjectSchool} aggregates
    *     corresponding to the provided school IDs
    * @throws AppValidationException if any created association violates domain constraints (e.g.,
    *     null IDs)
    */
-  List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds);
+  List<ProjectSchool> save(UUID projectId, List<UUID> schoolIds);
 
   /**
    * Removes a specific association between a project and a school.

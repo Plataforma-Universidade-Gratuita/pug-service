@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -56,9 +57,12 @@ public class Enrollment extends DomainError {
    *     state
    */
   public static Enrollment factory(Student student, Project project) {
+    UUID studentId = (student != null) ? student.getAccountId() : null;
+    UUID projectId = (project != null) ? project.getId() : null;
+
     Enrollment enrollment =
         Enrollment.builder()
-            .identifier(EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
+            .identifier(EnrollmentIdentifier.factory(studentId, projectId))
             .status(EnrollmentStatus.PENDING)
             .enrollmentInfo(EnrollmentInfo.factory())
             .build();

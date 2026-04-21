@@ -4,7 +4,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link Project} and {@link ProjectBySchool} aggregate
+ * Domain repository interface for managing {@link Project} and {@link ProjectSchool} aggregate
  * roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting

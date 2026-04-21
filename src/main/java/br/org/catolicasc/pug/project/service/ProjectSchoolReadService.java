@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import java.util.Set;
 import java.util.UUID;
@@ -11,10 +11,10 @@ import java.util.UUID;
  * and schools.
  *
  * <p>Following CQRS principles, this service handles the "Query" operations for the project–school
- * link. It leverages the underlying {@link ProjectBySchoolRepository} to resolve identifiers and
- * then projects them into lightweight read models.
+ * link. It leverages the underlying {@link ProjectSchoolRepository} to resolve identifiers and then
+ * projects them into lightweight read models.
  */
-public interface ProjectBySchoolReadService {
+public interface ProjectSchoolReadService {
 
   /**
    * Retrieves all schools associated with the specified project.

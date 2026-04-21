@@ -4,30 +4,30 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link ProjectBySchool} aggregate roots.
+ * Domain repository interface for managing {@link ProjectSchool} aggregate roots.
  *
  * <p>This interface defines the contract for persisting project-to-school association aggregates,
  * as well as removing existing associations either in bulk or for a specific project–school pair.
  */
-public interface ProjectBySchoolRepository {
+public interface ProjectSchoolRepository {
 
   /**
    * Removes a specific association between a project and a school.
    *
    * <p>The implementation is expected to use the {@code projectId} and {@code schoolId} contained
-   * in the provided {@link ProjectBySchool} aggregate to identify and delete a single matching
+   * in the provided {@link ProjectSchool} aggregate to identify and delete a single matching
    * record.
    *
-   * @param association the {@link ProjectBySchool} aggregate containing both identifiers
+   * @param association the {@link ProjectSchool} aggregate containing both identifiers
    * @return {@code true} if an association was deleted, {@code false} otherwise
    */
-  boolean delete(ProjectBySchool association);
+  boolean delete(ProjectSchool association);
 
   /**
    * Removes all associations for the specified project.
    *
    * <p>The implementation is expected to use the provided {@code projectId} to identify and delete
-   * all matching {@link ProjectBySchool} records.
+   * all matching {@link ProjectSchool} records.
    *
    * @param projectId the unique identifier of the project
    * @return the number of associations deleted
@@ -38,7 +38,7 @@ public interface ProjectBySchoolRepository {
    * Removes all associations for the specified school.
    *
    * <p>The implementation is expected to use the provided {@code schoolId} to identify and delete
-   * all matching {@link ProjectBySchool} records.
+   * all matching {@link ProjectSchool} records.
    *
    * @param schoolId the unique identifier of the school
    * @return the number of associations deleted
@@ -72,10 +72,10 @@ public interface ProjectBySchoolRepository {
   Set<java.util.UUID> findAllProjectIdsBySchoolId(UUID schoolId);
 
   /**
-   * Persists a newly created {@link ProjectBySchool} association into the repository.
+   * Persists a newly created {@link ProjectSchool} association into the repository.
    *
-   * @param association the {@link ProjectBySchool} aggregate to persist
-   * @return the fully persisted {@link ProjectBySchool} instance
+   * @param association the {@link ProjectSchool} aggregate to persist
+   * @return the fully persisted {@link ProjectSchool} instance
    */
-  ProjectBySchool persist(ProjectBySchool association);
+  ProjectSchool persist(ProjectSchool association);
 }

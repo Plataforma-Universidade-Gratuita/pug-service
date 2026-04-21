@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.academic.service.utils.SchoolProcessor;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolService;
+import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -36,7 +36,7 @@ public class SchoolServiceImpl implements SchoolService {
 
   @Inject CourseService courseService;
 
-  @Inject ProjectBySchoolService projectBySchoolService;
+  @Inject ProjectSchoolService projectSchoolService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -55,7 +55,7 @@ public class SchoolServiceImpl implements SchoolService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("School deleted successfully. ID: %s", id);
-      projectBySchoolService.deleteAllBySchoolId(id);
+      projectSchoolService.deleteAllBySchoolId(id);
       auditPublisher.fireDelete(School.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: School ID %s not found (idempotent)", id);

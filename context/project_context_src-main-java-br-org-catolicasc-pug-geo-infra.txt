@@ -1,0 +1,365 @@
+PROJECT CONTEXT DUMP
+Base: project_context_src-main-java-br-org-catolicasc-pug-geo-infra
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/main/java/br/org/catolicasc/pug/geo/infra
+================================================================================
+
+
+================================================================================
+FILE: CityMapper.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra;
+
+import br.org.catolicasc.pug.geo.domain.City;
+import br.org.catolicasc.pug.geo.domain.vos.IbgeCode;
+import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
+import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+
+/**
+ * Stateless utility class responsible for mapping between Geographic boundary layers.
+ *
+ * <p>This mapper acts as an anti-corruption layer, ensuring that the pure Domain model ({@link
+ * City}) does not leak into or depend upon the JPA Persistence model ({@link CityEntity}) or the
+ * Read/Query model ({@link CityView}).
+ */
+public final class CityMapper {
+
+  /** Private constructor to prevent instantiation of utility class. */
+  private CityMapper() {}
+
+  /**
+   * Reconstitutes a pure Domain {@link City} aggregate from a JPA {@link CityEntity}.
+   *
+   * <p>This method translates primitive database columns back into their corresponding Domain Value
+   * Objects (e.g., using {@link IbgeCode#factory(String)}).
+   *
+   * @param e the JPA persistence entity to convert
+   * @return a fully constructed Domain {@link City}, or {@code null} if the input entity is null
+   */
+  public static City toDomain(CityEntity e) {
+    if (e == null) {
+      return null;
+    }
+    return City.builder()
+        .id(e.getId())
+        .name(e.getName())
+        .ibgeCode(IbgeCode.factory(e.getIbgeCode()))
+        .build();
+  }
+
+  /**
+   * Projects a JPA {@link CityEntity} into a lightweight, read-only {@link CityView} DTO.
+   *
+   * <p>Used heavily by the query/read layer to provide flattened data structures ready for JSON
+   * serialization in API responses.
+   *
+   * @param c the JPA persistence entity to project
+   * @return a flattened {@link CityView} DTO, or {@code null} if the input entity is null
+   */
+  public static CityView toView(CityEntity c) {
+    if (c == null) {
+      return null;
+    }
+    return new CityView(c.getId(), c.getName(), c.getIbgeCode());
+  }
+}
+
+
+================================================================================
+FILE: persistence/CityEntity.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra.persistence;
+
+import br.org.catolicasc.pug.geo.domain.City;
+import br.org.catolicasc.pug.shared.infra.persistence.BaseUuidV7Entity;
+import br.org.catolicasc.pug.shared.infra.search.EsAnalysis;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.search.engine.backend.types.Sortable;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
+import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
+import org.hibernate.type.SqlTypes;
+
+/**
+ * JPA entity representing a geographic City within the persistence layer.
+ *
+ * <p>This class acts as the database-mapped counterpart to the {@link City} domain aggregate. It
+ * inherits a time-ordered UUIDv7 primary key and enforces strict uniqueness on the IBGE code at the
+ * database level.
+ *
+ * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
+ * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to
+ * support advanced full-text queries.
+ */
+@Getter
+@Setter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@ToString(
+    callSuper = true,
+    of = {"name", "ibgeCode"})
+@Entity
+@Table(
+    name = "cities",
+    uniqueConstraints = {
+      @UniqueConstraint(
+          name = "uq_cities_ibge_code",
+          columnNames = {"ibge_code"})
+    })
+@Indexed
+public class CityEntity extends BaseUuidV7Entity {
+
+  /**
+   * The name of the city.
+   *
+   * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
+   * {@link EsAnalysis}. It projects into four distinct index fields:
+   *
+   * <ul>
+   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
+   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").
+   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.
+   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.
+   * </ul>
+   */
+  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
+  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
+  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
+  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
+  @Column(name = "name", nullable = false, length = 100)
+  private String name;
+
+  /**
+   * The unique 7-digit IBGE code of the city.
+   *
+   * <p>Mapped as a fixed-length {@code CHAR(7)} at the database level for optimal storage and
+   * indexing. This serves as the natural key for the city, enforced by the {@code
+   * uq_cities_ibge_code} unique constraint.
+   */
+  @JdbcTypeCode(SqlTypes.CHAR)
+  @Column(name = "ibge_code", nullable = false, length = 7, unique = true)
+  private String ibgeCode;
+}
+
+
+================================================================================
+FILE: persistence/impl/CityRepositoryImpl.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra.persistence.impl;
+
+import br.org.catolicasc.pug.geo.domain.City;
+import br.org.catolicasc.pug.geo.domain.CityRepository;
+import br.org.catolicasc.pug.geo.infra.CityMapper;
+import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import jakarta.enterprise.context.ApplicationScoped;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Implementation of the read-only CityRepository using Panache. */
+@ApplicationScoped
+public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
+  /** {@inheritDoc} */
+  @Override
+  public Optional<City> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    return findByIdOptional(id).map(CityMapper::toDomain);
+  }
+}
+
+
+================================================================================
+FILE: read/CityQueries.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra.read;
+
+import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Read-only interface for executing geographic queries.
+ *
+ * <p>This interface represents the "Query" side of a CQRS architecture. It defines operations for
+ * retrieving geographic data directly into lightweight {@link CityView} projections, bypassing the
+ * overhead of instantiating full JPA entities or domain aggregates.
+ */
+public interface CityQueries {
+
+  /**
+   * Retrieves a read-only view of a city based on its unique identifier.
+   *
+   * @param id the unique identifier (UUID) of the city to retrieve
+   * @return an {@link Optional} containing the {@link CityView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<CityView> findOptionalById(UUID id);
+
+  /**
+   * Retrieves a read-only view of a city based on its unique IBGE code.
+   *
+   * @param ibgeCode the exact 7-digit IBGE code string
+   * @return an {@link Optional} containing the {@link CityView} if found, or {@link
+   *     Optional#empty()} otherwise
+   */
+  Optional<CityView> findOptionalByIbgeCode(String ibgeCode);
+
+  /**
+   * Retrieves a comprehensive list of all cities registered in the system.
+   *
+   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
+   * contexts where the dataset size is known to be safely bounded.
+   *
+   * @return a {@link List} containing all available {@link CityView} entries
+   */
+  List<CityView> listAllByIds(List<UUID> ids);
+
+  /**
+   * Retrieves a comprehensive list of all cities registered in the system.
+   *
+   * <p><i>Note:</i> Use with caution if the dataset grows significantly, as this method does not
+   * implement pagination.
+   *
+   * @return a {@link List} of all {@link CityView} entries available in the database
+   */
+  List<CityView> listAllCities();
+
+  /**
+   * Executes a robust full-text search against city names.
+   *
+   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
+   * Hibernate Search) to provide fuzzy matching, accent-insensitivity, and autocomplete
+   * capabilities.
+   *
+   * @param key the raw search string or partial name provided by the user
+   * @return a sorted {@link List} of {@link CityView} entries matching the search criteria, ordered
+   *     by search relevance
+   */
+  List<CityView> searchByName(String key);
+}
+
+
+================================================================================
+FILE: read/dtos/CityView.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra.read.dtos;
+
+import java.util.UUID;
+
+/**
+ * Data Transfer Object (DTO) representing a read-only view of a City.
+ *
+ * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
+ * client. It flattens the internal domain structure (e.g., extracting the raw string from the
+ * {@code IbgeCode} value object) to provide a simple, lightweight structure optimized for JSON
+ * serialization.
+ *
+ * @param id the unique identifier (UUIDv7) of the city
+ * @param name the name of the city
+ * @param ibgeCode the 7-digit Brazilian Institute of Geography and Statistics code
+ */
+public record CityView(UUID id, String name, String ibgeCode) {}
+
+
+================================================================================
+FILE: read/impl/CityQueriesImpl.java
+================================================================================
+package br.org.catolicasc.pug.geo.infra.read.impl;
+
+import br.org.catolicasc.pug.geo.infra.CityMapper;
+import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
+import br.org.catolicasc.pug.geo.infra.read.CityQueries;
+import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Implementation of CityQueries using JPA and Hibernate Search. */
+@ApplicationScoped
+@Transactional(Transactional.TxType.SUPPORTS)
+public class CityQueriesImpl implements CityQueries {
+
+  @Inject EntityManager entityManager;
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<CityView> findOptionalById(UUID id) {
+    if (id == null) {
+      return Optional.empty();
+    }
+    var q = entityManager.createQuery("from CityEntity c where c.id = :id", CityEntity.class);
+    q.setParameter("id", id);
+    return q.getResultStream().findFirst().map(CityMapper::toView);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Optional<CityView> findOptionalByIbgeCode(String ibgeCode) {
+    if (StringUtils.isEmpty(ibgeCode)) {
+      return Optional.empty();
+    }
+    var q =
+        entityManager.createQuery("from CityEntity c where c.ibgeCode = :ibge", CityEntity.class);
+    q.setParameter("ibge", ibgeCode);
+    return q.getResultStream().findFirst().map(CityMapper::toView);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listAllByIds(List<UUID> ids) {
+    if (ids == null || ids.isEmpty()) {
+      return List.of();
+    }
+    var q =
+        entityManager.createQuery(
+            "from CityEntity c where c.id in :ids order by c.name asc", CityEntity.class);
+    q.setParameter("ids", ids);
+    return q.getResultList().stream().map(CityMapper::toView).toList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> listAllCities() {
+    var q = entityManager.createQuery("from CityEntity c order by c.name asc", CityEntity.class);
+    return q.getResultList().stream().map(CityMapper::toView).toList();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<CityView> searchByName(String key) {
+    List<CityEntity> hits = HibernateSearchUtils.searchByName(entityManager, CityEntity.class, key);
+
+    if (hits.isEmpty()) {
+      return List.of();
+    }
+
+    List<CityView> out = new ArrayList<>(hits.size());
+    for (CityEntity c : hits) {
+      out.add(CityMapper.toView(c));
+    }
+    return out;
+  }
+}
+

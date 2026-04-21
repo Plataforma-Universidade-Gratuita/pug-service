@@ -62,11 +62,13 @@ public class Attendance extends DomainError {
    */
   public static Attendance factory(
       Project project, Student student, BigDecimal duration, String qrHash) {
+    UUID studentId = (student != null) ? student.getAccountId() : null;
+    UUID projectId = (project != null) ? project.getId() : null;
+
     Attendance att =
         Attendance.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
-            .enrollmentIdentifier(
-                EnrollmentIdentifier.factory(student.getAccountId(), project.getId()))
+            .enrollmentIdentifier(EnrollmentIdentifier.factory(studentId, projectId))
             .qrValidationInfo(QrValidationInfo.factory(duration, qrHash))
             .attendanceInfo(AttendanceInfo.factory(null, null))
             .status(AttendanceStatus.WAITING)

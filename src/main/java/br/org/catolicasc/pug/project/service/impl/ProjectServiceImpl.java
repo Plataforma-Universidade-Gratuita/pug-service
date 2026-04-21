@@ -6,7 +6,7 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectRepository;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolService;
+import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
@@ -36,7 +36,7 @@ public class ProjectServiceImpl implements ProjectService {
 
   @Inject AuditPublisher auditPublisher;
   @Inject ProjectRepository repo;
-  @Inject ProjectBySchoolService associationService;
+  @Inject ProjectSchoolService associationService;
   @Inject AuthService authService;
   @Inject EntityService entityService;
   @Inject EnrollmentService enrollmentService;

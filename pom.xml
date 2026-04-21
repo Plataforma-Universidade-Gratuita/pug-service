@@ -16,7 +16,6 @@
         <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
         <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
         <quarkus.platform.version>3.14.4</quarkus.platform.version>
-        <skipITs>true</skipITs>
         <surefire-plugin.version>3.5.0</surefire-plugin.version>
     </properties>
 
@@ -398,7 +397,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
                             <includes>
-                                <include>com/pug/**</include>
+                                <include>br/org/catocalisc/pug/**</include>
                             </includes>
                         </configuration>
                     </execution>

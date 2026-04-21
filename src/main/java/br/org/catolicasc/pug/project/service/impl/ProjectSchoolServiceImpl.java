@@ -1,10 +1,10 @@
 package br.org.catolicasc.pug.project.service.impl;
 
-import br.org.catolicasc.pug.project.domain.ProjectBySchool;
-import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolService;
-import br.org.catolicasc.pug.project.service.utils.ProjectBySchoolProcessor;
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
+import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.project.service.utils.ProjectProcessor;
+import br.org.catolicasc.pug.project.service.utils.ProjectSchoolProcessor;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
@@ -19,25 +19,25 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link ProjectBySchoolService} command interface.
+ * Implementation of the {@link ProjectSchoolService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for the association between
  * projects and schools. It delegates aggregate construction to {@link ProjectProcessor} and
- * persistence concerns to the {@link ProjectBySchoolRepository}, enforcing domain validation before
+ * persistence concerns to the {@link ProjectSchoolRepository}, enforcing domain validation before
  * write operations.
  */
 @ApplicationScoped
-public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
+public class ProjectSchoolServiceImpl implements ProjectSchoolService {
 
-  private static final Logger LOG = Logger.getLogger(ProjectBySchoolServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(ProjectSchoolServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
-  @Inject ProjectBySchoolRepository repo;
+  @Inject ProjectSchoolRepository repo;
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public List<ProjectBySchool> save(UUID projectId, List<UUID> schoolIds) {
+  public List<ProjectSchool> save(UUID projectId, List<UUID> schoolIds) {
     if (projectId == null || CollectionUtils.isEmpty(schoolIds)) {
       LOG.debugf("ProjectBySchool save skipped: projectId=%s, schoolIds=%s", projectId, schoolIds);
       return List.of();
@@ -51,7 +51,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
         "Creating ProjectBySchool associations for projectId=%s. Requested=%d, existing=%d",
         projectId, requestedSchoolIds.size(), existingSchoolIds.size());
 
-    List<ProjectBySchool> created = new ArrayList<>();
+    List<ProjectSchool> created = new ArrayList<>();
 
     for (UUID schoolId : requestedSchoolIds) {
       if (existingSchoolIds.contains(schoolId)) {
@@ -61,21 +61,20 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
         continue;
       }
 
-      ProjectBySchool association =
-          ProjectBySchoolProcessor.processCreateInput(projectId, schoolId);
+      ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, schoolId);
 
       if (association.hasFieldErrors()) {
         throw new AppValidationException(association.getFieldErrors());
       }
 
-      ProjectBySchool persisted = repo.persist(association);
+      ProjectSchool persisted = repo.persist(association);
       created.add(persisted);
     }
 
     LOG.infof(
         "Created %d new ProjectBySchool associations for projectId=%s", created.size(), projectId);
 
-    auditPublisher.fireCreate(ProjectBySchool.class.getName(), projectId);
+    auditPublisher.fireCreate(ProjectSchool.class.getName(), projectId);
     return created;
   }
 
@@ -94,8 +93,8 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
         "Attempting to delete ProjectsBySchool association: projectId=%s, schoolId=%s",
         projectId, schoolId);
 
-    ProjectBySchool association =
-        ProjectBySchool.builder().projectId(projectId).schoolId(schoolId).build();
+    ProjectSchool association =
+        ProjectSchool.builder().projectId(projectId).schoolId(schoolId).build();
 
     boolean deleted = repo.delete(association);
     if (deleted) {
@@ -109,7 +108,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     }
 
     if (deleted) {
-      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
+      auditPublisher.fireDelete(ProjectSchool.class.getName(), projectId);
     }
     return deleted;
   }
@@ -128,7 +127,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.infof("Deleted %d ProjectsBySchool associations for projectId=%s", deleted, projectId);
 
     if (deleted > 0) {
-      auditPublisher.fireDelete(ProjectBySchool.class.getName(), projectId);
+      auditPublisher.fireDelete(ProjectSchool.class.getName(), projectId);
     }
     return deleted;
   }
@@ -147,7 +146,7 @@ public class ProjectBySchoolServiceImpl implements ProjectBySchoolService {
     LOG.infof("Deleted %d ProjectsBySchool associations for schoolId=%s", deleted, schoolId);
 
     if (deleted > 0) {
-      auditPublisher.fireDelete(ProjectBySchool.class.getName(), schoolId);
+      auditPublisher.fireDelete(ProjectSchool.class.getName(), schoolId);
     }
     return deleted;
   }

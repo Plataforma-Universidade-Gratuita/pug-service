@@ -31,9 +31,9 @@ import lombok.ToString;
 @ToString(of = "id")
 @Entity
 @Table(
-    name = "projects_by_schools",
+    name = "project_school",
     indexes = {@Index(name = "idx_pbs_school", columnList = "school_id")})
-public class ProjectsBySchoolsEntity {
+public class ProjectSchoolEntity {
 
   /** Embeddable composite primary key mapping the intersection of a Project and a School. */
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")

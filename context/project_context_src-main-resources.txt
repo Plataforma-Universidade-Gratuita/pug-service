@@ -648,9 +648,9 @@ CREATE INDEX idx_projects_closed_at ON projects (closed_at);
 
 
 ================================================================================
-FILE: db/migration/V011__create_projects_by_schools_table.sql
+FILE: db/migration/V011__create_project_school_table.sql
 ================================================================================
-CREATE TABLE projects_by_schools
+CREATE TABLE project_school
 (
     project_id uuid NOT NULL,
     school_id  uuid NOT NULL,
@@ -659,7 +659,7 @@ CREATE TABLE projects_by_schools
     FOREIGN KEY (school_id) REFERENCES schools (id)
 );
 
-CREATE INDEX idx_pbs_school ON projects_by_schools (school_id);
+CREATE INDEX idx_pbs_school ON project_school (school_id);
 
 
 ================================================================================

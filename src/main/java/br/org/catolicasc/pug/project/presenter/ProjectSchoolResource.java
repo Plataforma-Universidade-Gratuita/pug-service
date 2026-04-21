@@ -5,13 +5,13 @@ import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
 import br.org.catolicasc.pug.academic.presenter.mappers.SchoolPresenter;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.ProjectBySchool;
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectBySchoolRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectSchoolRequest;
 import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolReadService;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolService;
+import br.org.catolicasc.pug.project.service.ProjectSchoolReadService;
+import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -44,13 +44,13 @@ import java.util.stream.Collectors;
  * REST API Resource controller for managing Project–School associations.
  *
  * <p>This resource is dedicated exclusively to linking existing {@link Project} instances to
- * existing {@link School} instances via the {@link ProjectBySchool} aggregate.
+ * existing {@link School} instances via the {@link ProjectSchool} aggregate.
  *
  * <p>Following CQRS principles:
  *
  * <ul>
- *   <li>Write operations delegate to {@link ProjectBySchoolService}.
- *   <li>Read operations delegate to {@link ProjectBySchoolReadService} and use existing read models
+ *   <li>Write operations delegate to {@link ProjectSchoolService}.
+ *   <li>Read operations delegate to {@link ProjectSchoolReadService} and use existing read models
  *       ({@link ProjectView}, {@link SchoolView}).
  * </ul>
  */
@@ -59,11 +59,11 @@ import java.util.stream.Collectors;
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
-public class ProjectBySchoolResource {
+public class ProjectSchoolResource {
 
-  @Inject ProjectBySchoolService writeService;
+  @Inject ProjectSchoolService writeService;
 
-  @Inject ProjectBySchoolReadService readService;
+  @Inject ProjectSchoolReadService readService;
 
   @Inject I18n i18n;
 
@@ -119,14 +119,14 @@ public class ProjectBySchoolResource {
    * <p>This operation is idempotent for existing links: attempting to reassign a school that is
    * already linked to the project will be silently ignored.
    *
-   * @param req the validated {@link ProjectBySchoolRequest} payload containing the projectId and
-   *     the list of schoolIds to associate
+   * @param req the validated {@link ProjectSchoolRequest} payload containing the projectId and the
+   *     list of schoolIds to associate
    * @return an HTTP 201 Created response containing the updated list of {@link SchoolResponse}
    *     associated with the project
    */
   @POST
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response createAssociations(@Valid ProjectBySchoolRequest req) {
+  public Response createAssociations(@Valid ProjectSchoolRequest req) {
     writeService.save(req.projectId(), req.schoolIds());
 
     Set<SchoolView> views = readService.listAllSchoolsByProjectId(req.projectId());

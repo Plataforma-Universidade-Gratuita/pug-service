@@ -1,4 +1,4 @@
-CREATE TABLE projects_by_schools
+CREATE TABLE project_school
 (
     project_id uuid NOT NULL,
     school_id  uuid NOT NULL,
@@ -7,4 +7,4 @@ CREATE TABLE projects_by_schools
     FOREIGN KEY (school_id) REFERENCES schools (id)
 );
 
-CREATE INDEX idx_pbs_school ON projects_by_schools (school_id);
+CREATE INDEX idx_pbs_school ON project_school (school_id);

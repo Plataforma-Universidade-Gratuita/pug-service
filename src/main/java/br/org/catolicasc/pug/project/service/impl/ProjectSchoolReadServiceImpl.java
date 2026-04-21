@@ -2,10 +2,10 @@ package br.org.catolicasc.pug.project.service.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.project.domain.ProjectBySchoolRepository;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.service.ProjectBySchoolReadService;
+import br.org.catolicasc.pug.project.service.ProjectSchoolReadService;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.HashSet;
@@ -15,19 +15,19 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link ProjectBySchoolReadService}.
+ * Implementation of the {@link ProjectSchoolReadService}.
  *
  * <p>This application-scoped bean delegates read-only operations to the underlying association
  * repository and the existing {@link SchoolQueries} and {@link ProjectQueries} components. It
- * resolves identifier sets via {@link ProjectBySchoolRepository} and then projects them into read
+ * resolves identifier sets via {@link ProjectSchoolRepository} and then projects them into read
  * models without instantiating full domain aggregates.
  */
 @ApplicationScoped
-public class ProjectBySchoolReadServiceImpl implements ProjectBySchoolReadService {
+public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
 
-  private static final Logger LOG = Logger.getLogger(ProjectBySchoolReadServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(ProjectSchoolReadServiceImpl.class);
 
-  @Inject ProjectBySchoolRepository associationRepo;
+  @Inject ProjectSchoolRepository associationRepo;
 
   @Inject SchoolQueries schoolQueries;
 
