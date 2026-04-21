@@ -27,4 +27,33 @@ public record EnrollmentView(
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt,
     OffsetDateTime acceptedAt,
-    OffsetDateTime closingStatusAt) {}
+    OffsetDateTime closingStatusAt) {
+  /**
+   * Construtor auxiliar para mapeamento JPA.
+   *
+   * @param projectId o identificador do projeto
+   * @param studentId o identificador do estudante
+   * @param status a string representando o status da enrollment para conversão em enum
+   * @param createdAt o timestamp de criação
+   * @param updatedAt o timestamp da última modificação
+   * @param acceptedAt o timestamp de aceitação
+   * @param closingStatusAt o timestamp de encerramento
+   */
+  public EnrollmentView(
+      UUID projectId,
+      UUID studentId,
+      String status,
+      OffsetDateTime createdAt,
+      OffsetDateTime updatedAt,
+      OffsetDateTime acceptedAt,
+      OffsetDateTime closingStatusAt) {
+    this(
+        projectId,
+        studentId,
+        EnrollmentStatus.valueOf(status),
+        createdAt,
+        updatedAt,
+        acceptedAt,
+        closingStatusAt);
+  }
+}

@@ -2,9 +2,15 @@ package br.org.catolicasc.pug.identity.infra.read.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.Admin;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -12,21 +18,34 @@ import org.junit.jupiter.api.Test;
 class AdminQueriesImplTest {
 
   @Inject AdminQueriesImpl queries;
+  @Inject TestDataFactory factory;
 
-  @Test
-  @DisplayName("Should project full nested AdminView for system admin")
-  void shouldGetAdminView() {
-    var admin = queries.findOptionalByEmail("admin@pug.com");
+  private Admin admin;
+  private Account account;
 
-    assertThat(admin).isPresent();
-    assertThat(admin.get().campus()).isEqualTo(Campi.JARAGUA_DO_SUL);
-    assertThat(admin.get().accountView().email()).isEqualTo("admin@pug.com");
+  @BeforeEach
+  void setup() {
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.ADMIN);
+    admin = factory.createAdmin(account); // Certifique-se de ter este método na factory
   }
 
   @Test
+  @Transactional
+  @DisplayName("Should project full nested AdminView for system admin")
+  void shouldGetAdminView() {
+    var adminView = queries.findOptionalById(account.getId());
+
+    assertThat(adminView).isPresent();
+    assertThat(adminView.get().campus()).isEqualTo(admin.getCampus());
+    assertThat(adminView.get().accountView().email()).isEqualTo(account.getEmail().getValue());
+  }
+
+  @Test
+  @Transactional
   @DisplayName("Should list system admin via AdminQueries")
   void shouldListAdmins() {
     var admins = queries.listAllAdmins();
-    assertThat(admins).anyMatch(a -> a.accountView().email().equals("admin@pug.com"));
+    assertThat(admins).anyMatch(a -> a.accountView().id().equals(account.getId()));
   }
 }

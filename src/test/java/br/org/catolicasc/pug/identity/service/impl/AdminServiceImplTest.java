@@ -7,8 +7,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.builders.AccountBuilder;
-import br.org.catolicasc.pug.builders.AdminBuilder;
+import br.org.catolicasc.pug.helpers.builders.AccountBuilder;
+import br.org.catolicasc.pug.helpers.builders.AdminBuilder;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
 import br.org.catolicasc.pug.identity.service.AccountService;

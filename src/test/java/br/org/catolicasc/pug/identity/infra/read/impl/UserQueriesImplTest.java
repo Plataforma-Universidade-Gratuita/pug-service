@@ -2,8 +2,12 @@ package br.org.catolicasc.pug.identity.infra.read.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.User;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,20 +15,30 @@ import org.junit.jupiter.api.Test;
 class UserQueriesImplTest {
 
   @Inject UserQueriesImpl queries;
+  @Inject TestDataFactory factory;
 
-  @Test
-  @DisplayName("Should retrieve system admin via UserQueries")
-  void shouldFindAdmin() {
-    var user = queries.findOptionalByCpf("00000000000");
+  private User user;
 
-    assertThat(user).isPresent();
-    assertThat(user.get().name()).isEqualTo("System Administrator");
+  @BeforeEach
+  void setup() {
+    user = factory.createUser();
   }
 
   @Test
-  @DisplayName("Should list all users including seeded admin")
+  @Transactional
+  @DisplayName("Should retrieve user by CPF")
+  void shouldFindUser() {
+    var found = queries.findOptionalByCpf(user.getCpf().getValue());
+
+    assertThat(found).isPresent();
+    assertThat(found.get().name()).isEqualTo(user.getName());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all users")
   void shouldListAll() {
     var users = queries.listAllUsers();
-    assertThat(users).isNotEmpty();
+    assertThat(users).anyMatch(u -> u.id().equals(user.getId()));
   }
 }

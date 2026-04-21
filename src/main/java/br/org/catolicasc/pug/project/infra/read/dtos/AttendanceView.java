@@ -32,4 +32,42 @@ public record AttendanceView(
     UUID validatedById,
     OffsetDateTime validatedAt,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt) {}
+    OffsetDateTime updatedAt) {
+  /**
+   * Construtor auxiliar para mapeamento JPA.
+   *
+   * @param id o identificador único (UUIDv7) da attendance
+   * @param projectId o identificador do projeto associado
+   * @param studentId o identificador da conta do estudante
+   * @param duration a duração registrada
+   * @param qrValidationHash o hash de validação do QR code
+   * @param status a string representando o status da attendance para conversão em enum
+   * @param validatedById o identificador de quem validou
+   * @param validatedAt o timestamp da validação
+   * @param createdAt o timestamp de criação
+   * @param updatedAt o timestamp da última modificação
+   */
+  public AttendanceView(
+      UUID id,
+      UUID projectId,
+      UUID studentId,
+      BigDecimal duration,
+      String qrValidationHash,
+      String status,
+      UUID validatedById,
+      OffsetDateTime validatedAt,
+      OffsetDateTime createdAt,
+      OffsetDateTime updatedAt) {
+    this(
+        id,
+        projectId,
+        studentId,
+        duration,
+        qrValidationHash,
+        AttendanceStatus.valueOf(status),
+        validatedById,
+        validatedAt,
+        createdAt,
+        updatedAt);
+  }
+}

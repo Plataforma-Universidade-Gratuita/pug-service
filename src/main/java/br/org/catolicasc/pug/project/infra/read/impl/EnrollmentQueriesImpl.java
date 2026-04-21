@@ -28,13 +28,8 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
   private static final String SELECT_BASE =
       """
                   select new br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView(
-                    en.id.projectId,
-                    en.id.studentId,
-                    br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus.valueOf(en.status),
-                    en.createdAt,
-                    en.updatedAt,
-                    en.acceptedAt,
-                    en.closingStatusAt
+                    en.id.projectId, en.id.studentId, en.status,
+                    en.createdAt, en.updatedAt, en.acceptedAt, en.closingStatusAt
                   )
                   from EnrollmentEntity en
                   """;

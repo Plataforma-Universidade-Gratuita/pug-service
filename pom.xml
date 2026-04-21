@@ -397,7 +397,7 @@
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
                             <includes>
-                                <include>br/org/catocalisc/pug/**</include>
+                                <include>br/org/catolicasc/pug/**</include>
                             </includes>
                         </configuration>
                     </execution>

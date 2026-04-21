@@ -38,4 +38,48 @@ public record ProjectView(
     ProjectStatus status,
     OffsetDateTime closedAt,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt) {}
+    OffsetDateTime updatedAt) {
+  /**
+   * Construtor auxiliar para mapeamento JPA.
+   *
+   * @param id o identificador único (UUIDv7) do projeto
+   * @param name o nome do projeto
+   * @param entityId o identificador da entidade parceira
+   * @param description a descrição do projeto
+   * @param creatorId o identificador do criador
+   * @param maxParticipants o número máximo de participantes
+   * @param offeredHours as horas oferecidas
+   * @param completedHours as horas completadas
+   * @param status a string representando o status do projeto para conversão em enum
+   * @param closedAt o timestamp de fechamento
+   * @param createdAt o timestamp de criação
+   * @param updatedAt o timestamp da última modificação
+   */
+  public ProjectView(
+      UUID id,
+      String name,
+      UUID entityId,
+      String description,
+      UUID creatorId,
+      Integer maxParticipants,
+      BigDecimal offeredHours,
+      BigDecimal completedHours,
+      String status,
+      OffsetDateTime closedAt,
+      OffsetDateTime createdAt,
+      OffsetDateTime updatedAt) {
+    this(
+        id,
+        name,
+        entityId,
+        description,
+        creatorId,
+        maxParticipants,
+        offeredHours,
+        completedHours,
+        ProjectStatus.valueOf(status),
+        closedAt,
+        createdAt,
+        updatedAt);
+  }
+}

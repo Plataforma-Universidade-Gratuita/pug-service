@@ -38,6 +38,28 @@ public final class CityMapper {
   }
 
   /**
+   * Translates a pure Domain {@link City} aggregate into a newly instantiated JPA {@link
+   * CityEntity}.
+   *
+   * <p>This method converts the domain aggregate, including its Value Objects, into a persistent
+   * entity format. It maps the {@link IbgeCode} back into its primitive string representation for
+   * database storage.
+   *
+   * @param d the Domain aggregate to convert
+   * @return a newly constructed JPA {@link CityEntity}, or {@code null} if the input domain is null
+   */
+  public static CityEntity toEntity(City d) {
+    if (d == null) {
+      return null;
+    }
+    return CityEntity.builder()
+        .id(d.getId())
+        .name(d.getName())
+        .ibgeCode(d.getIbgeCode().getCode())
+        .build();
+  }
+
+  /**
    * Projects a JPA {@link CityEntity} into a lightweight, read-only {@link CityView} DTO.
    *
    * <p>Used heavily by the query/read layer to provide flattened data structures ready for JSON
