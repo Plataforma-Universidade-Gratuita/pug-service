@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.helpers.builders.domain.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.User;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -163,7 +163,7 @@ class UserRepositoryImplTest {
     User user = UserBuilder.aUser().build();
     User userWithId =
         User.builder()
-            .id(UUID.randomUUID())
+            .id(UuidCreator.getTimeOrderedEpoch())
             .cpf(user.getCpf())
             .name(user.getName())
             .auditInfo(user.getAuditInfo())

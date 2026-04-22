@@ -1,0 +1,24 @@
+meta {
+  name: List Admins
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/identity/admins
+  body: none
+  auth: bearer
+}
+
+query {
+  ~q: admin
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.geo.presenter.dtos.CityResponse;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -27,7 +28,7 @@ class CityPresenterTest {
     @Test
     @DisplayName("Should map CityView to CityResponse correctly")
     void shouldMapSuccessfully() {
-      UUID id = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
       CityView view = new CityView(id, "Joinville", "4209106");
 
       CityResponse response = CityPresenter.toResponse(view);

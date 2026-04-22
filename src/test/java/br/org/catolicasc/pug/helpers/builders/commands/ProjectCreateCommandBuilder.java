@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
  */
 public class ProjectCreateCommandBuilder {
   private String name = TestNameGenerator.generateRandomProjectName();
-  private UUID entityId = UUID.randomUUID();
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
   private String description = "Test project description";
   private Integer maxParticipants = 20;
   private BigDecimal offeredHours = new BigDecimal("40.00");

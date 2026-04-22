@@ -10,12 +10,12 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectSchool;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,7 +52,7 @@ class ProjectSchoolServiceImplTest {
   @Test
   @DisplayName("Should return empty list for null project ID")
   void saveNullProjectId() {
-    assertThat(service.save(null, List.of(UUID.randomUUID()))).isEmpty();
+    assertThat(service.save(null, List.of(UuidCreator.getTimeOrderedEpoch()))).isEmpty();
   }
 
   @Test
@@ -92,13 +92,13 @@ class ProjectSchoolServiceImplTest {
   @Test
   @DisplayName("Should return false for null project ID in delete")
   void deleteNullProjectId() {
-    assertThat(service.delete(null, UUID.randomUUID())).isFalse();
+    assertThat(service.delete(null, UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test
   @DisplayName("Should return false for null school ID in delete")
   void deleteNullSchoolId() {
-    assertThat(service.delete(UUID.randomUUID(), null)).isFalse();
+    assertThat(service.delete(UuidCreator.getTimeOrderedEpoch(), null)).isFalse();
   }
 
   @Test

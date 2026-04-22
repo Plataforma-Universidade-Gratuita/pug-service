@@ -7,11 +7,11 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.infra.persistence.EntityEntity;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +32,7 @@ class EntityQueriesImplTest extends BaseSearchTest {
     assertThat(queries.findOptionalById(entity.getId())).isPresent();
     assertThat(queries.findOptionalByCnpj(entity.getCnpj().getValue())).isPresent();
 
-    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
     assertThat(queries.findOptionalByCnpj("00000000000000")).isEmpty();
   }
 

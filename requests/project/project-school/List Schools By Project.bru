@@ -1,0 +1,20 @@
+meta {
+  name: List Schools By Project
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/projects/by-school/projects/00000000-0000-0000-0000-000000000001/schools
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

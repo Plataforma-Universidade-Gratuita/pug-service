@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -26,8 +27,8 @@ class StudentTest {
   @Test
   @DisplayName("Should create valid Student")
   void shouldCreateStudent() {
-    UUID accountId = UUID.randomUUID();
-    UUID courseId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
 
     Student student =
         Student.factory(
@@ -62,10 +63,10 @@ class StudentTest {
     void shouldAddHours() throws InterruptedException {
       Student student =
           Student.factory(
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               validReg,
               Campi.JARAGUA_DO_SUL,
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               validHours,
               validPeriod);
       Thread.sleep(10);
@@ -81,13 +82,13 @@ class StudentTest {
     void shouldChangeCourse() {
       Student student =
           Student.factory(
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               validReg,
               Campi.JARAGUA_DO_SUL,
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               validHours,
               validPeriod);
-      UUID newCourse = UUID.randomUUID();
+      UUID newCourse = UuidCreator.getTimeOrderedEpoch();
 
       Student updated = student.changeCourse(newCourse);
 

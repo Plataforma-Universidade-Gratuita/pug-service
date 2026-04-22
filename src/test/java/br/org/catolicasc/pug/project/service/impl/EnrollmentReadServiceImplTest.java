@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.read.EnrollmentQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -28,8 +29,8 @@ class EnrollmentReadServiceImplTest {
 
   private EnrollmentView sampleView() {
     return new EnrollmentView(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
+        UuidCreator.getTimeOrderedEpoch(),
         EnrollmentStatus.PENDING,
         OffsetDateTime.now(),
         OffsetDateTime.now(),
@@ -40,8 +41,8 @@ class EnrollmentReadServiceImplTest {
   @Test
   @DisplayName("Should return enrollment view by IDs")
   void getViewByIdsSuccess() {
-    UUID pid = UUID.randomUUID();
-    UUID sid = UUID.randomUUID();
+    UUID pid = UuidCreator.getTimeOrderedEpoch();
+    UUID sid = UuidCreator.getTimeOrderedEpoch();
     EnrollmentView view = sampleView();
     when(queries.findOptionalByIds(pid, sid)).thenReturn(Optional.of(view));
 
@@ -54,7 +55,9 @@ class EnrollmentReadServiceImplTest {
     when(queries.findOptionalByIds(any(), any())).thenReturn(Optional.empty());
     assertThrows(
         ResourceNotFoundException.class,
-        () -> service.getViewByIds(UUID.randomUUID(), UUID.randomUUID()));
+        () ->
+            service.getViewByIds(
+                UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -67,7 +70,7 @@ class EnrollmentReadServiceImplTest {
   @Test
   @DisplayName("Should list views by project ID")
   void listViewsByProjectId() {
-    UUID pid = UUID.randomUUID();
+    UUID pid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByProjectId(pid)).thenReturn(List.of(sampleView()));
     assertThat(service.listViewsByProjectId(pid)).hasSize(1);
   }
@@ -81,7 +84,7 @@ class EnrollmentReadServiceImplTest {
   @Test
   @DisplayName("Should list views by student ID")
   void listViewsByStudentId() {
-    UUID sid = UUID.randomUUID();
+    UUID sid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
     assertThat(service.listViewsByStudentId(sid)).hasSize(1);
   }

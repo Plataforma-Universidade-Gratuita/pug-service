@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
@@ -30,7 +31,12 @@ class UserPresenterTest {
     void shouldFormatValidCpf() {
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       UserView view =
-          new UserView(UUID.randomUUID(), cpf, "Test", OffsetDateTime.now(), OffsetDateTime.now());
+          new UserView(
+              UuidCreator.getTimeOrderedEpoch(),
+              cpf,
+              "Test",
+              OffsetDateTime.now(),
+              OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
       assertThat(response.cpfFormatted()).contains(".");
@@ -43,7 +49,11 @@ class UserPresenterTest {
     void shouldReturnRawCpfIfInvalid() {
       UserView view =
           new UserView(
-              UUID.randomUUID(), "123", "Test", OffsetDateTime.now(), OffsetDateTime.now());
+              UuidCreator.getTimeOrderedEpoch(),
+              "123",
+              "Test",
+              OffsetDateTime.now(),
+              OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
       assertThat(response.cpfFormatted()).isEqualTo("123");
@@ -53,7 +63,12 @@ class UserPresenterTest {
     @DisplayName("Should return null if CPF is null")
     void shouldReturnNullCpf() {
       UserView view =
-          new UserView(UUID.randomUUID(), null, "Test", OffsetDateTime.now(), OffsetDateTime.now());
+          new UserView(
+              UuidCreator.getTimeOrderedEpoch(),
+              null,
+              "Test",
+              OffsetDateTime.now(),
+              OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
       assertThat(response.cpfFormatted()).isNull();
@@ -67,7 +82,7 @@ class UserPresenterTest {
     @Test
     @DisplayName("Should map all fields correctly to UserResponse")
     void shouldMapAllFields() {
-      UUID id = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       UserView view = new UserView(id, cpf, "John Doe", now, now);

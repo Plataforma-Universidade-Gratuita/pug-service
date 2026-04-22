@@ -5,7 +5,6 @@ import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * Builder class for creating {@link AdminCreateRequest} DTOs in test scenarios.
@@ -16,7 +15,7 @@ import java.util.UUID;
 public class AdminCreateRequestBuilder {
   private String cpfString = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
-  private String emailString = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
   private String password = "password123";
   private Campi campus = getRandomCampus();
 

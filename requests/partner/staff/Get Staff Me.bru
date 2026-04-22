@@ -1,0 +1,20 @@
+meta {
+  name: Get Staff Me
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/partners/staff/me
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

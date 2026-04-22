@@ -14,6 +14,45 @@ public final class TestNameGenerator {
   /** Private constructor to prevent instantiation of utility class. */
   private TestNameGenerator() {}
 
+  /**
+   * Generates a unique hexadecimal suffix of the given length using an atomic counter. This avoids
+   * the UUIDv7 pitfall where the first characters are timestamp-based and therefore identical for
+   * UUIDs generated within the same millisecond.
+   *
+   * @return a unique hex string
+   */
+  public static String uniqueSuffix() {
+    return UUID.randomUUID().toString().substring(0, 4);
+  }
+
+  /**
+   * Generates a unique test email address.
+   *
+   * @param domain the email domain (e.g. "pug.com")
+   * @return a unique email string
+   */
+  public static String generateUniqueEmail(String domain) {
+    return "test-" + uniqueSuffix() + "@" + domain;
+  }
+
+  /**
+   * Generates a unique academic registration string (uppercase hex, 14 chars).
+   *
+   * @return a unique registration string
+   */
+  public static String generateUniqueRegistration() {
+    return uniqueSuffix().toUpperCase();
+  }
+
+  /**
+   * Generates a unique address string.
+   *
+   * @return a unique address string
+   */
+  public static String generateUniqueAddress() {
+    return "Rua Test " + uniqueSuffix() + ", 123";
+  }
+
   private static final String[] NAMES = {
     "Ana", "Bruno", "Carlos", "Diana", "Eduardo", "Fernanda", "Gabriel", "Heloisa",
     "Igor", "Juliana", "Kevin", "Larissa", "Mateus", "Natalia", "Otavio", "Patricia"
@@ -31,7 +70,7 @@ public final class TestNameGenerator {
   public static String generateRandomName() {
     String firstName = NAMES[(int) (Math.random() * NAMES.length)];
     String lastName = SURNAMES[(int) (Math.random() * SURNAMES.length)];
-    String suffix = UUID.randomUUID().toString().substring(0, 4);
+    String suffix = uniqueSuffix();
 
     return firstName + " " + lastName + " " + suffix;
   }
@@ -52,7 +91,7 @@ public final class TestNameGenerator {
   public static String generateRandomSchoolName() {
     String prefix = SCHOOL_PREFIXES[(int) (Math.random() * SCHOOL_PREFIXES.length)];
     String theme = SCHOOL_THEMES[(int) (Math.random() * SCHOOL_THEMES.length)];
-    String suffix = UUID.randomUUID().toString().substring(0, 4);
+    String suffix = uniqueSuffix();
 
     return prefix + " " + theme + " " + suffix;
   }
@@ -74,7 +113,7 @@ public final class TestNameGenerator {
    */
   public static String generateRandomCourseName() {
     String subject = COURSE_SUBJECTS[(int) (Math.random() * COURSE_SUBJECTS.length)];
-    String suffix = UUID.randomUUID().toString().substring(0, 4);
+    String suffix = uniqueSuffix();
 
     return subject + " " + suffix;
   }
@@ -95,7 +134,7 @@ public final class TestNameGenerator {
   public static String generateRandomEntityName() {
     String prefix = ENTITY_PREFIXES[(int) (Math.random() * ENTITY_PREFIXES.length)];
     String suffix = ENTITY_SUFFIXES[(int) (Math.random() * ENTITY_SUFFIXES.length)];
-    String id = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    String id = uniqueSuffix().toUpperCase();
 
     return prefix + " " + id + " " + suffix;
   }
@@ -116,7 +155,7 @@ public final class TestNameGenerator {
   public static String generateRandomProjectName() {
     String adj = PROJECT_ADJECTIVES[(int) (Math.random() * PROJECT_ADJECTIVES.length)];
     String noun = PROJECT_NOUNS[(int) (Math.random() * PROJECT_NOUNS.length)];
-    String id = UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+    String id = uniqueSuffix().toUpperCase();
 
     return adj + " " + noun + " " + id;
   }

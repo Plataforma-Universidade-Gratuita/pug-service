@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -29,11 +30,11 @@ class ProjectReadServiceImplTest {
 
   private ProjectView sampleView() {
     return new ProjectView(
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         "Test Project",
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         "desc",
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         20,
         new BigDecimal("40.00"),
         BigDecimal.ZERO,
@@ -46,7 +47,7 @@ class ProjectReadServiceImplTest {
   @Test
   @DisplayName("Should return project view by ID")
   void getViewByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     ProjectView view = sampleView();
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
@@ -57,7 +58,9 @@ class ProjectReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when ID not found")
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -73,7 +76,7 @@ class ProjectReadServiceImplTest {
   @Test
   @DisplayName("Should list views by creator ID")
   void listViewsByCreatedBy() {
-    UUID accountId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
     ProjectView view = sampleView();
     when(queries.listByCreatedBy(accountId)).thenReturn(List.of(view));
 
@@ -89,7 +92,7 @@ class ProjectReadServiceImplTest {
   @Test
   @DisplayName("Should list views by entity ID")
   void listViewsByEntityId() {
-    UUID entityId = UUID.randomUUID();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
     ProjectView view = sampleView();
     when(queries.listByEntityId(entityId)).thenReturn(List.of(view));
 

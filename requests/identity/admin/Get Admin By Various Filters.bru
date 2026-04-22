@@ -1,11 +1,11 @@
 meta {
-  name: Get Admin By Various Filters
+  name: Get Admin By Email
   type: http
   seq: 3
 }
 
 get {
-  url: {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
+  url: {{baseUrl}}/identity/admins/by-email/admin@pug.com
   body: none
   auth: bearer
 }
@@ -14,18 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-docs {
-  Você pode testar os filtros trocando a URL do request:
-  - {{baseUrl}}/identity/admins/by-email/admin.master@pug.com
-  - {{baseUrl}}/identity/admins/by-cpf/73184295079
-}
-
-tests {
-  test("Should retrieve the admin by filter", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

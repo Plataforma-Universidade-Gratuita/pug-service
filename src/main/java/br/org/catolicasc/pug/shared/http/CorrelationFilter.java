@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.shared.http;
 
 import br.org.catolicasc.pug.shared.utils.StringUtils;
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.annotation.Priority;
 import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
@@ -32,7 +33,7 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
   public void filter(ContainerRequestContext req) {
     String cid = req.getHeaderString(HDR);
     if (StringUtils.isEmpty(cid)) {
-      cid = java.util.UUID.randomUUID().toString();
+      cid = UuidCreator.getTimeOrderedEpoch().toString();
     }
     req.setProperty(HDR, cid);
     MDC.put(HDR, cid);

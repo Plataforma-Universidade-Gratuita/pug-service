@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +31,10 @@ class AccountTest {
   void shouldDeactivate() throws InterruptedException {
     Account acc =
         Account.factory(
-            UUID.randomUUID(), Email.factory("test@pug.com"), AccountType.ADMIN, "secret");
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory("test@pug.com"),
+            AccountType.ADMIN,
+            "secret");
     Thread.sleep(1);
     Account deactivated = acc.deactivate();
 

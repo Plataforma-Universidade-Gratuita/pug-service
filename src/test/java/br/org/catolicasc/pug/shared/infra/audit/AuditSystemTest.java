@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.shared.infra.audit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.Duration;
@@ -25,7 +26,7 @@ class AuditSystemTest {
   @Test
   @DisplayName("AuditPublisher should fire event and AuditListener should persist it")
   void testAuditPersistence() {
-    UUID entityId = UUID.randomUUID();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
     auditPublisher.fireCreate("TestEntity", entityId);
 

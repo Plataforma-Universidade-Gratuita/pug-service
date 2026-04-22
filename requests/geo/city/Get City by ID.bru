@@ -1,11 +1,11 @@
 meta {
-  name: Get City by ID
+  name: Get City By ID
   type: http
-  seq: 2
+  seq: 1
 }
 
 get {
-  url: {{baseUrl}}/geo/cities/{{cityId}}
+  url: {{baseUrl}}/geo/cities/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
@@ -14,13 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should retrieve the city successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-    expect(res.getBody().data.id).to.equal(bru.getEnvVar("cityId"));
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.helpers.builders.domain;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 
 /**
@@ -15,7 +16,7 @@ public class AttendanceBuilder {
   private Project project = ProjectBuilder.aProject().build();
   private Student student = StudentBuilder.aStudent().build();
   private final BigDecimal duration = new BigDecimal("1.00");
-  private final String hash = "hash-" + java.util.UUID.randomUUID();
+  private final String hash = "hash-" + UuidCreator.getTimeOrderedEpoch();
 
   private AttendanceBuilder() {}
 

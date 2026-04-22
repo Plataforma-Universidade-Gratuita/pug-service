@@ -13,6 +13,7 @@ import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -42,7 +43,8 @@ class AuthServiceImplTest {
     String hash = "hashed";
 
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory(email), AccountType.STUDENT, hash);
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.STUDENT, hash);
     acc = acc.toBuilder().active(true).build();
 
     when(accountService.getByEmail(email)).thenReturn(acc);
@@ -73,7 +75,8 @@ class AuthServiceImplTest {
     String email = "test@pug.com";
     String hash = "hashed";
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory(email), AccountType.STUDENT, hash);
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.STUDENT, hash);
 
     when(accountService.getByEmail(email)).thenReturn(acc);
     when(passwordService.verify(hash, "wrong")).thenReturn(false);
@@ -87,7 +90,11 @@ class AuthServiceImplTest {
   void loginInactiveAccount() {
     String email = "test@pug.com";
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory(email), AccountType.STUDENT, "hash")
+        Account.factory(
+                UuidCreator.getTimeOrderedEpoch(),
+                Email.factory(email),
+                AccountType.STUDENT,
+                "hash")
             .toBuilder()
             .active(false)
             .build();
@@ -105,7 +112,7 @@ class AuthServiceImplTest {
     when(securityIdentity.isAnonymous()).thenReturn(false);
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
 
-    UUID accId = UUID.randomUUID();
+    UUID accId = UuidCreator.getTimeOrderedEpoch();
     when(jwtMock.getClaim("accountId")).thenReturn(accId.toString());
 
     assertThat(authService.getCurrentAccountId()).isEqualTo(accId);
@@ -118,7 +125,7 @@ class AuthServiceImplTest {
     when(securityIdentity.isAnonymous()).thenReturn(false);
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
 
-    UUID userId = UUID.randomUUID();
+    UUID userId = UuidCreator.getTimeOrderedEpoch();
     when(jwtMock.getClaim("userId")).thenReturn(userId.toString());
 
     assertThat(authService.getCurrentUserId()).isEqualTo(userId);

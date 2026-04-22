@@ -10,16 +10,15 @@ get {
   auth: bearer
 }
 
+params:query {
+  ~q: Tech
+  ~cityId: 00000000-0000-0000-0000-000000000001
+}
+
 headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should list entities", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

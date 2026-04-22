@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.OffsetDateTime;
@@ -36,8 +37,8 @@ class AccountPresenterTest {
     void shouldReturnNullOnLocaleNull() {
       AccountView view =
           new AccountView(
-              UUID.randomUUID(),
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
+              UuidCreator.getTimeOrderedEpoch(),
               "test@pug.com",
               AccountType.STUDENT,
               null,
@@ -49,8 +50,8 @@ class AccountPresenterTest {
     @Test
     @DisplayName("Should map AccountView to AccountResponse correctly")
     void shouldMapSuccessfully() {
-      UUID id = UUID.randomUUID();
-      UUID userId = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID userId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       AccountView view =
           new AccountView(id, userId, "test@pug.com", AccountType.STUDENT, now, now, true);

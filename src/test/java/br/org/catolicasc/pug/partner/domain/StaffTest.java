@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.partner.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,8 @@ class StaffTest {
   @Test
   @DisplayName("Should create valid Staff assignment")
   void shouldCreateStaff() {
-    UUID accountId = UUID.randomUUID();
-    UUID entityId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
     Staff staff = Staff.factory(accountId, entityId);
 

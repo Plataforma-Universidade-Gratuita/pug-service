@@ -11,6 +11,7 @@ import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -32,7 +33,7 @@ class AdminReadServiceImplTest {
   @Test
   @DisplayName("Should return admin view successfully")
   void getViewByAccountIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     AdminView view = new AdminView(null, null, Campi.JARAGUA_DO_SUL);
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
@@ -44,7 +45,8 @@ class AdminReadServiceImplTest {
   void notFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
     assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+        ResourceNotFoundException.class,
+        () -> service.getViewByAccountId(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test

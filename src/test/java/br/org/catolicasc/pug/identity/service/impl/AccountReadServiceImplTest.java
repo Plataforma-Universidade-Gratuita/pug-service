@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -32,11 +33,11 @@ class AccountReadServiceImplTest {
   @Test
   @DisplayName("Should return account view by ID")
   void getByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     AccountView view =
         new AccountView(
             id,
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             "test@pug.com",
             AccountType.STUDENT,
             OffsetDateTime.now(),
@@ -51,7 +52,9 @@ class AccountReadServiceImplTest {
   @DisplayName("Should throw exception when ID not found")
   void getByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -67,7 +70,13 @@ class AccountReadServiceImplTest {
     String email = "test@pug.com";
     AccountView view =
         new AccountView(
-            UUID.randomUUID(), UUID.randomUUID(), email, AccountType.STUDENT, null, null, true);
+            UuidCreator.getTimeOrderedEpoch(),
+            UuidCreator.getTimeOrderedEpoch(),
+            email,
+            AccountType.STUDENT,
+            null,
+            null,
+            true);
     when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByEmail(email)).isEqualTo(view);
@@ -87,8 +96,8 @@ class AccountReadServiceImplTest {
         .thenReturn(
             List.of(
                 new AccountView(
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
+                    UuidCreator.getTimeOrderedEpoch(),
+                    UuidCreator.getTimeOrderedEpoch(),
                     "a@a.com",
                     AccountType.STUDENT,
                     null,
@@ -112,8 +121,8 @@ class AccountReadServiceImplTest {
         .thenReturn(
             List.of(
                 new AccountView(
-                    UUID.randomUUID(),
-                    UUID.randomUUID(),
+                    UuidCreator.getTimeOrderedEpoch(),
+                    UuidCreator.getTimeOrderedEpoch(),
                     "a@a.com",
                     AccountType.STUDENT,
                     null,

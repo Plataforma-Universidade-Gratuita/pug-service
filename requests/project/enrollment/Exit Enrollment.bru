@@ -1,0 +1,20 @@
+meta {
+  name: Exit Enrollment
+  type: http
+  seq: 11
+}
+
+patch {
+  url: {{baseUrl}}/projects/enrollments/00000000-0000-0000-0000-000000000001/exit
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

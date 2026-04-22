@@ -13,6 +13,7 @@ import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,8 +27,8 @@ class StudentProcessorTest {
   @Test
   @DisplayName("Should process create input with zero completed hours")
   void shouldProcessCreateInput() {
-    UUID accountId = UUID.randomUUID();
-    UUID courseId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
     Student student =
         StudentProcessor.processCreateInput(
             accountId,
@@ -48,7 +49,7 @@ class StudentProcessorTest {
   @DisplayName("Should update all fields via processUpdateInput")
   void shouldUpdateAllFields() {
     Student existing = createValidStudent();
-    UUID newCourseId = UUID.randomUUID();
+    UUID newCourseId = UuidCreator.getTimeOrderedEpoch();
     Student updated =
         StudentProcessor.processUpdateInput(
             existing,
@@ -103,12 +104,12 @@ class StudentProcessorTest {
   @Test
   @DisplayName("Should process bulk create input successfully")
   void shouldProcessBulkCreateInput() {
-    UUID courseId = UUID.randomUUID();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
     StudentCreateCommand cmd1 = createCmd("REG001", courseId);
     StudentCreateCommand cmd2 = createCmd("REG002", courseId);
 
-    UUID acc1 = UUID.randomUUID();
-    UUID acc2 = UUID.randomUUID();
+    UUID acc1 = UuidCreator.getTimeOrderedEpoch();
+    UUID acc2 = UuidCreator.getTimeOrderedEpoch();
 
     List<Student> students =
         StudentProcessor.processBulkCreateInput(List.of(cmd1, cmd2), List.of(acc1, acc2));
@@ -121,7 +122,7 @@ class StudentProcessorTest {
   @Test
   @DisplayName("Should throw when bulk sizes mismatch")
   void shouldThrowOnMismatchedSizes() {
-    StudentCreateCommand cmd1 = createCmd("REG001", UUID.randomUUID());
+    StudentCreateCommand cmd1 = createCmd("REG001", UuidCreator.getTimeOrderedEpoch());
 
     assertThrows(
         IllegalArgumentException.class,
@@ -139,17 +140,19 @@ class StudentProcessorTest {
 
     assertThrows(
         AppValidationException.class,
-        () -> StudentProcessor.processBulkCreateInput(List.of(badCmd), List.of(UUID.randomUUID())));
+        () ->
+            StudentProcessor.processBulkCreateInput(
+                List.of(badCmd), List.of(UuidCreator.getTimeOrderedEpoch())));
   }
 
   /* --- helpers --- */
 
   private Student createValidStudent() {
     return Student.factory(
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         AcademicRegistration.factory("REG12345"),
         Campi.JOINVILLE,
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false),
         Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
   }

@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.domain;
 
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.Random;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
  * sensible defaults for mandatory fields.
  */
 public class AdminBuilder {
-  private UUID accountId = UUID.randomUUID();
+  private UUID accountId = UuidCreator.getTimeOrderedEpoch();
   private Campi campus = getRandomCampus();
 
   private AdminBuilder() {}

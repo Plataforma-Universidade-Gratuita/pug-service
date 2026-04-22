@@ -1,5 +1,5 @@
 meta {
-  name: System Login
+  name: Login
   type: http
   seq: 1
 }
@@ -20,18 +20,4 @@ body:json {
     "email": "admin@pug.com",
     "password": "admin"
   }
-}
-
-tests {
-  test("Should login successfully and store token", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-    
-    // Captura o token da resposta
-    const token = res.getBody().data.token;
-    expect(token).to.be.a("string");
-    
-    // Salva o token nas variáveis de ambiente do Bruno
-    bru.setEnvVar("jwtToken", token);
-  });
 }

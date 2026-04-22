@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -67,7 +68,7 @@ class SchoolMapperTest extends CopyableMapperTest<School, SchoolEntity> {
   @Test
   @DisplayName("toView should map all fields correctly")
   void toViewShouldMapAllFields() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
     SchoolEntity entity =
         SchoolEntity.builder().id(id).name("Engineering").createdAt(now).updatedAt(now).build();

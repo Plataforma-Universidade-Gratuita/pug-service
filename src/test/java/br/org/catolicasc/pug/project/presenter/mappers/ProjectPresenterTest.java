@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
@@ -33,7 +34,7 @@ class ProjectPresenterTest {
     @Test
     @DisplayName("Should map ProjectCreateRequest to ProjectCreateCommand")
     void toCreateCommand() {
-      UUID entityId = UUID.randomUUID();
+      UUID entityId = UuidCreator.getTimeOrderedEpoch();
       var req = new ProjectCreateRequest("Project", entityId, "desc", 20, new BigDecimal("40.00"));
 
       ProjectCreateCommand cmd = ProjectPresenter.toCommand(req);
@@ -147,11 +148,11 @@ class ProjectPresenterTest {
 
     private ProjectView sampleView() {
       return new ProjectView(
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
           "Test Project",
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
           "desc",
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
           20,
           new BigDecimal("40.00"),
           BigDecimal.ZERO,

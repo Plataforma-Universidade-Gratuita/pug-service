@@ -11,6 +11,7 @@ import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
@@ -36,7 +37,7 @@ class StudentPresenterTest {
     @DisplayName("Should map request to command with account data")
     void toCreateCommand() {
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-      UUID courseId = UUID.randomUUID();
+      UUID courseId = UuidCreator.getTimeOrderedEpoch();
       StudentCreateRequest req =
           new StudentCreateRequest(
               cpf,
@@ -86,7 +87,7 @@ class StudentPresenterTest {
               "newpass",
               "NEWREG",
               Campi.JOINVILLE,
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               new BigDecimal("200"),
               LocalDate.now(),
               LocalDate.now().plusMonths(12));
@@ -146,14 +147,14 @@ class StudentPresenterTest {
     @Test
     @DisplayName("Should set missingHours to zero when concluded")
     void toResponseConcluded() {
-      UUID accountId = UUID.randomUUID();
+      UUID accountId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       StudentView view =
           new StudentView(
               accountId,
               "REG12345",
               Campi.JOINVILLE,
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               new BigDecimal("100"),
               new BigDecimal("100"),
               true,
@@ -180,14 +181,14 @@ class StudentPresenterTest {
     @Test
     @DisplayName("Should handle null dueDate")
     void toResponseNullDueDate() {
-      UUID accountId = UUID.randomUUID();
+      UUID accountId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       StudentView view =
           new StudentView(
               accountId,
               "REG12345",
               Campi.JOINVILLE,
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
               new BigDecimal("100"),
               new BigDecimal("30"),
               false,
@@ -203,13 +204,13 @@ class StudentPresenterTest {
     }
 
     private StudentView buildStudentView() {
-      UUID accountId = UUID.randomUUID();
+      UUID accountId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       return new StudentView(
           accountId,
           "REG12345",
           Campi.JOINVILLE,
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
           new BigDecimal("100"),
           new BigDecimal("30"),
           false,

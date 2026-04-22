@@ -16,7 +16,6 @@ class UuidV7Test {
 
   private Validator validator;
 
-  // Uses specific types to help the validator engine choose the correct ConstraintValidator
   static class StringDto {
     @UuidV7 String id;
 

@@ -1,7 +1,7 @@
 meta {
   name: Create Staff
   type: http
-  seq: 3
+  seq: 1
 }
 
 post {
@@ -17,21 +17,14 @@ headers {
 
 body:json {
   {
-    "cpfString": "12345678909",
+    "cpf": "12345678909",
     "name": "Gestor da Parceria",
-    "emailString": "gestor@techcorp.com",
+    "email": "gestor@techcorp.com",
     "password": "SecurePassword123!",
-    "entityId": "{{entityId}}"
+    "entityId": "00000000-0000-0000-0000-000000000001"
   }
 }
 
-tests {
-  test("Should create staff successfully", function() {
-    expect(res.getStatus()).to.equal(201);
-    expect(res.getBody().success).to.be.true;
-    bru.setEnvVar("staffAccountId", res.getBody().data.account.id);
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

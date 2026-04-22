@@ -12,6 +12,7 @@ import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.OffsetDateTime;
@@ -34,7 +35,7 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should map StaffCreateRequest to StaffCreateCommand")
     void toCreateCommand() {
-      UUID entityId = UUID.randomUUID();
+      UUID entityId = UuidCreator.getTimeOrderedEpoch();
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       StaffCreateRequest req =
           new StaffCreateRequest(cpf, "Staff User", "staff@pug.com", "password123", entityId);
@@ -111,7 +112,8 @@ class StaffPresenterTest {
     @DisplayName("Should return null when locale is null")
     void toResponseNullLocale() {
       AccountView acc = buildAccountView();
-      StaffView view = new StaffView(acc, UUID.randomUUID(), UUID.randomUUID());
+      StaffView view =
+          new StaffView(acc, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
 
       assertThat(StaffPresenter.toResponse(view, null, i18n)).isNull();
     }
@@ -120,7 +122,8 @@ class StaffPresenterTest {
     @DisplayName("Should return null when i18n is null")
     void toResponseNullI18n() {
       AccountView acc = buildAccountView();
-      StaffView view = new StaffView(acc, UUID.randomUUID(), UUID.randomUUID());
+      StaffView view =
+          new StaffView(acc, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
 
       assertThat(StaffPresenter.toResponse(view, Locale.US, null)).isNull();
     }
@@ -128,8 +131,8 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should map StaffView to StaffResponse correctly")
     void toResponseSuccess() {
-      UUID entityId = UUID.randomUUID();
-      UUID cityId = UUID.randomUUID();
+      UUID entityId = UuidCreator.getTimeOrderedEpoch();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       AccountView acc = buildAccountView();
       StaffView view = new StaffView(acc, entityId, cityId);
 
@@ -146,8 +149,8 @@ class StaffPresenterTest {
 
     private AccountView buildAccountView() {
       return new AccountView(
-          UUID.randomUUID(),
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
+          UuidCreator.getTimeOrderedEpoch(),
           "staff@pug.com",
           AccountType.PARTNER,
           OffsetDateTime.now(),

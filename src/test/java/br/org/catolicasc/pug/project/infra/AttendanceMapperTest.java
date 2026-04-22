@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.persistence.AttendanceEntity;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -84,10 +85,10 @@ class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEnti
   @Test
   @DisplayName("toView should map all fields correctly")
   void toViewShouldMapAllFields() {
-    UUID id = UUID.randomUUID();
-    UUID projectId = UUID.randomUUID();
-    UUID studentId = UUID.randomUUID();
-    UUID validatedBy = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
+    UUID studentId = UuidCreator.getTimeOrderedEpoch();
+    UUID validatedBy = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     AttendanceEntity entity =

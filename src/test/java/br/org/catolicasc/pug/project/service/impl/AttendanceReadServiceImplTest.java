@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.read.AttendanceQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -29,9 +30,9 @@ class AttendanceReadServiceImplTest {
 
   private AttendanceView sampleView() {
     return new AttendanceView(
-        UUID.randomUUID(),
-        UUID.randomUUID(),
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
+        UuidCreator.getTimeOrderedEpoch(),
+        UuidCreator.getTimeOrderedEpoch(),
         new BigDecimal("2.00"),
         "hash-123",
         AttendanceStatus.WAITING,
@@ -44,7 +45,7 @@ class AttendanceReadServiceImplTest {
   @Test
   @DisplayName("Should return attendance view by ID")
   void getViewByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     AttendanceView view = sampleView();
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
@@ -55,14 +56,16 @@ class AttendanceReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when ID not found")
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should list by enrollment ID")
   void listByEnrollmentId() {
-    UUID pid = UUID.randomUUID();
-    UUID sid = UUID.randomUUID();
+    UUID pid = UuidCreator.getTimeOrderedEpoch();
+    UUID sid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByEnrollmentId(pid, sid)).thenReturn(List.of(sampleView()));
     assertThat(service.listByEnrollmentId(pid, sid)).hasSize(1);
   }
@@ -70,19 +73,19 @@ class AttendanceReadServiceImplTest {
   @Test
   @DisplayName("Should return empty list for null enrollment project ID")
   void listByEnrollmentIdNullProject() {
-    assertThat(service.listByEnrollmentId(null, UUID.randomUUID())).isEmpty();
+    assertThat(service.listByEnrollmentId(null, UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test
   @DisplayName("Should return empty list for null enrollment student ID")
   void listByEnrollmentIdNullStudent() {
-    assertThat(service.listByEnrollmentId(UUID.randomUUID(), null)).isEmpty();
+    assertThat(service.listByEnrollmentId(UuidCreator.getTimeOrderedEpoch(), null)).isEmpty();
   }
 
   @Test
   @DisplayName("Should list by project ID")
   void listByProjectId() {
-    UUID pid = UUID.randomUUID();
+    UUID pid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByProjectId(pid)).thenReturn(List.of(sampleView()));
     assertThat(service.listByProjectId(pid)).hasSize(1);
   }
@@ -96,7 +99,7 @@ class AttendanceReadServiceImplTest {
   @Test
   @DisplayName("Should list by student ID")
   void listByStudentId() {
-    UUID sid = UUID.randomUUID();
+    UUID sid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
     assertThat(service.listByStudentId(sid)).hasSize(1);
   }

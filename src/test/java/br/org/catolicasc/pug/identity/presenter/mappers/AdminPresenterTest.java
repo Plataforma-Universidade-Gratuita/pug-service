@@ -13,11 +13,11 @@ import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.OffsetDateTime;
 import java.util.Locale;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -74,8 +74,8 @@ class AdminPresenterTest {
     void toResponseSuccess() {
       AccountView acc =
           new AccountView(
-              UUID.randomUUID(),
-              UUID.randomUUID(),
+              UuidCreator.getTimeOrderedEpoch(),
+              UuidCreator.getTimeOrderedEpoch(),
               "a@a.com",
               AccountType.ADMIN,
               OffsetDateTime.now(),

@@ -21,6 +21,7 @@ import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -28,7 +29,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -107,7 +107,8 @@ class StudentServiceImplTest {
   @Test
   @DisplayName("Should throw when student not found")
   void getByIdNotFound() {
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -131,7 +132,9 @@ class StudentServiceImplTest {
   @DisplayName("Should throw when updating non-existing student")
   void updateNotFound() {
     var cmd = aStudentUpdateCommand().build();
-    assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.update(UuidCreator.getTimeOrderedEpoch(), cmd));
   }
 
   @Test
@@ -194,7 +197,7 @@ class StudentServiceImplTest {
   void addCompletedHoursNotFound() {
     assertThrows(
         ResourceNotFoundException.class,
-        () -> service.addCompletedHours(UUID.randomUUID(), new BigDecimal("10")));
+        () -> service.addCompletedHours(UuidCreator.getTimeOrderedEpoch(), new BigDecimal("10")));
   }
 
   @Test
@@ -221,6 +224,6 @@ class StudentServiceImplTest {
   @Test
   @DisplayName("Should delegate existsAnyByCourseId to repo")
   void existsAnyByCourseId() {
-    assertThat(service.existsAnyByCourseId(UUID.randomUUID())).isFalse();
+    assertThat(service.existsAnyByCourseId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }

@@ -10,10 +10,10 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,10 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty for non-existent composite ID")
   void shouldReturnEmptyForNonExistentIds() {
-    assertThat(queries.findOptionalByIds(UUID.randomUUID(), UUID.randomUUID())).isEmpty();
+    assertThat(
+            queries.findOptionalByIds(
+                UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch()))
+        .isEmpty();
   }
 
   @Test

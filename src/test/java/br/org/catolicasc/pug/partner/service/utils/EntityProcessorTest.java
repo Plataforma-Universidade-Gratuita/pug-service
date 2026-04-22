@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,7 @@ class EntityProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    UUID cityId = UUID.randomUUID();
+    UUID cityId = UuidCreator.getTimeOrderedEpoch();
     String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
     Entity entity = EntityProcessor.processCreateInput(cnpj, "WEG S.A.", cityId, "Address");
 
@@ -39,9 +40,9 @@ class EntityProcessorTest {
         Entity.factory(
             Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
             "Old Name",
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             "Old Addr");
-    UUID newCity = UUID.randomUUID();
+    UUID newCity = UuidCreator.getTimeOrderedEpoch();
 
     Entity updated = EntityProcessor.processUpdateInput(existing, "New Name", newCity, "New Addr");
 
@@ -57,7 +58,7 @@ class EntityProcessorTest {
         Entity.factory(
             Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
             "Name",
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             "Addr");
 
     Entity updated = EntityProcessor.processUpdateInput(existing, null, null, "");

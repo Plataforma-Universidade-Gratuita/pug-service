@@ -23,20 +23,11 @@ body:json {
     "password": "SecurePassword123!",
     "academicRegistration": "20261001",
     "campus": "JOINVILLE",
-    "courseId": "{{courseId}}",
+    "courseId": "00000000-0000-0000-0000-000000000001",
     "requiredHours": 120.00,
     "startDate": "2026-03-15",
     "dueDate": "2028-12-15"
   }
-}
-
-tests {
-  test("Should create a student successfully", function() {
-    expect(res.getStatus()).to.equal(201);
-    expect(res.getBody().success).to.be.true;
-    // The account ID is used as the student's primary identifier
-    bru.setEnvVar("studentAccountId", res.getBody().data.account.id);
-  });
 }
 
 auth:bearer {

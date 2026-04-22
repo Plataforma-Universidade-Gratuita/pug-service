@@ -8,7 +8,6 @@ import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * Builder class for creating {@link AdminCreateCommand} DTOs in test scenarios.
@@ -19,7 +18,7 @@ import java.util.UUID;
 public class AdminCreateCommandBuilder {
   private String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
-  private String email = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String email = TestNameGenerator.generateUniqueEmail("pug.com");
   private String password = "hashed-password";
   private Campi campus = getRandomCampus();
 

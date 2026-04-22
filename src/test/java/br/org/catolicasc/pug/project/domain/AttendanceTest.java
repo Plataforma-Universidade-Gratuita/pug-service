@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -59,7 +60,7 @@ class AttendanceTest {
     void shouldValidatePresence() {
       Attendance attendance =
           Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
-      UUID staffId = UUID.randomUUID();
+      UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       Attendance updatedPresent = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
       assertThat(updatedPresent.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
@@ -74,7 +75,7 @@ class AttendanceTest {
     void shouldFailOnInvalidStatus() {
       Attendance attendance =
           Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
-      UUID staffId = UUID.randomUUID();
+      UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       assertThrows(
           BusinessRuleException.class,

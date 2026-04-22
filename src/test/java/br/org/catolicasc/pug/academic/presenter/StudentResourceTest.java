@@ -148,7 +148,7 @@ class StudentResourceTest extends BaseResourceTest {
             "Test Student",
             cpf + "@test.com",
             "password123",
-            UUID.randomUUID().toString().substring(0, 14).toUpperCase(),
+            UuidCreator.getTimeOrderedEpoch().toString().substring(24).toUpperCase(),
             Campi.JOINVILLE,
             course[0].getId(),
             new BigDecimal("100"),
@@ -373,7 +373,7 @@ class StudentResourceTest extends BaseResourceTest {
 
   private StudentCreateRequest buildCreateRequest(UUID courseId) {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    String reg = UUID.randomUUID().toString().substring(0, 14).toUpperCase();
+    String reg = UuidCreator.getTimeOrderedEpoch().toString().substring(24).toUpperCase();
     return new StudentCreateRequest(
         cpf,
         "Test Student " + cpf,

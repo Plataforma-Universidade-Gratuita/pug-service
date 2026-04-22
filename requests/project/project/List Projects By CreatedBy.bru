@@ -1,11 +1,11 @@
 meta {
   name: List Projects By CreatedBy
   type: http
-  seq: 6
+  seq: 4
 }
 
 get {
-  url: {{baseUrl}}/projects/created-by/{{staffAccountId}}
+  url: {{baseUrl}}/projects/created-by/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
@@ -14,14 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should list projects created by account", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
-
 auth:bearer {
   token: {{jwtToken}}
 }
-

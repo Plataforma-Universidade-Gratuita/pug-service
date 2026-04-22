@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -10,8 +11,8 @@ import java.util.UUID;
  * <p>Provides a fluent API with random defaults for all fields.
  */
 public class AttendanceCreateCommandBuilder {
-  private UUID projectId = UUID.randomUUID();
-  private UUID studentId = UUID.randomUUID();
+  private UUID projectId = UuidCreator.getTimeOrderedEpoch();
+  private UUID studentId = UuidCreator.getTimeOrderedEpoch();
   private BigDecimal duration = new BigDecimal("2.0");
 
   private AttendanceCreateCommandBuilder() {}

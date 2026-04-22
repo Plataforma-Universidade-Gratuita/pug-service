@@ -6,11 +6,11 @@ import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,7 @@ class SchoolQueriesImplTest extends BaseSearchTest {
   @Transactional
   @DisplayName("Should return empty for non-existent ID")
   void shouldReturnEmptyForNonExistentId() {
-    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test

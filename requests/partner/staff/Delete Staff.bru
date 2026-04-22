@@ -1,0 +1,20 @@
+meta {
+  name: Delete Staff
+  type: http
+  seq: 10
+}
+
+delete {
+  url: {{baseUrl}}/partners/staff/00000000-0000-0000-0000-000000000001
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

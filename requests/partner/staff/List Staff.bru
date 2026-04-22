@@ -1,0 +1,24 @@
+meta {
+  name: List Staff
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/partners/staff
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~q: gestor
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

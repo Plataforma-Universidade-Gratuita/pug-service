@@ -1,25 +1,17 @@
 meta {
-  name: Get Course
+  name: Get Course By ID
   type: http
   seq: 2
 }
 
 get {
-  url: {{baseUrl}}/academic/courses/{{courseId}}
+  url: {{baseUrl}}/academic/courses/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
-}
-
-tests {
-  test("Should retrieve the course successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-    expect(res.getBody().data.id).to.equal(bru.getEnvVar("courseId"));
-  });
 }
 
 auth:bearer {

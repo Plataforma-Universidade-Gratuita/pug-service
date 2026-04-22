@@ -1,0 +1,20 @@
+meta {
+  name: Get Staff By Email
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/partners/staff/by-email/gestor@techcorp.com
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

@@ -21,6 +21,7 @@ import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -99,7 +100,7 @@ class ProjectServiceImplTest {
   @Test
   @DisplayName("Should throw when updating non-existing project")
   void updateNotFound() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     var cmd = aProjectUpdateCommand().withName("Name").build();
 
     assertThrows(ResourceNotFoundException.class, () -> service.update(id, cmd));
@@ -138,7 +139,7 @@ class ProjectServiceImplTest {
   @Transactional
   @DisplayName("Should return false when deleting non-existing project")
   void deleteNonExisting() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(enrollmentService.existsAnyByProjectId(id)).thenReturn(false);
 
     assertThat(service.delete(id)).isFalse();
@@ -147,7 +148,8 @@ class ProjectServiceImplTest {
   @Test
   @DisplayName("Should throw when project not found by ID")
   void getByIdNotFound() {
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -232,19 +234,19 @@ class ProjectServiceImplTest {
   void addCompletedHoursNotFound() {
     assertThrows(
         ResourceNotFoundException.class,
-        () -> service.addCompletedHours(UUID.randomUUID(), BigDecimal.TEN));
+        () -> service.addCompletedHours(UuidCreator.getTimeOrderedEpoch(), BigDecimal.TEN));
   }
 
   @Test
   @DisplayName("Should return false for non-existing entity ID")
   void existsAnyByEntityIdFalse() {
-    assertThat(service.existsAnyByEntityId(UUID.randomUUID())).isFalse();
+    assertThat(service.existsAnyByEntityId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test
   @DisplayName("Should return false for non-existing created by")
   void existsByCreatedByFalse() {
-    assertThat(service.existsByCreatedBy(UUID.randomUUID())).isFalse();
+    assertThat(service.existsByCreatedBy(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test

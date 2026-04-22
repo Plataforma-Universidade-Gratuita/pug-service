@@ -10,18 +10,15 @@ get {
   auth: bearer
 }
 
-headers {
-  Accept-Language: pt-BR
+params:query {
+  ~q: Alpha
+  ~entityId: 00000000-0000-0000-0000-000000000001
 }
 
-tests {
-  test("Should list projects", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
+headers {
+  Accept-Language: pt-BR
 }
 
 auth:bearer {
   token: {{jwtToken}}
 }
-

@@ -25,11 +25,11 @@ import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -125,7 +125,8 @@ class AttendanceServiceImplTest {
   @Test
   @DisplayName("Should throw when attendance not found")
   void getByIdNotFound() {
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -139,7 +140,7 @@ class AttendanceServiceImplTest {
   @Test
   @DisplayName("Should return false for non-existing delete")
   void deleteNonExisting() {
-    assertThat(service.delete(UUID.randomUUID())).isFalse();
+    assertThat(service.delete(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test
@@ -159,6 +160,6 @@ class AttendanceServiceImplTest {
   @DisplayName("Should return correct existence checks")
   void existsChecks() {
     assertThat(service.existsByValidatedBy(null)).isFalse();
-    assertThat(service.existsByValidatedBy(UUID.randomUUID())).isFalse();
+    assertThat(service.existsByValidatedBy(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }

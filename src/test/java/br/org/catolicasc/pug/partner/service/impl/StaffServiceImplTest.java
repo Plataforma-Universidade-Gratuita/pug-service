@@ -19,6 +19,7 @@ import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -141,7 +142,8 @@ class StaffServiceImplTest {
   @DisplayName("Should throw ResourceNotFound for unknown account ID")
   void getByAccountIdNotFound() {
     assertThrows(
-        ResourceNotFoundException.class, () -> service.getByAccountId(java.util.UUID.randomUUID()));
+        ResourceNotFoundException.class,
+        () -> service.getByAccountId(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -175,7 +177,7 @@ class StaffServiceImplTest {
   @Test
   @DisplayName("Should throw exception when staff has created projects")
   void deleteHasProjects() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(projectService.existsByCreatedBy(id)).thenReturn(true);
 
     assertThrows(BusinessRuleException.class, () -> service.delete(id));
@@ -184,7 +186,7 @@ class StaffServiceImplTest {
   @Test
   @DisplayName("Should throw exception when staff has validated attendances")
   void deleteHasAttendances() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(projectService.existsByCreatedBy(id)).thenReturn(false);
     when(attendanceService.existsByValidatedBy(id)).thenReturn(true);
 
@@ -202,7 +204,7 @@ class StaffServiceImplTest {
   @Transactional
   @DisplayName("Should return 0 when no staff members found for entity")
   void deleteAllByEntityIdEmpty() {
-    UUID entityId = UUID.randomUUID();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
     assertThat(service.deleteAllByEntityId(entityId)).isEqualTo(0);
   }
 

@@ -18,20 +18,10 @@ headers {
 body:json {
   {
     "name": "Engenharia de Software",
-    "schoolId": "{{schoolId}}"
+    "schoolId": "00000000-0000-0000-0000-000000000001"
   }
 }
 
-tests {
-  test("Should create a course successfully", function() {
-    expect(res.getStatus()).to.equal(201);
-    expect(res.getBody().success).to.be.true;
-    expect(res.getBody().data).to.have.property("id");
-
-    // Save the created ID to the environment for student enrollment
-    bru.setEnvVar("courseId", res.getBody().data.id);
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

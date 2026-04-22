@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.academic.infra.persistence.StudentEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -23,10 +24,10 @@ class StudentMapperTest extends CopyableMapperTest<Student, StudentEntity> {
   @Override
   protected Student createDomain() {
     return Student.factory(
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         AcademicRegistration.factory("12345"),
         Campi.JARAGUA_DO_SUL,
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false),
         Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
   }
@@ -102,8 +103,8 @@ class StudentMapperTest extends CopyableMapperTest<Student, StudentEntity> {
   @Test
   @DisplayName("toView should map all fields correctly")
   void toViewShouldMapAllFields() {
-    UUID accountId = UUID.randomUUID();
-    UUID courseId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
     LocalDate today = LocalDate.now();
 

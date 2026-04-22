@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +17,8 @@ class ProjectProcessorTest {
   @Test
   @DisplayName("Should create project with valid inputs")
   void processCreateInputValid() {
-    UUID entityId = UUID.randomUUID();
-    UUID creatorId = UUID.randomUUID();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
+    UUID creatorId = UuidCreator.getTimeOrderedEpoch();
 
     Project project =
         ProjectProcessor.processCreateInput(
@@ -36,7 +37,12 @@ class ProjectProcessorTest {
   void processCreateInputBlankName() {
     Project project =
         ProjectProcessor.processCreateInput(
-            "", UUID.randomUUID(), "desc", UUID.randomUUID(), 10, new BigDecimal("10"));
+            "",
+            UuidCreator.getTimeOrderedEpoch(),
+            "desc",
+            UuidCreator.getTimeOrderedEpoch(),
+            10,
+            new BigDecimal("10"));
 
     assertThat(project.hasFieldErrors()).isTrue();
   }

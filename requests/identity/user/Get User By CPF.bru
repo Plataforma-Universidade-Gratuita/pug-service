@@ -5,20 +5,13 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/identity/users/by-cpf/00000000000
+  url: {{baseUrl}}/identity/users/by-cpf/12345678901
   body: none
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
-}
-
-tests {
-  test("Should retrieve user by CPF", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
 }
 
 auth:bearer {

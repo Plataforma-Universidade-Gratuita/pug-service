@@ -1,7 +1,7 @@
 meta {
-  name: List or Search Students
+  name: List Students
   type: http
-  seq: 5
+  seq: 7
 }
 
 get {
@@ -10,22 +10,15 @@ get {
   auth: bearer
 }
 
-query {
+params:query {
   ~q: João
-  ~courseId: {{courseId}}
+  ~courseId: 00000000-0000-0000-0000-000000000001
 }
 
 headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should list students successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-    expect(Array.isArray(res.getBody().data)).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

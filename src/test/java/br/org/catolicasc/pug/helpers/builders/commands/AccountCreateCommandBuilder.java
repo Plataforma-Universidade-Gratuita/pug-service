@@ -6,7 +6,6 @@ import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import java.util.Random;
-import java.util.UUID;
 
 /**
  * Builder class for creating {@link AccountCreateCommand} DTOs in test scenarios.
@@ -15,7 +14,7 @@ import java.util.UUID;
  * internally. The user command is only included when CPF and name are provided.
  */
 public class AccountCreateCommandBuilder {
-  private String emailString = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
   private AccountType type = getRandomAccountType();
   private String passwordHash = "hashed-password";
   private String userCpf = TestBrazilianIdentifierGenerator.generateValidCpf();

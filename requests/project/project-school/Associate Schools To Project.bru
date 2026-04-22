@@ -1,0 +1,31 @@
+meta {
+  name: Associate Schools To Project
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/projects/by-school
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "projectId": "00000000-0000-0000-0000-000000000001",
+    "schoolIds": [
+      "00000000-0000-0000-0000-000000000002",
+      "00000000-0000-0000-0000-000000000003"
+    ]
+  }
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

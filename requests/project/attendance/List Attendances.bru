@@ -1,0 +1,25 @@
+meta {
+  name: List Attendances
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/projects/attendances
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~projectId: 00000000-0000-0000-0000-000000000001
+  ~studentId: 00000000-0000-0000-0000-000000000002
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

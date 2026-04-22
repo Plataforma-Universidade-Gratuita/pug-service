@@ -18,6 +18,7 @@ import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -67,7 +68,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should delete user and fire audit")
   void deleteSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(repository.deleteById(id)).thenReturn(true);
 
     boolean deleted = service.delete(id);
@@ -79,7 +80,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should update user successfully and fire audit")
   void updateSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     User user =
         User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Old Name");
     User updatedUser = user.rename("New Name");
@@ -98,7 +99,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw AppValidationException for invalid name")
   void updateInvalid() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     User user =
         User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
@@ -141,7 +142,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should return user by ID")
   void getByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     User user =
         User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
@@ -153,13 +154,14 @@ class UserServiceImplTest {
   @DisplayName("Should throw ResourceNotFoundException for unknown ID")
   void getByIdNotFound() {
     when(repository.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should perform batch delete")
   void deleteAll() {
-    List<UUID> ids = List.of(UUID.randomUUID());
+    List<UUID> ids = List.of(UuidCreator.getTimeOrderedEpoch());
     when(repository.deleteAllByIds(ids)).thenReturn(1L);
 
     long count = service.deleteAll(ids);

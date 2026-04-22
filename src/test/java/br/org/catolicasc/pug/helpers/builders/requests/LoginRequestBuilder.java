@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
+import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
-import java.util.UUID;
 
 /**
  * Builder class for creating {@link LoginRequest} DTOs in test scenarios.
@@ -9,7 +9,7 @@ import java.util.UUID;
  * <p>Provides a fluent API with random defaults for authentication payloads.
  */
 public class LoginRequestBuilder {
-  private String email = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String email = TestNameGenerator.generateUniqueEmail("pug.com");
   private String password = "password123";
 
   private LoginRequestBuilder() {}

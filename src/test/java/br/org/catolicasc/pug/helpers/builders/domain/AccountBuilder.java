@@ -3,8 +3,10 @@ package br.org.catolicasc.pug.helpers.builders.domain;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Builder class for creating {@link Account} domain aggregates in test scenarios.
@@ -13,7 +15,9 @@ import java.util.UUID;
  * fields like user linkage and authentication email.
  */
 public class AccountBuilder {
-  private UUID userId = UUID.randomUUID();
+  private static final AtomicLong EMAIL_COUNTER = new AtomicLong(System.nanoTime());
+
+  private UUID userId = UuidCreator.getTimeOrderedEpoch();
   private String email = generateUniqueEmail();
   private AccountType type = getRandomAccountType();
 
@@ -78,7 +82,7 @@ public class AccountBuilder {
    * @return a unique email string
    */
   private String generateUniqueEmail() {
-    return "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+    return "test-" + Long.toHexString(EMAIL_COUNTER.incrementAndGet()) + "@pug.com";
   }
 
   /**

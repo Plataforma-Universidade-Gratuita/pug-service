@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.math.BigDecimal;
@@ -33,8 +34,8 @@ class AttendancePresenterTest {
     @Test
     @DisplayName("Should map AttendanceCreateRequest to command")
     void toCommand() {
-      UUID pid = UUID.randomUUID();
-      UUID sid = UUID.randomUUID();
+      UUID pid = UuidCreator.getTimeOrderedEpoch();
+      UUID sid = UuidCreator.getTimeOrderedEpoch();
       var req = new AttendanceCreateRequest(pid, sid, new BigDecimal("2.00"));
 
       AttendanceCreateCommand cmd = AttendancePresenter.toCommand(req);
@@ -128,9 +129,9 @@ class AttendancePresenterTest {
 
     private AttendanceView sampleView() {
       return new AttendanceView(
-          UUID.randomUUID(),
-          UUID.randomUUID(),
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
+          UuidCreator.getTimeOrderedEpoch(),
+          UuidCreator.getTimeOrderedEpoch(),
           new BigDecimal("2.00"),
           "hash-123",
           AttendanceStatus.WAITING,

@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.domain;
 
 import br.org.catolicasc.pug.partner.domain.Staff;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 
 /**
@@ -10,8 +11,8 @@ import java.util.UUID;
  * partner entity.
  */
 public class StaffBuilder {
-  private UUID accountId = UUID.randomUUID();
-  private UUID entityId = UUID.randomUUID();
+  private UUID accountId = UuidCreator.getTimeOrderedEpoch();
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
   private StaffBuilder() {}
 

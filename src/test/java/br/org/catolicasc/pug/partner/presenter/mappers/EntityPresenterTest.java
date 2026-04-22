@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.partner.presenter.dtos.EntityResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityUpdateRequest;
 import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
@@ -26,7 +27,7 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should map EntityCreateRequest to EntityCreateCommand")
     void toCreateCommand() {
-      UUID cityId = UUID.randomUUID();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
       EntityCreateRequest req = new EntityCreateRequest(cnpj, "Acme Corp", cityId, "Rua A, 123");
 
@@ -53,7 +54,7 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should map EntityUpdateRequest to EntityUpdateCommand")
     void toUpdateCommand() {
-      UUID cityId = UUID.randomUUID();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       EntityUpdateRequest req = new EntityUpdateRequest("New Name", cityId, "Rua B, 456");
 
       EntityUpdateCommand cmd = EntityPresenter.toCommand(req);
@@ -97,8 +98,8 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should map EntityView to EntityResponse correctly")
     void toResponseSuccess() {
-      UUID id = UUID.randomUUID();
-      UUID cityId = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
       EntityView view = new EntityView(id, cnpj, "Acme Corp", "Rua A, 123", cityId, now, now);
@@ -121,8 +122,8 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should handle CNPJ with invalid length gracefully")
     void toResponseCnpjInvalidLength() {
-      UUID id = UUID.randomUUID();
-      UUID cityId = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       EntityView view = new EntityView(id, "123", "Short CNPJ", "Addr", cityId, now, now);
 
@@ -136,8 +137,8 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should handle null CNPJ gracefully")
     void toResponseCnpjNull() {
-      UUID id = UUID.randomUUID();
-      UUID cityId = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       EntityView view = new EntityView(id, null, "No CNPJ", "Addr", cityId, now, now);
 
@@ -151,8 +152,8 @@ class EntityPresenterTest {
     @Test
     @DisplayName("Should handle null audit timestamps")
     void toResponseNullTimestamps() {
-      UUID id = UUID.randomUUID();
-      UUID cityId = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
       String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
       EntityView view = new EntityView(id, cnpj, "Name", "Addr", cityId, null, null);
 

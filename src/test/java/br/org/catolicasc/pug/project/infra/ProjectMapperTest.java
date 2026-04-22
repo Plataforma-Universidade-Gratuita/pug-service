@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -90,9 +91,9 @@ class ProjectMapperTest extends CopyableMapperTest<Project, ProjectEntity> {
   @Test
   @DisplayName("toView should map all fields correctly")
   void toViewShouldMapAllFields() {
-    UUID id = UUID.randomUUID();
-    UUID entityId = UUID.randomUUID();
-    UUID creatorId = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
+    UUID creatorId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     ProjectEntity entity =

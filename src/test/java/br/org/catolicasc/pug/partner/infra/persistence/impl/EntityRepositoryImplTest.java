@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.partner.domain.Entity;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +43,7 @@ class EntityRepositoryImplTest {
     assertThat(repository.existsByCityId(entity.getCityId())).isTrue();
     assertThat(repository.existsByCnpj(entity.getCnpj().getValue())).isTrue();
 
-    assertThat(repository.existsByCityId(UUID.randomUUID())).isFalse();
+    assertThat(repository.existsByCityId(UuidCreator.getTimeOrderedEpoch())).isFalse();
     assertThat(repository.existsByCnpj("00000000000000")).isFalse();
   }
 

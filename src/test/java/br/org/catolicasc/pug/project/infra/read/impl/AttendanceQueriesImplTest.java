@@ -11,10 +11,10 @@ import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -66,7 +66,7 @@ class AttendanceQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty for non-existent ID")
   void shouldReturnEmptyForNonExistentId() {
-    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test

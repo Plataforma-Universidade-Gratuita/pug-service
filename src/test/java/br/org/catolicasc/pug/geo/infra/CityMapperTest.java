@@ -7,7 +7,7 @@ import br.org.catolicasc.pug.geo.domain.vos.IbgeCode;
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.helpers.AbstractMapperTest;
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +40,7 @@ class CityMapperTest extends AbstractMapperTest<City, CityEntity> {
   @DisplayName("Should project CityEntity to CityView correctly")
   void shouldProjectToView() {
     CityEntity entity = new CityEntity();
-    entity.setId(UUID.randomUUID());
+    entity.setId(UuidCreator.getTimeOrderedEpoch());
     entity.setName("Jaraguá do Sul");
     entity.setIbgeCode("4209106");
 

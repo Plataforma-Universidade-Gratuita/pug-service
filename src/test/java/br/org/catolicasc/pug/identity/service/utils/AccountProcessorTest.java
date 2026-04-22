@@ -9,9 +9,9 @@ import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,7 +40,8 @@ class AccountProcessorTest {
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
     List<Account> accounts =
-        AccountProcessor.processBulkCreateInput(List.of(accCmd), Map.of(cpf, UUID.randomUUID()));
+        AccountProcessor.processBulkCreateInput(
+            List.of(accCmd), Map.of(cpf, UuidCreator.getTimeOrderedEpoch()));
     assertThat(accounts).hasSize(1);
   }
 
@@ -58,7 +59,8 @@ class AccountProcessorTest {
   @DisplayName("Should mutate email and password correctly")
   void shouldUpdateAccount() {
     Account acc =
-        AccountProcessor.processCreateInput(UUID.randomUUID(), "old@test.com", "STUDENT", "hash");
+        AccountProcessor.processCreateInput(
+            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
 
     Account updated = AccountProcessor.processUpdateInput(acc, "new@test.com", "newhash");
 
@@ -70,7 +72,8 @@ class AccountProcessorTest {
   @DisplayName("Should return same instance if update values are null")
   void shouldIgnoreNullUpdates() {
     Account acc =
-        AccountProcessor.processCreateInput(UUID.randomUUID(), "old@test.com", "STUDENT", "hash");
+        AccountProcessor.processCreateInput(
+            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
     assertThat(AccountProcessor.processUpdateInput(acc, null, null)).isEqualTo(acc);
   }
 }

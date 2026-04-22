@@ -1,0 +1,20 @@
+meta {
+  name: Cancel Enrollment
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{baseUrl}}/projects/enrollments/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002/cancel
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

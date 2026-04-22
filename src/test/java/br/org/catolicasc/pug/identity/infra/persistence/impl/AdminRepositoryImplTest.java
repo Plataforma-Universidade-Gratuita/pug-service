@@ -9,12 +9,12 @@ import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -37,7 +37,7 @@ class AdminRepositoryImplTest {
   void deleteTests() {
     Account acc = setup();
     assertThat(repository.deleteByAccountId(null)).isFalse();
-    assertThat(repository.deleteByAccountId(UUID.randomUUID())).isFalse();
+    assertThat(repository.deleteByAccountId(UuidCreator.getTimeOrderedEpoch())).isFalse();
 
     factory.createAdmin(acc);
     em.flush();
@@ -48,7 +48,7 @@ class AdminRepositoryImplTest {
   @DisplayName("Should find admin by account ID")
   void findTests() {
     Account acc = setup();
-    assertThat(repository.findOptionalByAccountId(UUID.randomUUID())).isEmpty();
+    assertThat(repository.findOptionalByAccountId(UuidCreator.getTimeOrderedEpoch())).isEmpty();
 
     Admin admin = factory.createAdmin(acc);
     em.flush();

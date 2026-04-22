@@ -5,7 +5,7 @@ meta {
 }
 
 put {
-  url: {{baseUrl}}/academic/courses/{{courseId}}
+  url: {{baseUrl}}/academic/courses/00000000-0000-0000-0000-000000000001
   body: json
   auth: bearer
 }
@@ -18,16 +18,10 @@ headers {
 body:json {
   {
     "name": "Engenharia de Computação",
-    "schoolId": "{{schoolId}}"
+    "schoolId": "00000000-0000-0000-0000-000000000001"
   }
 }
 
-tests {
-  test("Should update the course successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentCreateRequest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 
 /**
@@ -9,7 +10,7 @@ import java.util.UUID;
  * <p>Provides a fluent API with a random default project ID.
  */
 public class EnrollmentCreateRequestBuilder {
-  private UUID projectId = UUID.randomUUID();
+  private UUID projectId = UuidCreator.getTimeOrderedEpoch();
 
   private EnrollmentCreateRequestBuilder() {}
 

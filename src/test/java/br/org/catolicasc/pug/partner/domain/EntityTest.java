@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,7 +16,7 @@ import org.junit.jupiter.api.Test;
 class EntityTest {
 
   private final Cnpj validCnpj = Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj());
-  private final UUID validCityId = UUID.randomUUID();
+  private final UUID validCityId = UuidCreator.getTimeOrderedEpoch();
 
   @Test
   @DisplayName("Should create valid Entity")
@@ -68,7 +69,7 @@ class EntityTest {
     @Test
     @DisplayName("Should move to another city successfully")
     void shouldMoveCity() {
-      UUID newCityId = UUID.randomUUID();
+      UUID newCityId = UuidCreator.getTimeOrderedEpoch();
       Entity entity = Entity.factory(validCnpj, "Name", validCityId, "Address");
       Entity moved = entity.moveToCity(newCityId);
 

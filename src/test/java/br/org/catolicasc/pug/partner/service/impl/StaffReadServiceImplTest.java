@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.infra.read.StaffQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -28,8 +29,9 @@ class StaffReadServiceImplTest {
   @Test
   @DisplayName("Should return staff view by account ID")
   void getByAccountIdSuccess() {
-    UUID accountId = UUID.randomUUID();
-    StaffView view = new StaffView(null, UUID.randomUUID(), UUID.randomUUID());
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+    StaffView view =
+        new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
     when(queries.findOptionalById(accountId)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByAccountId(accountId)).isEqualTo(view);
@@ -40,15 +42,16 @@ class StaffReadServiceImplTest {
   void getByAccountIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
     assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+        ResourceNotFoundException.class,
+        () -> service.getViewByAccountId(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should list staff views by entity ID")
   void listByEntityId() {
-    UUID entityId = UUID.randomUUID();
+    UUID entityId = UuidCreator.getTimeOrderedEpoch();
     when(queries.listAllByEntityId(entityId))
-        .thenReturn(List.of(new StaffView(null, entityId, UUID.randomUUID())));
+        .thenReturn(List.of(new StaffView(null, entityId, UuidCreator.getTimeOrderedEpoch())));
 
     assertThat(service.listViewsByEntityId(entityId)).hasSize(1);
   }
@@ -63,7 +66,8 @@ class StaffReadServiceImplTest {
   @Test
   @DisplayName("Should list all staff views")
   void listViews() {
-    StaffView view = new StaffView(null, UUID.randomUUID(), UUID.randomUUID());
+    StaffView view =
+        new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
     when(queries.listAllStaff()).thenReturn(List.of(view));
 
     List<StaffView> result = service.listViews();
@@ -75,7 +79,8 @@ class StaffReadServiceImplTest {
   @DisplayName("Should list staff views by CPF successfully")
   void listViewsByCpfSuccess() {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    StaffView view = new StaffView(null, UUID.randomUUID(), UUID.randomUUID());
+    StaffView view =
+        new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
     when(queries.listByCpf(cpf)).thenReturn(List.of(view));
 
     List<StaffView> result = service.listViewsByCpf(cpf);
@@ -94,7 +99,8 @@ class StaffReadServiceImplTest {
   @DisplayName("Should return staff view by email successfully")
   void getViewByEmailSuccess() {
     String email = "test@pug.com";
-    StaffView view = new StaffView(null, UUID.randomUUID(), UUID.randomUUID());
+    StaffView view =
+        new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
     when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByEmail(email)).isEqualTo(view);

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class AdminTest {
   @Test
   @DisplayName("Should create valid Admin")
   void shouldCreateAdmin() {
-    Admin admin = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+    Admin admin = Admin.factory(UuidCreator.getTimeOrderedEpoch(), Campi.JARAGUA_DO_SUL);
     assertThat(admin.hasFieldErrors()).isFalse();
   }
 

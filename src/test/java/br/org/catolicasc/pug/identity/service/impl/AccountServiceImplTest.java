@@ -20,6 +20,7 @@ import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -68,7 +69,7 @@ class AccountServiceImplTest {
   void deleteAndPrune() {
     Account acc =
         Account.factory(
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             br.org.catolicasc.pug.identity.domain.vos.Email.factory("a@a.com"),
             AccountType.STUDENT,
             "hash");
@@ -107,9 +108,13 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should update account and user successfully")
   void updateSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory("a@a.com"), AccountType.STUDENT, "hash");
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory("a@a.com"),
+            AccountType.STUDENT,
+            "hash");
     Account updatedAcc = acc.changeEmail(Email.factory("new@email.com"));
 
     when(repository.findOptionalById(id))
@@ -167,7 +172,11 @@ class AccountServiceImplTest {
   @DisplayName("Should get account by email successfully")
   void getByEmailSuccess() {
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory("a@a.com"), AccountType.STUDENT, "hash");
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory("a@a.com"),
+            AccountType.STUDENT,
+            "hash");
     when(repository.findOptionalByEmail("a@a.com")).thenReturn(Optional.of(acc));
 
     assertThat(service.getByEmail("a@a.com").getEmail().getValue()).isEqualTo("a@a.com");
@@ -176,10 +185,11 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should batch delete multiple accounts")
   void deleteAllSuccess() {
-    List<UUID> ids = List.of(UUID.randomUUID());
-    when(repository.findUserIdsByIds(ids)).thenReturn(List.of(UUID.randomUUID()));
+    List<UUID> ids = List.of(UuidCreator.getTimeOrderedEpoch());
+    when(repository.findUserIdsByIds(ids)).thenReturn(List.of(UuidCreator.getTimeOrderedEpoch()));
     when(repository.deleteAllByIds(ids)).thenReturn(1L);
-    when(repository.findAllOrphanUserIdsByUserIds(any())).thenReturn(List.of(UUID.randomUUID()));
+    when(repository.findAllOrphanUserIdsByUserIds(any()))
+        .thenReturn(List.of(UuidCreator.getTimeOrderedEpoch()));
 
     long deleted = service.deleteAll(ids);
 
@@ -191,7 +201,11 @@ class AccountServiceImplTest {
   @DisplayName("Should deactivate account")
   void deactivateSuccess() {
     Account acc =
-        Account.factory(UUID.randomUUID(), Email.factory("a@a.com"), AccountType.STUDENT, "hash");
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory("a@a.com"),
+            AccountType.STUDENT,
+            "hash");
     when(repository.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
 
     Account deactivated = service.deactivate(acc.getId());

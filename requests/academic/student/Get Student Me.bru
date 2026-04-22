@@ -1,0 +1,20 @@
+meta {
+  name: Get Student Me
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/academic/students/me
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

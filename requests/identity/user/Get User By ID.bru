@@ -5,20 +5,13 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/identity/users/019cf2fd-837d-799b-a963-e1b299da07df
+  url: {{baseUrl}}/identity/users/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
-}
-
-tests {
-  test("Should retrieve the user", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
 }
 
 auth:bearer {

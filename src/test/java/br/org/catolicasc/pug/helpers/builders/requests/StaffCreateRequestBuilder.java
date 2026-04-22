@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.helpers.builders.requests;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffCreateRequest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 
 /**
@@ -13,9 +14,9 @@ import java.util.UUID;
 public class StaffCreateRequestBuilder {
   private String cpfString = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
-  private String emailString = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
   private String password = "password123";
-  private UUID entityId = UUID.randomUUID();
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
   private StaffCreateRequestBuilder() {}
 

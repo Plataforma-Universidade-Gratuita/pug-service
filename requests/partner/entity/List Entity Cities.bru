@@ -1,0 +1,20 @@
+meta {
+  name: List Entity Cities
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/partner/entities/cities
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

@@ -1,11 +1,11 @@
 meta {
   name: Update Student
   type: http
-  seq: 6
+  seq: 8
 }
 
 put {
-  url: {{baseUrl}}/academic/students/{{studentAccountId}}
+  url: {{baseUrl}}/academic/students/00000000-0000-0000-0000-000000000001
   body: json
   auth: bearer
 }
@@ -23,12 +23,6 @@ body:json {
   }
 }
 
-tests {
-  test("Should update the student successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

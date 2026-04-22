@@ -15,12 +15,12 @@ import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -96,7 +96,8 @@ class CourseServiceImplTest {
   @Test
   @DisplayName("Should throw when course not found")
   void getByIdNotFound() {
-    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -133,7 +134,9 @@ class CourseServiceImplTest {
   @DisplayName("Should throw when updating non-existing course")
   void updateNotFound() {
     var cmd = aCourseUpdateCommand().build();
-    assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.update(UuidCreator.getTimeOrderedEpoch(), cmd));
   }
 
   @Test
@@ -159,7 +162,7 @@ class CourseServiceImplTest {
   @Test
   @DisplayName("Should return false when deleting non-existing course")
   void deleteNonExisting() {
-    assertThat(service.delete(UUID.randomUUID())).isFalse();
+    assertThat(service.delete(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test
@@ -181,6 +184,6 @@ class CourseServiceImplTest {
   @Test
   @DisplayName("Should delegate existsAnyBySchoolId to repo")
   void existsAnyBySchoolId() {
-    assertThat(service.existsAnyBySchoolId(UUID.randomUUID())).isFalse();
+    assertThat(service.existsAnyBySchoolId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }

@@ -17,7 +17,6 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -118,7 +117,8 @@ class CourseResourceTest extends BaseResourceTest {
     doInTransaction(() -> school[0] = factory.createSchool());
 
     CourseCreateRequest req =
-        new CourseCreateRequest("New Course " + UUID.randomUUID(), school[0].getId());
+        new CourseCreateRequest(
+            "New Course " + UuidCreator.getTimeOrderedEpoch(), school[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -169,7 +169,8 @@ class CourseResourceTest extends BaseResourceTest {
           course[0] = factory.createCourse(school);
         });
 
-    CourseUpdateRequest req = new CourseUpdateRequest("Updated " + UUID.randomUUID(), null);
+    CourseUpdateRequest req =
+        new CourseUpdateRequest("Updated " + UuidCreator.getTimeOrderedEpoch(), null);
 
     given()
         .contentType(ContentType.JSON)

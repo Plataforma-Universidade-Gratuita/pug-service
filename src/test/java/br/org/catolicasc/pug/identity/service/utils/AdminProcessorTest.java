@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ class AdminProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    UUID accountId = UUID.randomUUID();
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
     Admin admin = AdminProcessor.processCreateInput(accountId, Campi.JOINVILLE);
 
     assertThat(admin.hasFieldErrors()).isFalse();
@@ -25,7 +26,7 @@ class AdminProcessorTest {
   @Test
   @DisplayName("Should mutate campus correctly via update")
   void shouldUpdateAdmin() {
-    Admin existing = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+    Admin existing = Admin.factory(UuidCreator.getTimeOrderedEpoch(), Campi.JARAGUA_DO_SUL);
 
     Admin updated = AdminProcessor.processUpdateInput(existing, Campi.JOINVILLE);
 
@@ -36,7 +37,7 @@ class AdminProcessorTest {
   @Test
   @DisplayName("Should skip update when new campus is null")
   void shouldSkipUpdateIfNull() {
-    Admin existing = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+    Admin existing = Admin.factory(UuidCreator.getTimeOrderedEpoch(), Campi.JARAGUA_DO_SUL);
 
     Admin updated = AdminProcessor.processUpdateInput(existing, null);
 

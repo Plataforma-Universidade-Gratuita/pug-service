@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.project.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,8 @@ class ProjectSchoolProcessorTest {
   @Test
   @DisplayName("Should create valid ProjectSchool association")
   void processCreateInputValid() {
-    UUID projectId = UUID.randomUUID();
-    UUID schoolId = UUID.randomUUID();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
 
     ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, schoolId);
 
@@ -27,7 +28,8 @@ class ProjectSchoolProcessorTest {
   @Test
   @DisplayName("Should create ProjectSchool with errors for null project ID")
   void processCreateInputNullProjectId() {
-    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(null, UUID.randomUUID());
+    ProjectSchool association =
+        ProjectSchoolProcessor.processCreateInput(null, UuidCreator.getTimeOrderedEpoch());
 
     assertThat(association.hasFieldErrors()).isTrue();
   }
@@ -35,7 +37,8 @@ class ProjectSchoolProcessorTest {
   @Test
   @DisplayName("Should create ProjectSchool with errors for null school ID")
   void processCreateInputNullSchoolId() {
-    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(UUID.randomUUID(), null);
+    ProjectSchool association =
+        ProjectSchoolProcessor.processCreateInput(UuidCreator.getTimeOrderedEpoch(), null);
 
     assertThat(association.hasFieldErrors()).isTrue();
   }

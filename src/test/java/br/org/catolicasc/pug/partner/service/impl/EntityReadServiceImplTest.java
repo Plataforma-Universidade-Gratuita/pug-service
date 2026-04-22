@@ -11,6 +11,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.infra.read.EntityQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -32,7 +33,7 @@ class EntityReadServiceImplTest {
   @Test
   @DisplayName("Should return entity view by ID")
   void getByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
     EntityView view =
         new EntityView(
@@ -40,7 +41,7 @@ class EntityReadServiceImplTest {
             cnpj,
             "WEG S.A.",
             "Addr",
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             OffsetDateTime.now(),
             OffsetDateTime.now());
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
@@ -52,13 +53,15 @@ class EntityReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when ID not found")
   void getByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should list used cities via cityReadService")
   void listCityViews() {
-    UUID cityId = UUID.randomUUID();
+    UUID cityId = UuidCreator.getTimeOrderedEpoch();
     when(queries.listAllCityIds()).thenReturn(List.of(cityId));
     when(cityReadService.listViewsByIds(List.of(cityId)))
         .thenReturn(List.of(new CityView(cityId, "Name", "123")));
@@ -79,11 +82,11 @@ class EntityReadServiceImplTest {
     String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
     EntityView view =
         new EntityView(
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             cnpj,
             "WEG S.A.",
             "Addr",
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             OffsetDateTime.now(),
             OffsetDateTime.now());
     when(queries.findOptionalByCnpj(cnpj)).thenReturn(Optional.of(view));
@@ -103,11 +106,11 @@ class EntityReadServiceImplTest {
   void listViews() {
     EntityView view =
         new EntityView(
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             TestBrazilianIdentifierGenerator.generateValidCnpj(),
             "WEG S.A.",
             "Addr",
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             OffsetDateTime.now(),
             OffsetDateTime.now());
     when(queries.listAllEntities()).thenReturn(List.of(view));
@@ -120,10 +123,10 @@ class EntityReadServiceImplTest {
   @Test
   @DisplayName("Should list entity views by city ID")
   void listViewsByCityId() {
-    UUID cityId = UUID.randomUUID();
+    UUID cityId = UuidCreator.getTimeOrderedEpoch();
     EntityView view =
         new EntityView(
-            UUID.randomUUID(),
+            UuidCreator.getTimeOrderedEpoch(),
             TestBrazilianIdentifierGenerator.generateValidCnpj(),
             "WEG S.A.",
             "Addr",

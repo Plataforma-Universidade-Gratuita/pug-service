@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.project.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,8 @@ class ProjectSchoolTest {
   @Test
   @DisplayName("Should create valid association")
   void shouldCreateValidAssociation() {
-    UUID projectId = UUID.randomUUID();
-    UUID schoolId = UUID.randomUUID();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
 
     ProjectSchool pbs = ProjectSchool.factory(projectId, schoolId);
 

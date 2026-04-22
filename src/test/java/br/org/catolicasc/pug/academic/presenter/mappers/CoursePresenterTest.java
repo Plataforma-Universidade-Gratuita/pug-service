@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
@@ -26,7 +27,7 @@ class CoursePresenterTest {
     @Test
     @DisplayName("Should map request to command")
     void toCreateCommand() {
-      UUID schoolId = UUID.randomUUID();
+      UUID schoolId = UuidCreator.getTimeOrderedEpoch();
       CourseCreateRequest req = new CourseCreateRequest("CS", schoolId);
       CourseCreateCommand cmd = CoursePresenter.toCommand(req);
 
@@ -49,7 +50,7 @@ class CoursePresenterTest {
     @Test
     @DisplayName("Should map update request to command")
     void toUpdateCommand() {
-      UUID schoolId = UUID.randomUUID();
+      UUID schoolId = UuidCreator.getTimeOrderedEpoch();
       CourseUpdateRequest req = new CourseUpdateRequest("New Name", schoolId);
       CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
 
@@ -110,7 +111,7 @@ class CoursePresenterTest {
     @DisplayName("Should handle null school in view")
     void toResponseNullSchool() {
       OffsetDateTime now = OffsetDateTime.now();
-      CourseView view = new CourseView(UUID.randomUUID(), "CS", null, now, now);
+      CourseView view = new CourseView(UuidCreator.getTimeOrderedEpoch(), "CS", null, now, now);
       CourseResponse response = CoursePresenter.toResponse(view, Locale.US);
 
       assertThat(response).isNotNull();
@@ -119,8 +120,10 @@ class CoursePresenterTest {
 
     private CourseView buildCourseView() {
       OffsetDateTime now = OffsetDateTime.now();
-      SchoolView schoolView = new SchoolView(UUID.randomUUID(), "Engineering", now, now);
-      return new CourseView(UUID.randomUUID(), "Computer Science", schoolView, now, now);
+      SchoolView schoolView =
+          new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
+      return new CourseView(
+          UuidCreator.getTimeOrderedEpoch(), "Computer Science", schoolView, now, now);
     }
   }
 }

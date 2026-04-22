@@ -16,7 +16,6 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -99,7 +98,8 @@ class SchoolResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/schools - Success")
   void createSuccess() {
-    SchoolCreateRequest req = new SchoolCreateRequest("New School " + UUID.randomUUID());
+    SchoolCreateRequest req =
+        new SchoolCreateRequest("New School " + UuidCreator.getTimeOrderedEpoch());
 
     given()
         .contentType(ContentType.JSON)
@@ -140,7 +140,8 @@ class SchoolResourceTest extends BaseResourceTest {
     School[] school = new School[1];
     doInTransaction(() -> school[0] = factory.createSchool());
 
-    SchoolUpdateRequest req = new SchoolUpdateRequest("Updated " + UUID.randomUUID());
+    SchoolUpdateRequest req =
+        new SchoolUpdateRequest("Updated " + UuidCreator.getTimeOrderedEpoch());
 
     given()
         .contentType(ContentType.JSON)

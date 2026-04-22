@@ -7,7 +7,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
 import br.org.catolicasc.pug.partner.infra.persistence.EntityEntity;
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class EntityMapperTest extends CopyableMapperTest<Entity, EntityEntity> {
     return Entity.factory(
         Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
         "WEG S.A.",
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         "Address");
   }
 

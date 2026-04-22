@@ -1,0 +1,20 @@
+meta {
+  name: Remove Enrollment
+  type: http
+  seq: 10
+}
+
+patch {
+  url: {{baseUrl}}/projects/enrollments/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002/remove
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

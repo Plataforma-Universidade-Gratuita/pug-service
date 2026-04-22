@@ -9,8 +9,8 @@ import br.org.catolicasc.pug.partner.infra.persistence.EntityEntity;
 import br.org.catolicasc.pug.partner.infra.persistence.StaffEntity;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +19,7 @@ class StaffMapperTest extends AbstractMapperTest<Staff, StaffEntity> {
 
   @Override
   protected Staff createDomain() {
-    return Staff.factory(UUID.randomUUID(), UUID.randomUUID());
+    return Staff.factory(UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
   }
 
   @Override
@@ -41,8 +41,8 @@ class StaffMapperTest extends AbstractMapperTest<Staff, StaffEntity> {
   @DisplayName("Should project StaffView correctly from entities")
   void shouldProjectToView() {
     AccountEntity acc = new AccountEntity();
-    acc.setId(UUID.randomUUID());
-    acc.setUserId(UUID.randomUUID());
+    acc.setId(UuidCreator.getTimeOrderedEpoch());
+    acc.setUserId(UuidCreator.getTimeOrderedEpoch());
     acc.setEmail("staff@pug.com");
     acc.setAccountType(AccountType.PARTNER);
     acc.setCreatedAt(OffsetDateTime.now());
@@ -50,8 +50,8 @@ class StaffMapperTest extends AbstractMapperTest<Staff, StaffEntity> {
     acc.setActive(true);
 
     EntityEntity ent = new EntityEntity();
-    ent.setId(UUID.randomUUID());
-    ent.setCityId(UUID.randomUUID());
+    ent.setId(UuidCreator.getTimeOrderedEpoch());
+    ent.setCityId(UuidCreator.getTimeOrderedEpoch());
 
     StaffView view = StaffMapper.toView(acc, ent);
 

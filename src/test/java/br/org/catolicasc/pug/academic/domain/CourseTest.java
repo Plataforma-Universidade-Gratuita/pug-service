@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -15,7 +16,7 @@ class CourseTest {
   @Test
   @DisplayName("Should create valid Course")
   void shouldCreateCourse() {
-    UUID schoolId = UUID.randomUUID();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     Course course = Course.factory("Software Engineering", schoolId);
 
     assertThat(course.hasFieldErrors()).isFalse();
@@ -41,7 +42,7 @@ class CourseTest {
     @Test
     @DisplayName("Should rename course successfully")
     void shouldRename() {
-      Course course = Course.factory("Original Name", UUID.randomUUID());
+      Course course = Course.factory("Original Name", UuidCreator.getTimeOrderedEpoch());
       Course renamed = course.rename("New Name");
 
       assertThat(renamed.getName()).isEqualTo("New Name");
@@ -52,8 +53,8 @@ class CourseTest {
     @Test
     @DisplayName("Should move course to another school successfully")
     void shouldMoveToSchool() {
-      UUID originalSchool = UUID.randomUUID();
-      UUID newSchool = UUID.randomUUID();
+      UUID originalSchool = UuidCreator.getTimeOrderedEpoch();
+      UUID newSchool = UuidCreator.getTimeOrderedEpoch();
       Course course = Course.factory("Course Name", originalSchool);
 
       Course moved = course.moveToSchool(newSchool);

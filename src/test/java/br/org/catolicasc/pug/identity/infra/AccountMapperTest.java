@@ -7,7 +7,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
-import java.util.UUID;
+import com.github.f4b6a3.uuid.UuidCreator;
 import org.junit.jupiter.api.DisplayName;
 
 @DisplayName("AccountMapper Tests")
@@ -16,7 +16,10 @@ class AccountMapperTest extends AbstractMapperTest<Account, AccountEntity> {
   @Override
   protected Account createDomain() {
     return Account.factory(
-        UUID.randomUUID(), Email.factory("test@pug.com"), AccountType.ADMIN, "hashed-password");
+        UuidCreator.getTimeOrderedEpoch(),
+        Email.factory("test@pug.com"),
+        AccountType.ADMIN,
+        "hashed-password");
   }
 
   @Override

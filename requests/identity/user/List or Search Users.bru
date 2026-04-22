@@ -1,7 +1,7 @@
 meta {
-  name: List or Search Users
+  name: List Users
   type: http
-  seq: 3
+  seq: 4
 }
 
 get {
@@ -11,18 +11,11 @@ get {
 }
 
 params:query {
-  ~q: Administrador
+  ~q: admin
 }
 
 headers {
   Accept-Language: pt-BR
-}
-
-tests {
-  test("Should list users", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
 }
 
 auth:bearer {

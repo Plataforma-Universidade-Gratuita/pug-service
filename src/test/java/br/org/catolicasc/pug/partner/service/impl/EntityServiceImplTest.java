@@ -17,6 +17,7 @@ import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -132,7 +133,7 @@ class EntityServiceImplTest {
   @Transactional
   @DisplayName("Should return false when deleting non-existing entity")
   void deleteNonExisting() {
-    UUID randomId = UUID.randomUUID();
+    UUID randomId = UuidCreator.getTimeOrderedEpoch();
 
     when(projectService.existsAnyByEntityId(randomId)).thenReturn(false);
 
@@ -158,7 +159,7 @@ class EntityServiceImplTest {
   @Test
   @DisplayName("Should throw when updating non-existing entity")
   void updateNotFound() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     var cmd = anEntityUpdateCommand().build();
 
     assertThrows(ResourceNotFoundException.class, () -> service.update(id, cmd));
@@ -167,7 +168,7 @@ class EntityServiceImplTest {
   @Test
   @DisplayName("Should throw when entity not found")
   void getByIdNotFound() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
 
     assertThrows(ResourceNotFoundException.class, () -> service.getById(id));
   }

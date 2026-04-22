@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.academic.infra.read.StudentQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -31,7 +32,7 @@ class StudentReadServiceImplTest {
   @Test
   @DisplayName("Should return student view by account ID")
   void getViewByAccountIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     StudentView view = buildView(id);
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
@@ -43,13 +44,14 @@ class StudentReadServiceImplTest {
   void getViewByAccountIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
     assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+        ResourceNotFoundException.class,
+        () -> service.getViewByAccountId(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should return student view by registration")
   void getViewByAcademicRegistrationSuccess() {
-    StudentView view = buildView(UUID.randomUUID());
+    StudentView view = buildView(UuidCreator.getTimeOrderedEpoch());
     when(queries.findOptionalByAcademicRegistration("REG123")).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByAcademicRegistration("REG123")).isEqualTo(view);
@@ -66,7 +68,7 @@ class StudentReadServiceImplTest {
   @Test
   @DisplayName("Should return student view by CPF")
   void getViewByCpfSuccess() {
-    StudentView view = buildView(UUID.randomUUID());
+    StudentView view = buildView(UuidCreator.getTimeOrderedEpoch());
     when(queries.findOptionalByCpf("12345678901")).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByCpf("12345678901")).isEqualTo(view);
@@ -82,7 +84,7 @@ class StudentReadServiceImplTest {
   @Test
   @DisplayName("Should return student view by email")
   void getViewByEmailSuccess() {
-    StudentView view = buildView(UUID.randomUUID());
+    StudentView view = buildView(UuidCreator.getTimeOrderedEpoch());
     when(queries.findOptionalByEmail("john@test.com")).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByEmail("john@test.com")).isEqualTo(view);
@@ -98,14 +100,15 @@ class StudentReadServiceImplTest {
   @Test
   @DisplayName("Should list all students")
   void listViews() {
-    when(queries.listAllStudents()).thenReturn(List.of(buildView(UUID.randomUUID())));
+    when(queries.listAllStudents())
+        .thenReturn(List.of(buildView(UuidCreator.getTimeOrderedEpoch())));
     assertThat(service.listViews()).hasSize(1);
   }
 
   @Test
   @DisplayName("Should list students by account IDs")
   void listViewsByAccountIds() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(queries.listViewsByAccountIds(List.of(id))).thenReturn(List.of(buildView(id)));
     assertThat(service.listViewsByAccountIds(List.of(id))).hasSize(1);
   }
@@ -125,8 +128,9 @@ class StudentReadServiceImplTest {
   @Test
   @DisplayName("Should list students by course ID")
   void listViewsByCourseId() {
-    UUID courseId = UUID.randomUUID();
-    when(queries.listAllByCourseId(courseId)).thenReturn(List.of(buildView(UUID.randomUUID())));
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
+    when(queries.listAllByCourseId(courseId))
+        .thenReturn(List.of(buildView(UuidCreator.getTimeOrderedEpoch())));
     assertThat(service.listViewsByCourseId(courseId)).hasSize(1);
   }
 
@@ -161,7 +165,7 @@ class StudentReadServiceImplTest {
         accountId,
         "REG123",
         Campi.JOINVILLE,
-        UUID.randomUUID(),
+        UuidCreator.getTimeOrderedEpoch(),
         new BigDecimal("100"),
         BigDecimal.ZERO,
         false,

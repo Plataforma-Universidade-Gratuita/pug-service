@@ -11,10 +11,10 @@ import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,7 +48,7 @@ class StaffQueriesImplTest extends BaseSearchTest {
     assertThat(queries.findOptionalByEmail(account.getEmail().getValue())).isPresent();
     assertThat(queries.listByCpf(user.getCpf().getValue())).hasSize(1);
 
-    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test

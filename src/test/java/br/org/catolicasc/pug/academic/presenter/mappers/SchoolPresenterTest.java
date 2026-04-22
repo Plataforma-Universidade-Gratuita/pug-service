@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
@@ -84,14 +85,15 @@ class SchoolPresenterTest {
     @DisplayName("Should return null when locale is null")
     void toResponseNullLocale() {
       SchoolView view =
-          new SchoolView(UUID.randomUUID(), "Eng", OffsetDateTime.now(), OffsetDateTime.now());
+          new SchoolView(
+              UuidCreator.getTimeOrderedEpoch(), "Eng", OffsetDateTime.now(), OffsetDateTime.now());
       assertThat(SchoolPresenter.toResponse(view, null)).isNull();
     }
 
     @Test
     @DisplayName("Should map view to response correctly")
     void toResponseSuccess() {
-      UUID id = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       SchoolView view = new SchoolView(id, "Engineering", now, now);
 
@@ -107,7 +109,7 @@ class SchoolPresenterTest {
     @Test
     @DisplayName("Should handle null timestamps")
     void toResponseNullTimestamps() {
-      SchoolView view = new SchoolView(UUID.randomUUID(), "Name", null, null);
+      SchoolView view = new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Name", null, null);
       SchoolResponse response = SchoolPresenter.toResponse(view, Locale.US);
 
       assertThat(response).isNotNull();

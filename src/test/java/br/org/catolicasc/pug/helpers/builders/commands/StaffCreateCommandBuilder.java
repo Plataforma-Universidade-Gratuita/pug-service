@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 
 /**
@@ -15,10 +16,10 @@ import java.util.UUID;
  * and {@link UserCreateCommand} internally.
  */
 public class StaffCreateCommandBuilder {
-  private UUID entityId = UUID.randomUUID();
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
   private String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
-  private String email = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String email = TestNameGenerator.generateUniqueEmail("pug.com");
   private String password = "hashed-password";
   private boolean includeUser = true;
 

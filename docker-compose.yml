@@ -1,37 +1,61 @@
 services:
+  # ── DEV CONTAINERS ────────────────────────────────────────────────────────
   postgres:
-    image: postgres:16
+    image: registry-docker.weg.net/postgres:16
     container_name: pug-postgres
-    ports:
-      - "5433:5432" # Use 5433 so it doesn't conflict if you run the Q4P stack
+    ports: [ "5433:5432" ]
     environment:
       POSTGRES_USER: pug
       POSTGRES_PASSWORD: pug
       POSTGRES_DB: pug
-    networks:
-      - pug-network
+    networks: [ pug-network ]
 
   mongodb:
-    image: mongo:7.0
+    image: registry-docker.weg.net/mongo:7.0
     container_name: pug-mongodb
-    ports:
-      - "27018:27017" # Use 27018 to avoid conflicts
+    ports: [ "27018:27017" ]
     environment:
       MONGO_INITDB_ROOT_USERNAME: pug
       MONGO_INITDB_ROOT_PASSWORD: pug
-    networks:
-      - pug-network
+    networks: [ pug-network ]
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    image: registry-docker.weg.net/elastic/elasticsearch:9.1.5
     container_name: pug-es
-    ports:
-      - "9201:9200"
+    ports: [ "9201:9200" ]
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
-    networks:
-      - pug-network
+    networks: [ pug-network ]
+
+  # ── TEST CONTAINERS ───────────────────────────────────────────────────────
+  postgres-test:
+    image: registry-docker.weg.net/postgres:16
+    container_name: pug-postgres-test
+    ports: [ "5434:5432" ]
+    environment:
+      POSTGRES_USER: pug_test
+      POSTGRES_PASSWORD: pug_test
+      POSTGRES_DB: pug_test
+    networks: [ pug-network ]
+
+  mongodb-test:
+    image: registry-docker.weg.net/mongo:7.0
+    container_name: pug-mongodb-test
+    ports: [ "27019:27017" ]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: pug_test
+      MONGO_INITDB_ROOT_PASSWORD: pug_test
+    networks: [ pug-network ]
+
+  elasticsearch-test:
+    image: registry-docker.weg.net/elastic/elasticsearch:9.1.5
+    container_name: pug-es-test
+    ports: [ "9202:9200" ]
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks: [ pug-network ]
 
 networks:
   pug-network:

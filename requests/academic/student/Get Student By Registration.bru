@@ -1,0 +1,20 @@
+meta {
+  name: Get Student By Registration
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/academic/students/by-registration/20261001
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

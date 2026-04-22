@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.helpers.builders.requests;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityCreateRequest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 
 /**
@@ -13,8 +14,8 @@ import java.util.UUID;
 public class EntityCreateRequestBuilder {
   private String cnpjString = TestBrazilianIdentifierGenerator.generateValidCnpj();
   private String name = TestNameGenerator.generateRandomEntityName();
-  private UUID cityId = UUID.randomUUID();
-  private String address = "Rua Test " + UUID.randomUUID().toString().substring(0, 6) + ", 123";
+  private UUID cityId = UuidCreator.getTimeOrderedEpoch();
+  private String address = TestNameGenerator.generateUniqueAddress();
 
   private EntityCreateRequestBuilder() {}
 

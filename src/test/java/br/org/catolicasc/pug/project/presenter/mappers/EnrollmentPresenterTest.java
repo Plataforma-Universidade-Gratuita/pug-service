@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentResponse;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.time.OffsetDateTime;
@@ -30,7 +31,7 @@ class EnrollmentPresenterTest {
     @Test
     @DisplayName("Should map EnrollmentCreateRequest to command")
     void toCommand() {
-      UUID projectId = UUID.randomUUID();
+      UUID projectId = UuidCreator.getTimeOrderedEpoch();
       var req = new EnrollmentCreateRequest(projectId);
 
       EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(req);
@@ -96,8 +97,8 @@ class EnrollmentPresenterTest {
 
     private EnrollmentView sampleView() {
       return new EnrollmentView(
-          UUID.randomUUID(),
-          UUID.randomUUID(),
+          UuidCreator.getTimeOrderedEpoch(),
+          UuidCreator.getTimeOrderedEpoch(),
           EnrollmentStatus.PENDING,
           OffsetDateTime.now(),
           OffsetDateTime.now(),

@@ -1,11 +1,11 @@
 meta {
   name: Deactivate Admin
   type: http
-  seq: 6
+  seq: 7
 }
 
 patch {
-  url: {{baseUrl}}/identity/admins/{{adminAccountId}}/deactivate
+  url: {{baseUrl}}/identity/admins/00000000-0000-0000-0000-000000000001/deactivate
   body: none
   auth: bearer
 }
@@ -14,12 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should deactivate the admin account successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

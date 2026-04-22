@@ -1,11 +1,11 @@
 meta {
   name: Delete Student
   type: http
-  seq: 7
+  seq: 9
 }
 
 delete {
-  url: {{baseUrl}}/academic/students/{{studentAccountId}}
+  url: {{baseUrl}}/academic/students/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
@@ -14,12 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should delete the student successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

@@ -8,12 +8,12 @@ import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -53,7 +53,9 @@ class StaffRepositoryImplTest {
     em.flush();
 
     assertThat(repository.existsByAccountIdAndEntityId(acc.getId(), ent.getId())).isTrue();
-    assertThat(repository.existsByAccountIdAndEntityId(acc.getId(), UUID.randomUUID())).isFalse();
+    assertThat(
+            repository.existsByAccountIdAndEntityId(acc.getId(), UuidCreator.getTimeOrderedEpoch()))
+        .isFalse();
   }
 
   @Test

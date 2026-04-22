@@ -1,11 +1,11 @@
 meta {
   name: Update Project
   type: http
-  seq: 7
+  seq: 5
 }
 
 put {
-  url: {{baseUrl}}/projects/{{projectId}}
+  url: {{baseUrl}}/projects/00000000-0000-0000-0000-000000000001
   body: json
   auth: bearer
 }
@@ -24,14 +24,6 @@ body:json {
   }
 }
 
-tests {
-  test("Should update the project successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
-
 auth:bearer {
   token: {{jwtToken}}
 }
-

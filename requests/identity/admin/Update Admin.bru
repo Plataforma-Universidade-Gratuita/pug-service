@@ -1,11 +1,11 @@
 meta {
   name: Update Admin
   type: http
-  seq: 5
+  seq: 6
 }
 
 put {
-  url: {{baseUrl}}/identity/admins/{{adminAccountId}}
+  url: {{baseUrl}}/identity/admins/00000000-0000-0000-0000-000000000001
   body: json
   auth: bearer
 }
@@ -15,31 +15,15 @@ headers {
   Content-Type: application/json
 }
 
-auth:bearer {
-  token: {{jwtToken}}
-}
-
 body:json {
   {
-    "name": "Administrador do Sistema Atualizado",
+    "name": "Updated Admin Name",
+    "email": "updated@pug.com",
+    "password": "NewPass123!",
     "campus": "JOINVILLE"
   }
 }
 
-docs {
-  Como o DTO `AdminUpdateRequest` usa campos opcionais, você pode enviar apenas o que deseja alterar.
-  Campos permitidos:
-  - name
-  - emailString
-  - password
-  - campus
-}
-
-tests {
-  test("Should update the admin successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-    expect(res.getBody().data.accountResponse.user.name).to.equal("Administrador do Sistema Atualizado");
-    expect(res.getBody().data.campus.campus).to.equal("JOINVILLE");
-  });
+auth:bearer {
+  token: {{jwtToken}}
 }

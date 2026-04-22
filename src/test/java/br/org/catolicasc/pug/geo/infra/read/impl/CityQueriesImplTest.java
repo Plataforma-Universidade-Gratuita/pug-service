@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -56,7 +56,7 @@ class CityQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should return empty list when searching invalid/non-existent IDs")
   void listAllByIdsInvalid() {
     assertThat(queries.listAllByIds(null)).isEmpty();
-    assertThat(queries.listAllByIds(List.of(UUID.randomUUID()))).isEmpty();
+    assertThat(queries.listAllByIds(List.of(UuidCreator.getTimeOrderedEpoch()))).isEmpty();
   }
 
   @Test

@@ -1,0 +1,29 @@
+meta {
+  name: Create Attendance
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/projects/attendances
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "projectId": "00000000-0000-0000-0000-000000000001",
+    "studentId": "00000000-0000-0000-0000-000000000002",
+    "duration": 4.00
+  }
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

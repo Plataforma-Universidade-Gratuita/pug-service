@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
@@ -15,8 +16,8 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Project Aggregate Tests")
 class ProjectTest {
 
-  private final UUID entityId = UUID.randomUUID();
-  private final UUID creatorId = UUID.randomUUID();
+  private final UUID entityId = UuidCreator.getTimeOrderedEpoch();
+  private final UUID creatorId = UuidCreator.getTimeOrderedEpoch();
 
   @Nested
   @DisplayName("Factory and Validation")

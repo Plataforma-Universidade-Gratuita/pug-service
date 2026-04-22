@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -40,7 +41,7 @@ class AttendanceProcessorTest {
   @DisplayName("Should process validation input to PRESENT")
   void processValidationInputPresent() {
     Attendance existing = AttendanceBuilder.anAttendance().build();
-    UUID validatorId = UUID.randomUUID();
+    UUID validatorId = UuidCreator.getTimeOrderedEpoch();
 
     Attendance validated =
         AttendanceProcessor.processValidationInput(existing, validatorId, AttendanceStatus.PRESENT);
@@ -54,7 +55,7 @@ class AttendanceProcessorTest {
   @DisplayName("Should process validation input to ABSENT")
   void processValidationInputAbsent() {
     Attendance existing = AttendanceBuilder.anAttendance().build();
-    UUID validatorId = UUID.randomUUID();
+    UUID validatorId = UuidCreator.getTimeOrderedEpoch();
 
     Attendance validated =
         AttendanceProcessor.processValidationInput(existing, validatorId, AttendanceStatus.ABSENT);

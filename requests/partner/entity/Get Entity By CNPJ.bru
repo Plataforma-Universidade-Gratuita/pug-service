@@ -1,0 +1,20 @@
+meta {
+  name: Get Entity By CNPJ
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/partner/entities/by-cnpj/12345678000195
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

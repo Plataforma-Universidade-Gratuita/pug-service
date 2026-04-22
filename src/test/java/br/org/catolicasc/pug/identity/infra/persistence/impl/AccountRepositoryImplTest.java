@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.AccountBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -110,7 +111,7 @@ class AccountRepositoryImplTest {
     assertThat(repository.existsByEmail(acc.getEmail().getValue())).isTrue();
     assertThat(repository.findUserIdsByIds(List.of(acc.getId()))).containsExactly(user.getId());
 
-    UUID orphanId = UUID.randomUUID();
+    UUID orphanId = UuidCreator.getTimeOrderedEpoch();
     assertThat(repository.findAllOrphanUserIdsByUserIds(List.of(user.getId(), orphanId)))
         .containsExactly(orphanId);
   }

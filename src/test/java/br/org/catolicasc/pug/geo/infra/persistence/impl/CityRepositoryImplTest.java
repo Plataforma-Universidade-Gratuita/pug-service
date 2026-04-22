@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +28,7 @@ class CityRepositoryImplTest {
   @Test
   @DisplayName("Should return empty when ID does not exist")
   void findOptionalByIdNotFound() {
-    assertThat(repository.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(repository.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test

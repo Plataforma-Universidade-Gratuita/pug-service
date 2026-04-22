@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.geo.infra.read.CityQueries;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -29,7 +30,7 @@ class CityReadServiceImplTest {
   @Test
   @DisplayName("Should return city view by ID")
   void getByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     CityView view = new CityView(id, "Joinville", "4209106");
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
@@ -40,14 +41,16 @@ class CityReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when ID not found")
   void getByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should return city view by IBGE code")
   void getViewByIbgeSuccess() {
     String ibge = "4209106";
-    CityView view = new CityView(UUID.randomUUID(), "Joinville", ibge);
+    CityView view = new CityView(UuidCreator.getTimeOrderedEpoch(), "Joinville", ibge);
     when(queries.findOptionalByIbgeCode(ibge)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByIbgeCode(ibge)).isEqualTo(view);
@@ -64,7 +67,8 @@ class CityReadServiceImplTest {
   @DisplayName("Should list all city views")
   void listViews() {
     when(queries.listAllCities())
-        .thenReturn(List.of(new CityView(UUID.randomUUID(), "Joinville", "4209106")));
+        .thenReturn(
+            List.of(new CityView(UuidCreator.getTimeOrderedEpoch(), "Joinville", "4209106")));
     assertThat(service.listViews()).hasSize(1);
   }
 
@@ -78,7 +82,7 @@ class CityReadServiceImplTest {
   @Test
   @DisplayName("Should list city views by IDs successfully")
   void listViewsByIdsSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     CityView view = new CityView(id, "Joinville", "4209106");
     when(queries.listAllByIds(List.of(id))).thenReturn(List.of(view));
 

@@ -19,7 +19,7 @@ import java.util.UUID;
  */
 public class StudentUpdateCommandBuilder {
   private String name = TestNameGenerator.generateRandomName();
-  private String email = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@test.com";
+  private String email = TestNameGenerator.generateUniqueEmail("test.com");
   private String password = null;
   private String academicRegistration = null;
   private Campi campus = getRandomCampus();

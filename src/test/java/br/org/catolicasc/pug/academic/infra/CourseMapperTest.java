@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
 import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -17,12 +18,15 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
 
   @Override
   protected Course createDomain() {
-    return Course.factory("Software Engineering", UUID.randomUUID());
+    return Course.factory("Software Engineering", UuidCreator.getTimeOrderedEpoch());
   }
 
   @Override
   protected CourseEntity createEntity() {
-    return CourseEntity.builder().name("Original").schoolId(UUID.randomUUID()).build();
+    return CourseEntity.builder()
+        .name("Original")
+        .schoolId(UuidCreator.getTimeOrderedEpoch())
+        .build();
   }
 
   @Override
@@ -54,7 +58,7 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   @Test
   @DisplayName("copy should update entity fields from domain")
   void copyShouldUpdateEntityFields() {
-    UUID schoolId = UUID.randomUUID();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     Course course = Course.factory("Updated Course", schoolId);
     CourseEntity entity = createEntity();
 
@@ -75,8 +79,8 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   @Test
   @DisplayName("toView should map correctly with school")
   void toViewShouldMapWithSchool() {
-    UUID courseId = UUID.randomUUID();
-    UUID schoolId = UUID.randomUUID();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     CourseEntity courseEntity =
@@ -107,13 +111,13 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   @Test
   @DisplayName("toView should handle null school")
   void toViewShouldHandleNullSchool() {
-    UUID courseId = UUID.randomUUID();
+    UUID courseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
     CourseEntity courseEntity =
         CourseEntity.builder()
             .id(courseId)
             .name("Course")
-            .schoolId(UUID.randomUUID())
+            .schoolId(UuidCreator.getTimeOrderedEpoch())
             .createdAt(now)
             .updatedAt(now)
             .build();

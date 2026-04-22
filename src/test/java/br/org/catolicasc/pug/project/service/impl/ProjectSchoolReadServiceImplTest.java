@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -33,8 +34,8 @@ class ProjectSchoolReadServiceImplTest {
   @Test
   @DisplayName("Should list schools by project ID")
   void listAllSchoolsByProjectId() {
-    UUID projectId = UUID.randomUUID();
-    UUID schoolId = UUID.randomUUID();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of(schoolId));
@@ -55,7 +56,7 @@ class ProjectSchoolReadServiceImplTest {
   @Test
   @DisplayName("Should return empty set when no associations found for project")
   void listAllSchoolsByProjectIdNoAssociations() {
-    UUID projectId = UUID.randomUUID();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
     when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of());
 
     assertThat(service.listAllSchoolsByProjectId(projectId)).isEmpty();
@@ -64,8 +65,8 @@ class ProjectSchoolReadServiceImplTest {
   @Test
   @DisplayName("Should list projects by school ID")
   void listAllProjectsBySchoolId() {
-    UUID schoolId = UUID.randomUUID();
-    UUID projectId = UUID.randomUUID();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+    UUID projectId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     when(associationRepo.findAllProjectIdsBySchoolId(schoolId)).thenReturn(Set.of(projectId));
@@ -75,9 +76,9 @@ class ProjectSchoolReadServiceImplTest {
                 new ProjectView(
                     projectId,
                     "Project",
-                    UUID.randomUUID(),
+                    UuidCreator.getTimeOrderedEpoch(),
                     "desc",
-                    UUID.randomUUID(),
+                    UuidCreator.getTimeOrderedEpoch(),
                     10,
                     new BigDecimal("40"),
                     BigDecimal.ZERO,
@@ -100,7 +101,7 @@ class ProjectSchoolReadServiceImplTest {
   @Test
   @DisplayName("Should return empty set when no associations found for school")
   void listAllProjectsBySchoolIdNoAssociations() {
-    UUID schoolId = UUID.randomUUID();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     when(associationRepo.findAllProjectIdsBySchoolId(schoolId)).thenReturn(Set.of());
 
     assertThat(service.listAllProjectsBySchoolId(schoolId)).isEmpty();

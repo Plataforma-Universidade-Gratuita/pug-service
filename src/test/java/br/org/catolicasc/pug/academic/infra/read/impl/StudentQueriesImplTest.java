@@ -11,11 +11,11 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -94,7 +94,7 @@ class StudentQueriesImplTest extends BaseSearchTest {
   @Transactional
   @DisplayName("Should return empty for non-existent account ID")
   void shouldReturnEmptyForNonExistentId() {
-    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+    assertThat(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).isEmpty();
   }
 
   @Test

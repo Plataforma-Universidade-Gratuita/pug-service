@@ -1,0 +1,25 @@
+meta {
+  name: List Enrollments
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/projects/enrollments
+  body: none
+  auth: bearer
+}
+
+params:query {
+  ~projectId: 00000000-0000-0000-0000-000000000001
+  ~studentId: 00000000-0000-0000-0000-000000000002
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

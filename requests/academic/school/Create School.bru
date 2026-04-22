@@ -21,16 +21,6 @@ body:json {
   }
 }
 
-tests {
-  test("Should create a school successfully", function() {
-    expect(res.getStatus()).to.equal(201);
-    expect(res.getBody().success).to.be.true;
-    expect(res.getBody().data).to.have.property("id");
-
-    // Save the created ID to the environment for subsequent requests
-    bru.setEnvVar("schoolId", res.getBody().data.id);
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

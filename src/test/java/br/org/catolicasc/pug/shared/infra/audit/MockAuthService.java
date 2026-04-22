@@ -4,6 +4,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import jakarta.annotation.Priority;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Alternative;
@@ -14,7 +15,7 @@ import java.util.UUID;
 @Priority(1)
 public class MockAuthService implements AuthService {
 
-  public static final UUID TEST_ACCOUNT_ID = UUID.randomUUID();
+  public static final UUID TEST_ACCOUNT_ID = UuidCreator.getTimeOrderedEpoch();
 
   @Override
   public UUID getCurrentAccountId() {
@@ -23,7 +24,7 @@ public class MockAuthService implements AuthService {
 
   @Override
   public UUID getCurrentUserId() {
-    return UUID.randomUUID();
+    return UuidCreator.getTimeOrderedEpoch();
   }
 
   @Override

@@ -3,7 +3,6 @@ package br.org.catolicasc.pug.helpers.builders.commands;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
-import java.util.UUID;
 
 /**
  * Builder class for creating {@link AccountUpdateCommand} DTOs in test scenarios.
@@ -12,7 +11,7 @@ import java.util.UUID;
  * UserUpdateCommand} internally when a name is provided.
  */
 public class AccountUpdateCommandBuilder {
-  private String emailString = "test-" + UUID.randomUUID().toString().substring(0, 8) + "@pug.com";
+  private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
   private String passwordHash = null;
   private String userName = TestNameGenerator.generateRandomName();
 

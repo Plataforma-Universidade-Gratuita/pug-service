@@ -17,6 +17,7 @@ import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -54,7 +55,7 @@ class AdminServiceImplTest {
   @Test
   @DisplayName("Should delete admin and revoke account")
   void deleteSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     when(repo.deleteByAccountId(id)).thenReturn(true);
 
     boolean deleted = service.delete(id);
@@ -67,7 +68,7 @@ class AdminServiceImplTest {
   @Test
   @DisplayName("Should update campus successfully")
   void updateSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     Admin current = AdminBuilder.anAdmin().forAccount(id).atCampus(Campi.JARAGUA_DO_SUL).build();
     Admin updatedExpected = current.changeCampus(Campi.JOINVILLE);
 
@@ -86,7 +87,7 @@ class AdminServiceImplTest {
     @Test
     @DisplayName("Should deactivate linked account successfully")
     void deactivateSuccess() {
-      UUID id = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
       Admin admin = AdminBuilder.anAdmin().forAccount(id).build();
       when(repo.findOptionalByAccountId(id)).thenReturn(Optional.of(admin));
 
@@ -99,7 +100,7 @@ class AdminServiceImplTest {
     @Test
     @DisplayName("Should return false when admin not found during deactivation")
     void deactivateNotFound() {
-      UUID id = UUID.randomUUID();
+      UUID id = UuidCreator.getTimeOrderedEpoch();
       when(repo.findOptionalByAccountId(id)).thenReturn(Optional.empty());
 
       assertThrows(ResourceNotFoundException.class, () -> service.deactivate(id));

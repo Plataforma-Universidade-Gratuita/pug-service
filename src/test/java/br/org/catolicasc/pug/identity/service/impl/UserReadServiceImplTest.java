@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -27,7 +28,7 @@ class UserReadServiceImplTest {
   @Test
   @DisplayName("Should return user view by ID")
   void getByIdSuccess() {
-    UUID id = UUID.randomUUID();
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     UserView view = new UserView(id, cpf, "Test User", null, null);
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
@@ -38,15 +39,17 @@ class UserReadServiceImplTest {
   @Test
   @DisplayName("Should throw ResourceNotFound for unknown ID")
   void getByIdNotFound() {
-    when(queries.findOptionalById(UUID.randomUUID())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    when(queries.findOptionalById(UuidCreator.getTimeOrderedEpoch())).thenReturn(Optional.empty());
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should return user view by CPF")
   void getByCpfSuccess() {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    UserView view = new UserView(UUID.randomUUID(), cpf, "Test User", null, null);
+    UserView view = new UserView(UuidCreator.getTimeOrderedEpoch(), cpf, "Test User", null, null);
     when(queries.findOptionalByCpf(cpf)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewByCpf(cpf)).isEqualTo(view);
@@ -56,7 +59,8 @@ class UserReadServiceImplTest {
   @DisplayName("Should list all users")
   void listAll() {
     when(queries.listAllUsers())
-        .thenReturn(List.of(new UserView(UUID.randomUUID(), "111", "User", null, null)));
+        .thenReturn(
+            List.of(new UserView(UuidCreator.getTimeOrderedEpoch(), "111", "User", null, null)));
     assertThat(service.listViews()).hasSize(1);
   }
 
@@ -64,7 +68,8 @@ class UserReadServiceImplTest {
   @DisplayName("Should search users by name")
   void search() {
     when(queries.searchByName("ana"))
-        .thenReturn(List.of(new UserView(UUID.randomUUID(), "111", "Ana", null, null)));
+        .thenReturn(
+            List.of(new UserView(UuidCreator.getTimeOrderedEpoch(), "111", "Ana", null, null)));
     assertThat(service.search("  Ana  ")).isNotEmpty();
   }
 }

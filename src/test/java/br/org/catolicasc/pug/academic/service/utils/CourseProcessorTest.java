@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.academic.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
+import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class CourseProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    UUID schoolId = UUID.randomUUID();
+    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
     Course course = CourseProcessor.processCreateInput("Computer Science", schoolId);
 
     assertThat(course.hasFieldErrors()).isFalse();
@@ -32,7 +33,7 @@ class CourseProcessorTest {
   @Test
   @DisplayName("Should update name via processUpdateInput")
   void shouldUpdateName() {
-    Course existing = Course.factory("Old Name", UUID.randomUUID());
+    Course existing = Course.factory("Old Name", UuidCreator.getTimeOrderedEpoch());
     Course updated = CourseProcessor.processUpdateInput(existing, "New Name", null);
 
     assertThat(updated.getName()).isEqualTo("New Name");
@@ -42,8 +43,8 @@ class CourseProcessorTest {
   @Test
   @DisplayName("Should update schoolId via processUpdateInput")
   void shouldUpdateSchoolId() {
-    Course existing = Course.factory("Course", UUID.randomUUID());
-    UUID newSchoolId = UUID.randomUUID();
+    Course existing = Course.factory("Course", UuidCreator.getTimeOrderedEpoch());
+    UUID newSchoolId = UuidCreator.getTimeOrderedEpoch();
     Course updated = CourseProcessor.processUpdateInput(existing, null, newSchoolId);
 
     assertThat(updated.getSchoolId()).isEqualTo(newSchoolId);
@@ -53,7 +54,7 @@ class CourseProcessorTest {
   @Test
   @DisplayName("Should skip update if all inputs are null/empty")
   void shouldSkipNullUpdates() {
-    Course existing = Course.factory("Course", UUID.randomUUID());
+    Course existing = Course.factory("Course", UuidCreator.getTimeOrderedEpoch());
     Course updated = CourseProcessor.processUpdateInput(existing, null, null);
 
     assertThat(updated).isEqualTo(existing);

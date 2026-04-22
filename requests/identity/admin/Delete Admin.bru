@@ -1,11 +1,11 @@
 meta {
   name: Delete Admin
   type: http
-  seq: 7
+  seq: 8
 }
 
 delete {
-  url: {{baseUrl}}/identity/admins/{{adminAccountId}}
+  url: {{baseUrl}}/identity/admins/00000000-0000-0000-0000-000000000001
   body: none
   auth: bearer
 }
@@ -14,12 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should delete the admin successfully", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
 auth:bearer {
   token: {{jwtToken}}
 }

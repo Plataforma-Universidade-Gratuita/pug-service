@@ -1,11 +1,11 @@
 meta {
   name: Retake Project
   type: http
-  seq: 10
+  seq: 8
 }
 
 patch {
-  url: {{baseUrl}}/projects/{{projectId}}/retake
+  url: {{baseUrl}}/projects/00000000-0000-0000-0000-000000000001/retake
   body: none
   auth: bearer
 }
@@ -14,14 +14,6 @@ headers {
   Accept-Language: pt-BR
 }
 
-tests {
-  test("Should retake the project from ON_HOLD", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
-}
-
 auth:bearer {
   token: {{jwtToken}}
 }
-

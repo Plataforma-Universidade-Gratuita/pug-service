@@ -1,0 +1,20 @@
+meta {
+  name: Get My Enrollment In Project
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/projects/enrollments/00000000-0000-0000-0000-000000000001/me
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
