@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
 import br.org.catolicasc.pug.academic.infra.persistence.StudentEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,9 +18,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("StudentMapper Tests")
-class StudentMapperTest {
+class StudentMapperTest extends CopyableMapperTest<Student, StudentEntity> {
 
-  private Student createValidStudent() {
+  @Override
+  protected Student createDomain() {
     return Student.factory(
         UUID.randomUUID(),
         AcademicRegistration.factory("12345"),
@@ -29,59 +31,50 @@ class StudentMapperTest {
         Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
   }
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Student")
-  void shouldPerformRoundTrip() {
-    Student student = createValidStudent();
+  @Override
+  protected StudentEntity createEntity() {
+    return StudentEntity.builder().academicRegistration("99999").build();
+  }
 
-    StudentEntity entity = StudentMapper.toEntity(student);
-    Student mapped = StudentMapper.toDomain(entity);
+  @Override
+  protected Student mapToDomain(StudentEntity entity) {
+    return StudentMapper.toDomain(entity);
+  }
 
-    assertThat(mapped.getAccountId()).isEqualTo(student.getAccountId());
+  @Override
+  protected StudentEntity mapToEntity(Student domain) {
+    return StudentMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void copy(Student domain, StudentEntity entity) {
+    StudentMapper.copy(domain, entity);
+  }
+
+  @Override
+  protected void assertRoundTrip(Student original, Student mapped) {
+    assertThat(mapped.getAccountId()).isEqualTo(original.getAccountId());
     assertThat(mapped.getAcademicRegistration().getValue())
-        .isEqualTo(student.getAcademicRegistration().getValue());
+        .isEqualTo(original.getAcademicRegistration().getValue());
     assertThat(mapped.getCounterpartHours().getRequiredHours())
-        .isEqualTo(student.getCounterpartHours().getRequiredHours());
-  }
-
-  @Test
-  @DisplayName("toDomain should return null when entity is null")
-  void toDomainShouldReturnNullForNullEntity() {
-    assertThat(StudentMapper.toDomain(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("toEntity should return null when domain is null")
-  void toEntityShouldReturnNullForNullDomain() {
-    assertThat(StudentMapper.toEntity(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when domain is null")
-  void copyShouldHandleNullDomain() {
-    StudentEntity entity = StudentEntity.builder().academicRegistration("99999").build();
-    StudentMapper.copy(null, entity);
-    assertThat(entity.getAcademicRegistration()).isEqualTo("99999");
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when entity is null")
-  void copyShouldHandleNullEntity() {
-    Student student = createValidStudent();
-    StudentMapper.copy(student, null);
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when both are null")
-  void copyShouldHandleBothNull() {
-    StudentMapper.copy(null, null);
+        .isEqualTo(original.getCounterpartHours().getRequiredHours());
+    assertThat(mapped.getCampus()).isEqualTo(original.getCampus());
+    assertThat(mapped.getCourseId()).isEqualTo(original.getCourseId());
+    assertThat(mapped.getCounterpartHours().getCompletedHours())
+        .isEqualByComparingTo(original.getCounterpartHours().getCompletedHours());
+    assertThat(mapped.getCounterpartHours().getConcluded())
+        .isEqualTo(original.getCounterpartHours().getConcluded());
+    assertThat(mapped.getPeriod().getStartDate()).isEqualTo(original.getPeriod().getStartDate());
+    assertThat(mapped.getPeriod().getDueDate()).isEqualTo(original.getPeriod().getDueDate());
+    assertThat(mapped.getAuditInfo().getCreatedAt())
+        .isEqualTo(original.getAuditInfo().getCreatedAt());
   }
 
   @Test
   @DisplayName("copy should update all entity fields from domain")
   void copyShouldUpdateEntityFields() {
-    Student student = createValidStudent();
-    StudentEntity entity = StudentEntity.builder().academicRegistration("old").build();
+    Student student = createDomain();
+    StudentEntity entity = createEntity();
 
     StudentMapper.copy(student, entity);
 
@@ -141,25 +134,5 @@ class StudentMapperTest {
     assertThat(view.concluded()).isFalse();
     assertThat(view.startDate()).isEqualTo(today);
     assertThat(view.dueDate()).isEqualTo(today.plusMonths(12));
-  }
-
-  @Test
-  @DisplayName("Round-trip should preserve all value objects")
-  void roundTripShouldPreserveAllValueObjects() {
-    Student student = createValidStudent();
-
-    StudentEntity entity = StudentMapper.toEntity(student);
-    Student mapped = StudentMapper.toDomain(entity);
-
-    assertThat(mapped.getCampus()).isEqualTo(student.getCampus());
-    assertThat(mapped.getCourseId()).isEqualTo(student.getCourseId());
-    assertThat(mapped.getCounterpartHours().getCompletedHours())
-        .isEqualByComparingTo(student.getCounterpartHours().getCompletedHours());
-    assertThat(mapped.getCounterpartHours().getConcluded())
-        .isEqualTo(student.getCounterpartHours().getConcluded());
-    assertThat(mapped.getPeriod().getStartDate()).isEqualTo(student.getPeriod().getStartDate());
-    assertThat(mapped.getPeriod().getDueDate()).isEqualTo(student.getPeriod().getDueDate());
-    assertThat(mapped.getAuditInfo().getCreatedAt())
-        .isEqualTo(student.getAuditInfo().getCreatedAt());
   }
 }

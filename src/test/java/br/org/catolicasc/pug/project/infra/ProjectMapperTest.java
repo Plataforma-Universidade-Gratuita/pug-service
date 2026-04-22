@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
@@ -14,59 +15,57 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("ProjectMapper Tests")
-class ProjectMapperTest {
+class ProjectMapperTest extends CopyableMapperTest<Project, ProjectEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Project")
-  void shouldPerformRoundTrip() {
-    Project project = ProjectBuilder.aProject().withName("Mapper Test Project").build();
-
-    ProjectEntity entity = ProjectMapper.toEntity(project);
-    Project mapped = ProjectMapper.toDomain(entity);
-
-    assertThat(mapped.getId()).isEqualTo(project.getId());
-    assertThat(mapped.getName()).isEqualTo(project.getName());
-    assertThat(mapped.getProjectStatus()).isEqualTo(project.getProjectStatus());
+  @Override
+  protected Project createDomain() {
+    return ProjectBuilder.aProject().withName("Mapper Test Project").build();
   }
 
-  @Test
-  @DisplayName("toDomain should return null when entity is null")
-  void toDomainShouldReturnNullForNullEntity() {
-    assertThat(ProjectMapper.toDomain(null)).isNull();
+  @Override
+  protected ProjectEntity createEntity() {
+    return ProjectEntity.builder().name("Old").status("PLANNED").build();
   }
 
-  @Test
-  @DisplayName("toEntity should return null when domain is null")
-  void toEntityShouldReturnNullForNullDomain() {
-    assertThat(ProjectMapper.toEntity(null)).isNull();
+  @Override
+  protected Project mapToDomain(ProjectEntity entity) {
+    return ProjectMapper.toDomain(entity);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when domain is null")
-  void copyShouldHandleNullDomain() {
-    ProjectEntity entity = ProjectEntity.builder().name("Original").build();
-    ProjectMapper.copy(null, entity);
-    assertThat(entity.getName()).isEqualTo("Original");
+  @Override
+  protected ProjectEntity mapToEntity(Project domain) {
+    return ProjectMapper.toEntity(domain);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when entity is null")
-  void copyShouldHandleNullEntity() {
-    Project project = ProjectBuilder.aProject().build();
-    ProjectMapper.copy(project, null);
+  @Override
+  protected void copy(Project domain, ProjectEntity entity) {
+    ProjectMapper.copy(domain, entity);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when both are null")
-  void copyShouldHandleBothNull() {
-    ProjectMapper.copy(null, null);
+  @Override
+  protected void assertRoundTrip(Project original, Project mapped) {
+    assertThat(mapped.getId()).isEqualTo(original.getId());
+    assertThat(mapped.getName()).isEqualTo(original.getName());
+    assertThat(mapped.getProjectStatus()).isEqualTo(original.getProjectStatus());
+    assertThat(mapped.getEntityId()).isEqualTo(original.getEntityId());
+    assertThat(mapped.getDescription()).isEqualTo(original.getDescription());
+    assertThat(mapped.getProjectInfo().getMaxParticipants())
+        .isEqualTo(original.getProjectInfo().getMaxParticipants());
+    assertThat(mapped.getProjectInfo().getOfferedHours())
+        .isEqualByComparingTo(original.getProjectInfo().getOfferedHours());
+    assertThat(mapped.getProjectInfo().getCompletedHours())
+        .isEqualByComparingTo(original.getProjectInfo().getCompletedHours());
+    assertThat(mapped.getProjectInfo().getCreatedBy())
+        .isEqualTo(original.getProjectInfo().getCreatedBy());
+    assertThat(mapped.getProjectInfo().getAuditInfo().getCreatedAt())
+        .isEqualTo(original.getProjectInfo().getAuditInfo().getCreatedAt());
   }
 
   @Test
   @DisplayName("copy should update all entity fields from domain")
   void copyShouldUpdateEntityFields() {
     Project project = ProjectBuilder.aProject().withName("Updated Project").build();
-    ProjectEntity entity = ProjectEntity.builder().name("Old").status("PLANNED").build();
+    ProjectEntity entity = createEntity();
 
     ProjectMapper.copy(project, entity);
 
@@ -125,27 +124,5 @@ class ProjectMapperTest {
     assertThat(view.completedHours()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(view.status()).isEqualTo(ProjectStatus.PLANNED);
     assertThat(view.closedAt()).isNull();
-  }
-
-  @Test
-  @DisplayName("Round-trip should preserve all value objects")
-  void roundTripShouldPreserveAllValueObjects() {
-    Project project = ProjectBuilder.aProject().build();
-
-    ProjectEntity entity = ProjectMapper.toEntity(project);
-    Project mapped = ProjectMapper.toDomain(entity);
-
-    assertThat(mapped.getEntityId()).isEqualTo(project.getEntityId());
-    assertThat(mapped.getDescription()).isEqualTo(project.getDescription());
-    assertThat(mapped.getProjectInfo().getMaxParticipants())
-        .isEqualTo(project.getProjectInfo().getMaxParticipants());
-    assertThat(mapped.getProjectInfo().getOfferedHours())
-        .isEqualByComparingTo(project.getProjectInfo().getOfferedHours());
-    assertThat(mapped.getProjectInfo().getCompletedHours())
-        .isEqualByComparingTo(project.getProjectInfo().getCompletedHours());
-    assertThat(mapped.getProjectInfo().getCreatedBy())
-        .isEqualTo(project.getProjectInfo().getCreatedBy());
-    assertThat(mapped.getProjectInfo().getAuditInfo().getCreatedAt())
-        .isEqualTo(project.getProjectInfo().getAuditInfo().getCreatedAt());
   }
 }

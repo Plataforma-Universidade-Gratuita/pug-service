@@ -6,52 +6,49 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
 import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("CourseMapper Tests")
-class CourseMapperTest {
+class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Course")
-  void shouldPerformRoundTrip() {
-    Course course = Course.factory("Software Engineering", UUID.randomUUID());
-
-    CourseEntity entity = CourseMapper.toEntity(course);
-    Course mapped = CourseMapper.toDomain(entity);
-
-    assertThat(mapped.getId()).isEqualTo(course.getId());
-    assertThat(mapped.getName()).isEqualTo(course.getName());
-    assertThat(mapped.getSchoolId()).isEqualTo(course.getSchoolId());
+  @Override
+  protected Course createDomain() {
+    return Course.factory("Software Engineering", UUID.randomUUID());
   }
 
-  @Test
-  @DisplayName("toDomain should return null when entity is null")
-  void toDomainShouldReturnNullForNullEntity() {
-    assertThat(CourseMapper.toDomain(null)).isNull();
+  @Override
+  protected CourseEntity createEntity() {
+    return CourseEntity.builder().name("Original").schoolId(UUID.randomUUID()).build();
   }
 
-  @Test
-  @DisplayName("toEntity should return null when domain is null")
-  void toEntityShouldReturnNullForNullDomain() {
-    assertThat(CourseMapper.toEntity(null)).isNull();
+  @Override
+  protected Course mapToDomain(CourseEntity entity) {
+    return CourseMapper.toDomain(entity);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when domain is null")
-  void copyShouldHandleNullDomain() {
-    CourseEntity entity = CourseEntity.builder().name("Original").build();
-    CourseMapper.copy(null, entity);
-    assertThat(entity.getName()).isEqualTo("Original");
+  @Override
+  protected CourseEntity mapToEntity(Course domain) {
+    return CourseMapper.toEntity(domain);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when entity is null")
-  void copyShouldHandleNullEntity() {
-    Course course = Course.factory("Test", UUID.randomUUID());
-    CourseMapper.copy(course, null);
+  @Override
+  protected void copy(Course domain, CourseEntity entity) {
+    CourseMapper.copy(domain, entity);
+  }
+
+  @Override
+  protected void assertRoundTrip(Course original, Course mapped) {
+    assertThat(mapped.getId()).isEqualTo(original.getId());
+    assertThat(mapped.getName()).isEqualTo(original.getName());
+    assertThat(mapped.getSchoolId()).isEqualTo(original.getSchoolId());
+    assertThat(mapped.getAuditInfo().getCreatedAt())
+        .isEqualTo(original.getAuditInfo().getCreatedAt());
+    assertThat(mapped.getAuditInfo().getUpdatedAt())
+        .isEqualTo(original.getAuditInfo().getUpdatedAt());
   }
 
   @Test
@@ -59,7 +56,7 @@ class CourseMapperTest {
   void copyShouldUpdateEntityFields() {
     UUID schoolId = UUID.randomUUID();
     Course course = Course.factory("Updated Course", schoolId);
-    CourseEntity entity = CourseEntity.builder().name("Old").schoolId(UUID.randomUUID()).build();
+    CourseEntity entity = createEntity();
 
     CourseMapper.copy(course, entity);
 
@@ -125,19 +122,5 @@ class CourseMapperTest {
 
     assertThat(view).isNotNull();
     assertThat(view.school()).isNull();
-  }
-
-  @Test
-  @DisplayName("Round-trip should preserve audit info")
-  void roundTripShouldPreserveAuditInfo() {
-    Course course = Course.factory("CS", UUID.randomUUID());
-
-    CourseEntity entity = CourseMapper.toEntity(course);
-    Course mapped = CourseMapper.toDomain(entity);
-
-    assertThat(mapped.getAuditInfo().getCreatedAt())
-        .isEqualTo(course.getAuditInfo().getCreatedAt());
-    assertThat(mapped.getAuditInfo().getUpdatedAt())
-        .isEqualTo(course.getAuditInfo().getUpdatedAt());
   }
 }

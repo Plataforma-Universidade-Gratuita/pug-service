@@ -223,9 +223,8 @@ class StudentQueriesImplTest extends BaseSearchTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for empty/null search query")
-  void shouldReturnEmptyForEmptyQuery() {
-    assertThat(queries.searchByName(null)).isEmpty();
-    assertThat(queries.searchByName("")).isEmpty();
+  @DisplayName("Should handle invalid search inputs gracefully")
+  void shouldHandleInvalidSearchInputs() {
+    assertSearchHandlesInvalidInput(queries::searchByName);
   }
 }

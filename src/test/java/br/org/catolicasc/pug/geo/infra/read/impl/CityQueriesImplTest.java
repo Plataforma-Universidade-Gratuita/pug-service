@@ -7,7 +7,6 @@ import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -21,7 +20,6 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 class CityQueriesImplTest extends BaseSearchTest {
 
   @Inject CityQueriesImpl queries;
-  @Inject EntityManager em;
 
   @Test
   @DisplayName("Should return empty when ID is null")
@@ -74,13 +72,7 @@ class CityQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should list all cities")
   void listAllCities() {
     List<CityView> cities = queries.listAllCities();
-    assertThat(cities).hasSizeGreaterThan(200); // We have 295 seeded
-  }
-
-  @Test
-  @DisplayName("Should return empty list for non-matching search")
-  void searchNotFound() {
-    assertThat(queries.searchByName("NonExistentCity12345")).isEmpty();
+    assertThat(cities).hasSizeGreaterThan(200);
   }
 
   @Test
@@ -91,9 +83,8 @@ class CityQueriesImplTest extends BaseSearchTest {
   }
 
   @Test
-  @DisplayName("Should return empty for null/empty search query")
-  void searchByNameInvalid() {
-    assertThat(queries.searchByName(null)).isEmpty();
-    assertThat(queries.searchByName("   ")).isEmpty();
+  @DisplayName("Should handle invalid search inputs gracefully")
+  void shouldHandleInvalidSearchInputs() {
+    assertSearchHandlesInvalidInput(queries::searchByName);
   }
 }

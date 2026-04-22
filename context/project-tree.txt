@@ -373,7 +373,6 @@
 │   │   │                   │   │       ├── EnrollmentInfo.java
 │   │   │                   │   │       ├── ProjectInfo.java
 │   │   │                   │   │       └── QrValidationInfo.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AttendanceMapper.java
 │   │   │                   │   │   ├── EnrollmentMapper.java
@@ -468,7 +467,6 @@
 │   │   │                       │   ├── BusinessRuleException.java
 │   │   │                       │   ├── DuplicateResourceException.java
 │   │   │                       │   └── ResourceNotFoundException.java
-│   │   │                       ├── generate-context.sh
 │   │   │                       ├── http/
 │   │   │                       │   └── CorrelationFilter.java
 │   │   │                       ├── i18n/
@@ -546,7 +544,7 @@
 │   │       ├── messages_en_US.properties
 │   │       └── messages_pt_BR.properties
 │   └── test/
-│       ├── README.md
+│       ├── generate-context.sh
 │       ├── java/
 │       │   └── br/
 │       │       └── org/
@@ -734,7 +732,6 @@
 │       │                   │   │       ├── EnrollmentInfoTest.java
 │       │                   │   │       ├── ProjectInfoTest.java
 │       │                   │   │       └── QrValidationInfoTest.java
-│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── AttendanceMapperTest.java
 │       │                   │   │   ├── EnrollmentMapperTest.java
@@ -754,7 +751,6 @@
 │       │                   │   │   ├── EnrollmentResourceTest.java
 │       │                   │   │   ├── ProjectResourceTest.java
 │       │                   │   │   ├── ProjectSchoolResourceTest.java
-│       │                   │   │   ├── dtos/
 │       │                   │   │   └── mappers/
 │       │                   │   │       ├── AttendancePresenterTest.java
 │       │                   │   │       ├── EnrollmentPresenterTest.java
@@ -801,6 +797,7 @@
 │       │                       │           ├── ConstraintViolationMapperTest.java
 │       │                       │           ├── DuplicateResourceExceptionMapperTest.java
 │       │                       │           ├── NotAuthorizedExceptionMapperTest.java
+│       │                       │           ├── PersistenceExceptionMapperTest.java
 │       │                       │           ├── ResourceNotFoundExceptionMapperTest.java
 │       │                       │           └── SystemExceptionMappersTest.java
 │       │                       ├── utils/
@@ -812,7 +809,6 @@
 │       │                           └── UuidV7Test.java
 │       └── resources/
 │           ├── application.properties
-│           ├── generate-context.sh
 │           ├── messages_en_US.properties
 │           └── messages_pt_BR.properties
 └── target/

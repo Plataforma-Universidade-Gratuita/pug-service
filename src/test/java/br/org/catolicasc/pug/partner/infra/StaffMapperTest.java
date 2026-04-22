@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.AbstractMapperTest;
 import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.infra.persistence.EntityEntity;
@@ -14,17 +15,26 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("StaffMapper Tests")
-class StaffMapperTest {
+class StaffMapperTest extends AbstractMapperTest<Staff, StaffEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Staff")
-  void shouldPerformRoundTrip() {
-    Staff staff = Staff.factory(UUID.randomUUID(), UUID.randomUUID());
+  @Override
+  protected Staff createDomain() {
+    return Staff.factory(UUID.randomUUID(), UUID.randomUUID());
+  }
 
-    StaffEntity persistence = StaffMapper.toEntity(staff);
-    Staff mapped = StaffMapper.toDomain(persistence);
+  @Override
+  protected Staff mapToDomain(StaffEntity entity) {
+    return StaffMapper.toDomain(entity);
+  }
 
-    assertThat(mapped).isEqualTo(staff);
+  @Override
+  protected StaffEntity mapToEntity(Staff domain) {
+    return StaffMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void assertRoundTrip(Staff original, Staff mapped) {
+    assertThat(mapped).isEqualTo(original);
   }
 
   @Test
@@ -48,12 +58,5 @@ class StaffMapperTest {
     assertThat(view.account().id()).isEqualTo(acc.getId());
     assertThat(view.entityId()).isEqualTo(ent.getId());
     assertThat(view.cityId()).isEqualTo(ent.getCityId());
-  }
-
-  @Test
-  @DisplayName("Should return null on null inputs")
-  void shouldReturnNullOnNull() {
-    assertThat(StaffMapper.toDomain(null)).isNull();
-    assertThat(StaffMapper.toEntity(null)).isNull();
   }
 }

@@ -2,25 +2,34 @@ package br.org.catolicasc.pug.identity.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.AbstractMapperTest;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.infra.persistence.AdminEntity;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 
 @DisplayName("AdminMapper Tests")
-class AdminMapperTest {
+class AdminMapperTest extends AbstractMapperTest<Admin, AdminEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Admin")
-  void shouldPerformRoundTrip() {
-    Admin admin = Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+  @Override
+  protected Admin createDomain() {
+    return Admin.factory(UUID.randomUUID(), Campi.JARAGUA_DO_SUL);
+  }
 
-    AdminEntity entity = AdminMapper.toEntity(admin);
-    Admin mappedAdmin = AdminMapper.toDomain(entity);
+  @Override
+  protected Admin mapToDomain(AdminEntity entity) {
+    return AdminMapper.toDomain(entity);
+  }
 
-    assertThat(mappedAdmin).isEqualTo(admin);
-    assertThat(mappedAdmin.getCampus()).isEqualTo(admin.getCampus());
+  @Override
+  protected AdminEntity mapToEntity(Admin domain) {
+    return AdminMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void assertRoundTrip(Admin original, Admin mapped) {
+    assertThat(mapped).isEqualTo(original);
+    assertThat(mapped.getCampus()).isEqualTo(original.getCampus());
   }
 }

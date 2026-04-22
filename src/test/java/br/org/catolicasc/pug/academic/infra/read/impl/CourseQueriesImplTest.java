@@ -105,18 +105,8 @@ class CourseQueriesImplTest extends BaseSearchTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for null or blank search query")
-  void shouldReturnEmptyForEmptyQuery() {
-    assertThat(queries.searchByName(null)).isEmpty();
-    assertThat(queries.searchByName("   ")).isEmpty();
-  }
-
-  @Test
-  @DisplayName("Should return empty list when no courses match")
-  void shouldReturnEmptyForNoMatches() throws Exception {
-    syncIndex(CourseEntity.class);
-
-    var results = queries.searchByName("NonExistentCourseName123");
-    assertThat(results).isEmpty();
+  @DisplayName("Should handle invalid search inputs gracefully")
+  void shouldHandleInvalidSearchInputs() {
+    assertSearchHandlesInvalidInput(queries::searchByName);
   }
 }

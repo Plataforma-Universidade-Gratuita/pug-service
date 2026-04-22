@@ -6,24 +6,34 @@ import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.geo.domain.vos.IbgeCode;
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.helpers.AbstractMapperTest;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("CityMapper Tests")
-class CityMapperTest {
+class CityMapperTest extends AbstractMapperTest<City, CityEntity> {
 
-  @Test
-  @DisplayName("Should perform a perfect round-trip (Domain -> Entity -> Domain)")
-  void shouldPerformRoundTrip() {
-    City city = City.factory("Jaraguá do Sul", IbgeCode.factory("4209106"));
+  @Override
+  protected City createDomain() {
+    return City.factory("Jaraguá do Sul", IbgeCode.factory("4209106"));
+  }
 
-    CityEntity entity = CityMapper.toEntity(city);
-    City mappedCity = CityMapper.toDomain(entity);
+  @Override
+  protected City mapToDomain(CityEntity entity) {
+    return CityMapper.toDomain(entity);
+  }
 
-    assertThat(mappedCity.getId()).isEqualTo(city.getId());
-    assertThat(mappedCity.getName()).isEqualTo(city.getName());
-    assertThat(mappedCity.getIbgeCode().getCode()).isEqualTo(city.getIbgeCode().getCode());
+  @Override
+  protected CityEntity mapToEntity(City domain) {
+    return CityMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void assertRoundTrip(City original, City mapped) {
+    assertThat(mapped.getId()).isEqualTo(original.getId());
+    assertThat(mapped.getName()).isEqualTo(original.getName());
+    assertThat(mapped.getIbgeCode().getCode()).isEqualTo(original.getIbgeCode().getCode());
   }
 
   @Test

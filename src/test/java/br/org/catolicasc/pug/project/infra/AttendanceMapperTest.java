@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.helpers.builders.AttendanceBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
@@ -14,60 +15,54 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("AttendanceMapper Tests")
-class AttendanceMapperTest {
+class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for Attendance")
-  void shouldPerformRoundTrip() {
-    Attendance attendance = AttendanceBuilder.anAttendance().build();
+  @Override
+  protected Attendance createDomain() {
+    return AttendanceBuilder.anAttendance().build();
+  }
 
-    AttendanceEntity entity = AttendanceMapper.toEntity(attendance);
-    Attendance mapped = AttendanceMapper.toDomain(entity);
+  @Override
+  protected AttendanceEntity createEntity() {
+    return AttendanceEntity.builder().status("WAITING").build();
+  }
 
-    assertThat(mapped.getId()).isEqualTo(attendance.getId());
-    assertThat(mapped.getStatus()).isEqualTo(attendance.getStatus());
+  @Override
+  protected Attendance mapToDomain(AttendanceEntity entity) {
+    return AttendanceMapper.toDomain(entity);
+  }
+
+  @Override
+  protected AttendanceEntity mapToEntity(Attendance domain) {
+    return AttendanceMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void copy(Attendance domain, AttendanceEntity entity) {
+    AttendanceMapper.copy(domain, entity);
+  }
+
+  @Override
+  protected void assertRoundTrip(Attendance original, Attendance mapped) {
+    assertThat(mapped.getId()).isEqualTo(original.getId());
+    assertThat(mapped.getStatus()).isEqualTo(original.getStatus());
     assertThat(mapped.getQrValidationInfo().getQrValidationHash())
-        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
-  }
-
-  @Test
-  @DisplayName("toDomain should return null when entity is null")
-  void toDomainShouldReturnNullForNullEntity() {
-    assertThat(AttendanceMapper.toDomain(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("toEntity should return null when domain is null")
-  void toEntityShouldReturnNullForNullDomain() {
-    assertThat(AttendanceMapper.toEntity(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when domain is null")
-  void copyShouldHandleNullDomain() {
-    AttendanceEntity entity = AttendanceEntity.builder().status("WAITING").build();
-    AttendanceMapper.copy(null, entity);
-    assertThat(entity.getStatus()).isEqualTo("WAITING");
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when entity is null")
-  void copyShouldHandleNullEntity() {
-    Attendance attendance = AttendanceBuilder.anAttendance().build();
-    AttendanceMapper.copy(attendance, null);
-  }
-
-  @Test
-  @DisplayName("copy should do nothing when both are null")
-  void copyShouldHandleBothNull() {
-    AttendanceMapper.copy(null, null);
+        .isEqualTo(original.getQrValidationInfo().getQrValidationHash());
+    assertThat(mapped.getEnrollmentIdentifier().getProjectId())
+        .isEqualTo(original.getEnrollmentIdentifier().getProjectId());
+    assertThat(mapped.getEnrollmentIdentifier().getStudentId())
+        .isEqualTo(original.getEnrollmentIdentifier().getStudentId());
+    assertThat(mapped.getQrValidationInfo().getDuration())
+        .isEqualByComparingTo(original.getQrValidationInfo().getDuration());
+    assertThat(mapped.getAttendanceInfo().getAuditInfo().getCreatedAt())
+        .isEqualTo(original.getAttendanceInfo().getAuditInfo().getCreatedAt());
   }
 
   @Test
   @DisplayName("copy should update all entity fields from domain")
   void copyShouldUpdateEntityFields() {
-    Attendance attendance = AttendanceBuilder.anAttendance().build();
-    AttendanceEntity entity = AttendanceEntity.builder().status("OLD").build();
+    Attendance attendance = createDomain();
+    AttendanceEntity entity = createEntity();
 
     AttendanceMapper.copy(attendance, entity);
 
@@ -120,23 +115,5 @@ class AttendanceMapperTest {
     assertThat(view.status()).isEqualTo(AttendanceStatus.WAITING);
     assertThat(view.validatedById()).isEqualTo(validatedBy);
     assertThat(view.validatedAt()).isEqualTo(now);
-  }
-
-  @Test
-  @DisplayName("Round-trip should preserve all value objects")
-  void roundTripShouldPreserveAllValueObjects() {
-    Attendance attendance = AttendanceBuilder.anAttendance().build();
-
-    AttendanceEntity entity = AttendanceMapper.toEntity(attendance);
-    Attendance mapped = AttendanceMapper.toDomain(entity);
-
-    assertThat(mapped.getEnrollmentIdentifier().getProjectId())
-        .isEqualTo(attendance.getEnrollmentIdentifier().getProjectId());
-    assertThat(mapped.getEnrollmentIdentifier().getStudentId())
-        .isEqualTo(attendance.getEnrollmentIdentifier().getStudentId());
-    assertThat(mapped.getQrValidationInfo().getDuration())
-        .isEqualByComparingTo(attendance.getQrValidationInfo().getDuration());
-    assertThat(mapped.getAttendanceInfo().getAuditInfo().getCreatedAt())
-        .isEqualTo(attendance.getAttendanceInfo().getAuditInfo().getCreatedAt());
   }
 }

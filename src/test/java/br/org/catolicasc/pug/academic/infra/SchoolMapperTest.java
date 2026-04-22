@@ -5,58 +5,51 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("SchoolMapper Tests")
-class SchoolMapperTest {
+class SchoolMapperTest extends CopyableMapperTest<School, SchoolEntity> {
 
-  @Test
-  @DisplayName("Should perform round-trip mapping for School")
-  void shouldPerformRoundTrip() {
-    School school = School.factory("School of Engineering");
-
-    SchoolEntity entity = SchoolMapper.toEntity(school);
-    School mapped = SchoolMapper.toDomain(entity);
-
-    assertThat(mapped.getId()).isEqualTo(school.getId());
-    assertThat(mapped.getName()).isEqualTo(school.getName());
+  @Override
+  protected School createDomain() {
+    return School.factory("School of Engineering");
   }
 
-  @Test
-  @DisplayName("toDomain should return null when entity is null")
-  void toDomainShouldReturnNullForNullEntity() {
-    assertThat(SchoolMapper.toDomain(null)).isNull();
+  @Override
+  protected SchoolEntity createEntity() {
+    return SchoolEntity.builder().name("Original").build();
   }
 
-  @Test
-  @DisplayName("toEntity should return null when domain is null")
-  void toEntityShouldReturnNullForNullDomain() {
-    assertThat(SchoolMapper.toEntity(null)).isNull();
+  @Override
+  protected School mapToDomain(SchoolEntity entity) {
+    return SchoolMapper.toDomain(entity);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when domain is null")
-  void copyShouldHandleNullDomain() {
-    SchoolEntity entity = SchoolEntity.builder().name("Original").build();
-    SchoolMapper.copy(null, entity);
-    assertThat(entity.getName()).isEqualTo("Original");
+  @Override
+  protected SchoolEntity mapToEntity(School domain) {
+    return SchoolMapper.toEntity(domain);
   }
 
-  @Test
-  @DisplayName("copy should do nothing when entity is null")
-  void copyShouldHandleNullEntity() {
-    School school = School.factory("Test");
-    SchoolMapper.copy(school, null);
+  @Override
+  protected void copy(School domain, SchoolEntity entity) {
+    SchoolMapper.copy(domain, entity);
+  }
+
+  @Override
+  protected void assertRoundTrip(School original, School mapped) {
+    assertThat(mapped.getId()).isEqualTo(original.getId());
+    assertThat(mapped.getName()).isEqualTo(original.getName());
   }
 
   @Test
   @DisplayName("copy should update entity fields from domain")
   void copyShouldUpdateEntityFields() {
     School school = School.factory("Updated School");
-    SchoolEntity entity = SchoolEntity.builder().name("Old").build();
+    SchoolEntity entity = createEntity();
 
     SchoolMapper.copy(school, entity);
 

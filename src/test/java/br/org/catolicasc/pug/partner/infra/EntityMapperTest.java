@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
@@ -11,44 +12,50 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("EntityMapper Tests")
-class EntityMapperTest {
+class EntityMapperTest extends CopyableMapperTest<Entity, EntityEntity> {
 
-  @Test
-  @DisplayName("Should perform perfect round-trip (Domain -> Entity -> Domain)")
-  void shouldPerformRoundTrip() {
-    Entity entity =
-        Entity.factory(
-            Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
-            "WEG S.A.",
-            UUID.randomUUID(),
-            "Address");
-
-    EntityEntity persistence = EntityMapper.toEntity(entity);
-    Entity mapped = EntityMapper.toDomain(persistence);
-
-    assertThat(mapped).isEqualTo(entity);
-    assertThat(mapped.getCnpj().getValue()).isEqualTo(entity.getCnpj().getValue());
-    assertThat(mapped.getAuditInfo().getCreatedAt())
-        .isEqualTo(entity.getAuditInfo().getCreatedAt());
+  @Override
+  protected Entity createDomain() {
+    return Entity.factory(
+        Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
+        "WEG S.A.",
+        UUID.randomUUID(),
+        "Address");
   }
 
-  @Test
-  @DisplayName("Should return null when mapping null input")
-  void shouldReturnNullOnNullInput() {
-    assertThat(EntityMapper.toDomain(null)).isNull();
-    assertThat(EntityMapper.toEntity(null)).isNull();
+  @Override
+  protected EntityEntity createEntity() {
+    return new EntityEntity();
+  }
+
+  @Override
+  protected Entity mapToDomain(EntityEntity entity) {
+    return EntityMapper.toDomain(entity);
+  }
+
+  @Override
+  protected EntityEntity mapToEntity(Entity domain) {
+    return EntityMapper.toEntity(domain);
+  }
+
+  @Override
+  protected void copy(Entity domain, EntityEntity entity) {
+    EntityMapper.copy(domain, entity);
+  }
+
+  @Override
+  protected void assertRoundTrip(Entity original, Entity mapped) {
+    assertThat(mapped).isEqualTo(original);
+    assertThat(mapped.getCnpj().getValue()).isEqualTo(original.getCnpj().getValue());
+    assertThat(mapped.getAuditInfo().getCreatedAt())
+        .isEqualTo(original.getAuditInfo().getCreatedAt());
   }
 
   @Test
   @DisplayName("Should update existing JPA Entity correctly")
   void shouldCopyProperties() {
-    Entity entity =
-        Entity.factory(
-            Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj()),
-            "WEG S.A.",
-            UUID.randomUUID(),
-            "Old Addr");
-    EntityEntity dbEntity = new EntityEntity();
+    Entity entity = createDomain();
+    EntityEntity dbEntity = createEntity();
 
     Entity updatedDomain = entity.rename("New WEG Name");
     EntityMapper.copy(updatedDomain, dbEntity);
