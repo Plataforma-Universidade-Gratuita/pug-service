@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.project.service.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import org.junit.jupiter.api.DisplayName;

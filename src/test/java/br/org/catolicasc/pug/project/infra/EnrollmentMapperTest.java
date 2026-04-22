@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
-import br.org.catolicasc.pug.helpers.builders.EnrollmentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.EnrollmentBuilder;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.infra.persistence.EnrollmentEntity;
 import org.junit.jupiter.api.DisplayName;

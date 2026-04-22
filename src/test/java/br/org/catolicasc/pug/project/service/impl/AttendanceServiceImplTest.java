@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.AttendanceCreateCommandBuilder.anAttendanceCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.AttendanceValidateCommandBuilder.anAttendanceValidateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -20,8 +22,6 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.ProjectService;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -29,7 +29,6 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -78,8 +77,11 @@ class AttendanceServiceImplTest {
     when(projectService.getById(project.getId())).thenReturn(project);
     when(studentService.getById(student.getAccountId())).thenReturn(student);
 
-    AttendanceCreateCommand cmd =
-        new AttendanceCreateCommand(project.getId(), student.getAccountId(), new BigDecimal("2.0"));
+    var cmd =
+        anAttendanceCreateCommand()
+            .withProjectId(project.getId())
+            .withStudentId(student.getAccountId())
+            .build();
     Attendance saved = service.save(cmd);
 
     assertThat(saved).isNotNull();
@@ -91,9 +93,11 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should validate attendance successfully")
   void validateSuccess() {
-    AttendanceValidateCommand cmd =
-        new AttendanceValidateCommand(
-            attendance.getQrValidationInfo().getQrValidationHash(), AttendanceStatus.PRESENT);
+    var cmd =
+        anAttendanceValidateCommand()
+            .withQrValidationHash(attendance.getQrValidationInfo().getQrValidationHash())
+            .withStatus(AttendanceStatus.PRESENT)
+            .build();
 
     Attendance validated = service.validate(attendance.getId(), cmd);
 
@@ -106,8 +110,7 @@ class AttendanceServiceImplTest {
   @Test
   @DisplayName("Should fail validation on wrong hash")
   void validateWrongHash() {
-    AttendanceValidateCommand cmd =
-        new AttendanceValidateCommand("wrong-hash", AttendanceStatus.PRESENT);
+    var cmd = anAttendanceValidateCommand().withQrValidationHash("wrong-hash").build();
     assertThrows(ResourceNotFoundException.class, () -> service.validate(attendance.getId(), cmd));
   }
 

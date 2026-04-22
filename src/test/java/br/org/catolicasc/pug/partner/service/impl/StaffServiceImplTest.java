@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.StaffCreateCommandBuilder.aStaffCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.StaffUpdateCommandBuilder.aStaffUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,12 +11,7 @@ import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.service.AccountService;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
 import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
 import br.org.catolicasc.pug.project.service.AttendanceService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -48,11 +45,12 @@ class StaffServiceImplTest {
     var entity = factory.createEntity(factory.getAnyCity());
     var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
 
-    StaffCreateCommand cmd =
-        new StaffCreateCommand(
-            entity.getId(),
-            new AccountCreateCommand(
-                account.getEmail().getValue(), AccountType.PARTNER, "pass", null));
+    var cmd =
+        aStaffCreateCommand()
+            .withEntityId(entity.getId())
+            .withEmail(account.getEmail().getValue())
+            .withoutUser()
+            .build();
 
     when(accountService.save(any())).thenReturn(account);
 
@@ -68,11 +66,12 @@ class StaffServiceImplTest {
     var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     factory.createStaff(account, entity);
 
-    StaffCreateCommand cmd =
-        new StaffCreateCommand(
-            entity.getId(),
-            new AccountCreateCommand(
-                account.getEmail().getValue(), AccountType.PARTNER, "pass", null));
+    var cmd =
+        aStaffCreateCommand()
+            .withEntityId(entity.getId())
+            .withEmail(account.getEmail().getValue())
+            .withoutUser()
+            .build();
     when(accountService.save(any())).thenReturn(account);
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
@@ -101,9 +100,8 @@ class StaffServiceImplTest {
     var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     factory.createStaff(account, entity);
 
-    var userCmd = new UserUpdateCommand("New Name");
-    var accCmd = new AccountUpdateCommand(account.getEmail().getValue(), null, userCmd);
-    var cmd = new StaffUpdateCommand(accCmd);
+    var cmd =
+        aStaffUpdateCommand().withName("New Name").withEmail(account.getEmail().getValue()).build();
 
     var updated = service.update(account.getId(), cmd);
 
@@ -156,11 +154,12 @@ class StaffServiceImplTest {
 
     factory.createStaff(account, entityA);
 
-    StaffCreateCommand cmd =
-        new StaffCreateCommand(
-            entityB.getId(),
-            new AccountCreateCommand(
-                account.getEmail().getValue(), AccountType.PARTNER, "pass", null));
+    var cmd =
+        aStaffCreateCommand()
+            .withEntityId(entityB.getId())
+            .withEmail(account.getEmail().getValue())
+            .withoutUser()
+            .build();
 
     when(accountService.save(any())).thenReturn(account);
 

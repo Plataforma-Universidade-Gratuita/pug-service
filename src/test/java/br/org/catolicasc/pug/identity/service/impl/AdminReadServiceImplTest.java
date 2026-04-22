@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -13,9 +14,9 @@ import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,7 +43,7 @@ class AdminReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when admin missing")
   void notFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
+    assertThrows(
         ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
   }
 
@@ -67,22 +68,21 @@ class AdminReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound for invalid email lookup")
   void getViewByEmailNotFound() {
     when(queries.findOptionalByEmail("missing@pug.com")).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
   }
 
   @ParameterizedTest
   @NullAndEmptySource
   @DisplayName("Should throw ResourceNotFound for null or empty email")
   void getViewByEmailInvalid(String email) {
-    Assertions.assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail(email));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail(email));
   }
 
   @Test
   @DisplayName("Should list all admin views")
   void listViews() {
     when(queries.listAllAdmins())
-        .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
+        .thenReturn(List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
     assertThat(service.listViews()).hasSize(1);
   }
 
@@ -91,7 +91,7 @@ class AdminReadServiceImplTest {
   void listViewsByCpfSuccess() {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(queries.listByCpf(cpf))
-        .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
+        .thenReturn(List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
 
     assertThat(service.listViewsByCpf(cpf)).hasSize(1);
   }

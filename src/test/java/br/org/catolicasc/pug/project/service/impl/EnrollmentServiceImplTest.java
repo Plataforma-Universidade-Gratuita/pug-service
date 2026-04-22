@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.EnrollmentCreateCommandBuilder.anEnrollmentCreateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -17,7 +18,6 @@ import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
@@ -63,7 +63,7 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should save enrollment successfully")
   void saveSuccess() {
-    EnrollmentCreateCommand cmd = new EnrollmentCreateCommand(project.getId());
+    var cmd = anEnrollmentCreateCommand().withProjectId(project.getId()).build();
     Enrollment saved = service.save(cmd);
     assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
   }
@@ -72,12 +72,12 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should throw DuplicateResourceException for same enrollment")
   void saveDuplicate() {
-    service.save(new EnrollmentCreateCommand(project.getId()));
+    service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build());
     em.flush();
     em.clear();
     assertThrows(
         DuplicateResourceException.class,
-        () -> service.save(new EnrollmentCreateCommand(project.getId())));
+        () -> service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build()));
   }
 
   @Test

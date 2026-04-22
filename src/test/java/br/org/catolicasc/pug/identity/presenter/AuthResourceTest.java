@@ -1,10 +1,10 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.LoginRequestBuilder.aLoginRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -24,7 +24,7 @@ class AuthResourceTest {
   @Test
   @DisplayName("POST /auth/login - Success")
   void loginSuccess() {
-    LoginRequest req = new LoginRequest("test@pug.com", "password");
+    var req = aLoginRequest().withEmail("test@pug.com").withPassword("password").build();
     TokenResponse token = new TokenResponse("mocked-token", null, AccountType.STUDENT, 3600);
 
     when(authService.login(req)).thenReturn(token);
@@ -43,7 +43,7 @@ class AuthResourceTest {
   @Test
   @DisplayName("POST /auth/login - Unauthorized")
   void loginUnauthorized() {
-    LoginRequest req = new LoginRequest("bad@pug.com", "wrong");
+    var req = aLoginRequest().withEmail("bad@pug.com").withPassword("wrong").build();
     when(authService.login(req)).thenThrow(new NotAuthorizedException("Unauthorized"));
 
     given()

@@ -1,6 +1,9 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.UserCreateCommandBuilder.aUserCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.UserUpdateCommandBuilder.aUserUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
@@ -11,7 +14,6 @@ import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.UserRepository;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -22,7 +24,6 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -37,32 +38,30 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should create user successfully and fire audit")
   void saveSuccess() {
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    UserCreateCommand cmd = new UserCreateCommand(cpf, "New Name");
+    var cmd = aUserCreateCommand().build();
     when(repository.existsByCpf(any())).thenReturn(false);
     when(repository.persist(any())).thenAnswer(i -> i.getArgument(0));
 
     User saved = service.save(cmd);
 
-    assertThat(saved.getName()).isEqualTo("New Name");
+    assertThat(saved.getName()).isEqualTo(cmd.name());
     verify(audit).fireCreate(User.class.getName(), saved.getId());
   }
 
   @Test
   @DisplayName("Should throw DuplicateResourceException if CPF exists")
   void saveDuplicate() {
-    UserCreateCommand userCmd =
-        new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name");
+    var userCmd = aUserCreateCommand().build();
     when(repository.existsByCpf(anyString())).thenReturn(true);
 
-    Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
+    assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
   }
 
   @Test
   @DisplayName("Should throw AppValidationException for invalid input")
   void saveInvalid() {
-    UserCreateCommand cmd = new UserCreateCommand("123", "Too Short");
-    Assertions.assertThrows(AppValidationException.class, () -> service.save(cmd));
+    var cmd = aUserCreateCommand().withCpf("123").build();
+    assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
 
   @Test
@@ -89,7 +88,7 @@ class UserServiceImplTest {
         .thenReturn(Optional.of(user))
         .thenReturn(Optional.of(updatedUser));
 
-    UserUpdateCommand cmd = new UserUpdateCommand("New Name");
+    var cmd = aUserUpdateCommand().withName("New Name").build();
     User result = service.update(id, cmd);
 
     assertThat(result.getName()).isEqualTo("New Name");
@@ -105,16 +104,15 @@ class UserServiceImplTest {
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     String longName = "A".repeat(300);
-    UserUpdateCommand cmd = new UserUpdateCommand(longName);
+    var cmd = aUserUpdateCommand().withName(longName).build();
 
-    Assertions.assertThrows(AppValidationException.class, () -> service.update(id, cmd));
+    assertThrows(AppValidationException.class, () -> service.update(id, cmd));
   }
 
   @Test
   @DisplayName("Should successfully bulk create users")
   void saveInBulkSuccess() {
-    List<UserCreateCommand> cmds =
-        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
+    List<UserCreateCommand> cmds = List.of(aUserCreateCommand().build());
     when(repository.existsAnyByCpfs(any())).thenReturn(false);
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -126,11 +124,10 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on bulk duplicate")
   void saveInBulkDuplicate() {
-    List<UserCreateCommand> cmds =
-        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
+    List<UserCreateCommand> cmds = List.of(aUserCreateCommand().build());
     when(repository.existsAnyByCpfs(any())).thenReturn(true);
 
-    Assertions.assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
+    assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
   }
 
   @Test
@@ -156,8 +153,7 @@ class UserServiceImplTest {
   @DisplayName("Should throw ResourceNotFoundException for unknown ID")
   void getByIdNotFound() {
     when(repository.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
   }
 
   @Test

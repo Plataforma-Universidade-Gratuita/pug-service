@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.EntityCreateCommandBuilder.anEntityCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.EntityUpdateCommandBuilder.anEntityUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,11 +9,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.geo.domain.City;
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.partner.domain.Entity;
-import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -42,16 +41,11 @@ class EntityServiceImplTest {
   @Transactional
   @DisplayName("Should save entity successfully")
   void saveSuccess() {
-    EntityCreateCommand cmd =
-        new EntityCreateCommand(
-            TestBrazilianIdentifierGenerator.generateValidCnpj(),
-            "New Entity",
-            factory.getAnyCity().getId(),
-            "Addr");
+    var cmd = anEntityCreateCommand().withCityId(factory.getAnyCity().getId()).build();
 
     Entity saved = service.save(cmd);
 
-    assertThat(saved.getName()).isEqualTo("New Entity");
+    assertThat(saved.getName()).isEqualTo(cmd.name());
     verify(audit).fireCreate(Entity.class.getName(), saved.getId());
   }
 
@@ -62,9 +56,11 @@ class EntityServiceImplTest {
     Entity created = factory.createEntity(factory.getAnyCity());
     em.flush();
 
-    EntityCreateCommand cmd =
-        new EntityCreateCommand(
-            created.getCnpj().getValue(), "Dupe", factory.getAnyCity().getId(), "Addr");
+    var cmd =
+        anEntityCreateCommand()
+            .withCnpj(created.getCnpj().getValue())
+            .withCityId(factory.getAnyCity().getId())
+            .build();
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -74,11 +70,11 @@ class EntityServiceImplTest {
   @DisplayName("Should update entity successfully")
   void updateSuccess() {
     Entity entity = factory.createEntity(factory.getAnyCity());
-    EntityUpdateCommand cmd = new EntityUpdateCommand("Updated Name", null, null);
+    var cmd = anEntityUpdateCommand().build();
 
     Entity updated = service.update(entity.getId(), cmd);
 
-    assertThat(updated.getName()).isEqualTo("Updated Name");
+    assertThat(updated.getName()).isEqualTo(cmd.name());
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 
@@ -149,7 +145,12 @@ class EntityServiceImplTest {
   @Transactional
   @DisplayName("Should throw validation exception for invalid entity data")
   void saveValidationError() {
-    EntityCreateCommand cmd = new EntityCreateCommand("invalid-cnpj", "", null, "Addr");
+    var cmd =
+        anEntityCreateCommand()
+            .withCnpj("invalid-cnpj")
+            .withName("")
+            .withCityId(factory.getAnyCity().getId())
+            .build();
 
     assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
@@ -158,7 +159,7 @@ class EntityServiceImplTest {
   @DisplayName("Should throw when updating non-existing entity")
   void updateNotFound() {
     UUID id = UUID.randomUUID();
-    EntityUpdateCommand cmd = new EntityUpdateCommand("Name", null, null);
+    var cmd = anEntityUpdateCommand().build();
 
     assertThrows(ResourceNotFoundException.class, () -> service.update(id, cmd));
   }

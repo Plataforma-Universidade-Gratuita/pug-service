@@ -8,7 +8,7 @@ import static org.hamcrest.Matchers.is;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
@@ -17,19 +17,33 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("AttendanceResource Integration Tests")
-class AttendanceResourceTest {
+class AttendanceResourceTest extends BaseResourceTest {
 
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+  private record AttendanceGraph(Project project, Student student, Attendance attendance) {}
+
+  private AttendanceGraph createAttendanceGraph() throws Exception {
+    Project[] project = new Project[1];
+    Student[] student = new Student[1];
+    Attendance[] attendance = new Attendance[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project[0]);
+          attendance[0] = factory.createAttendance(project[0], student[0]);
+        });
+    return new AttendanceGraph(project[0], student[0], attendance[0]);
+  }
 
   @Test
   @TestSecurity(
@@ -37,27 +51,16 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/attendances/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    Attendance attendance = factory.createAttendance(project, student);
-    em.flush();
-    utx.commit();
+    AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .pathParam("id", attendance.getId())
+        .pathParam("id", g.attendance().getId())
         .when()
         .get("/projects/attendances/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(attendance.getId().toString()));
+        .body("data.id", is(g.attendance().getId().toString()));
   }
 
   @Test
@@ -80,17 +83,7 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/attendances - List All")
   void listAll() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    factory.createAttendance(project, student);
-    utx.commit();
+    createAttendanceGraph();
 
     given()
         .when()
@@ -106,20 +99,10 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/attendances?projectId= - Filter by Project")
   void listByProjectId() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    factory.createAttendance(project, student);
-    utx.commit();
+    AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .queryParam("projectId", project.getId().toString())
+        .queryParam("projectId", g.project().getId().toString())
         .when()
         .get("/projects/attendances")
         .then()
@@ -133,20 +116,10 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/attendances?studentId= - Filter by Student")
   void listByStudentId() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    factory.createAttendance(project, student);
-    utx.commit();
+    AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .queryParam("studentId", student.getAccountId().toString())
+        .queryParam("studentId", g.student().getAccountId().toString())
         .when()
         .get("/projects/attendances")
         .then()
@@ -160,21 +133,11 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/attendances?projectId=&studentId= - Filter by Enrollment")
   void listByEnrollmentId() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    factory.createAttendance(project, student);
-    utx.commit();
+    AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .queryParam("projectId", project.getId().toString())
-        .queryParam("studentId", student.getAccountId().toString())
+        .queryParam("projectId", g.project().getId().toString())
+        .queryParam("studentId", g.student().getAccountId().toString())
         .when()
         .get("/projects/attendances")
         .then()
@@ -188,21 +151,10 @@ class AttendanceResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /projects/attendances/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    Attendance attendance = factory.createAttendance(project, student);
-    em.flush();
-    utx.commit();
+    AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .pathParam("id", attendance.getId())
+        .pathParam("id", g.attendance().getId())
         .when()
         .delete("/projects/attendances/{id}")
         .then()
@@ -212,6 +164,6 @@ class AttendanceResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    given().when().get("/projects/attendances").then().statusCode(401);
+    assertUnauthenticated("/projects/attendances");
   }
 }

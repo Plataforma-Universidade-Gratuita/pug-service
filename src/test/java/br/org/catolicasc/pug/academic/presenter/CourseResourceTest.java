@@ -10,27 +10,20 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("CourseResource Integration Tests")
-class CourseResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class CourseResourceTest extends BaseResourceTest {
 
   @InjectMock AuditPublisher audit;
 
@@ -40,21 +33,23 @@ class CourseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /academic/courses/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          school[0] = factory.createSchool();
+          course[0] = factory.createCourse(school[0]);
+        });
 
     given()
-        .pathParam("id", course.getId())
+        .pathParam("id", course[0].getId())
         .when()
         .get("/academic/courses/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(course.getId().toString()))
-        .body("data.name", is(course.getName()));
+        .body("data.id", is(course[0].getId().toString()))
+        .body("data.name", is(course[0].getName()));
   }
 
   @Test
@@ -77,10 +72,11 @@ class CourseResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/courses - List All")
   void listAll() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    factory.createCourse(school);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          factory.createCourse(school);
+        });
 
     given()
         .when()
@@ -96,13 +92,15 @@ class CourseResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/courses?schoolId= - Filter by School")
   void listBySchoolId() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    factory.createCourse(school);
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(
+        () -> {
+          school[0] = factory.createSchool();
+          factory.createCourse(school[0]);
+        });
 
     given()
-        .queryParam("schoolId", school.getId().toString())
+        .queryParam("schoolId", school[0].getId().toString())
         .when()
         .get("/academic/courses")
         .then()
@@ -116,13 +114,11 @@ class CourseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/courses - Success")
   void createSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(() -> school[0] = factory.createSchool());
 
     CourseCreateRequest req =
-        new CourseCreateRequest("New Course " + UUID.randomUUID(), school.getId());
+        new CourseCreateRequest("New Course " + UUID.randomUUID(), school[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -141,13 +137,15 @@ class CourseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/courses - Duplicate Name")
   void createDuplicate() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course existing = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    Course[] existing = new Course[1];
+    doInTransaction(
+        () -> {
+          school[0] = factory.createSchool();
+          existing[0] = factory.createCourse(school[0]);
+        });
 
-    CourseCreateRequest req = new CourseCreateRequest(existing.getName(), school.getId());
+    CourseCreateRequest req = new CourseCreateRequest(existing[0].getName(), school[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -164,17 +162,18 @@ class CourseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /academic/courses/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+        });
 
     CourseUpdateRequest req = new CourseUpdateRequest("Updated " + UUID.randomUUID(), null);
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", course.getId())
+        .pathParam("id", course[0].getId())
         .body(req)
         .when()
         .put("/academic/courses/{id}")
@@ -189,14 +188,15 @@ class CourseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /academic/courses/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+        });
 
     given()
-        .pathParam("id", course.getId())
+        .pathParam("id", course[0].getId())
         .when()
         .delete("/academic/courses/{id}")
         .then()
@@ -206,7 +206,7 @@ class CourseResourceTest {
   @Test
   @DisplayName("Should return 401 when unauthenticated")
   void unauthorizedAccess() {
-    given().when().get("/academic/courses").then().statusCode(401);
+    assertUnauthenticated("/academic/courses");
   }
 
   @Test
@@ -215,11 +215,10 @@ class CourseResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /academic/courses - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(() -> school[0] = factory.createSchool());
 
-    CourseCreateRequest req = new CourseCreateRequest("Forbidden", school.getId());
+    CourseCreateRequest req = new CourseCreateRequest("Forbidden", school[0].getId());
 
     given()
         .contentType(ContentType.JSON)

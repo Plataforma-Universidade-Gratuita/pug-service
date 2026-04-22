@@ -6,26 +6,19 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("UserReadOnlyResource Integration Tests")
-class UserReadOnlyResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class UserReadOnlyResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
 
@@ -35,19 +28,17 @@ class UserReadOnlyResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/users/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    em.flush();
-    utx.commit();
+    User[] user = new User[1];
+    doInTransaction(() -> user[0] = factory.createUser());
 
     given()
-        .pathParam("id", user.getId())
+        .pathParam("id", user[0].getId())
         .when()
         .get("/identity/users/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(user.getId().toString()));
+        .body("data.id", is(user[0].getId().toString()));
   }
 
   @Test
@@ -72,18 +63,16 @@ class UserReadOnlyResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/users/by-cpf/{cpf} - Success")
   void getByCpfSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    em.flush();
-    utx.commit();
+    User[] user = new User[1];
+    doInTransaction(() -> user[0] = factory.createUser());
 
     given()
-        .pathParam("cpf", user.getCpf().getValue())
+        .pathParam("cpf", user[0].getCpf().getValue())
         .when()
         .get("/identity/users/by-cpf/{cpf}")
         .then()
         .statusCode(200)
-        .body("data.cpf", is(user.getCpf().getValue()));
+        .body("data.cpf", is(user[0].getCpf().getValue()));
   }
 
   @Test
@@ -92,18 +81,17 @@ class UserReadOnlyResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /identity/users/me - Authenticated Success")
   void getMeSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    utx.commit();
+    User[] user = new User[1];
+    doInTransaction(() -> user[0] = factory.createUser());
 
-    when(authService.getCurrentUserId()).thenReturn(user.getId());
+    when(authService.getCurrentUserId()).thenReturn(user[0].getId());
 
     given()
         .when()
         .get("/identity/users/me")
         .then()
         .statusCode(200)
-        .body("data.id", is(user.getId().toString()));
+        .body("data.id", is(user[0].getId().toString()));
   }
 
   @Test
@@ -112,9 +100,7 @@ class UserReadOnlyResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/users - List All")
   void listUsers() throws Exception {
-    utx.begin();
-    factory.createUser();
-    utx.commit();
+    doInTransaction(() -> factory.createUser());
 
     given()
         .when()
@@ -127,6 +113,6 @@ class UserReadOnlyResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without security")
   void unauthorizedAccess() {
-    given().when().get("/identity/users").then().statusCode(401);
+    assertUnauthenticated("/identity/users");
   }
 }

@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.infra.persistence.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
-import br.org.catolicasc.pug.helpers.builders.AccountBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.AccountBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;

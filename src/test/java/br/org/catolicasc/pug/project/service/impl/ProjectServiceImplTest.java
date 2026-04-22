@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.ProjectCreateCommandBuilder.aProjectCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.ProjectUpdateCommandBuilder.aProjectUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,8 +16,6 @@ import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
-import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
@@ -59,13 +59,11 @@ class ProjectServiceImplTest {
   @Transactional
   @DisplayName("Should save project successfully")
   void saveSuccess() {
-    ProjectCreateCommand cmd =
-        new ProjectCreateCommand(
-            "Test Save Project", partnerEntity.getId(), "description", 20, new BigDecimal("40.00"));
+    var cmd = aProjectCreateCommand().withEntityId(partnerEntity.getId()).build();
 
     Project saved = service.save(cmd);
 
-    assertThat(saved.getName()).isEqualTo("Test Save Project");
+    assertThat(saved.getName()).isEqualTo(cmd.name());
     assertThat(saved.getProjectStatus()).isEqualTo(ProjectStatus.PLANNED);
     verify(audit).fireCreate(Project.class.getName(), saved.getId());
   }
@@ -76,9 +74,11 @@ class ProjectServiceImplTest {
   void saveDuplicate() {
     Project existing = factory.createProject(partnerEntity, creator);
 
-    ProjectCreateCommand cmd =
-        new ProjectCreateCommand(
-            existing.getName(), partnerEntity.getId(), "desc", 10, new BigDecimal("20.00"));
+    var cmd =
+        aProjectCreateCommand()
+            .withName(existing.getName())
+            .withEntityId(partnerEntity.getId())
+            .build();
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -88,7 +88,7 @@ class ProjectServiceImplTest {
   @DisplayName("Should update project successfully")
   void updateSuccess() {
     Project project = factory.createProject(partnerEntity, creator);
-    ProjectUpdateCommand cmd = new ProjectUpdateCommand(null, "Updated description", null, null);
+    var cmd = aProjectUpdateCommand().withDescription("Updated description").build();
 
     Project updated = service.update(project.getId(), cmd);
 
@@ -100,7 +100,7 @@ class ProjectServiceImplTest {
   @DisplayName("Should throw when updating non-existing project")
   void updateNotFound() {
     UUID id = UUID.randomUUID();
-    ProjectUpdateCommand cmd = new ProjectUpdateCommand("Name", null, null, null);
+    var cmd = aProjectUpdateCommand().withName("Name").build();
 
     assertThrows(ResourceNotFoundException.class, () -> service.update(id, cmd));
   }

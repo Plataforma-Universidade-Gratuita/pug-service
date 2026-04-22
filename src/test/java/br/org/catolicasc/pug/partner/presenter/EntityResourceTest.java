@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.partner.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.EntityCreateRequestBuilder.anEntityCreateRequest;
+import static br.org.catolicasc.pug.helpers.builders.requests.EntityUpdateRequestBuilder.anEntityUpdateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -7,28 +9,18 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import br.org.catolicasc.pug.geo.domain.City;
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.partner.domain.Entity;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityCreateRequest;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityUpdateRequest;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("EntityResource Integration Tests")
-class EntityResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class EntityResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
@@ -36,22 +28,23 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /partner/entities/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          entity[0] = factory.createEntity(city);
+        });
 
     given()
-        .pathParam("id", entity.getId())
+        .pathParam("id", entity[0].getId())
         .when()
         .get("/partner/entities/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(entity.getId().toString()))
+        .body("data.id", is(entity[0].getId().toString()))
         .body("data.cnpjFormatted", notNullValue())
-        .body("data.name", is(entity.getName()));
+        .body("data.name", is(entity[0].getName()));
   }
 
   @Test
@@ -76,19 +69,20 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /partner/entities/by-cnpj/{cnpj} - Success")
   void getByCnpjSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          entity[0] = factory.createEntity(city);
+        });
 
     given()
-        .pathParam("cnpj", entity.getCnpj().getValue())
+        .pathParam("cnpj", entity[0].getCnpj().getValue())
         .when()
         .get("/partner/entities/by-cnpj/{cnpj}")
         .then()
         .statusCode(200)
-        .body("data.cnpj", is(entity.getCnpj().getValue()));
+        .body("data.cnpj", is(entity[0].getCnpj().getValue()));
   }
 
   @Test
@@ -97,10 +91,11 @@ class EntityResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /partner/entities - List All")
   void listAll() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    factory.createEntity(city);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          factory.createEntity(city);
+        });
 
     given()
         .when()
@@ -116,13 +111,15 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /partner/entities?cityId= - Filter by City")
   void listByCityId() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    factory.createEntity(city);
-    utx.commit();
+    City[] city = new City[1];
+    doInTransaction(
+        () -> {
+          city[0] = factory.getAnyCity();
+          factory.createEntity(city[0]);
+        });
 
     given()
-        .queryParam("cityId", city.getId().toString())
+        .queryParam("cityId", city[0].getId().toString())
         .when()
         .get("/partner/entities")
         .then()
@@ -136,10 +133,11 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /partner/entities/cities - List Cities")
   void listCities() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    factory.createEntity(city);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          factory.createEntity(city);
+        });
 
     given()
         .when()
@@ -155,13 +153,10 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /partner/entities - Success")
   void createSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    utx.commit();
+    City[] city = new City[1];
+    doInTransaction(() -> city[0] = factory.getAnyCity());
 
-    String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
-    EntityCreateRequest req =
-        new EntityCreateRequest(cnpj, "New Entity Corp", city.getId(), "Rua Test, 123");
+    var req = anEntityCreateRequest().withCityId(city[0].getId()).build();
 
     given()
         .contentType(ContentType.JSON)
@@ -170,8 +165,8 @@ class EntityResourceTest {
         .post("/partner/entities")
         .then()
         .statusCode(201)
-        .body("data.name", is("New Entity Corp"))
-        .body("data.cnpj", is(cnpj))
+        .body("data.name", is(req.name()))
+        .body("data.cnpj", is(req.cnpjString()))
         .body("data.cnpjFormatted", notNullValue());
   }
 
@@ -181,15 +176,19 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /partner/entities - Duplicate CNPJ")
   void createDuplicate() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity existing = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] existing = new Entity[1];
+    City[] city = new City[1];
+    doInTransaction(
+        () -> {
+          city[0] = factory.getAnyCity();
+          existing[0] = factory.createEntity(city[0]);
+        });
 
-    EntityCreateRequest req =
-        new EntityCreateRequest(
-            existing.getCnpj().getValue(), "Duplicate Corp", city.getId(), "Rua Dup, 1");
+    var req =
+        anEntityCreateRequest()
+            .withCnpj(existing[0].getCnpj().getValue())
+            .withCityId(city[0].getId())
+            .build();
 
     given()
         .contentType(ContentType.JSON)
@@ -206,17 +205,18 @@ class EntityResourceTest {
       roles = {"STAFF"})
   @DisplayName("PUT /partner/entities/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          entity[0] = factory.createEntity(city);
+        });
 
-    EntityUpdateRequest req = new EntityUpdateRequest("Updated Name", null, null);
+    var req = anEntityUpdateRequest().withName("Updated Name").build();
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", entity.getId())
+        .pathParam("id", entity[0].getId())
         .body(req)
         .when()
         .put("/partner/entities/{id}")
@@ -231,7 +231,7 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /partner/entities/{id} - Not Found")
   void updateNotFound() {
-    EntityUpdateRequest req = new EntityUpdateRequest("Name", null, null);
+    var req = anEntityUpdateRequest().build();
 
     given()
         .contentType(ContentType.JSON)
@@ -249,14 +249,15 @@ class EntityResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /partner/entities/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          entity[0] = factory.createEntity(city);
+        });
 
     given()
-        .pathParam("id", entity.getId())
+        .pathParam("id", entity[0].getId())
         .when()
         .delete("/partner/entities/{id}")
         .then()
@@ -266,7 +267,7 @@ class EntityResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    given().when().get("/partner/entities").then().statusCode(401);
+    assertUnauthenticated("/partner/entities");
   }
 
   @Test
@@ -275,16 +276,10 @@ class EntityResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /partner/entities - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    utx.commit();
+    City[] city = new City[1];
+    doInTransaction(() -> city[0] = factory.getAnyCity());
 
-    EntityCreateRequest req =
-        new EntityCreateRequest(
-            TestBrazilianIdentifierGenerator.generateValidCnpj(),
-            "Forbidden Corp",
-            city.getId(),
-            "Rua X");
+    var req = anEntityCreateRequest().withCityId(city[0].getId()).build();
 
     given()
         .contentType(ContentType.JSON)

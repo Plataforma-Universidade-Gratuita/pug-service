@@ -1,4 +1,4 @@
-package br.org.catolicasc.pug.helpers.builders;
+package br.org.catolicasc.pug.helpers.builders.domain;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.project.domain.Project;

@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -42,7 +42,7 @@ class StudentReadServiceImplTest {
   @DisplayName("Should throw when account ID not found")
   void getViewByAccountIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
+    assertThrows(
         ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
   }
 
@@ -59,7 +59,7 @@ class StudentReadServiceImplTest {
   @DisplayName("Should throw when registration not found")
   void getViewByAcademicRegistrationNotFound() {
     when(queries.findOptionalByAcademicRegistration(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
+    assertThrows(
         ResourceNotFoundException.class, () -> service.getViewByAcademicRegistration("NOTFOUND"));
   }
 
@@ -76,8 +76,7 @@ class StudentReadServiceImplTest {
   @DisplayName("Should throw when CPF not found")
   void getViewByCpfNotFound() {
     when(queries.findOptionalByCpf(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByCpf("00000000000"));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByCpf("00000000000"));
   }
 
   @Test
@@ -93,8 +92,7 @@ class StudentReadServiceImplTest {
   @DisplayName("Should throw when email not found")
   void getViewByEmailNotFound() {
     when(queries.findOptionalByEmail(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByEmail("missing@test.com"));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail("missing@test.com"));
   }
 
   @Test

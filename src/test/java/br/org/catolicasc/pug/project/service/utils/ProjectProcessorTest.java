@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.project.service.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import java.math.BigDecimal;

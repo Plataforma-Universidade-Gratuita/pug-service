@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -14,7 +15,6 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,7 +39,7 @@ class StaffReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when staff not found")
   void getByAccountIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
+    assertThrows(
         ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
   }
 
@@ -104,7 +104,6 @@ class StaffReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when email not found")
   void getViewByEmailNotFound() {
     when(queries.findOptionalByEmail("missing@pug.com")).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
   }
 }

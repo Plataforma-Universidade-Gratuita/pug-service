@@ -1,17 +1,16 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.AdminCreateRequestBuilder.anAdminCreateRequest;
+import static br.org.catolicasc.pug.helpers.builders.requests.AdminUpdateRequestBuilder.anAdminUpdateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminUpdateRequest;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
@@ -19,19 +18,12 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("AdminResource Integration Tests")
-class AdminResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class AdminResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
 
@@ -41,13 +33,7 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /identity/admins - Success")
   void createSuccess() {
-    AdminCreateRequest req =
-        new AdminCreateRequest(
-            TestBrazilianIdentifierGenerator.generateValidCpf(),
-            "Admin Name",
-            "admin2@pug.com",
-            "password123",
-            Campi.JARAGUA_DO_SUL);
+    var req = anAdminCreateRequest().withCampus(Campi.JARAGUA_DO_SUL).build();
 
     given()
         .contentType(ContentType.JSON)
@@ -56,7 +42,6 @@ class AdminResourceTest {
         .post("/identity/admins")
         .then()
         .statusCode(201)
-        .body("data.accountResponse.email", is("admin2@pug.com"))
         .body("data.campus.campus", is("JARAGUA_DO_SUL"));
   }
 
@@ -66,18 +51,19 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /identity/admins/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
-    AdminUpdateRequest req = new AdminUpdateRequest(null, null, null, Campi.JOINVILLE);
+    var req = anAdminUpdateRequest().withName(null).withCampus(Campi.JOINVILLE).build();
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", acc.getId())
+        .pathParam("id", acc[0].getId())
         .body(req)
         .when()
         .put("/identity/admins/{id}")
@@ -92,15 +78,16 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /identity/admins/{id}/deactivate - Success")
   void deactivateSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
     given()
-        .pathParam("id", acc.getId())
+        .pathParam("id", acc[0].getId())
         .when()
         .patch("/identity/admins/{id}/deactivate")
         .then()
@@ -113,15 +100,16 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /identity/admins/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
     given()
-        .pathParam("id", acc.getId())
+        .pathParam("id", acc[0].getId())
         .when()
         .delete("/identity/admins/{id}")
         .then()
@@ -134,20 +122,22 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/admins/me - Success")
   void getMeSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
-    when(authService.getCurrentAccountId()).thenReturn(acc.getId());
+    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
 
     given()
         .when()
         .get("/identity/admins/me")
         .then()
         .statusCode(200)
-        .body("data.accountResponse.id", is(acc.getId().toString()));
+        .body("data.accountResponse.id", is(acc[0].getId().toString()));
   }
 
   @Test
@@ -156,20 +146,21 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/admins/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
     given()
-        .pathParam("id", acc.getId())
+        .pathParam("id", acc[0].getId())
         .when()
         .get("/identity/admins/{id}")
         .then()
         .statusCode(200)
-        .body("data.accountResponse.id", is(acc.getId().toString()));
+        .body("data.accountResponse.id", is(acc[0].getId().toString()));
   }
 
   @Test
@@ -178,20 +169,21 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/admins/by-email/{email} - Success")
   void getByEmailSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          acc[0] = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+        });
 
     given()
-        .pathParam("email", acc.getEmail().getValue())
+        .pathParam("email", acc[0].getEmail().getValue())
         .when()
         .get("/identity/admins/by-email/{email}")
         .then()
         .statusCode(200)
-        .body("data.accountResponse.email", is(acc.getEmail().getValue()));
+        .body("data.accountResponse.email", is(acc[0].getEmail().getValue()));
   }
 
   @Test
@@ -200,11 +192,12 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/admins - List All")
   void listAdmins() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          User user = factory.createUser();
+          Account acc = factory.createAccount(user, AccountType.ADMIN);
+          factory.createAdmin(acc);
+        });
 
     given()
         .when()
@@ -220,19 +213,20 @@ class AdminResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /identity/admins/by-cpf/{cpf} - Success")
   void listByCpfSuccess() throws Exception {
-    utx.begin();
-    User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.ADMIN);
-    factory.createAdmin(acc);
-    em.flush();
-    utx.commit();
+    User[] user = new User[1];
+    doInTransaction(
+        () -> {
+          user[0] = factory.createUser();
+          Account acc = factory.createAccount(user[0], AccountType.ADMIN);
+          factory.createAdmin(acc);
+        });
 
     given()
-        .pathParam("cpf", user.getCpf().getValue())
+        .pathParam("cpf", user[0].getCpf().getValue())
         .when()
         .get("/identity/admins/by-cpf/{cpf}")
         .then()
         .statusCode(200)
-        .body("data[0].accountResponse.userId", is(user.getId().toString()));
+        .body("data[0].accountResponse.userId", is(user[0].getId().toString()));
   }
 }

@@ -9,27 +9,20 @@ import static org.hamcrest.Matchers.notNullValue;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("SchoolResource Integration Tests")
-class SchoolResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class SchoolResourceTest extends BaseResourceTest {
 
   @InjectMock AuditPublisher audit;
 
@@ -39,20 +32,18 @@ class SchoolResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /academic/schools/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(() -> school[0] = factory.createSchool());
 
     given()
-        .pathParam("id", school.getId())
+        .pathParam("id", school[0].getId())
         .when()
         .get("/academic/schools/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(school.getId().toString()))
-        .body("data.name", is(school.getName()));
+        .body("data.id", is(school[0].getId().toString()))
+        .body("data.name", is(school[0].getName()));
   }
 
   @Test
@@ -76,9 +67,7 @@ class SchoolResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/schools - List All")
   void listAll() throws Exception {
-    utx.begin();
-    factory.createSchool();
-    utx.commit();
+    doInTransaction(() -> factory.createSchool());
 
     given()
         .when()
@@ -94,9 +83,7 @@ class SchoolResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/schools?q=xxx - Search")
   void searchByName() throws Exception {
-    utx.begin();
-    factory.createSchool();
-    utx.commit();
+    doInTransaction(() -> factory.createSchool());
 
     given()
         .queryParam("q", "NonExistentSchoolName")
@@ -130,12 +117,10 @@ class SchoolResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/schools - Duplicate Name")
   void createDuplicate() throws Exception {
-    utx.begin();
-    School existing = factory.createSchool();
-    em.flush();
-    utx.commit();
+    School[] existing = new School[1];
+    doInTransaction(() -> existing[0] = factory.createSchool());
 
-    SchoolCreateRequest req = new SchoolCreateRequest(existing.getName());
+    SchoolCreateRequest req = new SchoolCreateRequest(existing[0].getName());
 
     given()
         .contentType(ContentType.JSON)
@@ -152,16 +137,14 @@ class SchoolResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /academic/schools/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(() -> school[0] = factory.createSchool());
 
     SchoolUpdateRequest req = new SchoolUpdateRequest("Updated " + UUID.randomUUID());
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", school.getId())
+        .pathParam("id", school[0].getId())
         .body(req)
         .when()
         .put("/academic/schools/{id}")
@@ -176,13 +159,11 @@ class SchoolResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /academic/schools/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    em.flush();
-    utx.commit();
+    School[] school = new School[1];
+    doInTransaction(() -> school[0] = factory.createSchool());
 
     given()
-        .pathParam("id", school.getId())
+        .pathParam("id", school[0].getId())
         .when()
         .delete("/academic/schools/{id}")
         .then()
@@ -192,7 +173,7 @@ class SchoolResourceTest {
   @Test
   @DisplayName("Should return 401 when unauthenticated")
   void unauthorizedAccess() {
-    given().when().get("/academic/schools").then().statusCode(401);
+    assertUnauthenticated("/academic/schools");
   }
 
   @Test

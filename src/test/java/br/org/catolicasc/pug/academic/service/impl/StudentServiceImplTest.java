@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.StudentCreateCommandBuilder.aStudentCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.StudentUpdateCommandBuilder.aStudentUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
@@ -9,13 +11,9 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
@@ -29,7 +27,6 @@ import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -54,7 +51,7 @@ class StudentServiceImplTest {
     Course course = factory.createCourse(school);
     em.flush();
 
-    StudentCreateCommand cmd = buildCreateCommand(course.getId());
+    StudentCreateCommand cmd = aStudentCreateCommand().withCourseId(course.getId()).build();
     Student saved = service.save(cmd);
 
     assertThat(saved.getAccountId()).isNotNull();
@@ -66,7 +63,7 @@ class StudentServiceImplTest {
   @Transactional
   @DisplayName("Should throw when course not found on save")
   void saveCourseNotFound() {
-    StudentCreateCommand cmd = buildCreateCommand(UUID.randomUUID());
+    StudentCreateCommand cmd = aStudentCreateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
   }
 
@@ -83,22 +80,11 @@ class StudentServiceImplTest {
 
     Student existingStudent = service.getById(account.getId());
 
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    AccountCreateCommand accCmd =
-        new AccountCreateCommand(
-            cpf + "@test.com",
-            AccountType.STUDENT,
-            "hash",
-            new UserCreateCommand(cpf, "Another Student"));
     StudentCreateCommand cmd =
-        new StudentCreateCommand(
-            accCmd,
-            existingStudent.getAcademicRegistration().getValue(),
-            Campi.JOINVILLE,
-            course.getId(),
-            new BigDecimal("100"),
-            LocalDate.now(),
-            LocalDate.now().plusMonths(6));
+        aStudentCreateCommand()
+            .withAcademicRegistration(existingStudent.getAcademicRegistration().getValue())
+            .withCourseId(course.getId())
+            .build();
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -135,8 +121,7 @@ class StudentServiceImplTest {
     factory.createStudent(account, course);
     em.flush();
 
-    StudentUpdateCommand cmd =
-        new StudentUpdateCommand(null, null, Campi.JOINVILLE, null, null, null, null);
+    var cmd = aStudentUpdateCommand().withCampus(Campi.JOINVILLE).build();
     Student updated = service.update(account.getId(), cmd);
 
     assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
@@ -145,7 +130,7 @@ class StudentServiceImplTest {
   @Test
   @DisplayName("Should throw when updating non-existing student")
   void updateNotFound() {
-    StudentUpdateCommand cmd = new StudentUpdateCommand(null, null, null, null, null, null, null);
+    var cmd = aStudentUpdateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
   }
 
@@ -220,8 +205,8 @@ class StudentServiceImplTest {
     Course course = factory.createCourse(school);
     em.flush();
 
-    StudentCreateCommand cmd1 = buildCreateCommand(course.getId());
-    StudentCreateCommand cmd2 = buildCreateCommand(course.getId());
+    StudentCreateCommand cmd1 = aStudentCreateCommand().withCourseId(course.getId()).build();
+    StudentCreateCommand cmd2 = aStudentCreateCommand().withCourseId(course.getId()).build();
 
     List<Student> students = service.saveInBulk(List.of(cmd1, cmd2));
     assertThat(students).hasSize(2);
@@ -237,26 +222,5 @@ class StudentServiceImplTest {
   @DisplayName("Should delegate existsAnyByCourseId to repo")
   void existsAnyByCourseId() {
     assertThat(service.existsAnyByCourseId(UUID.randomUUID())).isFalse();
-  }
-
-  /* --- helpers --- */
-
-  private StudentCreateCommand buildCreateCommand(UUID courseId) {
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    AccountCreateCommand accCmd =
-        new AccountCreateCommand(
-            cpf + "@test.com",
-            AccountType.STUDENT,
-            "hash",
-            new UserCreateCommand(cpf, "Test Student " + cpf));
-    String reg = UUID.randomUUID().toString().substring(0, 14).toUpperCase();
-    return new StudentCreateCommand(
-        accCmd,
-        reg,
-        Campi.JOINVILLE,
-        courseId,
-        new BigDecimal("100"),
-        LocalDate.now(),
-        LocalDate.now().plusMonths(6));
   }
 }

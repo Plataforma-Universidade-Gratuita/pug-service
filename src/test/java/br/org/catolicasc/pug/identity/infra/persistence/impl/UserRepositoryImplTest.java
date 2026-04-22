@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.infra.persistence.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
-import br.org.catolicasc.pug.helpers.builders.UserBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.User;
 import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
@@ -106,8 +106,8 @@ class UserRepositoryImplTest {
     // We create new instances manually to test persistAll
     List<User> users =
         List.of(
-            br.org.catolicasc.pug.helpers.builders.UserBuilder.aUser().build(),
-            br.org.catolicasc.pug.helpers.builders.UserBuilder.aUser().build());
+            br.org.catolicasc.pug.helpers.builders.domain.UserBuilder.aUser().build(),
+            br.org.catolicasc.pug.helpers.builders.domain.UserBuilder.aUser().build());
 
     List<User> saved = repository.persistAll(users);
     assertThat(saved).hasSize(2);

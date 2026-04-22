@@ -1,19 +1,19 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.AdminCreateCommandBuilder.anAdminCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.AdminUpdateCommandBuilder.anAdminUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.builders.AccountBuilder;
-import br.org.catolicasc.pug.helpers.builders.AdminBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.AccountBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.AdminBuilder;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
 import br.org.catolicasc.pug.identity.service.AccountService;
-import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
-import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -22,7 +22,6 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -40,10 +39,7 @@ class AdminServiceImplTest {
   @DisplayName("Should save admin successfully and fire audit")
   void saveSuccess() {
     var account = AccountBuilder.anAccount().build();
-    var accCmd =
-        new br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand(
-            "admin@pug.com", AccountType.ADMIN, "pass", null);
-    var cmd = new AdminCreateCommand(accCmd, Campi.JARAGUA_DO_SUL);
+    var cmd = anAdminCreateCommand().withCampus(Campi.JARAGUA_DO_SUL).build();
 
     when(accountService.save(any())).thenReturn(account);
     when(repo.persist(any())).thenAnswer(i -> i.getArgument(0));
@@ -79,7 +75,7 @@ class AdminServiceImplTest {
         .thenReturn(Optional.of(current))
         .thenReturn(Optional.of(updatedExpected));
 
-    Admin updated = service.update(id, new AdminUpdateCommand(null, Campi.JOINVILLE));
+    Admin updated = service.update(id, anAdminUpdateCommand().withCampus(Campi.JOINVILLE).build());
 
     assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
   }
@@ -106,7 +102,7 @@ class AdminServiceImplTest {
       UUID id = UUID.randomUUID();
       when(repo.findOptionalByAccountId(id)).thenReturn(Optional.empty());
 
-      Assertions.assertThrows(ResourceNotFoundException.class, () -> service.deactivate(id));
+      assertThrows(ResourceNotFoundException.class, () -> service.deactivate(id));
       verify(accountService, never()).deactivate(any());
     }
 

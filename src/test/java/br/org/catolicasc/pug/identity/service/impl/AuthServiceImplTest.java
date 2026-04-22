@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,7 +21,6 @@ import jakarta.ws.rs.NotAuthorizedException;
 import java.util.Set;
 import java.util.UUID;
 import org.eclipse.microprofile.jwt.JsonWebToken;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -62,7 +62,7 @@ class AuthServiceImplTest {
             new ResourceNotFoundException(
                 br.org.catolicasc.pug.identity.domain.enums.IdentityErrorCodes.ACCOUNT_NOT_FOUND));
 
-    Assertions.assertThrows(
+    assertThrows(
         NotAuthorizedException.class,
         () -> authService.login(new LoginRequest("unknown@pug.com", "pass")));
   }
@@ -78,7 +78,7 @@ class AuthServiceImplTest {
     when(accountService.getByEmail(email)).thenReturn(acc);
     when(passwordService.verify(hash, "wrong")).thenReturn(false);
 
-    Assertions.assertThrows(
+    assertThrows(
         NotAuthorizedException.class, () -> authService.login(new LoginRequest(email, "wrong")));
   }
 
@@ -94,7 +94,7 @@ class AuthServiceImplTest {
 
     when(accountService.getByEmail(email)).thenReturn(acc);
 
-    Assertions.assertThrows(
+    assertThrows(
         NotAuthorizedException.class, () -> authService.login(new LoginRequest(email, "pass")));
   }
 
@@ -144,7 +144,7 @@ class AuthServiceImplTest {
     when(jwtMock.getGroups()).thenReturn(Set.of("STUDENT"));
 
     authService.requireCurrentAccountOfType(AccountType.STUDENT);
-    Assertions.assertThrows(
+    assertThrows(
         NotAuthorizedException.class,
         () -> authService.requireCurrentAccountOfType(AccountType.ADMIN));
   }
@@ -158,7 +158,7 @@ class AuthServiceImplTest {
     when(jwtMock.getGroups()).thenReturn(Set.of("STUDENT"));
 
     authService.requireCurrentAccountNotOfType(AccountType.ADMIN);
-    Assertions.assertThrows(
+    assertThrows(
         NotAuthorizedException.class,
         () -> authService.requireCurrentAccountNotOfType(AccountType.STUDENT));
   }
@@ -171,6 +171,6 @@ class AuthServiceImplTest {
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
     when(jwtMock.getClaim("accountId")).thenReturn(null);
 
-    Assertions.assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountId());
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountId());
   }
 }

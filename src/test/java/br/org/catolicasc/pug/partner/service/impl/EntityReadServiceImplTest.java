@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -17,7 +18,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -52,8 +52,7 @@ class EntityReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when ID not found")
   void getByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
   }
 
   @Test
@@ -96,8 +95,7 @@ class EntityReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when CNPJ not found")
   void getViewByCnpjNotFound() {
     when(queries.findOptionalByCnpj("00000000000000")).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewByCnpj("00000000000000"));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewByCnpj("00000000000000"));
   }
 
   @Test

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;

@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
@@ -13,7 +14,6 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -39,8 +39,7 @@ class UserReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound for unknown ID")
   void getByIdNotFound() {
     when(queries.findOptionalById(UUID.randomUUID())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
   }
 
   @Test

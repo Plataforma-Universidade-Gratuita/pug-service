@@ -1,4 +1,4 @@
-package br.org.catolicasc.pug.helpers.builders;
+package br.org.catolicasc.pug.helpers.builders.domain;
 
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;

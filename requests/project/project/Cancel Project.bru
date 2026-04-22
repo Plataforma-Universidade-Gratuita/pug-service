@@ -1,0 +1,27 @@
+meta {
+  name: Cancel Project
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{baseUrl}}/projects/{{projectId}}/cancel
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should cancel the project (CANCELED)", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

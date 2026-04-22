@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.CourseCreateCommandBuilder.aCourseCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.CourseUpdateCommandBuilder.aCourseUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,8 +9,6 @@ import static org.mockito.Mockito.verify;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -41,10 +41,10 @@ class CourseServiceImplTest {
     School school = factory.createSchool();
     em.flush();
 
-    CourseCreateCommand cmd = new CourseCreateCommand("CS " + UUID.randomUUID(), school.getId());
+    var cmd = aCourseCreateCommand().withSchoolId(school.getId()).build();
     Course saved = service.save(cmd);
 
-    assertThat(saved.getName()).startsWith("CS ");
+    assertThat(saved.getName()).isEqualTo(cmd.name());
     assertThat(saved.getSchoolId()).isEqualTo(school.getId());
     verify(audit).fireCreate(Course.class.getName(), saved.getId());
   }
@@ -53,7 +53,7 @@ class CourseServiceImplTest {
   @Transactional
   @DisplayName("Should throw when school not found on save")
   void saveSchoolNotFound() {
-    CourseCreateCommand cmd = new CourseCreateCommand("CS", UUID.randomUUID());
+    var cmd = aCourseCreateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
   }
 
@@ -65,7 +65,8 @@ class CourseServiceImplTest {
     Course existing = factory.createCourse(school);
     em.flush();
 
-    CourseCreateCommand cmd = new CourseCreateCommand(existing.getName(), school.getId());
+    var cmd =
+        aCourseCreateCommand().withName(existing.getName()).withSchoolId(school.getId()).build();
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
 
@@ -76,7 +77,7 @@ class CourseServiceImplTest {
     School school = factory.createSchool();
     em.flush();
 
-    CourseCreateCommand cmd = new CourseCreateCommand("   ", school.getId());
+    var cmd = aCourseCreateCommand().withName("   ").withSchoolId(school.getId()).build();
     assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
 
@@ -106,11 +107,10 @@ class CourseServiceImplTest {
     Course course = factory.createCourse(school);
     em.flush();
 
-    String newName = "Updated Course " + UUID.randomUUID();
-    CourseUpdateCommand cmd = new CourseUpdateCommand(newName, null);
+    var cmd = aCourseUpdateCommand().withSchoolId(null).build();
     Course updated = service.update(course.getId(), cmd);
 
-    assertThat(updated.getName()).isEqualTo(newName);
+    assertThat(updated.getName()).isEqualTo(cmd.name());
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 
@@ -123,7 +123,7 @@ class CourseServiceImplTest {
     Course course = factory.createCourse(school1);
     em.flush();
 
-    CourseUpdateCommand cmd = new CourseUpdateCommand(null, school2.getId());
+    var cmd = aCourseUpdateCommand().withName(null).withSchoolId(school2.getId()).build();
     Course updated = service.update(course.getId(), cmd);
 
     assertThat(updated.getSchoolId()).isEqualTo(school2.getId());
@@ -132,7 +132,7 @@ class CourseServiceImplTest {
   @Test
   @DisplayName("Should throw when updating non-existing course")
   void updateNotFound() {
-    CourseUpdateCommand cmd = new CourseUpdateCommand("Name", null);
+    var cmd = aCourseUpdateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
   }
 

@@ -1,0 +1,27 @@
+meta {
+  name: Search Projects
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/projects?q=Alpha
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+tests {
+  test("Should search projects by name", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

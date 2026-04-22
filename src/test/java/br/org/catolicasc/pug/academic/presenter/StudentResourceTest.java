@@ -11,8 +11,8 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.presenter.dtos.StudentCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.StudentUpdateRequest;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -25,9 +25,6 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,11 +34,7 @@ import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("StudentResource Integration Tests")
-class StudentResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class StudentResourceTest extends BaseResourceTest {
 
   @InjectMock AuditPublisher audit;
   @InjectMock AuthService authService;
@@ -53,23 +46,24 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /academic/students/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
     given()
-        .pathParam("id", account.getId())
+        .pathParam("id", account[0].getId())
         .when()
         .get("/academic/students/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.accountId", is(account.getId().toString()));
+        .body("data.accountId", is(account[0].getId().toString()));
   }
 
   @Test
@@ -92,13 +86,14 @@ class StudentResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/students - List All")
   void listAll() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          Account account = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account, course);
+        });
 
     given()
         .when()
@@ -114,16 +109,18 @@ class StudentResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/students?courseId= - Filter by Course")
   void listByCourseId() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+          User user = factory.createUser();
+          Account account = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account, course[0]);
+        });
 
     given()
-        .queryParam("courseId", course.getId().toString())
+        .queryParam("courseId", course[0].getId().toString())
         .when()
         .get("/academic/students")
         .then()
@@ -137,11 +134,12 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/students - Success")
   void createSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+        });
 
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     StudentCreateRequest req =
@@ -152,7 +150,7 @@ class StudentResourceTest {
             "password123",
             UUID.randomUUID().toString().substring(0, 14).toUpperCase(),
             Campi.JOINVILLE,
-            course.getId(),
+            course[0].getId(),
             new BigDecimal("100"),
             LocalDate.now(),
             LocalDate.now().plusMonths(6));
@@ -173,14 +171,15 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /academic/students/bulk - Success")
   void createBulkSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    em.flush();
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+        });
 
-    StudentCreateRequest req1 = buildCreateRequest(course.getId());
-    StudentCreateRequest req2 = buildCreateRequest(course.getId());
+    StudentCreateRequest req1 = buildCreateRequest(course[0].getId());
+    StudentCreateRequest req2 = buildCreateRequest(course[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -198,14 +197,15 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /academic/students/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
     StudentUpdateRequest req =
         new StudentUpdateRequest(
@@ -213,13 +213,13 @@ class StudentResourceTest {
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", account.getId())
+        .pathParam("id", account[0].getId())
         .body(req)
         .when()
         .put("/academic/students/{id}")
         .then()
         .statusCode(200)
-        .body("data.accountId", is(account.getId().toString()));
+        .body("data.accountId", is(account[0].getId().toString()));
   }
 
   @Test
@@ -228,19 +228,20 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /academic/students/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
-    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(false);
+    when(enrollmentService.existsAnyByStudentId(account[0].getId())).thenReturn(false);
 
     given()
-        .pathParam("id", account.getId())
+        .pathParam("id", account[0].getId())
         .when()
         .delete("/academic/students/{id}")
         .then()
@@ -253,29 +254,30 @@ class StudentResourceTest {
       roles = {"STUDENT"})
   @DisplayName("GET /academic/students/me - Success")
   void getMeSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
-    when(authService.getCurrentAccountId()).thenReturn(account.getId());
+    when(authService.getCurrentAccountId()).thenReturn(account[0].getId());
 
     given()
         .when()
         .get("/academic/students/me")
         .then()
         .statusCode(200)
-        .body("data.accountId", is(account.getId().toString()));
+        .body("data.accountId", is(account[0].getId().toString()));
   }
 
   @Test
   @DisplayName("Should return 401 when unauthenticated")
   void unauthorizedAccess() {
-    given().when().get("/academic/students").then().statusCode(401);
+    assertUnauthenticated("/academic/students");
   }
 
   @Test
@@ -284,12 +286,14 @@ class StudentResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /academic/students - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    utx.commit();
+    Course[] course = new Course[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          course[0] = factory.createCourse(school);
+        });
 
-    StudentCreateRequest req = buildCreateRequest(course.getId());
+    StudentCreateRequest req = buildCreateRequest(course[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -320,22 +324,24 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /academic/students/by-cpf/{cpf} - Success")
   void getByCpfSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    User[] user = new User[1];
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          user[0] = factory.createUser();
+          account[0] = factory.createAccount(user[0], AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
     given()
-        .pathParam("cpf", user.getCpf().getValue())
+        .pathParam("cpf", user[0].getCpf().getValue())
         .when()
         .get("/academic/students/by-cpf/{cpf}")
         .then()
         .statusCode(200)
-        .body("data.accountId", is(account.getId().toString()));
+        .body("data.accountId", is(account[0].getId().toString()));
   }
 
   @Test
@@ -344,22 +350,23 @@ class StudentResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /academic/students/by-email/{email} - Success")
   void getByEmailSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
-    factory.createStudent(account, course);
-    em.flush();
-    utx.commit();
+    Account[] account = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          User user = factory.createUser();
+          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          factory.createStudent(account[0], course);
+        });
 
     given()
-        .pathParam("email", account.getEmail().getValue())
+        .pathParam("email", account[0].getEmail().getValue())
         .when()
         .get("/academic/students/by-email/{email}")
         .then()
         .statusCode(200)
-        .body("data.accountId", is(account.getId().toString()));
+        .body("data.accountId", is(account[0].getId().toString()));
   }
 
   /* --- helpers --- */

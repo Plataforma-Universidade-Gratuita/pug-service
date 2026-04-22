@@ -1,6 +1,9 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.AccountCreateCommandBuilder.anAccountCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.AccountUpdateCommandBuilder.anAccountUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
@@ -14,8 +17,6 @@ import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.identity.service.UserService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -25,7 +26,6 @@ import jakarta.inject.Inject;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -42,9 +42,14 @@ class AccountServiceImplTest {
   @DisplayName("Should provision new user and account when user does not exist")
   void saveNewUser() {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    UserCreateCommand userCmd = new UserCreateCommand(cpf, "New User");
     AccountCreateCommand cmd =
-        new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
+        anAccountCreateCommand()
+            .withEmail("new@pug.com")
+            .withType(AccountType.STUDENT)
+            .withPasswordHash("pass")
+            .withUserCpf(cpf)
+            .withUserName("New User")
+            .build();
 
     when(userService.existsByCpf(any())).thenReturn(false);
     User createdUser = User.factory(Cpf.factory(cpf), "New User");
@@ -88,10 +93,15 @@ class AccountServiceImplTest {
     when(repository.existsByEmail(any())).thenReturn(true);
 
     AccountCreateCommand cmd =
-        new AccountCreateCommand(
-            "exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand(cpf, "N"));
+        anAccountCreateCommand()
+            .withEmail("exists@pug.com")
+            .withType(AccountType.STUDENT)
+            .withPasswordHash("p")
+            .withUserCpf(cpf)
+            .withUserName("N")
+            .build();
 
-    Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
 
   @Test
@@ -106,7 +116,7 @@ class AccountServiceImplTest {
         .thenReturn(Optional.of(acc))
         .thenReturn(Optional.of(updatedAcc));
 
-    AccountUpdateCommand cmd = new AccountUpdateCommand("new@email.com", null, null);
+    var cmd = anAccountUpdateCommand().withEmail("new@email.com").withUserName(null).build();
 
     Account updated = service.update(id, cmd);
 
@@ -120,8 +130,13 @@ class AccountServiceImplTest {
   void saveInBulkSuccess() {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     AccountCreateCommand cmd =
-        new AccountCreateCommand(
-            "a@a.com", AccountType.STUDENT, "hash", new UserCreateCommand(cpf, "Name"));
+        anAccountCreateCommand()
+            .withEmail("a@a.com")
+            .withType(AccountType.STUDENT)
+            .withPasswordHash("hash")
+            .withUserCpf(cpf)
+            .withUserName("Name")
+            .build();
 
     when(repository.existsAnyByEmails(any())).thenReturn(false);
     when(userService.listByCpfs(any())).thenReturn(List.of());
@@ -137,11 +152,15 @@ class AccountServiceImplTest {
   @DisplayName("Should throw DuplicateResourceException on bulk duplicate email")
   void saveInBulkDuplicate() {
     AccountCreateCommand cmd =
-        new AccountCreateCommand("dup@a.com", AccountType.STUDENT, "hash", null);
+        anAccountCreateCommand()
+            .withEmail("dup@a.com")
+            .withType(AccountType.STUDENT)
+            .withPasswordHash("hash")
+            .withoutUser()
+            .build();
     when(repository.existsAnyByEmails(any())).thenReturn(true);
 
-    Assertions.assertThrows(
-        DuplicateResourceException.class, () -> service.saveInBulk(List.of(cmd)));
+    assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(List.of(cmd)));
   }
 
   @Test

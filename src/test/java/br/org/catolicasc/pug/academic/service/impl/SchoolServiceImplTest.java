@@ -1,13 +1,13 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
+import static br.org.catolicasc.pug.helpers.builders.commands.SchoolCreateCommandBuilder.aSchoolCreateCommand;
+import static br.org.catolicasc.pug.helpers.builders.commands.SchoolUpdateCommandBuilder.aSchoolUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -39,10 +39,10 @@ class SchoolServiceImplTest {
   @Transactional
   @DisplayName("Should save school successfully")
   void saveSuccess() {
-    SchoolCreateCommand cmd = new SchoolCreateCommand("Unique School " + UUID.randomUUID());
+    var cmd = aSchoolCreateCommand().build();
     School saved = service.save(cmd);
 
-    assertThat(saved.getName()).startsWith("Unique School");
+    assertThat(saved.getName()).isEqualTo(cmd.name());
     verify(audit).fireCreate(School.class.getName(), saved.getId());
   }
 
@@ -53,7 +53,7 @@ class SchoolServiceImplTest {
     School existing = factory.createSchool();
     em.flush();
 
-    SchoolCreateCommand cmd = new SchoolCreateCommand(existing.getName());
+    var cmd = aSchoolCreateCommand().withName(existing.getName()).build();
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
 
@@ -61,7 +61,7 @@ class SchoolServiceImplTest {
   @Transactional
   @DisplayName("Should throw validation exception for blank name")
   void saveValidationError() {
-    SchoolCreateCommand cmd = new SchoolCreateCommand("   ");
+    var cmd = aSchoolCreateCommand().withName("   ").build();
     assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
 
@@ -89,10 +89,10 @@ class SchoolServiceImplTest {
     School school = factory.createSchool();
     em.flush();
 
-    SchoolUpdateCommand cmd = new SchoolUpdateCommand("Updated Name " + UUID.randomUUID());
+    var cmd = aSchoolUpdateCommand().build();
     School updated = service.update(school.getId(), cmd);
 
-    assertThat(updated.getName()).startsWith("Updated Name");
+    assertThat(updated.getName()).isEqualTo(cmd.name());
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 
@@ -104,14 +104,14 @@ class SchoolServiceImplTest {
     School school2 = factory.createSchool();
     em.flush();
 
-    SchoolUpdateCommand cmd = new SchoolUpdateCommand(school2.getName());
+    var cmd = aSchoolUpdateCommand().withName(school2.getName()).build();
     assertThrows(DuplicateResourceException.class, () -> service.update(school1.getId(), cmd));
   }
 
   @Test
   @DisplayName("Should throw when updating non-existing school")
   void updateNotFound() {
-    SchoolUpdateCommand cmd = new SchoolUpdateCommand("Name");
+    var cmd = aSchoolUpdateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
   }
 

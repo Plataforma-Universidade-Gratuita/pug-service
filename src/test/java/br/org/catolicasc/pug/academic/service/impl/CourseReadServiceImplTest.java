@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +16,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -40,8 +40,7 @@ class CourseReadServiceImplTest {
   @DisplayName("Should throw when course not found")
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
-        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
   }
 
   @Test

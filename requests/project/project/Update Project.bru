@@ -1,0 +1,37 @@
+meta {
+  name: Update Project
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/projects/{{projectId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "name": "Projeto Comunitário Alpha Atualizado",
+    "description": "Descrição atualizada do projeto",
+    "maxParticipants": 50,
+    "offeredHours": 80.00
+  }
+}
+
+tests {
+  test("Should update the project successfully", function() {
+    expect(res.getStatus()).to.equal(200);
+    expect(res.getBody().success).to.be.true;
+  });
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+

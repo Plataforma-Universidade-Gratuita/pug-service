@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -15,7 +16,6 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +52,7 @@ class EnrollmentReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when IDs not found")
   void getViewByIdsNotFound() {
     when(queries.findOptionalByIds(any(), any())).thenReturn(Optional.empty());
-    Assertions.assertThrows(
+    assertThrows(
         ResourceNotFoundException.class,
         () -> service.getViewByIds(UUID.randomUUID(), UUID.randomUUID()));
   }

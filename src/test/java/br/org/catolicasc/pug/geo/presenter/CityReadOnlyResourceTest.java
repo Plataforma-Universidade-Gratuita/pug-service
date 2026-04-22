@@ -8,19 +8,16 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("CityReadOnlyResource Integration Tests")
-class CityReadOnlyResourceTest {
-
-  @Inject EntityManager em;
+class CityReadOnlyResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
@@ -106,6 +103,6 @@ class CityReadOnlyResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without security")
   void unauthorizedAccess() {
-    given().when().get("/geo/cities").then().statusCode(401);
+    assertUnauthenticated("/geo/cities");
   }
 }

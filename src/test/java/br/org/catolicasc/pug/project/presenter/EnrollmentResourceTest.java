@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.EnrollmentCreateRequestBuilder.anEnrollmentCreateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -9,7 +10,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -17,59 +18,56 @@ import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.EnrollmentMapper;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentCreateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("EnrollmentResource Integration Tests")
-class EnrollmentResourceTest {
+class EnrollmentResourceTest extends BaseResourceTest {
 
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
   @InjectMock AuthService authService;
 
   @Test
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Success")
   void getByIdsSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    em.flush();
-    utx.commit();
+    Student[] student = new Student[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project[0]);
+        });
 
     given()
-        .pathParam("projectId", project.getId())
-        .pathParam("studentId", student.getAccountId())
+        .pathParam("projectId", project[0].getId())
+        .pathParam("studentId", student[0].getAccountId())
         .when()
         .get("/projects/enrollments/{projectId}/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.projectId", is(project.getId().toString()));
+        .body("data.projectId", is(project[0].getId().toString()));
   }
 
   @Test
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Not Found")
   void getByIdsNotFound() {
     given()
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
@@ -84,17 +82,19 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments - List All")
   void listAll() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          Student student = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          Project project = factory.createProject(entity, creator);
+          factory.createEnrollment(student, project);
+        });
 
     given()
         .when()
@@ -108,22 +108,26 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("POST /projects/enrollments - Success")
   void createSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    utx.commit();
+    Account[] acc = new Account[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          acc[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          factory.createStudent(acc[0], course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
-    when(authService.getCurrentAccountId()).thenReturn(acc.getId());
+    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
 
     given()
         .contentType(ContentType.JSON)
-        .body(new EnrollmentCreateRequest(project.getId()))
+        .body(anEnrollmentCreateRequest().withProjectId(project[0].getId()).build())
         .when()
         .post("/projects/enrollments")
         .then()
@@ -134,22 +138,25 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/accept - Success")
   void acceptSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    em.flush();
-    utx.commit();
+    Student[] student = new Student[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project[0]);
+        });
 
     given()
-        .pathParam("projectId", project.getId())
-        .pathParam("studentId", student.getAccountId())
+        .pathParam("projectId", project[0].getId())
+        .pathParam("studentId", student[0].getAccountId())
         .when()
         .patch("/projects/enrollments/{projectId}/{studentId}/accept")
         .then()
@@ -161,16 +168,18 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/cancel - Success")
   void cancelSuccess() throws Exception {
-    utx.begin();
-    Enrollment enr = setupApprovedEnrollment();
-    em.merge(EnrollmentMapper.toEntity(enr));
-    em.flush();
-    utx.commit();
+    Enrollment[] enr = new Enrollment[1];
+    doInTransaction(
+        () -> {
+          enr[0] = setupApprovedEnrollment();
+          em.merge(EnrollmentMapper.toEntity(enr[0]));
+        });
 
     given()
-        .pathParam("projectId", enr.getIdentifier().getProjectId())
-        .pathParam("studentId", enr.getIdentifier().getStudentId())
+        .pathParam("projectId", enr[0].getIdentifier().getProjectId())
+        .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .when()
         .patch("/projects/enrollments/{projectId}/{studentId}/cancel")
         .then()
@@ -182,16 +191,18 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/complete - Success")
   void completeSuccess() throws Exception {
-    utx.begin();
-    Enrollment enr = setupApprovedEnrollment();
-    em.merge(EnrollmentMapper.toEntity(enr));
-    em.flush();
-    utx.commit();
+    Enrollment[] enr = new Enrollment[1];
+    doInTransaction(
+        () -> {
+          enr[0] = setupApprovedEnrollment();
+          em.merge(EnrollmentMapper.toEntity(enr[0]));
+        });
 
     given()
-        .pathParam("projectId", enr.getIdentifier().getProjectId())
-        .pathParam("studentId", enr.getIdentifier().getStudentId())
+        .pathParam("projectId", enr[0].getIdentifier().getProjectId())
+        .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .when()
         .patch("/projects/enrollments/{projectId}/{studentId}/complete")
         .then()
@@ -203,27 +214,28 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/exit - Success")
   void exitSuccess() throws Exception {
-    Account acc;
-    Project project;
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    project = factory.createProject(entity, creator);
-    Enrollment enr =
-        factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
-    em.merge(EnrollmentMapper.toEntity(enr));
-    em.flush();
-    utx.commit();
+    Account[] acc = new Account[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          acc[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          Student student = factory.createStudent(acc[0], course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          Enrollment enr =
+              factory.createEnrollment(student, project[0]).changeStatus(EnrollmentStatus.APPROVED);
+          em.merge(EnrollmentMapper.toEntity(enr));
+        });
 
-    when(authService.getCurrentAccountId()).thenReturn(acc.getId());
+    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
 
     given()
-        .pathParam("projectId", project.getId())
+        .pathParam("projectId", project[0].getId())
         .when()
         .patch("/projects/enrollments/{projectId}/exit")
         .then()
@@ -235,22 +247,25 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/reject - Success")
   void rejectSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    em.flush();
-    utx.commit();
+    Student[] student = new Student[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project[0]);
+        });
 
     given()
-        .pathParam("projectId", project.getId())
-        .pathParam("studentId", student.getAccountId())
+        .pathParam("projectId", project[0].getId())
+        .pathParam("studentId", student[0].getAccountId())
         .when()
         .patch("/projects/enrollments/{projectId}/{studentId}/reject")
         .then()
@@ -262,16 +277,18 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/remove - Success")
   void removeSuccess() throws Exception {
-    utx.begin();
-    Enrollment enr = setupApprovedEnrollment();
-    em.merge(EnrollmentMapper.toEntity(enr));
-    em.flush();
-    utx.commit();
+    Enrollment[] enr = new Enrollment[1];
+    doInTransaction(
+        () -> {
+          enr[0] = setupApprovedEnrollment();
+          em.merge(EnrollmentMapper.toEntity(enr[0]));
+        });
 
     given()
-        .pathParam("projectId", enr.getIdentifier().getProjectId())
-        .pathParam("studentId", enr.getIdentifier().getStudentId())
+        .pathParam("projectId", enr[0].getIdentifier().getProjectId())
+        .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .when()
         .patch("/projects/enrollments/{projectId}/{studentId}/remove")
         .then()
@@ -283,22 +300,25 @@ class EnrollmentResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/enrollments/{projectId}/{studentId} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    Student student = factory.createStudent(acc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    factory.createEnrollment(student, project);
-    em.flush();
-    utx.commit();
+    Student[] student = new Student[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project[0]);
+        });
 
     given()
-        .pathParam("projectId", project.getId())
-        .pathParam("studentId", student.getAccountId())
+        .pathParam("projectId", project[0].getId())
+        .pathParam("studentId", student[0].getAccountId())
         .when()
         .delete("/projects/enrollments/{projectId}/{studentId}")
         .then()

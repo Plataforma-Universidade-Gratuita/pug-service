@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.partner.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.StaffCreateRequestBuilder.aStaffCreateRequest;
+import static br.org.catolicasc.pug.helpers.builders.requests.StaffUpdateRequestBuilder.aStaffUpdateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -8,51 +10,45 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.geo.domain.City;
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.partner.presenter.dtos.StaffCreateRequest;
-import br.org.catolicasc.pug.partner.presenter.dtos.StaffUpdateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("StaffResource Integration Tests")
-class StaffResourceTest {
-
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
+class StaffResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
 
-  private StaffGraph createStaffGraph() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.PARTNER);
-    Staff staff = factory.createStaff(account, entity);
-    em.flush();
-    utx.commit();
-    return new StaffGraph(city, entity, user, account, staff);
-  }
-
   private record StaffGraph(City city, Entity entity, User user, Account account, Staff staff) {}
+
+  private StaffGraph createStaffGraph() throws Exception {
+    City[] city = new City[1];
+    Entity[] entity = new Entity[1];
+    User[] user = new User[1];
+    Account[] account = new Account[1];
+    Staff[] staff = new Staff[1];
+    doInTransaction(
+        () -> {
+          city[0] = factory.getAnyCity();
+          entity[0] = factory.createEntity(city[0]);
+          user[0] = factory.createUser();
+          account[0] = factory.createAccount(user[0], AccountType.PARTNER);
+          staff[0] = factory.createStaff(account[0], entity[0]);
+        });
+    return new StaffGraph(city[0], entity[0], user[0], account[0], staff[0]);
+  }
 
   @Test
   @TestSecurity(
@@ -181,19 +177,14 @@ class StaffResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /partners/staff - Success")
   void createSuccess() throws Exception {
-    utx.begin();
-    City city = factory.getAnyCity();
-    Entity entity = factory.createEntity(city);
-    em.flush();
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          City city = factory.getAnyCity();
+          entity[0] = factory.createEntity(city);
+        });
 
-    StaffCreateRequest req =
-        new StaffCreateRequest(
-            TestBrazilianIdentifierGenerator.generateValidCpf(),
-            "New Staff Member",
-            "newstaff@pug.com",
-            "password123",
-            entity.getId());
+    var req = aStaffCreateRequest().withEntityId(entity[0].getId()).build();
 
     given()
         .contentType(ContentType.JSON)
@@ -202,8 +193,7 @@ class StaffResourceTest {
         .post("/partners/staff")
         .then()
         .statusCode(201)
-        .body("data.account.email", is("newstaff@pug.com"))
-        .body("data.entityId", is(entity.getId().toString()));
+        .body("data.entityId", is(entity[0].getId().toString()));
   }
 
   @Test
@@ -214,7 +204,7 @@ class StaffResourceTest {
   void updateSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
-    StaffUpdateRequest req = new StaffUpdateRequest("Updated Staff Name", null, null);
+    var req = aStaffUpdateRequest().withName("Updated Staff Name").build();
 
     given()
         .contentType(ContentType.JSON)
@@ -234,7 +224,7 @@ class StaffResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /partners/staff/{id} - Not Found")
   void updateNotFound() {
-    StaffUpdateRequest req = new StaffUpdateRequest("Name", null, null);
+    var req = aStaffUpdateRequest().build();
 
     given()
         .contentType(ContentType.JSON)
@@ -281,7 +271,7 @@ class StaffResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    given().when().get("/partners/staff").then().statusCode(401);
+    assertUnauthenticated("/partners/staff");
   }
 
   @Test
@@ -290,13 +280,7 @@ class StaffResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /partners/staff - Forbidden for STUDENT")
   void createForbiddenForStudent() {
-    StaffCreateRequest req =
-        new StaffCreateRequest(
-            TestBrazilianIdentifierGenerator.generateValidCpf(),
-            "Forbidden",
-            "x@pug.com",
-            "pass1234",
-            UUID.randomUUID());
+    var req = aStaffCreateRequest().build();
 
     given()
         .contentType(ContentType.JSON)

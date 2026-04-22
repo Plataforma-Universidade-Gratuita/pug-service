@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.project.presenter;
 
+import static br.org.catolicasc.pug.helpers.builders.requests.ProjectCreateRequestBuilder.aProjectCreateRequest;
+import static br.org.catolicasc.pug.helpers.builders.requests.ProjectUpdateRequestBuilder.aProjectUpdateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -7,33 +9,24 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import jakarta.inject.Inject;
-import jakarta.persistence.EntityManager;
-import jakarta.transaction.UserTransaction;
-import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
 @DisplayName("ProjectResource Integration Tests")
-class ProjectResourceTest {
+class ProjectResourceTest extends BaseResourceTest {
 
-  @Inject TestDataFactory factory;
-  @Inject UserTransaction utx;
-  @Inject EntityManager em;
   @InjectMock AuthService authService;
 
   @Test
@@ -42,22 +35,23 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects/{id} - Success")
   void getByIdSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .get("/projects/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(project.getId().toString()))
-        .body("data.name", is(project.getName()));
+        .body("data.id", is(project[0].getId().toString()))
+        .body("data.name", is(project[0].getName()));
   }
 
   @Test
@@ -81,11 +75,12 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects - List All")
   void listAll() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    factory.createProject(entity, creator);
-    utx.commit();
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          factory.createProject(entity, creator);
+        });
 
     given()
         .when()
@@ -101,14 +96,16 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /projects?entityId= - Filter by Entity")
   void listByEntityId() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    factory.createProject(entity, creator);
-    utx.commit();
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          entity[0] = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          factory.createProject(entity[0], creator);
+        });
 
     given()
-        .queryParam("entityId", entity.getId().toString())
+        .queryParam("entityId", entity[0].getId().toString())
         .when()
         .get("/projects")
         .then()
@@ -122,23 +119,17 @@ class ProjectResourceTest {
       roles = {"STAFF"})
   @DisplayName("POST /projects - Success")
   void createSuccess() throws Exception {
-    Account staffAccount;
-    Entity entity;
+    Account[] staffAccount = new Account[1];
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          entity[0] = factory.createEntity(factory.getAnyCity());
+          staffAccount[0] = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+        });
 
-    utx.begin();
-    entity = factory.createEntity(factory.getAnyCity());
-    staffAccount = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    utx.commit();
+    when(authService.getCurrentAccountId()).thenReturn(staffAccount[0].getId());
 
-    when(authService.getCurrentAccountId()).thenReturn(staffAccount.getId());
-
-    var req =
-        new ProjectCreateRequest(
-            "REST Test Project " + UuidCreator.getTimeOrderedEpoch(),
-            entity.getId(),
-            "Test description",
-            15,
-            new BigDecimal("30.00"));
+    var req = aProjectCreateRequest().withEntityId(entity[0].getId()).build();
 
     given()
         .contentType(ContentType.JSON)
@@ -148,7 +139,7 @@ class ProjectResourceTest {
         .then()
         .statusCode(201)
         .body("data.name", notNullValue())
-        .body("data.entityId", is(entity.getId().toString()));
+        .body("data.entityId", is(entity[0].getId().toString()));
   }
 
   @Test
@@ -157,18 +148,19 @@ class ProjectResourceTest {
       roles = {"STAFF"})
   @DisplayName("PUT /projects/{id} - Success")
   void updateSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
-    var req = new ProjectUpdateRequest(null, "Updated Description", null, null);
+    var req = aProjectUpdateRequest().withDescription("Updated Description").build();
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .body(req)
         .when()
         .put("/projects/{id}")
@@ -183,7 +175,7 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /projects/{id} - Not Found")
   void updateNotFound() {
-    var req = new ProjectUpdateRequest("Name", null, null, null);
+    var req = aProjectUpdateRequest().withName("Name").build();
 
     given()
         .contentType(ContentType.JSON)
@@ -201,20 +193,26 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /projects/{id} - Success")
   void deleteSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
-    given().pathParam("id", project.getId()).when().delete("/projects/{id}").then().statusCode(200);
+    given()
+        .pathParam("id", project[0].getId())
+        .when()
+        .delete("/projects/{id}")
+        .then()
+        .statusCode(200);
   }
 
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    given().when().get("/projects").then().statusCode(401);
+    assertUnauthenticated("/projects");
   }
 
   @Test
@@ -223,9 +221,7 @@ class ProjectResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /projects - Forbidden for STUDENT")
   void createForbiddenForStudent() {
-    var req =
-        new ProjectCreateRequest(
-            "Forbidden", UuidCreator.getTimeOrderedEpoch(), "desc", 10, new BigDecimal("10"));
+    var req = aProjectCreateRequest().build();
 
     given().contentType(ContentType.JSON).body(req).when().post("/projects").then().statusCode(403);
   }
@@ -250,15 +246,16 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /projects/{id}/start - Success")
   void startSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .patch("/projects/{id}/start")
         .then()
@@ -272,15 +269,16 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /projects/{id}/cancel - Success")
   void cancelSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .patch("/projects/{id}/cancel")
         .then()
@@ -294,17 +292,18 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /projects/{id}/complete - Success")
   void completeSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator);
-    project = project.start(); // Precisa estar em IN_PROGRESS para completar
-    em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project));
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          project[0] = project[0].start();
+          em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project[0]));
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .patch("/projects/{id}/complete")
         .then()
@@ -318,15 +317,16 @@ class ProjectResourceTest {
       roles = {"STAFF"})
   @DisplayName("GET /projects/created-by/{accountId} - Success")
   void listByCreatedBy() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    factory.createProject(entity, creator);
-    em.flush();
-    utx.commit();
+    Account[] creator = new Account[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          creator[0] = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          factory.createProject(entity, creator[0]);
+        });
 
     given()
-        .pathParam("accountId", creator.getId())
+        .pathParam("accountId", creator[0].getId())
         .when()
         .get("/projects/created-by/{accountId}")
         .then()
@@ -340,16 +340,17 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /projects/{id}/hold - Success")
   void holdSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator).start();
-    em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project));
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator).start();
+          em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project[0]));
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .patch("/projects/{id}/hold")
         .then()
@@ -363,16 +364,17 @@ class ProjectResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PATCH /projects/{id}/retake - Success")
   void retakeSuccess() throws Exception {
-    utx.begin();
-    Entity entity = factory.createEntity(factory.getAnyCity());
-    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project project = factory.createProject(entity, creator).start().putOnHold();
-    em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project));
-    em.flush();
-    utx.commit();
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator).start().putOnHold();
+          em.merge(br.org.catolicasc.pug.project.infra.ProjectMapper.toEntity(project[0]));
+        });
 
     given()
-        .pathParam("id", project.getId())
+        .pathParam("id", project[0].getId())
         .when()
         .patch("/projects/{id}/retake")
         .then()

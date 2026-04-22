@@ -1,0 +1,58 @@
+package br.org.catolicasc.pug.helpers.builders.requests;
+
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.helpers.TestNameGenerator;
+import java.util.UUID;
+
+/**
+ * Builder class for creating {@link CourseUpdateRequest} DTOs in test scenarios.
+ *
+ * <p>Provides a fluent API with random defaults. Since update requests treat {@code null} fields as
+ * "no change", the default populates all fields to simulate a full update.
+ */
+public class CourseUpdateRequestBuilder {
+  private String name = TestNameGenerator.generateRandomCourseName();
+  private UUID schoolId = UUID.randomUUID();
+
+  private CourseUpdateRequestBuilder() {}
+
+  /**
+   * Initializes a new builder with random defaults.
+   *
+   * @return a new {@link CourseUpdateRequestBuilder} instance
+   */
+  public static CourseUpdateRequestBuilder aCourseUpdateRequest() {
+    return new CourseUpdateRequestBuilder();
+  }
+
+  /**
+   * Sets the course name.
+   *
+   * @param name the new course name, or {@code null} to leave unchanged
+   * @return this builder instance
+   */
+  public CourseUpdateRequestBuilder withName(String name) {
+    this.name = name;
+    return this;
+  }
+
+  /**
+   * Sets the school identifier.
+   *
+   * @param schoolId the new school UUID, or {@code null} to leave unchanged
+   * @return this builder instance
+   */
+  public CourseUpdateRequestBuilder withSchoolId(UUID schoolId) {
+    this.schoolId = schoolId;
+    return this;
+  }
+
+  /**
+   * Constructs the {@link CourseUpdateRequest} using the current builder state.
+   *
+   * @return a configured {@link CourseUpdateRequest} instance
+   */
+  public CourseUpdateRequest build() {
+    return new CourseUpdateRequest(name, schoolId);
+  }
+}

@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.infra;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
-import br.org.catolicasc.pug.helpers.builders.AttendanceBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.persistence.AttendanceEntity;
