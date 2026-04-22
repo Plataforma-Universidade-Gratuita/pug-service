@@ -162,7 +162,8 @@ class UserTest {
   @Test
   @DisplayName("Should create valid User")
   void shouldCreateUser() {
-    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "John Doe");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "John Doe");
     assertThat(user.hasFieldErrors()).isFalse();
   }
 
@@ -1072,7 +1073,10 @@ class UserMapperTest {
   @Test
   @DisplayName("Should perform a perfect round-trip (Domain -> Entity -> Domain)")
   void shouldPerformRoundTrip() {
-    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "System Administrator");
+    User user =
+        User.factory(
+            Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()),
+            "System Administrator");
 
     UserEntity entity = UserMapper.toEntity(user);
     User mappedUser = UserMapper.toDomain(entity);
@@ -1255,7 +1259,11 @@ class AdminResourceTest {
   void createSuccess() {
     AdminCreateRequest req =
         new AdminCreateRequest(
-            TestBrazilianIdentifierGenerator.generateValidCpf(), "Admin Name", "admin2@pug.com", "password123", Campi.JARAGUA_DO_SUL);
+            TestBrazilianIdentifierGenerator.generateValidCpf(),
+            "Admin Name",
+            "admin2@pug.com",
+            "password123",
+            Campi.JARAGUA_DO_SUL);
 
     given()
         .contentType(ContentType.JSON)
@@ -1718,8 +1726,7 @@ class UserPresenterTest {
     void shouldFormatValidCpf() {
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       UserView view =
-          new UserView(
-              UUID.randomUUID(), cpf, "Test", OffsetDateTime.now(), OffsetDateTime.now());
+          new UserView(UUID.randomUUID(), cpf, "Test", OffsetDateTime.now(), OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
       assertThat(response.cpfFormatted()).contains(".");
@@ -2170,8 +2177,7 @@ class AccountServiceImplTest {
 
     when(repository.existsAnyByEmails(any())).thenReturn(false);
     when(userService.listByCpfs(any())).thenReturn(List.of());
-    when(userService.saveInBulk(any()))
-        .thenReturn(List.of(User.factory(Cpf.factory(cpf), "Name")));
+    when(userService.saveInBulk(any())).thenReturn(List.of(User.factory(Cpf.factory(cpf), "Name")));
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
     List<Account> saved = service.saveInBulk(List.of(cmd));
@@ -2822,7 +2828,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException if CPF exists")
   void saveDuplicate() {
-    UserCreateCommand userCmd = new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name");
+    UserCreateCommand userCmd =
+        new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name");
     when(repository.existsByCpf(anyString())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
@@ -2851,7 +2858,8 @@ class UserServiceImplTest {
   @DisplayName("Should update user successfully and fire audit")
   void updateSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Old Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Old Name");
     User updatedUser = user.rename("New Name");
 
     when(repository.findOptionalById(id))
@@ -2869,7 +2877,8 @@ class UserServiceImplTest {
   @DisplayName("Should throw AppValidationException for invalid name")
   void updateInvalid() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     String longName = "A".repeat(300);
@@ -2881,7 +2890,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should successfully bulk create users")
   void saveInBulkSuccess() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
+    List<UserCreateCommand> cmds =
+        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(false);
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -2893,7 +2903,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on bulk duplicate")
   void saveInBulkDuplicate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
+    List<UserCreateCommand> cmds =
+        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
@@ -2903,14 +2914,16 @@ class UserServiceImplTest {
   @DisplayName("Should return list of users by CPFs")
   void listByCpfs() {
     when(repository.listByCpfs(any())).thenReturn(List.of());
-    assertThat(service.listByCpfs(List.of(TestBrazilianIdentifierGenerator.generateValidCpf()))).isEmpty();
+    assertThat(service.listByCpfs(List.of(TestBrazilianIdentifierGenerator.generateValidCpf())))
+        .isEmpty();
   }
 
   @Test
   @DisplayName("Should return user by ID")
   void getByIdSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     assertThat(service.getById(id)).isEqualTo(user);
@@ -2981,8 +2994,7 @@ class AccountProcessorTest {
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
     List<Account> accounts =
-        AccountProcessor.processBulkCreateInput(
-            List.of(accCmd), Map.of(cpf, UUID.randomUUID()));
+        AccountProcessor.processBulkCreateInput(List.of(accCmd), Map.of(cpf, UUID.randomUUID()));
     assertThat(accounts).hasSize(1);
   }
 
@@ -3091,7 +3103,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Test User");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Test User");
     assertThat(user.hasFieldErrors()).isFalse();
     assertThat(user.getName()).isEqualTo("Test User");
   }
@@ -3099,7 +3113,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process bulk create successfully")
   void shouldProcessBulkCreate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "User 1"));
+    List<UserCreateCommand> cmds =
+        List.of(
+            new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "User 1"));
     List<User> users = UserProcessor.processBulkCreateInput(cmds);
     assertThat(users).hasSize(1);
   }
@@ -3121,7 +3137,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should rename user successfully")
   void shouldRenameUser() {
-    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Old Name");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Old Name");
     User updated = UserProcessor.processUpdateInput(user, "New Name");
     assertThat(updated.getName()).isEqualTo("New Name");
   }
@@ -3129,7 +3147,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should return same instance if rename name is same or empty")
   void shouldReturnSameInstanceOnInvalidUpdate() {
-    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Same Name");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Same Name");
     assertThat(UserProcessor.processUpdateInput(user, "Same Name")).isEqualTo(user);
     assertThat(UserProcessor.processUpdateInput(user, null)).isEqualTo(user);
   }

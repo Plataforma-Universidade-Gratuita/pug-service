@@ -44,10 +44,11 @@ public class EnrollmentRepositoryImpl
       return false;
     }
 
-    var id =
-        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
-
-    return count("id", id) > 0;
+    return count(
+            "id.projectId = ?1 and id.studentId = ?2",
+            identifier.getProjectId(),
+            identifier.getStudentId())
+        > 0;
   }
 
   /** {@inheritDoc} */

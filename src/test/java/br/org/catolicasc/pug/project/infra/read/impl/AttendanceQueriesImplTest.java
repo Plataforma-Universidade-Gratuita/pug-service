@@ -14,6 +14,7 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,5 +53,106 @@ class AttendanceQueriesImplTest {
 
     assertThat(view).isPresent();
     assertThat(view.get().id()).isEqualTo(attendance.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty when ID is null")
+  void shouldReturnEmptyForNullId() {
+    assertThat(queries.findOptionalById(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty for non-existent ID")
+  void shouldReturnEmptyForNonExistentId() {
+    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by enrollment ID")
+  void shouldListByEnrollmentId() {
+    var list = queries.listByEnrollmentId(project.getId(), student.getAccountId());
+    assertThat(list).isNotEmpty();
+    assertThat(list)
+        .allSatisfy(
+            v -> {
+              assertThat(v.projectId()).isEqualTo(project.getId());
+              assertThat(v.studentId()).isEqualTo(student.getAccountId());
+            });
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null enrollment project ID")
+  void shouldReturnEmptyForNullEnrollmentProjectId() {
+    assertThat(queries.listByEnrollmentId(null, student.getAccountId())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null enrollment student ID")
+  void shouldReturnEmptyForNullEnrollmentStudentId() {
+    assertThat(queries.listByEnrollmentId(project.getId(), null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by project ID")
+  void shouldListByProjectId() {
+    var list = queries.listByProjectId(project.getId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.projectId()).isEqualTo(project.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null project ID")
+  void shouldReturnEmptyForNullProjectId() {
+    assertThat(queries.listByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by student ID")
+  void shouldListByStudentId() {
+    var list = queries.listByStudentId(student.getAccountId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(student.getAccountId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null student ID")
+  void shouldReturnEmptyForNullStudentId() {
+    assertThat(queries.listByStudentId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all views")
+  void shouldListViews() {
+    var list = queries.listViews();
+    assertThat(list).isNotEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should verify all fields in attendance view")
+  void shouldVerifyAllFieldsInView() {
+    var view = queries.findOptionalById(attendance.getId());
+
+    assertThat(view).isPresent();
+    var av = view.get();
+    assertThat(av.id()).isEqualTo(attendance.getId());
+    assertThat(av.projectId()).isEqualTo(attendance.getEnrollmentIdentifier().getProjectId());
+    assertThat(av.studentId()).isEqualTo(attendance.getEnrollmentIdentifier().getStudentId());
+    assertThat(av.duration()).isEqualByComparingTo(attendance.getQrValidationInfo().getDuration());
+    assertThat(av.qrValidationHash())
+        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+    assertThat(av.status()).isNotNull();
+    assertThat(av.createdAt()).isNotNull();
+    assertThat(av.updatedAt()).isNotNull();
   }
 }

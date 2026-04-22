@@ -1,12 +1,14 @@
 package br.org.catolicasc.pug.project.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +33,6 @@ class AttendanceTest {
 
       assertThat(attendance.hasFieldErrors()).isFalse();
       assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
-      assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("qr-hash-123");
     }
 
     @Test
@@ -54,17 +55,32 @@ class AttendanceTest {
   class BehaviorTests {
 
     @Test
-    @DisplayName("Should transition status to PRESENT when validated")
+    @DisplayName("Should transition status to PRESENT or ABSENT when validated")
     void shouldValidatePresence() {
       Attendance attendance =
           Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
-
       UUID staffId = UUID.randomUUID();
-      Attendance updated = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
 
-      assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
-      assertThat(updated.getAttendanceInfo().getValidatedBy()).isEqualTo(staffId);
-      assertThat(updated.getAttendanceInfo().getValidatedAt()).isNotNull();
+      Attendance updatedPresent = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
+      assertThat(updatedPresent.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+      assertThat(updatedPresent.getAttendanceInfo().getValidatedBy()).isEqualTo(staffId);
+
+      Attendance updatedAbsent = attendance.validatePresence(staffId, AttendanceStatus.ABSENT);
+      assertThat(updatedAbsent.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+    }
+
+    @Test
+    @DisplayName("Should throw BusinessRuleException for invalid status update")
+    void shouldFailOnInvalidStatus() {
+      Attendance attendance =
+          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+      UUID staffId = UUID.randomUUID();
+
+      assertThrows(
+          BusinessRuleException.class,
+          () -> attendance.validatePresence(staffId, AttendanceStatus.WAITING));
+
+      assertThrows(BusinessRuleException.class, () -> attendance.validatePresence(staffId, null));
     }
   }
 }

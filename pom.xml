@@ -416,6 +416,8 @@
                                 <include>br/org/catolicasc/pug/geo/**</include>
                                 <include>br/org/catolicasc/pug/identity/**</include>
                                 <include>br/org/catolicasc/pug/partner/**</include>
+                                <include>br/org/catolicasc/pug/project/**</include>
+                                <include>br/org/catolicasc/pug/shared/**</include>
                             </includes>
                             <rules>
                                 <rule>

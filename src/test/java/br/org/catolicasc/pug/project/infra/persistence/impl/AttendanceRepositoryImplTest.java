@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -35,9 +36,8 @@ class AttendanceRepositoryImplTest {
     student = factory.createStudent(sAcc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
-    project =
-        factory.createProject(
-            entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    project = factory.createProject(entity, creator);
 
     factory.createEnrollment(student, project);
   }
@@ -52,5 +52,52 @@ class AttendanceRepositoryImplTest {
     assertThat(found).isPresent();
     assertThat(found.get().getQrValidationInfo().getQrValidationHash())
         .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should handle existsByQrHash and findOptionalByQrHash")
+  void shouldHandleQrHashOperations() {
+    Attendance attendance = factory.createAttendance(project, student);
+    String hash = attendance.getQrValidationInfo().getQrValidationHash();
+
+    assertThat(repository.existsByQrHash(hash)).isTrue();
+    assertThat(repository.findOptionalByQrHash(hash)).isPresent();
+
+    assertThat(repository.existsByQrHash("invalid-hash")).isFalse();
+    assertThat(repository.findOptionalByQrHash(null)).isEmpty();
+    assertThat(repository.existsByQrHash(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update Attendance state")
+  void shouldUpdateAttendance() {
+    Account staffAccount = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Attendance attendance = factory.createAttendance(project, student);
+
+    Attendance updated =
+        attendance.validatePresence(staffAccount.getId(), AttendanceStatus.PRESENT);
+    repository.update(updated);
+
+    repository.flush();
+
+    var found = repository.findOptionalById(attendance.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+    assertThat(found.get().getAttendanceInfo().getValidatedBy()).isEqualTo(staffAccount.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should handle edge cases for repository methods")
+  void shouldHandleEdgeCases() {
+    assertThat(repository.deleteById(null)).isFalse();
+
+    assertThat(repository.deleteAllByEnrollmentId(null, null)).isZero();
+
+    repository.update(null);
+
+    assertThat(repository.existsByValidatedBy(null)).isFalse();
   }
 }

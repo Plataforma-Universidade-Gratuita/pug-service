@@ -97,7 +97,6 @@
 │   │   │                   │   │       ├── AcademicRegistration.java
 │   │   │                   │   │       ├── CounterpartHours.java
 │   │   │                   │   │       └── Period.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── CourseMapper.java
 │   │   │                   │   │   ├── SchoolMapper.java
@@ -374,6 +373,7 @@
 │   │   │                   │   │       ├── EnrollmentInfo.java
 │   │   │                   │   │       ├── ProjectInfo.java
 │   │   │                   │   │       └── QrValidationInfo.java
+│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── AttendanceMapper.java
 │   │   │                   │   │   ├── EnrollmentMapper.java
@@ -563,7 +563,6 @@
 │       │                   │   │       ├── AcademicRegistrationTest.java
 │       │                   │   │       ├── CounterpartHoursTest.java
 │       │                   │   │       └── PeriodTest.java
-│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── CourseMapperTest.java
 │       │                   │   │   ├── SchoolMapperTest.java
@@ -735,6 +734,7 @@
 │       │                   │   │       ├── EnrollmentInfoTest.java
 │       │                   │   │       ├── ProjectInfoTest.java
 │       │                   │   │       └── QrValidationInfoTest.java
+│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── AttendanceMapperTest.java
 │       │                   │   │   ├── EnrollmentMapperTest.java
@@ -750,12 +750,30 @@
 │       │                   │   │           ├── EnrollmentQueriesImplTest.java
 │       │                   │   │           └── ProjectQueriesImplTest.java
 │       │                   │   ├── presenter/
+│       │                   │   │   ├── AttendanceResourceTest.java
+│       │                   │   │   ├── EnrollmentResourceTest.java
+│       │                   │   │   ├── ProjectResourceTest.java
+│       │                   │   │   ├── ProjectSchoolResourceTest.java
 │       │                   │   │   ├── dtos/
 │       │                   │   │   └── mappers/
+│       │                   │   │       ├── AttendancePresenterTest.java
+│       │                   │   │       ├── EnrollmentPresenterTest.java
+│       │                   │   │       └── ProjectPresenterTest.java
 │       │                   │   └── service/
-│       │                   │       ├── dtos/
 │       │                   │       ├── impl/
+│       │                   │       │   ├── AttendanceReadServiceImplTest.java
+│       │                   │       │   ├── AttendanceServiceImplTest.java
+│       │                   │       │   ├── EnrollmentReadServiceImplTest.java
+│       │                   │       │   ├── EnrollmentServiceImplTest.java
+│       │                   │       │   ├── ProjectReadServiceImplTest.java
+│       │                   │       │   ├── ProjectSchoolReadServiceImplTest.java
+│       │                   │       │   ├── ProjectSchoolServiceImplTest.java
+│       │                   │       │   └── ProjectServiceImplTest.java
 │       │                   │       └── utils/
+│       │                   │           ├── AttendanceProcessorTest.java
+│       │                   │           ├── EnrollmentProcessorTest.java
+│       │                   │           ├── ProjectProcessorTest.java
+│       │                   │           └── ProjectSchoolProcessorTest.java
 │       │                   └── shared/
 │       │                       ├── domain/
 │       │                       │   ├── DomainErrorAndAuditInfoTest.java

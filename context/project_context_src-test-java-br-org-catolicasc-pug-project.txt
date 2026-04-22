@@ -1,0 +1,4289 @@
+PROJECT CONTEXT DUMP
+Base: project_context_src-test-java-br-org-catolicasc-pug-project
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/test/java/br/org/catolicasc/pug/project
+================================================================================
+
+
+================================================================================
+FILE: domain/AttendanceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Attendance Aggregate Tests")
+class AttendanceTest {
+
+  private final Project project = ProjectBuilder.aProject().build();
+  private final Student student = StudentBuilder.aStudent().build();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Attendance in WAITING status")
+    void shouldCreateValidAttendance() {
+      Attendance attendance =
+          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+
+      assertThat(attendance.hasFieldErrors()).isFalse();
+      assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
+      assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("qr-hash-123");
+    }
+
+    @Test
+    @DisplayName("Should collect errors for missing fields")
+    void shouldCollectErrors() {
+      Attendance attendance = Attendance.factory(null, null, null, " ");
+
+      assertThat(attendance.hasFieldErrors()).isTrue();
+      assertThat(attendance.getFieldErrors())
+          .contains(
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID,
+              ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
+    }
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should transition status to PRESENT when validated")
+    void shouldValidatePresence() {
+      Attendance attendance =
+          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+
+      UUID staffId = UUID.randomUUID();
+      Attendance updated = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
+
+      assertThat(updated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+      assertThat(updated.getAttendanceInfo().getValidatedBy()).isEqualTo(staffId);
+      assertThat(updated.getAttendanceInfo().getValidatedAt()).isNotNull();
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/EnrollmentTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Enrollment Aggregate Tests")
+class EnrollmentTest {
+
+  private final Student student = StudentBuilder.aStudent().build();
+  private final Project project = ProjectBuilder.aProject().build();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Enrollment in PENDING status")
+    void shouldCreateValidEnrollment() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      assertThat(enrollment.hasFieldErrors()).isFalse();
+      assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
+      assertThat(enrollment.getIdentifier()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should collect errors when data is null")
+    void shouldCollectValidationErrors() {
+      Enrollment enrollment = Enrollment.factory(null, null);
+
+      assertThat(enrollment.hasFieldErrors()).isTrue();
+      assertThat(enrollment.getFieldErrors())
+          .contains(
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
+    }
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should transition from PENDING to APPROVED successfully")
+    void shouldApproveEnrollment() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED);
+
+      assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+      assertThat(approved.getEnrollmentInfo().getAcceptedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should throw BusinessRuleException when transitioning invalidly")
+    void shouldRejectInvalidTransition() {
+      Enrollment enrollment = Enrollment.factory(student, project);
+
+      Assertions.assertThrows(
+          BusinessRuleException.class, () -> enrollment.changeStatus(EnrollmentStatus.COMPLETED));
+    }
+
+    @Test
+    @DisplayName("Should transition from APPROVED to COMPLETED (closing status)")
+    void shouldCloseEnrollment() {
+      Enrollment enrollment =
+          Enrollment.factory(student, project).changeStatus(EnrollmentStatus.APPROVED);
+
+      Enrollment completed = enrollment.changeStatus(EnrollmentStatus.COMPLETED);
+
+      assertThat(completed.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+      assertThat(completed.getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/ProjectEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Project Enum Bundle Key Integrity Tests")
+class ProjectEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all project enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(
+            AttendanceStatus.values(),
+            EnrollmentStatus.values(),
+            ProjectStatus.values(),
+            ProjectsErrorCodes.values(),
+            ProjectsFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: domain/ProjectSchoolTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectBySchool Aggregate Tests")
+class ProjectSchoolTest {
+
+  @Test
+  @DisplayName("Should create valid association")
+  void shouldCreateValidAssociation() {
+    UUID projectId = UUID.randomUUID();
+    UUID schoolId = UUID.randomUUID();
+
+    ProjectSchool pbs = ProjectSchool.factory(projectId, schoolId);
+
+    assertThat(pbs.hasFieldErrors()).isFalse();
+    assertThat(pbs.getProjectId()).isEqualTo(projectId);
+    assertThat(pbs.getSchoolId()).isEqualTo(schoolId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when IDs are missing")
+  void shouldCollectValidationErrors() {
+    ProjectSchool pbs = ProjectSchool.factory(null, null);
+
+    assertThat(pbs.hasFieldErrors()).isTrue();
+    assertThat(pbs.getFieldErrors())
+        .contains(
+            ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
+            ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: domain/ProjectTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Project Aggregate Tests")
+class ProjectTest {
+
+  private final UUID entityId = UUID.randomUUID();
+  private final UUID creatorId = UUID.randomUUID();
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Project in PLANNED status")
+    void shouldCreateValidProject() {
+      Project project =
+          Project.factory(
+              "Project Alpha",
+              entityId,
+              "Description",
+              creatorId,
+              10,
+              new BigDecimal("40.0"),
+              BigDecimal.ZERO);
+
+      assertThat(project.hasFieldErrors()).isFalse();
+      assertThat(project.getProjectStatus()).isEqualTo(ProjectStatus.PLANNED);
+    }
+  }
+
+  @Nested
+  @DisplayName("Lifecycle Transitions")
+  class TransitionTests {
+
+    @Test
+    @DisplayName("Should start PLANNED project to IN_PROGRESS")
+    void shouldStartProject() {
+      Project project =
+          Project.factory("Name", entityId, "Desc", creatorId, 10, BigDecimal.TEN, BigDecimal.ZERO);
+
+      Project started = project.start();
+      assertThat(started.getProjectStatus()).isEqualTo(ProjectStatus.IN_PROGRESS);
+    }
+
+    @Test
+    @DisplayName("Should fail to cancel COMPLETED project")
+    void shouldFailToCancelCompleted() {
+      Project project =
+          Project.factory("Name", entityId, "Desc", creatorId, 10, BigDecimal.TEN, BigDecimal.ZERO);
+
+      Project completed = project.start().complete();
+
+      Assertions.assertThrows(BusinessRuleException.class, completed::cancel);
+    }
+  }
+
+  @Nested
+  @DisplayName("Progress Management")
+  class ProgressTests {
+
+    @Test
+    @DisplayName("Should complete project when hours are reached")
+    void shouldCompleteOnHoursReached() {
+      Project project =
+          Project.factory(
+              "Name", entityId, "Desc", creatorId, 10, new BigDecimal("10.0"), BigDecimal.ZERO);
+
+      Project inProgress = project.start();
+      Project completed = inProgress.addCompletedHours(new BigDecimal("10.0"));
+
+      assertThat(completed.getProjectStatus()).isEqualTo(ProjectStatus.COMPLETED);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/AttendanceInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AttendanceInfo VO Tests")
+class AttendanceInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    AttendanceInfo info = AttendanceInfo.factory(UUID.randomUUID(), OffsetDateTime.now());
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should reject mismatched validator/timestamp")
+  void shouldRejectMismatched() {
+    AttendanceInfo info = AttendanceInfo.factory(UUID.randomUUID(), null);
+    assertThat(info.hasFieldErrors()).isTrue();
+    assertThat(info.getFieldErrors())
+        .contains(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STATUS_BLANK);
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EnrollmentIdentifierTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentIdentifier VO Tests")
+class EnrollmentIdentifierTest {
+  @Test
+  @DisplayName("Should create valid identifier")
+  void shouldCreate() {
+    EnrollmentIdentifier id = EnrollmentIdentifier.factory(UUID.randomUUID(), UUID.randomUUID());
+    assertThat(id.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/EnrollmentInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentInfo VO Tests")
+class EnrollmentInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    EnrollmentInfo info = EnrollmentInfo.factory();
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/ProjectInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectInfo VO Tests")
+class ProjectInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    ProjectInfo info =
+        ProjectInfo.factory(UUID.randomUUID(), 10, new BigDecimal("40"), BigDecimal.ZERO);
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/QrValidationInfoTest.java
+================================================================================
+package br.org.catolicasc.pug.project.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("QrValidationInfo VO Tests")
+class QrValidationInfoTest {
+  @Test
+  @DisplayName("Should create valid info")
+  void shouldCreate() {
+    QrValidationInfo info = QrValidationInfo.factory(new BigDecimal("1.0"), "hash-123");
+    assertThat(info.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should reject invalid duration")
+  void shouldReject() {
+    QrValidationInfo info = QrValidationInfo.factory(BigDecimal.ZERO, " ");
+    assertThat(info.hasFieldErrors()).isTrue();
+    assertThat(info.getFieldErrors())
+        .contains(
+            ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID,
+            ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);
+  }
+}
+
+
+================================================================================
+FILE: infra/AttendanceMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.AttendanceBuilder;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.infra.persistence.AttendanceEntity;
+import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AttendanceMapper Tests")
+class AttendanceMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Attendance")
+  void shouldPerformRoundTrip() {
+    Attendance attendance = AttendanceBuilder.anAttendance().build();
+
+    AttendanceEntity entity = AttendanceMapper.toEntity(attendance);
+    Attendance mapped = AttendanceMapper.toDomain(entity);
+
+    assertThat(mapped.getId()).isEqualTo(attendance.getId());
+    assertThat(mapped.getStatus()).isEqualTo(attendance.getStatus());
+    assertThat(mapped.getQrValidationInfo().getQrValidationHash())
+        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+  }
+
+  @Test
+  @DisplayName("toDomain should return null when entity is null")
+  void toDomainShouldReturnNullForNullEntity() {
+    assertThat(AttendanceMapper.toDomain(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("toEntity should return null when domain is null")
+  void toEntityShouldReturnNullForNullDomain() {
+    assertThat(AttendanceMapper.toEntity(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when domain is null")
+  void copyShouldHandleNullDomain() {
+    AttendanceEntity entity = AttendanceEntity.builder().status("WAITING").build();
+    AttendanceMapper.copy(null, entity);
+    assertThat(entity.getStatus()).isEqualTo("WAITING");
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when entity is null")
+  void copyShouldHandleNullEntity() {
+    Attendance attendance = AttendanceBuilder.anAttendance().build();
+    AttendanceMapper.copy(attendance, null);
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when both are null")
+  void copyShouldHandleBothNull() {
+    AttendanceMapper.copy(null, null);
+  }
+
+  @Test
+  @DisplayName("copy should update all entity fields from domain")
+  void copyShouldUpdateEntityFields() {
+    Attendance attendance = AttendanceBuilder.anAttendance().build();
+    AttendanceEntity entity = AttendanceEntity.builder().status("OLD").build();
+
+    AttendanceMapper.copy(attendance, entity);
+
+    assertThat(entity.getDuration())
+        .isEqualByComparingTo(attendance.getQrValidationInfo().getDuration());
+    assertThat(entity.getQrValidationHash())
+        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+    assertThat(entity.getStatus()).isEqualTo(attendance.getStatus().name());
+    assertThat(entity.getUpdatedAt())
+        .isEqualTo(attendance.getAttendanceInfo().getAuditInfo().getUpdatedAt());
+  }
+
+  @Test
+  @DisplayName("toView should return null when entity is null")
+  void toViewShouldReturnNullForNullEntity() {
+    assertThat(AttendanceMapper.toView(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("toView should map all fields correctly")
+  void toViewShouldMapAllFields() {
+    UUID id = UUID.randomUUID();
+    UUID projectId = UUID.randomUUID();
+    UUID studentId = UUID.randomUUID();
+    UUID validatedBy = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+
+    AttendanceEntity entity =
+        AttendanceEntity.builder()
+            .id(id)
+            .projectId(projectId)
+            .studentId(studentId)
+            .duration(new BigDecimal("2.50"))
+            .qrValidationHash("hash-123")
+            .status("WAITING")
+            .validatedBy(validatedBy)
+            .validatedAt(now)
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+
+    AttendanceView view = AttendanceMapper.toView(entity);
+
+    assertThat(view).isNotNull();
+    assertThat(view.id()).isEqualTo(id);
+    assertThat(view.projectId()).isEqualTo(projectId);
+    assertThat(view.studentId()).isEqualTo(studentId);
+    assertThat(view.duration()).isEqualByComparingTo(new BigDecimal("2.50"));
+    assertThat(view.qrValidationHash()).isEqualTo("hash-123");
+    assertThat(view.status()).isEqualTo(AttendanceStatus.WAITING);
+    assertThat(view.validatedById()).isEqualTo(validatedBy);
+    assertThat(view.validatedAt()).isEqualTo(now);
+  }
+
+  @Test
+  @DisplayName("Round-trip should preserve all value objects")
+  void roundTripShouldPreserveAllValueObjects() {
+    Attendance attendance = AttendanceBuilder.anAttendance().build();
+
+    AttendanceEntity entity = AttendanceMapper.toEntity(attendance);
+    Attendance mapped = AttendanceMapper.toDomain(entity);
+
+    assertThat(mapped.getEnrollmentIdentifier().getProjectId())
+        .isEqualTo(attendance.getEnrollmentIdentifier().getProjectId());
+    assertThat(mapped.getEnrollmentIdentifier().getStudentId())
+        .isEqualTo(attendance.getEnrollmentIdentifier().getStudentId());
+    assertThat(mapped.getQrValidationInfo().getDuration())
+        .isEqualByComparingTo(attendance.getQrValidationInfo().getDuration());
+    assertThat(mapped.getAttendanceInfo().getAuditInfo().getCreatedAt())
+        .isEqualTo(attendance.getAttendanceInfo().getAuditInfo().getCreatedAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/EnrollmentMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.EnrollmentBuilder;
+import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.infra.persistence.EnrollmentEntity;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentMapper Tests")
+class EnrollmentMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Enrollment")
+  void shouldPerformRoundTrip() {
+    Enrollment enrollment = EnrollmentBuilder.anEnrollment().build();
+
+    EnrollmentEntity entity = EnrollmentMapper.toEntity(enrollment);
+    Enrollment mapped = EnrollmentMapper.toDomain(entity);
+
+    assertThat(mapped.getIdentifier()).isEqualTo(enrollment.getIdentifier());
+    assertThat(mapped.getStatus()).isEqualTo(enrollment.getStatus());
+  }
+
+  @Test
+  @DisplayName("toDomain should return null when entity is null")
+  void toDomainShouldReturnNullForNullEntity() {
+    assertThat(EnrollmentMapper.toDomain(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("toEntity should return null when domain is null")
+  void toEntityShouldReturnNullForNullDomain() {
+    assertThat(EnrollmentMapper.toEntity(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when domain is null")
+  void copyShouldHandleNullDomain() {
+    EnrollmentEntity entity = EnrollmentEntity.builder().status("PENDING").build();
+    EnrollmentMapper.copy(null, entity);
+    assertThat(entity.getStatus()).isEqualTo("PENDING");
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when entity is null")
+  void copyShouldHandleNullEntity() {
+    Enrollment enrollment = EnrollmentBuilder.anEnrollment().build();
+    EnrollmentMapper.copy(enrollment, null);
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when both are null")
+  void copyShouldHandleBothNull() {
+    EnrollmentMapper.copy(null, null);
+  }
+
+  @Test
+  @DisplayName("copy should update all entity fields from domain")
+  void copyShouldUpdateEntityFields() {
+    Enrollment enrollment = EnrollmentBuilder.anEnrollment().build();
+    EnrollmentEntity entity = EnrollmentEntity.builder().status("OLD").build();
+
+    EnrollmentMapper.copy(enrollment, entity);
+
+    assertThat(entity.getStatus()).isEqualTo(enrollment.getStatus().name());
+    assertThat(entity.getCreatedAt())
+        .isEqualTo(enrollment.getEnrollmentInfo().getAuditInfo().getCreatedAt());
+    assertThat(entity.getUpdatedAt())
+        .isEqualTo(enrollment.getEnrollmentInfo().getAuditInfo().getUpdatedAt());
+  }
+
+  @Test
+  @DisplayName("Round-trip should preserve enrollment info")
+  void roundTripShouldPreserveEnrollmentInfo() {
+    Enrollment enrollment = EnrollmentBuilder.anEnrollment().build();
+
+    EnrollmentEntity entity = EnrollmentMapper.toEntity(enrollment);
+    Enrollment mapped = EnrollmentMapper.toDomain(entity);
+
+    assertThat(mapped.getIdentifier().getProjectId())
+        .isEqualTo(enrollment.getIdentifier().getProjectId());
+    assertThat(mapped.getIdentifier().getStudentId())
+        .isEqualTo(enrollment.getIdentifier().getStudentId());
+    assertThat(mapped.getStatus()).isEqualTo(enrollment.getStatus());
+    assertThat(mapped.getEnrollmentInfo().getAuditInfo().getCreatedAt())
+        .isEqualTo(enrollment.getEnrollmentInfo().getAuditInfo().getCreatedAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/AttendanceRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AttendanceRepositoryImplTest {
+
+  @Inject AttendanceRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+
+  private Student student;
+  private Project project;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account sAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(sAcc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    project =
+        factory.createProject(
+            entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
+
+    factory.createEnrollment(student, project);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find Attendance")
+  void shouldPersistAndFind() {
+    Attendance attendance = factory.createAttendance(project, student);
+
+    var found = repository.findOptionalById(attendance.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getQrValidationInfo().getQrValidationHash())
+        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/EnrollmentRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class EnrollmentRepositoryImplTest {
+
+  @Inject EnrollmentRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+
+  private Student student;
+  private Project project;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(acc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    project =
+        factory.createProject(
+            entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find Enrollment")
+  void shouldPersistAndFind() {
+    Enrollment enrollment = factory.createEnrollment(student, project);
+
+    var found = repository.findOptionalById(enrollment.getIdentifier());
+    assertThat(found).isPresent();
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/ProjectRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class ProjectRepositoryImplTest {
+
+  @Inject ProjectRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+
+  private Entity entity;
+  private Account account;
+
+  @BeforeEach
+  void setup() {
+    entity = factory.createEntity(factory.getAnyCity());
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.PARTNER);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find Project")
+  void shouldPersistAndFind() {
+    Project project = factory.createProject(entity, account);
+
+    var found = repository.findOptionalById(project.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getName()).isEqualTo(project.getName());
+  }
+}
+
+
+================================================================================
+FILE: infra/ProjectMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
+import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectMapper Tests")
+class ProjectMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Project")
+  void shouldPerformRoundTrip() {
+    Project project = ProjectBuilder.aProject().withName("Mapper Test Project").build();
+
+    ProjectEntity entity = ProjectMapper.toEntity(project);
+    Project mapped = ProjectMapper.toDomain(entity);
+
+    assertThat(mapped.getId()).isEqualTo(project.getId());
+    assertThat(mapped.getName()).isEqualTo(project.getName());
+    assertThat(mapped.getProjectStatus()).isEqualTo(project.getProjectStatus());
+  }
+
+  @Test
+  @DisplayName("toDomain should return null when entity is null")
+  void toDomainShouldReturnNullForNullEntity() {
+    assertThat(ProjectMapper.toDomain(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("toEntity should return null when domain is null")
+  void toEntityShouldReturnNullForNullDomain() {
+    assertThat(ProjectMapper.toEntity(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when domain is null")
+  void copyShouldHandleNullDomain() {
+    ProjectEntity entity = ProjectEntity.builder().name("Original").build();
+    ProjectMapper.copy(null, entity);
+    assertThat(entity.getName()).isEqualTo("Original");
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when entity is null")
+  void copyShouldHandleNullEntity() {
+    Project project = ProjectBuilder.aProject().build();
+    ProjectMapper.copy(project, null);
+  }
+
+  @Test
+  @DisplayName("copy should do nothing when both are null")
+  void copyShouldHandleBothNull() {
+    ProjectMapper.copy(null, null);
+  }
+
+  @Test
+  @DisplayName("copy should update all entity fields from domain")
+  void copyShouldUpdateEntityFields() {
+    Project project = ProjectBuilder.aProject().withName("Updated Project").build();
+    ProjectEntity entity = ProjectEntity.builder().name("Old").status("PLANNED").build();
+
+    ProjectMapper.copy(project, entity);
+
+    assertThat(entity.getName()).isEqualTo("Updated Project");
+    assertThat(entity.getEntityId()).isEqualTo(project.getEntityId());
+    assertThat(entity.getDescription()).isEqualTo(project.getDescription());
+    assertThat(entity.getMaxParticipants())
+        .isEqualTo(project.getProjectInfo().getMaxParticipants());
+    assertThat(entity.getOfferedHours())
+        .isEqualByComparingTo(project.getProjectInfo().getOfferedHours());
+    assertThat(entity.getCompletedHours())
+        .isEqualByComparingTo(project.getProjectInfo().getCompletedHours());
+    assertThat(entity.getStatus()).isEqualTo(project.getProjectStatus().name());
+  }
+
+  @Test
+  @DisplayName("toView should return null when entity is null")
+  void toViewShouldReturnNullForNullEntity() {
+    assertThat(ProjectMapper.toView(null)).isNull();
+  }
+
+  @Test
+  @DisplayName("toView should map all fields correctly")
+  void toViewShouldMapAllFields() {
+    UUID id = UUID.randomUUID();
+    UUID entityId = UUID.randomUUID();
+    UUID creatorId = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+
+    ProjectEntity entity =
+        ProjectEntity.builder()
+            .id(id)
+            .name("Test Project")
+            .entityId(entityId)
+            .description("desc")
+            .createdBy(creatorId)
+            .maxParticipants(10)
+            .offeredHours(new BigDecimal("40.00"))
+            .completedHours(BigDecimal.ZERO)
+            .status("PLANNED")
+            .closedAt(null)
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+
+    ProjectView view = ProjectMapper.toView(entity);
+
+    assertThat(view).isNotNull();
+    assertThat(view.id()).isEqualTo(id);
+    assertThat(view.name()).isEqualTo("Test Project");
+    assertThat(view.entityId()).isEqualTo(entityId);
+    assertThat(view.description()).isEqualTo("desc");
+    assertThat(view.creatorId()).isEqualTo(creatorId);
+    assertThat(view.maxParticipants()).isEqualTo(10);
+    assertThat(view.offeredHours()).isEqualByComparingTo(new BigDecimal("40.00"));
+    assertThat(view.completedHours()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(view.status()).isEqualTo(ProjectStatus.PLANNED);
+    assertThat(view.closedAt()).isNull();
+  }
+
+  @Test
+  @DisplayName("Round-trip should preserve all value objects")
+  void roundTripShouldPreserveAllValueObjects() {
+    Project project = ProjectBuilder.aProject().build();
+
+    ProjectEntity entity = ProjectMapper.toEntity(project);
+    Project mapped = ProjectMapper.toDomain(entity);
+
+    assertThat(mapped.getEntityId()).isEqualTo(project.getEntityId());
+    assertThat(mapped.getDescription()).isEqualTo(project.getDescription());
+    assertThat(mapped.getProjectInfo().getMaxParticipants())
+        .isEqualTo(project.getProjectInfo().getMaxParticipants());
+    assertThat(mapped.getProjectInfo().getOfferedHours())
+        .isEqualByComparingTo(project.getProjectInfo().getOfferedHours());
+    assertThat(mapped.getProjectInfo().getCompletedHours())
+        .isEqualByComparingTo(project.getProjectInfo().getCompletedHours());
+    assertThat(mapped.getProjectInfo().getCreatedBy())
+        .isEqualTo(project.getProjectInfo().getCreatedBy());
+    assertThat(mapped.getProjectInfo().getAuditInfo().getCreatedAt())
+        .isEqualTo(project.getProjectInfo().getAuditInfo().getCreatedAt());
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/AttendanceQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class AttendanceQueriesImplTest {
+
+  @Inject AttendanceQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Student student;
+  private Project project;
+  private Attendance attendance;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(acc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    project =
+        factory.createProject(
+            entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
+
+    factory.createEnrollment(student, project);
+    attendance = factory.createAttendance(project, student);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should retrieve AttendanceView by ID")
+  void shouldFindById() {
+    var view = queries.findOptionalById(attendance.getId());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().id()).isEqualTo(attendance.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty when ID is null")
+  void shouldReturnEmptyForNullId() {
+    assertThat(queries.findOptionalById(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty for non-existent ID")
+  void shouldReturnEmptyForNonExistentId() {
+    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by enrollment ID")
+  void shouldListByEnrollmentId() {
+    var list = queries.listByEnrollmentId(project.getId(), student.getAccountId());
+    assertThat(list).isNotEmpty();
+    assertThat(list)
+        .allSatisfy(
+            v -> {
+              assertThat(v.projectId()).isEqualTo(project.getId());
+              assertThat(v.studentId()).isEqualTo(student.getAccountId());
+            });
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null enrollment project ID")
+  void shouldReturnEmptyForNullEnrollmentProjectId() {
+    assertThat(queries.listByEnrollmentId(null, student.getAccountId())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null enrollment student ID")
+  void shouldReturnEmptyForNullEnrollmentStudentId() {
+    assertThat(queries.listByEnrollmentId(project.getId(), null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by project ID")
+  void shouldListByProjectId() {
+    var list = queries.listByProjectId(project.getId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.projectId()).isEqualTo(project.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null project ID")
+  void shouldReturnEmptyForNullProjectId() {
+    assertThat(queries.listByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list by student ID")
+  void shouldListByStudentId() {
+    var list = queries.listByStudentId(student.getAccountId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(student.getAccountId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null student ID")
+  void shouldReturnEmptyForNullStudentId() {
+    assertThat(queries.listByStudentId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all views")
+  void shouldListViews() {
+    var list = queries.listViews();
+    assertThat(list).isNotEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should verify all fields in attendance view")
+  void shouldVerifyAllFieldsInView() {
+    var view = queries.findOptionalById(attendance.getId());
+
+    assertThat(view).isPresent();
+    var av = view.get();
+    assertThat(av.id()).isEqualTo(attendance.getId());
+    assertThat(av.projectId()).isEqualTo(attendance.getEnrollmentIdentifier().getProjectId());
+    assertThat(av.studentId()).isEqualTo(attendance.getEnrollmentIdentifier().getStudentId());
+    assertThat(av.duration()).isEqualByComparingTo(attendance.getQrValidationInfo().getDuration());
+    assertThat(av.qrValidationHash())
+        .isEqualTo(attendance.getQrValidationInfo().getQrValidationHash());
+    assertThat(av.status()).isNotNull();
+    assertThat(av.createdAt()).isNotNull();
+    assertThat(av.updatedAt()).isNotNull();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/EnrollmentQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class EnrollmentQueriesImplTest {
+
+  @Inject EnrollmentQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Student student;
+  private Project project;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(acc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    project =
+        factory.createProject(
+            entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
+
+    factory.createEnrollment(student, project);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should retrieve EnrollmentView by composite ID")
+  void shouldFindByIds() {
+    var view = queries.findOptionalByIds(project.getId(), student.getAccountId());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().projectId()).isEqualTo(project.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty when project ID is null")
+  void shouldReturnEmptyForNullProjectId() {
+    assertThat(queries.findOptionalByIds(null, student.getAccountId())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty when student ID is null")
+  void shouldReturnEmptyForNullStudentId() {
+    assertThat(queries.findOptionalByIds(project.getId(), null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty for non-existent composite ID")
+  void shouldReturnEmptyForNonExistentIds() {
+    assertThat(queries.findOptionalByIds(UUID.randomUUID(), UUID.randomUUID())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all enrollments")
+  void shouldListAllEnrollments() {
+    var list = queries.listAllEnrollments();
+    assertThat(list).isNotEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list enrollments by project ID")
+  void shouldListByProjectId() {
+    var list = queries.listByProjectId(project.getId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.projectId()).isEqualTo(project.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null project ID")
+  void shouldReturnEmptyListForNullProjectId() {
+    assertThat(queries.listByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list enrollments by student ID")
+  void shouldListByStudentId() {
+    var list = queries.listByStudentId(student.getAccountId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(student.getAccountId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null student ID")
+  void shouldReturnEmptyListForNullStudentId() {
+    assertThat(queries.listByStudentId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should verify all fields in enrollment view")
+  void shouldVerifyAllFieldsInView() {
+    var view = queries.findOptionalByIds(project.getId(), student.getAccountId());
+
+    assertThat(view).isPresent();
+    var ev = view.get();
+    assertThat(ev.projectId()).isEqualTo(project.getId());
+    assertThat(ev.studentId()).isEqualTo(student.getAccountId());
+    assertThat(ev.status()).isNotNull();
+    assertThat(ev.createdAt()).isNotNull();
+    assertThat(ev.updatedAt()).isNotNull();
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/ProjectQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class ProjectQueriesImplTest {
+
+  @Inject ProjectQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Project project;
+  private Entity partnerEntity;
+  private Account creator;
+
+  @BeforeEach
+  void setup() {
+    partnerEntity = factory.createEntity(factory.getAnyCity());
+    creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    project = factory.createProject(partnerEntity, creator);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should retrieve ProjectView by ID")
+  void shouldFindById() {
+    var view = queries.findOptionalById(project.getId());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().name()).isEqualTo(project.getName());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty when ID is null")
+  void shouldReturnEmptyForNullId() {
+    assertThat(queries.findOptionalById(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty for non-existent ID")
+  void shouldReturnEmptyForNonExistentId() {
+    assertThat(queries.findOptionalById(UUID.randomUUID())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list all projects")
+  void shouldListAllProjects() {
+    var list = queries.listAllProjects();
+    assertThat(list).isNotEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list projects by creator")
+  void shouldListByCreatedBy() {
+    var list = queries.listByCreatedBy(creator.getId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.creatorId()).isEqualTo(creator.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null creator ID")
+  void shouldReturnEmptyForNullCreator() {
+    assertThat(queries.listByCreatedBy(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list projects by entity ID")
+  void shouldListByEntityId() {
+    var list = queries.listByEntityId(partnerEntity.getId());
+    assertThat(list).isNotEmpty();
+    assertThat(list).allSatisfy(v -> assertThat(v.entityId()).isEqualTo(partnerEntity.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null entity ID")
+  void shouldReturnEmptyForNullEntityId() {
+    assertThat(queries.listByEntityId(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should list projects by IDs")
+  void shouldListByIds() {
+    var list = queries.listByIds(List.of(project.getId()));
+    assertThat(list).hasSize(1);
+    assertThat(list.getFirst().id()).isEqualTo(project.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return empty list for null IDs")
+  void shouldReturnEmptyForNullIds() {
+    assertThat(queries.listByIds(null)).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should verify all fields in project view")
+  void shouldVerifyAllFieldsInView() {
+    var view = queries.findOptionalById(project.getId());
+
+    assertThat(view).isPresent();
+    var pv = view.get();
+    assertThat(pv.id()).isEqualTo(project.getId());
+    assertThat(pv.name()).isEqualTo(project.getName());
+    assertThat(pv.entityId()).isEqualTo(project.getEntityId());
+    assertThat(pv.description()).isEqualTo(project.getDescription());
+    assertThat(pv.creatorId()).isEqualTo(project.getProjectInfo().getCreatedBy());
+    assertThat(pv.status()).isEqualTo(project.getProjectStatus());
+    assertThat(pv.createdAt()).isNotNull();
+    assertThat(pv.updatedAt()).isNotNull();
+  }
+}
+
+
+================================================================================
+FILE: presenter/AttendanceResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("AttendanceResource Integration Tests")
+class AttendanceResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    Attendance attendance = factory.createAttendance(project, student);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", attendance.getId())
+        .when()
+        .get("/projects/attendances/{id}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.id", is(attendance.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances/{id} - Not Found")
+  void getByIdNotFound() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/projects/attendances/{id}")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    factory.createAttendance(project, student);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/projects/attendances")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances?projectId= - Filter by Project")
+  void listByProjectId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    factory.createAttendance(project, student);
+    utx.commit();
+
+    given()
+        .queryParam("projectId", project.getId().toString())
+        .when()
+        .get("/projects/attendances")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances?studentId= - Filter by Student")
+  void listByStudentId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    factory.createAttendance(project, student);
+    utx.commit();
+
+    given()
+        .queryParam("studentId", student.getAccountId().toString())
+        .when()
+        .get("/projects/attendances")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/attendances?projectId=&studentId= - Filter by Enrollment")
+  void listByEnrollmentId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    factory.createAttendance(project, student);
+    utx.commit();
+
+    given()
+        .queryParam("projectId", project.getId().toString())
+        .queryParam("studentId", student.getAccountId().toString())
+        .when()
+        .get("/projects/attendances")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/attendances/{id} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    Attendance attendance = factory.createAttendance(project, student);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", attendance.getId())
+        .when()
+        .delete("/projects/attendances/{id}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when accessing without authentication")
+  void unauthorizedAccess() {
+    given().when().get("/projects/attendances").then().statusCode(401);
+  }
+}
+
+
+================================================================================
+FILE: presenter/EnrollmentResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("EnrollmentResource Integration Tests")
+class EnrollmentResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Success")
+  void getByIdsSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("projectId", project.getId())
+        .pathParam("studentId", student.getAccountId())
+        .when()
+        .get("/projects/enrollments/{projectId}/{studentId}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.projectId", is(project.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Not Found")
+  void getByIdsNotFound() {
+    given()
+        .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
+        .pathParam("studentId", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/projects/enrollments/{projectId}/{studentId}")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/projects/enrollments")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments?projectId= - Filter by Project")
+  void listByProjectId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    utx.commit();
+
+    given()
+        .queryParam("projectId", project.getId().toString())
+        .when()
+        .get("/projects/enrollments")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/enrollments/{projectId}/{studentId} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("projectId", project.getId())
+        .pathParam("studentId", student.getAccountId())
+        .when()
+        .delete("/projects/enrollments/{projectId}/{studentId}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when accessing without authentication")
+  void unauthorizedAccess() {
+    given().when().get("/projects/enrollments").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("GET /projects/enrollments - Forbidden for STUDENT")
+  void listForbiddenForStudent() {
+    given().when().get("/projects/enrollments").then().statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("DELETE /projects/enrollments - Forbidden for STUDENT")
+  void deleteForbiddenForStudent() {
+    given()
+        .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
+        .pathParam("studentId", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .delete("/projects/enrollments/{projectId}/{studentId}")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/accept - Success")
+  void acceptSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    Student student = factory.createStudent(acc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    factory.createEnrollment(student, project);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("projectId", project.getId())
+        .pathParam("studentId", student.getAccountId())
+        .when()
+        .patch("/projects/enrollments/{projectId}/{studentId}/accept")
+        .then()
+        .statusCode(200)
+        .body("data.status", is("APPROVED"));
+  }
+}
+
+
+================================================================================
+FILE: presenter/mappers/AttendancePresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("AttendancePresenter Coverage")
+class AttendancePresenterTest {
+
+  @Inject I18n i18n;
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandTests {
+
+    @Test
+    @DisplayName("Should map AttendanceCreateRequest to command")
+    void toCommand() {
+      UUID pid = UUID.randomUUID();
+      UUID sid = UUID.randomUUID();
+      var req = new AttendanceCreateRequest(pid, sid, new BigDecimal("2.00"));
+
+      AttendanceCreateCommand cmd = AttendancePresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.projectId()).isEqualTo(pid);
+      assertThat(cmd.studentId()).isEqualTo(sid);
+      assertThat(cmd.duration()).isEqualByComparingTo(new BigDecimal("2.00"));
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCommandNull() {
+      assertThat(AttendancePresenter.toCommand((AttendanceCreateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Validate Command Mapping")
+  class ValidateCommandTests {
+
+    @Test
+    @DisplayName("Should map AttendanceValidateRequest to command")
+    void toCommand() {
+      var req = new AttendanceValidateRequest(AttendanceStatus.PRESENT, "hash-123");
+
+      AttendanceValidateCommand cmd = AttendancePresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.status()).isEqualTo(AttendanceStatus.PRESENT);
+      assertThat(cmd.qrValidationHash()).isEqualTo("hash-123");
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCommandNull() {
+      assertThat(AttendancePresenter.toCommand((AttendanceValidateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseTests {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(AttendancePresenter.toResponse(null, Locale.US, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      assertThat(AttendancePresenter.toResponse(sampleView(), null, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when i18n is null")
+    void toResponseNullI18n() {
+      assertThat(AttendancePresenter.toResponse(sampleView(), Locale.US, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map AttendanceView to response correctly")
+    void toResponseSuccess() {
+      var view = sampleView();
+
+      AttendanceResponse response = AttendancePresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(view.id());
+      assertThat(response.projectId()).isEqualTo(view.projectId());
+      assertThat(response.studentId()).isEqualTo(view.studentId());
+      assertThat(response.duration()).isEqualByComparingTo(view.duration());
+      assertThat(response.qrValidationHash()).isEqualTo(view.qrValidationHash());
+      assertThat(response.status()).isEqualTo(AttendanceStatus.WAITING);
+      assertThat(response.statusFormatted()).isNotBlank();
+      assertThat(response.auditInfo()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle null validated timestamps")
+    void toResponseNullValidated() {
+      var view = sampleView();
+
+      AttendanceResponse response = AttendancePresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.validatedById()).isNull();
+      assertThat(response.validatedAt()).isNull();
+    }
+
+    private AttendanceView sampleView() {
+      return new AttendanceView(
+          UUID.randomUUID(),
+          UUID.randomUUID(),
+          UUID.randomUUID(),
+          new BigDecimal("2.00"),
+          "hash-123",
+          AttendanceStatus.WAITING,
+          null,
+          null,
+          OffsetDateTime.now(),
+          OffsetDateTime.now());
+    }
+  }
+}
+
+
+================================================================================
+FILE: presenter/mappers/EnrollmentPresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
+import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentResponse;
+import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("EnrollmentPresenter Coverage")
+class EnrollmentPresenterTest {
+
+  @Inject I18n i18n;
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandTests {
+
+    @Test
+    @DisplayName("Should map EnrollmentCreateRequest to command")
+    void toCommand() {
+      UUID projectId = UUID.randomUUID();
+      var req = new EnrollmentCreateRequest(projectId);
+
+      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.projectId()).isEqualTo(projectId);
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCommandNull() {
+      assertThat(EnrollmentPresenter.toCommand(null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseTests {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(EnrollmentPresenter.toResponse(null, Locale.US, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      assertThat(EnrollmentPresenter.toResponse(sampleView(), null, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when i18n is null")
+    void toResponseNullI18n() {
+      assertThat(EnrollmentPresenter.toResponse(sampleView(), Locale.US, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map EnrollmentView to response correctly")
+    void toResponseSuccess() {
+      var view = sampleView();
+
+      EnrollmentResponse response = EnrollmentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.projectId()).isEqualTo(view.projectId());
+      assertThat(response.studentId()).isEqualTo(view.studentId());
+      assertThat(response.status()).isEqualTo(EnrollmentStatus.PENDING);
+      assertThat(response.statusFormatted()).isNotBlank();
+      assertThat(response.auditInfo()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle null optional timestamps")
+    void toResponseNullTimestamps() {
+      var view = sampleView();
+
+      EnrollmentResponse response = EnrollmentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.acceptedAt()).isNull();
+      assertThat(response.closingStatusAt()).isNull();
+    }
+
+    private EnrollmentView sampleView() {
+      return new EnrollmentView(
+          UUID.randomUUID(),
+          UUID.randomUUID(),
+          EnrollmentStatus.PENDING,
+          OffsetDateTime.now(),
+          OffsetDateTime.now(),
+          null,
+          null);
+    }
+  }
+}
+
+
+================================================================================
+FILE: presenter/mappers/ProjectPresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
+import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectPresenter Coverage")
+class ProjectPresenterTest {
+
+  @Inject I18n i18n;
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandTests {
+
+    @Test
+    @DisplayName("Should map ProjectCreateRequest to ProjectCreateCommand")
+    void toCreateCommand() {
+      UUID entityId = UUID.randomUUID();
+      var req = new ProjectCreateRequest("Project", entityId, "desc", 20, new BigDecimal("40.00"));
+
+      ProjectCreateCommand cmd = ProjectPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("Project");
+      assertThat(cmd.entityId()).isEqualTo(entityId);
+      assertThat(cmd.description()).isEqualTo("desc");
+      assertThat(cmd.maxParticipants()).isEqualTo(20);
+      assertThat(cmd.offeredHours()).isEqualByComparingTo(new BigDecimal("40.00"));
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCreateCommandNull() {
+      assertThat(ProjectPresenter.toCommand((ProjectCreateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Update Command Mapping")
+  class UpdateCommandTests {
+
+    @Test
+    @DisplayName("Should map ProjectUpdateRequest to ProjectUpdateCommand")
+    void toUpdateCommand() {
+      var req = new ProjectUpdateRequest("New Name", "New Desc", 30, new BigDecimal("80"));
+
+      ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("New Name");
+      assertThat(cmd.description()).isEqualTo("New Desc");
+      assertThat(cmd.maxParticipants()).isEqualTo(30);
+      assertThat(cmd.offeredHours()).isEqualByComparingTo(new BigDecimal("80"));
+    }
+
+    @Test
+    @DisplayName("Should map partial update with nulls")
+    void toUpdateCommandPartial() {
+      var req = new ProjectUpdateRequest(null, null, null, null);
+
+      ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isNull();
+      assertThat(cmd.description()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toUpdateCommandNull() {
+      assertThat(ProjectPresenter.toCommand((ProjectUpdateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseTests {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(ProjectPresenter.toResponse(null, Locale.US, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      var view = sampleView();
+      assertThat(ProjectPresenter.toResponse(view, null, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when i18n is null")
+    void toResponseNullI18n() {
+      var view = sampleView();
+      assertThat(ProjectPresenter.toResponse(view, Locale.US, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map ProjectView to ProjectResponse correctly")
+    void toResponseSuccess() {
+      var view = sampleView();
+
+      ProjectResponse response = ProjectPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(view.id());
+      assertThat(response.name()).isEqualTo(view.name());
+      assertThat(response.entityId()).isEqualTo(view.entityId());
+      assertThat(response.description()).isEqualTo(view.description());
+      assertThat(response.createdBy()).isEqualTo(view.creatorId());
+      assertThat(response.maxParticipants()).isEqualTo(view.maxParticipants());
+      assertThat(response.offeredHours()).isEqualByComparingTo(view.offeredHours());
+      assertThat(response.completedHours()).isEqualByComparingTo(view.completedHours());
+      assertThat(response.status()).isEqualTo(ProjectStatus.PLANNED);
+      assertThat(response.statusFormatted()).isNotBlank();
+      assertThat(response.auditInfo()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle null closedAt gracefully")
+    void toResponseNullClosedAt() {
+      var view = sampleView();
+
+      ProjectResponse response = ProjectPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.closedAt()).isNull();
+    }
+
+    private ProjectView sampleView() {
+      return new ProjectView(
+          UUID.randomUUID(),
+          "Test Project",
+          UUID.randomUUID(),
+          "desc",
+          UUID.randomUUID(),
+          20,
+          new BigDecimal("40.00"),
+          BigDecimal.ZERO,
+          ProjectStatus.PLANNED,
+          null,
+          OffsetDateTime.now(),
+          OffsetDateTime.now());
+    }
+  }
+}
+
+
+================================================================================
+FILE: presenter/ProjectResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectResource Integration Tests")
+class ProjectResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", project.getId())
+        .when()
+        .get("/projects/{id}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.id", is(project.getId().toString()))
+        .body("data.name", is(project.getName()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/{id} - Not Found")
+  void getByIdNotFound() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/projects/{id}")
+        .then()
+        .statusCode(404)
+        .body("success", is(false));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    factory.createProject(entity, creator);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/projects")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects?entityId= - Filter by Entity")
+  void listByEntityId() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    factory.createProject(entity, creator);
+    utx.commit();
+
+    given()
+        .queryParam("entityId", entity.getId().toString())
+        .when()
+        .get("/projects")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
+  @DisplayName("POST /projects - Success")
+  void createSuccess() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    utx.commit();
+
+    var req =
+        new ProjectCreateRequest(
+            "REST Test Project " + UuidCreator.getTimeOrderedEpoch(),
+            entity.getId(),
+            "Test description",
+            15,
+            new BigDecimal("30.00"));
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/projects")
+        .then()
+        .statusCode(201)
+        .body("data.name", notNullValue())
+        .body("data.entityId", is(entity.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
+  @DisplayName("PUT /projects/{id} - Success")
+  void updateSuccess() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    em.flush();
+    utx.commit();
+
+    var req = new ProjectUpdateRequest(null, "Updated Description", null, null);
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", project.getId())
+        .body(req)
+        .when()
+        .put("/projects/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.description", is("Updated Description"));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("PUT /projects/{id} - Not Found")
+  void updateNotFound() {
+    var req = new ProjectUpdateRequest("Name", null, null, null);
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .body(req)
+        .when()
+        .put("/projects/{id}")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/{id} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    em.flush();
+    utx.commit();
+
+    given().pathParam("id", project.getId()).when().delete("/projects/{id}").then().statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when accessing without authentication")
+  void unauthorizedAccess() {
+    given().when().get("/projects").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("POST /projects - Forbidden for STUDENT")
+  void createForbiddenForStudent() {
+    var req =
+        new ProjectCreateRequest(
+            "Forbidden", UuidCreator.getTimeOrderedEpoch(), "desc", 10, new BigDecimal("10"));
+
+    given().contentType(ContentType.JSON).body(req).when().post("/projects").then().statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("DELETE /projects/{id} - Forbidden for STUDENT")
+  void deleteForbiddenForStudent() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .delete("/projects/{id}")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("PATCH /projects/{id}/start - Success")
+  void startSuccess() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", project.getId())
+        .when()
+        .patch("/projects/{id}/start")
+        .then()
+        .statusCode(200)
+        .body("data.status", is("IN_PROGRESS"));
+  }
+}
+
+
+================================================================================
+FILE: presenter/ProjectSchoolResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.project.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectSchoolRequest;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import java.util.List;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectSchoolResource Integration Tests")
+class ProjectSchoolResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("POST /projects/by-school - Create Associations")
+  void createAssociations() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/projects/by-school")
+        .then()
+        .statusCode(201)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/by-school/projects/{projectId}/schools - List Schools")
+  void listSchoolsByProjectId() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    // Create association first
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+    given().contentType(ContentType.JSON).body(req).post("/projects/by-school");
+
+    given()
+        .pathParam("projectId", project.getId())
+        .when()
+        .get("/projects/by-school/projects/{projectId}/schools")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/by-school/schools/{schoolId}/projects - List Projects")
+  void listProjectsBySchoolId() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    // Create association first
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+    given().contentType(ContentType.JSON).body(req).post("/projects/by-school");
+
+    given()
+        .pathParam("schoolId", school.getId())
+        .when()
+        .get("/projects/by-school/schools/{schoolId}/projects")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/by-school/projects/{projectId}/schools/{schoolId} - Success")
+  void deleteAssociation() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    // Create association first
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+    given().contentType(ContentType.JSON).body(req).post("/projects/by-school");
+
+    given()
+        .pathParam("projectId", project.getId())
+        .pathParam("schoolId", school.getId())
+        .when()
+        .delete("/projects/by-school/projects/{projectId}/schools/{schoolId}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/by-school/projects/{projectId} - Delete All by Project")
+  void deleteAllByProject() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+    given().contentType(ContentType.JSON).body(req).post("/projects/by-school");
+
+    given()
+        .pathParam("projectId", project.getId())
+        .when()
+        .delete("/projects/by-school/projects/{projectId}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("DELETE /projects/by-school/schools/{schoolId} - Delete All by School")
+  void deleteAllBySchool() throws Exception {
+    utx.begin();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project project = factory.createProject(entity, creator);
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    var req = new ProjectSchoolRequest(project.getId(), List.of(school.getId()));
+    given().contentType(ContentType.JSON).body(req).post("/projects/by-school");
+
+    given()
+        .pathParam("schoolId", school.getId())
+        .when()
+        .delete("/projects/by-school/schools/{schoolId}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when accessing without authentication")
+  void unauthorizedAccess() {
+    given()
+        .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/projects/by-school/projects/{projectId}/schools")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("POST /projects/by-school - Forbidden for STUDENT")
+  void createForbiddenForStudent() {
+    var req =
+        new ProjectSchoolRequest(
+            UuidCreator.getTimeOrderedEpoch(), List.of(UuidCreator.getTimeOrderedEpoch()));
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/projects/by-school")
+        .then()
+        .statusCode(403);
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AttendanceReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.infra.read.AttendanceQueries;
+import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("AttendanceReadServiceImpl Coverage")
+class AttendanceReadServiceImplTest {
+
+  @Inject AttendanceReadServiceImpl service;
+  @InjectMock AttendanceQueries queries;
+
+  private AttendanceView sampleView() {
+    return new AttendanceView(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        new BigDecimal("2.00"),
+        "hash-123",
+        AttendanceStatus.WAITING,
+        null,
+        null,
+        OffsetDateTime.now(),
+        OffsetDateTime.now());
+  }
+
+  @Test
+  @DisplayName("Should return attendance view by ID")
+  void getViewByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    AttendanceView view = sampleView();
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewById(id)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw ResourceNotFound when ID not found")
+  void getViewByIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should list by enrollment ID")
+  void listByEnrollmentId() {
+    UUID pid = UUID.randomUUID();
+    UUID sid = UUID.randomUUID();
+    when(queries.listByEnrollmentId(pid, sid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listByEnrollmentId(pid, sid)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null enrollment project ID")
+  void listByEnrollmentIdNullProject() {
+    assertThat(service.listByEnrollmentId(null, UUID.randomUUID())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null enrollment student ID")
+  void listByEnrollmentIdNullStudent() {
+    assertThat(service.listByEnrollmentId(UUID.randomUUID(), null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list by project ID")
+  void listByProjectId() {
+    UUID pid = UUID.randomUUID();
+    when(queries.listByProjectId(pid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listByProjectId(pid)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null project ID")
+  void listByProjectIdNull() {
+    assertThat(service.listByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list by student ID")
+  void listByStudentId() {
+    UUID sid = UUID.randomUUID();
+    when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listByStudentId(sid)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null student ID")
+  void listByStudentIdNull() {
+    assertThat(service.listByStudentId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list all views")
+  void listViews() {
+    when(queries.listViews()).thenReturn(List.of(sampleView()));
+    assertThat(service.listViews()).hasSize(1);
+  }
+}
+
+
+================================================================================
+FILE: service/impl/AttendanceServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("AttendanceServiceImpl Integration Tests")
+class AttendanceServiceImplTest {
+
+  @Inject AttendanceServiceImpl service;
+  @Inject TestDataFactory factory;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock AuthService authService;
+
+  private Student student;
+  private Project project;
+  private Attendance attendance;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(studentAcc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    project = factory.createProject(entity, creatorAcc);
+
+    factory.createEnrollment(student, project);
+    attendance = factory.createAttendance(project, student);
+
+    doNothing().when(authService).requireCurrentAccountNotOfType(any());
+    doNothing().when(authService).requireCurrentAccountOfType(any());
+    when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get attendance by ID")
+  void getByIdSuccess() {
+    Attendance found = service.getById(attendance.getId());
+
+    assertThat(found.getId()).isEqualTo(attendance.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when attendance not found")
+  void getByIdNotFound() {
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete attendance successfully")
+  void deleteSuccess() {
+    boolean deleted = service.delete(attendance.getId());
+
+    assertThat(deleted).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null ID")
+  void deleteNullId() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return false when deleting non-existing attendance")
+  void deleteNonExisting() {
+    assertThat(service.delete(UUID.randomUUID())).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete all by enrollment identifier")
+  void deleteAllByEnrollmentIdentifier() {
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.builder()
+            .projectId(project.getId())
+            .studentId(student.getAccountId())
+            .build();
+
+    long deleted = service.deleteAllByEnrollmentIdentifier(identifier);
+
+    assertThat(deleted).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should return 0 when deleting with null identifier")
+  void deleteAllByNullIdentifier() {
+    assertThat(service.deleteAllByEnrollmentIdentifier(null)).isZero();
+  }
+
+  @Test
+  @DisplayName("Should return false for null account ID in existsByValidatedBy")
+  void existsByValidatedByNull() {
+    assertThat(service.existsByValidatedBy(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should return false for non-existing validated by")
+  void existsByValidatedByNonExisting() {
+    assertThat(service.existsByValidatedBy(UUID.randomUUID())).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/EnrollmentReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.infra.read.EnrollmentQueries;
+import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("EnrollmentReadServiceImpl Coverage")
+class EnrollmentReadServiceImplTest {
+
+  @Inject EnrollmentReadServiceImpl service;
+  @InjectMock EnrollmentQueries queries;
+
+  private EnrollmentView sampleView() {
+    return new EnrollmentView(
+        UUID.randomUUID(),
+        UUID.randomUUID(),
+        EnrollmentStatus.PENDING,
+        OffsetDateTime.now(),
+        OffsetDateTime.now(),
+        null,
+        null);
+  }
+
+  @Test
+  @DisplayName("Should return enrollment view by IDs")
+  void getViewByIdsSuccess() {
+    UUID pid = UUID.randomUUID();
+    UUID sid = UUID.randomUUID();
+    EnrollmentView view = sampleView();
+    when(queries.findOptionalByIds(pid, sid)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByIds(pid, sid)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw ResourceNotFound when IDs not found")
+  void getViewByIdsNotFound() {
+    when(queries.findOptionalByIds(any(), any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewByIds(UUID.randomUUID(), UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should list all enrollment views")
+  void listViews() {
+    when(queries.listAllEnrollments()).thenReturn(List.of(sampleView()));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should list views by project ID")
+  void listViewsByProjectId() {
+    UUID pid = UUID.randomUUID();
+    when(queries.listByProjectId(pid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listViewsByProjectId(pid)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null project ID")
+  void listViewsByProjectIdNull() {
+    assertThat(service.listViewsByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list views by student ID")
+  void listViewsByStudentId() {
+    UUID sid = UUID.randomUUID();
+    when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listViewsByStudentId(sid)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null student ID")
+  void listViewsByStudentIdNull() {
+    assertThat(service.listViewsByStudentId(null)).isEmpty();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/EnrollmentServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("EnrollmentServiceImpl Integration Tests")
+class EnrollmentServiceImplTest {
+
+  @Inject EnrollmentServiceImpl service;
+  @Inject TestDataFactory factory;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock AuthService authService;
+
+  private Student student;
+  private Project project;
+
+  @BeforeEach
+  void setup() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    student = factory.createStudent(studentAcc, course);
+
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    project = factory.createProject(entity, creatorAcc);
+
+    doNothing().when(authService).requireCurrentAccountOfType(any());
+    doNothing().when(authService).requireCurrentAccountNotOfType(any());
+    when(authService.getCurrentAccountId()).thenReturn(studentAcc.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should save enrollment successfully")
+  void saveSuccess() {
+    EnrollmentCreateCommand cmd = new EnrollmentCreateCommand(project.getId());
+
+    Enrollment saved = service.save(cmd);
+
+    assertThat(saved).isNotNull();
+    assertThat(saved.getIdentifier().getProjectId()).isEqualTo(project.getId());
+    assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException for same enrollment")
+  void saveDuplicate() {
+    factory.createEnrollment(student, project);
+
+    EnrollmentCreateCommand cmd = new EnrollmentCreateCommand(project.getId());
+
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get enrollment by IDs")
+  void getByIdsSuccess() {
+    factory.createEnrollment(student, project);
+
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder()
+            .projectId(project.getId())
+            .studentId(student.getAccountId())
+            .build();
+
+    Enrollment found = service.getByIds(id);
+
+    assertThat(found.getIdentifier().getProjectId()).isEqualTo(project.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when enrollment not found")
+  void getByIdsNotFound() {
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder()
+            .projectId(UUID.randomUUID())
+            .studentId(UUID.randomUUID())
+            .build();
+
+    assertThrows(ResourceNotFoundException.class, () -> service.getByIds(id));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should accept enrollment")
+  void acceptSuccess() {
+    factory.createEnrollment(student, project);
+
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder()
+            .projectId(project.getId())
+            .studentId(student.getAccountId())
+            .build();
+
+    Enrollment accepted = service.accept(id);
+
+    assertThat(accepted.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should reject enrollment")
+  void rejectSuccess() {
+    factory.createEnrollment(student, project);
+
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder()
+            .projectId(project.getId())
+            .studentId(student.getAccountId())
+            .build();
+
+    Enrollment rejected = service.reject(id);
+
+    assertThat(rejected.getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete enrollment successfully")
+  void deleteSuccess() {
+    factory.createEnrollment(student, project);
+
+    EnrollmentIdentifier id =
+        EnrollmentIdentifier.builder()
+            .projectId(project.getId())
+            .studentId(student.getAccountId())
+            .build();
+
+    boolean deleted = service.delete(id);
+
+    assertThat(deleted).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null identifier")
+  void deleteNull() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should return false for null student ID in existsAnyByStudentId")
+  void existsAnyByStudentIdNull() {
+    assertThat(service.existsAnyByStudentId(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should return false for null project ID in existsAnyByProjectId")
+  void existsAnyByProjectIdNull() {
+    assertThat(service.existsAnyByProjectId(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should check existence by student ID")
+  void existsAnyByStudentId() {
+    factory.createEnrollment(student, project);
+
+    assertThat(service.existsAnyByStudentId(student.getAccountId())).isTrue();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should check existence by project ID")
+  void existsAnyByProjectId() {
+    factory.createEnrollment(student, project);
+
+    assertThat(service.existsAnyByProjectId(project.getId())).isTrue();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
+import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectReadServiceImpl Coverage")
+class ProjectReadServiceImplTest {
+
+  @Inject ProjectReadServiceImpl service;
+  @InjectMock ProjectQueries queries;
+
+  private ProjectView sampleView() {
+    return new ProjectView(
+        UUID.randomUUID(),
+        "Test Project",
+        UUID.randomUUID(),
+        "desc",
+        UUID.randomUUID(),
+        20,
+        new BigDecimal("40.00"),
+        BigDecimal.ZERO,
+        ProjectStatus.PLANNED,
+        null,
+        OffsetDateTime.now(),
+        OffsetDateTime.now());
+  }
+
+  @Test
+  @DisplayName("Should return project view by ID")
+  void getViewByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    ProjectView view = sampleView();
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewById(id)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw ResourceNotFound when ID not found")
+  void getViewByIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should list all project views")
+  void listViews() {
+    ProjectView view = sampleView();
+    when(queries.listAllProjects()).thenReturn(List.of(view));
+
+    List<ProjectView> result = service.listViews();
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should list views by creator ID")
+  void listViewsByCreatedBy() {
+    UUID accountId = UUID.randomUUID();
+    ProjectView view = sampleView();
+    when(queries.listByCreatedBy(accountId)).thenReturn(List.of(view));
+
+    assertThat(service.listViewsByCreatedBy(accountId)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null creator ID")
+  void listViewsByCreatedByNull() {
+    assertThat(service.listViewsByCreatedBy(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list views by entity ID")
+  void listViewsByEntityId() {
+    UUID entityId = UUID.randomUUID();
+    ProjectView view = sampleView();
+    when(queries.listByEntityId(entityId)).thenReturn(List.of(view));
+
+    assertThat(service.listViewsByEntityId(entityId)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null entity ID")
+  void listViewsByEntityIdNull() {
+    assertThat(service.listViewsByEntityId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should search by name and delegate folded query")
+  void searchByName() {
+    when(queries.searchByName("test")).thenReturn(List.of(sampleView()));
+    assertThat(service.searchByName("  TEST  ")).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null search query")
+  void searchByNameNull() {
+    assertThat(service.searchByName(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty list for empty search query")
+  void searchByNameEmpty() {
+    assertThat(service.searchByName("")).isEmpty();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectSchoolReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
+import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectSchoolReadServiceImpl Coverage")
+class ProjectSchoolReadServiceImplTest {
+
+  @Inject ProjectSchoolReadServiceImpl service;
+  @InjectMock ProjectSchoolRepository associationRepo;
+  @InjectMock SchoolQueries schoolQueries;
+  @InjectMock ProjectQueries projectQueries;
+
+  @Test
+  @DisplayName("Should list schools by project ID")
+  void listAllSchoolsByProjectId() {
+    UUID projectId = UUID.randomUUID();
+    UUID schoolId = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+
+    when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of(schoolId));
+    when(schoolQueries.listByIds(any()))
+        .thenReturn(List.of(new SchoolView(schoolId, "School", now, now)));
+
+    Set<SchoolView> result = service.listAllSchoolsByProjectId(projectId);
+
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty set for null project ID")
+  void listAllSchoolsByProjectIdNull() {
+    assertThat(service.listAllSchoolsByProjectId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty set when no associations found for project")
+  void listAllSchoolsByProjectIdNoAssociations() {
+    UUID projectId = UUID.randomUUID();
+    when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of());
+
+    assertThat(service.listAllSchoolsByProjectId(projectId)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list projects by school ID")
+  void listAllProjectsBySchoolId() {
+    UUID schoolId = UUID.randomUUID();
+    UUID projectId = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+
+    when(associationRepo.findAllProjectIdsBySchoolId(schoolId)).thenReturn(Set.of(projectId));
+    when(projectQueries.listByIds(any()))
+        .thenReturn(
+            List.of(
+                new ProjectView(
+                    projectId,
+                    "Project",
+                    UUID.randomUUID(),
+                    "desc",
+                    UUID.randomUUID(),
+                    10,
+                    new BigDecimal("40"),
+                    BigDecimal.ZERO,
+                    ProjectStatus.PLANNED,
+                    null,
+                    now,
+                    now)));
+
+    Set<ProjectView> result = service.listAllProjectsBySchoolId(schoolId);
+
+    assertThat(result).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty set for null school ID")
+  void listAllProjectsBySchoolIdNull() {
+    assertThat(service.listAllProjectsBySchoolId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty set when no associations found for school")
+  void listAllProjectsBySchoolIdNoAssociations() {
+    UUID schoolId = UUID.randomUUID();
+    when(associationRepo.findAllProjectIdsBySchoolId(schoolId)).thenReturn(Set.of());
+
+    assertThat(service.listAllProjectsBySchoolId(schoolId)).isEmpty();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectSchoolServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectSchoolServiceImpl Integration Tests")
+class ProjectSchoolServiceImplTest {
+
+  @Inject ProjectSchoolServiceImpl service;
+  @Inject TestDataFactory factory;
+
+  @InjectMock AuditPublisher audit;
+
+  private Project project;
+  private School school;
+
+  @BeforeEach
+  void setup() {
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    project = factory.createProject(entity, creator);
+    school = factory.createSchool();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should save project-school association")
+  void saveSuccess() {
+    List<ProjectSchool> created = service.save(project.getId(), List.of(school.getId()));
+
+    assertThat(created).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null project ID")
+  void saveNullProjectId() {
+    assertThat(service.save(null, List.of(UUID.randomUUID()))).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null school IDs")
+  void saveNullSchoolIds() {
+    assertThat(service.save(project.getId(), null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty list for empty school IDs")
+  void saveEmptySchoolIds() {
+    assertThat(service.save(project.getId(), List.of())).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should skip already existing associations")
+  void saveSkipExisting() {
+    service.save(project.getId(), List.of(school.getId()));
+
+    List<ProjectSchool> second = service.save(project.getId(), List.of(school.getId()));
+
+    assertThat(second).isEmpty();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete project-school association")
+  void deleteSuccess() {
+    service.save(project.getId(), List.of(school.getId()));
+
+    boolean deleted = service.delete(project.getId(), school.getId());
+
+    assertThat(deleted).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should return false for null project ID in delete")
+  void deleteNullProjectId() {
+    assertThat(service.delete(null, UUID.randomUUID())).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should return false for null school ID in delete")
+  void deleteNullSchoolId() {
+    assertThat(service.delete(UUID.randomUUID(), null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete all by project ID")
+  void deleteAllByProjectId() {
+    service.save(project.getId(), List.of(school.getId()));
+
+    long deleted = service.deleteAllByProjectId(project.getId());
+
+    assertThat(deleted).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should return 0 for null project ID in deleteAllByProjectId")
+  void deleteAllByProjectIdNull() {
+    assertThat(service.deleteAllByProjectId(null)).isZero();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete all by school ID")
+  void deleteAllBySchoolId() {
+    service.save(project.getId(), List.of(school.getId()));
+
+    long deleted = service.deleteAllBySchoolId(school.getId());
+
+    assertThat(deleted).isGreaterThanOrEqualTo(1);
+  }
+
+  @Test
+  @DisplayName("Should return 0 for null school ID in deleteAllBySchoolId")
+  void deleteAllBySchoolIdNull() {
+    assertThat(service.deleteAllBySchoolId(null)).isZero();
+  }
+}
+
+
+================================================================================
+FILE: service/impl/ProjectServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("ProjectServiceImpl Integration Tests")
+class ProjectServiceImplTest {
+
+  @Inject ProjectServiceImpl service;
+  @Inject TestDataFactory factory;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock AuthService authService;
+  @InjectMock EnrollmentService enrollmentService;
+
+  private Entity partnerEntity;
+  private Account creator;
+
+  @BeforeEach
+  void setup() {
+    partnerEntity = factory.createEntity(factory.getAnyCity());
+    creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+
+    doNothing().when(authService).requireCurrentAccountNotOfType(any());
+    doNothing().when(authService).requireCurrentAccountOfType(any());
+    when(authService.getCurrentAccountId()).thenReturn(creator.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should save project successfully")
+  void saveSuccess() {
+    ProjectCreateCommand cmd =
+        new ProjectCreateCommand(
+            "Test Save Project", partnerEntity.getId(), "description", 20, new BigDecimal("40.00"));
+
+    Project saved = service.save(cmd);
+
+    assertThat(saved.getName()).isEqualTo("Test Save Project");
+    assertThat(saved.getProjectStatus()).isEqualTo(ProjectStatus.PLANNED);
+    verify(audit).fireCreate(Project.class.getName(), saved.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException for same name+entity")
+  void saveDuplicate() {
+    Project existing = factory.createProject(partnerEntity, creator);
+
+    ProjectCreateCommand cmd =
+        new ProjectCreateCommand(
+            existing.getName(), partnerEntity.getId(), "desc", 10, new BigDecimal("20.00"));
+
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update project successfully")
+  void updateSuccess() {
+    Project project = factory.createProject(partnerEntity, creator);
+    ProjectUpdateCommand cmd = new ProjectUpdateCommand(null, "Updated description", null, null);
+
+    Project updated = service.update(project.getId(), cmd);
+
+    assertThat(updated.getDescription()).isEqualTo("Updated description");
+    verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @DisplayName("Should throw when updating non-existing project")
+  void updateNotFound() {
+    UUID id = UUID.randomUUID();
+    ProjectUpdateCommand cmd = new ProjectUpdateCommand("Name", null, null, null);
+
+    assertThrows(ResourceNotFoundException.class, () -> service.update(id, cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete project successfully")
+  void deleteSuccess() {
+    Project project = factory.createProject(partnerEntity, creator);
+    when(enrollmentService.existsAnyByProjectId(project.getId())).thenReturn(false);
+
+    boolean deleted = service.delete(project.getId());
+
+    assertThat(deleted).isTrue();
+    verify(audit).fireDelete(Project.class.getName(), project.getId());
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null ID")
+  void deleteNullId() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when deleting project with enrollments")
+  void deleteWithEnrollments() {
+    Project project = factory.createProject(partnerEntity, creator);
+    when(enrollmentService.existsAnyByProjectId(project.getId())).thenReturn(true);
+
+    assertThrows(BusinessRuleException.class, () -> service.delete(project.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return false when deleting non-existing project")
+  void deleteNonExisting() {
+    UUID id = UUID.randomUUID();
+    when(enrollmentService.existsAnyByProjectId(id)).thenReturn(false);
+
+    assertThat(service.delete(id)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should throw when project not found by ID")
+  void getByIdNotFound() {
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get project by ID successfully")
+  void getByIdSuccess() {
+    Project project = factory.createProject(partnerEntity, creator);
+
+    Project found = service.getById(project.getId());
+
+    assertThat(found.getId()).isEqualTo(project.getId());
+    assertThat(found.getName()).isEqualTo(project.getName());
+  }
+
+  @Test
+  @DisplayName("Should check existence by entity ID")
+  void existsAnyByEntityId() {
+    factory.createProject(partnerEntity, creator);
+
+    assertThat(service.existsAnyByEntityId(partnerEntity.getId())).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should return false for null entity ID")
+  void existsAnyByEntityIdNull() {
+    assertThat(service.existsAnyByEntityId(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should check existence by created by")
+  void existsByCreatedBy() {
+    factory.createProject(partnerEntity, creator);
+
+    assertThat(service.existsByCreatedBy(creator.getId())).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should return false for null created by")
+  void existsByCreatedByNull() {
+    assertThat(service.existsByCreatedBy(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should transition project to IN_PROGRESS")
+  void transitionToInProgress() {
+    Project project = factory.createProject(partnerEntity, creator);
+
+    Project updated = service.transitionStatus(project.getId(), ProjectStatus.IN_PROGRESS);
+
+    assertThat(updated.getProjectStatus()).isEqualTo(ProjectStatus.IN_PROGRESS);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should add completed hours")
+  void addCompletedHours() {
+    Project project = factory.createProject(partnerEntity, creator);
+
+    Project updated = service.addCompletedHours(project.getId(), new BigDecimal("5.00"));
+
+    assertThat(updated.getProjectInfo().getCompletedHours())
+        .isEqualByComparingTo(new BigDecimal("5.00"));
+  }
+}
+
+
+================================================================================
+FILE: service/utils/AttendanceProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.AttendanceBuilder;
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AttendanceProcessor Tests")
+class AttendanceProcessorTest {
+
+  @Test
+  @DisplayName("Should create attendance with valid inputs")
+  void processCreateInputValid() {
+    var project = ProjectBuilder.aProject().build();
+    var student = StudentBuilder.aStudent().build();
+
+    Attendance attendance =
+        AttendanceProcessor.processCreateInput(
+            project, student, new BigDecimal("2.00"), "hash-test-123");
+
+    assertThat(attendance).isNotNull();
+    assertThat(attendance.getEnrollmentIdentifier().getProjectId()).isEqualTo(project.getId());
+    assertThat(attendance.getEnrollmentIdentifier().getStudentId())
+        .isEqualTo(student.getAccountId());
+    assertThat(attendance.getQrValidationInfo().getDuration())
+        .isEqualByComparingTo(new BigDecimal("2.00"));
+    assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("hash-test-123");
+    assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
+    assertThat(attendance.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should process validation input to PRESENT")
+  void processValidationInputPresent() {
+    Attendance existing = AttendanceBuilder.anAttendance().build();
+    UUID validatorId = UUID.randomUUID();
+
+    Attendance validated =
+        AttendanceProcessor.processValidationInput(existing, validatorId, AttendanceStatus.PRESENT);
+
+    assertThat(validated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
+    assertThat(validated.getAttendanceInfo().getValidatedBy()).isEqualTo(validatorId);
+    assertThat(validated.getAttendanceInfo().getValidatedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Should process validation input to ABSENT")
+  void processValidationInputAbsent() {
+    Attendance existing = AttendanceBuilder.anAttendance().build();
+    UUID validatorId = UUID.randomUUID();
+
+    Attendance validated =
+        AttendanceProcessor.processValidationInput(existing, validatorId, AttendanceStatus.ABSENT);
+
+    assertThat(validated.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+    assertThat(validated.getAttendanceInfo().getValidatedBy()).isEqualTo(validatorId);
+  }
+}
+
+
+================================================================================
+FILE: service/utils/EnrollmentProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.helpers.builders.StudentBuilder;
+import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("EnrollmentProcessor Tests")
+class EnrollmentProcessorTest {
+
+  @Test
+  @DisplayName("Should create enrollment with valid inputs")
+  void processCreateInputValid() {
+    var student = StudentBuilder.aStudent().build();
+    var project = ProjectBuilder.aProject().build();
+
+    Enrollment enrollment = EnrollmentProcessor.processCreateInput(student, project);
+
+    assertThat(enrollment).isNotNull();
+    assertThat(enrollment.getIdentifier().getProjectId()).isEqualTo(project.getId());
+    assertThat(enrollment.getIdentifier().getStudentId()).isEqualTo(student.getAccountId());
+    assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
+    assertThat(enrollment.hasFieldErrors()).isFalse();
+  }
+}
+
+
+================================================================================
+FILE: service/utils/ProjectProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.helpers.builders.ProjectBuilder;
+import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
+import java.math.BigDecimal;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectProcessor Tests")
+class ProjectProcessorTest {
+
+  @Test
+  @DisplayName("Should create project with valid inputs")
+  void processCreateInputValid() {
+    UUID entityId = UUID.randomUUID();
+    UUID creatorId = UUID.randomUUID();
+
+    Project project =
+        ProjectProcessor.processCreateInput(
+            "Test Project", entityId, "desc", creatorId, 20, new BigDecimal("40.00"));
+
+    assertThat(project).isNotNull();
+    assertThat(project.getName()).isEqualTo("Test Project");
+    assertThat(project.getEntityId()).isEqualTo(entityId);
+    assertThat(project.getDescription()).isEqualTo("desc");
+    assertThat(project.getProjectStatus()).isEqualTo(ProjectStatus.PLANNED);
+    assertThat(project.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should create project with validation errors for blank name")
+  void processCreateInputBlankName() {
+    Project project =
+        ProjectProcessor.processCreateInput(
+            "", UUID.randomUUID(), "desc", UUID.randomUUID(), 10, new BigDecimal("10"));
+
+    assertThat(project.hasFieldErrors()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should update only name when name provided")
+  void processUpdateInputName() {
+    Project existing = ProjectBuilder.aProject().withName("Original").build();
+
+    Project updated = ProjectProcessor.processUpdateInput(existing, "New Name", null, null, null);
+
+    assertThat(updated.getName()).isEqualTo("New Name");
+    assertThat(updated.getDescription()).isEqualTo(existing.getDescription());
+  }
+
+  @Test
+  @DisplayName("Should update only description when description provided")
+  void processUpdateInputDescription() {
+    Project existing = ProjectBuilder.aProject().build();
+
+    Project updated =
+        ProjectProcessor.processUpdateInput(existing, null, "New Description", null, null);
+
+    assertThat(updated.getDescription()).isEqualTo("New Description");
+    assertThat(updated.getName()).isEqualTo(existing.getName());
+  }
+
+  @Test
+  @DisplayName("Should update max participants")
+  void processUpdateInputMaxParticipants() {
+    Project existing = ProjectBuilder.aProject().build();
+
+    Project updated = ProjectProcessor.processUpdateInput(existing, null, null, 50, null);
+
+    assertThat(updated.getProjectInfo().getMaxParticipants()).isEqualTo(50);
+  }
+
+  @Test
+  @DisplayName("Should update offered hours")
+  void processUpdateInputOfferedHours() {
+    Project existing = ProjectBuilder.aProject().build();
+
+    Project updated =
+        ProjectProcessor.processUpdateInput(existing, null, null, null, new BigDecimal("100.00"));
+
+    assertThat(updated.getProjectInfo().getOfferedHours())
+        .isEqualByComparingTo(new BigDecimal("100.00"));
+  }
+
+  @Test
+  @DisplayName("Should return same project when all fields are null")
+  void processUpdateInputNoChanges() {
+    Project existing = ProjectBuilder.aProject().build();
+
+    Project updated = ProjectProcessor.processUpdateInput(existing, null, null, null, null);
+
+    assertThat(updated.getName()).isEqualTo(existing.getName());
+    assertThat(updated.getDescription()).isEqualTo(existing.getDescription());
+  }
+
+  @Test
+  @DisplayName("Should update all fields simultaneously")
+  void processUpdateInputAllFields() {
+    Project existing = ProjectBuilder.aProject().build();
+
+    Project updated =
+        ProjectProcessor.processUpdateInput(
+            existing, "Updated", "New Desc", 30, new BigDecimal("80.00"));
+
+    assertThat(updated.getName()).isEqualTo("Updated");
+    assertThat(updated.getDescription()).isEqualTo("New Desc");
+    assertThat(updated.getProjectInfo().getMaxParticipants()).isEqualTo(30);
+    assertThat(updated.getProjectInfo().getOfferedHours())
+        .isEqualByComparingTo(new BigDecimal("80.00"));
+  }
+}
+
+
+================================================================================
+FILE: service/utils/ProjectSchoolProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.project.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.project.domain.ProjectSchool;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("ProjectSchoolProcessor Tests")
+class ProjectSchoolProcessorTest {
+
+  @Test
+  @DisplayName("Should create valid ProjectSchool association")
+  void processCreateInputValid() {
+    UUID projectId = UUID.randomUUID();
+    UUID schoolId = UUID.randomUUID();
+
+    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, schoolId);
+
+    assertThat(association).isNotNull();
+    assertThat(association.getProjectId()).isEqualTo(projectId);
+    assertThat(association.getSchoolId()).isEqualTo(schoolId);
+    assertThat(association.hasFieldErrors()).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should create ProjectSchool with errors for null project ID")
+  void processCreateInputNullProjectId() {
+    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(null, UUID.randomUUID());
+
+    assertThat(association.hasFieldErrors()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should create ProjectSchool with errors for null school ID")
+  void processCreateInputNullSchoolId() {
+    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(UUID.randomUUID(), null);
+
+    assertThat(association.hasFieldErrors()).isTrue();
+  }
+}
+

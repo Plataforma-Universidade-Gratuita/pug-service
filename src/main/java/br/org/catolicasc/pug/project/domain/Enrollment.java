@@ -88,8 +88,11 @@ public class Enrollment extends DomainError {
    *       is applied, stamping {@code acceptedAt}.
    *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
    *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
-   *       EnrollmentStatus#REJECTED}, {@link EnrollmentStatus#REMOVED}) are only allowed when the
-   *       current {@code status} is {@link EnrollmentStatus#APPROVED}. On success, {@link
+   *       EnrollmentStatus#REMOVED}) are only allowed when the current {@code status} is {@link
+   *       EnrollmentStatus#APPROVED}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
+   *       stamping {@code closingStatusAt}.
+   *   <li>A transition to {@link EnrollmentStatus#REJECTED} is allowed from both {@link
+   *       EnrollmentStatus#PENDING} and {@link EnrollmentStatus#APPROVED}. On success, {@link
    *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
    *   <li>All other transitions (for example, attempting to go from {@code PENDING} directly to a
    *       closing status, or attempting to revert from a closing status back to {@code PENDING} or
@@ -120,6 +123,11 @@ public class Enrollment extends DomainError {
         throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
       }
       newInfo = enrollmentInfo.accept();
+    } else if (newStatus == EnrollmentStatus.REJECTED) {
+      if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.APPROVED) {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
+      newInfo = enrollmentInfo.closeStatus();
     } else {
       if (isClosingStatus(newStatus)) {
         if (status != EnrollmentStatus.APPROVED) {

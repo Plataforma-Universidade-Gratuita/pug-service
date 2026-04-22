@@ -144,7 +144,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     Student student = studentService.getById(authService.getCurrentAccountId());
 
     EnrollmentIdentifier identifier =
-        EnrollmentIdentifier.factory(project.getId(), student.getAccountId());
+        EnrollmentIdentifier.factory(student.getAccountId(), project.getId());
 
     if (identifier.hasFieldErrors()) {
       throw new AppValidationException(identifier.getFieldErrors());
