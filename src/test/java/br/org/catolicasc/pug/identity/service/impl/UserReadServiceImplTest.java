@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.identity.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -27,7 +28,8 @@ class UserReadServiceImplTest {
   @DisplayName("Should return user view by ID")
   void getByIdSuccess() {
     UUID id = UUID.randomUUID();
-    UserView view = new UserView(id, "11144477735", "Test User", null, null);
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserView view = new UserView(id, cpf, "Test User", null, null);
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewById(id)).isEqualTo(view);
@@ -44,7 +46,7 @@ class UserReadServiceImplTest {
   @Test
   @DisplayName("Should return user view by CPF")
   void getByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     UserView view = new UserView(UUID.randomUUID(), cpf, "Test User", null, null);
     when(queries.findOptionalByCpf(cpf)).thenReturn(Optional.of(view));
 

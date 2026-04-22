@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.identity.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import org.junit.jupiter.api.DisplayName;
@@ -13,7 +14,8 @@ class UserTest {
   @Test
   @DisplayName("Should create valid User")
   void shouldCreateUser() {
-    User user = User.factory(Cpf.factory("11144477735"), "John Doe");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "John Doe");
     assertThat(user.hasFieldErrors()).isFalse();
   }
 

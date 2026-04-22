@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.helpers.builders;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
-import java.util.Random;
 import java.util.UUID;
 
 /**
@@ -14,7 +14,7 @@ import java.util.UUID;
  */
 public class EntityBuilder {
   private final String name = TestNameGenerator.generateRandomEntityName();
-  private String cnpj = generateValidCnpj();
+  private String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
   private UUID cityId;
 
   private EntityBuilder() {}
@@ -48,45 +48,6 @@ public class EntityBuilder {
   public EntityBuilder withCnpj(String cnpj) {
     this.cnpj = cnpj;
     return this;
-  }
-
-  /**
-   * Generates a valid random CNPJ based on standard Brazilian validation rules.
-   *
-   * @return a valid CNPJ string
-   */
-  private String generateValidCnpj() {
-    int[] cnpj = new int[14];
-    Random random = new Random();
-    for (int i = 0; i < 12; i++) {
-      cnpj[i] = random.nextInt(10);
-    }
-    int[] weight1 = {5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
-    cnpj[12] = calculateDigit(cnpj, weight1);
-    int[] weight2 = {6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2};
-    cnpj[13] = calculateDigit(cnpj, weight2);
-
-    StringBuilder sb = new StringBuilder();
-    for (int digit : cnpj) {
-      sb.append(digit);
-    }
-    return sb.toString();
-  }
-
-  /**
-   * Calculates the verification digit for the CNPJ algorithm.
-   *
-   * @param cnpj the array of digits
-   * @param weights the weight array
-   * @return the calculated check digit
-   */
-  private int calculateDigit(int[] cnpj, int[] weights) {
-    int sum = 0;
-    for (int i = 0; i < weights.length; i++) {
-      sum += cnpj[i] * weights[i];
-    }
-    int remainder = sum % 11;
-    return (remainder < 2) ? 0 : 11 - remainder;
   }
 
   /**

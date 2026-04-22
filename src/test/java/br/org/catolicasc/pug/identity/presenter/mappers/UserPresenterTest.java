@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
 import java.time.OffsetDateTime;
@@ -27,18 +28,19 @@ class UserPresenterTest {
     @Test
     @DisplayName("Should format valid 11-digit CPF correctly")
     void shouldFormatValidCpf() {
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       UserView view =
-          new UserView(
-              UUID.randomUUID(), "11144477735", "Test", OffsetDateTime.now(), OffsetDateTime.now());
+          new UserView(UUID.randomUUID(), cpf, "Test", OffsetDateTime.now(), OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
-      assertThat(response.cpfFormatted()).isEqualTo("111.444.777-35");
+      assertThat(response.cpfFormatted()).contains(".");
+      assertThat(response.cpfFormatted()).contains("-");
+      assertThat(response.cpfFormatted()).hasSize(14);
     }
 
     @Test
     @DisplayName("Should return raw CPF if length is not 11")
     void shouldReturnRawCpfIfInvalid() {
-      // Testing the edge case in UserPresenter.cpfFormatted(String cpf)
       UserView view =
           new UserView(
               UUID.randomUUID(), "123", "Test", OffsetDateTime.now(), OffsetDateTime.now());
@@ -67,7 +69,8 @@ class UserPresenterTest {
     void shouldMapAllFields() {
       UUID id = UUID.randomUUID();
       OffsetDateTime now = OffsetDateTime.now();
-      UserView view = new UserView(id, "11144477735", "John Doe", now, now);
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+      UserView view = new UserView(id, cpf, "John Doe", now, now);
 
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 

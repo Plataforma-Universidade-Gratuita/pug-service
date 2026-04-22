@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.identity.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
@@ -20,7 +21,8 @@ class AccountProcessorTest {
   @Test
   @DisplayName("Should extract missing user commands correctly")
   void shouldExtractMissing() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
@@ -32,13 +34,13 @@ class AccountProcessorTest {
   @Test
   @DisplayName("Should build bulk accounts successfully")
   void shouldBuildBulk() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
     List<Account> accounts =
-        AccountProcessor.processBulkCreateInput(
-            List.of(accCmd), Map.of("11144477735", UUID.randomUUID()));
+        AccountProcessor.processBulkCreateInput(List.of(accCmd), Map.of(cpf, UUID.randomUUID()));
     assertThat(accounts).hasSize(1);
   }
 

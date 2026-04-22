@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
@@ -34,14 +35,15 @@ class AdminPresenterTest {
     @Test
     @DisplayName("Should map CreateRequest to AdminCreateCommand")
     void toCreateCommand() {
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       AdminCreateRequest req =
-          new AdminCreateRequest("11144477735", "Admin User", "a@a.com", "pass", Campi.JOINVILLE);
+          new AdminCreateRequest(cpf, "Admin User", "a@a.com", "pass", Campi.JOINVILLE);
       AdminCreateCommand cmd = AdminPresenter.toCommand(req, "hashedPass");
 
       assertThat(cmd.campus()).isEqualTo(Campi.JOINVILLE);
       assertThat(cmd.accountCommand().emailString()).isEqualTo("a@a.com");
       assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedPass");
-      assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo("11144477735");
+      assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo(cpf);
     }
 
     @Test

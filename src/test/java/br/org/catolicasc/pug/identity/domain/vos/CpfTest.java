@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.identity.domain.vos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,10 +18,11 @@ class CpfTest {
     @Test
     @DisplayName("Should create valid CPF from raw numeric string")
     void shouldCreateValidCpf() {
-      Cpf cpf = Cpf.factory("11144477735");
+      String raw = TestBrazilianIdentifierGenerator.generateValidCpf();
+      Cpf cpf = Cpf.factory(raw);
 
       assertThat(cpf.hasFieldErrors()).isFalse();
-      assertThat(cpf.getValue()).isEqualTo("11144477735");
+      assertThat(cpf.getValue()).isEqualTo(raw);
     }
 
     @Test

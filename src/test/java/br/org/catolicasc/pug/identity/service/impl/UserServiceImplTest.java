@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.UserRepository;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
@@ -36,7 +37,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should create user successfully and fire audit")
   void saveSuccess() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "New Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "New Name");
     when(repository.existsByCpf(any())).thenReturn(false);
     when(repository.persist(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -49,7 +51,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException if CPF exists")
   void saveDuplicate() {
-    UserCreateCommand userCmd = new UserCreateCommand("11144477735", "Name");
+    UserCreateCommand userCmd =
+        new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name");
     when(repository.existsByCpf(anyString())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
@@ -78,7 +81,8 @@ class UserServiceImplTest {
   @DisplayName("Should update user successfully and fire audit")
   void updateSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Old Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Old Name");
     User updatedUser = user.rename("New Name");
 
     when(repository.findOptionalById(id))
@@ -96,7 +100,8 @@ class UserServiceImplTest {
   @DisplayName("Should throw AppValidationException for invalid name")
   void updateInvalid() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     String longName = "A".repeat(300);
@@ -108,7 +113,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should successfully bulk create users")
   void saveInBulkSuccess() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    List<UserCreateCommand> cmds =
+        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(false);
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -120,7 +126,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on bulk duplicate")
   void saveInBulkDuplicate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    List<UserCreateCommand> cmds =
+        List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
@@ -130,14 +137,16 @@ class UserServiceImplTest {
   @DisplayName("Should return list of users by CPFs")
   void listByCpfs() {
     when(repository.listByCpfs(any())).thenReturn(List.of());
-    assertThat(service.listByCpfs(List.of("11144477735"))).isEmpty();
+    assertThat(service.listByCpfs(List.of(TestBrazilianIdentifierGenerator.generateValidCpf())))
+        .isEmpty();
   }
 
   @Test
   @DisplayName("Should return user by ID")
   void getByIdSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    User user =
+        User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     assertThat(service.getById(id)).isEqualTo(user);

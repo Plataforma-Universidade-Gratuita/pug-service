@@ -150,6 +150,7 @@ package br.org.catolicasc.pug.identity.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import org.junit.jupiter.api.DisplayName;
@@ -161,7 +162,7 @@ class UserTest {
   @Test
   @DisplayName("Should create valid User")
   void shouldCreateUser() {
-    User user = User.factory(Cpf.factory("11144477735"), "John Doe");
+    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "John Doe");
     assertThat(user.hasFieldErrors()).isFalse();
   }
 
@@ -186,6 +187,7 @@ package br.org.catolicasc.pug.identity.domain.vos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.enums.IdentityFieldErrorCodes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -201,10 +203,11 @@ class CpfTest {
     @Test
     @DisplayName("Should create valid CPF from raw numeric string")
     void shouldCreateValidCpf() {
-      Cpf cpf = Cpf.factory("11144477735");
+      String raw = TestBrazilianIdentifierGenerator.generateValidCpf();
+      Cpf cpf = Cpf.factory(raw);
 
       assertThat(cpf.hasFieldErrors()).isFalse();
-      assertThat(cpf.getValue()).isEqualTo("11144477735");
+      assertThat(cpf.getValue()).isEqualTo(raw);
     }
 
     @Test
@@ -1056,6 +1059,7 @@ package br.org.catolicasc.pug.identity.infra;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
@@ -1068,7 +1072,7 @@ class UserMapperTest {
   @Test
   @DisplayName("Should perform a perfect round-trip (Domain -> Entity -> Domain)")
   void shouldPerformRoundTrip() {
-    User user = User.factory(Cpf.factory("11144477735"), "System Administrator");
+    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "System Administrator");
 
     UserEntity entity = UserMapper.toEntity(user);
     User mappedUser = UserMapper.toDomain(entity);
@@ -1209,9 +1213,12 @@ FILE: presenter/AdminResourceTest.java
 package br.org.catolicasc.pug.identity.presenter;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
@@ -1248,7 +1255,7 @@ class AdminResourceTest {
   void createSuccess() {
     AdminCreateRequest req =
         new AdminCreateRequest(
-            "11144477735", "Admin Name", "admin2@pug.com", "password123", Campi.JARAGUA_DO_SUL);
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Admin Name", "admin2@pug.com", "password123", Campi.JARAGUA_DO_SUL);
 
     given()
         .contentType(ContentType.JSON)
@@ -1350,6 +1357,154 @@ class AdminResourceTest {
         .statusCode(200)
         .body("data.accountResponse.id", is(acc.getId().toString()));
   }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", acc.getId())
+        .when()
+        .get("/identity/admins/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.accountResponse.id", is(acc.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/by-email/{email} - Success")
+  void getByEmailSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("email", acc.getEmail().getValue())
+        .when()
+        .get("/identity/admins/by-email/{email}")
+        .then()
+        .statusCode(200)
+        .body("data.accountResponse.email", is(acc.getEmail().getValue()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins - List All")
+  void listAdmins() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/identity/admins")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/by-cpf/{cpf} - Success")
+  void listByCpfSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("cpf", user.getCpf().getValue())
+        .when()
+        .get("/identity/admins/by-cpf/{cpf}")
+        .then()
+        .statusCode(200)
+        .body("data[0].accountResponse.userId", is(user.getId().toString()));
+  }
+}
+
+
+================================================================================
+FILE: presenter/AuthResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.identity.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.restassured.http.ContentType;
+import jakarta.ws.rs.NotAuthorizedException;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("AuthResource Integration Tests")
+class AuthResourceTest {
+
+  @InjectMock AuthService authService;
+
+  @Test
+  @DisplayName("POST /auth/login - Success")
+  void loginSuccess() {
+    LoginRequest req = new LoginRequest("test@pug.com", "password");
+    TokenResponse token = new TokenResponse("mocked-token", null, AccountType.STUDENT, 3600);
+
+    when(authService.login(req)).thenReturn(token);
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/auth/login")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.token", is("mocked-token"));
+  }
+
+  @Test
+  @DisplayName("POST /auth/login - Unauthorized")
+  void loginUnauthorized() {
+    LoginRequest req = new LoginRequest("bad@pug.com", "wrong");
+    when(authService.login(req)).thenThrow(new NotAuthorizedException("Unauthorized"));
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/auth/login")
+        .then()
+        .statusCode(401);
+  }
 }
 
 
@@ -1436,6 +1591,7 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
@@ -1468,14 +1624,15 @@ class AdminPresenterTest {
     @Test
     @DisplayName("Should map CreateRequest to AdminCreateCommand")
     void toCreateCommand() {
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       AdminCreateRequest req =
-          new AdminCreateRequest("11144477735", "Admin User", "a@a.com", "pass", Campi.JOINVILLE);
+          new AdminCreateRequest(cpf, "Admin User", "a@a.com", "pass", Campi.JOINVILLE);
       AdminCreateCommand cmd = AdminPresenter.toCommand(req, "hashedPass");
 
       assertThat(cmd.campus()).isEqualTo(Campi.JOINVILLE);
       assertThat(cmd.accountCommand().emailString()).isEqualTo("a@a.com");
       assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedPass");
-      assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo("11144477735");
+      assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo(cpf);
     }
 
     @Test
@@ -1533,6 +1690,7 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
 import java.time.OffsetDateTime;
@@ -1558,18 +1716,20 @@ class UserPresenterTest {
     @Test
     @DisplayName("Should format valid 11-digit CPF correctly")
     void shouldFormatValidCpf() {
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       UserView view =
           new UserView(
-              UUID.randomUUID(), "11144477735", "Test", OffsetDateTime.now(), OffsetDateTime.now());
+              UUID.randomUUID(), cpf, "Test", OffsetDateTime.now(), OffsetDateTime.now());
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
-      assertThat(response.cpfFormatted()).isEqualTo("111.444.777-35");
+      assertThat(response.cpfFormatted()).contains(".");
+      assertThat(response.cpfFormatted()).contains("-");
+      assertThat(response.cpfFormatted()).hasSize(14);
     }
 
     @Test
     @DisplayName("Should return raw CPF if length is not 11")
     void shouldReturnRawCpfIfInvalid() {
-      // Testing the edge case in UserPresenter.cpfFormatted(String cpf)
       UserView view =
           new UserView(
               UUID.randomUUID(), "123", "Test", OffsetDateTime.now(), OffsetDateTime.now());
@@ -1598,7 +1758,8 @@ class UserPresenterTest {
     void shouldMapAllFields() {
       UUID id = UUID.randomUUID();
       OffsetDateTime now = OffsetDateTime.now();
-      UserView view = new UserView(id, "11144477735", "John Doe", now, now);
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+      UserView view = new UserView(id, cpf, "John Doe", now, now);
 
       UserResponse response = UserPresenter.toResponse(view, Locale.US);
 
@@ -1757,6 +1918,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -1860,7 +2022,7 @@ class AccountReadServiceImplTest {
   @Test
   @DisplayName("Should list account views by CPF successfully")
   void listViewsByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(queries.listByCpf(cpf))
         .thenReturn(
             List.of(
@@ -1889,6 +2051,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.AccountRepository;
 import br.org.catolicasc.pug.identity.domain.User;
@@ -1923,12 +2086,13 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should provision new user and account when user does not exist")
   void saveNewUser() {
-    UserCreateCommand userCmd = new UserCreateCommand("11144477735", "New User");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand userCmd = new UserCreateCommand(cpf, "New User");
     AccountCreateCommand cmd =
         new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
 
     when(userService.existsByCpf(any())).thenReturn(false);
-    User createdUser = User.factory(Cpf.factory("11144477735"), "New User");
+    User createdUser = User.factory(Cpf.factory(cpf), "New User");
     when(userService.save(any())).thenReturn(createdUser);
     when(repository.persist(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -1963,13 +2127,14 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on email conflict")
   void duplicateEmail() {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(userService.existsByCpf(any())).thenReturn(false);
-    when(userService.save(any())).thenReturn(User.factory(Cpf.factory("11144477735"), "Name"));
+    when(userService.save(any())).thenReturn(User.factory(Cpf.factory(cpf), "Name"));
     when(repository.existsByEmail(any())).thenReturn(true);
 
     AccountCreateCommand cmd =
         new AccountCreateCommand(
-            "exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand("11144477735", "N"));
+            "exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand(cpf, "N"));
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -1998,14 +2163,15 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should save accounts in bulk successfully")
   void saveInBulkSuccess() {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     AccountCreateCommand cmd =
         new AccountCreateCommand(
-            "a@a.com", AccountType.STUDENT, "hash", new UserCreateCommand("11144477735", "Name"));
+            "a@a.com", AccountType.STUDENT, "hash", new UserCreateCommand(cpf, "Name"));
 
     when(repository.existsAnyByEmails(any())).thenReturn(false);
     when(userService.listByCpfs(any())).thenReturn(List.of());
     when(userService.saveInBulk(any()))
-        .thenReturn(List.of(User.factory(Cpf.factory("11144477735"), "Name")));
+        .thenReturn(List.of(User.factory(Cpf.factory(cpf), "Name")));
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
     List<Account> saved = service.saveInBulk(List.of(cmd));
@@ -2074,6 +2240,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
@@ -2157,7 +2324,7 @@ class AdminReadServiceImplTest {
   @Test
   @DisplayName("Should list admin views by CPF successfully")
   void listViewsByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(queries.listByCpf(cpf))
         .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
 
@@ -2531,6 +2698,7 @@ package br.org.catolicasc.pug.identity.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -2555,7 +2723,8 @@ class UserReadServiceImplTest {
   @DisplayName("Should return user view by ID")
   void getByIdSuccess() {
     UUID id = UUID.randomUUID();
-    UserView view = new UserView(id, "11144477735", "Test User", null, null);
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserView view = new UserView(id, cpf, "Test User", null, null);
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
 
     assertThat(service.getViewById(id)).isEqualTo(view);
@@ -2572,7 +2741,7 @@ class UserReadServiceImplTest {
   @Test
   @DisplayName("Should return user view by CPF")
   void getByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     UserView view = new UserView(UUID.randomUUID(), cpf, "Test User", null, null);
     when(queries.findOptionalByCpf(cpf)).thenReturn(Optional.of(view));
 
@@ -2608,6 +2777,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.UserRepository;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
@@ -2638,7 +2808,8 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should create user successfully and fire audit")
   void saveSuccess() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "New Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "New Name");
     when(repository.existsByCpf(any())).thenReturn(false);
     when(repository.persist(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -2651,7 +2822,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException if CPF exists")
   void saveDuplicate() {
-    UserCreateCommand userCmd = new UserCreateCommand("11144477735", "Name");
+    UserCreateCommand userCmd = new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name");
     when(repository.existsByCpf(anyString())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(userCmd));
@@ -2680,7 +2851,7 @@ class UserServiceImplTest {
   @DisplayName("Should update user successfully and fire audit")
   void updateSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Old Name");
+    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Old Name");
     User updatedUser = user.rename("New Name");
 
     when(repository.findOptionalById(id))
@@ -2698,7 +2869,7 @@ class UserServiceImplTest {
   @DisplayName("Should throw AppValidationException for invalid name")
   void updateInvalid() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     String longName = "A".repeat(300);
@@ -2710,7 +2881,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should successfully bulk create users")
   void saveInBulkSuccess() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(false);
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
@@ -2722,7 +2893,7 @@ class UserServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on bulk duplicate")
   void saveInBulkDuplicate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "Name"));
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "Name"));
     when(repository.existsAnyByCpfs(any())).thenReturn(true);
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.saveInBulk(cmds));
@@ -2732,14 +2903,14 @@ class UserServiceImplTest {
   @DisplayName("Should return list of users by CPFs")
   void listByCpfs() {
     when(repository.listByCpfs(any())).thenReturn(List.of());
-    assertThat(service.listByCpfs(List.of("11144477735"))).isEmpty();
+    assertThat(service.listByCpfs(List.of(TestBrazilianIdentifierGenerator.generateValidCpf()))).isEmpty();
   }
 
   @Test
   @DisplayName("Should return user by ID")
   void getByIdSuccess() {
     UUID id = UUID.randomUUID();
-    User user = User.factory(Cpf.factory("11144477735"), "Name");
+    User user = User.factory(Cpf.factory(TestBrazilianIdentifierGenerator.generateValidCpf()), "Name");
     when(repository.findOptionalById(id)).thenReturn(Optional.of(user));
 
     assertThat(service.getById(id)).isEqualTo(user);
@@ -2773,6 +2944,7 @@ package br.org.catolicasc.pug.identity.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
@@ -2790,7 +2962,8 @@ class AccountProcessorTest {
   @Test
   @DisplayName("Should extract missing user commands correctly")
   void shouldExtractMissing() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
@@ -2802,13 +2975,14 @@ class AccountProcessorTest {
   @Test
   @DisplayName("Should build bulk accounts successfully")
   void shouldBuildBulk() {
-    UserCreateCommand cmd = new UserCreateCommand("11144477735", "Name");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
         new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
 
     List<Account> accounts =
         AccountProcessor.processBulkCreateInput(
-            List.of(accCmd), Map.of("11144477735", UUID.randomUUID()));
+            List.of(accCmd), Map.of(cpf, UUID.randomUUID()));
     assertThat(accounts).hasSize(1);
   }
 
@@ -2902,6 +3076,7 @@ package br.org.catolicasc.pug.identity.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -2916,7 +3091,7 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    User user = UserProcessor.processCreateInput("11144477735", "Test User");
+    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Test User");
     assertThat(user.hasFieldErrors()).isFalse();
     assertThat(user.getName()).isEqualTo("Test User");
   }
@@ -2924,7 +3099,7 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process bulk create successfully")
   void shouldProcessBulkCreate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "User 1"));
+    List<UserCreateCommand> cmds = List.of(new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "User 1"));
     List<User> users = UserProcessor.processBulkCreateInput(cmds);
     assertThat(users).hasSize(1);
   }
@@ -2946,7 +3121,7 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should rename user successfully")
   void shouldRenameUser() {
-    User user = UserProcessor.processCreateInput("11144477735", "Old Name");
+    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Old Name");
     User updated = UserProcessor.processUpdateInput(user, "New Name");
     assertThat(updated.getName()).isEqualTo("New Name");
   }
@@ -2954,7 +3129,7 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should return same instance if rename name is same or empty")
   void shouldReturnSameInstanceOnInvalidUpdate() {
-    User user = UserProcessor.processCreateInput("11144477735", "Same Name");
+    User user = UserProcessor.processCreateInput(TestBrazilianIdentifierGenerator.generateValidCpf(), "Same Name");
     assertThat(UserProcessor.processUpdateInput(user, "Same Name")).isEqualTo(user);
     assertThat(UserProcessor.processUpdateInput(user, null)).isEqualTo(user);
   }

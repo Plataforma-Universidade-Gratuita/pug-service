@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.domain.vos;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,10 +18,11 @@ class CnpjTest {
     @Test
     @DisplayName("Should create valid CNPJ from raw numeric string")
     void shouldCreateValidCnpj() {
-      Cnpj cnpj = Cnpj.factory("84429695000111");
+      String raw = TestBrazilianIdentifierGenerator.generateValidCnpj();
+      Cnpj cnpj = Cnpj.factory(raw);
 
       assertThat(cnpj.hasFieldErrors()).isFalse();
-      assertThat(cnpj.getValue()).isEqualTo("84429695000111");
+      assertThat(cnpj.getValue()).isEqualTo(raw);
     }
 
     @Test

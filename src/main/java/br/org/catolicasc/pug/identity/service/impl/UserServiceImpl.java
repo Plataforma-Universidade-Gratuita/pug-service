@@ -73,14 +73,14 @@ public class UserServiceImpl implements UserService {
     if (cpf == null) {
       return false;
     }
-    return repo.existsByCpf(cpf.toString());
+    return repo.existsByCpf(cpf.getValue());
   }
 
   /** {@inheritDoc} */
   @Override
   public User getByCpf(Cpf cpf) {
     User user =
-        repo.findOptionalByCpf(cpf.toString())
+        repo.findOptionalByCpf(cpf.getValue())
             .orElseThrow(
                 () -> {
                   LOG.debugf("User lookup failed: CPF %s not found", cpf);

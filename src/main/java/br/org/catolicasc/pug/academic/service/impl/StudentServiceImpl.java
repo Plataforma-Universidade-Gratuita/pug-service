@@ -141,7 +141,7 @@ public class StudentServiceImpl implements StudentService {
       throw new AppValidationException(studentToPersist.getFieldErrors());
     }
 
-    if (existsByRegistration(studentToPersist.getAcademicRegistration().toString())) {
+    if (existsByRegistration(studentToPersist.getAcademicRegistration().getValue())) {
       LOG.warnf(
           "Creation failed: Student with registration %s already exists",
           studentToPersist.getAcademicRegistration());
@@ -219,7 +219,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     if (cmd.academicRegistration() != null
-        && !cmd.academicRegistration().equals(current.getAcademicRegistration().toString())
+        && !cmd.academicRegistration().equals(current.getAcademicRegistration().getValue())
         && existsByRegistration(cmd.academicRegistration())) {
       LOG.warnf(
           "Update failed: Student Account ID %s tried to use existing registration %s",

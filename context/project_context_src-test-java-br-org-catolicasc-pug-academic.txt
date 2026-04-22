@@ -1,0 +1,3325 @@
+PROJECT CONTEXT DUMP
+Base: project_context_src-test-java-br-org-catolicasc-pug-academic
+Root Path: /c/Users/e-mateusf/Documents/college/PUG portfolio/pug-service/src/test/java/br/org/catolicasc/pug/academic
+================================================================================
+
+
+================================================================================
+FILE: domain/CourseTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Course Aggregate Tests")
+class CourseTest {
+
+  @Test
+  @DisplayName("Should create valid Course")
+  void shouldCreateCourse() {
+    UUID schoolId = UUID.randomUUID();
+    Course course = Course.factory("Software Engineering", schoolId);
+
+    assertThat(course.hasFieldErrors()).isFalse();
+    assertThat(course.getName()).isEqualTo("Software Engineering");
+    assertThat(course.getSchoolId()).isEqualTo(schoolId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when data is invalid")
+  void shouldCollectValidationErrors() {
+    Course course = Course.factory("   ", null);
+
+    assertThat(course.hasFieldErrors()).isTrue();
+    assertThat(course.getFieldErrors())
+        .contains(
+            SharedFieldErrorCodes.INVALID_NAME_BLANK, AcademicFieldErrorCodes.INVALID_SCHOOL_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename course successfully")
+    void shouldRename() {
+      Course course = Course.factory("Original Name", UUID.randomUUID());
+      Course renamed = course.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(course.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should move course to another school successfully")
+    void shouldMoveToSchool() {
+      UUID originalSchool = UUID.randomUUID();
+      UUID newSchool = UUID.randomUUID();
+      Course course = Course.factory("Course Name", originalSchool);
+
+      Course moved = course.moveToSchool(newSchool);
+
+      assertThat(moved.getSchoolId()).isEqualTo(newSchool);
+      assertThat(moved.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(course.getAuditInfo().getCreatedAt());
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/enums/AcademicEnumBundleKeysTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.enums;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import java.util.Locale;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+@DisplayName("Academic Enum Bundle Key Integrity Tests")
+class AcademicEnumBundleKeysTest {
+
+  private final I18n i18n = new I18n();
+
+  @ParameterizedTest(name = "{0} - Locale: {1}")
+  @DisplayName("Verify that all academic enum keys exist in properties files")
+  @MethodSource("provideEnumsAndLocales")
+  void verifyEnumKeysExist(String enumName, GenericCodes code, Locale locale) {
+    String key = code.getBundleKey();
+    String translation = i18n.translation(key, locale);
+
+    assertThat(translation)
+        .as("Key '%s' not found for %s in locale %s", key, enumName, locale)
+        .isNotEqualTo(key);
+  }
+
+  static Stream<Arguments> provideEnumsAndLocales() {
+    Locale ptBr = Locale.forLanguageTag("pt-BR");
+    Locale enUs = Locale.forLanguageTag("en-US");
+
+    return Stream.of(AcademicErrorCodes.values(), AcademicFieldErrorCodes.values())
+        .flatMap(Stream::of)
+        .flatMap(
+            code ->
+                Stream.of(
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, ptBr),
+                    Arguments.of(
+                        code.getClass().getSimpleName() + "." + code.toString(), code, enUs)));
+  }
+}
+
+
+================================================================================
+FILE: domain/SchoolTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("School Aggregate Tests")
+class SchoolTest {
+
+  @Test
+  @DisplayName("Should create valid School")
+  void shouldCreateSchool() {
+    School school = School.factory("School of Engineering");
+
+    assertThat(school.hasFieldErrors()).isFalse();
+    assertThat(school.getName()).isEqualTo("School of Engineering");
+    assertThat(school.getAuditInfo()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Should collect errors for blank name")
+  void shouldCollectValidationErrors() {
+    School school = School.factory("   ");
+
+    assertThat(school.hasFieldErrors()).isTrue();
+    assertThat(school.getFieldErrors()).contains(SharedFieldErrorCodes.INVALID_NAME_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should rename school successfully")
+    void shouldRename() {
+      School school = School.factory("Old Name");
+      School renamed = school.rename("New Name");
+
+      assertThat(renamed.getName()).isEqualTo("New Name");
+      assertThat(renamed.getId()).isEqualTo(school.getId());
+      assertThat(renamed.getAuditInfo().getUpdatedAt())
+          .isAfterOrEqualTo(school.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should be idempotent when renaming to the same name")
+    void shouldBeIdempotent() {
+      School school = School.factory("Same Name");
+      School renamed = school.rename("Same Name");
+
+      assertThat(renamed).isSameAs(school);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/StudentTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
+import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
+import br.org.catolicasc.pug.academic.domain.vos.Period;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Student Aggregate Tests")
+class StudentTest {
+
+  private final AcademicRegistration validReg = AcademicRegistration.factory("12345");
+  private final CounterpartHours validHours =
+      CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false);
+  private final Period validPeriod = Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6));
+
+  @Test
+  @DisplayName("Should create valid Student")
+  void shouldCreateStudent() {
+    UUID accountId = UUID.randomUUID();
+    UUID courseId = UUID.randomUUID();
+
+    Student student =
+        Student.factory(
+            accountId, validReg, Campi.JARAGUA_DO_SUL, courseId, validHours, validPeriod);
+
+    assertThat(student.hasFieldErrors()).isFalse();
+    assertThat(student.getAccountId()).isEqualTo(accountId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors when all fields are invalid")
+  void shouldCollectValidationErrors() {
+    Student student = Student.factory(null, null, null, null, null, null);
+
+    assertThat(student.hasFieldErrors()).isTrue();
+    assertThat(student.getFieldErrors())
+        .contains(
+            AcademicFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK,
+            AcademicFieldErrorCodes.INVALID_REGISTRATION_BLANK,
+            SharedFieldErrorCodes.INVALID_CAMPUS_BLANK,
+            AcademicFieldErrorCodes.INVALID_COURSE_BLANK,
+            AcademicFieldErrorCodes.INVALID_HOURS_BLANK,
+            AcademicFieldErrorCodes.INVALID_PERIOD_BLANK);
+  }
+
+  @Nested
+  @DisplayName("Behavior Methods")
+  class BehaviorTests {
+
+    @Test
+    @DisplayName("Should add completed hours and update status")
+    void shouldAddHours() throws InterruptedException {
+      Student student =
+          Student.factory(
+              UUID.randomUUID(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UUID.randomUUID(),
+              validHours,
+              validPeriod);
+      Thread.sleep(10);
+      Student updated = student.addCompletedHours(new BigDecimal("50"));
+
+      assertThat(updated.getCounterpartHours().getCompletedHours()).isEqualTo(new BigDecimal("50"));
+      assertThat(updated.getAuditInfo().getUpdatedAt())
+          .isAfter(student.getAuditInfo().getCreatedAt());
+    }
+
+    @Test
+    @DisplayName("Should update course successfully")
+    void shouldChangeCourse() {
+      Student student =
+          Student.factory(
+              UUID.randomUUID(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UUID.randomUUID(),
+              validHours,
+              validPeriod);
+      UUID newCourse = UUID.randomUUID();
+
+      Student updated = student.changeCourse(newCourse);
+
+      assertThat(updated.getCourseId()).isEqualTo(newCourse);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/AcademicRegistrationTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("AcademicRegistration Value Object Tests")
+class AcademicRegistrationTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid AcademicRegistration from string")
+    void shouldCreateValidRegistration() {
+      AcademicRegistration reg = AcademicRegistration.factory("123456789012345");
+
+      assertThat(reg.hasFieldErrors()).isFalse();
+      assertThat(reg.getValue()).isEqualTo("123456789012345");
+    }
+
+    @Test
+    @DisplayName("Should trim whitespace")
+    void shouldTrimWhitespace() {
+      AcademicRegistration reg = AcademicRegistration.factory("  REG123  ");
+      assertThat(reg.hasFieldErrors()).isFalse();
+      assertThat(reg.getValue()).isEqualTo("REG123");
+    }
+
+    @Test
+    @DisplayName("Should reject blank/null inputs")
+    void shouldRejectEmpty() {
+      AcademicRegistration reg = AcademicRegistration.factory("   ");
+      assertThat(reg.hasFieldErrors()).isTrue();
+      assertThat(reg.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_REGISTRATION_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject registration exceeding 15 characters")
+    void shouldRejectTooLong() {
+      AcademicRegistration reg = AcademicRegistration.factory("1234567890123456");
+      assertThat(reg.hasFieldErrors()).isTrue();
+      assertThat(reg.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_REGISTRATION_TOO_LONG);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/CounterpartHoursTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import java.math.BigDecimal;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("CounterpartHours Value Object Tests")
+class CounterpartHoursTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid CounterpartHours")
+    void shouldCreateValidHours() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100.00"), BigDecimal.ZERO, false);
+
+      assertThat(hours.hasFieldErrors()).isFalse();
+      assertThat(hours.getRequiredHours()).isEqualTo(new BigDecimal("100.00"));
+      assertThat(hours.getConcluded()).isFalse();
+    }
+
+    @Test
+    @DisplayName("Should reject non-positive required hours")
+    void shouldRejectInvalidRequired() {
+      CounterpartHours hours = CounterpartHours.factory(BigDecimal.ZERO, BigDecimal.ZERO, false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_HOURS_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject negative completed hours")
+    void shouldRejectNegativeCompleted() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("-1"), false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_NEGATIVE);
+    }
+
+    @Test
+    @DisplayName("Should reject completed hours exceeding required hours")
+    void shouldRejectExceedingHours() {
+      CounterpartHours hours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("150"), false);
+
+      assertThat(hours.hasFieldErrors()).isTrue();
+      assertThat(hours.getFieldErrors())
+          .contains(AcademicFieldErrorCodes.INVALID_COMPLETED_HOURS_EXCEEDS);
+    }
+  }
+}
+
+
+================================================================================
+FILE: domain/vos/PeriodTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.domain.vos;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import java.time.LocalDate;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("Period Value Object Tests")
+class PeriodTest {
+
+  @Nested
+  @DisplayName("Factory and Validation")
+  class FactoryTests {
+
+    @Test
+    @DisplayName("Should create valid Period")
+    void shouldCreateValidPeriod() {
+      LocalDate start = LocalDate.of(2026, 1, 1);
+      LocalDate end = LocalDate.of(2026, 6, 30);
+      Period period = Period.factory(start, end);
+
+      assertThat(period.hasFieldErrors()).isFalse();
+      assertThat(period.getStartDate()).isEqualTo(start);
+      assertThat(period.getDueDate()).isEqualTo(end);
+    }
+
+    @Test
+    @DisplayName("Should reject when dates are null")
+    void shouldRejectNullDates() {
+      Period period = Period.factory(null, null);
+
+      assertThat(period.hasFieldErrors()).isTrue();
+      assertThat(period.getFieldErrors())
+          .contains(
+              AcademicFieldErrorCodes.INVALID_START_DATE_BLANK,
+              AcademicFieldErrorCodes.INVALID_DUE_DATE_BLANK);
+    }
+
+    @Test
+    @DisplayName("Should reject when due date is before start date")
+    void shouldRejectChronologicalInvalid() {
+      LocalDate start = LocalDate.of(2026, 6, 30);
+      LocalDate end = LocalDate.of(2026, 1, 1);
+      Period period = Period.factory(start, end);
+
+      assertThat(period.hasFieldErrors()).isTrue();
+      assertThat(period.getFieldErrors()).contains(AcademicFieldErrorCodes.INVALID_PERIOD_RANGE);
+    }
+  }
+}
+
+
+================================================================================
+FILE: infra/CourseMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("CourseMapper Tests")
+class CourseMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Course")
+  void shouldPerformRoundTrip() {
+    Course course = Course.factory("Software Engineering", UUID.randomUUID());
+
+    CourseEntity entity = CourseMapper.toEntity(course);
+    Course mapped = CourseMapper.toDomain(entity);
+
+    assertThat(mapped.getId()).isEqualTo(course.getId());
+    assertThat(mapped.getName()).isEqualTo(course.getName());
+    assertThat(mapped.getSchoolId()).isEqualTo(course.getSchoolId());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/CourseRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class CourseRepositoryImplTest {
+
+  @Inject CourseRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+  private School school;
+
+  @BeforeEach
+  void setup() {
+    school = factory.createSchool();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find Course linked to School")
+  void shouldPersistAndFind() {
+    Course course = factory.createCourse(school);
+
+    var found = repository.findOptionalById(course.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getSchoolId()).isEqualTo(school.getId());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/SchoolRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class SchoolRepositoryImplTest {
+
+  @Inject SchoolRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+  private School school;
+
+  @BeforeEach
+  void setup() {
+    school = factory.createSchool();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find School")
+  void shouldPersistAndFind() {
+    Optional<School> found = repository.findOptionalById(school.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getName()).isEqualTo(school.getName());
+  }
+}
+
+
+================================================================================
+FILE: infra/persistence/impl/StudentRepositoryImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.persistence.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class StudentRepositoryImplTest {
+
+  @Inject StudentRepositoryImpl repository;
+  @Inject TestDataFactory factory;
+
+  private Account account;
+  private Course course;
+
+  @BeforeEach
+  void setup() {
+    User user = factory.createUser();
+    account = factory.createAccount(user, AccountType.STUDENT);
+
+    School school = factory.createSchool();
+    course = factory.createCourse(school);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should persist and find Student")
+  void shouldPersistAndFind() {
+    Student student = factory.createStudent(account, course);
+
+    var found = repository.findOptionalById(student.getAccountId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getAcademicRegistration().getValue())
+        .isEqualTo(student.getAcademicRegistration().getValue());
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/CourseQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class CourseQueriesImplTest {
+
+  @Inject CourseQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private School school;
+
+  @BeforeEach
+  void setup() {
+    school = factory.createSchool();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should find CourseView with School details")
+  void shouldFindWithSchoolDetails() {
+    Course course = factory.createCourse(school);
+
+    var view = queries.findOptionalById(course.getId());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().school().name()).isEqualTo(school.getName());
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/SchoolQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class SchoolQueriesImplTest {
+
+  @Inject SchoolQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private School school;
+
+  @BeforeEach
+  void setup() {
+    school = factory.createSchool();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should find SchoolView by ID")
+  void shouldFindById() {
+    var view = queries.findOptionalById(school.getId());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().name()).isEqualTo(school.getName());
+  }
+}
+
+
+================================================================================
+FILE: infra/read/impl/StudentQueriesImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra.read.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+class StudentQueriesImplTest {
+
+  @Inject StudentQueriesImpl queries;
+  @Inject TestDataFactory factory;
+
+  private Student student;
+
+  @BeforeEach
+  void setup() {
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+
+    student = factory.createStudent(account, course);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should retrieve StudentView by Registration")
+  void shouldFindByRegistration() {
+    var view =
+        queries.findOptionalByAcademicRegistration(student.getAcademicRegistration().getValue());
+
+    assertThat(view).isPresent();
+    assertThat(view.get().academicRegistration())
+        .isEqualTo(student.getAcademicRegistration().getValue());
+  }
+}
+
+
+================================================================================
+FILE: infra/SchoolMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("SchoolMapper Tests")
+class SchoolMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for School")
+  void shouldPerformRoundTrip() {
+    School school = School.factory("School of Engineering");
+
+    SchoolEntity entity = SchoolMapper.toEntity(school);
+    School mapped = SchoolMapper.toDomain(entity);
+
+    assertThat(mapped.getId()).isEqualTo(school.getId());
+    assertThat(mapped.getName()).isEqualTo(school.getName());
+  }
+}
+
+
+================================================================================
+FILE: infra/StudentMapperTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.infra;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
+import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
+import br.org.catolicasc.pug.academic.domain.vos.Period;
+import br.org.catolicasc.pug.academic.infra.persistence.StudentEntity;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("StudentMapper Tests")
+class StudentMapperTest {
+
+  @Test
+  @DisplayName("Should perform round-trip mapping for Student")
+  void shouldPerformRoundTrip() {
+    Student student =
+        Student.factory(
+            UUID.randomUUID(),
+            AcademicRegistration.factory("12345"),
+            Campi.JARAGUA_DO_SUL,
+            UUID.randomUUID(),
+            CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false),
+            Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
+
+    StudentEntity entity = StudentMapper.toEntity(student);
+    Student mapped = StudentMapper.toDomain(entity);
+
+    assertThat(mapped.getAccountId()).isEqualTo(student.getAccountId());
+    assertThat(mapped.getAcademicRegistration().getValue())
+        .isEqualTo(student.getAcademicRegistration().getValue());
+    assertThat(mapped.getCounterpartHours().getRequiredHours())
+        .isEqualTo(student.getCounterpartHours().getRequiredHours());
+  }
+}
+
+
+================================================================================
+FILE: presenter/CourseResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("CourseResource Integration Tests")
+class CourseResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/courses/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", course.getId())
+        .when()
+        .get("/academic/courses/{id}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.id", is(course.getId().toString()))
+        .body("data.name", is(course.getName()));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/courses/{id} - Not Found")
+  void getByIdNotFound() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/academic/courses/{id}")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/courses - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    factory.createCourse(school);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/academic/courses")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/courses?schoolId= - Filter by School")
+  void listBySchoolId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    factory.createCourse(school);
+    utx.commit();
+
+    given()
+        .queryParam("schoolId", school.getId().toString())
+        .when()
+        .get("/academic/courses")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/courses - Success")
+  void createSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    CourseCreateRequest req = new CourseCreateRequest("New Course " + UUID.randomUUID(), school.getId());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/courses")
+        .then()
+        .statusCode(201)
+        .body("data.name", notNullValue())
+        .body("data.school", notNullValue());
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/courses - Duplicate Name")
+  void createDuplicate() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course existing = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    CourseCreateRequest req = new CourseCreateRequest(existing.getName(), school.getId());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/courses")
+        .then()
+        .statusCode(409);
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("PUT /academic/courses/{id} - Success")
+  void updateSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    CourseUpdateRequest req = new CourseUpdateRequest("Updated " + UUID.randomUUID(), null);
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", course.getId())
+        .body(req)
+        .when()
+        .put("/academic/courses/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.name", notNullValue());
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("DELETE /academic/courses/{id} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", course.getId())
+        .when()
+        .delete("/academic/courses/{id}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when unauthenticated")
+  void unauthorizedAccess() {
+    given().when().get("/academic/courses").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("POST /academic/courses - Forbidden for STUDENT")
+  void createForbiddenForStudent() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    utx.commit();
+
+    CourseCreateRequest req = new CourseCreateRequest("Forbidden", school.getId());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/courses")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("DELETE /academic/courses/{id} - Forbidden for STUDENT")
+  void deleteForbiddenForStudent() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .delete("/academic/courses/{id}")
+        .then()
+        .statusCode(403);
+  }
+}
+
+
+
+================================================================================
+FILE: presenter/mappers/CoursePresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("CoursePresenter Coverage")
+class CoursePresenterTest {
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandMapping {
+
+    @Test
+    @DisplayName("Should map request to command")
+    void toCreateCommand() {
+      UUID schoolId = UUID.randomUUID();
+      CourseCreateRequest req = new CourseCreateRequest("CS", schoolId);
+      CourseCreateCommand cmd = CoursePresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("CS");
+      assertThat(cmd.schoolId()).isEqualTo(schoolId);
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCreateCommandNull() {
+      assertThat(CoursePresenter.toCommand((CourseCreateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Update Command Mapping")
+  class UpdateCommandMapping {
+
+    @Test
+    @DisplayName("Should map update request to command")
+    void toUpdateCommand() {
+      UUID schoolId = UUID.randomUUID();
+      CourseUpdateRequest req = new CourseUpdateRequest("New Name", schoolId);
+      CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("New Name");
+      assertThat(cmd.schoolId()).isEqualTo(schoolId);
+    }
+
+    @Test
+    @DisplayName("Should map partial update request")
+    void toUpdateCommandPartial() {
+      CourseUpdateRequest req = new CourseUpdateRequest(null, null);
+      CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isNull();
+      assertThat(cmd.schoolId()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toUpdateCommandNull() {
+      assertThat(CoursePresenter.toCommand((CourseUpdateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseMapping {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(CoursePresenter.toResponse(null, Locale.US)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      CourseView view = buildCourseView();
+      assertThat(CoursePresenter.toResponse(view, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map view to response correctly with nested school")
+    void toResponseSuccess() {
+      CourseView view = buildCourseView();
+      CourseResponse response = CoursePresenter.toResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+      assertThat(response.name()).isEqualTo("Computer Science");
+      assertThat(response.school()).isNotNull();
+      assertThat(response.school().name()).isEqualTo("Engineering");
+      assertThat(response.auditInfo()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should handle null school in view")
+    void toResponseNullSchool() {
+      OffsetDateTime now = OffsetDateTime.now();
+      CourseView view = new CourseView(UUID.randomUUID(), "CS", null, now, now);
+      CourseResponse response = CoursePresenter.toResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+      assertThat(response.school()).isNull();
+    }
+
+    private CourseView buildCourseView() {
+      OffsetDateTime now = OffsetDateTime.now();
+      SchoolView schoolView = new SchoolView(UUID.randomUUID(), "Engineering", now, now);
+      return new CourseView(UUID.randomUUID(), "Computer Science", schoolView, now, now);
+    }
+  }
+}
+
+
+
+================================================================================
+FILE: presenter/mappers/SchoolPresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
+import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("SchoolPresenter Coverage")
+class SchoolPresenterTest {
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandMapping {
+
+    @Test
+    @DisplayName("Should map request to command")
+    void toCreateCommand() {
+      SchoolCreateRequest req = new SchoolCreateRequest("Engineering");
+      SchoolCreateCommand cmd = SchoolPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("Engineering");
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCreateCommandNull() {
+      assertThat(SchoolPresenter.toCommand((SchoolCreateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Update Command Mapping")
+  class UpdateCommandMapping {
+
+    @Test
+    @DisplayName("Should map update request to command")
+    void toUpdateCommand() {
+      SchoolUpdateRequest req = new SchoolUpdateRequest("New Name");
+      SchoolUpdateCommand cmd = SchoolPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isEqualTo("New Name");
+    }
+
+    @Test
+    @DisplayName("Should map partial update request (null name)")
+    void toUpdateCommandPartial() {
+      SchoolUpdateRequest req = new SchoolUpdateRequest(null);
+      SchoolUpdateCommand cmd = SchoolPresenter.toCommand(req);
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.name()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when update request is null")
+    void toUpdateCommandNull() {
+      assertThat(SchoolPresenter.toCommand((SchoolUpdateRequest) null)).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseMapping {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(SchoolPresenter.toResponse(null, Locale.US)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      SchoolView view = new SchoolView(UUID.randomUUID(), "Eng", OffsetDateTime.now(), OffsetDateTime.now());
+      assertThat(SchoolPresenter.toResponse(view, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map view to response correctly")
+    void toResponseSuccess() {
+      UUID id = UUID.randomUUID();
+      OffsetDateTime now = OffsetDateTime.now();
+      SchoolView view = new SchoolView(id, "Engineering", now, now);
+
+      SchoolResponse response = SchoolPresenter.toResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(id);
+      assertThat(response.name()).isEqualTo("Engineering");
+      assertThat(response.auditInfo()).isNotNull();
+      assertThat(response.auditInfo().createdAt()).isEqualTo(now);
+    }
+
+    @Test
+    @DisplayName("Should handle null timestamps")
+    void toResponseNullTimestamps() {
+      SchoolView view = new SchoolView(UUID.randomUUID(), "Name", null, null);
+      SchoolResponse response = SchoolPresenter.toResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+    }
+  }
+}
+
+
+
+================================================================================
+FILE: presenter/mappers/StudentPresenterTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter.mappers;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
+import br.org.catolicasc.pug.academic.presenter.dtos.StudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.StudentResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.StudentUpdateRequest;
+import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.Locale;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("StudentPresenter Coverage")
+class StudentPresenterTest {
+
+  @Inject I18n i18n;
+
+  @Nested
+  @DisplayName("Create Command Mapping")
+  class CreateCommandMapping {
+
+    @Test
+    @DisplayName("Should map request to command with account data")
+    void toCreateCommand() {
+      String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+      UUID courseId = UUID.randomUUID();
+      StudentCreateRequest req =
+          new StudentCreateRequest(
+              cpf, "John Doe", "john@test.com", "password123",
+              "REG12345", Campi.JOINVILLE, courseId,
+              new BigDecimal("100"), LocalDate.now(), LocalDate.now().plusMonths(6));
+
+      StudentCreateCommand cmd = StudentPresenter.toCommand(req, "hashedPw");
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.academicRegistration()).isEqualTo("REG12345");
+      assertThat(cmd.campus()).isEqualTo(Campi.JOINVILLE);
+      assertThat(cmd.courseId()).isEqualTo(courseId);
+      assertThat(cmd.accountCreateCommand()).isNotNull();
+//      assertThat(cmd.accountCreateCommand().email()).isEqualTo("john@test.com");
+//      assertThat(cmd.accountCreateCommand().passwordHash()).isEqualTo("hashedPw");
+//      assertThat(cmd.accountCreateCommand().userCreateCommand().name()).isEqualTo("John Doe");
+//      assertThat(cmd.accountCreateCommand().userCreateCommand().cpf()).isEqualTo(cpf);
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toCreateCommandNull() {
+      assertThat(StudentPresenter.toCommand((StudentCreateRequest) null, "hash")).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Update Command Mapping")
+  class UpdateCommandMapping {
+
+    @Test
+    @DisplayName("Should map update request to command")
+    void toUpdateCommand() {
+      StudentUpdateRequest req =
+          new StudentUpdateRequest(
+              "Jane Doe", null, "jane@test.com", "newpass",
+              "NEWREG", Campi.JOINVILLE, UUID.randomUUID(),
+              new BigDecimal("200"), LocalDate.now(), LocalDate.now().plusMonths(12));
+
+      StudentUpdateCommand cmd = StudentPresenter.toCommand(req, "hashedNewPw");
+
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.academicRegistration()).isEqualTo("NEWREG");
+      assertThat(cmd.accountUpdateCommand()).isNotNull();
+//      assertThat(cmd.accountUpdateCommand().email()).isEqualTo("jane@test.com");
+      assertThat(cmd.accountUpdateCommand().passwordHash()).isEqualTo("hashedNewPw");
+    }
+
+    @Test
+    @DisplayName("Should return null when request is null")
+    void toUpdateCommandNull() {
+      assertThat(StudentPresenter.toCommand((StudentUpdateRequest) null, "hash")).isNull();
+    }
+  }
+
+  @Nested
+  @DisplayName("Response Mapping")
+  class ResponseMapping {
+
+    @Test
+    @DisplayName("Should return null when view is null")
+    void toResponseNullView() {
+      assertThat(StudentPresenter.toResponse(null, Locale.US, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when locale is null")
+    void toResponseNullLocale() {
+      assertThat(StudentPresenter.toResponse(buildStudentView(), null, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should return null when i18n is null")
+    void toResponseNullI18n() {
+      assertThat(StudentPresenter.toResponse(buildStudentView(), Locale.US, null)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map view to response and calculate missing hours")
+    void toResponseWithMissingHours() {
+      StudentView view = buildStudentView();
+      StudentResponse response = StudentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.accountId()).isEqualTo(view.accountId());
+      assertThat(response.academicRegistration()).isEqualTo("REG12345");
+      assertThat(response.requiredHours()).isEqualByComparingTo(new BigDecimal("100"));
+      assertThat(response.completedHours()).isEqualByComparingTo(new BigDecimal("30"));
+      assertThat(response.missingHours()).isEqualByComparingTo(new BigDecimal("70"));
+    }
+
+    @Test
+    @DisplayName("Should set missingHours to zero when concluded")
+    void toResponseConcluded() {
+      UUID accountId = UUID.randomUUID();
+      OffsetDateTime now = OffsetDateTime.now();
+      StudentView view =
+          new StudentView(
+              accountId, "REG12345", Campi.JOINVILLE, UUID.randomUUID(),
+              new BigDecimal("100"), new BigDecimal("100"), true,
+              LocalDate.now(), LocalDate.now().plusMonths(6), now, now);
+
+      StudentResponse response = StudentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.missingHours()).isEqualByComparingTo(BigDecimal.ZERO);
+    }
+
+    @Test
+    @DisplayName("Should calculate remaining days")
+    void toResponseRemainingDays() {
+      StudentView view = buildStudentView();
+      StudentResponse response = StudentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.remainingDays()).isGreaterThan(0);
+      assertThat(response.remainingDaysFormatted()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("Should handle null dueDate")
+    void toResponseNullDueDate() {
+      UUID accountId = UUID.randomUUID();
+      OffsetDateTime now = OffsetDateTime.now();
+      StudentView view =
+          new StudentView(
+              accountId, "REG12345", Campi.JOINVILLE, UUID.randomUUID(),
+              new BigDecimal("100"), new BigDecimal("30"), false,
+              LocalDate.now(), null, now, now);
+
+      StudentResponse response = StudentPresenter.toResponse(view, Locale.US, i18n);
+
+      assertThat(response.remainingDays()).isZero();
+      assertThat(response.remainingDaysFormatted()).isEmpty();
+    }
+
+    private StudentView buildStudentView() {
+      UUID accountId = UUID.randomUUID();
+      OffsetDateTime now = OffsetDateTime.now();
+      return new StudentView(
+          accountId, "REG12345", Campi.JOINVILLE, UUID.randomUUID(),
+          new BigDecimal("100"), new BigDecimal("30"), false,
+          LocalDate.now(), LocalDate.now().plusMonths(6), now, now);
+    }
+  }
+}
+
+
+
+================================================================================
+FILE: presenter/SchoolResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("SchoolResource Integration Tests")
+class SchoolResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/schools/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", school.getId())
+        .when()
+        .get("/academic/schools/{id}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.id", is(school.getId().toString()))
+        .body("data.name", is(school.getName()));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/schools/{id} - Not Found")
+  void getByIdNotFound() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/academic/schools/{id}")
+        .then()
+        .statusCode(404)
+        .body("success", is(false));
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/schools - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    factory.createSchool();
+    utx.commit();
+
+    given()
+        .when()
+        .get("/academic/schools")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/schools?q=xxx - Search")
+  void searchByName() throws Exception {
+    utx.begin();
+    factory.createSchool();
+    utx.commit();
+
+    given()
+        .queryParam("q", "NonExistentSchoolName")
+        .when()
+        .get("/academic/schools")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/schools - Success")
+  void createSuccess() {
+    SchoolCreateRequest req = new SchoolCreateRequest("New School " + UUID.randomUUID());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/schools")
+        .then()
+        .statusCode(201)
+        .body("data.name", notNullValue());
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/schools - Duplicate Name")
+  void createDuplicate() throws Exception {
+    utx.begin();
+    School existing = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    SchoolCreateRequest req = new SchoolCreateRequest(existing.getName());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/schools")
+        .then()
+        .statusCode(409);
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("PUT /academic/schools/{id} - Success")
+  void updateSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    SchoolUpdateRequest req = new SchoolUpdateRequest("Updated " + UUID.randomUUID());
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", school.getId())
+        .body(req)
+        .when()
+        .put("/academic/schools/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.name", notNullValue());
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("DELETE /academic/schools/{id} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", school.getId())
+        .when()
+        .delete("/academic/schools/{id}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @DisplayName("Should return 401 when unauthenticated")
+  void unauthorizedAccess() {
+    given().when().get("/academic/schools").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("POST /academic/schools - Forbidden for STUDENT")
+  void createForbiddenForStudent() {
+    SchoolCreateRequest req = new SchoolCreateRequest("Forbidden School");
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/schools")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("DELETE /academic/schools/{id} - Forbidden for STUDENT")
+  void deleteForbiddenForStudent() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .delete("/academic/schools/{id}")
+        .then()
+        .statusCode(403);
+  }
+}
+
+
+
+================================================================================
+FILE: presenter/StudentResourceTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.presenter;
+
+import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.presenter.dtos.StudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.StudentUpdateRequest;
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.UserTransaction;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("StudentResource Integration Tests")
+class StudentResourceTest {
+
+  @Inject TestDataFactory factory;
+  @Inject UserTransaction utx;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock AuthService authService;
+  @InjectMock EnrollmentService enrollmentService;
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/students/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", account.getId())
+        .when()
+        .get("/academic/students/{id}")
+        .then()
+        .statusCode(200)
+        .body("success", is(true))
+        .body("data.accountId", is(account.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/students/{id} - Not Found")
+  void getByIdNotFound() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .get("/academic/students/{id}")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/students - List All")
+  void listAll() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/academic/students")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(user = "user", roles = {"STUDENT"})
+  @DisplayName("GET /academic/students?courseId= - Filter by Course")
+  void listByCourseId() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    utx.commit();
+
+    given()
+        .queryParam("courseId", course.getId().toString())
+        .when()
+        .get("/academic/students")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/students - Success")
+  void createSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    StudentCreateRequest req =
+        new StudentCreateRequest(
+            cpf, "Test Student", cpf + "@test.com", "password123",
+            UUID.randomUUID().toString().substring(0, 14).toUpperCase(),
+            Campi.JOINVILLE, course.getId(),
+            new BigDecimal("100"), LocalDate.now(), LocalDate.now().plusMonths(6));
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/students")
+        .then()
+        .statusCode(201)
+        .body("data.accountId", notNullValue());
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("POST /academic/students/bulk - Success")
+  void createBulkSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+    utx.commit();
+
+    StudentCreateRequest req1 = buildCreateRequest(course.getId());
+    StudentCreateRequest req2 = buildCreateRequest(course.getId());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(List.of(req1, req2))
+        .when()
+        .post("/academic/students/bulk")
+        .then()
+        .statusCode(201)
+        .body("data", hasSize(2));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("PUT /academic/students/{id} - Success")
+  void updateSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    StudentUpdateRequest req =
+        new StudentUpdateRequest(null, null, null, null, null, Campi.JOINVILLE, null, null, null, null);
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", account.getId())
+        .body(req)
+        .when()
+        .put("/academic/students/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.accountId", is(account.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("DELETE /academic/students/{id} - Success")
+  void deleteSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(false);
+
+    given()
+        .pathParam("id", account.getId())
+        .when()
+        .delete("/academic/students/{id}")
+        .then()
+        .statusCode(200);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("GET /academic/students/me - Success")
+  void getMeSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    when(authService.getCurrentAccountId()).thenReturn(account.getId());
+
+    given()
+        .when()
+        .get("/academic/students/me")
+        .then()
+        .statusCode(200)
+        .body("data.accountId", is(account.getId().toString()));
+  }
+
+  @Test
+  @DisplayName("Should return 401 when unauthenticated")
+  void unauthorizedAccess() {
+    given().when().get("/academic/students").then().statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("POST /academic/students - Forbidden for STUDENT")
+  void createForbiddenForStudent() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    utx.commit();
+
+    StudentCreateRequest req = buildCreateRequest(course.getId());
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/academic/students")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(user = "student", roles = {"STUDENT"})
+  @DisplayName("DELETE /academic/students/{id} - Forbidden for STUDENT")
+  void deleteForbiddenForStudent() {
+    given()
+        .pathParam("id", UuidCreator.getTimeOrderedEpoch())
+        .when()
+        .delete("/academic/students/{id}")
+        .then()
+        .statusCode(403);
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/students/by-cpf/{cpf} - Success")
+  void getByCpfSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("cpf", user.getCpf().getValue())
+        .when()
+        .get("/academic/students/by-cpf/{cpf}")
+        .then()
+        .statusCode(200)
+        .body("data.accountId", is(account.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @DisplayName("GET /academic/students/by-email/{email} - Success")
+  void getByEmailSuccess() throws Exception {
+    utx.begin();
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("email", account.getEmail())
+        .when()
+        .get("/academic/students/by-email/{email}")
+        .then()
+        .statusCode(200)
+        .body("data.accountId", is(account.getId().toString()));
+  }
+
+  /* --- helpers --- */
+
+  private StudentCreateRequest buildCreateRequest(UUID courseId) {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    String reg = UUID.randomUUID().toString().substring(0, 14).toUpperCase();
+    return new StudentCreateRequest(
+        cpf, "Test Student " + cpf, cpf + "@test.com", "password123",
+        reg, Campi.JOINVILLE, courseId,
+        new BigDecimal("100"), LocalDate.now(), LocalDate.now().plusMonths(6));
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/CourseReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.infra.read.CourseQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("CourseReadServiceImpl Coverage")
+class CourseReadServiceImplTest {
+
+  @Inject CourseReadServiceImpl service;
+  @InjectMock CourseQueries queries;
+
+  @Test
+  @DisplayName("Should return course view by ID")
+  void getViewByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    CourseView view = buildView(id);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewById(id)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when course not found")
+  void getViewByIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should list all courses")
+  void listViews() {
+    when(queries.listAllCourses()).thenReturn(List.of(buildView(UUID.randomUUID())));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should list courses by school ID")
+  void listViewsBySchoolId() {
+    UUID schoolId = UUID.randomUUID();
+    when(queries.listAllBySchoolId(schoolId)).thenReturn(List.of(buildView(UUID.randomUUID())));
+
+    assertThat(service.listViewsBySchoolId(schoolId)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for null school ID")
+  void listViewsBySchoolIdNull() {
+    assertThat(service.listViewsBySchoolId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should fold input and delegate search")
+  void searchByName() {
+    when(queries.searchByName("computer")).thenReturn(List.of());
+    assertThat(service.searchByName("  Computer  ")).isEmpty();
+  }
+
+  private CourseView buildView(UUID id) {
+    OffsetDateTime now = OffsetDateTime.now();
+    SchoolView school = new SchoolView(UUID.randomUUID(), "Eng", now, now);
+    return new CourseView(id, "CS", school, now, now);
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/CourseServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.helpers.builders.CourseBuilder;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("CourseServiceImpl Integration Tests")
+class CourseServiceImplTest {
+
+  @Inject CourseServiceImpl service;
+  @Inject TestDataFactory factory;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+
+  @Test
+  @Transactional
+  @DisplayName("Should save course successfully")
+  void saveSuccess() {
+    School school = factory.createSchool();
+    em.flush();
+
+    CourseCreateCommand cmd = new CourseCreateCommand("CS " + UUID.randomUUID(), school.getId());
+    Course saved = service.save(cmd);
+
+    assertThat(saved.getName()).startsWith("CS ");
+    assertThat(saved.getSchoolId()).isEqualTo(school.getId());
+    verify(audit).fireCreate(Course.class.getName(), saved.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when school not found on save")
+  void saveSchoolNotFound() {
+    CourseCreateCommand cmd = new CourseCreateCommand("CS", UUID.randomUUID());
+    assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException for same name")
+  void saveDuplicate() {
+    School school = factory.createSchool();
+    Course existing = factory.createCourse(school);
+    em.flush();
+
+    CourseCreateCommand cmd = new CourseCreateCommand(existing.getName(), school.getId());
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw validation exception for blank name")
+  void saveValidationError() {
+    School school = factory.createSchool();
+    em.flush();
+
+    CourseCreateCommand cmd = new CourseCreateCommand("   ", school.getId());
+    assertThrows(AppValidationException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get course by ID")
+  void getByIdSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+
+    Course found = service.getById(course.getId());
+    assertThat(found.getId()).isEqualTo(course.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when course not found")
+  void getByIdNotFound() {
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update course successfully")
+  void updateSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+
+    String newName = "Updated Course " + UUID.randomUUID();
+    CourseUpdateCommand cmd = new CourseUpdateCommand(newName, null);
+    Course updated = service.update(course.getId(), cmd);
+
+    assertThat(updated.getName()).isEqualTo(newName);
+    verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update course with new school")
+  void updateWithNewSchool() {
+    School school1 = factory.createSchool();
+    School school2 = factory.createSchool();
+    Course course = factory.createCourse(school1);
+    em.flush();
+
+    CourseUpdateCommand cmd = new CourseUpdateCommand(null, school2.getId());
+    Course updated = service.update(course.getId(), cmd);
+
+    assertThat(updated.getSchoolId()).isEqualTo(school2.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when updating non-existing course")
+  void updateNotFound() {
+    CourseUpdateCommand cmd = new CourseUpdateCommand("Name", null);
+    assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete course successfully")
+  void deleteSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+
+    boolean deleted = service.delete(course.getId());
+
+    assertThat(deleted).isTrue();
+    verify(audit).fireDelete(Course.class.getName(), course.getId());
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null ID")
+  void deleteNullId() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting non-existing course")
+  void deleteNonExisting() {
+    assertThat(service.delete(UUID.randomUUID())).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when deleting course with students")
+  void deleteWithStudents() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+
+    var user = factory.createUser();
+    var account = factory.createAccount(user, br.org.catolicasc.pug.shared.domain.enums.AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    assertThrows(BusinessRuleException.class, () -> service.delete(course.getId()));
+  }
+
+  @Test
+  @DisplayName("Should delegate existsAnyBySchoolId to repo")
+  void existsAnyBySchoolId() {
+    assertThat(service.existsAnyBySchoolId(UUID.randomUUID())).isFalse();
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/SchoolReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("SchoolReadServiceImpl Coverage")
+class SchoolReadServiceImplTest {
+
+  @Inject SchoolReadServiceImpl service;
+  @InjectMock SchoolQueries queries;
+
+  @Test
+  @DisplayName("Should return school view by ID")
+  void getViewByIdSuccess() {
+    UUID id = UUID.randomUUID();
+    OffsetDateTime now = OffsetDateTime.now();
+    SchoolView view = new SchoolView(id, "Engineering", now, now);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewById(id)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when school not found")
+  void getViewByIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewById(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should list all schools")
+  void listAll() {
+    OffsetDateTime now = OffsetDateTime.now();
+    when(queries.listAllSchools())
+        .thenReturn(List.of(new SchoolView(UUID.randomUUID(), "Eng", now, now)));
+
+    assertThat(service.listAll()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should fold input and delegate search")
+  void searchByName() {
+    when(queries.searchByName("engenharia")).thenReturn(List.of());
+    assertThat(service.searchByName("  Engenharia  ")).isEmpty();
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/SchoolServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.project.service.ProjectSchoolService;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("SchoolServiceImpl Integration Tests")
+class SchoolServiceImplTest {
+
+  @Inject SchoolServiceImpl service;
+  @Inject TestDataFactory factory;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock ProjectSchoolService projectSchoolService;
+
+  @Test
+  @Transactional
+  @DisplayName("Should save school successfully")
+  void saveSuccess() {
+    SchoolCreateCommand cmd = new SchoolCreateCommand("Unique School " + UUID.randomUUID());
+    School saved = service.save(cmd);
+
+    assertThat(saved.getName()).startsWith("Unique School");
+    verify(audit).fireCreate(School.class.getName(), saved.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException for same name")
+  void saveDuplicate() {
+    School existing = factory.createSchool();
+    em.flush();
+
+    SchoolCreateCommand cmd = new SchoolCreateCommand(existing.getName());
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw validation exception for blank name")
+  void saveValidationError() {
+    SchoolCreateCommand cmd = new SchoolCreateCommand("   ");
+    assertThrows(AppValidationException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get school by ID")
+  void getByIdSuccess() {
+    School school = factory.createSchool();
+    em.flush();
+
+    School found = service.getById(school.getId());
+    assertThat(found.getId()).isEqualTo(school.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when school not found")
+  void getByIdNotFound() {
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update school successfully")
+  void updateSuccess() {
+    School school = factory.createSchool();
+    em.flush();
+
+    SchoolUpdateCommand cmd = new SchoolUpdateCommand("Updated Name " + UUID.randomUUID());
+    School updated = service.update(school.getId(), cmd);
+
+    assertThat(updated.getName()).startsWith("Updated Name");
+    verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException when updating to existing name")
+  void updateDuplicateName() {
+    School school1 = factory.createSchool();
+    School school2 = factory.createSchool();
+    em.flush();
+
+    SchoolUpdateCommand cmd = new SchoolUpdateCommand(school2.getName());
+    assertThrows(DuplicateResourceException.class, () -> service.update(school1.getId(), cmd));
+  }
+
+  @Test
+  @DisplayName("Should throw when updating non-existing school")
+  void updateNotFound() {
+    SchoolUpdateCommand cmd = new SchoolUpdateCommand("Name");
+    assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete school successfully")
+  void deleteSuccess() {
+    School school = factory.createSchool();
+    em.flush();
+
+    boolean deleted = service.delete(school.getId());
+
+    assertThat(deleted).isTrue();
+    verify(audit).fireDelete(School.class.getName(), school.getId());
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null ID")
+  void deleteNullId() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should return false when deleting non-existing school")
+  void deleteNonExisting() {
+    assertThat(service.delete(UUID.randomUUID())).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when deleting school with courses")
+  void deleteWithCourses() {
+    School school = factory.createSchool();
+    factory.createCourse(school);
+    em.flush();
+
+    assertThrows(BusinessRuleException.class, () -> service.delete(school.getId()));
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/StudentReadServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.infra.read.StudentQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("StudentReadServiceImpl Coverage")
+class StudentReadServiceImplTest {
+
+  @Inject StudentReadServiceImpl service;
+  @InjectMock StudentQueries queries;
+
+  @Test
+  @DisplayName("Should return student view by account ID")
+  void getViewByAccountIdSuccess() {
+    UUID id = UUID.randomUUID();
+    StudentView view = buildView(id);
+    when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByAccountId(id)).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when account ID not found")
+  void getViewByAccountIdNotFound() {
+    when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewByAccountId(UUID.randomUUID()));
+  }
+
+  @Test
+  @DisplayName("Should return student view by registration")
+  void getViewByAcademicRegistrationSuccess() {
+    StudentView view = buildView(UUID.randomUUID());
+    when(queries.findOptionalByAcademicRegistration("REG123")).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByAcademicRegistration("REG123")).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when registration not found")
+  void getViewByAcademicRegistrationNotFound() {
+    when(queries.findOptionalByAcademicRegistration(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewByAcademicRegistration("NOTFOUND"));
+  }
+
+  @Test
+  @DisplayName("Should return student view by CPF")
+  void getViewByCpfSuccess() {
+    StudentView view = buildView(UUID.randomUUID());
+    when(queries.findOptionalByCpf("12345678901")).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByCpf("12345678901")).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when CPF not found")
+  void getViewByCpfNotFound() {
+    when(queries.findOptionalByCpf(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewByCpf("00000000000"));
+  }
+
+  @Test
+  @DisplayName("Should return student view by email")
+  void getViewByEmailSuccess() {
+    StudentView view = buildView(UUID.randomUUID());
+    when(queries.findOptionalByEmail("john@test.com")).thenReturn(Optional.of(view));
+
+    assertThat(service.getViewByEmail("john@test.com")).isEqualTo(view);
+  }
+
+  @Test
+  @DisplayName("Should throw when email not found")
+  void getViewByEmailNotFound() {
+    when(queries.findOptionalByEmail(any())).thenReturn(Optional.empty());
+    Assertions.assertThrows(
+        ResourceNotFoundException.class, () -> service.getViewByEmail("missing@test.com"));
+  }
+
+  @Test
+  @DisplayName("Should list all students")
+  void listViews() {
+    when(queries.listAllStudents()).thenReturn(List.of(buildView(UUID.randomUUID())));
+    assertThat(service.listViews()).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should list students by account IDs")
+  void listViewsByAccountIds() {
+    UUID id = UUID.randomUUID();
+    when(queries.listViewsByAccountIds(List.of(id))).thenReturn(List.of(buildView(id)));
+    assertThat(service.listViewsByAccountIds(List.of(id))).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty for null account IDs")
+  void listViewsByAccountIdsNull() {
+    assertThat(service.listViewsByAccountIds(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty for empty account IDs")
+  void listViewsByAccountIdsEmpty() {
+    assertThat(service.listViewsByAccountIds(List.of())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list students by course ID")
+  void listViewsByCourseId() {
+    UUID courseId = UUID.randomUUID();
+    when(queries.listAllByCourseId(courseId)).thenReturn(List.of(buildView(UUID.randomUUID())));
+    assertThat(service.listViewsByCourseId(courseId)).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty for null course ID")
+  void listViewsByCourseIdNull() {
+    assertThat(service.listViewsByCourseId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should fold input and delegate search")
+  void searchByName() {
+    when(queries.searchByName("john")).thenReturn(List.of());
+    assertThat(service.searchByName("  John  ")).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty for empty search query")
+  void searchByNameEmpty() {
+    assertThat(service.searchByName("")).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should return empty for null search query")
+  void searchByNameNull() {
+    assertThat(service.searchByName(null)).isEmpty();
+  }
+
+  private StudentView buildView(UUID accountId) {
+    OffsetDateTime now = OffsetDateTime.now();
+    return new StudentView(
+        accountId, "REG123", Campi.JOINVILLE, UUID.randomUUID(),
+        new BigDecimal("100"), BigDecimal.ZERO, false,
+        LocalDate.now(), LocalDate.now().plusMonths(6), now, now);
+  }
+}
+
+
+
+================================================================================
+FILE: service/impl/StudentServiceImplTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.impl;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
+import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
+import io.quarkus.test.InjectMock;
+import io.quarkus.test.junit.QuarkusTest;
+import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@QuarkusTest
+@DisplayName("StudentServiceImpl Integration Tests")
+class StudentServiceImplTest {
+
+  @Inject StudentServiceImpl service;
+  @Inject TestDataFactory factory;
+  @Inject EntityManager em;
+
+  @InjectMock AuditPublisher audit;
+  @InjectMock EnrollmentService enrollmentService;
+
+  @Test
+  @Transactional
+  @DisplayName("Should save student successfully")
+  void saveSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+
+    StudentCreateCommand cmd = buildCreateCommand(course.getId());
+    Student saved = service.save(cmd);
+
+    assertThat(saved.getAccountId()).isNotNull();
+    assertThat(saved.getCourseId()).isEqualTo(course.getId());
+    verify(audit).fireCreate(Student.class.getName(), saved.getAccountId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when course not found on save")
+  void saveCourseNotFound() {
+    StudentCreateCommand cmd = buildCreateCommand(UUID.randomUUID());
+    assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw DuplicateResourceException for same registration")
+  void saveDuplicateRegistration() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    Student existingStudent = service.getById(account.getId());
+
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    AccountCreateCommand accCmd =
+        new AccountCreateCommand(
+            cpf + "@test.com", AccountType.STUDENT, "hash",
+            new UserCreateCommand(cpf, "Another Student"));
+    StudentCreateCommand cmd =
+        new StudentCreateCommand(
+            accCmd,
+            existingStudent.getAcademicRegistration().toString(),
+            Campi.JOINVILLE, course.getId(),
+            new BigDecimal("100"), LocalDate.now(), LocalDate.now().plusMonths(6));
+
+    assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should get student by ID")
+  void getByIdSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    Student found = service.getById(account.getId());
+    assertThat(found.getAccountId()).isEqualTo(account.getId());
+  }
+
+  @Test
+  @DisplayName("Should throw when student not found")
+  void getByIdNotFound() {
+    assertThrows(ResourceNotFoundException.class, () -> service.getById(UUID.randomUUID()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update student successfully")
+  void updateSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    StudentUpdateCommand cmd =
+        new StudentUpdateCommand(null, null, Campi.JOINVILLE, null, null, null, null);
+    Student updated = service.update(account.getId(), cmd);
+
+    assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
+  }
+
+  @Test
+  @DisplayName("Should throw when updating non-existing student")
+  void updateNotFound() {
+    StudentUpdateCommand cmd =
+        new StudentUpdateCommand(null, null, null, null, null, null, null);
+    assertThrows(ResourceNotFoundException.class, () -> service.update(UUID.randomUUID(), cmd));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete student successfully")
+  void deleteSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(false);
+    boolean deleted = service.delete(account.getId());
+
+    assertThat(deleted).isTrue();
+    verify(audit).fireDelete(Student.class.getName(), account.getId());
+  }
+
+  @Test
+  @DisplayName("Should return false when deleting with null ID")
+  void deleteNullId() {
+    assertThat(service.delete(null)).isFalse();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when deleting student with enrollments")
+  void deleteWithEnrollments() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(true);
+    assertThrows(BusinessRuleException.class, () -> service.delete(account.getId()));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should add completed hours successfully")
+  void addCompletedHoursSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    User user = factory.createUser();
+    Account account = factory.createAccount(user, AccountType.STUDENT);
+    factory.createStudent(account, course);
+    em.flush();
+
+    Student updated = service.addCompletedHours(account.getId(), new BigDecimal("10"));
+    assertThat(updated.getCounterpartHours().getCompletedHours())
+        .isEqualByComparingTo(new BigDecimal("10"));
+  }
+
+  @Test
+  @DisplayName("Should throw when adding hours to non-existing student")
+  void addCompletedHoursNotFound() {
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.addCompletedHours(UUID.randomUUID(), new BigDecimal("10")));
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should save in bulk successfully")
+  void saveInBulkSuccess() {
+    School school = factory.createSchool();
+    Course course = factory.createCourse(school);
+    em.flush();
+
+    StudentCreateCommand cmd1 = buildCreateCommand(course.getId());
+    StudentCreateCommand cmd2 = buildCreateCommand(course.getId());
+
+    List<Student> students = service.saveInBulk(List.of(cmd1, cmd2));
+    assertThat(students).hasSize(2);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for empty bulk")
+  void saveInBulkEmpty() {
+    assertThat(service.saveInBulk(List.of())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should delegate existsAnyByCourseId to repo")
+  void existsAnyByCourseId() {
+    assertThat(service.existsAnyByCourseId(UUID.randomUUID())).isFalse();
+  }
+
+  /* --- helpers --- */
+
+  private StudentCreateCommand buildCreateCommand(UUID courseId) {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    AccountCreateCommand accCmd =
+        new AccountCreateCommand(
+            cpf + "@test.com", AccountType.STUDENT, "hash",
+            new UserCreateCommand(cpf, "Test Student " + cpf));
+    String reg = UUID.randomUUID().toString().substring(0, 14).toUpperCase();
+    return new StudentCreateCommand(
+        accCmd, reg, Campi.JOINVILLE, courseId,
+        new BigDecimal("100"), LocalDate.now(), LocalDate.now().plusMonths(6));
+  }
+}
+
+
+
+================================================================================
+FILE: service/utils/CourseProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.Course;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("CourseProcessor Coverage")
+class CourseProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input successfully")
+  void shouldProcessCreateInput() {
+    UUID schoolId = UUID.randomUUID();
+    Course course = CourseProcessor.processCreateInput("Computer Science", schoolId);
+
+    assertThat(course.hasFieldErrors()).isFalse();
+    assertThat(course.getName()).isEqualTo("Computer Science");
+    assertThat(course.getSchoolId()).isEqualTo(schoolId);
+  }
+
+  @Test
+  @DisplayName("Should collect errors for blank name and null schoolId")
+  void shouldCollectErrors() {
+    Course course = CourseProcessor.processCreateInput("", null);
+
+    assertThat(course.hasFieldErrors()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should update name via processUpdateInput")
+  void shouldUpdateName() {
+    Course existing = Course.factory("Old Name", UUID.randomUUID());
+    Course updated = CourseProcessor.processUpdateInput(existing, "New Name", null);
+
+    assertThat(updated.getName()).isEqualTo("New Name");
+    assertThat(updated.getSchoolId()).isEqualTo(existing.getSchoolId());
+  }
+
+  @Test
+  @DisplayName("Should update schoolId via processUpdateInput")
+  void shouldUpdateSchoolId() {
+    Course existing = Course.factory("Course", UUID.randomUUID());
+    UUID newSchoolId = UUID.randomUUID();
+    Course updated = CourseProcessor.processUpdateInput(existing, null, newSchoolId);
+
+    assertThat(updated.getSchoolId()).isEqualTo(newSchoolId);
+    assertThat(updated.getName()).isEqualTo("Course");
+  }
+
+  @Test
+  @DisplayName("Should skip update if all inputs are null/empty")
+  void shouldSkipNullUpdates() {
+    Course existing = Course.factory("Course", UUID.randomUUID());
+    Course updated = CourseProcessor.processUpdateInput(existing, null, null);
+
+    assertThat(updated).isEqualTo(existing);
+  }
+}
+
+
+
+================================================================================
+FILE: service/utils/SchoolProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import br.org.catolicasc.pug.academic.domain.School;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("SchoolProcessor Coverage")
+class SchoolProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input successfully")
+  void shouldProcessCreateInput() {
+    School school = SchoolProcessor.processCreateInput("Engineering");
+
+    assertThat(school.hasFieldErrors()).isFalse();
+    assertThat(school.getName()).isEqualTo("Engineering");
+    assertThat(school.getId()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Should collect errors for blank name")
+  void shouldCollectErrorsForBlankName() {
+    School school = SchoolProcessor.processCreateInput("   ");
+
+    assertThat(school.hasFieldErrors()).isTrue();
+  }
+
+  @Test
+  @DisplayName("Should update name via processUpdateInput")
+  void shouldUpdateName() {
+    School existing = School.factory("Old Name");
+    School updated = SchoolProcessor.processUpdateInput(existing, "New Name");
+
+    assertThat(updated.getName()).isEqualTo("New Name");
+  }
+
+  @Test
+  @DisplayName("Should skip update if name is null")
+  void shouldSkipNullName() {
+    School existing = School.factory("Keep Me");
+    School updated = SchoolProcessor.processUpdateInput(existing, null);
+
+    assertThat(updated.getName()).isEqualTo("Keep Me");
+  }
+
+  @Test
+  @DisplayName("Should skip update if name is empty")
+  void shouldSkipEmptyName() {
+    School existing = School.factory("Keep Me");
+    School updated = SchoolProcessor.processUpdateInput(existing, "");
+
+    assertThat(updated.getName()).isEqualTo("Keep Me");
+  }
+}
+
+
+
+================================================================================
+FILE: service/utils/StudentProcessorTest.java
+================================================================================
+package br.org.catolicasc.pug.academic.service.utils;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
+import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
+import br.org.catolicasc.pug.academic.domain.vos.Period;
+import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+@DisplayName("StudentProcessor Coverage")
+class StudentProcessorTest {
+
+  @Test
+  @DisplayName("Should process create input with zero completed hours")
+  void shouldProcessCreateInput() {
+    UUID accountId = UUID.randomUUID();
+    UUID courseId = UUID.randomUUID();
+    Student student =
+        StudentProcessor.processCreateInput(
+            accountId,
+            "REG12345",
+            Campi.JOINVILLE,
+            courseId,
+            new BigDecimal("100"),
+            LocalDate.now(),
+            LocalDate.now().plusMonths(6));
+
+    assertThat(student.hasFieldErrors()).isFalse();
+    assertThat(student.getAccountId()).isEqualTo(accountId);
+    assertThat(student.getCounterpartHours().getCompletedHours()).isEqualByComparingTo(BigDecimal.ZERO);
+  }
+
+  @Test
+  @DisplayName("Should update all fields via processUpdateInput")
+  void shouldUpdateAllFields() {
+    Student existing = createValidStudent();
+    UUID newCourseId = UUID.randomUUID();
+    Student updated =
+        StudentProcessor.processUpdateInput(
+            existing,
+            "NEWREG999",
+            Campi.JOINVILLE,
+            newCourseId,
+            new BigDecimal("200"),
+            LocalDate.now().plusDays(1),
+            LocalDate.now().plusMonths(12));
+
+    assertThat(updated.getAcademicRegistration().toString()).isEqualTo("NEWREG999");
+    assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
+    assertThat(updated.getCourseId()).isEqualTo(newCourseId);
+    assertThat(updated.getCounterpartHours().getRequiredHours()).isEqualByComparingTo(new BigDecimal("200"));
+  }
+
+  @Test
+  @DisplayName("Should skip update if all inputs are null/empty")
+  void shouldSkipNullUpdates() {
+    Student existing = createValidStudent();
+    Student updated =
+        StudentProcessor.processUpdateInput(existing, null, null, null, null, null, null);
+
+    assertThat(updated).isEqualTo(existing);
+  }
+
+  @Test
+  @DisplayName("Should update only startDate keeping dueDate")
+  void shouldUpdateOnlyStartDate() {
+    Student existing = createValidStudent();
+    LocalDate newStart = LocalDate.now().plusDays(10);
+    Student updated =
+        StudentProcessor.processUpdateInput(existing, null, null, null, null, newStart, null);
+
+    assertThat(updated.getPeriod().getStartDate()).isEqualTo(newStart);
+    assertThat(updated.getPeriod().getDueDate()).isEqualTo(existing.getPeriod().getDueDate());
+  }
+
+  @Test
+  @DisplayName("Should update only dueDate keeping startDate")
+  void shouldUpdateOnlyDueDate() {
+    Student existing = createValidStudent();
+    LocalDate newDue = LocalDate.now().plusMonths(12);
+    Student updated =
+        StudentProcessor.processUpdateInput(existing, null, null, null, null, null, newDue);
+
+    assertThat(updated.getPeriod().getDueDate()).isEqualTo(newDue);
+    assertThat(updated.getPeriod().getStartDate()).isEqualTo(existing.getPeriod().getStartDate());
+  }
+
+  @Test
+  @DisplayName("Should process bulk create input successfully")
+  void shouldProcessBulkCreateInput() {
+    UUID courseId = UUID.randomUUID();
+    StudentCreateCommand cmd1 = createCmd("REG001", courseId);
+    StudentCreateCommand cmd2 = createCmd("REG002", courseId);
+
+    UUID acc1 = UUID.randomUUID();
+    UUID acc2 = UUID.randomUUID();
+
+    List<Student> students =
+        StudentProcessor.processBulkCreateInput(List.of(cmd1, cmd2), List.of(acc1, acc2));
+
+    assertThat(students).hasSize(2);
+    assertThat(students.get(0).getAccountId()).isEqualTo(acc1);
+    assertThat(students.get(1).getAccountId()).isEqualTo(acc2);
+  }
+
+  @Test
+  @DisplayName("Should throw when bulk sizes mismatch")
+  void shouldThrowOnMismatchedSizes() {
+    StudentCreateCommand cmd1 = createCmd("REG001", UUID.randomUUID());
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> StudentProcessor.processBulkCreateInput(List.of(cmd1), List.of()));
+  }
+
+  @Test
+  @DisplayName("Should throw AppValidationException for invalid bulk input")
+  void shouldThrowOnInvalidBulkInput() {
+    AccountCreateCommand accCmd =
+        new AccountCreateCommand("x@x.com", AccountType.STUDENT, "hash",
+            new UserCreateCommand("12345678901", "Name"));
+    StudentCreateCommand badCmd =
+        new StudentCreateCommand(accCmd, "", null, null, null, null, null);
+
+    assertThrows(
+        AppValidationException.class,
+        () -> StudentProcessor.processBulkCreateInput(List.of(badCmd), List.of(UUID.randomUUID())));
+  }
+
+  /* --- helpers --- */
+
+  private Student createValidStudent() {
+    return Student.factory(
+        UUID.randomUUID(),
+        AcademicRegistration.factory("REG12345"),
+        Campi.JOINVILLE,
+        UUID.randomUUID(),
+        CounterpartHours.factory(new BigDecimal("100"), BigDecimal.ZERO, false),
+        Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
+  }
+
+  private StudentCreateCommand createCmd(String reg, UUID courseId) {
+    AccountCreateCommand accCmd =
+        new AccountCreateCommand("x@x.com", AccountType.STUDENT, "hash",
+            new UserCreateCommand("12345678901", "Name"));
+    return new StudentCreateCommand(
+        accCmd, reg, Campi.JOINVILLE, courseId, new BigDecimal("100"),
+        LocalDate.now(), LocalDate.now().plusMonths(6));
+  }
+}
+
+

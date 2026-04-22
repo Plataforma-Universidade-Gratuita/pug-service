@@ -180,7 +180,7 @@ public class AccountServiceImpl implements AccountService {
       throw new AppValidationException(account.getFieldErrors());
     }
 
-    if (existsByEmail(account.getEmail().toString())) {
+    if (existsByEmail(account.getEmail().getValue())) {
       LOG.warnf("Creation failed: Account with email %s already exists", account.getEmail());
       throw ExceptionHelper.accountAlreadyExists();
     }
@@ -256,7 +256,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     if (!updated.getEmail().equals(current.getEmail())
-        && existsByEmail(updated.getEmail().toString())) {
+        && existsByEmail(updated.getEmail().getValue())) {
       LOG.warnf(
           "Update failed: Account ID %s tried to use existing email %s", id, updated.getEmail());
       throw ExceptionHelper.accountAlreadyExists();

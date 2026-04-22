@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.AccountRepository;
 import br.org.catolicasc.pug.identity.domain.User;
@@ -40,12 +41,13 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should provision new user and account when user does not exist")
   void saveNewUser() {
-    UserCreateCommand userCmd = new UserCreateCommand("11144477735", "New User");
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+    UserCreateCommand userCmd = new UserCreateCommand(cpf, "New User");
     AccountCreateCommand cmd =
         new AccountCreateCommand("new@pug.com", AccountType.STUDENT, "pass", userCmd);
 
     when(userService.existsByCpf(any())).thenReturn(false);
-    User createdUser = User.factory(Cpf.factory("11144477735"), "New User");
+    User createdUser = User.factory(Cpf.factory(cpf), "New User");
     when(userService.save(any())).thenReturn(createdUser);
     when(repository.persist(any(Account.class))).thenAnswer(i -> i.getArgument(0));
 
@@ -80,13 +82,14 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should throw DuplicateResourceException on email conflict")
   void duplicateEmail() {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(userService.existsByCpf(any())).thenReturn(false);
-    when(userService.save(any())).thenReturn(User.factory(Cpf.factory("11144477735"), "Name"));
+    when(userService.save(any())).thenReturn(User.factory(Cpf.factory(cpf), "Name"));
     when(repository.existsByEmail(any())).thenReturn(true);
 
     AccountCreateCommand cmd =
         new AccountCreateCommand(
-            "exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand("11144477735", "N"));
+            "exists@pug.com", AccountType.STUDENT, "p", new UserCreateCommand(cpf, "N"));
 
     Assertions.assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -115,14 +118,14 @@ class AccountServiceImplTest {
   @Test
   @DisplayName("Should save accounts in bulk successfully")
   void saveInBulkSuccess() {
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     AccountCreateCommand cmd =
         new AccountCreateCommand(
-            "a@a.com", AccountType.STUDENT, "hash", new UserCreateCommand("11144477735", "Name"));
+            "a@a.com", AccountType.STUDENT, "hash", new UserCreateCommand(cpf, "Name"));
 
     when(repository.existsAnyByEmails(any())).thenReturn(false);
     when(userService.listByCpfs(any())).thenReturn(List.of());
-    when(userService.saveInBulk(any()))
-        .thenReturn(List.of(User.factory(Cpf.factory("11144477735"), "Name")));
+    when(userService.saveInBulk(any())).thenReturn(List.of(User.factory(Cpf.factory(cpf), "Name")));
     when(repository.persistAll(any())).thenAnswer(i -> i.getArgument(0));
 
     List<Account> saved = service.saveInBulk(List.of(cmd));

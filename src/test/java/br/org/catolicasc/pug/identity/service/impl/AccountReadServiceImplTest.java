@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -107,7 +108,7 @@ class AccountReadServiceImplTest {
   @Test
   @DisplayName("Should list account views by CPF successfully")
   void listViewsByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(queries.listByCpf(cpf))
         .thenReturn(
             List.of(

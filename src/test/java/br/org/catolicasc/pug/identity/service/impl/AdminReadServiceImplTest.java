@@ -5,6 +5,7 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
@@ -88,7 +89,7 @@ class AdminReadServiceImplTest {
   @Test
   @DisplayName("Should list admin views by CPF successfully")
   void listViewsByCpfSuccess() {
-    String cpf = "11144477735";
+    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     when(queries.listByCpf(cpf))
         .thenReturn(java.util.List.of(new AdminView(null, null, Campi.JARAGUA_DO_SUL)));
 

@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.identity.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -17,7 +18,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    User user = UserProcessor.processCreateInput("11144477735", "Test User");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Test User");
     assertThat(user.hasFieldErrors()).isFalse();
     assertThat(user.getName()).isEqualTo("Test User");
   }
@@ -25,7 +28,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should process bulk create successfully")
   void shouldProcessBulkCreate() {
-    List<UserCreateCommand> cmds = List.of(new UserCreateCommand("11144477735", "User 1"));
+    List<UserCreateCommand> cmds =
+        List.of(
+            new UserCreateCommand(TestBrazilianIdentifierGenerator.generateValidCpf(), "User 1"));
     List<User> users = UserProcessor.processBulkCreateInput(cmds);
     assertThat(users).hasSize(1);
   }
@@ -47,7 +52,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should rename user successfully")
   void shouldRenameUser() {
-    User user = UserProcessor.processCreateInput("11144477735", "Old Name");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Old Name");
     User updated = UserProcessor.processUpdateInput(user, "New Name");
     assertThat(updated.getName()).isEqualTo("New Name");
   }
@@ -55,7 +62,9 @@ class UserProcessorTest {
   @Test
   @DisplayName("Should return same instance if rename name is same or empty")
   void shouldReturnSameInstanceOnInvalidUpdate() {
-    User user = UserProcessor.processCreateInput("11144477735", "Same Name");
+    User user =
+        UserProcessor.processCreateInput(
+            TestBrazilianIdentifierGenerator.generateValidCpf(), "Same Name");
     assertThat(UserProcessor.processUpdateInput(user, "Same Name")).isEqualTo(user);
     assertThat(UserProcessor.processUpdateInput(user, null)).isEqualTo(user);
   }

@@ -412,17 +412,14 @@
                         <configuration>
                             <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
                             <includes>
+                                <include>br/org/catolicasc/pug/academic/**</include>
+                                <include>br/org/catolicasc/pug/geo/**</include>
                                 <include>br/org/catolicasc/pug/identity/**</include>
+                                <include>br/org/catolicasc/pug/partner/**</include>
                             </includes>
                             <rules>
                                 <rule>
                                     <element>PACKAGE</element>
-                                    <includes>
-                                        <include>br.org.catolicasc.pug.identity.domain.*</include>
-                                        <include>br.org.catolicasc.pug.identity.infra.*</include>
-                                        <include>br.org.catolicasc.pug.identity.presenter.*</include>
-                                        <include>br.org.catolicasc.pug.identity.service.*</include>
-                                    </includes>
                                     <limits>
                                         <limit>
                                             <counter>INSTRUCTION</counter>

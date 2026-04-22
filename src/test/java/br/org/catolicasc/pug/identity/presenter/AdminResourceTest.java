@@ -1,9 +1,12 @@
 package br.org.catolicasc.pug.identity.presenter;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
@@ -40,7 +43,11 @@ class AdminResourceTest {
   void createSuccess() {
     AdminCreateRequest req =
         new AdminCreateRequest(
-            "11144477735", "Admin Name", "admin2@pug.com", "password123", Campi.JARAGUA_DO_SUL);
+            TestBrazilianIdentifierGenerator.generateValidCpf(),
+            "Admin Name",
+            "admin2@pug.com",
+            "password123",
+            Campi.JARAGUA_DO_SUL);
 
     given()
         .contentType(ContentType.JSON)
@@ -141,5 +148,91 @@ class AdminResourceTest {
         .then()
         .statusCode(200)
         .body("data.accountResponse.id", is(acc.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/{id} - Success")
+  void getByIdSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("id", acc.getId())
+        .when()
+        .get("/identity/admins/{id}")
+        .then()
+        .statusCode(200)
+        .body("data.accountResponse.id", is(acc.getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/by-email/{email} - Success")
+  void getByEmailSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("email", acc.getEmail().getValue())
+        .when()
+        .get("/identity/admins/by-email/{email}")
+        .then()
+        .statusCode(200)
+        .body("data.accountResponse.email", is(acc.getEmail().getValue()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins - List All")
+  void listAdmins() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    utx.commit();
+
+    given()
+        .when()
+        .get("/identity/admins")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /identity/admins/by-cpf/{cpf} - Success")
+  void listByCpfSuccess() throws Exception {
+    utx.begin();
+    User user = factory.createUser();
+    Account acc = factory.createAccount(user, AccountType.ADMIN);
+    factory.createAdmin(acc);
+    em.flush();
+    utx.commit();
+
+    given()
+        .pathParam("cpf", user.getCpf().getValue())
+        .when()
+        .get("/identity/admins/by-cpf/{cpf}")
+        .then()
+        .statusCode(200)
+        .body("data[0].accountResponse.userId", is(user.getId().toString()));
   }
 }

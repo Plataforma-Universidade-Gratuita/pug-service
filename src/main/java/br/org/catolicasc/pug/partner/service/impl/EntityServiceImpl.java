@@ -87,7 +87,7 @@ public class EntityServiceImpl implements EntityService {
     if (cnpj == null) {
       return false;
     }
-    return repo.existsByCnpj(cnpj.toString());
+    return repo.existsByCnpj(cnpj.getValue());
   }
 
   /** {@inheritDoc} */

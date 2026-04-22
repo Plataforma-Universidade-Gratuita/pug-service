@@ -97,6 +97,7 @@
 │   │   │                   │   │       ├── AcademicRegistration.java
 │   │   │                   │   │       ├── CounterpartHours.java
 │   │   │                   │   │       └── Period.java
+│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── CourseMapper.java
 │   │   │                   │   │   ├── SchoolMapper.java
@@ -175,7 +176,6 @@
 │   │   │                   │   │   │   └── GeoFieldErrorCodes.java
 │   │   │                   │   │   └── vos/
 │   │   │                   │   │       └── IbgeCode.java
-│   │   │                   │   ├── generate-context.sh
 │   │   │                   │   ├── infra/
 │   │   │                   │   │   ├── CityMapper.java
 │   │   │                   │   │   ├── persistence/
@@ -563,6 +563,7 @@
 │       │                   │   │       ├── AcademicRegistrationTest.java
 │       │                   │   │       ├── CounterpartHoursTest.java
 │       │                   │   │       └── PeriodTest.java
+│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── CourseMapperTest.java
 │       │                   │   │   ├── SchoolMapperTest.java
@@ -578,12 +579,25 @@
 │       │                   │   │           ├── SchoolQueriesImplTest.java
 │       │                   │   │           └── StudentQueriesImplTest.java
 │       │                   │   ├── presenter/
-│       │                   │   │   ├── dtos/
+│       │                   │   │   ├── CourseResourceTest.java
+│       │                   │   │   ├── SchoolResourceTest.java
+│       │                   │   │   ├── StudentResourceTest.java
 │       │                   │   │   └── mappers/
+│       │                   │   │       ├── CoursePresenterTest.java
+│       │                   │   │       ├── SchoolPresenterTest.java
+│       │                   │   │       └── StudentPresenterTest.java
 │       │                   │   └── service/
-│       │                   │       ├── dtos/
 │       │                   │       ├── impl/
+│       │                   │       │   ├── CourseReadServiceImplTest.java
+│       │                   │       │   ├── CourseServiceImplTest.java
+│       │                   │       │   ├── SchoolReadServiceImplTest.java
+│       │                   │       │   ├── SchoolServiceImplTest.java
+│       │                   │       │   ├── StudentReadServiceImplTest.java
+│       │                   │       │   └── StudentServiceImplTest.java
 │       │                   │       └── utils/
+│       │                   │           ├── CourseProcessorTest.java
+│       │                   │           ├── SchoolProcessorTest.java
+│       │                   │           └── StudentProcessorTest.java
 │       │                   ├── geo/
 │       │                   │   ├── domain/
 │       │                   │   │   ├── CityTest.java
@@ -591,7 +605,6 @@
 │       │                   │   │   │   └── GeoEnumBundleKeysTest.java
 │       │                   │   │   └── vos/
 │       │                   │   │       └── IbgeCodeTest.java
-│       │                   │   ├── generate-context.sh
 │       │                   │   ├── infra/
 │       │                   │   │   ├── CityMapperTest.java
 │       │                   │   │   ├── persistence/
@@ -601,15 +614,16 @@
 │       │                   │   │       └── impl/
 │       │                   │   │           └── CityQueriesImplTest.java
 │       │                   │   ├── presenter/
-│       │                   │   │   ├── dtos/
+│       │                   │   │   ├── CityReadOnlyResourceTest.java
 │       │                   │   │   └── mappers/
+│       │                   │   │       └── CityPresenterTest.java
 │       │                   │   └── service/
-│       │                   │       ├── dtos/
-│       │                   │       ├── impl/
-│       │                   │       └── utils/
+│       │                   │       └── impl/
+│       │                   │           └── CityReadServiceImplTest.java
 │       │                   ├── helpers/
 │       │                   │   ├── BaseSearchTest.java
 │       │                   │   ├── MongoTestInitializer.java
+│       │                   │   ├── TestBrazilianIdentifierGenerator.java
 │       │                   │   ├── TestDataFactory.java
 │       │                   │   ├── TestNameGenerator.java
 │       │                   │   ├── builders/
@@ -653,6 +667,7 @@
 │       │                   │   ├── presenter/
 │       │                   │   │   ├── AccountReadOnlyResourceTest.java
 │       │                   │   │   ├── AdminResourceTest.java
+│       │                   │   │   ├── AuthResourceTest.java
 │       │                   │   │   ├── UserReadOnlyResourceTest.java
 │       │                   │   │   └── mappers/
 │       │                   │   │       ├── AccountPresenterTest.java
@@ -692,14 +707,20 @@
 │       │                   │   │           ├── EntityQueriesImplTest.java
 │       │                   │   │           └── StaffQueriesImplTest.java
 │       │                   │   ├── presenter/
-│       │                   │   │   ├── EntityResourceSecurityTest.java
-│       │                   │   │   ├── StaffResourceSecurityTest.java
-│       │                   │   │   ├── dtos/
+│       │                   │   │   ├── EntityResourceTest.java
+│       │                   │   │   ├── StaffResourceTest.java
 │       │                   │   │   └── mappers/
+│       │                   │   │       ├── EntityPresenterTest.java
+│       │                   │   │       └── StaffPresenterTest.java
 │       │                   │   └── service/
-│       │                   │       ├── dtos/
 │       │                   │       ├── impl/
+│       │                   │       │   ├── EntityReadServiceImplTest.java
+│       │                   │       │   ├── EntityServiceImplTest.java
+│       │                   │       │   ├── StaffReadServiceImplTest.java
+│       │                   │       │   └── StaffServiceImplTest.java
 │       │                   │       └── utils/
+│       │                   │           ├── EntityProcessorTest.java
+│       │                   │           └── StaffProcessorTest.java
 │       │                   ├── project/
 │       │                   │   ├── domain/
 │       │                   │   │   ├── AttendanceTest.java

@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Entity Aggregate Tests")
 class EntityTest {
 
-  private final Cnpj validCnpj = Cnpj.factory("84429695000111");
+  private final Cnpj validCnpj = Cnpj.factory(TestBrazilianIdentifierGenerator.generateValidCnpj());
   private final UUID validCityId = UUID.randomUUID();
 
   @Test
