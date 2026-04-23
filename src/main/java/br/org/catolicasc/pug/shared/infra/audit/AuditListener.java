@@ -49,7 +49,9 @@ public class AuditListener implements PanacheMongoRepository<AuditLog> {
   }
 
   private static List<FieldChange> toChangeList(Map<String, FieldChange> src) {
-    if (src == null) return null;
+    if (src == null) {
+      return null;
+    }
     return new ArrayList<>(src.values());
   }
 }

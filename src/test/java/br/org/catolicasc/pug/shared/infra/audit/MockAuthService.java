@@ -1,6 +1,8 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -36,6 +38,17 @@ public class MockAuthService implements AuthService {
   public TokenResponse login(LoginRequest request) {
     return null;
   }
+
+  @Override
+  public TokenResponse refresh(RefreshRequest request) {
+    return null;
+  }
+
+  @Override
+  public void logout(LogoutRequest request) {}
+
+  @Override
+  public void logoutAll() {}
 
   @Override
   public void requireCurrentAccountNotOfType(AccountType forbidden) {}

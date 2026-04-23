@@ -2,6 +2,8 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import java.util.UUID;
@@ -9,9 +11,10 @@ import java.util.UUID;
 /**
  * Application service interface for handling authentication and authorization flows.
  *
- * <p>This service orchestrates credential verification and the generation of secure JSON Web Tokens
- * (JWT) for authenticated accounts. It also exposes helper methods to resolve the current
- * authenticated principal from the security context.
+ * <p>This service orchestrates credential verification, the generation of secure JSON Web Tokens
+ * (JWT) as short-lived access tokens, and the management of long-lived refresh tokens for session
+ * continuity. It also exposes helper methods to resolve the current authenticated principal from
+ * the security context.
  */
 public interface AuthService {
 
@@ -46,20 +49,50 @@ public interface AuthService {
   UUID getCurrentUserId();
 
   /**
-   * Authenticates a user based on their credentials and generates a JSON Web Token (JWT).
+   * Authenticates a user based on their credentials and generates an access/refresh token pair.
    *
    * <p>This method evaluates the provided email and plaintext password. If the credentials are
-   * valid and the underlying {@link Account} is active, it issues a signed JWT containing the
-   * user's roles and identity claims.
+   * valid and the underlying {@link Account} is active, it issues a signed short-lived JWT access
+   * token and a long-lived opaque refresh token persisted in the database.
    *
    * @param request the structured {@link LoginRequest} containing the user's email and plaintext
    *     password
-   * @return a {@link TokenResponse} containing the generated JWT, account identifier, role, and
-   *     lifespan
+   * @return a {@link TokenResponse} containing the access token, refresh token, account identifier,
+   *     role, and lifespans
    * @throws jakarta.ws.rs.NotAuthorizedException if the account cannot be found, the password does
    *     not match, or the account is currently marked as inactive
    */
   TokenResponse login(LoginRequest request);
+
+  /**
+   * Validates a refresh token and issues a new short-lived access token.
+   *
+   * <p>The refresh token itself remains unchanged until it expires or is explicitly revoked.
+   *
+   * @param request the structured {@link RefreshRequest} containing the opaque refresh token
+   * @return a {@link TokenResponse} with a fresh access token and the same refresh token
+   * @throws jakarta.ws.rs.NotAuthorizedException if the refresh token is invalid, expired, or the
+   *     associated account is inactive
+   */
+  TokenResponse refresh(RefreshRequest request);
+
+  /**
+   * Revokes a refresh token, effectively logging the user out.
+   *
+   * <p>After this operation, the refresh token can no longer be used to obtain new access tokens.
+   * Any existing access tokens will expire naturally.
+   *
+   * @param request the structured {@link LogoutRequest} containing the refresh token to revoke
+   */
+  void logout(LogoutRequest request);
+
+  /**
+   * Revokes all refresh tokens for the currently authenticated account, logging out from all
+   * devices/sessions.
+   *
+   * @throws jakarta.ws.rs.NotAuthorizedException if there is no authenticated principal
+   */
+  void logoutAll();
 
   /**
    * Ensures that the currently authenticated account is not of the given forbidden type.

@@ -55,9 +55,9 @@ public final class DiffUtils {
   /**
    * Compares two objects of the same type and returns a map of changed fields.
    *
-   * <p>Complex nested objects are recursively diffed, producing dot-notation keys
-   * (e.g., {@code "address.street"}). Primitive types, enums, strings, UUIDs, and temporal
-   * types are compared directly and their values are stored as strings.
+   * <p>Complex nested objects are recursively diffed, producing dot-notation keys (e.g., {@code
+   * "address.street"}). Primitive types, enums, strings, UUIDs, and temporal types are compared
+   * directly and their values are stored as strings.
    *
    * @param oldObj the original state of the object
    * @param newObj the new state of the object
@@ -92,7 +92,8 @@ public final class DiffUtils {
 
         if (isLeafType(field.getType())) {
           diffs.put(qualifiedName, new FieldChange(qualifiedName, oldVal, newVal));
-        } else if (oldVal != null && newVal != null
+        } else if (oldVal != null
+            && newVal != null
             && oldVal.getClass().equals(newVal.getClass())) {
           // Recurse into nested complex objects
           diffRecursive(qualifiedName, oldVal, newVal, diffs);
@@ -106,9 +107,7 @@ public final class DiffUtils {
     }
   }
 
-  /**
-   * Determines whether a type should be compared directly (leaf) vs recursed into.
-   */
+  /** Determines whether a type should be compared directly (leaf) vs recursed into. */
   private static boolean isLeafType(Class<?> type) {
     return type.isPrimitive()
         || type.isEnum()

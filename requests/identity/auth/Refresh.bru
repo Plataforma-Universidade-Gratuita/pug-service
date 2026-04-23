@@ -1,11 +1,11 @@
 meta {
-  name: Login
+  name: Refresh
   type: http
-  seq: 1
+  seq: 2
 }
 
 post {
-  url: {{baseUrl}}/auth/login
+  url: {{baseUrl}}/auth/refresh
   body: json
   auth: none
 }
@@ -17,14 +17,13 @@ headers {
 
 body:json {
   {
-    "email": "admin@pug.com",
-    "password": "admin"
+    "refreshToken": "{{refreshToken}}"
   }
 }
 
 script:post-response {
   if (res.getStatus() === 200) {
     bru.setEnvVar("jwtToken", res.getBody().data.token);
-    bru.setEnvVar("refreshToken", res.getBody().data.refreshToken);
   }
 }
+

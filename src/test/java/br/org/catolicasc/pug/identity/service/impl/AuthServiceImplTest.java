@@ -1,13 +1,20 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
+import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
+import br.org.catolicasc.pug.identity.infra.persistence.RefreshTokenEntity;
+import br.org.catolicasc.pug.identity.infra.persistence.impl.RefreshTokenRepositoryImpl;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
@@ -19,6 +26,10 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
+import java.security.Principal;
+import java.time.OffsetDateTime;
+import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.eclipse.microprofile.jwt.JsonWebToken;
@@ -34,6 +45,7 @@ class AuthServiceImplTest {
   @InjectMock AccountService accountService;
   @InjectMock PasswordService passwordService;
   @InjectMock SecurityIdentity securityIdentity;
+  @InjectMock RefreshTokenRepositoryImpl refreshTokenRepository;
 
   @Test
   @DisplayName("Should login successfully and return token")
@@ -53,6 +65,7 @@ class AuthServiceImplTest {
     TokenResponse response = authService.login(new LoginRequest(email, raw));
 
     assertThat(response.token()).isNotBlank();
+    assertThat(response.refreshToken()).isNotBlank();
     assertThat(response.accountId()).isEqualTo(acc.getId());
   }
 
@@ -103,6 +116,167 @@ class AuthServiceImplTest {
 
     assertThrows(
         NotAuthorizedException.class, () -> authService.login(new LoginRequest(email, "pass")));
+  }
+
+  @Test
+  @DisplayName("Should refresh token successfully")
+  void refreshSuccess() {
+    String rawToken = "valid-refresh-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+    UUID accId = UuidCreator.getTimeOrderedEpoch();
+
+    AccountEntity accountEntity = new AccountEntity();
+    accountEntity.setId(accId);
+    accountEntity.setActive(true);
+
+    RefreshTokenEntity entity = mock(RefreshTokenEntity.class);
+    when(entity.getExpiresAt()).thenReturn(OffsetDateTime.now().plusHours(1));
+    when(entity.getAccount()).thenReturn(accountEntity);
+
+    when(refreshTokenRepository.findByTokenHash(hash)).thenReturn(Optional.of(entity));
+
+    Account account =
+        Account.factory(accId, Email.factory("r@pug.com"), AccountType.STUDENT, "hash");
+    when(accountService.getById(accId)).thenReturn(account);
+
+    TokenResponse response = authService.refresh(new RefreshRequest(rawToken));
+
+    assertThat(response.token()).isNotBlank();
+    assertThat(response.refreshToken()).isEqualTo(rawToken);
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when refresh token not found")
+  void refreshTokenNotFound() {
+    String rawToken = "unknown-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+    when(refreshTokenRepository.findByTokenHash(hash)).thenReturn(Optional.empty());
+
+    assertThrows(
+        NotAuthorizedException.class, () -> authService.refresh(new RefreshRequest(rawToken)));
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when refresh token is expired")
+  void refreshTokenExpired() {
+    String rawToken = "expired-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+
+    RefreshTokenEntity entity = mock(RefreshTokenEntity.class);
+    when(entity.getExpiresAt()).thenReturn(OffsetDateTime.now().minusHours(1));
+
+    when(refreshTokenRepository.findByTokenHash(hash)).thenReturn(Optional.of(entity));
+
+    assertThrows(
+        NotAuthorizedException.class, () -> authService.refresh(new RefreshRequest(rawToken)));
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when refreshing with inactive account")
+  void refreshInactiveAccount() {
+    String rawToken = "inactive-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+
+    AccountEntity accountEntity = new AccountEntity();
+    accountEntity.setId(UuidCreator.getTimeOrderedEpoch());
+    accountEntity.setActive(false);
+
+    RefreshTokenEntity entity = mock(RefreshTokenEntity.class);
+    when(entity.getExpiresAt()).thenReturn(OffsetDateTime.now().plusHours(1));
+    when(entity.getAccount()).thenReturn(accountEntity);
+
+    when(refreshTokenRepository.findByTokenHash(hash)).thenReturn(Optional.of(entity));
+
+    assertThrows(
+        NotAuthorizedException.class, () -> authService.refresh(new RefreshRequest(rawToken)));
+  }
+
+  @Test
+  @DisplayName("Should logout successfully when token exists")
+  void logoutSuccess() {
+    String rawToken = "some-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+    when(refreshTokenRepository.deleteByTokenHash(hash)).thenReturn(1L);
+
+    assertDoesNotThrow(() -> authService.logout(new LogoutRequest(rawToken)));
+    verify(refreshTokenRepository).deleteByTokenHash(hash);
+  }
+
+  @Test
+  @DisplayName("Should handle logout gracefully when token does not exist")
+  void logoutUnknownToken() {
+    String rawToken = "nonexistent-token";
+    String hash = AuthServiceImpl.sha256(rawToken);
+    when(refreshTokenRepository.deleteByTokenHash(hash)).thenReturn(0L);
+
+    assertDoesNotThrow(() -> authService.logout(new LogoutRequest(rawToken)));
+  }
+
+  @Test
+  @DisplayName("Should revoke all refresh tokens for current account")
+  void logoutAllSuccess() {
+    UUID accId = UuidCreator.getTimeOrderedEpoch();
+
+    JsonWebToken jwtMock = mock(JsonWebToken.class);
+    when(securityIdentity.isAnonymous()).thenReturn(false);
+    when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
+    when(jwtMock.getClaim("accountId")).thenReturn(accId.toString());
+    when(refreshTokenRepository.deleteByAccountId(accId)).thenReturn(3L);
+
+    assertDoesNotThrow(() -> authService.logoutAll());
+    verify(refreshTokenRepository).deleteByAccountId(accId);
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when identity is anonymous")
+  void getCurrentAccountTypeAnonymous() {
+    when(securityIdentity.isAnonymous()).thenReturn(true);
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountType());
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when principal is not JWT")
+  void getCurrentAccountTypeNonJwtPrincipal() {
+    when(securityIdentity.isAnonymous()).thenReturn(false);
+    when(securityIdentity.getPrincipal()).thenReturn(mock(Principal.class));
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountType());
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when groups claim is empty")
+  void getCurrentAccountTypeEmptyGroups() {
+    JsonWebToken jwtMock = mock(JsonWebToken.class);
+    when(securityIdentity.isAnonymous()).thenReturn(false);
+    when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
+    when(jwtMock.getGroups()).thenReturn(Collections.emptySet());
+
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountType());
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when group value is invalid")
+  void getCurrentAccountTypeInvalidGroup() {
+    JsonWebToken jwtMock = mock(JsonWebToken.class);
+    when(securityIdentity.isAnonymous()).thenReturn(false);
+    when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
+    when(jwtMock.getGroups()).thenReturn(Set.of("INVALID_ROLE"));
+
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountType());
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when identity is null/anonymous for claims")
+  void getRequiredClaimAnonymous() {
+    when(securityIdentity.isAnonymous()).thenReturn(true);
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountId());
+  }
+
+  @Test
+  @DisplayName("Should throw NotAuthorized when principal is not JWT for claims")
+  void getRequiredClaimNonJwt() {
+    when(securityIdentity.isAnonymous()).thenReturn(false);
+    when(securityIdentity.getPrincipal()).thenReturn(mock(Principal.class));
+    assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountId());
   }
 
   @Test
@@ -179,5 +353,13 @@ class AuthServiceImplTest {
     when(jwtMock.getClaim("accountId")).thenReturn(null);
 
     assertThrows(NotAuthorizedException.class, () -> authService.getCurrentAccountId());
+  }
+
+  @Test
+  @DisplayName("sha256 should produce consistent hex output")
+  void sha256Consistency() {
+    String hash1 = AuthServiceImpl.sha256("test");
+    String hash2 = AuthServiceImpl.sha256("test");
+    assertThat(hash1).isEqualTo(hash2).hasSize(64);
   }
 }

@@ -42,7 +42,10 @@ public final class TestNameGenerator {
    * @return a unique registration string
    */
   public static String generateUniqueRegistration() {
-    return uniqueSuffix().toUpperCase(Locale.ROOT).concat("-").concat(uniqueSuffix().toUpperCase(Locale.ROOT));
+    return uniqueSuffix()
+        .toUpperCase(Locale.ROOT)
+        .concat("-")
+        .concat(uniqueSuffix().toUpperCase(Locale.ROOT));
   }
 
   /**

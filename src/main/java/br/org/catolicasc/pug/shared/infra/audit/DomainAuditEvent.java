@@ -4,9 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 
-/**
- * Event payload for triggering an asynchronous audit log entry.
- */
+/** Event payload for triggering an asynchronous audit log entry. */
 public record DomainAuditEvent(
     String entityName,
     UUID entityId,

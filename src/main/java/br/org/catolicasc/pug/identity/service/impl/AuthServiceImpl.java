@@ -1,7 +1,12 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
+import br.org.catolicasc.pug.identity.infra.persistence.RefreshTokenEntity;
+import br.org.catolicasc.pug.identity.infra.persistence.impl.RefreshTokenRepositoryImpl;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountService;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -9,10 +14,18 @@ import br.org.catolicasc.pug.identity.service.PasswordService;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.OffsetDateTime;
+import java.util.HexFormat;
 import java.util.Set;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -20,10 +33,12 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link AuthService} utilizing SmallRye JWT.
+ * Implementation of the {@link AuthService} utilizing SmallRye JWT for short-lived access tokens
+ * and database-persisted opaque refresh tokens for session management.
  *
- * <p>This application-scoped bean verifies credentials via the AccountService and signs a new JWT
- * containing the user's role and identifiers as claims.
+ * <p>This application-scoped bean verifies credentials via the AccountService, signs a new JWT
+ * containing the user's role and identifiers as claims, and manages refresh token lifecycle
+ * (creation, validation, revocation).
  */
 @ApplicationScoped
 public class AuthServiceImpl implements AuthService {
@@ -36,8 +51,15 @@ public class AuthServiceImpl implements AuthService {
 
   @Inject SecurityIdentity identity;
 
-  @ConfigProperty(name = "smallrye.jwt.new-token.lifespan", defaultValue = "28800")
-  long lifespan;
+  @Inject RefreshTokenRepositoryImpl refreshTokenRepository;
+
+  @Inject EntityManager em;
+
+  @ConfigProperty(name = "pug.auth.access-token.lifespan", defaultValue = "900")
+  long accessTokenLifespan;
+
+  @ConfigProperty(name = "pug.auth.refresh-token.lifespan", defaultValue = "604800")
+  long refreshTokenLifespan;
 
   /** {@inheritDoc} */
   @Override
@@ -81,10 +103,7 @@ public class AuthServiceImpl implements AuthService {
   /**
    * Retrieves a required string claim from the current JWT principal.
    *
-   * <p>If there is no authenticated principal, the principal is not a {@link JsonWebToken}, or the
-   * claim is missing, this method throws the standardized unauthorized exception.
-   *
-   * @param claimName the name of the claim to resolve (e.g., {@code "accountId"}, {@code "userId"})
+   * @param claimName the name of the claim to resolve
    * @return the claim value as a non-null {@link String}
    * @throws jakarta.ws.rs.NotAuthorizedException if the claim cannot be resolved
    */
@@ -108,6 +127,7 @@ public class AuthServiceImpl implements AuthService {
 
   /** {@inheritDoc} */
   @Override
+  @Transactional
   public TokenResponse login(LoginRequest request) {
     LOG.debugf("Attempting authentication for email: %s", request.email());
 
@@ -129,15 +149,74 @@ public class AuthServiceImpl implements AuthService {
       throw ExceptionHelper.unauthorized();
     }
 
-    String token =
-        Jwt.upn(account.getEmail().getValue())
-            .groups(Set.of(account.getAccountType().name()))
-            .claim("accountId", account.getId().toString())
-            .claim("userId", account.getUserId().toString())
-            .sign();
+    String accessToken = signAccessToken(account);
+    String rawRefreshToken = UUID.randomUUID().toString();
+    persistRefreshToken(account.getId(), rawRefreshToken);
 
     LOG.infof("Authentication successful for account %s", account.getId());
-    return new TokenResponse(token, account.getId(), account.getAccountType(), lifespan);
+    return new TokenResponse(
+        accessToken,
+        rawRefreshToken,
+        account.getId(),
+        account.getAccountType(),
+        accessTokenLifespan,
+        refreshTokenLifespan);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  @Transactional
+  public TokenResponse refresh(RefreshRequest request) {
+    String hash = sha256(request.refreshToken());
+
+    RefreshTokenEntity entity =
+        refreshTokenRepository.findByTokenHash(hash).orElseThrow(ExceptionHelper::unauthorized);
+
+    if (entity.getExpiresAt().isBefore(OffsetDateTime.now())) {
+      refreshTokenRepository.deleteByTokenHash(hash);
+      LOG.warn("Refresh token expired, deleting it");
+      throw ExceptionHelper.unauthorized();
+    }
+
+    AccountEntity accountEntity = entity.getAccount();
+    if (Boolean.FALSE.equals(accountEntity.getActive())) {
+      LOG.warnf("Refresh failed: Account %s is deactivated", accountEntity.getId());
+      throw ExceptionHelper.unauthorized();
+    }
+
+    Account account = accountService.getById(accountEntity.getId());
+    String accessToken = signAccessToken(account);
+
+    LOG.infof("Access token refreshed for account %s", account.getId());
+    return new TokenResponse(
+        accessToken,
+        request.refreshToken(),
+        account.getId(),
+        account.getAccountType(),
+        accessTokenLifespan,
+        refreshTokenLifespan);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  @Transactional
+  public void logout(LogoutRequest request) {
+    String hash = sha256(request.refreshToken());
+    long deleted = refreshTokenRepository.deleteByTokenHash(hash);
+    if (deleted > 0) {
+      LOG.info("Refresh token revoked successfully");
+    } else {
+      LOG.warn("Logout attempted with unknown refresh token");
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  @Transactional
+  public void logoutAll() {
+    UUID accountId = getCurrentAccountId();
+    long deleted = refreshTokenRepository.deleteByAccountId(accountId);
+    LOG.infof("Revoked %d refresh token(s) for account %s", deleted, accountId);
   }
 
   /** {@inheritDoc} */
@@ -155,6 +234,59 @@ public class AuthServiceImpl implements AuthService {
     AccountType current = getCurrentAccountType();
     if (current != allowed) {
       throw ExceptionHelper.unauthorized();
+    }
+  }
+
+  /**
+   * Signs a short-lived JWT access token for the given account.
+   *
+   * @param account the authenticated account
+   * @return the signed JWT string
+   */
+  private String signAccessToken(Account account) {
+    return Jwt.upn(account.getEmail().getValue())
+        .groups(Set.of(account.getAccountType().name()))
+        .claim("accountId", account.getId().toString())
+        .claim("userId", account.getUserId().toString())
+        .sign();
+  }
+
+  /**
+   * Persists a hashed refresh token linked to the given account.
+   *
+   * @param accountId the account UUID
+   * @param rawToken the raw opaque refresh token string
+   */
+  private void persistRefreshToken(UUID accountId, String rawToken) {
+    AccountEntity accountRef = em.getReference(AccountEntity.class, accountId);
+
+    OffsetDateTime now = OffsetDateTime.now();
+    RefreshTokenEntity entity =
+        RefreshTokenEntity.builder()
+            .id(UuidCreator.getTimeOrderedEpoch())
+            .account(accountRef)
+            .tokenHash(sha256(rawToken))
+            .expiresAt(now.plusSeconds(refreshTokenLifespan))
+            .createdAt(now)
+            .updatedAt(now)
+            .build();
+
+    refreshTokenRepository.persist(entity);
+  }
+
+  /**
+   * Computes the SHA-256 hex digest of the given input.
+   *
+   * @param input the string to hash
+   * @return the lowercase hex-encoded SHA-256 digest
+   */
+  static String sha256(String input) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
+      return HexFormat.of().formatHex(digest);
+    } catch (NoSuchAlgorithmException e) {
+      throw new IllegalStateException("SHA-256 algorithm not available", e);
     }
   }
 }

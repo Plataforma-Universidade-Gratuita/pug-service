@@ -31,9 +31,7 @@ public class AuditLog {
   /** The type of operation performed (e.g., "CREATE", "UPDATE", "DELETE"). */
   private String action;
 
-  /**
-   * A list of field-level changes capturing old and new values.
-   */
+  /** A list of field-level changes capturing old and new values. */
   private List<FieldChange> changes;
 
   /** The unique identifier (Account ID) of the user who performed the change. */
