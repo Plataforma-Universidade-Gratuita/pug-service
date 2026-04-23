@@ -15,6 +15,10 @@ headers {
   Content-Type: application/json
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 body:json {
   [
     {
@@ -42,8 +46,4 @@ body:json {
       "dueDate": "2028-12-15"
     }
   ]
-}
-
-auth:bearer {
-  token: {{jwtToken}}
 }

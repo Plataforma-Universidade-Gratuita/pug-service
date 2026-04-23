@@ -3,20 +3,22 @@ package br.org.catolicasc.pug.shared.utils;
 import br.org.catolicasc.pug.shared.infra.audit.FieldChange;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.lang.reflect.Field;
+import java.time.temporal.Temporal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Utility class for calculating the differences between two objects using reflection.
  *
  * <p>This class provides mechanisms to inspect two domain objects and determine which specific
  * fields have changed, making it ideal for auditing state transitions in an immutable domain model.
+ * Complex nested objects are recursively diffed with dot-notation field names.
  */
 @SuppressFBWarnings("DP_DO_INSIDE_DO_PRIVILEGED")
 public final class DiffUtils {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private DiffUtils() {}
 
   /**
@@ -53,9 +55,9 @@ public final class DiffUtils {
   /**
    * Compares two objects of the same type and returns a map of changed fields.
    *
-   * <p>The map uses the field name as the key and a {@link FieldChange} record containing the old
-   * and new values as the value. Fields explicitly listed in the {@code ignoredFields} set are
-   * skipped during comparison, which is useful for filtering sensitive data like password hashes.
+   * <p>Complex nested objects are recursively diffed, producing dot-notation keys
+   * (e.g., {@code "address.street"}). Primitive types, enums, strings, UUIDs, and temporal
+   * types are compared directly and their values are stored as strings.
    *
    * @param oldObj the original state of the object
    * @param newObj the new state of the object
@@ -66,8 +68,15 @@ public final class DiffUtils {
     if (oldObj == null || newObj == null) {
       return diffs;
     }
+    diffRecursive("", oldObj, newObj, diffs);
+    return diffs;
+  }
 
+  private static void diffRecursive(
+      String prefix, Object oldObj, Object newObj, Map<String, FieldChange> diffs) {
     for (Field field : oldObj.getClass().getDeclaredFields()) {
+      String qualifiedName = prefix.isEmpty() ? field.getName() : prefix + "." + field.getName();
+
       if (Ignored.all().contains(field.getName())) {
         continue;
       }
@@ -77,23 +86,40 @@ public final class DiffUtils {
         Object oldVal = field.get(oldObj);
         Object newVal = field.get(newObj);
 
-        if (hasChanged(oldVal, newVal)) {
-          diffs.put(field.getName(), new FieldChange(oldVal, newVal));
+        if (!hasChanged(oldVal, newVal)) {
+          continue;
+        }
+
+        if (isLeafType(field.getType())) {
+          diffs.put(qualifiedName, new FieldChange(qualifiedName, oldVal, newVal));
+        } else if (oldVal != null && newVal != null
+            && oldVal.getClass().equals(newVal.getClass())) {
+          // Recurse into nested complex objects
+          diffRecursive(qualifiedName, oldVal, newVal, diffs);
+        } else {
+          // One is null or types differ — store as string representation
+          diffs.put(qualifiedName, new FieldChange(qualifiedName, oldVal, newVal));
         }
       } catch (IllegalAccessException e) {
         // Silently skip fields that cannot be accessed via reflection
       }
     }
-    return diffs;
   }
 
   /**
-   * Helper method to determine if two values are different.
-   *
-   * @param oldVal the original value
-   * @param newVal the new value
-   * @return {@code true} if the values are different, {@code false} otherwise
+   * Determines whether a type should be compared directly (leaf) vs recursed into.
    */
+  private static boolean isLeafType(Class<?> type) {
+    return type.isPrimitive()
+        || type.isEnum()
+        || CharSequence.class.isAssignableFrom(type)
+        || Number.class.isAssignableFrom(type)
+        || Boolean.class.equals(type)
+        || UUID.class.equals(type)
+        || Temporal.class.isAssignableFrom(type)
+        || type.getName().startsWith("java.");
+  }
+
   private static boolean hasChanged(Object oldVal, Object newVal) {
     if (oldVal == null && newVal == null) {
       return false;

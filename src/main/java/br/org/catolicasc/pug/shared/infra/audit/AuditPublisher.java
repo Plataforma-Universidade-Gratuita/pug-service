@@ -72,7 +72,7 @@ public class AuditPublisher {
     UUID userId = authService.getCurrentAccountId();
     if (!changes.isEmpty()) {
       auditEvent.fireAsync(
-          new DomainAuditEvent(entityName, entityId, "UPDATE", (Map) changes, userId, cid));
+          new DomainAuditEvent(entityName, entityId, "UPDATE", changes, userId, cid));
     }
   }
 }

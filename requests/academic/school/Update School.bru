@@ -15,12 +15,12 @@ headers {
   Content-Type: application/json
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 body:json {
   {
     "name": "Centro de Ciências Tecnológicas Atualizado"
   }
-}
-
-auth:bearer {
-  token: {{jwtToken}}
 }

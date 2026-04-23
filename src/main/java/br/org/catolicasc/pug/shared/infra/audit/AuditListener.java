@@ -4,6 +4,10 @@ import io.quarkus.mongodb.panache.PanacheMongoRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.ObservesAsync;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.jboss.logging.Logger;
 
 /**
@@ -30,9 +34,9 @@ public class AuditListener implements PanacheMongoRepository<AuditLog> {
               .entityName(event.entityName())
               .entityId(event.entityId())
               .action(event.action())
-              .changes(event.changes())
+              .changes(toChangeList(event.changes()))
               .performedBy(event.performedBy())
-              .timestamp(OffsetDateTime.now())
+              .timestamp(OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME))
               .correlationId(event.correlationId())
               .build();
 
@@ -42,5 +46,10 @@ public class AuditListener implements PanacheMongoRepository<AuditLog> {
       // Catch exception to prevent the async observer from failing the entire process
       LOG.errorf(e, "Failed to persist audit log for entity: %s", event.entityName());
     }
+  }
+
+  private static List<FieldChange> toChangeList(Map<String, FieldChange> src) {
+    if (src == null) return null;
+    return new ArrayList<>(src.values());
   }
 }

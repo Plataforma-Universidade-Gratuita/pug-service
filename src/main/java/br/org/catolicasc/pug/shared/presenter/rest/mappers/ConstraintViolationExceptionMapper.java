@@ -15,6 +15,7 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
 /**
  * Mapper to catch {@link jakarta.validation.ConstraintViolationException} (Bean Validation) and
@@ -27,6 +28,8 @@ import java.util.stream.Collectors;
 @Provider
 public class ConstraintViolationExceptionMapper
     implements ExceptionMapper<ConstraintViolationException> {
+
+  private static final Logger LOG = Logger.getLogger(ConstraintViolationExceptionMapper.class);
 
   @Inject I18n i18n;
 
@@ -41,6 +44,7 @@ public class ConstraintViolationExceptionMapper
    */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
+    LOG.debugf(ex, "Bean validation constraint violation");
     List<FieldErrorsResponse> groupedViolations =
         ex.getConstraintViolations().stream()
             .collect(

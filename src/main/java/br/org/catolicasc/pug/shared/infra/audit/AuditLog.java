@@ -1,9 +1,8 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
-import java.time.OffsetDateTime;
 import java.util.Collections;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,16 +32,15 @@ public class AuditLog {
   private String action;
 
   /**
-   * A map capturing the structural changes, typically mapping field names to their old and new
-   * values.
+   * A list of field-level changes capturing old and new values.
    */
-  private Map<String, Object> changes;
+  private List<FieldChange> changes;
 
   /** The unique identifier (Account ID) of the user who performed the change. */
   private UUID performedBy;
 
-  /** The exact timestamp when the audit log entry was created. */
-  private OffsetDateTime timestamp;
+  /** ISO-8601 formatted timestamp string. */
+  private String timestamp;
 
   /**
    * The correlation ID extracted from the request, used to trace the audit log to specific API
@@ -50,14 +48,14 @@ public class AuditLog {
    */
   private String correlationId;
 
-  public Map<String, Object> getChanges() {
-    return changes != null ? Collections.unmodifiableMap(changes) : null;
+  public List<FieldChange> getChanges() {
+    return changes != null ? Collections.unmodifiableList(changes) : null;
   }
 
-  /** Custom builder method to ensure immutability of the changes map. */
+  /** Custom builder method to ensure immutability of the changes list. */
   public static class AuditLogBuilder {
-    public AuditLogBuilder changes(Map<String, Object> changes) {
-      this.changes = (changes != null) ? new java.util.HashMap<>(changes) : null;
+    public AuditLogBuilder changes(List<FieldChange> changes) {
+      this.changes = (changes != null) ? new java.util.ArrayList<>(changes) : null;
       return this;
     }
   }

@@ -21,6 +21,20 @@ class DiffUtilsTest {
     private String email; // Should be ignored
   }
 
+  @Getter
+  @AllArgsConstructor
+  static class Address {
+    private String street;
+    private String city;
+  }
+
+  @Getter
+  @AllArgsConstructor
+  static class Person {
+    private String name;
+    private Address address;
+  }
+
   @Nested
   @DisplayName("Method: diff")
   class DiffTests {
@@ -35,11 +49,24 @@ class DiffUtilsTest {
 
       // name and age should be detected
       assertThat(result).hasSize(2);
-      assertThat(result.get("name")).isEqualTo(new FieldChange("Original", "Updated"));
-      assertThat(result.get("age")).isEqualTo(new FieldChange(20, 25));
+      assertThat(result.get("name")).isEqualTo(new FieldChange("name", "Original", "Updated"));
+      assertThat(result.get("age")).isEqualTo(new FieldChange("age", "20", "25"));
 
       // email is in Ignored enum, should not be present
       assertThat(result).doesNotContainKey("email");
+    }
+
+    @Test
+    @DisplayName("Should recursively diff nested objects with dot-notation keys")
+    void shouldRecursivelyDiffNestedObjects() {
+      Person oldPerson = new Person("Alice", new Address("Main St", "Springfield"));
+      Person newPerson = new Person("Alice", new Address("Oak Ave", "Springfield"));
+
+      var result = DiffUtils.diff(oldPerson, newPerson);
+
+      assertThat(result).hasSize(1);
+      assertThat(result.get("address.street"))
+          .isEqualTo(new FieldChange("address.street", "Main St", "Oak Ave"));
     }
 
     @Test

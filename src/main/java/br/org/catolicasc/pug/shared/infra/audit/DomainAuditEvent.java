@@ -6,23 +6,12 @@ import java.util.UUID;
 
 /**
  * Event payload for triggering an asynchronous audit log entry.
- *
- * <p>This record is used to propagate change information from the application services to the
- * asynchronous audit listener, allowing decoupled recording of modifications without impacting the
- * primary business transaction.
- *
- * @param entityName the name of the domain entity being modified
- * @param entityId the unique identifier of the modified entity
- * @param action the type of action performed (e.g., "UPDATE")
- * @param changes a {@link Map} representing the differences or state captured during the operation
- * @param performedBy the user who triggered that transaction
- * @param correlationId the correlation identifier for distributed systems
  */
 public record DomainAuditEvent(
     String entityName,
     UUID entityId,
     String action,
-    Map<String, Object> changes,
+    Map<String, FieldChange> changes,
     UUID performedBy,
     String correlationId) {
 
@@ -30,7 +19,7 @@ public record DomainAuditEvent(
     changes = (changes != null) ? Map.copyOf(changes) : null;
   }
 
-  public Map<String, Object> changes() {
+  public Map<String, FieldChange> changes() {
     return changes != null ? Collections.unmodifiableMap(changes) : null;
   }
 }

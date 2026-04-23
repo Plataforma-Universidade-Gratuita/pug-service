@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.partner.presenter.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 
@@ -21,5 +22,5 @@ import jakarta.validation.constraints.Size;
  */
 public record StaffUpdateRequest(
     @Size(max = 100) String name,
-    @Email @Size(max = 100) String emailString,
+    @Email @Size(max = 100) @JsonProperty("email") String emailString,
     @Size(max = 100) String password) {}

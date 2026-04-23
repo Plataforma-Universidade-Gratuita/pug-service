@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.partner.presenter.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -19,7 +20,7 @@ import java.util.UUID;
  * @param address the physical street address (optional, max 254 characters)
  */
 public record EntityCreateRequest(
-    @NotBlank String cnpjString,
+    @NotBlank @JsonProperty("cnpj") String cnpjString,
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID cityId,
     @Size(max = 254) String address) {}

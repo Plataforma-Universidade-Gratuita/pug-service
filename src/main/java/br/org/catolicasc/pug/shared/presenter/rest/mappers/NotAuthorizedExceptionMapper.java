@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
 
 /**
  * Maps {@link NotAuthorizedException} to an HTTP 401 (Unauthorized) response.
@@ -20,10 +21,13 @@ import jakarta.ws.rs.ext.Provider;
 @Provider
 public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthorizedException> {
 
+  private static final Logger LOG = Logger.getLogger(NotAuthorizedExceptionMapper.class);
+
   @Inject I18n i18n;
 
   @Override
   public Response toResponse(NotAuthorizedException ex) {
+    LOG.debugf(ex, "Unauthorized access attempt");
     String code = SharedErrorCodes.UNAUTHORIZED_ERROR.getCode();
     String message = i18n.translation(SharedErrorCodes.UNAUTHORIZED_ERROR.getBundleKey());
 

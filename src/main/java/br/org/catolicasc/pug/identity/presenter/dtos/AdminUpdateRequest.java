@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.presenter.dtos;
 
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -20,6 +21,6 @@ import jakarta.validation.constraints.Size;
  */
 public record AdminUpdateRequest(
     @Size(max = 150) String name,
-    String emailString,
+    @JsonProperty("email") String emailString,
     @Size(max = 255) String password,
     Campi campus) {}

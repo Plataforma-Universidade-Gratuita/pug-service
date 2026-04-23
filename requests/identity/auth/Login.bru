@@ -21,3 +21,9 @@ body:json {
     "password": "admin"
   }
 }
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setEnvVar("jwtToken", res.getBody().data.token);
+  }
+}

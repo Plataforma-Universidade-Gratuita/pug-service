@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.helpers;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -41,7 +42,7 @@ public final class TestNameGenerator {
    * @return a unique registration string
    */
   public static String generateUniqueRegistration() {
-    return uniqueSuffix().toUpperCase();
+    return uniqueSuffix().toUpperCase(Locale.ROOT).concat("-").concat(uniqueSuffix().toUpperCase(Locale.ROOT));
   }
 
   /**

@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.partner.presenter.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -21,8 +22,8 @@ import java.util.UUID;
  *     null)
  */
 public record StaffCreateRequest(
-    @NotBlank String cpfString,
+    @NotBlank @JsonProperty("cpf") String cpfString,
     @NotBlank @Size(max = 150) String name,
-    @NotBlank String emailString,
+    @NotBlank @JsonProperty("email") String emailString,
     @NotBlank @Size(max = 255) String password,
     @NotNull UUID entityId) {}

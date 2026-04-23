@@ -15,10 +15,13 @@ import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jboss.logging.Logger;
 
 /** Mapper to catch AppValidationException and return a detailed, grouped error response. */
 @Provider
 public class AppValidationExceptionMapper implements ExceptionMapper<AppValidationException> {
+
+  private static final Logger LOG = Logger.getLogger(AppValidationExceptionMapper.class);
 
   @Inject I18n i18n;
 
@@ -31,6 +34,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    */
   @Override
   public Response toResponse(AppValidationException exception) {
+    LOG.debugf(exception, "Validation error caught");
     List<FieldErrorsResponse> groupedErrors =
         CollectionUtils.toStream(exception.getFieldErrors())
             .collect(

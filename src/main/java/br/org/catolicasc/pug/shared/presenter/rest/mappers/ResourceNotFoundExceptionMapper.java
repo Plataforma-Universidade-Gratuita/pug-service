@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
 
 /**
  * Maps {@link ResourceNotFoundException} to an HTTP 404 (Not Found) response.
@@ -18,6 +19,8 @@ import jakarta.ws.rs.ext.Provider;
  */
 @Provider
 public class ResourceNotFoundExceptionMapper implements ExceptionMapper<ResourceNotFoundException> {
+
+  private static final Logger LOG = Logger.getLogger(ResourceNotFoundExceptionMapper.class);
 
   @Inject I18n i18n;
 
@@ -29,6 +32,7 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
    */
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
+    LOG.debugf(ex, "Resource not found");
     String code = ex.getCode().getCode();
     String message = i18n.translation(ex.getCode().getBundleKey());
 

@@ -1,7 +1,7 @@
 meta {
   name: Update Admin
   type: http
-  seq: 6
+  seq: 7
 }
 
 put {
@@ -15,6 +15,10 @@ headers {
   Content-Type: application/json
 }
 
+auth:bearer {
+  token: {{jwtToken}}
+}
+
 body:json {
   {
     "name": "Updated Admin Name",
@@ -22,8 +26,4 @@ body:json {
     "password": "NewPass123!",
     "campus": "JOINVILLE"
   }
-}
-
-auth:bearer {
-  token: {{jwtToken}}
 }

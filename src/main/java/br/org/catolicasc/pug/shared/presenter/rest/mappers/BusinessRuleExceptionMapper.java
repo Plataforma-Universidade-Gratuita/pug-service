@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
 
 /**
  * Maps {@link BusinessRuleException} to an HTTP 422 (Unprocessable Entity) response.
@@ -18,6 +19,8 @@ import jakarta.ws.rs.ext.Provider;
  */
 @Provider
 public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRuleException> {
+
+  private static final Logger LOG = Logger.getLogger(BusinessRuleExceptionMapper.class);
 
   @Inject I18n i18n;
 
@@ -29,6 +32,7 @@ public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRule
    */
   @Override
   public Response toResponse(BusinessRuleException ex) {
+    LOG.debugf(ex, "Business rule violation caught");
     String code = ex.getCode().getCode();
     String message = i18n.translation(ex.getCode().getBundleKey());
 

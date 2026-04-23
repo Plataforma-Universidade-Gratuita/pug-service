@@ -9,6 +9,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
 
 /**
  * Maps {@link DuplicateResourceException} to an HTTP 409 (Conflict) response.
@@ -21,6 +22,8 @@ import jakarta.ws.rs.ext.Provider;
 public class DuplicateResourceExceptionMapper
     implements ExceptionMapper<DuplicateResourceException> {
 
+  private static final Logger LOG = Logger.getLogger(DuplicateResourceExceptionMapper.class);
+
   @Inject I18n i18n;
 
   /**
@@ -31,6 +34,7 @@ public class DuplicateResourceExceptionMapper
    */
   @Override
   public Response toResponse(DuplicateResourceException ex) {
+    LOG.debugf(ex, "Duplicate resource conflict");
     String code = ex.getCode().getCode();
     String message = i18n.translation(ex.getCode().getBundleKey());
 
