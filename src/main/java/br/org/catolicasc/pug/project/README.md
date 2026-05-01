@@ -1,161 +1,350 @@
-# Project Module
+# 📋 Project Module
 
 ## Overview
 
-The `project` bounded context handles:
+The **Project** module is the operational core of the PUG platform. It manages community service **Projects** offered by partner entities, **Project-School associations**, **Enrollments** of students into projects, and **Attendance** tracking via QR code validation. Projects follow a lifecycle state machine and expose the workflow used by staff and students during execution.
 
-- community service projects offered by partner entities
-- project-school associations
-- student enrollments in projects
-- attendance registration and validation
+## Domain Model
 
-It is the operational core of the platform and depends on `identity`, `academic`, `partner`, and `shared`.
+```mermaid
+classDiagram
+    class Project {
+        +UUID id
+        +String name
+        +UUID entityId
+        +String description
+        +ProjectInfo projectInfo
+        +ProjectStatus projectStatus
+    }
 
-## Main aggregates
+    class ProjectSchool {
+        +UUID projectId
+        +UUID schoolId
+    }
 
-- `Project`
-- `ProjectSchool`
-- `Enrollment`
-- `Attendance`
+    class Enrollment {
+        +EnrollmentIdentifier id
+        +EnrollmentStatus status
+        +EnrollmentInfo enrollmentInfo
+    }
 
-Important enums:
+    class Attendance {
+        +UUID id
+        +EnrollmentIdentifier enrollmentIdentifier
+        +QrValidationInfo qrValidationInfo
+        +AttendanceInfo attendanceInfo
+        +AttendanceStatus status
+    }
 
-- `ProjectStatus`: `PLANNED`, `IN_PROGRESS`, `ON_HOLD`, `COMPLETED`, `CANCELED`
-- `EnrollmentStatus`: `PENDING`, `APPROVED`, `COMPLETED`, `CANCELED`, `EXITED`, `REJECTED`, `REMOVED`
-- `AttendanceStatus`: `WAITING`, `PRESENT`, `ABSENT`
+    class ProjectInfo {
+        +UUID createdBy
+        +int maxParticipants
+        +BigDecimal offeredHours
+        +BigDecimal completedHours
+        +Instant closedAt
+        +AuditInfo auditInfo
+    }
 
-## Internal structure
+    class EnrollmentIdentifier {
+        +UUID studentId
+        +UUID projectId
+    }
 
-```text
-presenter/
-  ProjectResource
-  ProjectSchoolResource
-  SchoolProjectResource
-  EnrollmentResource
-  AttendanceResource
-domain/
-  Project, ProjectSchool, Enrollment, Attendance
-service/
-  ProjectService
-  ProjectSchoolService
-  EnrollmentService
-  AttendanceService
-  *ReadService
-infra/
-  persistence/
-  read/
-  *Mapper
+    class EnrollmentInfo {
+        +Instant acceptedAt
+        +Instant closingStatusAt
+        +AuditInfo auditInfo
+    }
+
+    class AttendanceInfo {
+        +UUID validatedBy
+        +Instant validatedAt
+        +AuditInfo auditInfo
+    }
+
+    class QrValidationInfo {
+        +BigDecimal duration
+        +String qrValidationHash
+    }
+
+    class ProjectStatus {
+        <<enumeration>>
+        PLANNED
+        IN_PROGRESS
+        ON_HOLD
+        COMPLETED
+        CANCELED
+    }
+
+    class EnrollmentStatus {
+        <<enumeration>>
+        PENDING
+        APPROVED
+        COMPLETED
+        CANCELED
+        EXITED
+        REJECTED
+        REMOVED
+    }
+
+    class AttendanceStatus {
+        <<enumeration>>
+        WAITING
+        PRESENT
+        ABSENT
+    }
+
+    Project --> ProjectInfo
+    Project --> ProjectStatus
+    Project "1" --> "*" ProjectSchool
+    Project "1" --> "*" Enrollment
+    Project "1" --> "*" Attendance
+    Enrollment --> EnrollmentIdentifier
+    Enrollment --> EnrollmentStatus
+    Enrollment --> EnrollmentInfo
+    Attendance --> EnrollmentIdentifier
+    Attendance --> QrValidationInfo
+    Attendance --> AttendanceInfo
+    Attendance --> AttendanceStatus
 ```
 
-## HTTP contract
+## Architecture
 
-### Projects - `/projects`
+```
+presenter/                        ← REST controllers
+  ProjectResource                 ← CRUD + lifecycle updates for projects
+  ProjectSchoolResource           ← Project → School association endpoints
+  SchoolProjectResource           ← School → Project listing/removal endpoints
+  EnrollmentResource              ← Enrollment queries + status transitions
+  AttendanceResource              ← CRUD + QR validation for attendances
+  dtos/                           ← Request/Response DTOs
+  mappers/                        ← Presenter layer transformers
+domain/                           ← Pure domain model
+  Project, Enrollment, Attendance ← Aggregate roots
+  ProjectSchool                   ← Association aggregate
+  vos/                            ← Value Objects
+  enums/                          ← Status enums
+  *Repository                     ← Repository interfaces
+service/                          ← Application services (CQRS)
+  ProjectService                  ← Project commands + lifecycle
+  ProjectSchoolService            ← Project-school association commands
+  EnrollmentService               ← Enrollment commands + transitions
+  AttendanceService               ← Attendance commands + QR validation
+  *ReadService                    ← Query-side services
+infra/                            ← Infrastructure layer
+  persistence/                    ← JPA entities (Hibernate Search indexed)
+  read/                           ← CQRS query implementations
+  *Mapper                         ← Domain ↔ JPA anti-corruption layers
+```
 
-- `GET /projects`
-  - list all
-  - supports `?q=`, `?entityId=`, `?createdBy=`
-- `GET /projects/{id}`
-- `POST /projects`
-- `PUT /projects/{id}`
-- `PATCH /projects/{id}`
-  - supports partial field updates
-  - supports lifecycle transitions through body `status`
-- `DELETE /projects/{id}`
+## Endpoints
 
-Examples of lifecycle patches:
+### Projects — `/projects`
 
-- `{ "status": "IN_PROGRESS" }`
-- `{ "status": "ON_HOLD" }`
-- `{ "status": "COMPLETED" }`
-- `{ "status": "CANCELED" }`
+```mermaid
+graph LR
+    subgraph Projects["📋 /projects"]
+        direction TB
+        GET_LIST["GET / — List/search ?q= ?entityId= ?createdBy=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
+        POST["POST / — Create project<br/>🔒 ADMIN, STAFF"]
+        PUT["PUT /{id} — Update project<br/>🔒 ADMIN, STAFF"]
+        PATCH["PATCH /{id} — Partial update / lifecycle status change<br/>🔒 ADMIN, STAFF"]
+        DELETE["DELETE /{id} — Delete project<br/>🔒 ADMIN, STAFF"]
+    end
+```
 
-`retake` is represented by setting status back to `IN_PROGRESS`, not by a dedicated route.
+### Project ↔ School Associations
 
-### Project-school associations
+```mermaid
+graph LR
+    subgraph ProjectSide["🏫 /projects/{projectId}/schools"]
+        direction TB
+        GET_SCHOOLS["GET / — List schools for project<br/>🔒 Authenticated"]
+        POST_SCHOOLS["POST / — Create associations<br/>🔒 ADMIN, STAFF"]
+        DELETE_ONE["DELETE /{schoolId} — Remove one association<br/>🔒 ADMIN, STAFF"]
+        DELETE_ALL_PROJECT["DELETE / — Remove all by project<br/>🔒 ADMIN, STAFF"]
+    end
 
-Project side:
-
-- `GET /projects/{projectId}/schools`
-- `POST /projects/{projectId}/schools`
-- `DELETE /projects/{projectId}/schools/{schoolId}`
-- `DELETE /projects/{projectId}/schools`
-
-School side:
-
-- `GET /academic/schools/{schoolId}/projects`
-- `DELETE /academic/schools/{schoolId}/projects`
-
-Association creation body:
-
-```json
-{
-  "schoolIds": [
-    "00000000-0000-0000-0000-000000000001"
-  ]
-}
+    subgraph SchoolSide["🎓 /academic/schools/{schoolId}/projects"]
+        direction TB
+        GET_PROJECTS["GET / — List projects for school<br/>🔒 Authenticated"]
+        DELETE_ALL_SCHOOL["DELETE / — Remove all by school<br/>🔒 ADMIN, STAFF"]
+    end
 ```
 
 ### Enrollments
 
-Collection and self routes:
+```mermaid
+graph LR
+    subgraph EnrollmentCollection["📝 /projects/enrollments"]
+        direction TB
+        GET_LIST["GET / — List ?projectId= ?studentId=<br/>🔒 ADMIN, STAFF"]
+        GET_ME_LIST["GET /me — My enrollments<br/>🔒 STUDENT"]
+    end
 
-- `GET /projects/enrollments`
-  - supports `?projectId=` and `?studentId=`
-- `GET /projects/enrollments/me`
-
-Nested project routes:
-
-- `GET /projects/{projectId}/enrollments/{studentId}`
-- `GET /projects/{projectId}/enrollments/me`
-- `POST /projects/{projectId}/enrollments`
-- `PATCH /projects/{projectId}/enrollments/{studentId}`
-- `PATCH /projects/{projectId}/enrollments/me`
-- `DELETE /projects/{projectId}/enrollments/{studentId}`
-
-Enrollment creation does not use a JSON body. The project identifier comes from the route.
-
-Enrollment transitions are driven by request body:
-
-```json
-{
-  "status": "APPROVED"
-}
+    subgraph EnrollmentProject["📝 /projects/{projectId}/enrollments"]
+        direction TB
+        GET_ONE["GET /{studentId} — Specific enrollment<br/>🔒 ADMIN, STAFF"]
+        GET_ME_ONE["GET /me — My enrollment in project<br/>🔒 STUDENT"]
+        POST["POST / — Enroll in project (no body)<br/>🔒 STUDENT"]
+        PATCH_ONE["PATCH /{studentId} — Update enrollment status<br/>🔒 ADMIN, STAFF"]
+        PATCH_ME["PATCH /me — Student exits own enrollment<br/>🔒 STUDENT"]
+        DELETE["DELETE /{studentId} — Delete enrollment<br/>🔒 ADMIN"]
+    end
 ```
 
-Supported transition payloads depend on caller and current state, but the public contract uses one `PATCH` route with statuses such as:
+### Attendances — `/projects/attendances`
 
-- `APPROVED`
-- `REJECTED`
-- `COMPLETED`
-- `CANCELED`
-- `REMOVED`
-- `EXITED`
+```mermaid
+graph LR
+    subgraph Attendances["📱 /projects/attendances"]
+        direction TB
+        GET_LIST["GET / — List ?projectId= ?studentId=<br/>🔒 Authenticated"]
+        GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
+        POST["POST / — Record attendance<br/>🔒 Authenticated"]
+        PATCH["PATCH /{id}/validate — Staff validates<br/>🔒 Authenticated"]
+        DELETE["DELETE /{id} — Delete record<br/>🔒 Authenticated"]
+    end
+```
 
-### Attendances - `/projects/attendances`
+## Use Case Diagram
 
-- `GET /projects/attendances`
-  - supports `?projectId=` and `?studentId=`
-- `GET /projects/attendances/{id}`
-- `POST /projects/attendances`
-- `PATCH /projects/attendances/{id}/validate`
-- `DELETE /projects/attendances/{id}`
+```mermaid
+graph TB
+    subgraph Actors
+        STAFF["👥 Staff / Admin"]
+        STUDENT["🎓 Student"]
+    end
 
-## Business rules
+    subgraph ProjectModule["📋 Project Module"]
+        UC1["Create / Update / Delete Projects"]
+        UC2["Change Project Status<br/>planned · in progress · on hold · completed · canceled"]
+        UC3["Associate Projects with Schools"]
+        UC4["List Projects by School"]
+        UC5["Enroll in Project"]
+        UC6["Approve / Reject / Complete / Cancel / Remove Enrollments"]
+        UC7["Exit Own Enrollment"]
+        UC8["Record Attendance via QR"]
+        UC9["Validate Attendance"]
+        UC10["View Own Enrollments"]
+    end
 
-- project names must be unique per partner entity
-- a project cannot be deleted while dependent data still blocks the operation
-- project status changes follow the domain lifecycle rules
-- enrollment status changes follow a strict state machine
-- attendance QR hashes must remain unique
-- attendance validation records who validated and when
+    STAFF --> UC1
+    STAFF --> UC2
+    STAFF --> UC3
+    STAFF --> UC4
+    STAFF --> UC6
+    STAFF --> UC8
+    STAFF --> UC9
 
-## Persistence model
+    STUDENT --> UC5
+    STUDENT --> UC7
+    STUDENT --> UC8
+    STUDENT --> UC10
+```
 
-Core relational tables:
+## Project Lifecycle State Machine
 
-- `projects`
-- `projects_by_schools`
-- `enrollments`
-- `attendances`
+```mermaid
+stateDiagram-v2
+    [*] --> PLANNED
+    PLANNED --> IN_PROGRESS : status=IN_PROGRESS
+    PLANNED --> CANCELED : status=CANCELED
+    IN_PROGRESS --> ON_HOLD : status=ON_HOLD
+    IN_PROGRESS --> COMPLETED : status=COMPLETED
+    IN_PROGRESS --> CANCELED : status=CANCELED
+    ON_HOLD --> IN_PROGRESS : status=IN_PROGRESS
+    ON_HOLD --> CANCELED : status=CANCELED
 
-The read side uses dedicated query services and Hibernate Search where applicable.
+    COMPLETED --> [*]
+    CANCELED --> [*]
+```
+
+## Enrollment Lifecycle
+
+```mermaid
+stateDiagram-v2
+    [*] --> PENDING
+    PENDING --> APPROVED : status=APPROVED
+    PENDING --> REJECTED : status=REJECTED
+    APPROVED --> COMPLETED : status=COMPLETED
+    APPROVED --> CANCELED : status=CANCELED
+    APPROVED --> EXITED : status=EXITED
+    APPROVED --> REMOVED : status=REMOVED
+
+    COMPLETED --> [*]
+    CANCELED --> [*]
+    EXITED --> [*]
+    REJECTED --> [*]
+    REMOVED --> [*]
+```
+
+## ERM (Entity-Relationship Model)
+
+```mermaid
+erDiagram
+    projects {
+        UUID id PK
+        VARCHAR name
+        UUID entity_id FK
+        TEXT description
+        UUID created_by FK
+        INT max_participants
+        DECIMAL offered_hours
+        DECIMAL completed_hours
+        VARCHAR status
+        TIMESTAMPTZ closed_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    projects_by_schools {
+        UUID project_id PK
+        UUID school_id PK
+    }
+
+    enrollments {
+        UUID project_id PK
+        UUID student_id PK
+        VARCHAR status
+        TIMESTAMPTZ accepted_at
+        TIMESTAMPTZ closing_status_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    attendances {
+        UUID id PK
+        UUID project_id FK
+        UUID student_id FK
+        DECIMAL duration
+        VARCHAR qr_validation_hash UK
+        VARCHAR status
+        UUID validated_by FK
+        TIMESTAMPTZ validated_at
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    entities ||--o{ projects : "offers"
+    staff ||--o{ projects : "created_by"
+    projects ||--o{ projects_by_schools : "associated"
+    schools ||--o{ projects_by_schools : "associated"
+    projects ||--o{ enrollments : "has"
+    students ||--o{ enrollments : "participates"
+    projects ||--o{ attendances : "has"
+    students ||--o{ attendances : "records"
+    staff ||--o{ attendances : "validated_by"
+```
+
+## Business Rules
+
+- Project names must be unique per partner entity.
+- A project cannot be deleted while dependent data still blocks the operation.
+- Project status transitions follow the lifecycle rules enforced by the domain.
+- Project retake is represented by setting status back to `IN_PROGRESS`.
+- Enrollment status transitions follow a strict state machine.
+- Enrollment creation uses the project identifier from the route, not from a request body.
+- Attendance QR hashes must be globally unique to prevent duplicate submissions.
+- Attendance validation records who validated and when.
