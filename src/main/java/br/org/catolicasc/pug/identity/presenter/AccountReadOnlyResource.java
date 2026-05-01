@@ -13,7 +13,6 @@ import br.org.catolicasc.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -66,22 +65,6 @@ public class AccountReadOnlyResource {
   }
 
   /**
-   * Retrieves a specific account by its email address.
-   *
-   * <p>Finds and returns the account matching the provided email.
-   *
-   * @param emailRaw the email address of the account to retrieve
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     AccountResponse}
-   */
-  @GET
-  @Path("by-email/{email}")
-  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
-    var body = AccountPresenter.toResponse(readService.getViewByEmail(emailRaw), locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
    * Retrieves the account details of the currently authenticated user.
    *
    * <p>Extracts the account ID directly from the JWT claims via {@link AuthService}, ensuring users
@@ -102,44 +85,41 @@ public class AccountReadOnlyResource {
   }
 
   /**
-   * Retrieves a list of accounts, optionally filtered by a search query.
+   * Retrieves accounts, optionally filtered by query parameters.
    *
-   * <p>If a query string is provided, it searches for matching accounts; otherwise, it lists all
-   * available accounts.
+   * <p>When {@code email} is provided, this endpoint returns the single account linked to that
+   * email. When {@code cpf} is provided, it returns the accounts associated with that CPF. If
+   * neither identifier is present, it falls back to full-text search with {@code q} or lists all
+   * accounts when no filters are supplied.
    *
-   * @param query an optional search string to filter accounts
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a {@link List} of {@link
-   *     AccountResponse}
+   * @param query the optional search string used to filter accounts by text
+   * @param emailRaw the optional email used to retrieve a single account
+   * @param cpfRaw the optional CPF used to retrieve the accounts associated with a user
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     AccountResponse} or a {@link List} of {@link AccountResponse}
    */
   @GET
-  public Response list(@QueryParam("q") String query) {
-    List<AccountView> views;
-    if (StringUtils.isNotEmpty(query)) {
-      views = readService.search(query);
-    } else {
-      views = readService.listViews();
+  public Response list(
+      @QueryParam("q") String query,
+      @QueryParam("email") String emailRaw,
+      @QueryParam("cpf") String cpfRaw) {
+    if (StringUtils.isNotEmpty(emailRaw)) {
+      var body = AccountPresenter.toResponse(readService.getViewByEmail(emailRaw), locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(body)).build();
     }
+
+    if (StringUtils.isNotEmpty(cpfRaw)) {
+      List<AccountResponse> list =
+          readService.listViewsByCpf(cpfRaw).stream()
+              .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
+              .collect(Collectors.toList());
+      return Response.ok(ApiEnvelope.ok(list)).build();
+    }
+
+    List<AccountView> views =
+        StringUtils.isNotEmpty(query) ? readService.search(query) : readService.listViews();
     List<AccountResponse> list =
         views.stream()
-            .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(list)).build();
-  }
-
-  /**
-   * Retrieves a list of accounts associated with a specific CPF.
-   *
-   * <p>Finds and returns all accounts that match the provided CPF.
-   *
-   * @param cpfRaw the CPF to filter the accounts by
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a {@link List} of {@link
-   *     AccountResponse}
-   */
-  @GET
-  @Path("by-cpf/{cpf}")
-  public Response listByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
-    List<AccountResponse> list =
-        readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> AccountPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(list)).build();

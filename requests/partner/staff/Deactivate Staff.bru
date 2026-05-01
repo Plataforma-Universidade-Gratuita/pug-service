@@ -5,13 +5,20 @@ meta {
 }
 
 patch {
-  url: {{baseUrl}}/partners/staff/00000000-0000-0000-0000-000000000001/deactivate
-  body: none
+  url: {{baseUrl}}/partners/staff/00000000-0000-0000-0000-000000000001
+  body: json
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "active": false
+  }
 }
 
 auth:bearer {

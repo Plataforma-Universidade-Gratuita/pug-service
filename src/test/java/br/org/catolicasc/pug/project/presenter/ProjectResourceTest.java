@@ -14,6 +14,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
@@ -244,7 +245,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id}/start - Success")
+  @DisplayName("PATCH /projects/{id} start - Success")
   void startSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -255,9 +256,11 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
+        .body(aProjectUpdateRequest().withStatus(ProjectStatus.IN_PROGRESS).build())
         .when()
-        .patch("/projects/{id}/start")
+        .patch("/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("IN_PROGRESS"));
@@ -267,7 +270,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id}/cancel - Success")
+  @DisplayName("PATCH /projects/{id} cancel - Success")
   void cancelSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -278,9 +281,11 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
+        .body(aProjectUpdateRequest().withStatus(ProjectStatus.CANCELED).build())
         .when()
-        .patch("/projects/{id}/cancel")
+        .patch("/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("CANCELED"));
@@ -290,7 +295,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id}/complete - Success")
+  @DisplayName("PATCH /projects/{id} complete - Success")
   void completeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -303,9 +308,11 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
+        .body(aProjectUpdateRequest().withStatus(ProjectStatus.COMPLETED).build())
         .when()
-        .patch("/projects/{id}/complete")
+        .patch("/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("COMPLETED"));
@@ -315,7 +322,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("GET /projects/created-by/{accountId} - Success")
+  @DisplayName("GET /projects?createdBy= - Success")
   void listByCreatedBy() throws Exception {
     Account[] creator = new Account[1];
     doInTransaction(
@@ -326,9 +333,9 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("accountId", creator[0].getId())
+        .queryParam("createdBy", creator[0].getId())
         .when()
-        .get("/projects/created-by/{accountId}")
+        .get("/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -338,7 +345,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id}/hold - Success")
+  @DisplayName("PATCH /projects/{id} hold - Success")
   void holdSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -350,9 +357,11 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
+        .body(aProjectUpdateRequest().withStatus(ProjectStatus.ON_HOLD).build())
         .when()
-        .patch("/projects/{id}/hold")
+        .patch("/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("ON_HOLD"));
@@ -362,7 +371,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id}/retake - Success")
+  @DisplayName("PATCH /projects/{id} retake - Success")
   void retakeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -374,9 +383,11 @@ class ProjectResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
+        .body(aProjectUpdateRequest().withStatus(ProjectStatus.PLANNED).build())
         .when()
-        .patch("/projects/{id}/retake")
+        .patch("/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("IN_PROGRESS"));

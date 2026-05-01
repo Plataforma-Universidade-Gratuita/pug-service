@@ -61,7 +61,7 @@ class ProjectPresenterTest {
     @Test
     @DisplayName("Should map ProjectUpdateRequest to ProjectUpdateCommand")
     void toUpdateCommand() {
-      var req = new ProjectUpdateRequest("New Name", "New Desc", 30, new BigDecimal("80"));
+      var req = new ProjectUpdateRequest("New Name", "New Desc", 30, new BigDecimal("80"), null);
 
       ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
 
@@ -75,7 +75,7 @@ class ProjectPresenterTest {
     @Test
     @DisplayName("Should map partial update with nulls")
     void toUpdateCommandPartial() {
-      var req = new ProjectUpdateRequest(null, null, null, null);
+      var req = new ProjectUpdateRequest(null, null, null, null, null);
 
       ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
 

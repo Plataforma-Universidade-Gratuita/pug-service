@@ -119,11 +119,12 @@ public class AccountProcessor {
    * @param existingAccount the current, reconstituted {@link Account} aggregate from the repository
    * @param emailString the proposed new email address, or {@code null}/empty to skip updating
    * @param passwordHash the proposed new password hash, or {@code null}/empty to skip updating
+   * @param active the proposed activation flag, or {@code null} to keep the current account status
    * @return a new {@link Account} domain aggregate reflecting the requested updates, potentially
    *     containing validation errors
    */
   public static Account processUpdateInput(
-      Account existingAccount, String emailString, String passwordHash) {
+      Account existingAccount, String emailString, String passwordHash, Boolean active) {
 
     Account updatedAccount = existingAccount;
 
@@ -134,6 +135,10 @@ public class AccountProcessor {
 
     if (StringUtils.isNotEmpty(passwordHash)) {
       updatedAccount = updatedAccount.changePasswordHash(passwordHash);
+    }
+
+    if (active != null) {
+      updatedAccount = active ? updatedAccount.activate() : updatedAccount.deactivate();
     }
 
     return updatedAccount;

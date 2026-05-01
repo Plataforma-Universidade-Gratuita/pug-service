@@ -20,7 +20,6 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -77,37 +76,30 @@ public class EntityResource {
   }
 
   /**
-   * Retrieves a specific partner entity by its unique corporate identification (CNPJ).
+   * Retrieves partner entities, optionally filtered by query parameters.
    *
-   * @param cnpjRaw the exact 14-digit numeric CNPJ string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     EntityResponse}
-   * @throws AppValidationException if the provided CNPJ is malformed
-   * @throws ResourceNotFoundException if the entity is not found
-   */
-  @GET
-  @Path("/by-cnpj/{cnpj}")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response getByCnpj(@PathParam("cnpj") @NotNull String cnpjRaw) {
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a collection of partner entities.
-   *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * entities' names. If the {@code cityId} parameter is provided, it filters the results
-   * geographically. If both are omitted, it returns all entities.
+   * <p>When {@code cnpj} is provided, this endpoint returns the single entity associated with that
+   * identifier. Otherwise, it filters by {@code cityId}, falls back to full-text search with {@code
+   * q}, or lists all entities when no filters are supplied.
    *
    * @param q the optional search query string
    * @param cityId the optional geographic filter
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     EntityResponse}
+   * @param cnpjRaw the optional CNPJ used to retrieve a single entity
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     EntityResponse} or a list of {@link EntityResponse}
    */
   @GET
   @Authenticated
-  public Response list(@QueryParam("q") String q, @QueryParam("cityId") @UuidV7 UUID cityId) {
+  public Response list(
+      @QueryParam("q") String q,
+      @QueryParam("cityId") @UuidV7 UUID cityId,
+      @QueryParam("cnpj") String cnpjRaw) {
+    if (StringUtils.isNotEmpty(cnpjRaw)) {
+      EntityResponse body =
+          EntityPresenter.toResponse(readService.getViewByCnpj(cnpjRaw), locale());
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
     List<EntityView> views;
 
     if (cityId != null) {

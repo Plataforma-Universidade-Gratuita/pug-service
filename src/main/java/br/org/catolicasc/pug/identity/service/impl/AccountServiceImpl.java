@@ -249,7 +249,8 @@ public class AccountServiceImpl implements AccountService {
     }
 
     Account updated =
-        AccountProcessor.processUpdateInput(current, cmd.emailString(), cmd.passwordHash());
+        AccountProcessor.processUpdateInput(
+            current, cmd.emailString(), cmd.passwordHash(), cmd.active());
 
     if (updated.hasFieldErrors()) {
       throw new AppValidationException(updated.getFieldErrors());

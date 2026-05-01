@@ -322,7 +322,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students/by-cpf/{cpf} - Success")
+  @DisplayName("GET /academic/students?cpf= - Success")
   void getByCpfSuccess() throws Exception {
     User[] user = new User[1];
     Account[] account = new Account[1];
@@ -336,9 +336,9 @@ class StudentResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("cpf", user[0].getCpf().getValue())
+        .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/academic/students/by-cpf/{cpf}")
+        .get("/academic/students")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));
@@ -348,7 +348,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students/by-email/{email} - Success")
+  @DisplayName("GET /academic/students?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -361,9 +361,9 @@ class StudentResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("email", account[0].getEmail().getValue())
+        .queryParam("email", account[0].getEmail().getValue())
         .when()
-        .get("/academic/students/by-email/{email}")
+        .get("/academic/students")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));

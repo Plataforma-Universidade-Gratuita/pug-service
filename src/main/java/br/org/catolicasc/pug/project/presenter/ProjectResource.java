@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
@@ -83,24 +82,29 @@ public class ProjectResource {
   }
 
   /**
-   * Retrieves a collection of projects.
+   * Retrieves projects, optionally filtered by query parameters.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * project names. If the {@code entityId} parameter is provided, it filters the results by partner
-   * entity.
+   * <p>When {@code createdBy} is provided, this endpoint returns the projects created by that
+   * account. Otherwise, it filters by {@code entityId}, falls back to full-text search with {@code
+   * q}, or lists all projects when no filters are supplied.
    *
    * @param query the optional search query string
    * @param entityId the optional entity filter
+   * @param createdBy the optional creator account identifier
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     ProjectResponse}
    */
   @GET
   @Authenticated
   public Response list(
-      @QueryParam("q") String query, @QueryParam("entityId") @UuidV7 UUID entityId) {
+      @QueryParam("q") String query,
+      @QueryParam("entityId") @UuidV7 UUID entityId,
+      @QueryParam("createdBy") @UuidV7 UUID createdBy) {
     List<ProjectView> views;
 
-    if (entityId != null) {
+    if (createdBy != null) {
+      views = readService.listViewsByCreatedBy(createdBy);
+    } else if (entityId != null) {
       views = readService.listViewsByEntityId(entityId);
     } else if (StringUtils.isNotEmpty(query)) {
       views = readService.searchByName(query);
@@ -108,26 +112,6 @@ public class ProjectResource {
       views = readService.listViews();
     }
 
-    List<ProjectResponse> body =
-        views.stream()
-            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a list of projects created by a specific account.
-   *
-   * @param accountId the unique identifier (UUIDv7) of the account
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     ProjectResponse}
-   */
-  @GET
-  @Path("/created-by/{accountId}")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response listByCreatedBy(@PathParam("accountId") @UuidV7 UUID accountId) {
-    List<ProjectView> views = readService.listViewsByCreatedBy(accountId);
     List<ProjectResponse> body =
         views.stream()
             .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
@@ -175,76 +159,33 @@ public class ProjectResource {
   }
 
   /**
-   * Cancels a project.
+   * Applies a partial update to an existing project.
    *
-   * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
+   * <p>Non-null descriptive fields are forwarded to the standard update flow. When {@code status}
+   * is provided, the endpoint executes the corresponding project lifecycle transition through the
+   * application service.
+   *
+   * @param id the unique identifier (UUIDv7) of the project
+   * @param req the validated {@link ProjectUpdateRequest} containing the fields to change
+   * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
+   * @throws ResourceNotFoundException if the project is not found
    */
   @PATCH
-  @Path("/{id}/cancel")
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response cancel(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, ProjectStatus.CANCELED);
-    ProjectView view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
-  }
+  public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
+    if (req.name() != null
+        || req.description() != null
+        || req.maxParticipants() != null
+        || req.offeredHours() != null) {
+      ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
+      writeService.update(id, cmd);
+    }
 
-  /**
-   * Completes a project.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
-   */
-  @PATCH
-  @Path("/{id}/complete")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response complete(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, ProjectStatus.COMPLETED);
-    ProjectView view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
-  }
+    if (req.status() != null) {
+      writeService.transitionStatus(id, req.status());
+    }
 
-  /**
-   * Puts a project on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
-   */
-  @PATCH
-  @Path("/{id}/hold")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response putOnHold(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, ProjectStatus.ON_HOLD);
-    ProjectView view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
-  }
-
-  /**
-   * Resumes a project that is on hold.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
-   */
-  @PATCH
-  @Path("/{id}/retake")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response retake(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, ProjectStatus.PLANNED);
-    ProjectView view = readService.getViewById(id);
-    return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
-  }
-
-  /**
-   * Starts a project, setting its status to IN_PROGRESS.
-   *
-   * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response with the updated {@link ProjectResponse}
-   */
-  @PATCH
-  @Path("/{id}/start")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response start(@PathParam("id") @UuidV7 UUID id) {
-    writeService.transitionStatus(id, ProjectStatus.IN_PROGRESS);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }

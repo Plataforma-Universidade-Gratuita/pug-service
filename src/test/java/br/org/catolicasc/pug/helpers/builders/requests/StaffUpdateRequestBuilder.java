@@ -12,6 +12,7 @@ public class StaffUpdateRequestBuilder {
   private String name = TestNameGenerator.generateRandomName();
   private String emailString = null;
   private String password = null;
+  private Boolean active = null;
 
   private StaffUpdateRequestBuilder() {}
 
@@ -34,7 +35,12 @@ public class StaffUpdateRequestBuilder {
     return this;
   }
 
+  public StaffUpdateRequestBuilder withActive(Boolean active) {
+    this.active = active;
+    return this;
+  }
+
   public StaffUpdateRequest build() {
-    return new StaffUpdateRequest(name, emailString, password);
+    return new StaffUpdateRequest(name, emailString, password, active);
   }
 }

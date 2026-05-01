@@ -42,4 +42,22 @@ class AccountTest {
     assertThat(deactivated.getAuditInfo().getUpdatedAt())
         .isAfter(acc.getAuditInfo().getCreatedAt());
   }
+
+  @Test
+  @DisplayName("Should activate account correctly")
+  void shouldActivate() throws InterruptedException {
+    Account acc =
+        Account.factory(
+                UuidCreator.getTimeOrderedEpoch(),
+                Email.factory("test@pug.com"),
+                AccountType.ADMIN,
+                "secret")
+            .deactivate();
+    Thread.sleep(1);
+
+    Account activated = acc.activate();
+
+    assertThat(activated.getActive()).isTrue();
+    assertThat(activated.getAuditInfo().getUpdatedAt()).isAfter(acc.getAuditInfo().getUpdatedAt());
+  }
 }

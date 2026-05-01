@@ -90,14 +90,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff/by-email/{email} - Success")
+  @DisplayName("GET /partners/staff?email= - Success")
   void getByEmailSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
-        .pathParam("email", g.account().getEmail().getValue())
+        .queryParam("email", g.account().getEmail().getValue())
         .when()
-        .get("/partners/staff/by-email/{email}")
+        .get("/partners/staff")
         .then()
         .statusCode(200)
         .body("data.account.email", is(g.account().getEmail().getValue()));
@@ -140,14 +140,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff/by-cpf/{cpf} - Success")
+  @DisplayName("GET /partners/staff?cpf= - Success")
   void listByCpfSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
-        .pathParam("cpf", g.user().getCpf().getValue())
+        .queryParam("cpf", g.user().getCpf().getValue())
         .when()
-        .get("/partners/staff/by-cpf/{cpf}")
+        .get("/partners/staff")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)))
@@ -158,14 +158,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /partners/staff/by-entity/{entityId} - Success")
+  @DisplayName("GET /partners/staff?entityId= - Success")
   void listByEntitySuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
-        .pathParam("entityId", g.entity().getId())
+        .queryParam("entityId", g.entity().getId())
         .when()
-        .get("/partners/staff/by-entity/{entityId}")
+        .get("/partners/staff")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -240,14 +240,16 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /partners/staff/{id}/deactivate - Success")
+  @DisplayName("PATCH /partners/staff/{id} - Success")
   void deactivateSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", g.account().getId())
+        .body(aStaffUpdateRequest().withName(null).withActive(false).build())
         .when()
-        .patch("/partners/staff/{id}/deactivate")
+        .patch("/partners/staff/{id}")
         .then()
         .statusCode(200);
   }

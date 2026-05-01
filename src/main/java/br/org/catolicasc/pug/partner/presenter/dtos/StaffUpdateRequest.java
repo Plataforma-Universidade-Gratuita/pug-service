@@ -19,8 +19,10 @@ import jakarta.validation.constraints.Size;
  *     be a valid email up to 100 characters)
  * @param password the new raw password, or {@code null} to leave unchanged (if provided, must be
  *     between 8 and 100 characters)
+ * @param active the new activation flag, or {@code null} to leave the current status unchanged
  */
 public record StaffUpdateRequest(
     @Size(max = 100) String name,
     @Email @Size(max = 100) @JsonProperty("email") String emailString,
-    @Size(max = 100) String password) {}
+    @Size(max = 100) String password,
+    Boolean active) {}

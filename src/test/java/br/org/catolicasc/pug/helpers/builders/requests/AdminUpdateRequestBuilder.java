@@ -15,6 +15,7 @@ public class AdminUpdateRequestBuilder {
   private String emailString = null;
   private String password = null;
   private Campi campus = getRandomCampus();
+  private Boolean active = null;
 
   private AdminUpdateRequestBuilder() {}
 
@@ -53,13 +54,18 @@ public class AdminUpdateRequestBuilder {
     return this;
   }
 
+  public AdminUpdateRequestBuilder withActive(Boolean active) {
+    this.active = active;
+    return this;
+  }
+
   /**
    * Constructs the {@link AdminUpdateRequest} using the current builder state.
    *
    * @return a configured {@link AdminUpdateRequest} instance
    */
   public AdminUpdateRequest build() {
-    return new AdminUpdateRequest(name, emailString, password, campus);
+    return new AdminUpdateRequest(name, emailString, password, campus, active);
   }
 
   private static Campi getRandomCampus() {

@@ -66,7 +66,7 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should map StaffUpdateRequest to StaffUpdateCommand")
     void toUpdateCommand() {
-      StaffUpdateRequest req = new StaffUpdateRequest("New Name", "new@pug.com", "newPass");
+      StaffUpdateRequest req = new StaffUpdateRequest("New Name", "new@pug.com", "newPass", false);
 
       StaffUpdateCommand cmd = StaffPresenter.toCommand(req, "hashedNew");
 
@@ -74,6 +74,7 @@ class StaffPresenterTest {
       assertThat(cmd.accountCommand()).isNotNull();
       assertThat(cmd.accountCommand().emailString()).isEqualTo("new@pug.com");
       assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedNew");
+      assertThat(cmd.accountCommand().active()).isFalse();
       assertThat(cmd.accountCommand().userCommand()).isNotNull();
       assertThat(cmd.accountCommand().userCommand().name()).isEqualTo("New Name");
     }
@@ -81,7 +82,7 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should map partial StaffUpdateRequest (all nulls)")
     void toUpdateCommandPartial() {
-      StaffUpdateRequest req = new StaffUpdateRequest(null, null, null);
+      StaffUpdateRequest req = new StaffUpdateRequest(null, null, null, null);
 
       StaffUpdateCommand cmd = StaffPresenter.toCommand(req, null);
 

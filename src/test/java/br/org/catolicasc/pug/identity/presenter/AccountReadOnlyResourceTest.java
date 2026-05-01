@@ -48,7 +48,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/accounts/by-email/{email} - Success")
+  @DisplayName("GET /identity/accounts?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -58,9 +58,9 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("email", acc[0].getEmail().getValue())
+        .queryParam("email", acc[0].getEmail().getValue())
         .when()
-        .get("/identity/accounts/by-email/{email}")
+        .get("/identity/accounts")
         .then()
         .statusCode(200)
         .body("data.email", is(acc[0].getEmail().getValue()));

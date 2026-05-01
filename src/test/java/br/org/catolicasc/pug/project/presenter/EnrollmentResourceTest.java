@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import static br.org.catolicasc.pug.helpers.builders.requests.EnrollmentCreateRequestBuilder.anEnrollmentCreateRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -18,6 +17,7 @@ import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.EnrollmentMapper;
+import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentUpdateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
@@ -37,7 +37,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Success")
+  @DisplayName("GET /projects/{projectId}/enrollments/{studentId} - Success")
   void getByIdsSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -57,7 +57,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
         .when()
-        .get("/projects/enrollments/{projectId}/{studentId}")
+        .get("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.projectId", is(project[0].getId().toString()));
@@ -67,13 +67,13 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/enrollments/{projectId}/{studentId} - Not Found")
+  @DisplayName("GET /projects/{projectId}/enrollments/{studentId} - Not Found")
   void getByIdsNotFound() {
     given()
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
         .pathParam("studentId", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/projects/enrollments/{projectId}/{studentId}")
+        .get("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(404);
   }
@@ -108,7 +108,123 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /projects/enrollments - Success")
+  @DisplayName("GET /projects/enrollments?projectId={projectId} - List By Project")
+  void listByProjectId() throws Exception {
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          Student student = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student, project[0]);
+        });
+
+    given()
+        .queryParam("projectId", project[0].getId())
+        .when()
+        .get("/projects/enrollments")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /projects/enrollments?studentId={studentId} - List By Student")
+  void listByStudentId() throws Exception {
+    Student[] student = new Student[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          student[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          Project project = factory.createProject(entity, creator);
+          factory.createEnrollment(student[0], project);
+        });
+
+    given()
+        .queryParam("studentId", student[0].getAccountId())
+        .when()
+        .get("/projects/enrollments")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("GET /projects/{projectId}/enrollments/me - Success")
+  void getMineSuccess() throws Exception {
+    Account[] acc = new Account[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          acc[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          Student student = factory.createStudent(acc[0], course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(student, project[0]);
+        });
+
+    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
+
+    given()
+        .pathParam("projectId", project[0].getId())
+        .when()
+        .get("/projects/{projectId}/enrollments/me")
+        .then()
+        .statusCode(200)
+        .body("data.projectId", is(project[0].getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "student",
+      roles = {"STUDENT"})
+  @DisplayName("GET /projects/enrollments/me - Success")
+  void listMineSuccess() throws Exception {
+    Account[] acc = new Account[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          acc[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          Student student = factory.createStudent(acc[0], course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          Project project = factory.createProject(entity, creator);
+          factory.createEnrollment(student, project);
+        });
+
+    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
+
+    given()
+        .when()
+        .get("/projects/enrollments/me")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("POST /projects/{projectId}/enrollments - Success")
   void createSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -126,10 +242,9 @@ class EnrollmentResourceTest extends BaseResourceTest {
     when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
 
     given()
-        .contentType(ContentType.JSON)
-        .body(anEnrollmentCreateRequest().withProjectId(project[0].getId()).build())
+        .pathParam("projectId", project[0].getId())
         .when()
-        .post("/projects/enrollments")
+        .post("/projects/{projectId}/enrollments")
         .then()
         .statusCode(201);
   }
@@ -138,7 +253,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/accept - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} approve - Success")
   void acceptSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -155,10 +270,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.APPROVED))
         .when()
-        .patch("/projects/enrollments/{projectId}/{studentId}/accept")
+        .patch("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("APPROVED"));
@@ -168,7 +285,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/cancel - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} cancel - Success")
   void cancelSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -178,10 +295,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.CANCELED))
         .when()
-        .patch("/projects/enrollments/{projectId}/{studentId}/cancel")
+        .patch("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("CANCELED"));
@@ -191,7 +310,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/complete - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} complete - Success")
   void completeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -201,10 +320,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.COMPLETED))
         .when()
-        .patch("/projects/enrollments/{projectId}/{studentId}/complete")
+        .patch("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("COMPLETED"));
@@ -214,7 +335,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/exit - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/me - Success")
   void exitSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -235,9 +356,11 @@ class EnrollmentResourceTest extends BaseResourceTest {
     when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.EXITED))
         .when()
-        .patch("/projects/enrollments/{projectId}/exit")
+        .patch("/projects/{projectId}/enrollments/me")
         .then()
         .statusCode(200)
         .body("data.status", is("EXITED"));
@@ -247,7 +370,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/reject - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} reject - Success")
   void rejectSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -264,10 +387,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.REJECTED))
         .when()
-        .patch("/projects/enrollments/{projectId}/{studentId}/reject")
+        .patch("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("REJECTED"));
@@ -277,7 +402,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/enrollments/{projectId}/{studentId}/remove - Success")
+  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} remove - Success")
   void removeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -287,10 +412,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
+        .body(new EnrollmentUpdateRequest(EnrollmentStatus.REMOVED))
         .when()
-        .patch("/projects/enrollments/{projectId}/{studentId}/remove")
+        .patch("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("REMOVED"));
@@ -300,7 +427,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/enrollments/{projectId}/{studentId} - Success")
+  @DisplayName("DELETE /projects/{projectId}/enrollments/{studentId} - Success")
   void deleteSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -320,7 +447,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
         .when()
-        .delete("/projects/enrollments/{projectId}/{studentId}")
+        .delete("/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200);
   }

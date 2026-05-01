@@ -5,14 +5,12 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) used as the JSON request payload for creating a new Enrollment.
+ * Data Transfer Object (DTO) used as the JSON request payload for creating an Enrollment.
  *
- * <p>This request only carries the target {@code projectId}. The {@code studentId} is not provided
- * by the client; instead, it is resolved server-side from the currently authenticated user (for
- * example, via {@code AuthService.getCurrentAccountId()}), ensuring that a student can only create
- * enrollments on their own behalf.
+ * <p>This request shape is retained for compatibility with supporting tests and builders. The
+ * current public enrollment creation endpoint receives the project identifier from the request
+ * path.
  *
- * @param projectId the unique identifier (UUIDv7) of the project the currently authenticated
- *     student wishes to enroll in
+ * @param projectId the unique identifier of the target project
  */
 public record EnrollmentCreateRequest(@NotNull @UuidV7 UUID projectId) {}

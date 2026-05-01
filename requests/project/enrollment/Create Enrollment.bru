@@ -5,23 +5,15 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/projects/enrollments
-  body: json
+  url: {{baseUrl}}/projects/00000000-0000-0000-0000-000000000001/enrollments
+  body: none
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
-  Content-Type: application/json
-}
-
-body:json {
-  {
-    "projectId": "00000000-0000-0000-0000-000000000001"
-  }
 }
 
 auth:bearer {
   token: {{jwtToken}}
 }
-

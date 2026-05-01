@@ -76,7 +76,7 @@ public final class StudentPresenter {
 
     UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
     AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.email(), hashedPassword, userCmd);
+        new AccountUpdateCommand(req.email(), hashedPassword, null, userCmd);
 
     return new StudentUpdateCommand(
         accountCmd,

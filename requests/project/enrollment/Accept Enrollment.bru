@@ -5,13 +5,20 @@ meta {
 }
 
 patch {
-  url: {{baseUrl}}/projects/enrollments/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002/accept
-  body: none
+  url: {{baseUrl}}/projects/00000000-0000-0000-0000-000000000001/enrollments/00000000-0000-0000-0000-000000000002
+  body: json
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "status": "APPROVED"
+  }
 }
 
 auth:bearer {

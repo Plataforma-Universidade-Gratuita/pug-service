@@ -11,7 +11,6 @@ import java.util.UUID;
  * <p>Provides a fluent API with random defaults for all fields.
  */
 public class ProjectSchoolRequestBuilder {
-  private UUID projectId = UuidCreator.getTimeOrderedEpoch();
   private List<UUID> schoolIds = List.of(UuidCreator.getTimeOrderedEpoch());
 
   private ProjectSchoolRequestBuilder() {}
@@ -20,17 +19,12 @@ public class ProjectSchoolRequestBuilder {
     return new ProjectSchoolRequestBuilder();
   }
 
-  public ProjectSchoolRequestBuilder withProjectId(UUID projectId) {
-    this.projectId = projectId;
-    return this;
-  }
-
   public ProjectSchoolRequestBuilder withSchoolIds(List<UUID> schoolIds) {
     this.schoolIds = schoolIds;
     return this;
   }
 
   public ProjectSchoolRequest build() {
-    return new ProjectSchoolRequest(projectId, schoolIds);
+    return new ProjectSchoolRequest(schoolIds);
   }
 }

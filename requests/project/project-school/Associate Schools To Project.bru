@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/projects/by-school
+  url: {{baseUrl}}/projects/00000000-0000-0000-0000-000000000001/schools
   body: json
   auth: bearer
 }
@@ -17,7 +17,6 @@ headers {
 
 body:json {
   {
-    "projectId": "00000000-0000-0000-0000-000000000001",
     "schoolIds": [
       "00000000-0000-0000-0000-000000000002",
       "00000000-0000-0000-0000-000000000003"

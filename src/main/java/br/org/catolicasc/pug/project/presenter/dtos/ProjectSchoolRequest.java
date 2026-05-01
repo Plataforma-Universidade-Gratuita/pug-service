@@ -1,7 +1,5 @@
 package br.org.catolicasc.pug.project.presenter.dtos;
 
-import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.ProjectSchool;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -9,17 +7,15 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) used as the JSON request payload for assigning a Project to one or
- * more Schools.
+ * Data Transfer Object (DTO) used as the JSON request payload for associating schools to an
+ * existing Project.
  *
- * <p>This request does not create or update the {@link Project} itself; it is dedicated exclusively
- * to managing the project–school association via {@link ProjectSchool}.
+ * <p>The project identifier is supplied in the request path, so this payload contains only the
+ * collection of school identifiers to associate.
  *
- * @param projectId the unique identifier (UUIDv7) of the project to be associated
- * @param schoolIds the list of unique identifiers (UUIDv7) of the schools to link to the project
+ * @param schoolIds the non-empty list of school identifiers to associate with the target project
  */
-public record ProjectSchoolRequest(
-    @NotNull @UuidV7 UUID projectId, @NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {
+public record ProjectSchoolRequest(@NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {
 
   public ProjectSchoolRequest {
     schoolIds = (schoolIds != null) ? List.copyOf(schoolIds) : null;

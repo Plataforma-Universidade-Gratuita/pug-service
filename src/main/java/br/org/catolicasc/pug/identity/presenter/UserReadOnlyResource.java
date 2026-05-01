@@ -5,7 +5,6 @@ import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
 import br.org.catolicasc.pug.identity.presenter.mappers.UserPresenter;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.UserReadService;
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -14,7 +13,6 @@ import br.org.catolicasc.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
@@ -64,21 +62,6 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Retrieves a specific user by their exact CPF.
-   *
-   * @param cpfRaw the raw 11-digit numeric CPF string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link UserResponse}
-   * @throws AppValidationException if the provided CPF is malformed
-   * @throws ResourceNotFoundException if no user with the given CPF is found
-   */
-  @GET
-  @Path("by-cpf/{cpf}")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpfRaw) {
-    UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
    * Retrieves the identity details of the currently authenticated user.
    *
    * <p>The user identifier is resolved exclusively from the JWT {@code userId} claim via {@link
@@ -99,17 +82,24 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Retrieves a collection of users.
+   * Retrieves users, optionally filtered by query parameters.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * users' names. If omitted, it returns an unfiltered list of all users.
+   * <p>When {@code cpf} is provided, this endpoint returns the single user associated with that
+   * CPF. Otherwise, it falls back to full-text search with {@code q} or lists all users when no
+   * filters are supplied.
    *
    * @param query the optional search query string used to filter by name
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     UserResponse}
+   * @param cpfRaw the optional CPF used to retrieve a single user
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     UserResponse} or a list of {@link UserResponse}
    */
   @GET
-  public Response list(@QueryParam("q") String query) {
+  public Response list(@QueryParam("q") String query, @QueryParam("cpf") String cpfRaw) {
+    if (StringUtils.isNotEmpty(cpfRaw)) {
+      UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
     List<UserView> views;
 
     if (StringUtils.isNotEmpty(query)) {

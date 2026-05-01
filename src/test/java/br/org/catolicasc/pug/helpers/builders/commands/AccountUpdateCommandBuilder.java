@@ -66,6 +66,6 @@ public class AccountUpdateCommandBuilder {
    */
   public AccountUpdateCommand build() {
     UserUpdateCommand userCmd = (userName != null) ? new UserUpdateCommand(userName) : null;
-    return new AccountUpdateCommand(emailString, passwordHash, userCmd);
+    return new AccountUpdateCommand(emailString, passwordHash, null, userCmd);
   }
 }

@@ -1,18 +1,11 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
 import br.org.catolicasc.pug.academic.presenter.mappers.SchoolPresenter;
-import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.ProjectSchool;
-import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectSchoolRequest;
-import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
 import br.org.catolicasc.pug.project.service.ProjectSchoolReadService;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
-import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
@@ -41,106 +34,68 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing Project–School associations.
+ * REST API resource controller for managing project-school associations from the project side.
  *
- * <p>This resource is dedicated exclusively to linking existing {@link Project} instances to
- * existing {@link School} instances via the {@link ProjectSchool} aggregate.
- *
- * <p>Following CQRS principles:
- *
- * <ul>
- *   <li>Write operations delegate to {@link ProjectSchoolService}.
- *   <li>Read operations delegate to {@link ProjectSchoolReadService} and use existing read models
- *       ({@link ProjectView}, {@link SchoolView}).
- * </ul>
+ * <p>This class exposes nested endpoints rooted at {@code /projects/{projectId}/schools} to list,
+ * create, and remove the relationship between a project and academic schools. It delegates commands
+ * to the {@link ProjectSchoolService} and queries to the {@link ProjectSchoolReadService}, adhering
+ * to CQRS principles.
  */
 @ApplicationScoped
-@Path("/projects/by-school")
+@Path("/projects/{projectId}/schools")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
 public class ProjectSchoolResource {
 
   @Inject ProjectSchoolService writeService;
-
   @Inject ProjectSchoolReadService readService;
 
-  @Inject I18n i18n;
-
   @Context UriInfo uri;
-
   @Context HttpHeaders headers;
 
   /**
-   * Retrieves all schools associated with a specific project.
+   * Retrieves the schools associated with a specific project.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     SchoolResponse}
    */
   @GET
-  @Path("/projects/{projectId}/schools")
-  @Authenticated
   public Response listSchoolsByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
     Set<SchoolView> views = readService.listAllSchoolsByProjectId(projectId);
-
     List<SchoolResponse> body =
         views.stream()
             .map(v -> SchoolPresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
-
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**
-   * Retrieves all projects associated with a specific school.
+   * Creates project-school associations for the specified project.
    *
-   * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     ProjectResponse}
-   */
-  @GET
-  @Path("/schools/{schoolId}/projects")
-  @Authenticated
-  public Response listProjectsBySchoolId(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    Set<ProjectView> views = readService.listAllProjectsBySchoolId(schoolId);
-
-    List<ProjectResponse> body =
-        views.stream()
-            .map(v -> ProjectPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Registers associations between a project and one or more schools.
+   * <p>The project identifier is supplied in the route and the request payload contains only the
+   * target school identifiers.
    *
-   * <p>This operation is idempotent for existing links: attempting to reassign a school that is
-   * already linked to the project will be silently ignored.
-   *
-   * @param req the validated {@link ProjectSchoolRequest} payload containing the projectId and the
-   *     list of schoolIds to associate
-   * @return an HTTP 201 Created response containing the updated list of {@link SchoolResponse}
-   *     associated with the project
+   * @param projectId the unique identifier (UUIDv7) of the project
+   * @param req the validated {@link ProjectSchoolRequest} containing the school identifiers
+   * @return an HTTP 201 Created response containing a {@code Location} header and the resulting
+   *     list of associated {@link SchoolResponse}
    */
   @POST
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response createAssociations(@Valid ProjectSchoolRequest req) {
-    writeService.save(req.projectId(), req.schoolIds());
+  public Response createAssociations(
+      @PathParam("projectId") @UuidV7 UUID projectId, @Valid ProjectSchoolRequest req) {
+    writeService.save(projectId, req.schoolIds());
 
-    Set<SchoolView> views = readService.listAllSchoolsByProjectId(req.projectId());
+    Set<SchoolView> views = readService.listAllSchoolsByProjectId(projectId);
     List<SchoolResponse> body =
         views.stream()
             .map(v -> SchoolPresenter.toResponse(v, locale()))
             .collect(Collectors.toList());
 
     URI location =
-        uri.getAbsolutePathBuilder()
-            .path("projects")
-            .path(req.projectId().toString())
-            .path("schools")
-            .build();
+        uri.getBaseUriBuilder().path("projects").path(projectId.toString()).path("schools").build();
 
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -148,34 +103,27 @@ public class ProjectSchoolResource {
   /**
    * Removes a specific association between a project and a school.
    *
-   * <p>This operation is idempotent: attempting to delete a non-existing association will result in
-   * a successful 200 response with an empty payload.
-   *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @param schoolId the unique identifier (UUIDv7) of the school
    * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
-  @Path("/projects/{projectId}/schools/{schoolId}")
+  @Path("/{schoolId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAssociation(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("schoolId") @UuidV7 UUID schoolId) {
-
     writeService.delete(projectId, schoolId);
     return Response.ok(ApiEnvelope.ok(null)).build();
   }
 
   /**
-   * Removes all school associations for a specific project.
-   *
-   * <p>This operation is idempotent: if no associations exist, it still returns 200 OK.
+   * Removes all school associations for the specified project.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
    */
   @DELETE
-  @Path("/projects/{projectId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAllByProject(@PathParam("projectId") @UuidV7 UUID projectId) {
     writeService.deleteAllByProjectId(projectId);
@@ -183,21 +131,10 @@ public class ProjectSchoolResource {
   }
 
   /**
-   * Removes all project associations for a specific school.
+   * Determines the preferred locale from the incoming request headers.
    *
-   * <p>This operation is idempotent: if no associations exist, it still returns 200 OK.
-   *
-   * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return the resolved {@link Locale}
    */
-  @DELETE
-  @Path("/schools/{schoolId}")
-  @RolesAllowed({"ADMIN", "STAFF"})
-  public Response deleteAllBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    writeService.deleteAllBySchoolId(schoolId);
-    return Response.ok(ApiEnvelope.ok(null)).build();
-  }
-
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

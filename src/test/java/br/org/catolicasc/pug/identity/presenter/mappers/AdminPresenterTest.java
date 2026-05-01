@@ -50,11 +50,12 @@ class AdminPresenterTest {
     @DisplayName("Should map UpdateRequest to AdminUpdateCommand")
     void toUpdateCommand() {
       AdminUpdateRequest req =
-          new AdminUpdateRequest("New Name", "new@a.com", "newPass", Campi.JARAGUA_DO_SUL);
+          new AdminUpdateRequest("New Name", "new@a.com", "newPass", Campi.JARAGUA_DO_SUL, false);
       AdminUpdateCommand cmd = AdminPresenter.toCommand(req, "hashedPass");
 
       assertThat(cmd.campus()).isEqualTo(Campi.JARAGUA_DO_SUL);
       assertThat(cmd.accountCommand().emailString()).isEqualTo("new@a.com");
+      assertThat(cmd.accountCommand().active()).isFalse();
       assertThat(cmd.accountCommand().userCommand().name()).isEqualTo("New Name");
     }
   }

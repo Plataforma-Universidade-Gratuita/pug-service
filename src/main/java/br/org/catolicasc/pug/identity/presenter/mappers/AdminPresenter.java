@@ -61,7 +61,8 @@ public final class AdminPresenter {
       return null;
     }
     var userCmd = new UserUpdateCommand(req.name());
-    var accountCmd = new AccountUpdateCommand(req.emailString(), hashedPassword, userCmd);
+    var accountCmd =
+        new AccountUpdateCommand(req.emailString(), hashedPassword, req.active(), userCmd);
     return new AdminUpdateCommand(accountCmd, req.campus());
   }
 

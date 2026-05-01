@@ -21,7 +21,6 @@ import br.org.catolicasc.pug.shared.validation.UuidV7;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -46,9 +45,9 @@ import java.util.stream.Collectors;
 /**
  * REST API Resource controller for managing Administrator profiles.
  *
- * <p>This class exposes endpoints to create, retrieve, update, deactivate, and revoke
- * administrative privileges. It delegates commands to the {@link AdminService} (writes) and queries
- * to the {@link AdminReadService} (reads), strictly adhering to CQRS principles.
+ * <p>This class exposes endpoints to create, retrieve, update, patch, and revoke administrative
+ * privileges. It delegates commands to the {@link AdminService} (writes) and queries to the {@link
+ * AdminReadService} (reads), strictly adhering to CQRS principles.
  */
 @Path("/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -82,23 +81,6 @@ public class AdminResource {
   }
 
   /**
-   * Retrieves a specific administrator by their registered email address.
-   *
-   * @param emailRaw the exact email string of the admin
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     AdminResponse}
-   * @throws AppValidationException if the provided email is malformed
-   * @throws ResourceNotFoundException if no admin with the given email is found
-   */
-  @GET
-  @Path("by-email/{email}")
-  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
-    AdminView view = readService.getViewByEmail(emailRaw);
-    AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
    * Retrieves the administrator profile associated with the currently authenticated account.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
@@ -120,17 +102,39 @@ public class AdminResource {
   }
 
   /**
-   * Retrieves a collection of administrators.
+   * Retrieves administrators, optionally filtered by query parameters.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * admins' personal names. If omitted, it returns an unfiltered list of all admins.
+   * <p>When {@code email} is provided, this endpoint returns the administrator linked to that
+   * account email. When {@code cpf} is provided, it returns the administrators associated with that
+   * CPF. If neither identifier is present, it falls back to full-text search with {@code q} or
+   * lists all administrators when no filters are supplied.
    *
    * @param query the optional search query string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     AdminResponse}
+   * @param emailRaw the optional email used to retrieve a single administrator
+   * @param cpfRaw the optional CPF used to retrieve the administrators associated with a user
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     AdminResponse} or a list of {@link AdminResponse}
    */
   @GET
-  public Response list(@QueryParam("q") String query) {
+  public Response list(
+      @QueryParam("q") String query,
+      @QueryParam("email") String emailRaw,
+      @QueryParam("cpf") String cpfRaw) {
+    if (StringUtils.isNotEmpty(emailRaw)) {
+      AdminView view = readService.getViewByEmail(emailRaw);
+      AdminResponse body = AdminPresenter.toResponse(view, locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
+    if (StringUtils.isNotEmpty(cpfRaw)) {
+      List<AdminResponse> list =
+          readService.listViewsByCpf(cpfRaw).stream()
+              .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
+              .collect(Collectors.toList());
+
+      return Response.ok(ApiEnvelope.ok(list)).build();
+    }
+
     List<AdminView> views;
 
     if (StringUtils.isNotEmpty(query)) {
@@ -141,25 +145,6 @@ public class AdminResource {
 
     List<AdminResponse> list =
         views.stream()
-            .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-
-    return Response.ok(ApiEnvelope.ok(list)).build();
-  }
-
-  /**
-   * Retrieves a collection of administrators filtered by the user's CPF.
-   *
-   * @param cpfRaw the raw 11-digit numeric CPF string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     AdminResponse}
-   * @throws AppValidationException if the provided CPF is malformed
-   */
-  @GET
-  @Path("by-cpf/{cpf}")
-  public Response listByCpf(@PathParam("cpf") String cpfRaw) {
-    List<AdminResponse> list =
-        readService.listViewsByCpf(cpfRaw).stream()
             .map(v -> AdminPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
 
@@ -222,19 +207,32 @@ public class AdminResource {
   }
 
   /**
-   * Gracefully deactivates an administrator's account.
+   * Applies a partial update to an existing administrator.
    *
-   * <p>This disables Login.bru capabilities and system access without destroying the underlying
-   * records, maintaining historical referential integrity.
+   * <p>This endpoint supports the same partial payload semantics as {@link #update(UUID,
+   * AdminUpdateRequest)} and is also used for activation-state changes, such as setting {@code
+   * active} to {@code false} to deactivate the account.
    *
    * @param id the unique identifier (UUIDv7) of the admin's account
-   * @return an HTTP 200 OK response with an empty payload indicating successful deactivation
+   * @param req the validated {@link AdminUpdateRequest} containing the fields to change
+   * @return an HTTP 200 OK response containing the updated {@link AdminResponse}
+   * @throws ResourceNotFoundException if the admin does not exist
+   * @throws DuplicateResourceException if an updated email/CPF conflicts with an existing record
+   * @throws AppValidationException if input validation fails
    */
   @PATCH
-  @Path("{id}/deactivate")
-  public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
-    writeService.deactivate(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+  @Path("{id}")
+  public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
+    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
+    var cmd = AdminPresenter.toCommand(req, hashedPassword);
+
+    Admin updatedAdmin = writeService.update(id, cmd);
+
+    AdminResponse body =
+        AdminPresenter.toResponse(
+            readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**

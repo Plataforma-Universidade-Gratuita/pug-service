@@ -124,6 +124,24 @@ public class Account extends DomainError {
   }
 
   /**
+   * Reactivates the account by setting the {@code active} flag to {@code true}.
+   *
+   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
+   * updated active status and a refreshed {@link AuditInfo} timestamp.
+   *
+   * @return a new, activated, and validated {@link Account} instance, or {@code this} if the
+   *     account is already active
+   */
+  public Account activate() {
+    if (Boolean.TRUE.equals(active)) {
+      return this;
+    }
+    Account updated = toBuilder().active(true).auditInfo(auditInfo.update()).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
    * Updates the account's email address.
    *
    * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the

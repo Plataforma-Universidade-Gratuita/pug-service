@@ -148,7 +148,7 @@ public class StudentUpdateCommandBuilder {
     UserUpdateCommand userCmd = (name != null) ? new UserUpdateCommand(name) : null;
     AccountUpdateCommand accCmd =
         (email != null || password != null || userCmd != null)
-            ? new AccountUpdateCommand(email, password, userCmd)
+            ? new AccountUpdateCommand(email, password, null, userCmd)
             : null;
     return new StudentUpdateCommand(
         accCmd, academicRegistration, campus, courseId, requiredHours, startDate, dueDate);

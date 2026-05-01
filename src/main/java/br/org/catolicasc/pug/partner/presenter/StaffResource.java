@@ -10,7 +10,6 @@ import br.org.catolicasc.pug.partner.presenter.dtos.StaffUpdateRequest;
 import br.org.catolicasc.pug.partner.presenter.mappers.StaffPresenter;
 import br.org.catolicasc.pug.partner.service.StaffReadService;
 import br.org.catolicasc.pug.partner.service.StaffService;
-import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
@@ -22,7 +21,6 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -87,26 +85,6 @@ public class StaffResource {
   }
 
   /**
-   * Retrieves a specific staff member by their registered email address.
-   *
-   * <p>Available to any authenticated user so that students can look up staff contacts by email.
-   *
-   * @param emailRaw the exact email string of the staff member
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StaffResponse}
-   * @throws AppValidationException if the provided email is malformed
-   * @throws ResourceNotFoundException if no staff member is found with the given email
-   */
-  @GET
-  @Path("/by-email/{email}")
-  @Authenticated
-  public Response getByEmail(@PathParam("email") @NotNull String emailRaw) {
-    StaffView v = readService.getViewByEmail(emailRaw);
-    StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(out)).build();
-  }
-
-  /**
    * Retrieves the staff profile details of the currently authenticated user.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
@@ -129,19 +107,50 @@ public class StaffResource {
   }
 
   /**
-   * Retrieves a collection of staff members.
+   * Retrieves staff members, optionally filtered by query parameters.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * personal names of the staff. If omitted, it returns an unfiltered list of all staff. Available
-   * to any authenticated user so that students can see the staff members they will interact with.
+   * <p>When {@code email} is provided, this endpoint returns the staff member linked to that
+   * account email. When {@code cpf} is provided, it returns the staff members associated with that
+   * CPF. When {@code entityId} is provided, it returns the staff assigned to that partner entity.
+   * If none of those filters are supplied, it falls back to full-text search with {@code q} or
+   * lists all staff members.
    *
    * @param query the optional search query string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     StaffResponse}
+   * @param emailRaw the optional email used to retrieve a single staff member
+   * @param cpfRaw the optional CPF used to retrieve the staff members associated with a user
+   * @param entityId the optional partner entity identifier used to filter staff members
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     StaffResponse} or a list of {@link StaffResponse}
    */
   @GET
   @Authenticated
-  public Response list(@QueryParam("q") String query) {
+  public Response list(
+      @QueryParam("q") String query,
+      @QueryParam("email") String emailRaw,
+      @QueryParam("cpf") String cpfRaw,
+      @QueryParam("entityId") @UuidV7 UUID entityId) {
+    if (StringUtils.isNotEmpty(emailRaw)) {
+      StaffView v = readService.getViewByEmail(emailRaw);
+      StaffResponse out = StaffPresenter.toResponse(v, locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(out)).build();
+    }
+
+    if (StringUtils.isNotEmpty(cpfRaw)) {
+      List<StaffResponse> list =
+          readService.listViewsByCpf(cpfRaw).stream()
+              .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+              .collect(Collectors.toList());
+      return Response.ok(ApiEnvelope.ok(list)).build();
+    }
+
+    if (entityId != null) {
+      List<StaffResponse> list =
+          readService.listViewsByEntityId(entityId).stream()
+              .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
+              .collect(Collectors.toList());
+      return Response.ok(ApiEnvelope.ok(list)).build();
+    }
+
     List<StaffView> views =
         StringUtils.isNotEmpty(query) ? readService.search(query) : readService.listViews();
 
@@ -150,49 +159,6 @@ public class StaffResource {
             .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
             .collect(Collectors.toList());
 
-    return Response.ok(ApiEnvelope.ok(list)).build();
-  }
-
-  /**
-   * Retrieves a collection of staff members filtered by the user's exact CPF.
-   *
-   * <p>Available to any authenticated user. Useful for administrative use cases and internal tools;
-   * not a common path for students, but safe to expose read-only.
-   *
-   * @param cpfRaw the raw 11-digit numeric CPF string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     StaffResponse}
-   * @throws AppValidationException if the provided CPF is malformed
-   */
-  @GET
-  @Path("/by-cpf/{cpf}")
-  @Authenticated
-  public Response listByCpf(@PathParam("cpf") String cpfRaw) {
-    List<StaffResponse> list =
-        readService.listViewsByCpf(cpfRaw).stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
-    return Response.ok(ApiEnvelope.ok(list)).build();
-  }
-
-  /**
-   * Retrieves a collection of staff members assigned to a specific partner entity.
-   *
-   * <p>Available to any authenticated user so that students can see the staff of the entity they
-   * will work with.
-   *
-   * @param entityId the unique identifier (UUID) of the partner entity
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     StaffResponse}
-   */
-  @GET
-  @Path("/by-entity/{entityId}")
-  @Authenticated
-  public Response listByEntity(@PathParam("entityId") @UuidV7 UUID entityId) {
-    List<StaffResponse> list =
-        readService.listViewsByEntityId(entityId).stream()
-            .map(v -> StaffPresenter.toResponse(v, locale(), i18n))
-            .collect(Collectors.toList());
     return Response.ok(ApiEnvelope.ok(list)).build();
   }
 
@@ -235,16 +201,29 @@ public class StaffResource {
   }
 
   /**
-   * Gracefully deactivates a staff member's account.
+   * Applies a partial update to a staff member.
    *
-   * <p>Restricted to ADMIN and STAFF roles.
+   * <p>This endpoint supports the same partial payload semantics as {@link #update(UUID,
+   * StaffUpdateRequest)} and is also used for activation-state changes, such as setting {@code
+   * active} to {@code false} to deactivate the account.
+   *
+   * @param id the unique identifier (UUIDv7) of the staff member's account
+   * @param req the validated {@link StaffUpdateRequest} containing the fields to change
+   * @return an HTTP 200 OK response containing the updated {@link StaffResponse}
+   * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @PATCH
-  @Path("/{id}/deactivate")
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response deactivate(@PathParam("id") @UuidV7 UUID id) {
-    writeService.deactivate(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+  public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
+    String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
+    var cmd = StaffPresenter.toCommand(req, hashedPassword);
+    writeService.update(id, cmd);
+
+    StaffView v = readService.getViewByAccountId(id);
+    StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
+
+    return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
   /**

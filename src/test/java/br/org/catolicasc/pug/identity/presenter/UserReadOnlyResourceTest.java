@@ -61,15 +61,15 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/users/by-cpf/{cpf} - Success")
+  @DisplayName("GET /identity/users?cpf= - Success")
   void getByCpfSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(() -> user[0] = factory.createUser());
 
     given()
-        .pathParam("cpf", user[0].getCpf().getValue())
+        .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/identity/users/by-cpf/{cpf}")
+        .get("/identity/users")
         .then()
         .statusCode(200)
         .body("data.cpf", is(user[0].getCpf().getValue()));

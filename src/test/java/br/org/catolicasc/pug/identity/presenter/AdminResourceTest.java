@@ -76,7 +76,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /identity/admins/{id}/deactivate - Success")
+  @DisplayName("PATCH /identity/admins/{id} - Success")
   void deactivateSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -87,9 +87,11 @@ class AdminResourceTest extends BaseResourceTest {
         });
 
     given()
+        .contentType(ContentType.JSON)
         .pathParam("id", acc[0].getId())
+        .body(anAdminUpdateRequest().withName(null).withCampus(null).withActive(false).build())
         .when()
-        .patch("/identity/admins/{id}/deactivate")
+        .patch("/identity/admins/{id}")
         .then()
         .statusCode(200);
   }
@@ -167,7 +169,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins/by-email/{email} - Success")
+  @DisplayName("GET /identity/admins?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -178,9 +180,9 @@ class AdminResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("email", acc[0].getEmail().getValue())
+        .queryParam("email", acc[0].getEmail().getValue())
         .when()
-        .get("/identity/admins/by-email/{email}")
+        .get("/identity/admins")
         .then()
         .statusCode(200)
         .body("data.accountResponse.email", is(acc[0].getEmail().getValue()));
@@ -211,7 +213,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins/by-cpf/{cpf} - Success")
+  @DisplayName("GET /identity/admins?cpf= - Success")
   void listByCpfSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(
@@ -222,9 +224,9 @@ class AdminResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("cpf", user[0].getCpf().getValue())
+        .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/identity/admins/by-cpf/{cpf}")
+        .get("/identity/admins")
         .then()
         .statusCode(200)
         .body("data[0].accountResponse.userId", is(user[0].getId().toString()));

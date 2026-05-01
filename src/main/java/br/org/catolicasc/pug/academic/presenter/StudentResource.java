@@ -85,57 +85,6 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a specific student by their exact CPF.
-   *
-   * @param cpf the raw 11-digit numeric CPF string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StudentResponse}
-   * @throws ResourceNotFoundException if the student is not found
-   */
-  @GET
-  @Path("/by-cpf/{cpf}")
-  @RolesAllowed("ADMIN")
-  public Response getByCpf(@PathParam("cpf") @NotNull String cpf) {
-    StudentView view = readService.getViewByCpf(cpf);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a specific student by their registered email address.
-   *
-   * @param email the exact email string of the student
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StudentResponse}
-   * @throws ResourceNotFoundException if the student is not found
-   */
-  @GET
-  @Path("/by-email/{email}")
-  @RolesAllowed("ADMIN")
-  public Response getByEmail(@PathParam("email") @NotNull String email) {
-    StudentView view = readService.getViewByEmail(email);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Retrieves a specific student by their exact academic registration number.
-   *
-   * @param registration the academic registration string
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
-   *     StudentResponse}
-   * @throws ResourceNotFoundException if the student is not found
-   */
-  @GET
-  @Path("/by-registration/{registration}")
-  @RolesAllowed("ADMIN")
-  public Response getByRegistration(@PathParam("registration") @NotNull String registration) {
-    StudentView view = readService.getViewByAcademicRegistration(registration);
-    StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
    * Retrieves the academic enrollment details of the currently authenticated student.
    *
    * <p>The account identifier is resolved from the JWT {@code accountId} claim via {@link
@@ -158,20 +107,46 @@ public class StudentResource {
   }
 
   /**
-   * Retrieves a collection of students.
+   * Retrieves students, optionally filtered by query parameters.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
-   * students' personal names. If the {@code courseId} is provided, it filters the students by their
-   * enrolled course. If both are omitted, it returns all students.
+   * <p>When {@code cpf}, {@code email}, or {@code registration} is provided, this endpoint returns
+   * the single student linked to that identifier. Otherwise, it filters by {@code courseId}, falls
+   * back to full-text search with {@code q}, or lists all students when no filters are supplied.
    *
    * @param q the optional search query string
    * @param courseId the optional course identifier to filter by
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
-   *     StudentResponse}
+   * @param cpf the optional CPF used to retrieve a single student
+   * @param email the optional email used to retrieve a single student
+   * @param registration the optional academic registration used to retrieve a single student
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
+   *     StudentResponse} or a list of {@link StudentResponse}
    */
   @GET
   @Authenticated
-  public Response list(@QueryParam("q") String q, @QueryParam("courseId") @UuidV7 UUID courseId) {
+  public Response list(
+      @QueryParam("q") String q,
+      @QueryParam("courseId") @UuidV7 UUID courseId,
+      @QueryParam("cpf") String cpf,
+      @QueryParam("email") String email,
+      @QueryParam("registration") String registration) {
+
+    if (StringUtils.isNotEmpty(cpf)) {
+      StudentView view = readService.getViewByCpf(cpf);
+      StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
+    if (StringUtils.isNotEmpty(email)) {
+      StudentView view = readService.getViewByEmail(email);
+      StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
+    if (StringUtils.isNotEmpty(registration)) {
+      StudentView view = readService.getViewByAcademicRegistration(registration);
+      StudentResponse body = StudentPresenter.toResponse(view, locale(), i18n);
+      return Response.ok(ApiEnvelope.ok(body)).build();
+    }
 
     List<StudentView> views;
 

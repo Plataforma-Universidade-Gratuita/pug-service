@@ -62,10 +62,12 @@ class AccountProcessorTest {
         AccountProcessor.processCreateInput(
             UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
 
-    Account updated = AccountProcessor.processUpdateInput(acc, "new@test.com", "newhash");
+    Account updated =
+        AccountProcessor.processUpdateInput(acc, "new@test.com", "newhash", Boolean.FALSE);
 
     assertThat(updated.getEmail().getValue()).isEqualTo("new@test.com");
     assertThat(updated.getPasswordHash()).isEqualTo("newhash");
+    assertThat(updated.getActive()).isFalse();
   }
 
   @Test
@@ -74,6 +76,6 @@ class AccountProcessorTest {
     Account acc =
         AccountProcessor.processCreateInput(
             UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
-    assertThat(AccountProcessor.processUpdateInput(acc, null, null)).isEqualTo(acc);
+    assertThat(AccountProcessor.processUpdateInput(acc, null, null, null)).isEqualTo(acc);
   }
 }

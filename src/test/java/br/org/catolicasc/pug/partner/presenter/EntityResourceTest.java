@@ -67,7 +67,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partner/entities/by-cnpj/{cnpj} - Success")
+  @DisplayName("GET /partner/entities?cnpj= - Success")
   void getByCnpjSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -77,9 +77,9 @@ class EntityResourceTest extends BaseResourceTest {
         });
 
     given()
-        .pathParam("cnpj", entity[0].getCnpj().getValue())
+        .queryParam("cnpj", entity[0].getCnpj().getValue())
         .when()
-        .get("/partner/entities/by-cnpj/{cnpj}")
+        .get("/partner/entities")
         .then()
         .statusCode(200)
         .body("data.cnpj", is(entity[0].getCnpj().getValue()));

@@ -9,8 +9,9 @@ package br.org.catolicasc.pug.identity.service.dtos;
  *
  * @param emailString the new email address string, or {@code null} to leave unchanged
  * @param passwordHash the new hashed password string, or {@code null} to leave unchanged
+ * @param active the new activation flag, or {@code null} to leave the account status unchanged
  * @param userCommand the nested command for updating the associated user, or {@code null} to leave
  *     unchanged
  */
 public record AccountUpdateCommand(
-    String emailString, String passwordHash, UserUpdateCommand userCommand) {}
+    String emailString, String passwordHash, Boolean active, UserUpdateCommand userCommand) {}
