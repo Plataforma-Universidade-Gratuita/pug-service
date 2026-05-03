@@ -70,7 +70,7 @@ public class SchoolResource {
    * @throws ResourceNotFoundException if the school is not found
    */
   @GET
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     SchoolView view = readService.getViewById(id);
@@ -136,7 +136,7 @@ public class SchoolResource {
    * @return an HTTP 200 OK response containing the updated {@link SchoolResponse}
    */
   @PUT
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid SchoolUpdateRequest req) {
     SchoolUpdateCommand cmd = SchoolPresenter.toCommand(req);
@@ -155,7 +155,7 @@ public class SchoolResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

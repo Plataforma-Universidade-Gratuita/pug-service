@@ -318,5 +318,3 @@ class EntityResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
-
-

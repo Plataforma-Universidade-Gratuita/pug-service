@@ -69,7 +69,7 @@ public class EntityResource {
    * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(id), locale());
@@ -129,7 +129,7 @@ public class EntityResource {
    * @return a {@link Response} containing an {@link ApiEnvelope} with the list of used cities.
    */
   @GET
-  @Path(PartnerApiPaths.ENTITY_CITIES_SEGMENT)
+  @Path("/cities")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response listCities() {
     var body =
@@ -177,7 +177,7 @@ public class EntityResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     var cmd = EntityPresenter.toCommand(req);
@@ -196,7 +196,7 @@ public class EntityResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

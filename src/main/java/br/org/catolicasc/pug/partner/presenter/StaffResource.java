@@ -77,7 +77,7 @@ public class StaffResource {
    * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @GET
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StaffView v = readService.getViewByAccountId(id);
@@ -98,7 +98,7 @@ public class StaffResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path(PartnerApiPaths.SELF)
+  @Path("/me")
   @Authenticated
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
@@ -188,7 +188,7 @@ public class StaffResource {
    * <p>Restricted to ADMIN and STAFF roles.
    */
   @PUT
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
@@ -214,7 +214,7 @@ public class StaffResource {
    * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @PATCH
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
@@ -229,7 +229,7 @@ public class StaffResource {
    * <p>Restricted to ADMIN role only.
    */
   @DELETE
-  @Path(PartnerApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

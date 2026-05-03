@@ -50,7 +50,7 @@ public class CityReadOnlyResource {
    * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details
    */
   @GET
-  @Path(GeoApiPaths.ITEM)
+  @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     CityView cityView = readService.getViewById(id);
     CityResponse responseBody = CityPresenter.toResponse(cityView);
@@ -67,7 +67,7 @@ public class CityReadOnlyResource {
    * @return a {@link Response} containing an {@link ApiEnvelope} with the retrieved city details
    */
   @GET
-  @Path(GeoApiPaths.BY_IBGE)
+  @Path("by-ibge/{ibgeCode}")
   public Response getByIbgeCode(@PathParam("ibgeCode") String ibgeCode) {
     CityView cityView = readService.getViewByIbgeCode(ibgeCode);
     CityResponse responseBody = CityPresenter.toResponse(cityView);

@@ -70,7 +70,7 @@ public class CourseResource {
    * @throws ResourceNotFoundException if the course is not found
    */
   @GET
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     CourseView view = readService.getViewById(id);
@@ -142,7 +142,7 @@ public class CourseResource {
    * @return an HTTP 200 OK response containing the updated {@link CourseResponse}
    */
   @PUT
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid CourseUpdateRequest req) {
     CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
@@ -161,7 +161,7 @@ public class CourseResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

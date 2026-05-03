@@ -74,7 +74,7 @@ public class ProjectResource {
    * @throws ResourceNotFoundException if the project is not found
    */
   @GET
-  @Path(ProjectApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     ProjectView view = readService.getViewById(id);
@@ -148,7 +148,7 @@ public class ProjectResource {
    * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
    */
   @PUT
-  @Path(ProjectApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
@@ -172,7 +172,7 @@ public class ProjectResource {
    * @throws ResourceNotFoundException if the project is not found
    */
   @PATCH
-  @Path(ProjectApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     if (req.name() != null
@@ -198,7 +198,7 @@ public class ProjectResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(ProjectApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

@@ -399,5 +399,3 @@ class ProjectResourceTest extends BaseResourceTest {
         .body("data.status", is("IN_PROGRESS"));
   }
 }
-
-

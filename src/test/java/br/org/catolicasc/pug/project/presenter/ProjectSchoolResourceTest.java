@@ -195,5 +195,3 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .post("/v1/projects/{projectId}/schools");
   }
 }
-
-

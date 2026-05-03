@@ -244,5 +244,3 @@ class CourseResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
-
-

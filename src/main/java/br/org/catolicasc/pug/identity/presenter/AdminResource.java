@@ -74,7 +74,7 @@ public class AdminResource {
    * @throws ResourceNotFoundException if the admin is not found
    */
   @GET
-  @Path(IdentityApiPaths.ITEM)
+  @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     AdminView v = readService.getViewByAccountId(id);
     AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
@@ -94,7 +94,7 @@ public class AdminResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path(IdentityApiPaths.SELF)
+  @Path("me")
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
     AdminView v = readService.getViewByAccountId(accountId);
@@ -193,7 +193,7 @@ public class AdminResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path(IdentityApiPaths.ITEM)
+  @Path("{id}")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = AdminPresenter.toCommand(req, hashedPassword);
@@ -222,7 +222,7 @@ public class AdminResource {
    * @throws AppValidationException if input validation fails
    */
   @PATCH
-  @Path(IdentityApiPaths.ITEM)
+  @Path("{id}")
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = AdminPresenter.toCommand(req, hashedPassword);
@@ -240,7 +240,7 @@ public class AdminResource {
    * @throws ResourceNotFoundException if the admin does not exist
    */
   @DELETE
-  @Path(IdentityApiPaths.ITEM)
+  @Path("{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.noContent().build();

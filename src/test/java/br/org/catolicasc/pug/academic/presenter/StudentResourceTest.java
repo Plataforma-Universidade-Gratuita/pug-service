@@ -387,5 +387,3 @@ class StudentResourceTest extends BaseResourceTest {
         LocalDate.now().plusMonths(6));
   }
 }
-
-

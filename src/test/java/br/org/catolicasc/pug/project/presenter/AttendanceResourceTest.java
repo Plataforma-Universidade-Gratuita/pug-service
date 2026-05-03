@@ -167,5 +167,3 @@ class AttendanceResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/projects/attendances");
   }
 }
-
-

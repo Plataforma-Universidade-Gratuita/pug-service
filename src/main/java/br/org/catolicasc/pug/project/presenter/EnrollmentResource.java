@@ -12,6 +12,7 @@ import br.org.catolicasc.pug.project.presenter.mappers.EnrollmentPresenter;
 import br.org.catolicasc.pug.project.service.EnrollmentReadService;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.shared.constants.ApiVersions;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
@@ -45,8 +46,7 @@ import java.util.stream.Collectors;
  *
  * <p>This class exposes nested project enrollment endpoints rooted at {@code /v1/projects} for
  * reads, creation, status transitions, and removal. It delegates commands to the {@link
- * EnrollmentService} and queries to the {@link EnrollmentReadService}, adhering to CQRS
- * principles.
+ * EnrollmentService} and queries to the {@link EnrollmentReadService}, adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path(ProjectApiPaths.PROJECTS)
@@ -70,7 +70,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
+  @Path("/{projectId}/enrollments/{studentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response get(
       @PathParam("projectId") @UuidV7 UUID projectId,
@@ -88,7 +88,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_ME_SEGMENT)
+  @Path("/{projectId}/enrollments/me")
   @RolesAllowed("STUDENT")
   public Response getMine(@PathParam("projectId") @UuidV7 UUID projectId) {
     UUID studentAccountId = authService.getCurrentAccountId();
@@ -110,7 +110,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path(ProjectApiPaths.ENROLLMENTS_SEGMENT)
+  @Path("/enrollments")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
@@ -140,7 +140,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path(ProjectApiPaths.ENROLLMENTS_ME_SEGMENT)
+  @Path("/enrollments/me")
   @RolesAllowed("STUDENT")
   public Response listMine() {
     UUID studentAccountId = authService.getCurrentAccountId();
@@ -165,7 +165,7 @@ public class EnrollmentResource {
    *     {@link EnrollmentResponse}
    */
   @POST
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENTS_SEGMENT)
+  @Path("/{projectId}/enrollments")
   @Authenticated
   public Response create(@PathParam("projectId") @UuidV7 UUID projectId) {
     EnrollmentCreateCommand cmd = new EnrollmentCreateCommand(projectId);
@@ -178,7 +178,7 @@ public class EnrollmentResource {
 
     URI location =
         uri.getBaseUriBuilder()
-            .path(ProjectApiPaths.VERSION.substring(1))
+            .path(ApiVersions.V1.substring(1))
             .path("projects")
             .path(created.getIdentifier().getProjectId().toString())
             .path("enrollments")
@@ -197,7 +197,7 @@ public class EnrollmentResource {
    * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
    */
   @PATCH
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
+  @Path("/{projectId}/enrollments/{studentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   @jakarta.ws.rs.Consumes(MediaType.APPLICATION_JSON)
   public Response patch(
@@ -219,7 +219,7 @@ public class EnrollmentResource {
    * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
    */
   @PATCH
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_ME_SEGMENT)
+  @Path("/{projectId}/enrollments/me")
   @RolesAllowed("STUDENT")
   @jakarta.ws.rs.Consumes(MediaType.APPLICATION_JSON)
   public Response patchMine(
@@ -239,7 +239,7 @@ public class EnrollmentResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
+  @Path("/{projectId}/enrollments/{studentId}")
   @RolesAllowed({"ADMIN"})
   public Response delete(
       @PathParam("projectId") @UuidV7 UUID projectId,

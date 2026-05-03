@@ -208,5 +208,3 @@ class SchoolResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
-
-

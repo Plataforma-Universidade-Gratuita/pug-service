@@ -463,5 +463,3 @@ class EnrollmentResourceTest extends BaseResourceTest {
     return factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
   }
 }
-
-

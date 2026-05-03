@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectSchoolRequest;
 import br.org.catolicasc.pug.project.service.ProjectSchoolReadService;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
+import br.org.catolicasc.pug.shared.constants.ApiVersions;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
@@ -97,7 +98,7 @@ public class ProjectSchoolResource {
 
     URI location =
         uri.getBaseUriBuilder()
-            .path(ProjectApiPaths.VERSION.substring(1))
+            .path(ApiVersions.V1.substring(1))
             .path("projects")
             .path(projectId.toString())
             .path("schools")
@@ -114,7 +115,7 @@ public class ProjectSchoolResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(ProjectApiPaths.PROJECT_SCHOOL_ITEM_SEGMENT)
+  @Path("/{schoolId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAssociation(
       @PathParam("projectId") @UuidV7 UUID projectId,

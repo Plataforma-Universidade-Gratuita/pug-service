@@ -77,7 +77,7 @@ public class StudentResource {
    * @throws ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StudentView view = readService.getViewByAccountId(id);
@@ -98,7 +98,7 @@ public class StudentResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path(AcademicApiPaths.SELF)
+  @Path("/me")
   @Authenticated
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
@@ -207,7 +207,7 @@ public class StudentResource {
    * @throws DuplicateResourceException if any academic registration or email already exists
    */
   @POST
-  @Path(AcademicApiPaths.BULK)
+  @Path("/bulk")
   @RolesAllowed("ADMIN")
   public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
     List<StudentCreateCommand> cmds =
@@ -238,7 +238,7 @@ public class StudentResource {
    * @return an HTTP 200 OK response containing the updated {@link StudentResponse}
    */
   @PUT
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
     String passwordHash = null;
@@ -261,7 +261,7 @@ public class StudentResource {
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path(AcademicApiPaths.ITEM)
+  @Path("/{id}")
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);

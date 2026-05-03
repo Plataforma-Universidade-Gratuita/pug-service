@@ -321,5 +321,3 @@ class StaffResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
-
-

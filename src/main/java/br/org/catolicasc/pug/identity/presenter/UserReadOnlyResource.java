@@ -56,7 +56,7 @@ public class UserReadOnlyResource {
    * @throws ResourceNotFoundException if no user with the given ID is found
    */
   @GET
-  @Path(IdentityApiPaths.ITEM)
+  @Path("{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     UserResponse body = UserPresenter.toResponse(readService.getViewById(id), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -74,7 +74,7 @@ public class UserReadOnlyResource {
    *     required {@code userId} claim
    */
   @GET
-  @Path(IdentityApiPaths.SELF)
+  @Path("me")
   @Authenticated
   public Response getMe() {
     UUID userId = authService.getCurrentUserId();

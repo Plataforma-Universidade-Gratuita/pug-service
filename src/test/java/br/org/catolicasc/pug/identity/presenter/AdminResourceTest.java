@@ -232,5 +232,3 @@ class AdminResourceTest extends BaseResourceTest {
         .body("data[0].accountResponse.userId", is(user[0].getId().toString()));
   }
 }
-
-
