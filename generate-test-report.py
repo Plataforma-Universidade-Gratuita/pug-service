@@ -4,10 +4,11 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 
 
-REPORT_DIR = Path("./target/jacoco-report")
+BASE_DIR = Path(__file__).resolve().parent
+REPORT_DIR = BASE_DIR / "target" / "jacoco-report"
 XML_REPORT = REPORT_DIR / "jacoco.xml"
 CSV_REPORT = REPORT_DIR / "jacoco.csv"
-OUTPUT_REPORT = Path("coverage_report.md")
+OUTPUT_REPORT = BASE_DIR.parent / "pug-docs" / "pug-service" / "tests" / "coverage_report.md"
 TOP_N = 10
 
 
