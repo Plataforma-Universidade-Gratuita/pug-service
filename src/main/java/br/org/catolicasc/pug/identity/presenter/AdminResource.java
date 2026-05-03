@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
  * privileges. It delegates commands to the {@link AdminService} (writes) and queries to the {@link
  * AdminReadService} (reads), strictly adhering to CQRS principles.
  */
-@Path("/identity/admins")
+@Path(IdentityApiPaths.ADMINS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")

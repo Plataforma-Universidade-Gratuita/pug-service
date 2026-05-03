@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/identity/admins
+  url: {{baseUrl}}/v1/identity/admins
   body: json
   auth: bearer
 }
@@ -28,3 +28,4 @@ body:json {
 auth:bearer {
   token: {{jwtToken}}
 }
+

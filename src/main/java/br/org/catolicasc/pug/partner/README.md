@@ -56,11 +56,11 @@ infra/                        ← Infrastructure layer
 
 ## Endpoints
 
-### Partner Entities — `/partner/entities`
+### Partner Entities — `/v1/partner/entities`
 
 ```mermaid
 graph LR
-    subgraph Entities["🏢 /partner/entities"]
+    subgraph Entities["🏢 /v1/partner/entities"]
         direction TB
         GET_LIST["GET / — List/search ?q= ?cityId=<br/>🔒 Authenticated"]
         GET_ID["GET /{id} — Get by UUID<br/>🔒 Authenticated"]
@@ -72,11 +72,11 @@ graph LR
     end
 ```
 
-### Staff Members — `/partners/staff`
+### Staff Members — `/v1/partners/staff`
 
 ```mermaid
 graph LR
-    subgraph Staff["👥 /partners/staff"]
+    subgraph Staff["👥 /v1/partners/staff"]
         direction TB
         GET_LIST["GET / — List/search ?q= ?entityId= ?cpf=<br/>🔒 Authenticated"]
         GET_ID["GET /{id} — Get by account ID<br/>🔒 Authenticated"]
@@ -148,4 +148,5 @@ erDiagram
 - An account can only be assigned as staff to **one** partner entity at a time.
 - A partner entity cannot be deleted if it has associated projects.
 - A staff member cannot be deleted if they have validated attendances or created projects.
+
 

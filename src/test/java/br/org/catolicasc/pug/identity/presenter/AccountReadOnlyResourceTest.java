@@ -25,7 +25,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/accounts/{id} - Success")
+  @DisplayName("GET /v1/identity/accounts/{id} - Success")
   void getByIdSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -37,7 +37,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", acc[0].getId())
         .when()
-        .get("/identity/accounts/{id}")
+        .get("/v1/identity/accounts/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -48,7 +48,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/accounts?email= - Success")
+  @DisplayName("GET /v1/identity/accounts?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -60,7 +60,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
     given()
         .queryParam("email", acc[0].getEmail().getValue())
         .when()
-        .get("/identity/accounts")
+        .get("/v1/identity/accounts")
         .then()
         .statusCode(200)
         .body("data.email", is(acc[0].getEmail().getValue()));
@@ -70,7 +70,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /identity/accounts/me - Authenticated Success")
+  @DisplayName("GET /v1/identity/accounts/me - Authenticated Success")
   void getMeSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -83,7 +83,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/identity/accounts/me")
+        .get("/v1/identity/accounts/me")
         .then()
         .statusCode(200)
         .body("data.id", is(acc[0].getId().toString()));
@@ -93,7 +93,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/accounts - List All")
+  @DisplayName("GET /v1/identity/accounts - List All")
   void listAccounts() throws Exception {
     doInTransaction(
         () -> {
@@ -103,7 +103,7 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/identity/accounts")
+        .get("/v1/identity/accounts")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -112,6 +112,6 @@ class AccountReadOnlyResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without security")
   void unauthorizedAccess() {
-    assertUnauthenticated("/identity/accounts");
+    assertUnauthenticated("/v1/identity/accounts");
   }
 }

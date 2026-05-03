@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/projects/enrollments
+  url: {{baseUrl}}/v1/projects/enrollments
   body: none
   auth: bearer
 }
@@ -22,4 +22,6 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
+
+
 

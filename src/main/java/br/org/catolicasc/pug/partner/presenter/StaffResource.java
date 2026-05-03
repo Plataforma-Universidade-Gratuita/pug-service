@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.presenter;
 
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
+import br.org.catolicasc.pug.partner.constants.PartnerApiPaths;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffCreateRequest;
@@ -50,7 +51,7 @@ import java.util.stream.Collectors;
  * StaffReadService} and commands to the {@link StaffService}, adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path("/partners/staff")
+@Path(PartnerApiPaths.STAFF)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StaffResource {

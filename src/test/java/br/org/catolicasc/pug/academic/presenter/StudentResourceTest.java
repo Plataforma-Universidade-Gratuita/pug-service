@@ -44,7 +44,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students/{id} - Success")
+  @DisplayName("GET /v1/academic/students/{id} - Success")
   void getByIdSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -59,7 +59,7 @@ class StudentResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", account[0].getId())
         .when()
-        .get("/academic/students/{id}")
+        .get("/v1/academic/students/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -70,12 +70,12 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students/{id} - Not Found")
+  @DisplayName("GET /v1/academic/students/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/academic/students/{id}")
+        .get("/v1/academic/students/{id}")
         .then()
         .statusCode(404);
   }
@@ -84,7 +84,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "user",
       roles = {"STUDENT"})
-  @DisplayName("GET /academic/students - List All")
+  @DisplayName("GET /v1/academic/students - List All")
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -97,7 +97,7 @@ class StudentResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/academic/students")
+        .get("/v1/academic/students")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -107,7 +107,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "user",
       roles = {"STUDENT"})
-  @DisplayName("GET /academic/students?courseId= - Filter by Course")
+  @DisplayName("GET /v1/academic/students?courseId= - Filter by Course")
   void listByCourseId() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -122,7 +122,7 @@ class StudentResourceTest extends BaseResourceTest {
     given()
         .queryParam("courseId", course[0].getId().toString())
         .when()
-        .get("/academic/students")
+        .get("/v1/academic/students")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -132,7 +132,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /academic/students - Success")
+  @DisplayName("POST /v1/academic/students - Success")
   void createSuccess() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -159,7 +159,7 @@ class StudentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/academic/students")
+        .post("/v1/academic/students")
         .then()
         .statusCode(201)
         .body("data.accountId", notNullValue());
@@ -169,7 +169,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /academic/students/bulk - Success")
+  @DisplayName("POST /v1/academic/students/bulk - Success")
   void createBulkSuccess() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -185,7 +185,7 @@ class StudentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(List.of(req1, req2))
         .when()
-        .post("/academic/students/bulk")
+        .post("/v1/academic/students/bulk")
         .then()
         .statusCode(201)
         .body("data", hasSize(2));
@@ -195,7 +195,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /academic/students/{id} - Success")
+  @DisplayName("PUT /v1/academic/students/{id} - Success")
   void updateSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -216,7 +216,7 @@ class StudentResourceTest extends BaseResourceTest {
         .pathParam("id", account[0].getId())
         .body(req)
         .when()
-        .put("/academic/students/{id}")
+        .put("/v1/academic/students/{id}")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));
@@ -226,7 +226,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /academic/students/{id} - Success")
+  @DisplayName("DELETE /v1/academic/students/{id} - Success")
   void deleteSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -243,7 +243,7 @@ class StudentResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", account[0].getId())
         .when()
-        .delete("/academic/students/{id}")
+        .delete("/v1/academic/students/{id}")
         .then()
         .statusCode(200);
   }
@@ -252,7 +252,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /academic/students/me - Success")
+  @DisplayName("GET /v1/academic/students/me - Success")
   void getMeSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -268,7 +268,7 @@ class StudentResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/academic/students/me")
+        .get("/v1/academic/students/me")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));
@@ -277,14 +277,14 @@ class StudentResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when unauthenticated")
   void unauthorizedAccess() {
-    assertUnauthenticated("/academic/students");
+    assertUnauthenticated("/v1/academic/students");
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /academic/students - Forbidden for STUDENT")
+  @DisplayName("POST /v1/academic/students - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -299,7 +299,7 @@ class StudentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/academic/students")
+        .post("/v1/academic/students")
         .then()
         .statusCode(403);
   }
@@ -308,12 +308,12 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("DELETE /academic/students/{id} - Forbidden for STUDENT")
+  @DisplayName("DELETE /v1/academic/students/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/academic/students/{id}")
+        .delete("/v1/academic/students/{id}")
         .then()
         .statusCode(403);
   }
@@ -322,7 +322,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students?cpf= - Success")
+  @DisplayName("GET /v1/academic/students?cpf= - Success")
   void getByCpfSuccess() throws Exception {
     User[] user = new User[1];
     Account[] account = new Account[1];
@@ -338,7 +338,7 @@ class StudentResourceTest extends BaseResourceTest {
     given()
         .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/academic/students")
+        .get("/v1/academic/students")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));
@@ -348,7 +348,7 @@ class StudentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/students?email= - Success")
+  @DisplayName("GET /v1/academic/students?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] account = new Account[1];
     doInTransaction(
@@ -363,7 +363,7 @@ class StudentResourceTest extends BaseResourceTest {
     given()
         .queryParam("email", account[0].getEmail().getValue())
         .when()
-        .get("/academic/students")
+        .get("/v1/academic/students")
         .then()
         .statusCode(200)
         .body("data.accountId", is(account[0].getId().toString()));

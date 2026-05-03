@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.project.presenter;
 
 import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
@@ -47,7 +48,7 @@ import java.util.stream.Collectors;
  * the {@link EnrollmentReadService}, adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path("/projects")
+@Path(ProjectApiPaths.PROJECTS)
 @Produces(MediaType.APPLICATION_JSON)
 public class EnrollmentResource {
 

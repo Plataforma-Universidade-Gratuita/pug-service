@@ -5,7 +5,7 @@ meta {
 }
 
 patch {
-  url: {{baseUrl}}/projects/attendances/00000000-0000-0000-0000-000000000001/validate
+  url: {{baseUrl}}/v1/projects/attendances/00000000-0000-0000-0000-000000000001/validate
   body: json
   auth: bearer
 }
@@ -25,4 +25,6 @@ body:json {
 auth:bearer {
   token: {{jwtToken}}
 }
+
+
 

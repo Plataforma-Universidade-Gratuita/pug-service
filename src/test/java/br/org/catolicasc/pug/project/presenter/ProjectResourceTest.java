@@ -34,7 +34,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/{id} - Success")
+  @DisplayName("GET /v1/projects/{id} - Success")
   void getByIdSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -47,7 +47,7 @@ class ProjectResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", project[0].getId())
         .when()
-        .get("/projects/{id}")
+        .get("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -59,12 +59,12 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/{id} - Not Found")
+  @DisplayName("GET /v1/projects/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/projects/{id}")
+        .get("/v1/projects/{id}")
         .then()
         .statusCode(404)
         .body("success", is(false));
@@ -74,7 +74,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects - List All")
+  @DisplayName("GET /v1/projects - List All")
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -85,7 +85,7 @@ class ProjectResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/projects")
+        .get("/v1/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -95,7 +95,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects?entityId= - Filter by Entity")
+  @DisplayName("GET /v1/projects?entityId= - Filter by Entity")
   void listByEntityId() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -108,7 +108,7 @@ class ProjectResourceTest extends BaseResourceTest {
     given()
         .queryParam("entityId", entity[0].getId().toString())
         .when()
-        .get("/projects")
+        .get("/v1/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -118,7 +118,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("POST /projects - Success")
+  @DisplayName("POST /v1/projects - Success")
   void createSuccess() throws Exception {
     Account[] staffAccount = new Account[1];
     Entity[] entity = new Entity[1];
@@ -136,7 +136,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/projects")
+        .post("/v1/projects")
         .then()
         .statusCode(201)
         .body("data.name", notNullValue())
@@ -147,7 +147,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("PUT /projects/{id} - Success")
+  @DisplayName("PUT /v1/projects/{id} - Success")
   void updateSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -164,7 +164,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(req)
         .when()
-        .put("/projects/{id}")
+        .put("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.description", is("Updated Description"));
@@ -174,7 +174,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /projects/{id} - Not Found")
+  @DisplayName("PUT /v1/projects/{id} - Not Found")
   void updateNotFound() {
     var req = aProjectUpdateRequest().withName("Name").build();
 
@@ -183,7 +183,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .body(req)
         .when()
-        .put("/projects/{id}")
+        .put("/v1/projects/{id}")
         .then()
         .statusCode(404);
   }
@@ -192,7 +192,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/{id} - Success")
+  @DisplayName("DELETE /v1/projects/{id} - Success")
   void deleteSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -205,7 +205,7 @@ class ProjectResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", project[0].getId())
         .when()
-        .delete("/projects/{id}")
+        .delete("/v1/projects/{id}")
         .then()
         .statusCode(200);
   }
@@ -213,30 +213,36 @@ class ProjectResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    assertUnauthenticated("/projects");
+    assertUnauthenticated("/v1/projects");
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /projects - Forbidden for STUDENT")
+  @DisplayName("POST /v1/projects - Forbidden for STUDENT")
   void createForbiddenForStudent() {
     var req = aProjectCreateRequest().build();
 
-    given().contentType(ContentType.JSON).body(req).when().post("/projects").then().statusCode(403);
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/v1/projects")
+        .then()
+        .statusCode(403);
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("DELETE /projects/{id} - Forbidden for STUDENT")
+  @DisplayName("DELETE /v1/projects/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/projects/{id}")
+        .delete("/v1/projects/{id}")
         .then()
         .statusCode(403);
   }
@@ -245,7 +251,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id} start - Success")
+  @DisplayName("PATCH /v1/projects/{id} start - Success")
   void startSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -260,7 +266,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(aProjectUpdateRequest().withStatus(ProjectStatus.IN_PROGRESS).build())
         .when()
-        .patch("/projects/{id}")
+        .patch("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("IN_PROGRESS"));
@@ -270,7 +276,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id} cancel - Success")
+  @DisplayName("PATCH /v1/projects/{id} cancel - Success")
   void cancelSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -285,7 +291,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(aProjectUpdateRequest().withStatus(ProjectStatus.CANCELED).build())
         .when()
-        .patch("/projects/{id}")
+        .patch("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("CANCELED"));
@@ -295,7 +301,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id} complete - Success")
+  @DisplayName("PATCH /v1/projects/{id} complete - Success")
   void completeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -312,7 +318,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(aProjectUpdateRequest().withStatus(ProjectStatus.COMPLETED).build())
         .when()
-        .patch("/projects/{id}")
+        .patch("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("COMPLETED"));
@@ -322,7 +328,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("GET /projects?createdBy= - Success")
+  @DisplayName("GET /v1/projects?createdBy= - Success")
   void listByCreatedBy() throws Exception {
     Account[] creator = new Account[1];
     doInTransaction(
@@ -335,7 +341,7 @@ class ProjectResourceTest extends BaseResourceTest {
     given()
         .queryParam("createdBy", creator[0].getId())
         .when()
-        .get("/projects")
+        .get("/v1/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -345,7 +351,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id} hold - Success")
+  @DisplayName("PATCH /v1/projects/{id} hold - Success")
   void holdSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -361,7 +367,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(aProjectUpdateRequest().withStatus(ProjectStatus.ON_HOLD).build())
         .when()
-        .patch("/projects/{id}")
+        .patch("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("ON_HOLD"));
@@ -371,7 +377,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{id} retake - Success")
+  @DisplayName("PATCH /v1/projects/{id} retake - Success")
   void retakeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -387,7 +393,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .pathParam("id", project[0].getId())
         .body(aProjectUpdateRequest().withStatus(ProjectStatus.PLANNED).build())
         .when()
-        .patch("/projects/{id}")
+        .patch("/v1/projects/{id}")
         .then()
         .statusCode(200)
         .body("data.status", is("IN_PROGRESS"));

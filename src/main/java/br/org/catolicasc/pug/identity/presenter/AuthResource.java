@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
@@ -25,7 +26,7 @@ import jakarta.ws.rs.core.Response;
  * tokens, and log out by revoking refresh tokens.
  */
 @ApplicationScoped
-@Path("/auth")
+@Path(IdentityApiPaths.AUTH)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {

@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/partners/staff
+  url: {{baseUrl}}/v1/partners/staff
   body: none
   auth: bearer
 }
@@ -21,4 +21,5 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
+
 

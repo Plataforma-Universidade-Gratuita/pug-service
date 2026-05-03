@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/projects/attendances
+  url: {{baseUrl}}/v1/projects/attendances
   body: json
   auth: bearer
 }
@@ -26,4 +26,6 @@ body:json {
 auth:bearer {
   token: {{jwtToken}}
 }
+
+
 

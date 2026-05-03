@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/projects?entityId={{entityId}}
+  url: {{baseUrl}}/v1/projects?entityId={{entityId}}
   body: none
   auth: bearer
 }
@@ -24,4 +24,5 @@ tests {
 auth:bearer {
   token: {{jwtToken}}
 }
+
 

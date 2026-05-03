@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/identity/admins
+  url: {{baseUrl}}/v1/identity/admins
   body: none
   auth: bearer
 }
@@ -21,3 +21,4 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
+

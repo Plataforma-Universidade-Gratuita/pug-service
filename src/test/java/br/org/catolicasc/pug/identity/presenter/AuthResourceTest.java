@@ -26,7 +26,7 @@ class AuthResourceTest {
   @InjectMock AuthService authService;
 
   @Test
-  @DisplayName("POST /auth/login - Success")
+  @DisplayName("POST /v1/auth/login - Success")
   void loginSuccess() {
     var req = aLoginRequest().withEmail("test@pug.com").withPassword("password").build();
     TokenResponse token =
@@ -38,7 +38,7 @@ class AuthResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/auth/login")
+        .post("/v1/auth/login")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -47,7 +47,7 @@ class AuthResourceTest {
   }
 
   @Test
-  @DisplayName("POST /auth/login - Unauthorized")
+  @DisplayName("POST /v1/auth/login - Unauthorized")
   void loginUnauthorized() {
     var req = aLoginRequest().withEmail("bad@pug.com").withPassword("wrong").build();
     when(authService.login(req)).thenThrow(new NotAuthorizedException("Unauthorized"));
@@ -56,13 +56,13 @@ class AuthResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/auth/login")
+        .post("/v1/auth/login")
         .then()
         .statusCode(401);
   }
 
   @Test
-  @DisplayName("POST /auth/refresh - Success")
+  @DisplayName("POST /v1/auth/refresh - Success")
   void refreshSuccess() {
     var req = new RefreshRequest("valid-refresh-token");
     TokenResponse token =
@@ -75,7 +75,7 @@ class AuthResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/auth/refresh")
+        .post("/v1/auth/refresh")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -84,7 +84,7 @@ class AuthResourceTest {
   }
 
   @Test
-  @DisplayName("POST /auth/refresh - Unauthorized with invalid token")
+  @DisplayName("POST /v1/auth/refresh - Unauthorized with invalid token")
   void refreshUnauthorized() {
     var req = new RefreshRequest("invalid-token");
     when(authService.refresh(req)).thenThrow(new NotAuthorizedException("Unauthorized"));
@@ -93,13 +93,13 @@ class AuthResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/auth/refresh")
+        .post("/v1/auth/refresh")
         .then()
         .statusCode(401);
   }
 
   @Test
-  @DisplayName("POST /auth/logout - Success (204 No Content)")
+  @DisplayName("POST /v1/auth/logout - Success (204 No Content)")
   void logoutSuccess() {
     var req = new LogoutRequest("some-refresh-token");
     doNothing().when(authService).logout(req);
@@ -108,19 +108,19 @@ class AuthResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/auth/logout")
+        .post("/v1/auth/logout")
         .then()
         .statusCode(204);
   }
 
   @Test
-  @DisplayName("POST /auth/logout - Validation error with blank token")
+  @DisplayName("POST /v1/auth/logout - Validation error with blank token")
   void logoutBadRequest() {
     given()
         .contentType(ContentType.JSON)
         .body("{\"refreshToken\": \"\"}")
         .when()
-        .post("/auth/logout")
+        .post("/v1/auth/logout")
         .then()
         .statusCode(422);
   }
@@ -129,16 +129,16 @@ class AuthResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /auth/logout-all - Success (204 No Content)")
+  @DisplayName("POST /v1/auth/logout-all - Success (204 No Content)")
   void logoutAllSuccess() {
     doNothing().when(authService).logoutAll();
 
-    given().when().post("/auth/logout-all").then().statusCode(204);
+    given().when().post("/v1/auth/logout-all").then().statusCode(204);
   }
 
   @Test
-  @DisplayName("POST /auth/logout-all - Unauthorized without token")
+  @DisplayName("POST /v1/auth/logout-all - Unauthorized without token")
   void logoutAllUnauthorized() {
-    given().when().post("/auth/logout-all").then().statusCode(401);
+    given().when().post("/v1/auth/logout-all").then().statusCode(401);
   }
 }

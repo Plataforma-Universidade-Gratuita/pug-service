@@ -42,7 +42,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /projects/{projectId}/schools - Create Associations")
+  @DisplayName("POST /v1/projects/{projectId}/schools - Create Associations")
   void createAssociations() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     var req = aProjectSchoolRequest().withSchoolIds(List.of(g.school().getId())).build();
@@ -52,7 +52,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .pathParam("projectId", g.project().getId())
         .body(req)
         .when()
-        .post("/projects/{projectId}/schools")
+        .post("/v1/projects/{projectId}/schools")
         .then()
         .statusCode(201)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -62,7 +62,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/{projectId}/schools - List Schools")
+  @DisplayName("GET /v1/projects/{projectId}/schools - List Schools")
   void listSchoolsByProjectId() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     createAssociation(g);
@@ -70,7 +70,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("projectId", g.project().getId())
         .when()
-        .get("/projects/{projectId}/schools")
+        .get("/v1/projects/{projectId}/schools")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -80,7 +80,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/schools/{schoolId}/projects - List Projects")
+  @DisplayName("GET /v1/academic/schools/{schoolId}/projects - List Projects")
   void listProjectsBySchoolId() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     createAssociation(g);
@@ -88,7 +88,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("schoolId", g.school().getId())
         .when()
-        .get("/academic/schools/{schoolId}/projects")
+        .get("/v1/academic/schools/{schoolId}/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -98,7 +98,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/{projectId}/schools/{schoolId} - Success")
+  @DisplayName("DELETE /v1/projects/{projectId}/schools/{schoolId} - Success")
   void deleteAssociation() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     createAssociation(g);
@@ -107,7 +107,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .pathParam("projectId", g.project().getId())
         .pathParam("schoolId", g.school().getId())
         .when()
-        .delete("/projects/{projectId}/schools/{schoolId}")
+        .delete("/v1/projects/{projectId}/schools/{schoolId}")
         .then()
         .statusCode(200);
   }
@@ -116,7 +116,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/{projectId}/schools - Delete All by Project")
+  @DisplayName("DELETE /v1/projects/{projectId}/schools - Delete All by Project")
   void deleteAllByProject() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     createAssociation(g);
@@ -124,7 +124,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("projectId", g.project().getId())
         .when()
-        .delete("/projects/{projectId}/schools")
+        .delete("/v1/projects/{projectId}/schools")
         .then()
         .statusCode(200);
   }
@@ -133,7 +133,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /academic/schools/{schoolId}/projects - Delete All by School")
+  @DisplayName("DELETE /v1/academic/schools/{schoolId}/projects - Delete All by School")
   void deleteAllBySchool() throws Exception {
     ProjectSchoolGraph g = createProjectSchoolGraph();
     createAssociation(g);
@@ -141,7 +141,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("schoolId", g.school().getId())
         .when()
-        .delete("/academic/schools/{schoolId}/projects")
+        .delete("/v1/academic/schools/{schoolId}/projects")
         .then()
         .statusCode(200);
   }
@@ -152,7 +152,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/projects/{projectId}/schools")
+        .get("/v1/projects/{projectId}/schools")
         .then()
         .statusCode(401);
   }
@@ -163,7 +163,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .pathParam("schoolId", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/academic/schools/{schoolId}/projects")
+        .get("/v1/academic/schools/{schoolId}/projects")
         .then()
         .statusCode(401);
   }
@@ -172,7 +172,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /projects/{projectId}/schools - Forbidden for STUDENT")
+  @DisplayName("POST /v1/projects/{projectId}/schools - Forbidden for STUDENT")
   void createForbiddenForStudent() {
     var req = aProjectSchoolRequest().build();
 
@@ -181,7 +181,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
         .body(req)
         .when()
-        .post("/projects/{projectId}/schools")
+        .post("/v1/projects/{projectId}/schools")
         .then()
         .statusCode(403);
   }
@@ -192,6 +192,6 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
         .body(req)
-        .post("/projects/{projectId}/schools");
+        .post("/v1/projects/{projectId}/schools");
   }
 }

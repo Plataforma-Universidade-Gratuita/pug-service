@@ -49,14 +49,14 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances/{id} - Success")
+  @DisplayName("GET /v1/projects/attendances/{id} - Success")
   void getByIdSuccess() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
     given()
         .pathParam("id", g.attendance().getId())
         .when()
-        .get("/projects/attendances/{id}")
+        .get("/v1/projects/attendances/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -67,12 +67,12 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances/{id} - Not Found")
+  @DisplayName("GET /v1/projects/attendances/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/projects/attendances/{id}")
+        .get("/v1/projects/attendances/{id}")
         .then()
         .statusCode(404);
   }
@@ -81,13 +81,13 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances - List All")
+  @DisplayName("GET /v1/projects/attendances - List All")
   void listAll() throws Exception {
     createAttendanceGraph();
 
     given()
         .when()
-        .get("/projects/attendances")
+        .get("/v1/projects/attendances")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -97,14 +97,14 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances?projectId= - Filter by Project")
+  @DisplayName("GET /v1/projects/attendances?projectId= - Filter by Project")
   void listByProjectId() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
     given()
         .queryParam("projectId", g.project().getId().toString())
         .when()
-        .get("/projects/attendances")
+        .get("/v1/projects/attendances")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -114,14 +114,14 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances?studentId= - Filter by Student")
+  @DisplayName("GET /v1/projects/attendances?studentId= - Filter by Student")
   void listByStudentId() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
     given()
         .queryParam("studentId", g.student().getAccountId().toString())
         .when()
-        .get("/projects/attendances")
+        .get("/v1/projects/attendances")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -131,7 +131,7 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/attendances?projectId=&studentId= - Filter by Enrollment")
+  @DisplayName("GET /v1/projects/attendances?projectId=&studentId= - Filter by Enrollment")
   void listByEnrollmentId() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
@@ -139,7 +139,7 @@ class AttendanceResourceTest extends BaseResourceTest {
         .queryParam("projectId", g.project().getId().toString())
         .queryParam("studentId", g.student().getAccountId().toString())
         .when()
-        .get("/projects/attendances")
+        .get("/v1/projects/attendances")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -149,14 +149,14 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/attendances/{id} - Success")
+  @DisplayName("DELETE /v1/projects/attendances/{id} - Success")
   void deleteSuccess() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
     given()
         .pathParam("id", g.attendance().getId())
         .when()
-        .delete("/projects/attendances/{id}")
+        .delete("/v1/projects/attendances/{id}")
         .then()
         .statusCode(200);
   }
@@ -164,6 +164,6 @@ class AttendanceResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    assertUnauthenticated("/projects/attendances");
+    assertUnauthenticated("/v1/projects/attendances");
   }
 }

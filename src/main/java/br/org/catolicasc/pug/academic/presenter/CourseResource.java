@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.academic.presenter;
 
+import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
  * (reads), strictly adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path("/academic/courses")
+@Path(AcademicApiPaths.COURSES)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CourseResource {

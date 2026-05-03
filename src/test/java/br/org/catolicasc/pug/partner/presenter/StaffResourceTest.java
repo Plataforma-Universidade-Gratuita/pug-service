@@ -54,14 +54,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff/{id} - Success")
+  @DisplayName("GET /v1/partners/staff/{id} - Success")
   void getByIdSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
         .pathParam("id", g.account().getId())
         .when()
-        .get("/partners/staff/{id}")
+        .get("/v1/partners/staff/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -74,12 +74,12 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff/{id} - Not Found")
+  @DisplayName("GET /v1/partners/staff/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/partners/staff/{id}")
+        .get("/v1/partners/staff/{id}")
         .then()
         .statusCode(404)
         .body("success", is(false))
@@ -90,14 +90,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff?email= - Success")
+  @DisplayName("GET /v1/partners/staff?email= - Success")
   void getByEmailSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
         .queryParam("email", g.account().getEmail().getValue())
         .when()
-        .get("/partners/staff")
+        .get("/v1/partners/staff")
         .then()
         .statusCode(200)
         .body("data.account.email", is(g.account().getEmail().getValue()));
@@ -107,14 +107,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("GET /partners/staff/me - Success")
+  @DisplayName("GET /v1/partners/staff/me - Success")
   void getMeSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
     when(authService.getCurrentAccountId()).thenReturn(g.account().getId());
 
     given()
         .when()
-        .get("/partners/staff/me")
+        .get("/v1/partners/staff/me")
         .then()
         .statusCode(200)
         .body("data.account.id", is(g.account().getId().toString()));
@@ -124,13 +124,13 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /partners/staff - List All")
+  @DisplayName("GET /v1/partners/staff - List All")
   void listAll() throws Exception {
     createStaffGraph();
 
     given()
         .when()
-        .get("/partners/staff")
+        .get("/v1/partners/staff")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -140,14 +140,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /partners/staff?cpf= - Success")
+  @DisplayName("GET /v1/partners/staff?cpf= - Success")
   void listByCpfSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
         .queryParam("cpf", g.user().getCpf().getValue())
         .when()
-        .get("/partners/staff")
+        .get("/v1/partners/staff")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)))
@@ -158,14 +158,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /partners/staff?entityId= - Success")
+  @DisplayName("GET /v1/partners/staff?entityId= - Success")
   void listByEntitySuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
         .queryParam("entityId", g.entity().getId())
         .when()
-        .get("/partners/staff")
+        .get("/v1/partners/staff")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -175,7 +175,7 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /partners/staff - Success")
+  @DisplayName("POST /v1/partners/staff - Success")
   void createSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -190,7 +190,7 @@ class StaffResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/partners/staff")
+        .post("/v1/partners/staff")
         .then()
         .statusCode(201)
         .body("data.entityId", is(entity[0].getId().toString()));
@@ -200,7 +200,7 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /partners/staff/{id} - Success")
+  @DisplayName("PUT /v1/partners/staff/{id} - Success")
   void updateSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
@@ -211,7 +211,7 @@ class StaffResourceTest extends BaseResourceTest {
         .pathParam("id", g.account().getId())
         .body(req)
         .when()
-        .put("/partners/staff/{id}")
+        .put("/v1/partners/staff/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -222,7 +222,7 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /partners/staff/{id} - Not Found")
+  @DisplayName("PUT /v1/partners/staff/{id} - Not Found")
   void updateNotFound() {
     var req = aStaffUpdateRequest().build();
 
@@ -231,7 +231,7 @@ class StaffResourceTest extends BaseResourceTest {
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .body(req)
         .when()
-        .put("/partners/staff/{id}")
+        .put("/v1/partners/staff/{id}")
         .then()
         .statusCode(404);
   }
@@ -240,7 +240,7 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /partners/staff/{id} - Success")
+  @DisplayName("PATCH /v1/partners/staff/{id} - Success")
   void deactivateSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
@@ -249,7 +249,7 @@ class StaffResourceTest extends BaseResourceTest {
         .pathParam("id", g.account().getId())
         .body(aStaffUpdateRequest().withName(null).withActive(false).build())
         .when()
-        .patch("/partners/staff/{id}")
+        .patch("/v1/partners/staff/{id}")
         .then()
         .statusCode(200);
   }
@@ -258,14 +258,14 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /partners/staff/{id} - Success")
+  @DisplayName("DELETE /v1/partners/staff/{id} - Success")
   void deleteSuccess() throws Exception {
     StaffGraph g = createStaffGraph();
 
     given()
         .pathParam("id", g.account().getId())
         .when()
-        .delete("/partners/staff/{id}")
+        .delete("/v1/partners/staff/{id}")
         .then()
         .statusCode(200);
   }
@@ -273,14 +273,14 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    assertUnauthenticated("/partners/staff");
+    assertUnauthenticated("/v1/partners/staff");
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /partners/staff - Forbidden for STUDENT")
+  @DisplayName("POST /v1/partners/staff - Forbidden for STUDENT")
   void createForbiddenForStudent() {
     var req = aStaffCreateRequest().build();
 
@@ -288,7 +288,7 @@ class StaffResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/partners/staff")
+        .post("/v1/partners/staff")
         .then()
         .statusCode(403);
   }
@@ -297,12 +297,12 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("DELETE /partners/staff/{id} - Forbidden for STUDENT")
+  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/partners/staff/{id}")
+        .delete("/v1/partners/staff/{id}")
         .then()
         .statusCode(403);
   }
@@ -311,12 +311,12 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("DELETE /partners/staff/{id} - Forbidden for STAFF")
+  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for STAFF")
   void deleteForbiddenForStaff() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/partners/staff/{id}")
+        .delete("/v1/partners/staff/{id}")
         .then()
         .statusCode(403);
   }

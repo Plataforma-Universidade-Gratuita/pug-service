@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/auth/login
+  url: {{baseUrl}}/v1/auth/login
   body: json
   auth: none
 }
@@ -28,3 +28,4 @@ script:post-response {
     bru.setEnvVar("refreshToken", res.getBody().data.refreshToken);
   }
 }
+

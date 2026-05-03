@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/projects?q=Alpha
+  url: {{baseUrl}}/v1/projects?q=Alpha
   body: none
   auth: bearer
 }
@@ -24,4 +24,5 @@ tests {
 auth:bearer {
   token: {{jwtToken}}
 }
+
 

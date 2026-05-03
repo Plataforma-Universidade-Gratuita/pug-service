@@ -26,7 +26,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/users/{id} - Success")
+  @DisplayName("GET /v1/identity/users/{id} - Success")
   void getByIdSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(() -> user[0] = factory.createUser());
@@ -34,7 +34,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", user[0].getId())
         .when()
-        .get("/identity/users/{id}")
+        .get("/v1/identity/users/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -45,12 +45,12 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/users/{id} - Not Found")
+  @DisplayName("GET /v1/identity/users/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/identity/users/{id}")
+        .get("/v1/identity/users/{id}")
         .then()
         .statusCode(404)
         .body("success", is(false))
@@ -61,7 +61,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/users?cpf= - Success")
+  @DisplayName("GET /v1/identity/users?cpf= - Success")
   void getByCpfSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(() -> user[0] = factory.createUser());
@@ -69,7 +69,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
     given()
         .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/identity/users")
+        .get("/v1/identity/users")
         .then()
         .statusCode(200)
         .body("data.cpf", is(user[0].getCpf().getValue()));
@@ -79,7 +79,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /identity/users/me - Authenticated Success")
+  @DisplayName("GET /v1/identity/users/me - Authenticated Success")
   void getMeSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(() -> user[0] = factory.createUser());
@@ -88,7 +88,7 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/identity/users/me")
+        .get("/v1/identity/users/me")
         .then()
         .statusCode(200)
         .body("data.id", is(user[0].getId().toString()));
@@ -98,13 +98,13 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/users - List All")
+  @DisplayName("GET /v1/identity/users - List All")
   void listUsers() throws Exception {
     doInTransaction(() -> factory.createUser());
 
     given()
         .when()
-        .get("/identity/users")
+        .get("/v1/identity/users")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -113,6 +113,6 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without security")
   void unauthorizedAccess() {
-    assertUnauthenticated("/identity/users");
+    assertUnauthenticated("/v1/identity/users");
   }
 }

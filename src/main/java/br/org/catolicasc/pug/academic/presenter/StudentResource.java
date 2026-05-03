@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.academic.presenter;
 
+import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
 import br.org.catolicasc.pug.academic.presenter.dtos.StudentCreateRequest;
@@ -53,7 +54,7 @@ import java.util.stream.Collectors;
  * (reads), adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path("/academic/students")
+@Path(AcademicApiPaths.STUDENTS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class StudentResource {

@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/partners/staff?email=gestor@techcorp.com
+  url: {{baseUrl}}/v1/partners/staff?email=gestor@techcorp.com
   body: none
   auth: bearer
 }
@@ -17,4 +17,5 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
+
 

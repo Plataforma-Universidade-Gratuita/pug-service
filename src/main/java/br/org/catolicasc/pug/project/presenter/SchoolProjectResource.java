@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
+import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
 import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
@@ -38,7 +39,7 @@ import java.util.stream.Collectors;
  * adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path("/academic/schools/{schoolId}/projects")
+@Path(ProjectApiPaths.SCHOOL_PROJECTS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

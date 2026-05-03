@@ -5,7 +5,7 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/partner/entities?cnpj=12345678000195
+  url: {{baseUrl}}/v1/partner/entities?cnpj=12345678000195
   body: none
   auth: bearer
 }
@@ -17,4 +17,5 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
+
 

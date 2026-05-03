@@ -31,7 +31,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /identity/admins - Success")
+  @DisplayName("POST /v1/identity/admins - Success")
   void createSuccess() {
     var req = anAdminCreateRequest().withCampus(Campi.JARAGUA_DO_SUL).build();
 
@@ -39,7 +39,7 @@ class AdminResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/identity/admins")
+        .post("/v1/identity/admins")
         .then()
         .statusCode(201)
         .body("data.campus.campus", is("JARAGUA_DO_SUL"));
@@ -49,7 +49,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /identity/admins/{id} - Success")
+  @DisplayName("PUT /v1/identity/admins/{id} - Success")
   void updateSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -66,7 +66,7 @@ class AdminResourceTest extends BaseResourceTest {
         .pathParam("id", acc[0].getId())
         .body(req)
         .when()
-        .put("/identity/admins/{id}")
+        .put("/v1/identity/admins/{id}")
         .then()
         .statusCode(200)
         .body("data.campus.campus", is("JOINVILLE"));
@@ -76,7 +76,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /identity/admins/{id} - Success")
+  @DisplayName("PATCH /v1/identity/admins/{id} - Success")
   void deactivateSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -91,7 +91,7 @@ class AdminResourceTest extends BaseResourceTest {
         .pathParam("id", acc[0].getId())
         .body(anAdminUpdateRequest().withName(null).withCampus(null).withActive(false).build())
         .when()
-        .patch("/identity/admins/{id}")
+        .patch("/v1/identity/admins/{id}")
         .then()
         .statusCode(200);
   }
@@ -100,7 +100,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /identity/admins/{id} - Success")
+  @DisplayName("DELETE /v1/identity/admins/{id} - Success")
   void deleteSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -113,7 +113,7 @@ class AdminResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", acc[0].getId())
         .when()
-        .delete("/identity/admins/{id}")
+        .delete("/v1/identity/admins/{id}")
         .then()
         .statusCode(200);
   }
@@ -122,7 +122,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins/me - Success")
+  @DisplayName("GET /v1/identity/admins/me - Success")
   void getMeSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -136,7 +136,7 @@ class AdminResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/identity/admins/me")
+        .get("/v1/identity/admins/me")
         .then()
         .statusCode(200)
         .body("data.accountResponse.id", is(acc[0].getId().toString()));
@@ -146,7 +146,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins/{id} - Success")
+  @DisplayName("GET /v1/identity/admins/{id} - Success")
   void getByIdSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -159,7 +159,7 @@ class AdminResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", acc[0].getId())
         .when()
-        .get("/identity/admins/{id}")
+        .get("/v1/identity/admins/{id}")
         .then()
         .statusCode(200)
         .body("data.accountResponse.id", is(acc[0].getId().toString()));
@@ -169,7 +169,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins?email= - Success")
+  @DisplayName("GET /v1/identity/admins?email= - Success")
   void getByEmailSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -182,7 +182,7 @@ class AdminResourceTest extends BaseResourceTest {
     given()
         .queryParam("email", acc[0].getEmail().getValue())
         .when()
-        .get("/identity/admins")
+        .get("/v1/identity/admins")
         .then()
         .statusCode(200)
         .body("data.accountResponse.email", is(acc[0].getEmail().getValue()));
@@ -192,7 +192,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins - List All")
+  @DisplayName("GET /v1/identity/admins - List All")
   void listAdmins() throws Exception {
     doInTransaction(
         () -> {
@@ -203,7 +203,7 @@ class AdminResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/identity/admins")
+        .get("/v1/identity/admins")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -213,7 +213,7 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /identity/admins?cpf= - Success")
+  @DisplayName("GET /v1/identity/admins?cpf= - Success")
   void listByCpfSuccess() throws Exception {
     User[] user = new User[1];
     doInTransaction(
@@ -226,7 +226,7 @@ class AdminResourceTest extends BaseResourceTest {
     given()
         .queryParam("cpf", user[0].getCpf().getValue())
         .when()
-        .get("/identity/admins")
+        .get("/v1/identity/admins")
         .then()
         .statusCode(200)
         .body("data[0].accountResponse.userId", is(user[0].getId().toString()));

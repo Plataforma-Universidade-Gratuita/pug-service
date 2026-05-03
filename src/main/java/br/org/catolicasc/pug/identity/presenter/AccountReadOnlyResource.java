@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
 import br.org.catolicasc.pug.identity.presenter.mappers.AccountPresenter;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  * <p>Provides endpoints to retrieve individual accounts or lists of accounts. Accessible primarily
  * by users with the ADMIN role, except for specific endpoints.
  */
-@Path("/identity/accounts")
+@Path(IdentityApiPaths.ACCOUNTS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")

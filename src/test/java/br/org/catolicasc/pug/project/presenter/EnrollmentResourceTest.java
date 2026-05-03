@@ -37,7 +37,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/{projectId}/enrollments/{studentId} - Success")
+  @DisplayName("GET /v1/projects/{projectId}/enrollments/{studentId} - Success")
   void getByIdsSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -57,7 +57,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
         .when()
-        .get("/projects/{projectId}/enrollments/{studentId}")
+        .get("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.projectId", is(project[0].getId().toString()));
@@ -67,13 +67,13 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/{projectId}/enrollments/{studentId} - Not Found")
+  @DisplayName("GET /v1/projects/{projectId}/enrollments/{studentId} - Not Found")
   void getByIdsNotFound() {
     given()
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())
         .pathParam("studentId", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/projects/{projectId}/enrollments/{studentId}")
+        .get("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(404);
   }
@@ -82,7 +82,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/enrollments - List All")
+  @DisplayName("GET /v1/projects/enrollments - List All")
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -98,7 +98,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/projects/enrollments")
+        .get("/v1/projects/enrollments")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -108,7 +108,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/enrollments?projectId={projectId} - List By Project")
+  @DisplayName("GET /v1/projects/enrollments?projectId={projectId} - List By Project")
   void listByProjectId() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -126,7 +126,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .queryParam("projectId", project[0].getId())
         .when()
-        .get("/projects/enrollments")
+        .get("/v1/projects/enrollments")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -136,7 +136,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /projects/enrollments?studentId={studentId} - List By Student")
+  @DisplayName("GET /v1/projects/enrollments?studentId={studentId} - List By Student")
   void listByStudentId() throws Exception {
     Student[] student = new Student[1];
     doInTransaction(
@@ -154,7 +154,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .queryParam("studentId", student[0].getAccountId())
         .when()
-        .get("/projects/enrollments")
+        .get("/v1/projects/enrollments")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -164,7 +164,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /projects/{projectId}/enrollments/me - Success")
+  @DisplayName("GET /v1/projects/{projectId}/enrollments/me - Success")
   void getMineSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -185,7 +185,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .pathParam("projectId", project[0].getId())
         .when()
-        .get("/projects/{projectId}/enrollments/me")
+        .get("/v1/projects/{projectId}/enrollments/me")
         .then()
         .statusCode(200)
         .body("data.projectId", is(project[0].getId().toString()));
@@ -195,7 +195,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /projects/enrollments/me - Success")
+  @DisplayName("GET /v1/projects/enrollments/me - Success")
   void listMineSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
@@ -214,7 +214,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/projects/enrollments/me")
+        .get("/v1/projects/enrollments/me")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -224,7 +224,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /projects/{projectId}/enrollments - Success")
+  @DisplayName("POST /v1/projects/{projectId}/enrollments - Success")
   void createSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -244,7 +244,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .pathParam("projectId", project[0].getId())
         .when()
-        .post("/projects/{projectId}/enrollments")
+        .post("/v1/projects/{projectId}/enrollments")
         .then()
         .statusCode(201);
   }
@@ -253,7 +253,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} approve - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} approve - Success")
   void acceptSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -275,7 +275,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("studentId", student[0].getAccountId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.APPROVED))
         .when()
-        .patch("/projects/{projectId}/enrollments/{studentId}")
+        .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("APPROVED"));
@@ -285,7 +285,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} cancel - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} cancel - Success")
   void cancelSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -300,7 +300,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.CANCELED))
         .when()
-        .patch("/projects/{projectId}/enrollments/{studentId}")
+        .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("CANCELED"));
@@ -310,7 +310,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} complete - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} complete - Success")
   void completeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -325,7 +325,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.COMPLETED))
         .when()
-        .patch("/projects/{projectId}/enrollments/{studentId}")
+        .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("COMPLETED"));
@@ -335,7 +335,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/me - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/me - Success")
   void exitSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -360,7 +360,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("projectId", project[0].getId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.EXITED))
         .when()
-        .patch("/projects/{projectId}/enrollments/me")
+        .patch("/v1/projects/{projectId}/enrollments/me")
         .then()
         .statusCode(200)
         .body("data.status", is("EXITED"));
@@ -370,7 +370,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} reject - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} reject - Success")
   void rejectSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -392,7 +392,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("studentId", student[0].getAccountId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.REJECTED))
         .when()
-        .patch("/projects/{projectId}/enrollments/{studentId}")
+        .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("REJECTED"));
@@ -402,7 +402,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /projects/{projectId}/enrollments/{studentId} remove - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} remove - Success")
   void removeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -417,7 +417,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
         .body(new EnrollmentUpdateRequest(EnrollmentStatus.REMOVED))
         .when()
-        .patch("/projects/{projectId}/enrollments/{studentId}")
+        .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
         .body("data.status", is("REMOVED"));
@@ -427,7 +427,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /projects/{projectId}/enrollments/{studentId} - Success")
+  @DisplayName("DELETE /v1/projects/{projectId}/enrollments/{studentId} - Success")
   void deleteSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -447,7 +447,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", student[0].getAccountId())
         .when()
-        .delete("/projects/{projectId}/enrollments/{studentId}")
+        .delete("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200);
   }

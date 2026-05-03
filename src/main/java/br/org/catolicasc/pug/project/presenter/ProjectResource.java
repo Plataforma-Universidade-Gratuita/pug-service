@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
+import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
@@ -49,7 +50,7 @@ import java.util.stream.Collectors;
  * endpoints preceding collections.
  */
 @ApplicationScoped
-@Path("/projects")
+@Path(ProjectApiPaths.PROJECTS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectResource {

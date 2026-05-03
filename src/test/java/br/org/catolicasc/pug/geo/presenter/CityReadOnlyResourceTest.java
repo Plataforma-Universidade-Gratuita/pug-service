@@ -23,7 +23,7 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /geo/cities/{id} - Success")
+  @DisplayName("GET /v1/geo/cities/{id} - Success")
   void getByIdSuccess() {
     var city =
         em.createQuery("from CityEntity", CityEntity.class).setMaxResults(1).getSingleResult();
@@ -31,7 +31,7 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", city.getId())
         .when()
-        .get("/geo/cities/{id}")
+        .get("/v1/geo/cities/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -43,12 +43,12 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /geo/cities/{id} - Not Found")
+  @DisplayName("GET /v1/geo/cities/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/geo/cities/{id}")
+        .get("/v1/geo/cities/{id}")
         .then()
         .statusCode(404)
         .body("success", is(false))
@@ -59,12 +59,12 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /geo/cities/by-ibge/{ibgeCode} - Success")
+  @DisplayName("GET /v1/geo/cities/by-ibge/{ibgeCode} - Success")
   void getByIbgeSuccess() {
     given()
         .pathParam("ibgeCode", "4209106")
         .when()
-        .get("/geo/cities/by-ibge/{ibgeCode}")
+        .get("/v1/geo/cities/by-ibge/{ibgeCode}")
         .then()
         .statusCode(200)
         .body("data.ibgeCode", is("4209106"));
@@ -74,11 +74,11 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /geo/cities - List All")
+  @DisplayName("GET /v1/geo/cities - List All")
   void listCities() {
     given()
         .when()
-        .get("/geo/cities")
+        .get("/v1/geo/cities")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThan(200)));
@@ -88,12 +88,12 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /geo/cities - Search")
+  @DisplayName("GET /v1/geo/cities - Search")
   void searchCities() {
     given()
         .queryParam("q", "Joinville")
         .when()
-        .get("/geo/cities")
+        .get("/v1/geo/cities")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)))
@@ -103,6 +103,6 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when accessing without security")
   void unauthorizedAccess() {
-    assertUnauthenticated("/geo/cities");
+    assertUnauthenticated("/v1/geo/cities");
   }
 }

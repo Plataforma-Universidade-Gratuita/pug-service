@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.identity.presenter;
 
+import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
 import br.org.catolicasc.pug.identity.presenter.mappers.UserPresenter;
@@ -35,7 +36,7 @@ import java.util.UUID;
  * principles. Direct write operations for users are typically orchestrated through account-creation
  * endpoints (like Admins or Students) rather than standalone user endpoints.
  */
-@Path("/identity/users")
+@Path(IdentityApiPaths.USERS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")

@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/partner/entities
+  url: {{baseUrl}}/v1/partner/entities
   body: json
   auth: bearer
 }
@@ -27,3 +27,4 @@ body:json {
 auth:bearer {
   token: {{jwtToken}}
 }
+

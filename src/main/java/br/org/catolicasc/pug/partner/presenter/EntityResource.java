@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.partner.presenter;
 
 import br.org.catolicasc.pug.geo.presenter.mappers.CityPresenter;
+import br.org.catolicasc.pug.partner.constants.PartnerApiPaths;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityCreateRequest;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityResponse;
@@ -48,7 +49,7 @@ import java.util.stream.Collectors;
  * EntityReadService} (reads), strictly adhering to CQRS architectural principles.
  */
 @ApplicationScoped
-@Path("/partner/entities")
+@Path(PartnerApiPaths.ENTITIES)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntityResource {

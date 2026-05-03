@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{baseUrl}}/academic/schools
+  url: {{baseUrl}}/v1/academic/schools
   body: json
   auth: bearer
 }
@@ -24,3 +24,4 @@ body:json {
 auth:bearer {
   token: {{jwtToken}}
 }
+

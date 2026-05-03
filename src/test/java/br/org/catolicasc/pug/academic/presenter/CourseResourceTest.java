@@ -30,7 +30,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/courses/{id} - Success")
+  @DisplayName("GET /v1/academic/courses/{id} - Success")
   void getByIdSuccess() throws Exception {
     School[] school = new School[1];
     Course[] course = new Course[1];
@@ -43,7 +43,7 @@ class CourseResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", course[0].getId())
         .when()
-        .get("/academic/courses/{id}")
+        .get("/v1/academic/courses/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -55,12 +55,12 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /academic/courses/{id} - Not Found")
+  @DisplayName("GET /v1/academic/courses/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/academic/courses/{id}")
+        .get("/v1/academic/courses/{id}")
         .then()
         .statusCode(404);
   }
@@ -69,7 +69,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "user",
       roles = {"STUDENT"})
-  @DisplayName("GET /academic/courses - List All")
+  @DisplayName("GET /v1/academic/courses - List All")
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -79,7 +79,7 @@ class CourseResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/academic/courses")
+        .get("/v1/academic/courses")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -89,7 +89,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "user",
       roles = {"STUDENT"})
-  @DisplayName("GET /academic/courses?schoolId= - Filter by School")
+  @DisplayName("GET /v1/academic/courses?schoolId= - Filter by School")
   void listBySchoolId() throws Exception {
     School[] school = new School[1];
     doInTransaction(
@@ -101,7 +101,7 @@ class CourseResourceTest extends BaseResourceTest {
     given()
         .queryParam("schoolId", school[0].getId().toString())
         .when()
-        .get("/academic/courses")
+        .get("/v1/academic/courses")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -111,7 +111,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /academic/courses - Success")
+  @DisplayName("POST /v1/academic/courses - Success")
   void createSuccess() throws Exception {
     School[] school = new School[1];
     doInTransaction(() -> school[0] = factory.createSchool());
@@ -124,7 +124,7 @@ class CourseResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/academic/courses")
+        .post("/v1/academic/courses")
         .then()
         .statusCode(201)
         .body("data.name", notNullValue())
@@ -135,7 +135,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /academic/courses - Duplicate Name")
+  @DisplayName("POST /v1/academic/courses - Duplicate Name")
   void createDuplicate() throws Exception {
     School[] school = new School[1];
     Course[] existing = new Course[1];
@@ -151,7 +151,7 @@ class CourseResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/academic/courses")
+        .post("/v1/academic/courses")
         .then()
         .statusCode(409);
   }
@@ -160,7 +160,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /academic/courses/{id} - Success")
+  @DisplayName("PUT /v1/academic/courses/{id} - Success")
   void updateSuccess() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -177,7 +177,7 @@ class CourseResourceTest extends BaseResourceTest {
         .pathParam("id", course[0].getId())
         .body(req)
         .when()
-        .put("/academic/courses/{id}")
+        .put("/v1/academic/courses/{id}")
         .then()
         .statusCode(200)
         .body("data.name", notNullValue());
@@ -187,7 +187,7 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /academic/courses/{id} - Success")
+  @DisplayName("DELETE /v1/academic/courses/{id} - Success")
   void deleteSuccess() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
@@ -199,7 +199,7 @@ class CourseResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", course[0].getId())
         .when()
-        .delete("/academic/courses/{id}")
+        .delete("/v1/academic/courses/{id}")
         .then()
         .statusCode(200);
   }
@@ -207,14 +207,14 @@ class CourseResourceTest extends BaseResourceTest {
   @Test
   @DisplayName("Should return 401 when unauthenticated")
   void unauthorizedAccess() {
-    assertUnauthenticated("/academic/courses");
+    assertUnauthenticated("/v1/academic/courses");
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /academic/courses - Forbidden for STUDENT")
+  @DisplayName("POST /v1/academic/courses - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
     School[] school = new School[1];
     doInTransaction(() -> school[0] = factory.createSchool());
@@ -225,7 +225,7 @@ class CourseResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/academic/courses")
+        .post("/v1/academic/courses")
         .then()
         .statusCode(403);
   }
@@ -234,12 +234,12 @@ class CourseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("DELETE /academic/courses/{id} - Forbidden for STUDENT")
+  @DisplayName("DELETE /v1/academic/courses/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/academic/courses/{id}")
+        .delete("/v1/academic/courses/{id}")
         .then()
         .statusCode(403);
   }
