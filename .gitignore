@@ -13,6 +13,7 @@
 # Next.js
 /.next/
 /out/
+codex*.log
 
 # Build outputs
 /build
