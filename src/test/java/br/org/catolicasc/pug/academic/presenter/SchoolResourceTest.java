@@ -168,7 +168,7 @@ class SchoolResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/academic/schools/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -208,3 +208,5 @@ class SchoolResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
+
+

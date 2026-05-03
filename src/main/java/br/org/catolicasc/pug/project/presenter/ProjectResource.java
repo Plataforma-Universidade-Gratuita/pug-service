@@ -74,7 +74,7 @@ public class ProjectResource {
    * @throws ResourceNotFoundException if the project is not found
    */
   @GET
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     ProjectView view = readService.getViewById(id);
@@ -148,7 +148,7 @@ public class ProjectResource {
    * @return an HTTP 200 OK response containing the updated {@link ProjectResponse}
    */
   @PUT
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
@@ -172,7 +172,7 @@ public class ProjectResource {
    * @throws ResourceNotFoundException if the project is not found
    */
   @PATCH
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     if (req.name() != null
@@ -195,14 +195,14 @@ public class ProjectResource {
    * Permanently removes a project from the system.
    *
    * @param id the unique identifier (UUID) of the project
-   * @return an HTTP 200 OK response
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   private Locale locale() {

@@ -251,7 +251,7 @@ class StaffResourceTest extends BaseResourceTest {
         .when()
         .patch("/v1/partners/staff/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -267,7 +267,7 @@ class StaffResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/partners/staff/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -321,3 +321,5 @@ class StaffResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
+
+

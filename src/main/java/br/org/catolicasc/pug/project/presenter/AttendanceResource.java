@@ -66,7 +66,7 @@ public class AttendanceResource {
    * @throws ResourceNotFoundException if the attendance is not found
    */
   @GET
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     AttendanceView view = readService.getViewById(id);
     AttendanceResponse body = AttendancePresenter.toResponse(view, locale(), i18n);
@@ -136,7 +136,7 @@ public class AttendanceResource {
    * @return an HTTP 200 OK response containing the updated {@link AttendanceResponse}
    */
   @PATCH
-  @Path("/{id}/validate")
+  @Path(ProjectApiPaths.ATTENDANCE_VALIDATE_SEGMENT)
   public Response validate(@PathParam("id") @UuidV7 UUID id, @Valid AttendanceValidateRequest req) {
     var cmd = AttendancePresenter.toCommand(req);
 
@@ -151,13 +151,13 @@ public class AttendanceResource {
    * Permanently removes an attendance record from the system.
    *
    * @param id the unique identifier (UUIDv7) of the attendance to delete
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{id}")
+  @Path(ProjectApiPaths.ITEM)
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**

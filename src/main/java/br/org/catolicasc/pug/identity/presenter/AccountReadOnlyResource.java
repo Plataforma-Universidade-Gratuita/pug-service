@@ -59,7 +59,7 @@ public class AccountReadOnlyResource {
    *     AccountResponse}
    */
   @GET
-  @Path("{id}")
+  @Path(IdentityApiPaths.ITEM)
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     var body = AccountPresenter.toResponse(readService.getViewById(id), locale(), i18n);
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -77,7 +77,7 @@ public class AccountReadOnlyResource {
    *     accountId} claim
    */
   @GET
-  @Path("me")
+  @Path(IdentityApiPaths.SELF)
   @Authenticated
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();

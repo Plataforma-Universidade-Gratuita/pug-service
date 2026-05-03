@@ -93,7 +93,7 @@ class AdminResourceTest extends BaseResourceTest {
         .when()
         .patch("/v1/identity/admins/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -115,7 +115,7 @@ class AdminResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/identity/admins/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -232,3 +232,5 @@ class AdminResourceTest extends BaseResourceTest {
         .body("data[0].accountResponse.userId", is(user[0].getId().toString()));
   }
 }
+
+

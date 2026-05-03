@@ -253,7 +253,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} approve - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} status=APPROVED - Success")
   void acceptSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -285,7 +285,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} cancel - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} status=CANCELED - Success")
   void cancelSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -310,7 +310,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} complete - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} status=COMPLETED - Success")
   void completeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -335,7 +335,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/me - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/me status=EXITED - Success")
   void exitSuccess() throws Exception {
     Account[] acc = new Account[1];
     Project[] project = new Project[1];
@@ -370,7 +370,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} reject - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} status=REJECTED - Success")
   void rejectSuccess() throws Exception {
     Student[] student = new Student[1];
     Project[] project = new Project[1];
@@ -402,7 +402,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} remove - Success")
+  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{studentId} status=REMOVED - Success")
   void removeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -449,7 +449,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   private Enrollment setupApprovedEnrollment() {
@@ -463,3 +463,5 @@ class EnrollmentResourceTest extends BaseResourceTest {
     return factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
   }
 }
+
+

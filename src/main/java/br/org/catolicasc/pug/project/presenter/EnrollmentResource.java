@@ -43,9 +43,10 @@ import java.util.stream.Collectors;
 /**
  * REST API resource controller for managing project enrollments.
  *
- * <p>This class exposes nested project enrollment endpoints for reads, creation, status
- * transitions, and removal. It delegates commands to the {@link EnrollmentService} and queries to
- * the {@link EnrollmentReadService}, adhering to CQRS principles.
+ * <p>This class exposes nested project enrollment endpoints rooted at {@code /v1/projects} for
+ * reads, creation, status transitions, and removal. It delegates commands to the {@link
+ * EnrollmentService} and queries to the {@link EnrollmentReadService}, adhering to CQRS
+ * principles.
  */
 @ApplicationScoped
 @Path(ProjectApiPaths.PROJECTS)
@@ -69,7 +70,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response get(
       @PathParam("projectId") @UuidV7 UUID projectId,
@@ -87,7 +88,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path("/{projectId}/enrollments/me")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_ME_SEGMENT)
   @RolesAllowed("STUDENT")
   public Response getMine(@PathParam("projectId") @UuidV7 UUID projectId) {
     UUID studentAccountId = authService.getCurrentAccountId();
@@ -109,7 +110,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path("/enrollments")
+  @Path(ProjectApiPaths.ENROLLMENTS_SEGMENT)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
@@ -139,7 +140,7 @@ public class EnrollmentResource {
    *     EnrollmentResponse}
    */
   @GET
-  @Path("/enrollments/me")
+  @Path(ProjectApiPaths.ENROLLMENTS_ME_SEGMENT)
   @RolesAllowed("STUDENT")
   public Response listMine() {
     UUID studentAccountId = authService.getCurrentAccountId();
@@ -164,7 +165,7 @@ public class EnrollmentResource {
    *     {@link EnrollmentResponse}
    */
   @POST
-  @Path("/{projectId}/enrollments")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENTS_SEGMENT)
   @Authenticated
   public Response create(@PathParam("projectId") @UuidV7 UUID projectId) {
     EnrollmentCreateCommand cmd = new EnrollmentCreateCommand(projectId);
@@ -177,6 +178,7 @@ public class EnrollmentResource {
 
     URI location =
         uri.getBaseUriBuilder()
+            .path(ProjectApiPaths.VERSION.substring(1))
             .path("projects")
             .path(created.getIdentifier().getProjectId().toString())
             .path("enrollments")
@@ -195,7 +197,7 @@ public class EnrollmentResource {
    * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
    */
   @PATCH
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
   @RolesAllowed({"ADMIN", "STAFF"})
   @jakarta.ws.rs.Consumes(MediaType.APPLICATION_JSON)
   public Response patch(
@@ -217,7 +219,7 @@ public class EnrollmentResource {
    * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
    */
   @PATCH
-  @Path("/{projectId}/enrollments/me")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_ME_SEGMENT)
   @RolesAllowed("STUDENT")
   @jakarta.ws.rs.Consumes(MediaType.APPLICATION_JSON)
   public Response patchMine(
@@ -234,16 +236,16 @@ public class EnrollmentResource {
    *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @param studentId the unique identifier (UUIDv7) of the enrolled student account
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path(ProjectApiPaths.PROJECT_ENROLLMENT_BY_STUDENT_SEGMENT)
   @RolesAllowed({"ADMIN"})
   public Response delete(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
     writeService.delete(identifier(projectId, studentId));
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**

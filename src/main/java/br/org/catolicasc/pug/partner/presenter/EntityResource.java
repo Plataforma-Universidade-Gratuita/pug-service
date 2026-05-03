@@ -69,7 +69,7 @@ public class EntityResource {
    * @throws ResourceNotFoundException if the entity is not found
    */
   @GET
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     EntityResponse body = EntityPresenter.toResponse(readService.getViewById(id), locale());
@@ -129,7 +129,7 @@ public class EntityResource {
    * @return a {@link Response} containing an {@link ApiEnvelope} with the list of used cities.
    */
   @GET
-  @Path("/cities")
+  @Path(PartnerApiPaths.ENTITY_CITIES_SEGMENT)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response listCities() {
     var body =
@@ -177,7 +177,7 @@ public class EntityResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     var cmd = EntityPresenter.toCommand(req);
@@ -193,14 +193,14 @@ public class EntityResource {
    * Permanently removes a partner entity from the system.
    *
    * @param id the unique identifier (UUIDv7) of the entity to delete
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @RolesAllowed({"ADMIN"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /** Helper method to determine the preferred locale from the incoming request headers. */

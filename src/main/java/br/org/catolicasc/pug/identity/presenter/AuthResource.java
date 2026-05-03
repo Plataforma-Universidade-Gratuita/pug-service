@@ -41,7 +41,7 @@ public class AuthResource {
    *     TokenResponse}
    */
   @POST
-  @Path("/login")
+  @Path(IdentityApiPaths.LOGIN)
   @PermitAll
   public Response login(@Valid LoginRequest request) {
     TokenResponse body = authService.login(request);
@@ -56,7 +56,7 @@ public class AuthResource {
    *     TokenResponse}
    */
   @POST
-  @Path("/refresh")
+  @Path(IdentityApiPaths.REFRESH)
   @PermitAll
   public Response refresh(@Valid RefreshRequest request) {
     TokenResponse body = authService.refresh(request);
@@ -70,7 +70,7 @@ public class AuthResource {
    * @return an HTTP 204 No Content response
    */
   @POST
-  @Path("/logout")
+  @Path(IdentityApiPaths.LOGOUT)
   @PermitAll
   public Response logout(@Valid LogoutRequest request) {
     authService.logout(request);
@@ -84,7 +84,7 @@ public class AuthResource {
    * @return an HTTP 204 No Content response
    */
   @POST
-  @Path("/logout-all")
+  @Path(IdentityApiPaths.LOGOUT_ALL)
   @Consumes(MediaType.WILDCARD)
   @RolesAllowed({"ADMIN", "PARTNER", "STUDENT"})
   public Response logoutAll() {

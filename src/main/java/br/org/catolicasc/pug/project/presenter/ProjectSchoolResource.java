@@ -37,10 +37,10 @@ import java.util.stream.Collectors;
 /**
  * REST API resource controller for managing project-school associations from the project side.
  *
- * <p>This class exposes nested endpoints rooted at {@code /projects/{projectId}/schools} to list,
- * create, and remove the relationship between a project and academic schools. It delegates commands
- * to the {@link ProjectSchoolService} and queries to the {@link ProjectSchoolReadService}, adhering
- * to CQRS principles.
+ * <p>This class exposes nested endpoints rooted at {@code /v1/projects/{projectId}/schools} to
+ * list, create, and remove the relationship between a project and academic schools. It delegates
+ * commands to the {@link ProjectSchoolService} and queries to the {@link ProjectSchoolReadService},
+ * adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path(ProjectApiPaths.PROJECT_SCHOOLS)
@@ -96,7 +96,12 @@ public class ProjectSchoolResource {
             .collect(Collectors.toList());
 
     URI location =
-        uri.getBaseUriBuilder().path("projects").path(projectId.toString()).path("schools").build();
+        uri.getBaseUriBuilder()
+            .path(ProjectApiPaths.VERSION.substring(1))
+            .path("projects")
+            .path(projectId.toString())
+            .path("schools")
+            .build();
 
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -106,29 +111,29 @@ public class ProjectSchoolResource {
    *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{schoolId}")
+  @Path(ProjectApiPaths.PROJECT_SCHOOL_ITEM_SEGMENT)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAssociation(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("schoolId") @UuidV7 UUID schoolId) {
     writeService.delete(projectId, schoolId);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**
    * Removes all school associations for the specified project.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAllByProject(@PathParam("projectId") @UuidV7 UUID projectId) {
     writeService.deleteAllByProjectId(projectId);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**

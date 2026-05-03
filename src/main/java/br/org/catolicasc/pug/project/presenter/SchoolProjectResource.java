@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
+import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
 import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
@@ -33,13 +33,13 @@ import java.util.stream.Collectors;
 /**
  * REST API resource controller for managing project-school associations from the school side.
  *
- * <p>This class exposes nested endpoints rooted at {@code /academic/schools/{schoolId}/projects} to
- * list and remove the relationship between a school and its associated projects. It delegates
+ * <p>This class exposes nested endpoints rooted at {@code /v1/academic/schools/{schoolId}/projects}
+ * to list and remove the relationship between a school and its associated projects. It delegates
  * commands to the {@link ProjectSchoolService} and queries to the {@link ProjectSchoolReadService},
  * adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path(ProjectApiPaths.SCHOOL_PROJECTS)
+@Path(AcademicApiPaths.SCHOOL_PROJECTS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -72,13 +72,13 @@ public class SchoolProjectResource {
    * Removes all project associations for the specified school.
    *
    * @param schoolId the unique identifier (UUIDv7) of the school
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAllBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
     writeService.deleteAllBySchoolId(schoolId);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**

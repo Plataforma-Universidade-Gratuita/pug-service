@@ -207,7 +207,7 @@ class ProjectResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/projects/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -251,7 +251,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{id} start - Success")
+  @DisplayName("PATCH /v1/projects/{id} status=IN_PROGRESS - Success")
   void startSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -276,7 +276,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{id} cancel - Success")
+  @DisplayName("PATCH /v1/projects/{id} status=CANCELED - Success")
   void cancelSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -301,7 +301,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{id} complete - Success")
+  @DisplayName("PATCH /v1/projects/{id} status=COMPLETED - Success")
   void completeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -351,7 +351,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{id} hold - Success")
+  @DisplayName("PATCH /v1/projects/{id} status=ON_HOLD - Success")
   void holdSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -377,7 +377,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{id} retake - Success")
+  @DisplayName("PATCH /v1/projects/{id} status=PLANNED - Success")
   void retakeSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -399,3 +399,5 @@ class ProjectResourceTest extends BaseResourceTest {
         .body("data.status", is("IN_PROGRESS"));
   }
 }
+
+

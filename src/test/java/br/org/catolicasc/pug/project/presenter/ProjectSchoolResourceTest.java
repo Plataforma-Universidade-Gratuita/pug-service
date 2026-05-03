@@ -109,7 +109,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/projects/{projectId}/schools/{schoolId}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -126,7 +126,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/projects/{projectId}/schools")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -143,7 +143,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/academic/schools/{schoolId}/projects")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -195,3 +195,5 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .post("/v1/projects/{projectId}/schools");
   }
 }
+
+

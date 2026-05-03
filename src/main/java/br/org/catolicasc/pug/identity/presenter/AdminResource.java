@@ -74,7 +74,7 @@ public class AdminResource {
    * @throws ResourceNotFoundException if the admin is not found
    */
   @GET
-  @Path("{id}")
+  @Path(IdentityApiPaths.ITEM)
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     AdminView v = readService.getViewByAccountId(id);
     AdminResponse body = AdminPresenter.toResponse(v, locale(), i18n);
@@ -94,7 +94,7 @@ public class AdminResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path("me")
+  @Path(IdentityApiPaths.SELF)
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
     AdminView v = readService.getViewByAccountId(accountId);
@@ -193,7 +193,7 @@ public class AdminResource {
    * @throws AppValidationException if input validation fails
    */
   @PUT
-  @Path("{id}")
+  @Path(IdentityApiPaths.ITEM)
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = AdminPresenter.toCommand(req, hashedPassword);
@@ -216,24 +216,19 @@ public class AdminResource {
    *
    * @param id the unique identifier (UUIDv7) of the admin's account
    * @param req the validated {@link AdminUpdateRequest} containing the fields to change
-   * @return an HTTP 200 OK response containing the updated {@link AdminResponse}
+   * @return an HTTP 204 No Content response when the update succeeds
    * @throws ResourceNotFoundException if the admin does not exist
    * @throws DuplicateResourceException if an updated email/CPF conflicts with an existing record
    * @throws AppValidationException if input validation fails
    */
   @PATCH
-  @Path("{id}")
+  @Path(IdentityApiPaths.ITEM)
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid AdminUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = AdminPresenter.toCommand(req, hashedPassword);
 
-    Admin updatedAdmin = writeService.update(id, cmd);
-
-    AdminResponse body =
-        AdminPresenter.toResponse(
-            readService.getViewByAccountId(updatedAdmin.getAccountId()), locale(), i18n);
-
-    return Response.ok(ApiEnvelope.ok(body)).build();
+    writeService.update(id, cmd);
+    return Response.noContent().build();
   }
 
   /**
@@ -241,14 +236,14 @@ public class AdminResource {
    * account.
    *
    * @param id the unique identifier (UUIDv7) of the admin's account
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    * @throws ResourceNotFoundException if the admin does not exist
    */
   @DELETE
-  @Path("{id}")
+  @Path(IdentityApiPaths.ITEM)
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /** Helper method to determine the preferred locale from the incoming request headers. */

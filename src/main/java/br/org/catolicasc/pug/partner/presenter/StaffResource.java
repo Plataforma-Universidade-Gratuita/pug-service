@@ -77,7 +77,7 @@ public class StaffResource {
    * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @GET
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StaffView v = readService.getViewByAccountId(id);
@@ -98,7 +98,7 @@ public class StaffResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path("/me")
+  @Path(PartnerApiPaths.SELF)
   @Authenticated
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
@@ -188,7 +188,7 @@ public class StaffResource {
    * <p>Restricted to ADMIN and STAFF roles.
    */
   @PUT
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
@@ -210,21 +210,17 @@ public class StaffResource {
    *
    * @param id the unique identifier (UUIDv7) of the staff member's account
    * @param req the validated {@link StaffUpdateRequest} containing the fields to change
-   * @return an HTTP 200 OK response containing the updated {@link StaffResponse}
+   * @return an HTTP 204 No Content response when the update succeeds
    * @throws ResourceNotFoundException if the staff assignment is not found
    */
   @PATCH
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response patch(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     String hashedPassword = req.password() != null ? passwordService.hash(req.password()) : null;
     var cmd = StaffPresenter.toCommand(req, hashedPassword);
     writeService.update(id, cmd);
-
-    StaffView v = readService.getViewByAccountId(id);
-    StaffResponse body = StaffPresenter.toResponse(v, locale(), i18n);
-
-    return Response.ok(ApiEnvelope.ok(body)).build();
+    return Response.noContent().build();
   }
 
   /**
@@ -233,11 +229,11 @@ public class StaffResource {
    * <p>Restricted to ADMIN role only.
    */
   @DELETE
-  @Path("/{id}")
+  @Path(PartnerApiPaths.ITEM)
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   private Locale locale() {

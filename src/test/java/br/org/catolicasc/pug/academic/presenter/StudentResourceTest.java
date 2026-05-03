@@ -245,7 +245,7 @@ class StudentResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/academic/students/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -387,3 +387,5 @@ class StudentResourceTest extends BaseResourceTest {
         LocalDate.now().plusMonths(6));
   }
 }
+
+

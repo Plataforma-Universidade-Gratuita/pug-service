@@ -158,7 +158,7 @@ class AttendanceResourceTest extends BaseResourceTest {
         .when()
         .delete("/v1/projects/attendances/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
@@ -167,3 +167,5 @@ class AttendanceResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/projects/attendances");
   }
 }
+
+

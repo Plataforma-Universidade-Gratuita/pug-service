@@ -26,7 +26,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partner/entities/{id} - Success")
+  @DisplayName("GET /v1/partners/entities/{id} - Success")
   void getByIdSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -38,7 +38,7 @@ class EntityResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", entity[0].getId())
         .when()
-        .get("/v1/partner/entities/{id}")
+        .get("/v1/partners/entities/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
@@ -51,12 +51,12 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partner/entities/{id} - Not Found")
+  @DisplayName("GET /v1/partners/entities/{id} - Not Found")
   void getByIdNotFound() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .get("/v1/partner/entities/{id}")
+        .get("/v1/partners/entities/{id}")
         .then()
         .statusCode(404)
         .body("success", is(false))
@@ -67,7 +67,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partner/entities?cnpj= - Success")
+  @DisplayName("GET /v1/partners/entities?cnpj= - Success")
   void getByCnpjSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -79,7 +79,7 @@ class EntityResourceTest extends BaseResourceTest {
     given()
         .queryParam("cnpj", entity[0].getCnpj().getValue())
         .when()
-        .get("/v1/partner/entities")
+        .get("/v1/partners/entities")
         .then()
         .statusCode(200)
         .body("data.cnpj", is(entity[0].getCnpj().getValue()));
@@ -89,7 +89,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("GET /v1/partner/entities - List All")
+  @DisplayName("GET /v1/partners/entities - List All")
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -99,7 +99,7 @@ class EntityResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/v1/partner/entities")
+        .get("/v1/partners/entities")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -109,7 +109,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partner/entities?cityId= - Filter by City")
+  @DisplayName("GET /v1/partners/entities?cityId= - Filter by City")
   void listByCityId() throws Exception {
     City[] city = new City[1];
     doInTransaction(
@@ -121,7 +121,7 @@ class EntityResourceTest extends BaseResourceTest {
     given()
         .queryParam("cityId", city[0].getId().toString())
         .when()
-        .get("/v1/partner/entities")
+        .get("/v1/partners/entities")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -131,7 +131,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partner/entities/cities - List Cities")
+  @DisplayName("GET /v1/partners/entities/cities - List Cities")
   void listCities() throws Exception {
     doInTransaction(
         () -> {
@@ -141,7 +141,7 @@ class EntityResourceTest extends BaseResourceTest {
 
     given()
         .when()
-        .get("/v1/partner/entities/cities")
+        .get("/v1/partners/entities/cities")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -151,7 +151,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /v1/partner/entities - Success")
+  @DisplayName("POST /v1/partners/entities - Success")
   void createSuccess() throws Exception {
     City[] city = new City[1];
     doInTransaction(() -> city[0] = factory.getAnyCity());
@@ -162,7 +162,7 @@ class EntityResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/v1/partner/entities")
+        .post("/v1/partners/entities")
         .then()
         .statusCode(201)
         .body("data.name", is(req.name()))
@@ -174,7 +174,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("POST /v1/partner/entities - Duplicate CNPJ")
+  @DisplayName("POST /v1/partners/entities - Duplicate CNPJ")
   void createDuplicate() throws Exception {
     Entity[] existing = new Entity[1];
     City[] city = new City[1];
@@ -194,7 +194,7 @@ class EntityResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/v1/partner/entities")
+        .post("/v1/partners/entities")
         .then()
         .statusCode(409);
   }
@@ -203,7 +203,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("PUT /v1/partner/entities/{id} - Success")
+  @DisplayName("PUT /v1/partners/entities/{id} - Success")
   void updateSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -219,7 +219,7 @@ class EntityResourceTest extends BaseResourceTest {
         .pathParam("id", entity[0].getId())
         .body(req)
         .when()
-        .put("/v1/partner/entities/{id}")
+        .put("/v1/partners/entities/{id}")
         .then()
         .statusCode(200)
         .body("data.name", is("Updated Name"));
@@ -229,7 +229,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PUT /v1/partner/entities/{id} - Not Found")
+  @DisplayName("PUT /v1/partners/entities/{id} - Not Found")
   void updateNotFound() {
     var req = anEntityUpdateRequest().build();
 
@@ -238,7 +238,7 @@ class EntityResourceTest extends BaseResourceTest {
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .body(req)
         .when()
-        .put("/v1/partner/entities/{id}")
+        .put("/v1/partners/entities/{id}")
         .then()
         .statusCode(404);
   }
@@ -247,7 +247,7 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("DELETE /v1/partner/entities/{id} - Success")
+  @DisplayName("DELETE /v1/partners/entities/{id} - Success")
   void deleteSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
@@ -259,22 +259,22 @@ class EntityResourceTest extends BaseResourceTest {
     given()
         .pathParam("id", entity[0].getId())
         .when()
-        .delete("/v1/partner/entities/{id}")
+        .delete("/v1/partners/entities/{id}")
         .then()
-        .statusCode(200);
+        .statusCode(204);
   }
 
   @Test
   @DisplayName("Should return 401 when accessing without authentication")
   void unauthorizedAccess() {
-    assertUnauthenticated("/v1/partner/entities");
+    assertUnauthenticated("/v1/partners/entities");
   }
 
   @Test
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("POST /v1/partner/entities - Forbidden for STUDENT")
+  @DisplayName("POST /v1/partners/entities - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
     City[] city = new City[1];
     doInTransaction(() -> city[0] = factory.getAnyCity());
@@ -285,7 +285,7 @@ class EntityResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .body(req)
         .when()
-        .post("/v1/partner/entities")
+        .post("/v1/partners/entities")
         .then()
         .statusCode(403);
   }
@@ -294,12 +294,12 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
-  @DisplayName("DELETE /v1/partner/entities/{id} - Forbidden for STUDENT")
+  @DisplayName("DELETE /v1/partners/entities/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/v1/partner/entities/{id}")
+        .delete("/v1/partners/entities/{id}")
         .then()
         .statusCode(403);
   }
@@ -308,13 +308,15 @@ class EntityResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
-  @DisplayName("DELETE /v1/partner/entities/{id} - Forbidden for STAFF")
+  @DisplayName("DELETE /v1/partners/entities/{id} - Forbidden for STAFF")
   void deleteForbiddenForStaff() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
         .when()
-        .delete("/v1/partner/entities/{id}")
+        .delete("/v1/partners/entities/{id}")
         .then()
         .statusCode(403);
   }
 }
+
+

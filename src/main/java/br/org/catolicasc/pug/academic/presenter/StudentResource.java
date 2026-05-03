@@ -77,7 +77,7 @@ public class StudentResource {
    * @throws ResourceNotFoundException if the student is not found
    */
   @GET
-  @Path("/{id}")
+  @Path(AcademicApiPaths.ITEM)
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
     StudentView view = readService.getViewByAccountId(id);
@@ -98,7 +98,7 @@ public class StudentResource {
    *     contain the required {@code accountId} claim
    */
   @GET
-  @Path("/me")
+  @Path(AcademicApiPaths.SELF)
   @Authenticated
   public Response getMe() {
     UUID accountId = authService.getCurrentAccountId();
@@ -207,7 +207,7 @@ public class StudentResource {
    * @throws DuplicateResourceException if any academic registration or email already exists
    */
   @POST
-  @Path("/bulk")
+  @Path(AcademicApiPaths.BULK)
   @RolesAllowed("ADMIN")
   public Response createInBulk(@Valid @NotNull List<StudentCreateRequest> reqs) {
     List<StudentCreateCommand> cmds =
@@ -238,7 +238,7 @@ public class StudentResource {
    * @return an HTTP 200 OK response containing the updated {@link StudentResponse}
    */
   @PUT
-  @Path("/{id}")
+  @Path(AcademicApiPaths.ITEM)
   @RolesAllowed("ADMIN")
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StudentUpdateRequest req) {
     String passwordHash = null;
@@ -258,14 +258,14 @@ public class StudentResource {
    * Permanently removes a student enrollment from the system and revokes their account access.
    *
    * @param id the unique identifier (UUIDv7) of the student's account to delete
-   * @return an HTTP 200 OK response with an empty data payload indicating successful deletion
+   * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
-  @Path("/{id}")
+  @Path(AcademicApiPaths.ITEM)
   @RolesAllowed("ADMIN")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
-    return Response.ok(ApiEnvelope.ok(null)).build();
+    return Response.noContent().build();
   }
 
   /**
