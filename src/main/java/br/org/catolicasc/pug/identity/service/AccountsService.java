@@ -18,7 +18,7 @@ import java.util.UUID;
  * complex lifecycle relationship between an {@link Account} and its underlying {@link User},
  * automatically provisioning or pruning user records to prevent orphans.
  */
-public interface AccountService {
+public interface AccountsService {
 
   /**
    * Deactivates an existing {@link Account} without deleting it.
@@ -59,8 +59,7 @@ public interface AccountService {
    * Retrieves a full {@link Account} domain aggregate by its registered email address.
    *
    * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (such as
-   * authentication flows). For API responses, use {@link AccountReadService#getViewByEmail(String)}
-   * instead.
+   * authentication flows).
    *
    * @param email the email address of the account
    * @return the fully reconstituted {@link Account} aggregate
@@ -74,7 +73,7 @@ public interface AccountService {
    * Retrieves a full {@link Account} domain aggregate by its unique identifier.
    *
    * <p><b>Note:</b> This method is intended strictly for internal domain orchestration. For API
-   * responses, use {@link AccountReadService#getViewById(UUID)} instead.
+   * responses, use {@link AccountsReadService#getViewById(UUID)} instead.
    *
    * @param id the unique identifier (UUID) of the account
    * @return the fully reconstituted {@link Account} aggregate

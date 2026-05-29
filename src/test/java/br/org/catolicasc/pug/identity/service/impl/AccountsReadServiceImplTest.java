@@ -5,11 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
+import br.org.catolicasc.pug.identity.infra.read.AccountsQueries;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.identity.service.dtos.AccountComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -20,15 +23,13 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 @QuarkusTest
-@DisplayName("AccountReadServiceImpl Coverage")
-class AccountReadServiceImplTest {
+@DisplayName("AccountsReadServiceImpl Coverage")
+class AccountsReadServiceImplTest {
 
-  @Inject AccountReadServiceImpl service;
-  @InjectMock AccountQueries queries;
+  @Inject AccountsReadServiceImpl service;
+  @InjectMock AccountsQueries queries;
 
   @Test
   @DisplayName("Should return account view by ID")
@@ -58,38 +59,6 @@ class AccountReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should search accounts by query")
-  void search() {
-    when(queries.searchByName("test")).thenReturn(List.of());
-    assertThat(service.search("  Test  ")).isEmpty();
-  }
-
-  @Test
-  @DisplayName("Should return account view by email successfully")
-  void getViewByEmailSuccess() {
-    String email = "test@pug.com";
-    AccountView view =
-        new AccountView(
-            UuidCreator.getTimeOrderedEpoch(),
-            UuidCreator.getTimeOrderedEpoch(),
-            email,
-            AccountType.STUDENT,
-            null,
-            null,
-            true);
-    when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
-
-    assertThat(service.getViewByEmail(email)).isEqualTo(view);
-  }
-
-  @ParameterizedTest
-  @NullAndEmptySource
-  @DisplayName("Should throw ResourceNotFound for null/empty email")
-  void getViewByEmailInvalid(String email) {
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail(email));
-  }
-
-  @Test
   @DisplayName("Should list all account views")
   void listViews() {
     when(queries.listAllAccounts())
@@ -106,22 +75,21 @@ class AccountReadServiceImplTest {
     assertThat(service.listViews()).hasSize(1);
   }
 
-  @ParameterizedTest
-  @NullAndEmptySource
-  @DisplayName("Should return empty list for null/empty CPF list lookup")
-  void listViewsByCpfInvalid(String cpf) {
-    assertThat(service.listViewsByCpf(cpf)).isEmpty();
+  @Test
+  @DisplayName("Should return empty list for null IDs lookup")
+  void listViewsByIdsInvalid() {
+    assertThat(service.listViewsByIds(null)).isEmpty();
   }
 
   @Test
-  @DisplayName("Should list account views by CPF successfully")
-  void listViewsByCpfSuccess() {
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    when(queries.listByCpf(cpf))
+  @DisplayName("Should list account views by IDs successfully")
+  void listViewsByIdsSuccess() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    when(queries.listAllByIds(List.of(id)))
         .thenReturn(
             List.of(
                 new AccountView(
-                    UuidCreator.getTimeOrderedEpoch(),
+                    id,
                     UuidCreator.getTimeOrderedEpoch(),
                     "a@a.com",
                     AccountType.STUDENT,
@@ -129,6 +97,34 @@ class AccountReadServiceImplTest {
                     null,
                     true)));
 
-    assertThat(service.listViewsByCpf(cpf)).hasSize(1);
+    assertThat(service.listViewsByIds(List.of(id))).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should search accounts by complex criteria")
+  void search() {
+    var criteria =
+        new AccountComplexSearchCriteria(
+            "Ana", null, null, List.of(AccountType.STUDENT), null, null, true);
+    var pageResult =
+        new PageResult<>(
+            List.of(
+                new AccountComplexSearchView(
+                    UuidCreator.getTimeOrderedEpoch(),
+                    UuidCreator.getTimeOrderedEpoch(),
+                    "Ana Silva",
+                    "ana@pug.com",
+                    AccountType.STUDENT,
+                    OffsetDateTime.now(),
+                    OffsetDateTime.now(),
+                    true)),
+            0,
+            10,
+            1,
+            1);
+
+    when(queries.search(new PageQuery(0, 10), criteria)).thenReturn(pageResult);
+
+    assertThat(service.search(new PageQuery(0, 10), criteria)).isEqualTo(pageResult);
   }
 }

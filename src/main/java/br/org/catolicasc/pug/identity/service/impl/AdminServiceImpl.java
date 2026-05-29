@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.service.impl;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.AdminService;
 import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
@@ -22,7 +22,7 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for administrator profiles.
  * Because an admin is inherently an extension of an account, this service delegates authentication
- * and identity concerns down to the {@link AccountService}, ensuring proper transaction boundaries
+ * and identity concerns down to the {@link AccountsService}, ensuring proper transaction boundaries
  * and lifecycle cascading (e.g., deleting the account when admin privileges are revoked).
  */
 @ApplicationScoped
@@ -34,7 +34,7 @@ public class AdminServiceImpl implements AdminService {
 
   @Inject AdminRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject AccountsService accountService;
 
   /** {@inheritDoc} */
   @Transactional

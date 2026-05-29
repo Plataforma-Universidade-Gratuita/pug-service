@@ -5,7 +5,7 @@ import br.org.catolicasc.pug.identity.domain.AccountRepository;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.UsersService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link AccountService} command interface.
+ * Implementation of the {@link AccountsService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for authentication accounts. It
  * coordinates with the {@link UsersService} to ensure that user identity records are properly
@@ -34,9 +34,9 @@ import org.jboss.logging.Logger;
  * to isolate complex domain instantiation logic.
  */
 @ApplicationScoped
-public class AccountServiceImpl implements AccountService {
+public class AccountsServiceImpl implements AccountsService {
 
-  private static final Logger LOG = Logger.getLogger(AccountServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(AccountsServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
 

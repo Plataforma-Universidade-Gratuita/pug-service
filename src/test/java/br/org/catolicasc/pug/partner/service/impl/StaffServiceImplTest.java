@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.project.service.AttendanceService;
 import br.org.catolicasc.pug.project.service.ProjectService;
@@ -34,7 +34,7 @@ class StaffServiceImplTest {
 
   @Inject StaffServiceImpl service;
   @Inject TestDataFactory factory;
-  @InjectMock AccountService accountService;
+  @InjectMock AccountsService accountService;
   @InjectMock AuditPublisher audit;
   @InjectMock ProjectService projectService;
   @InjectMock AttendanceService attendanceService;

@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.partner.service;
 
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
@@ -25,7 +25,7 @@ public interface StaffService {
   /**
    * Deactivates a Staff member's account.
    *
-   * <p>This operation delegates to the underlying {@link AccountService} to gracefully disable
+   * <p>This operation delegates to the underlying {@link AccountsService} to gracefully disable
    * Login.bru and operational capabilities without permanently destroying the account data,
    * preserving referential integrity for historical records.
    *
@@ -79,7 +79,7 @@ public interface StaffService {
    *
    * <p>This method performs a cascading save. It verifies that the specified partner entity exists,
    * then delegates the creation of the underlying authentication account (and potentially the user)
-   * to the {@link AccountService} before appending the staff privileges.
+   * to the {@link AccountsService} before appending the staff privileges.
    *
    * <p><b>Business Rule:</b> An authentication account may only be assigned as Staff to a single
    * partner organization at any given time.

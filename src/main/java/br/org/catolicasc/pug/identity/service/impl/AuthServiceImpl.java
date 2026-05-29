@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
@@ -36,7 +36,7 @@ import org.jboss.logging.Logger;
  * Implementation of the {@link AuthService} utilizing SmallRye JWT for short-lived access tokens
  * and database-persisted opaque refresh tokens for session management.
  *
- * <p>This application-scoped bean verifies credentials via the AccountService, signs a new JWT
+ * <p>This application-scoped bean verifies credentials via the AccountsService, signs a new JWT
  * containing the user's role and identifiers as claims, and manages refresh token lifecycle
  * (creation, validation, revocation).
  */
@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
 
   private static final Logger LOG = Logger.getLogger(AuthServiceImpl.class);
 
-  @Inject AccountService accountService;
+  @Inject AccountsService accountService;
 
   @Inject PasswordService passwordService;
 

@@ -22,7 +22,7 @@ public interface AdminService {
   /**
    * Gracefully deactivates an Administrator's account.
    *
-   * <p>This delegates to the underlying {@link AccountService} to disable Login.bru capabilities
+   * <p>This delegates to the underlying {@link AccountsService} to disable Login.bru capabilities
    * without destroying the underlying Admin or Account records, preserving historical referential
    * integrity.
    *
@@ -61,7 +61,7 @@ public interface AdminService {
    * Instantiates and persists a new {@link Admin} aggregate based on the provided command.
    *
    * <p>This method performs a cascading save. It delegates the creation of the underlying
-   * authentication account (and potentially the user) to the {@link AccountService} before
+   * authentication account (and potentially the user) to the {@link AccountsService} before
    * appending the administrative privileges to that account.
    *
    * @param cmd the structured command containing the data to create the admin and linked account

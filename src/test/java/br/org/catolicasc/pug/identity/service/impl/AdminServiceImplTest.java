@@ -13,7 +13,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.AccountBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.AdminBuilder;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -33,7 +33,7 @@ class AdminServiceImplTest {
 
   @Inject AdminServiceImpl service;
   @InjectMock AdminRepository repo;
-  @InjectMock AccountService accountService;
+  @InjectMock AccountsService accountService;
   @InjectMock AuditPublisher audit;
 
   @Test

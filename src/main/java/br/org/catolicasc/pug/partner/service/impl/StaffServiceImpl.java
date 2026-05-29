@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.domain.StaffRepository;
 import br.org.catolicasc.pug.partner.service.EntityService;
@@ -26,7 +26,7 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for staff privileges. Because a
  * staff member is inherently an extension of an authentication account tied to a specific partner
- * organization, this service delegates identity concerns down to the {@link AccountService} and
+ * organization, this service delegates identity concerns down to the {@link AccountsService} and
  * structural validations to the {@link EntityService}.
  */
 @ApplicationScoped
@@ -38,7 +38,7 @@ public class StaffServiceImpl implements StaffService {
 
   @Inject StaffRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject AccountsService accountService;
 
   @Inject EntityService entityService;
 

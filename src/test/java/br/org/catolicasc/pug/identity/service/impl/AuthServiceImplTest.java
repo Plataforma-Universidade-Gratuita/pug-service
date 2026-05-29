@@ -16,7 +16,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -42,7 +42,7 @@ class AuthServiceImplTest {
 
   @Inject AuthServiceImpl authService;
 
-  @InjectMock AccountService accountService;
+  @InjectMock AccountsService accountService;
   @InjectMock PasswordService passwordService;
   @InjectMock SecurityIdentity securityIdentity;
   @InjectMock RefreshTokenRepositoryImpl refreshTokenRepository;

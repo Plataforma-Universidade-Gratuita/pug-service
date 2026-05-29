@@ -5,7 +5,7 @@ import br.org.catolicasc.pug.academic.domain.Student;
 import br.org.catolicasc.pug.academic.service.dtos.StudentCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -79,7 +79,7 @@ public interface StudentService {
    *
    * <p>This method performs a cascading save. It verifies that the specified course exists, then
    * delegates the creation of the underlying authentication account (and potentially the user
-   * identity) to the {@link AccountService} before saving the student's academic enrollment
+   * identity) to the {@link AccountsService} before saving the student's academic enrollment
    * records.
    *
    * @param cmd the structured command containing the data to create the student and linked account

@@ -2,7 +2,9 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.i18n.I18n;
@@ -61,6 +63,31 @@ class AccountPresenterTest {
       assertThat(response).isNotNull();
       assertThat(response.id()).isEqualTo(id);
       assertThat(response.userId()).isEqualTo(userId);
+      assertThat(response.email()).isEqualTo("test@pug.com");
+      assertThat(response.accountType()).isEqualTo(AccountType.STUDENT);
+      assertThat(response.accountTypeFormatted())
+          .isEqualTo(i18n.translation(AccountType.STUDENT.getBundleKey(), Locale.US));
+      assertThat(response.active()).isTrue();
+      assertThat(response.auditInfo()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should map AccountComplexSearchView to AccountComplexSearchResponse correctly")
+    void shouldMapComplexSearchSuccessfully() {
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      UUID userId = UuidCreator.getTimeOrderedEpoch();
+      OffsetDateTime now = OffsetDateTime.now();
+      AccountComplexSearchView view =
+          new AccountComplexSearchView(
+              id, userId, "Test User", "test@pug.com", AccountType.STUDENT, now, now, true);
+
+      AccountComplexSearchResponse response =
+          AccountPresenter.toComplexSearchResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(id);
+      assertThat(response.user().id()).isEqualTo(userId);
+      assertThat(response.user().name()).isEqualTo("Test User");
       assertThat(response.email()).isEqualTo("test@pug.com");
       assertThat(response.accountType()).isEqualTo(AccountType.STUDENT);
       assertThat(response.accountTypeFormatted())

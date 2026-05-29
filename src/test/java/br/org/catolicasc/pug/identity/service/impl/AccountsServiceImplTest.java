@@ -31,10 +31,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("AccountServiceImpl Coverage")
-class AccountServiceImplTest {
+@DisplayName("AccountsServiceImpl Coverage")
+class AccountsServiceImplTest {
 
-  @Inject AccountServiceImpl service;
+  @Inject AccountsServiceImpl service;
   @InjectMock AccountRepository repository;
   @InjectMock UsersService userService;
   @InjectMock AuditPublisher audit;

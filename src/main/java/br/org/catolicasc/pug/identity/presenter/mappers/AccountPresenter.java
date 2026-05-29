@@ -1,7 +1,10 @@
 package br.org.catolicasc.pug.identity.presenter.mappers;
 
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.UserComplexSearchResponse;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -46,5 +49,34 @@ public final class AccountPresenter {
 
     return new AccountResponse(
         v.id(), v.userId(), v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
+  }
+
+  /**
+   * Projects a read-only {@link AccountComplexSearchView} into a client-facing {@link
+   * AccountComplexSearchResponse}.
+   *
+   * <p>This mapping preserves the lightweight linked-user payload required by account search flows
+   * while also resolving the localized label for the account type and formatting account audit
+   * timestamps according to the provided {@link Locale}.
+   *
+   * @param v the internal read-model projection of the account search result
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link AccountComplexSearchResponse} ready for JSON serialization, or
+   *     {@code null} if any required input is null
+   */
+  public static AccountComplexSearchResponse toComplexSearchResponse(
+      AccountComplexSearchView v, Locale locale, I18n i18n) {
+    if (v == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+    UserComplexSearchResponse user = new UserComplexSearchResponse(v.userId(), v.userName());
+
+    return new AccountComplexSearchResponse(
+        v.id(), user, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
   }
 }

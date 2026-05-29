@@ -9,7 +9,7 @@ import br.org.catolicasc.pug.academic.service.dtos.StudentUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.academic.service.utils.StudentProcessor;
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.service.AccountService;
+import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.project.service.EnrollmentService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for student enrollments. Because
  * a student is inherently an extension of an authentication account tied to a specific course, this
- * service delegates identity concerns down to the {@link AccountService} and structural course
+ * service delegates identity concerns down to the {@link AccountsService} and structural course
  * validations to the {@link CourseService}.
  */
 @ApplicationScoped
@@ -41,7 +41,7 @@ public class StudentServiceImpl implements StudentService {
 
   @Inject StudentRepository repo;
 
-  @Inject AccountService accountService;
+  @Inject AccountsService accountService;
 
   @Inject CourseService courseService;
 
