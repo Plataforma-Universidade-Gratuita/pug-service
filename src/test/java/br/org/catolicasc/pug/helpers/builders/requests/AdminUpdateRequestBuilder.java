@@ -13,17 +13,10 @@ import java.util.Random;
 public class AdminUpdateRequestBuilder {
   private String name = TestNameGenerator.generateRandomName();
   private String emailString = null;
-  private String password = null;
   private Campi campus = getRandomCampus();
-  private Boolean active = null;
 
   private AdminUpdateRequestBuilder() {}
 
-  /**
-   * Initializes a new builder with sensible defaults for a partial update.
-   *
-   * @return a new {@link AdminUpdateRequestBuilder} instance
-   */
   public static AdminUpdateRequestBuilder anAdminUpdateRequest() {
     return new AdminUpdateRequestBuilder();
   }
@@ -38,34 +31,13 @@ public class AdminUpdateRequestBuilder {
     return this;
   }
 
-  public AdminUpdateRequestBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
-  /**
-   * Sets the campus assignment.
-   *
-   * @param campus the new {@link Campi}, or {@code null} to leave unchanged
-   * @return this builder instance
-   */
   public AdminUpdateRequestBuilder withCampus(Campi campus) {
     this.campus = campus;
     return this;
   }
 
-  public AdminUpdateRequestBuilder withActive(Boolean active) {
-    this.active = active;
-    return this;
-  }
-
-  /**
-   * Constructs the {@link AdminUpdateRequest} using the current builder state.
-   *
-   * @return a configured {@link AdminUpdateRequest} instance
-   */
   public AdminUpdateRequest build() {
-    return new AdminUpdateRequest(name, emailString, password, campus, active);
+    return new AdminUpdateRequest(name, emailString, campus);
   }
 
   private static Campi getRandomCampus() {

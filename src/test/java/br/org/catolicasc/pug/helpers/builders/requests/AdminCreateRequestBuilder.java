@@ -16,16 +16,10 @@ public class AdminCreateRequestBuilder {
   private String cpfString = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
   private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
-  private String password = "password123";
   private Campi campus = getRandomCampus();
 
   private AdminCreateRequestBuilder() {}
 
-  /**
-   * Initializes a new builder with random defaults.
-   *
-   * @return a new {@link AdminCreateRequestBuilder} instance
-   */
   public static AdminCreateRequestBuilder anAdminCreateRequest() {
     return new AdminCreateRequestBuilder();
   }
@@ -45,29 +39,13 @@ public class AdminCreateRequestBuilder {
     return this;
   }
 
-  public AdminCreateRequestBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
-  /**
-   * Sets the campus assignment.
-   *
-   * @param campus the {@link Campi} enum value
-   * @return this builder instance
-   */
   public AdminCreateRequestBuilder withCampus(Campi campus) {
     this.campus = campus;
     return this;
   }
 
-  /**
-   * Constructs the {@link AdminCreateRequest} using the current builder state.
-   *
-   * @return a configured {@link AdminCreateRequest} instance
-   */
   public AdminCreateRequest build() {
-    return new AdminCreateRequest(cpfString, name, emailString, password, campus);
+    return new AdminCreateRequest(cpfString, name, emailString, campus);
   }
 
   private static Campi getRandomCampus() {

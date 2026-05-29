@@ -56,7 +56,7 @@ public class Account extends DomainError {
    * @param userId the linked user's identifier
    * @param email the account's email VO
    * @param accountType the classification of the account
-   * @param passwordHash the hashed password
+   * @param passwordHash the hashed password, or {@code null} when setup is intentionally deferred
    * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
@@ -86,7 +86,8 @@ public class Account extends DomainError {
    * @param userId the UUID of the person associated with the Account
    * @param email the {@link Email} value object
    * @param type the {@link AccountType} assigning the role
-   * @param passwordHash the securely hashed password string
+   * @param passwordHash the securely hashed password string, or {@code null} when the account is
+   *     intentionally created without local credentials
    * @return a newly created and self-validated {@link Account} instance
    */
   public static Account factory(UUID userId, Email email, AccountType type, String passwordHash) {
@@ -105,15 +106,6 @@ public class Account extends DomainError {
     return account;
   }
 
-  /**
-   * Deactivates the account by setting the {@code active} flag to {@code false}.
-   *
-   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
-   * updated active status and a refreshed {@link AuditInfo} timestamp.
-   *
-   * @return a new, deactivated, and validated {@link Account} instance, or {@code this} if the
-   *     account is already inactive
-   */
   public Account deactivate() {
     if (Boolean.FALSE.equals(active)) {
       return this;
@@ -123,15 +115,6 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Reactivates the account by setting the {@code active} flag to {@code true}.
-   *
-   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
-   * updated active status and a refreshed {@link AuditInfo} timestamp.
-   *
-   * @return a new, activated, and validated {@link Account} instance, or {@code this} if the
-   *     account is already active
-   */
   public Account activate() {
     if (Boolean.TRUE.equals(active)) {
       return this;
@@ -141,16 +124,6 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Updates the account's email address.
-   *
-   * <p>Since this entity is immutable, this method returns a new {@code Account} instance with the
-   * updated email and a refreshed {@link AuditInfo} timestamp.
-   *
-   * @param newEmail the new {@link Email} to assign to the account
-   * @return a new, updated, and validated {@link Account} instance, or {@code this} if the email is
-   *     unchanged
-   */
   public Account changeEmail(Email newEmail) {
     if (email.equals(newEmail)) {
       return this;
@@ -160,16 +133,6 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Updates the account's password hash.
-   *
-   * <p>Returns a new, re-validated {@code Account} instance reflecting the changed credentials and
-   * a refreshed {@link AuditInfo} timestamp.
-   *
-   * @param newHash the new hashed password string
-   * @return a new, updated, and validated {@link Account} instance, or {@code this} if the hash is
-   *     unchanged
-   */
   public Account changePasswordHash(String newHash) {
     if (StringUtils.isEmpty(newHash) && StringUtils.isEmpty(passwordHash)) {
       return this;
@@ -182,22 +145,6 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Evaluates constraints for the Account entity and aggregates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Ensures the {@code userId} is not null (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_USER_ID_BLANK})
-   *   <li>Ensures the {@code email} is not null and bubbles up any internal {@link Email} errors
-   *   <li>Ensures the {@code accountType} is not null (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_ACCOUNT_TYPE_BLANK})
-   *   <li>Ensures the {@code passwordHash} is neither empty nor exceeds 255 characters
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     if (userId == null) {
@@ -211,9 +158,7 @@ public class Account extends DomainError {
     if (accountType == null) {
       addFieldError(IdentityFieldErrorCodes.INVALID_ACCOUNT_TYPE_BLANK);
     }
-    if (StringUtils.isEmpty(passwordHash)) {
-      addFieldError(IdentityFieldErrorCodes.INVALID_PASSWORD_HASH_BLANK);
-    } else if (passwordHash.length() > 255) {
+    if (StringUtils.isNotEmpty(passwordHash) && passwordHash.length() > 255) {
       addFieldError(IdentityFieldErrorCodes.INVALID_PASSWORD_HASH_TOO_LONG);
     }
     if (auditInfo == null) {

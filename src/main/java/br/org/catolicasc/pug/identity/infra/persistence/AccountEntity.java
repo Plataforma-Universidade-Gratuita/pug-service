@@ -76,8 +76,13 @@ public class AccountEntity extends BaseAuditedEntity {
   @Column(name = "account_type", nullable = false, length = 16)
   private AccountType accountType;
 
-  /** The securely hashed representation of the user's password. */
-  @Column(name = "password_hash", nullable = false)
+  /**
+   * The securely hashed representation of the user's password.
+   *
+   * <p>This column may remain {@code null} for account flows where password setup is intentionally
+   * deferred until a later stage.
+   */
+  @Column(name = "password_hash")
   private String passwordHash;
 
   /** Flag indicating whether the account is active or has been deactivated. */

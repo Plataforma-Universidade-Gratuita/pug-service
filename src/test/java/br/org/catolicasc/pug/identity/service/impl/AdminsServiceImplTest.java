@@ -4,7 +4,7 @@ import static br.org.catolicasc.pug.helpers.builders.commands.AdminCreateCommand
 import static br.org.catolicasc.pug.helpers.builders.commands.AdminUpdateCommandBuilder.anAdminUpdateCommand;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,10 +28,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("AdminServiceImpl Coverage")
-class AdminServiceImplTest {
+@DisplayName("AdminsServiceImpl Coverage")
+class AdminsServiceImplTest {
 
-  @Inject AdminServiceImpl service;
+  @Inject AdminsServiceImpl service;
   @InjectMock AdminRepository repo;
   @InjectMock AccountsService accountService;
   @InjectMock AuditPublisher audit;
@@ -81,6 +81,20 @@ class AdminServiceImplTest {
     assertThat(updated.getCampus()).isEqualTo(Campi.JOINVILLE);
   }
 
+  @Test
+  @DisplayName("Should update linked account status successfully")
+  void updateStatusSuccess() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    Admin current = AdminBuilder.anAdmin().forAccount(id).build();
+    when(repo.findOptionalByAccountId(id)).thenReturn(Optional.of(current), Optional.of(current));
+
+    Admin updated = service.updateStatus(id, false);
+
+    assertThat(updated).isEqualTo(current);
+    verify(accountService).update(any(), any());
+    verify(audit).fireUpdate(Admin.class.getName(), id, current, current);
+  }
+
   @Nested
   @DisplayName("Method: deactivate")
   class DeactivateTests {
@@ -98,7 +112,7 @@ class AdminServiceImplTest {
     }
 
     @Test
-    @DisplayName("Should return false when admin not found during deactivation")
+    @DisplayName("Should throw when admin not found during deactivation")
     void deactivateNotFound() {
       UUID id = UuidCreator.getTimeOrderedEpoch();
       when(repo.findOptionalByAccountId(id)).thenReturn(Optional.empty());

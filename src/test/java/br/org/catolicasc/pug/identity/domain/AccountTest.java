@@ -13,17 +13,31 @@ import org.junit.jupiter.api.Test;
 class AccountTest {
 
   @Test
-  @DisplayName("Should collect errors for missing fields")
+  @DisplayName("Should collect errors for missing required fields")
   void shouldCollectErrors() {
-    Account account = Account.factory(null, null, null, "");
+    Account account = Account.factory(null, null, null, null);
 
     assertThat(account.hasFieldErrors()).isTrue();
     assertThat(account.getFieldErrors())
         .contains(
             IdentityFieldErrorCodes.INVALID_USER_ID_BLANK,
             IdentityFieldErrorCodes.INVALID_EMAIL_BLANK,
-            IdentityFieldErrorCodes.INVALID_ACCOUNT_TYPE_BLANK,
-            IdentityFieldErrorCodes.INVALID_PASSWORD_HASH_BLANK);
+            IdentityFieldErrorCodes.INVALID_ACCOUNT_TYPE_BLANK)
+        .doesNotContain(IdentityFieldErrorCodes.INVALID_PASSWORD_HASH_BLANK);
+  }
+
+  @Test
+  @DisplayName("Should allow account creation without password hash")
+  void shouldAllowNullPasswordHash() {
+    Account account =
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory("test@pug.com"),
+            AccountType.ADMIN,
+            null);
+
+    assertThat(account.hasFieldErrors()).isFalse();
+    assertThat(account.getPasswordHash()).isNull();
   }
 
   @Test

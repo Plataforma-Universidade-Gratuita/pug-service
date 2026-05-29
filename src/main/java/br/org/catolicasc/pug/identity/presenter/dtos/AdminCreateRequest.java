@@ -16,12 +16,10 @@ import jakarta.validation.constraints.Size;
  * @param cpfString the raw 11-digit CPF string (must not be blank)
  * @param name the full name of the administrator (must not be blank and max 150 characters)
  * @param emailString the email address for the administrator's account (must not be blank)
- * @param password the requested password (must not be blank, between 8 and 255 characters)
  * @param campus the designated university campus enum (must not be null)
  */
 public record AdminCreateRequest(
     @NotBlank @JsonProperty("cpf") String cpfString,
     @NotBlank @Size(max = 150) String name,
     @NotBlank @JsonProperty("email") String emailString,
-    @NotBlank @Size(max = 255) String password,
     @NotNull Campi campus) {}

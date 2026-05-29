@@ -14,7 +14,8 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
  *
  * @param emailString the raw string representation of the requested email address
  * @param type the designated authorization role for the account
- * @param passwordHash the securely hashed password string
+ * @param passwordHash the securely hashed password string, or {@code null} when the account should
+ *     start without local credentials
  * @param userCommand the nested command containing the data for the associated user
  */
 public record AccountCreateCommand(

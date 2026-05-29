@@ -4,7 +4,8 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
 import br.org.catolicasc.pug.identity.service.AccountsService;
-import br.org.catolicasc.pug.identity.service.AdminService;
+import br.org.catolicasc.pug.identity.service.AdminsService;
+import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
 import br.org.catolicasc.pug.identity.service.utils.AdminProcessor;
@@ -18,22 +19,19 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link AdminService} command interface.
+ * Implementation of the {@link AdminsService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for administrator profiles.
  * Because an admin is inherently an extension of an account, this service delegates authentication
- * and identity concerns down to the {@link AccountsService}, ensuring proper transaction boundaries
- * and lifecycle cascading (e.g., deleting the account when admin privileges are revoked).
+ * and identity concerns down to the {@link AccountsService}.
  */
 @ApplicationScoped
-public class AdminServiceImpl implements AdminService {
+public class AdminsServiceImpl implements AdminsService {
 
-  private static final Logger LOG = Logger.getLogger(AdminServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(AdminsServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
-
   @Inject AdminRepository repo;
-
   @Inject AccountsService accountService;
 
   /** {@inheritDoc} */
@@ -46,7 +44,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     getByAccountId(accountId);
-
     accountService.deactivate(accountId);
     LOG.infof("Admin account deactivated successfully. Account ID: %s", accountId);
     return true;
@@ -132,5 +129,19 @@ public class AdminServiceImpl implements AdminService {
 
     auditPublisher.fireUpdate(Admin.class.getName(), accountId, current, updatedAdmin);
     return getByAccountId(accountId);
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public Admin updateStatus(UUID accountId, boolean active) {
+    LOG.debugf("Attempting to update Admin account status for Account ID: %s", accountId);
+    Admin current = getByAccountId(accountId);
+
+    accountService.update(accountId, new AccountUpdateCommand(null, null, active, null));
+
+    Admin updatedAdmin = getByAccountId(accountId);
+    auditPublisher.fireUpdate(Admin.class.getName(), accountId, current, updatedAdmin);
+    return updatedAdmin;
   }
 }

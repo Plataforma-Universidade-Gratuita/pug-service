@@ -4,7 +4,7 @@ CREATE TABLE accounts
     user_id       uuid                     NOT NULL,
     email         varchar(254)             NOT NULL,
     account_type  varchar(16)              NOT NULL,
-    password_hash varchar(255)             NOT NULL,
+    password_hash varchar(255)             ,
     created_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     updated_at    TIMESTAMP WITH TIME ZONE NOT NULL,
     active        boolean                  NOT NULL,

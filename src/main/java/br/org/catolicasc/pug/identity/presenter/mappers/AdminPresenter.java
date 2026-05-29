@@ -1,7 +1,10 @@
 package br.org.catolicasc.pug.identity.presenter.mappers;
 
+import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
+import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.AdminComplexSearchResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminUpdateRequest;
@@ -35,16 +38,14 @@ public final class AdminPresenter {
    * Maps an incoming REST creation request into an application layer creation command.
    *
    * @param req the validated {@link AdminCreateRequest} payload
-   * @param hashedPassword the securely hashed password string to assign to the new account
    * @return the corresponding {@link AdminCreateCommand}, or {@code null} if input is null
    */
-  public static AdminCreateCommand toCommand(AdminCreateRequest req, String hashedPassword) {
+  public static AdminCreateCommand toCommand(AdminCreateRequest req) {
     if (req == null) {
       return null;
     }
     var userCmd = new UserCreateCommand(req.cpfString(), req.name());
-    var accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.ADMIN, hashedPassword, userCmd);
+    var accountCmd = new AccountCreateCommand(req.emailString(), AccountType.ADMIN, null, userCmd);
     return new AdminCreateCommand(accountCmd, req.campus());
   }
 
@@ -52,18 +53,42 @@ public final class AdminPresenter {
    * Maps an incoming REST update request into an application layer update command.
    *
    * @param req the validated {@link AdminUpdateRequest} payload
-   * @param hashedPassword the securely hashed password string, or {@code null} if the password is
-   *     not being updated
    * @return the corresponding {@link AdminUpdateCommand}, or {@code null} if input is null
    */
-  public static AdminUpdateCommand toCommand(AdminUpdateRequest req, String hashedPassword) {
+  public static AdminUpdateCommand toCommand(AdminUpdateRequest req) {
     if (req == null) {
       return null;
     }
     var userCmd = new UserUpdateCommand(req.name());
-    var accountCmd =
-        new AccountUpdateCommand(req.emailString(), hashedPassword, req.active(), userCmd);
+    var accountCmd = new AccountUpdateCommand(req.emailString(), null, null, userCmd);
     return new AdminUpdateCommand(accountCmd, req.campus());
+  }
+
+  /**
+   * Projects a read-only {@link AdminComplexSearchView} into a client-facing {@link
+   * AdminComplexSearchResponse}.
+   *
+   * <p>This mapping reuses the account complex-search presenter so the shared account payload keeps
+   * the same shape across identity endpoints while the admin response adds the privilege-grant
+   * timestamp required by the administrator filtering flow.
+   *
+   * @param v the internal read-model projection of the administrator search result
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated {@link AdminComplexSearchResponse} ready for JSON serialization, or
+   *     {@code null} if any required input is null
+   */
+  public static AdminComplexSearchResponse toComplexSearchResponse(
+      AdminComplexSearchView v, Locale locale, I18n i18n) {
+    if (v == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    AccountComplexSearchResponse account =
+        AccountPresenter.toComplexSearchResponse(v.accountView(), locale, i18n);
+    String grantedAtFormatted = StringUtils.toStringFormatted(v.grantedAt(), locale);
+
+    return new AdminComplexSearchResponse(account, v.grantedAt(), grantedAtFormatted);
   }
 
   /**

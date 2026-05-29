@@ -3,7 +3,9 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.AdminResponse;
@@ -37,12 +39,12 @@ class AdminPresenterTest {
     void toCreateCommand() {
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
       AdminCreateRequest req =
-          new AdminCreateRequest(cpf, "Admin User", "a@a.com", "pass", Campi.JOINVILLE);
-      AdminCreateCommand cmd = AdminPresenter.toCommand(req, "hashedPass");
+          new AdminCreateRequest(cpf, "Admin User", "a@a.com", Campi.JOINVILLE);
+      AdminCreateCommand cmd = AdminPresenter.toCommand(req);
 
       assertThat(cmd.campus()).isEqualTo(Campi.JOINVILLE);
       assertThat(cmd.accountCommand().emailString()).isEqualTo("a@a.com");
-      assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedPass");
+      assertThat(cmd.accountCommand().passwordHash()).isNull();
       assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo(cpf);
     }
 
@@ -50,12 +52,13 @@ class AdminPresenterTest {
     @DisplayName("Should map UpdateRequest to AdminUpdateCommand")
     void toUpdateCommand() {
       AdminUpdateRequest req =
-          new AdminUpdateRequest("New Name", "new@a.com", "newPass", Campi.JARAGUA_DO_SUL, false);
-      AdminUpdateCommand cmd = AdminPresenter.toCommand(req, "hashedPass");
+          new AdminUpdateRequest("New Name", "new@a.com", Campi.JARAGUA_DO_SUL);
+      AdminUpdateCommand cmd = AdminPresenter.toCommand(req);
 
       assertThat(cmd.campus()).isEqualTo(Campi.JARAGUA_DO_SUL);
       assertThat(cmd.accountCommand().emailString()).isEqualTo("new@a.com");
-      assertThat(cmd.accountCommand().active()).isFalse();
+      assertThat(cmd.accountCommand().active()).isNull();
+      assertThat(cmd.accountCommand().passwordHash()).isNull();
       assertThat(cmd.accountCommand().userCommand().name()).isEqualTo("New Name");
     }
   }
@@ -68,6 +71,30 @@ class AdminPresenterTest {
     @DisplayName("Should return null if AdminView is null")
     void toResponseNull() {
       assertThat(AdminPresenter.toResponse(null, Locale.US, i18n)).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map AdminComplexSearchView to response correctly")
+    void toComplexSearchResponseSuccess() {
+      AdminComplexSearchView view =
+          new AdminComplexSearchView(
+              new AccountComplexSearchView(
+                  UuidCreator.getTimeOrderedEpoch(),
+                  UuidCreator.getTimeOrderedEpoch(),
+                  "Admin User",
+                  "a@a.com",
+                  AccountType.ADMIN,
+                  OffsetDateTime.now(),
+                  OffsetDateTime.now(),
+                  true),
+              OffsetDateTime.now());
+
+      var response = AdminPresenter.toComplexSearchResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.account().email()).isEqualTo("a@a.com");
+      assertThat(response.account().user().name()).isEqualTo("Admin User");
+      assertThat(response.grantedAtFormatted()).isNotBlank();
     }
 
     @Test

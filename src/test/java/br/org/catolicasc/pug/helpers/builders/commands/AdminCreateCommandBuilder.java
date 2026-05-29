@@ -9,26 +9,15 @@ import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.util.Random;
 
-/**
- * Builder class for creating {@link AdminCreateCommand} DTOs in test scenarios.
- *
- * <p>Provides a fluent API with random defaults, composing the nested {@link AccountCreateCommand}
- * and {@link UserCreateCommand} internally.
- */
+/** Builder class for creating {@link AdminCreateCommand} DTOs in test scenarios. */
 public class AdminCreateCommandBuilder {
   private String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
   private String email = TestNameGenerator.generateUniqueEmail("pug.com");
-  private String password = "hashed-password";
   private Campi campus = getRandomCampus();
 
   private AdminCreateCommandBuilder() {}
 
-  /**
-   * Initializes a new builder with random defaults.
-   *
-   * @return a new {@link AdminCreateCommandBuilder} instance
-   */
   public static AdminCreateCommandBuilder anAdminCreateCommand() {
     return new AdminCreateCommandBuilder();
   }
@@ -48,32 +37,14 @@ public class AdminCreateCommandBuilder {
     return this;
   }
 
-  public AdminCreateCommandBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
-  /**
-   * Sets the campus assignment.
-   *
-   * @param campus the {@link Campi} enum value
-   * @return this builder instance
-   */
   public AdminCreateCommandBuilder withCampus(Campi campus) {
     this.campus = campus;
     return this;
   }
 
-  /**
-   * Constructs the {@link AdminCreateCommand} using the current builder state, composing the nested
-   * {@link AccountCreateCommand} and {@link UserCreateCommand} internally.
-   *
-   * @return a configured {@link AdminCreateCommand} instance
-   */
   public AdminCreateCommand build() {
     UserCreateCommand userCmd = new UserCreateCommand(cpf, name);
-    AccountCreateCommand accCmd =
-        new AccountCreateCommand(email, AccountType.ADMIN, password, userCmd);
+    AccountCreateCommand accCmd = new AccountCreateCommand(email, AccountType.ADMIN, null, userCmd);
     return new AdminCreateCommand(accCmd, campus);
   }
 

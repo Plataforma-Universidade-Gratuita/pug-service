@@ -22,8 +22,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("AdminResource Integration Tests")
-class AdminResourceTest extends BaseResourceTest {
+@DisplayName("AdminsResource Integration Tests")
+class AdminsResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
 
@@ -76,8 +76,8 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/identity/admins/{id} - Success")
-  void deactivateSuccess() throws Exception {
+  @DisplayName("PATCH /v1/identity/admins/{id}/status - Success")
+  void updateStatusSuccess() throws Exception {
     Account[] acc = new Account[1];
     doInTransaction(
         () -> {
@@ -89,9 +89,11 @@ class AdminResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("id", acc[0].getId())
-        .body(anAdminUpdateRequest().withName(null).withCampus(null).withActive(false).build())
+        .body("""
+            { "active": false }
+            """)
         .when()
-        .patch("/v1/identity/admins/{id}")
+        .patch("/v1/identity/admins/{id}/status")
         .then()
         .statusCode(204);
   }
@@ -169,29 +171,6 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/identity/admins?email= - Success")
-  void getByEmailSuccess() throws Exception {
-    Account[] acc = new Account[1];
-    doInTransaction(
-        () -> {
-          User user = factory.createUser();
-          acc[0] = factory.createAccount(user, AccountType.ADMIN);
-          factory.createAdmin(acc[0]);
-        });
-
-    given()
-        .queryParam("email", acc[0].getEmail().getValue())
-        .when()
-        .get("/v1/identity/admins")
-        .then()
-        .statusCode(200)
-        .body("data.accountResponse.email", is(acc[0].getEmail().getValue()));
-  }
-
-  @Test
-  @TestSecurity(
-      user = "admin",
-      roles = {"ADMIN"})
   @DisplayName("GET /v1/identity/admins - List All")
   void listAdmins() throws Exception {
     doInTransaction(
@@ -213,22 +192,73 @@ class AdminResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/identity/admins?cpf= - Success")
-  void listByCpfSuccess() throws Exception {
-    User[] user = new User[1];
+  @DisplayName("GET /v1/identity/admins?ids= - Success")
+  void listByIdsSuccess() throws Exception {
+    Account[] acc = new Account[2];
     doInTransaction(
         () -> {
-          user[0] = factory.createUser();
-          Account acc = factory.createAccount(user[0], AccountType.ADMIN);
-          factory.createAdmin(acc);
+          acc[0] = factory.createAccount(factory.createUser(), AccountType.ADMIN);
+          factory.createAdmin(acc[0]);
+          acc[1] = factory.createAccount(factory.createUser(), AccountType.ADMIN);
+          factory.createAdmin(acc[1]);
         });
 
     given()
-        .queryParam("cpf", user[0].getCpf().getValue())
+        .queryParam("ids", acc[0].getId())
         .when()
         .get("/v1/identity/admins")
         .then()
         .statusCode(200)
-        .body("data[0].accountResponse.userId", is(user[0].getId().toString()));
+        .body("data", hasSize(1))
+        .body("data[0].accountResponse.id", is(acc[0].getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("POST /v1/identity/admins/search - Paginated Search")
+  void searchAdmins() throws Exception {
+    Account[] account = new Account[1];
+    User[] user = new User[1];
+    doInTransaction(
+        () -> {
+          user[0] = factory.createUser();
+          account[0] = factory.createAccount(user[0], AccountType.ADMIN);
+          factory.createAdmin(account[0]);
+        });
+
+    given()
+        .queryParam("page", 0)
+        .queryParam("size", 10)
+        .contentType("application/json")
+        .body(
+            """
+            {
+              "name": "%s",
+              "cpf": "%s",
+              "email": "%s"
+            }
+            """
+                .formatted(
+                    user[0].getName().split(" ")[0],
+                    user[0].getCpf().getValue().substring(0, 3),
+                    account[0].getEmail().getValue().substring(0, 4)))
+        .when()
+        .post("/v1/identity/admins/search")
+        .then()
+        .statusCode(200)
+        .body("data.content", hasSize(1))
+        .body("data.content[0].account.id", is(account[0].getId().toString()))
+        .body("data.content[0].account.user.id", is(user[0].getId().toString()))
+        .body("data.content[0].account.user.name", is(user[0].getName()))
+        .body("data.page", is(0))
+        .body("data.size", is(10));
+  }
+
+  @Test
+  @DisplayName("Should return 401 when accessing without security")
+  void unauthorizedAccess() {
+    assertUnauthenticated("/v1/identity/admins");
   }
 }
