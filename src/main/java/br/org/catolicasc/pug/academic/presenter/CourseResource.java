@@ -81,7 +81,7 @@ public class CourseResource {
   /**
    * Retrieves a collection of courses.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * <p>If the optional {@code q} parameter is provided, it executes a name-based search against the
    * courses' names. If the {@code schoolId} is provided, it filters the courses by that school. If
    * omitted, it returns an unfiltered list of all courses.
    *

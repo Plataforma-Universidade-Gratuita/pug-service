@@ -34,10 +34,10 @@ public interface SchoolReadService {
   List<SchoolView> listAll();
 
   /**
-   * Executes a robust full-text search against the names of registered schools.
+   * Executes a robust name-based search against the names of registered schools.
    *
-   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
-   * matching, accent-insensitivity, and predictive autocomplete capabilities.
+   * <p>Leverages database-backed filtering (e.g., database-backed filtering) to provide fuzzy
+   * matching, accent-insensitivity, and name matching.
    *
    * @param key the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link SchoolView} entries

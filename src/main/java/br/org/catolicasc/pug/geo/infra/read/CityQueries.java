@@ -53,10 +53,10 @@ public interface CityQueries {
   List<CityView> listAllCities();
 
   /**
-   * Executes a robust full-text search against city names.
+   * Executes a robust name-based search against city names.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search) to provide fuzzy matching, accent-insensitivity, and autocomplete
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering) to provide flexible matching, accent-insensitivity, and autocomplete
    * capabilities.
    *
    * @param key the raw search string or partial name provided by the user

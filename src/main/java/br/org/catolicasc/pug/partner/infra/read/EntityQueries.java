@@ -62,10 +62,10 @@ public interface EntityQueries {
   List<EntityView> listAllEntities();
 
   /**
-   * Executes a robust full-text search against the names of partner entities.
+   * Executes a robust name-based search against the names of partner entities.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search).
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering).
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link EntityView} entries matching the search criteria

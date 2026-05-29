@@ -46,10 +46,10 @@ public interface SchoolQueries {
   List<SchoolView> listByIds(List<UUID> ids);
 
   /**
-   * Executes a robust full-text search against the names of schools.
+   * Executes a robust name-based search against the names of schools.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search).
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering).
    *
    * @param key the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link SchoolView} entries matching the search criteria

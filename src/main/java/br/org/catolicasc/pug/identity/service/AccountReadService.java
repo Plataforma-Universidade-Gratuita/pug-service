@@ -51,7 +51,7 @@ public interface AccountReadService {
   List<AccountView> listViewsByCpf(String cpf);
 
   /**
-   * Executes a robust full-text search against the names of the associated users, returning their
+   * Executes a robust name-based search against the names of the associated users, returning their
    * corresponding accounts.
    *
    * @param query the raw search string or partial name provided by the client

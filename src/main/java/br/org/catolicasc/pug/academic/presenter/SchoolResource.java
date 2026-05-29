@@ -81,7 +81,7 @@ public class SchoolResource {
   /**
    * Retrieves a collection of schools.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a full-text search against the
+   * <p>If the optional {@code q} parameter is provided, it executes a name-based search against the
    * schools' names. If omitted, it returns an unfiltered list of all schools.
    *
    * @param q the optional search query string

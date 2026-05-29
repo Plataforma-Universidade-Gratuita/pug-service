@@ -59,7 +59,7 @@ public interface StaffReadService {
   List<StaffView> listViewsByEntityId(UUID entityId);
 
   /**
-   * Executes a robust full-text search against the names of the associated staff users, returning
+   * Executes a robust name-based search against the names of the associated staff users, returning
    * their corresponding staff profiles.
    *
    * @param term the raw search string or partial name provided by the client

@@ -112,7 +112,7 @@ public class StudentResource {
    *
    * <p>When {@code cpf}, {@code email}, or {@code registration} is provided, this endpoint returns
    * the single student linked to that identifier. Otherwise, it filters by {@code courseId}, falls
-   * back to full-text search with {@code q}, or lists all students when no filters are supplied.
+   * back to name-based search with {@code q}, or lists all students when no filters are supplied.
    *
    * @param q the optional search query string
    * @param courseId the optional course identifier to filter by

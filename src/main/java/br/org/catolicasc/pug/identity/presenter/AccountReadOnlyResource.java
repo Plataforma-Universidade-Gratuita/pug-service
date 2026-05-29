@@ -90,7 +90,7 @@ public class AccountReadOnlyResource {
    *
    * <p>When {@code email} is provided, this endpoint returns the single account linked to that
    * email. When {@code cpf} is provided, it returns the accounts associated with that CPF. If
-   * neither identifier is present, it falls back to full-text search with {@code q} or lists all
+   * neither identifier is present, it falls back to name-based search with {@code q} or lists all
    * accounts when no filters are supplied.
    *
    * @param query the optional search string used to filter accounts by text

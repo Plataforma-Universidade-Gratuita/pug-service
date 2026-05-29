@@ -54,10 +54,10 @@ public interface AccountQueries {
   List<AccountView> listByCpf(String cpf);
 
   /**
-   * Executes a robust full-text search against the names of the associated users.
+   * Executes a robust name-based search against the names of the associated users.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search) to resolve the individual's name and project the resulting account data.
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering) to resolve the individual's name and project the resulting account data.
    *
    * @param key the raw search string or partial name of the linked user
    * @return a sorted {@link List} of matching {@link AccountView} entries

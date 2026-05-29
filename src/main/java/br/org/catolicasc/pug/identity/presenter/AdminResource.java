@@ -107,7 +107,7 @@ public class AdminResource {
    *
    * <p>When {@code email} is provided, this endpoint returns the administrator linked to that
    * account email. When {@code cpf} is provided, it returns the administrators associated with that
-   * CPF. If neither identifier is present, it falls back to full-text search with {@code q} or
+   * CPF. If neither identifier is present, it falls back to name-based search with {@code q} or
    * lists all administrators when no filters are supplied.
    *
    * @param query the optional search query string

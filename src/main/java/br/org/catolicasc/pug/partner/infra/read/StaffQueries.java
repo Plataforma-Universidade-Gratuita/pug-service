@@ -58,10 +58,10 @@ public interface StaffQueries {
   List<StaffView> listByCpf(String cpf);
 
   /**
-   * Executes a robust full-text search against the names of the associated staff users.
+   * Executes a robust name-based search against the names of the associated staff users.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search).
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering).
    *
    * @param key the raw search string or partial name of the staff member
    * @return a sorted {@link List} of matching {@link StaffView} records

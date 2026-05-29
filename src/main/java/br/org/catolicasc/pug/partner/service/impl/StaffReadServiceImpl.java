@@ -81,7 +81,7 @@ public class StaffReadServiceImpl implements StaffReadService {
    * {@inheritDoc}
    *
    * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
-   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying search indexing
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database filtering
    * rules.
    */
   @Override

@@ -113,7 +113,7 @@ public class StaffResource {
    * <p>When {@code email} is provided, this endpoint returns the staff member linked to that
    * account email. When {@code cpf} is provided, it returns the staff members associated with that
    * CPF. When {@code entityId} is provided, it returns the staff assigned to that partner entity.
-   * If none of those filters are supplied, it falls back to full-text search with {@code q} or
+   * If none of those filters are supplied, it falls back to name-based search with {@code q} or
    * lists all staff members.
    *
    * @param query the optional search query string

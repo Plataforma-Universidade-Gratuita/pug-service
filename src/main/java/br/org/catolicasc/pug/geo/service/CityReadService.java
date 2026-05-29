@@ -55,10 +55,10 @@ public interface CityReadService {
   List<CityView> listViewsByIds(List<UUID> ids);
 
   /**
-   * Executes a robust full-text search against the names of registered cities.
+   * Executes a robust name-based search against the names of registered cities.
    *
-   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
-   * matching, accent-insensitivity, and predictive autocomplete capabilities. The results are
+   * <p>Leverages database-backed filtering (e.g., database-backed filtering) to provide fuzzy
+   * matching, accent-insensitivity, and name matching. The results are
    * automatically sorted by relevance score.
    *
    * @param q the raw search string or partial name provided by the client

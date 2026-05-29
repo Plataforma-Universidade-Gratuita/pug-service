@@ -86,7 +86,7 @@ public class UserReadOnlyResource {
    * Retrieves users, optionally filtered by query parameters.
    *
    * <p>When {@code cpf} is provided, this endpoint returns the single user associated with that
-   * CPF. Otherwise, it falls back to full-text search with {@code q} or lists all users when no
+   * CPF. Otherwise, it falls back to name-based search with {@code q} or lists all users when no
    * filters are supplied.
    *
    * @param query the optional search query string used to filter by name

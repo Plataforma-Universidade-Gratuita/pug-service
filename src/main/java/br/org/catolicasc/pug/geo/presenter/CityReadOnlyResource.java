@@ -78,8 +78,8 @@ public class CityReadOnlyResource {
    * Retrieves a comprehensive list of cities, optionally filtered by a text-based search query.
    *
    * <p>If a search query ({@code q}) is provided, this endpoint delegates to the underlying search
-   * service (e.g., Hibernate Search) to perform a full-text, fuzzy, or normalized search against
-   * the city names. If the query is omitted or empty, it bypasses the search index and returns a
+   * service (e.g., filtering) to perform a full-text, fuzzy, or normalized search against
+   * the city names. If the query is omitted or empty, it bypasses the database filter and returns a
    * complete list of all available cities, ordered alphabetically.
    *
    * @param q an optional {@link String} representing the search query used to filter cities by name

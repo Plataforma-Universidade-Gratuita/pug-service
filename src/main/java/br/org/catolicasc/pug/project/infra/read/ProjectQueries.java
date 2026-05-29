@@ -54,7 +54,7 @@ public interface ProjectQueries {
   List<ProjectView> listByIds(List<UUID> ids);
 
   /**
-   * Executes a robust full-text search against the names of projects.
+   * Executes a robust name-based search against the names of projects.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria

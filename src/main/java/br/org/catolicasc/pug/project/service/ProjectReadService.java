@@ -47,10 +47,10 @@ public interface ProjectReadService {
   List<ProjectView> listViewsByEntityId(UUID entityId);
 
   /**
-   * Executes a robust full-text search against the names of projects.
+   * Executes a robust name-based search against the names of projects.
    *
-   * <p>Leverages advanced text analysis to provide fuzzy matching, accent-insensitivity, and
-   * predictive autocomplete capabilities.
+   * <p>Leverages database-backed filtering to provide flexible matching, accent-insensitivity, and
+   * name matching.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link ProjectView} entries

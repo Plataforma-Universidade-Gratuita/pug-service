@@ -43,10 +43,10 @@ public interface UserQueries {
   List<UserView> listAllUsers();
 
   /**
-   * Executes a robust full-text search against user names.
+   * Executes a robust name-based search against user names.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search) to provide fuzzy matching, accent-insensitivity, and autocomplete
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering) to provide flexible matching, accent-insensitivity, and autocomplete
    * capabilities.
    *
    * @param key the raw search string or partial name provided by the client

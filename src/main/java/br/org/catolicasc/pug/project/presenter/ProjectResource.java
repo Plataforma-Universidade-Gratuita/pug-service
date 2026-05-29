@@ -86,7 +86,7 @@ public class ProjectResource {
    * Retrieves projects, optionally filtered by query parameters.
    *
    * <p>When {@code createdBy} is provided, this endpoint returns the projects created by that
-   * account. Otherwise, it filters by {@code entityId}, falls back to full-text search with {@code
+   * account. Otherwise, it filters by {@code entityId}, falls back to name-based search with {@code
    * q}, or lists all projects when no filters are supplied.
    *
    * @param query the optional search query string

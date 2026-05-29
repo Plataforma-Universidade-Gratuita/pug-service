@@ -83,10 +83,10 @@ public interface StudentReadService {
   List<StudentView> listViewsByCourseId(UUID courseId);
 
   /**
-   * Executes a robust full-text search against the names of the associated student users.
+   * Executes a robust name-based search against the names of the associated student users.
    *
-   * <p>Leverages advanced text analysis (e.g., Elasticsearch via Hibernate Search) to provide fuzzy
-   * matching, accent-insensitivity, and predictive autocomplete capabilities.
+   * <p>Leverages database-backed filtering (e.g., database-backed filtering) to provide fuzzy
+   * matching, accent-insensitivity, and name matching.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link StudentView} entries

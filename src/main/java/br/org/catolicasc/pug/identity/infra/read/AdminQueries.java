@@ -52,10 +52,10 @@ public interface AdminQueries {
   List<AdminView> listByCpf(String cpf);
 
   /**
-   * Executes a robust full-text search against the names of the associated administrators.
+   * Executes a robust name-based search against the names of the associated administrators.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search) to provide fuzzy matching and predictive autocomplete capabilities based on
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering) to provide flexible matching and name matching based on
    * the admin's name.
    *
    * @param key the raw search string or partial name provided by the client

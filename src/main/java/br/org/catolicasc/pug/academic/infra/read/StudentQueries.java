@@ -74,10 +74,10 @@ public interface StudentQueries {
   List<StudentView> listViewsByAccountIds(List<UUID> accountIds);
 
   /**
-   * Executes a robust full-text search against the names of the associated student users.
+   * Executes a robust name-based search against the names of the associated student users.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search).
+   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
+   * filtering).
    *
    * @param key the raw search string or partial name of the student
    * @return a sorted {@link List} of matching {@link StudentView} records

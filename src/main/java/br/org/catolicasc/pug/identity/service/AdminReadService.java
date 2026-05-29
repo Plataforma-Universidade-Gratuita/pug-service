@@ -51,7 +51,7 @@ public interface AdminReadService {
   List<AdminView> listViewsByCpf(String cpf);
 
   /**
-   * Executes a robust full-text search against the names of the associated users, returning their
+   * Executes a robust name-based search against the names of the associated users, returning their
    * corresponding administrator profiles.
    *
    * @param query the raw search string or partial name provided by the client
