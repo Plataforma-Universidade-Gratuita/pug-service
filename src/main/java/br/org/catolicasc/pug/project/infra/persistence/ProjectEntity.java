@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.project.infra.persistence;
 
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.shared.infra.persistence.BaseAuditedEntity;
-import br.org.catolicasc.pug.shared.infra.search.EsAnalysis;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -23,10 +22,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 /**
  * JPA entity representing a Project within the persistence layer.
@@ -60,26 +55,11 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
       @Index(name = "idx_projects_updated_at", columnList = "updated_at"),
       @Index(name = "idx_projects_closed_at", columnList = "closed_at")
     })
-@Indexed
 public class ProjectEntity extends BaseAuditedEntity {
 
   /**
    * The title or name of the project.
-   *
-   * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link EsAnalysis}. It projects into four distinct index fields:
-   *
-   * <ul>
-   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
-   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").
-   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.
-   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.
-   * </ul>
    */
-  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
-  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
-  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
-  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @NotBlank
   @Size(max = 150)
   @Column(name = "name", nullable = false, length = 150)

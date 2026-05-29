@@ -1,25 +1,19 @@
 package br.org.catolicasc.pug.academic.infra.read.impl;
 
-import static br.org.catolicasc.pug.academic.infra.CourseMapper.toView;
-
-import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
-import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.CourseQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
- * Implementation of the {@link CourseQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link CourseQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles the execution of read-only queries for courses. It uses
  * JPQL constructor expressions to implicitly join the course data with its underlying School in a
@@ -80,35 +74,24 @@ public class CourseQueriesImpl implements CourseQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>To achieve a full-text search against the course name, this method first resolves the
-   * matching courses via the search index, extracts their required School UUIDs, fetches the
+   * <p>To achieve a name-based search against the course name, this method first resolves the
+   * matching courses via the database filter, extracts their required School UUIDs, fetches the
    * corresponding schools, and finally assembles the complete {@link CourseView}.
    */
   @Override
   public List<CourseView> searchByName(String key) {
-    List<CourseEntity> hits =
-        HibernateSearchUtils.searchByName(entityManager, CourseEntity.class, key);
-
-    if (hits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UUID> schoolIds = hits.stream().map(CourseEntity::getSchoolId).distinct().toList();
-
-    List<SchoolEntity> schools =
-        entityManager
-            .createQuery("from SchoolEntity where id in :ids", SchoolEntity.class)
-            .setParameter("ids", schoolIds)
-            .getResultList();
-
-    Map<UUID, SchoolEntity> schoolMap =
-        schools.stream().collect(Collectors.toMap(SchoolEntity::getId, s -> s));
-
-    List<CourseView> out = new ArrayList<>(hits.size());
-    for (CourseEntity c : hits) {
-      SchoolEntity s = schoolMap.get(c.getSchoolId());
-      out.add(toView(c, s));
-    }
-    return out;
+    return entityManager
+        .createQuery(
+            SELECT_BASE
+                + " where "
+                + JpaSearchUtils.folded("c.name")
+                + " like :pattern"
+                + ORDER_BY_NAME_ASC,
+            CourseView.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
+        .getResultList();
   }
 }

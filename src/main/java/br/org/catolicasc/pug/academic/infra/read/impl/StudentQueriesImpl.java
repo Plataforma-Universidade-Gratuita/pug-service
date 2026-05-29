@@ -2,8 +2,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.StudentQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.StudentView;
-import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -135,23 +134,24 @@ public class StudentQueriesImpl implements StudentQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>Utiliza Hibernate Search para localizar os usuários pelo nome e, em seguida, busca os
+   * <p>Utiliza filtering para localizar os usuários pelo nome e, em seguida, busca os
    * estudantes correspondentes.
    */
   @Override
   public List<StudentView> searchByName(String key) {
-    List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
-    if (userHits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UUID> userIds = CollectionUtils.toStream(userHits).map(UserEntity::getId).toList();
-
     return em.createQuery(
             SELECT_BASE
-                + " join AccountEntity acc on acc.id = s.accountId where acc.userId in :ids",
+                + " join AccountEntity acc on acc.id = s.accountId"
+                + " join UserEntity u on u.id = acc.userId"
+                + " where "
+                + JpaSearchUtils.folded("u.name")
+                + " like :pattern"
+                + " order by s.academicRegistration asc",
             StudentView.class)
-        .setParameter("ids", userIds)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
         .getResultList();
   }
 }

@@ -42,10 +42,9 @@ public interface CourseQueries {
   List<CourseView> listAllCourses();
 
   /**
-   * Executes a robust full-text search against the names of courses.
+   * Executes name-based search against course names.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., Elasticsearch via
-   * Hibernate Search).
+   * <p>This method applies folded, database-backed filtering on the mapped name field.
    *
    * @param query the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link CourseView} entries matching the search criteria

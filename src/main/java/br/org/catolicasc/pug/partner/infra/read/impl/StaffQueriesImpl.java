@@ -1,26 +1,19 @@
 package br.org.catolicasc.pug.partner.infra.read.impl;
 
-import static br.org.catolicasc.pug.partner.infra.StaffMapper.toView;
-
-import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
 import br.org.catolicasc.pug.partner.infra.read.StaffQueries;
-import br.org.catolicasc.pug.partner.infra.read.dtos.StaffAcc;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link StaffQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link StaffQueries} interface using JPA.
  *
  * <p>This application-scoped bean executes read-only operations for staff profiles. Given the
  * deeply nested structure of a staff member crossing multiple domains (Staff -> Account -> User,
@@ -116,47 +109,17 @@ public class StaffQueriesImpl implements StaffQueries {
 
   @Override
   public List<StaffView> searchByName(String key) {
-    List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
-    if (userHits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
-
-    var rows =
-        em.createQuery(
-                """
-                        select new br.org.catolicasc.pug.partner.infra.read.dtos.StaffAcc(
-                        s, acc, e, c)
-                        from StaffEntity s
-                          join AccountEntity acc on acc.id = s.accountId
-                          join EntityEntity e on e.id = s.entityId
-                          join CityEntity c on c.id = e.cityId
-                        where acc.userId in :ids
-                        """,
-                StaffAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
-
-    Map<UUID, List<StaffAcc>> byUser = new HashMap<>();
-    for (StaffAcc row : rows) {
-      if (row.account() != null && row.account().getUserId() != null) {
-        byUser.computeIfAbsent(row.account().getUserId(), k -> new ArrayList<>()).add(row);
-      }
-    }
-
-    List<StaffView> out = new ArrayList<>();
-    for (UserEntity u : userHits) {
-      List<StaffAcc> pairs = byUser.get(u.getId());
-      if (pairs == null) {
-        continue;
-      }
-      for (StaffAcc row : pairs) {
-        if (row.account() != null && row.entity() != null) {
-          out.add(toView(row.account(), row.entity()));
-        }
-      }
-    }
-    return out;
+    return em.createQuery(
+            SELECT_BASE
+                + " where "
+                + JpaSearchUtils.folded("u.name")
+                + " like :pattern"
+                + ORDER_BY_PERSON_NAME_ASC,
+            StaffView.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
+        .getResultList();
   }
 }

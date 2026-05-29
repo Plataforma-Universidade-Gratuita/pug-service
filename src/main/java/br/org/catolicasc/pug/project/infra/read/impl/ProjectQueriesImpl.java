@@ -1,10 +1,9 @@
 package br.org.catolicasc.pug.project.infra.read.impl;
 
-import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
 import br.org.catolicasc.pug.project.infra.persistence.ProjectSchoolEntity;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -93,16 +92,17 @@ public class ProjectQueriesImpl implements ProjectQueries {
   /** {@inheritDoc} */
   @Override
   public List<ProjectView> searchByName(String query) {
-    String key = StringUtils.fold(query);
-    List<ProjectEntity> hits = HibernateSearchUtils.searchByName(em, ProjectEntity.class, key);
-
-    if (hits.isEmpty()) {
+    if (StringUtils.isEmpty(query)) {
       return List.of();
     }
-    List<UUID> ids = hits.stream().map(ProjectEntity::getId).toList();
-
-    return em.createQuery(SELECT_BASE + " where p.id in :ids" + ORDER_BY_NAME, ProjectView.class)
-        .setParameter("ids", ids)
+    return em.createQuery(
+            SELECT_BASE
+                + " where "
+                + JpaSearchUtils.folded("p.name")
+                + " like :pattern"
+                + ORDER_BY_NAME,
+            ProjectView.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(query))
         .getResultList();
   }
 }

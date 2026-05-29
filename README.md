@@ -19,7 +19,7 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
 - Primary infrastructure:
   - PostgreSQL for transactional data
   - MongoDB for audit-related persistence
-  - Elasticsearch through Hibernate Search for indexed queries
+  - PostgreSQL-backed filtering for read-side name queries
 - Core platform concerns already present in the codebase:
   - JWT authentication and refresh tokens
   - role-based authorization
@@ -64,7 +64,6 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
   - `quarkus-flyway`
   - `quarkus-mongodb-client`
   - `quarkus-mongodb-panache`
-  - `quarkus-hibernate-search-orm-elasticsearch`
   - `quarkus-smallrye-openapi`
   - `quarkus-smallrye-health`
   - `quarkus-micrometer`
@@ -79,10 +78,8 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
 - Local development infrastructure currently configured in the checked-in profiles:
   - dev PostgreSQL: `localhost:5433`
   - dev MongoDB: `localhost:27018`
-  - dev Elasticsearch: `localhost:9201`
   - test PostgreSQL: `localhost:5434`
   - test MongoDB: `localhost:27019`
-  - test Elasticsearch: `localhost:9202`
 
 ## High-level folder contract
 

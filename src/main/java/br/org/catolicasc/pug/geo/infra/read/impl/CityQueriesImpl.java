@@ -4,18 +4,17 @@ import br.org.catolicasc.pug.geo.infra.CityMapper;
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
 import br.org.catolicasc.pug.geo.infra.read.CityQueries;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of CityQueries using JPA and Hibernate Search. */
+/** Implementation of CityQueries using JPA. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CityQueriesImpl implements CityQueries {
@@ -68,16 +67,19 @@ public class CityQueriesImpl implements CityQueries {
   /** {@inheritDoc} */
   @Override
   public List<CityView> searchByName(String key) {
-    List<CityEntity> hits = HibernateSearchUtils.searchByName(entityManager, CityEntity.class, key);
-
-    if (hits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<CityView> out = new ArrayList<>(hits.size());
-    for (CityEntity c : hits) {
-      out.add(CityMapper.toView(c));
-    }
-    return out;
+    return entityManager
+        .createQuery(
+            "from CityEntity c where "
+                + JpaSearchUtils.folded("c.name")
+                + " like :pattern order by c.name asc",
+            CityEntity.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
+        .getResultList()
+        .stream()
+        .map(CityMapper::toView)
+        .toList();
   }
 }

@@ -13,10 +13,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 
 /**
  * JPA entity representing an Academic School within the persistence layer.
@@ -42,18 +38,11 @@ import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordFie
           name = "uq_schools_name",
           columnNames = {"name"})
     })
-@Indexed
 public class SchoolEntity extends BaseAuditedEntity {
 
   /**
    * The name of the academic school.
-   *
-   * <p>Heavily indexed for optimized searching using custom analyzers.
    */
-  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
-  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
-  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
-  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 }

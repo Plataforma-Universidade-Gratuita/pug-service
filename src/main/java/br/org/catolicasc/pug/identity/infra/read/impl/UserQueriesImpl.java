@@ -1,28 +1,23 @@
 package br.org.catolicasc.pug.identity.infra.read.impl;
 
-import static br.org.catolicasc.pug.identity.infra.UserMapper.toView;
-
-import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
 import br.org.catolicasc.pug.identity.infra.read.UserQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link UserQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link UserQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles the execution of read-only queries. It uses JPQL
- * constructor expressions to directly project database rows into lightweight {@link UserView} DTOs,
- * completely bypassing the overhead of instantiating managed JPA entities. Full-text searches are
- * delegated to the underlying Elasticsearch/OpenSearch indices via {@link HibernateSearchUtils}.
+ * constructor expressions to directly project database rows into lightweight {@link UserView}
+ * DTOs, completely bypassing the overhead of instantiating managed JPA entities.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
@@ -77,16 +72,17 @@ public class UserQueriesImpl implements UserQueries {
   /** {@inheritDoc} */
   @Override
   public List<UserView> searchByName(String key) {
-    List<UserEntity> hits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
-
-    if (hits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UserView> out = new ArrayList<>(hits.size());
-    for (UserEntity p : hits) {
-      out.add(toView(p));
-    }
-    return out;
+    return em.createQuery(
+            "select new br.org.catolicasc.pug.identity.infra.read.dtos.UserView("
+                + "p.id, p.cpf, p.name, p.createdAt, p.updatedAt) "
+                + "from UserEntity p where "
+                + JpaSearchUtils.folded("p.name")
+                + " like :pattern order by p.name asc",
+            UserView.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
+        .getResultList();
   }
 }

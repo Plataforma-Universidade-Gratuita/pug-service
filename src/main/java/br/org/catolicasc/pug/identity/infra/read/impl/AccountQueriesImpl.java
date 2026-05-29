@@ -1,24 +1,19 @@
 package br.org.catolicasc.pug.identity.infra.read.impl;
 
-import static br.org.catolicasc.pug.identity.infra.AccountMapper.toView;
-
-import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
-import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
 import br.org.catolicasc.pug.identity.infra.read.AccountQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link AccountQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link AccountQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles read-only queries for accounts. Because an account
  * inherently belongs to a user, the JPQL queries utilize constructor expressions that implicitly
@@ -92,25 +87,18 @@ public class AccountQueriesImpl implements AccountQueries {
   /** {@inheritDoc} */
   @Override
   public List<AccountView> searchByName(String key) {
-    List<UserEntity> userHits =
-        HibernateSearchUtils.searchByName(entityManager, UserEntity.class, key);
-
-    if (userHits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
-
-    List<AccountEntity> accountEntities =
-        entityManager
-            .createQuery("from AccountEntity a where a.userId in :userIds", AccountEntity.class)
-            .setParameter("userIds", userIds)
-            .getResultList();
-
-    List<AccountView> out = new ArrayList<>(accountEntities.size());
-    for (AccountEntity accountEntity : accountEntities) {
-      out.add(toView(accountEntity));
-    }
-    return out;
+    var q =
+        entityManager.createQuery(
+            SELECT_BASE
+                + " and "
+                + JpaSearchUtils.folded("u.name")
+                + " like :pattern"
+                + ORDER_BY_NAME_ASC,
+            AccountView.class);
+    q.setParameter("pattern", JpaSearchUtils.containsPattern(key));
+    return q.getResultList();
   }
 }

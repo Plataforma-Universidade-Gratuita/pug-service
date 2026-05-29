@@ -19,44 +19,6 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: pug
     networks: [ pug-network ]
 
-  elasticsearch:
-    image: registry-docker.weg.net/elastic/elasticsearch:9.1.5
-    container_name: pug-es
-    ports: [ "9201:9200" ]
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    networks: [ pug-network ]
-
-  # ── TEST CONTAINERS ───────────────────────────────────────────────────────
-  postgres-test:
-    image: registry-docker.weg.net/postgres:16
-    container_name: pug-postgres-test
-    ports: [ "5434:5432" ]
-    environment:
-      POSTGRES_USER: pug_test
-      POSTGRES_PASSWORD: pug_test
-      POSTGRES_DB: pug_test
-    networks: [ pug-network ]
-
-  mongodb-test:
-    image: registry-docker.weg.net/mongo:7.0
-    container_name: pug-mongodb-test
-    ports: [ "27019:27017" ]
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: pug_test
-      MONGO_INITDB_ROOT_PASSWORD: pug_test
-    networks: [ pug-network ]
-
-  elasticsearch-test:
-    image: registry-docker.weg.net/elastic/elasticsearch:9.1.5
-    container_name: pug-es-test
-    ports: [ "9202:9200" ]
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    networks: [ pug-network ]
-
 networks:
   pug-network:
     driver: bridge

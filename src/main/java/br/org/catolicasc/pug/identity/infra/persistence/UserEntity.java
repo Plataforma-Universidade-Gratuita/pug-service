@@ -2,7 +2,6 @@ package br.org.catolicasc.pug.identity.infra.persistence;
 
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.shared.infra.persistence.BaseAuditedEntity;
-import br.org.catolicasc.pug.shared.infra.search.EsAnalysis;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
@@ -16,10 +15,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.search.engine.backend.types.Sortable;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.FullTextField;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.Indexed;
-import org.hibernate.search.mapper.pojo.mapping.definition.annotation.KeywordField;
 import org.hibernate.type.SqlTypes;
 
 /**
@@ -28,10 +23,6 @@ import org.hibernate.type.SqlTypes;
  * <p>This class acts as the database-mapped counterpart to the {@link User} domain aggregate. It
  * inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
  * BaseAuditedEntity}. It enforces strict uniqueness on the CPF at the database level.
- *
- * <p>Additionally, this entity is marked with {@code @Indexed}, meaning Hibernate Search will
- * automatically synchronize its state with the underlying Elasticsearch/OpenSearch indices to
- * support advanced full-text queries on the user's name.
  */
 @Getter
 @Setter
@@ -53,7 +44,6 @@ import org.hibernate.type.SqlTypes;
       @Index(name = "idx_users_name", columnList = "name"),
       @Index(name = "idx_users_cpf", columnList = "cpf")
     })
-@Indexed
 @SuperBuilder
 public class UserEntity extends BaseAuditedEntity {
 
@@ -70,21 +60,7 @@ public class UserEntity extends BaseAuditedEntity {
 
   /**
    * The full name of the user.
-   *
-   * <p>This field is heavily indexed for optimized searching using custom analyzers defined in
-   * {@link EsAnalysis}. It projects into four distinct index fields:
-   *
-   * <ul>
-   *   <li><b>name:</b> Standard full-text search (fuzzy matching, accent-insensitive).
-   *   <li><b>name_auto:</b> Edge n-gram indexing for fast autocomplete ("type-as-you-go").
-   *   <li><b>name_exact:</b> Wildcard and exact phrase matching.
-   *   <li><b>name_sort:</b> Normalized keyword field used exclusively for alphabetical sorting.
-   * </ul>
    */
-  @FullTextField(analyzer = "pt_folded", searchAnalyzer = "pt_folded")
-  @FullTextField(name = "name_auto", analyzer = "auto_ngram", searchAnalyzer = "pt_folded")
-  @KeywordField(name = "name_exact", normalizer = "folding_lowercase")
-  @KeywordField(name = "name_sort", normalizer = "folding_lowercase", sortable = Sortable.YES)
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 }

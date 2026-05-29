@@ -1,23 +1,20 @@
 package br.org.catolicasc.pug.academic.infra.read.impl;
 
-import static br.org.catolicasc.pug.academic.infra.SchoolMapper.toView;
-
-import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
 import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link SchoolQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link SchoolQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles the execution of read-only queries. It uses JPQL
  * constructor expressions to directly project database rows into lightweight {@link SchoolView}
@@ -76,17 +73,18 @@ public class SchoolQueriesImpl implements SchoolQueries {
   /** {@inheritDoc} */
   @Override
   public List<SchoolView> searchByName(String key) {
-    List<SchoolEntity> hits =
-        HibernateSearchUtils.searchByName(entityManager, SchoolEntity.class, key);
-
-    if (hits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<SchoolView> out = new ArrayList<>(hits.size());
-    for (SchoolEntity e : hits) {
-      out.add(toView(e));
-    }
-    return out;
+    var q =
+        entityManager.createQuery(
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
+                + "s.id, s.name, s.createdAt, s.updatedAt) "
+                + "from SchoolEntity s where "
+                + JpaSearchUtils.folded("s.name")
+                + " like :pattern order by s.name asc",
+            SchoolView.class);
+    q.setParameter("pattern", JpaSearchUtils.containsPattern(key));
+    return q.getResultList();
   }
 }

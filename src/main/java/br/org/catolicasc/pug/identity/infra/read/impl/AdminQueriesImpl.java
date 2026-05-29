@@ -1,29 +1,19 @@
 package br.org.catolicasc.pug.identity.infra.read.impl;
 
-import static br.org.catolicasc.pug.identity.infra.AdminMapper.toView;
-
-import br.org.catolicasc.pug.identity.infra.AdminMapper;
-import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
-import br.org.catolicasc.pug.identity.infra.persistence.AdminEntity;
-import br.org.catolicasc.pug.identity.infra.persistence.UserEntity;
 import br.org.catolicasc.pug.identity.infra.read.AdminQueries;
-import br.org.catolicasc.pug.identity.infra.read.dtos.AdminAcc;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.shared.infra.search.HibernateSearchUtils;
+import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link AdminQueries} interface using JPA and Hibernate Search.
+ * Implementation of the {@link AdminQueries} interface using JPA.
  *
  * <p>This application-scoped bean executes read-only operations for administrative profiles. Given
  * the deeply nested structure of an administrator (Admin -> Account -> User), these queries rely on
@@ -102,48 +92,24 @@ public class AdminQueriesImpl implements AdminQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>This implementation preserves the relevance order returned by the full-text search in {@link
+   * <p>This implementation preserves the relevance order returned by the name-based search in {@link
    * UserEntity}. For each user found, the function loads the associated pairs ({@link AdminEntity},
    * {@link AccountEntity}) and projects them into {@link AdminView} using the mapper {@link
    * AdminMapper#toView(AdminEntity, AccountEntity)}.
    */
   @Override
   public List<AdminView> searchByName(String key) {
-    List<UserEntity> userHits = HibernateSearchUtils.searchByName(em, UserEntity.class, key);
-    if (userHits.isEmpty()) {
+    if (StringUtils.isEmpty(key)) {
       return List.of();
     }
-
-    List<UUID> userIds = userHits.stream().map(UserEntity::getId).toList();
-
-    List<AdminAcc> rows =
-        em.createQuery(
-                """
-                        select new br.org.catolicasc.pug.identity.infra.read.dtos.AdminAcc(a, acc)
-                        from AdminEntity a join AccountEntity acc on acc.id = a.accountId
-                        where acc.userId in :ids
-                        """,
-                AdminAcc.class)
-            .setParameter("ids", userIds)
-            .getResultList();
-
-    Map<UUID, List<AdminAcc>> byUser = new HashMap<>();
-    for (AdminAcc row : rows) {
-      UUID userId = row.account().getUserId();
-      byUser.computeIfAbsent(userId, k -> new ArrayList<>()).add(row);
-    }
-
-    List<AdminView> out = new ArrayList<>();
-    for (UserEntity u : userHits) {
-      List<AdminAcc> accs = byUser.get(u.getId());
-      if (accs == null) {
-        continue;
-      }
-      for (AdminAcc pair : accs) {
-        out.add(toView(pair.admin(), pair.account()));
-      }
-    }
-
-    return out;
+    return em.createQuery(
+            SELECT_BASE
+                + " where "
+                + JpaSearchUtils.folded("u.name")
+                + " like :pattern"
+                + ORDER_BY_PERSON_NAME_ASC,
+            AdminView.class)
+        .setParameter("pattern", JpaSearchUtils.containsPattern(key))
+        .getResultList();
   }
 }
