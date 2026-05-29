@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.service.impl;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.UserRepository;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
-import br.org.catolicasc.pug.identity.service.UserService;
+import br.org.catolicasc.pug.identity.service.UsersService;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
@@ -19,7 +19,7 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link UserService} command interface.
+ * Implementation of the {@link UsersService} command interface.
  *
  * <p>This application-scoped service acts as the orchestrator for user state mutations. It manages
  * transaction boundaries, invokes pure domain logic via {@link UserProcessor}, enforces
@@ -27,9 +27,9 @@ import org.jboss.logging.Logger;
  * UserRepository}.
  */
 @ApplicationScoped
-public class UserServiceImpl implements UserService {
+public class UsersServiceImpl implements UsersService {
 
-  private static final Logger LOG = Logger.getLogger(UserServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(UsersServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
 

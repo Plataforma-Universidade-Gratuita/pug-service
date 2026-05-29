@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.presenter;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -17,8 +18,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("UserReadOnlyResource Integration Tests")
-class UserReadOnlyResourceTest extends BaseResourceTest {
+@DisplayName("UsersReadOnlyResource Integration Tests")
+class UsersReadOnlyResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
 
@@ -59,24 +60,6 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "admin",
-      roles = {"ADMIN"})
-  @DisplayName("GET /v1/identity/users?cpf= - Success")
-  void getByCpfSuccess() throws Exception {
-    User[] user = new User[1];
-    doInTransaction(() -> user[0] = factory.createUser());
-
-    given()
-        .queryParam("cpf", user[0].getCpf().getValue())
-        .when()
-        .get("/v1/identity/users")
-        .then()
-        .statusCode(200)
-        .body("data.cpf", is(user[0].getCpf().getValue()));
-  }
-
-  @Test
-  @TestSecurity(
       user = "student",
       roles = {"STUDENT"})
   @DisplayName("GET /v1/identity/users/me - Authenticated Success")
@@ -108,6 +91,53 @@ class UserReadOnlyResourceTest extends BaseResourceTest {
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("GET /v1/identity/users?ids= - Filter By Ids")
+  void listUsersByIds() throws Exception {
+    User[] users = new User[2];
+    doInTransaction(
+        () -> {
+          users[0] = factory.createUser();
+          users[1] = factory.createUser();
+        });
+
+    given()
+        .queryParam("ids", users[0].getId())
+        .when()
+        .get("/v1/identity/users")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(1))
+        .body("data[0].id", is(users[0].getId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("POST /v1/identity/users/search - Paginated Search")
+  void searchUsers() throws Exception {
+    User[] user = new User[1];
+    doInTransaction(() -> user[0] = factory.createUser());
+
+    given()
+        .queryParam("page", 0)
+        .queryParam("size", 10)
+        .contentType("application/json")
+        .body("{\"name\":\"" + user[0].getName().split(" ")[0] + "\"}")
+        .when()
+        .post("/v1/identity/users/search")
+        .then()
+        .statusCode(200)
+        .body("data.content", hasSize(greaterThan(0)))
+        .body("data.page", is(0))
+        .body("data.size", is(10))
+        .body("data.totalElements", greaterThan(0));
   }
 
   @Test

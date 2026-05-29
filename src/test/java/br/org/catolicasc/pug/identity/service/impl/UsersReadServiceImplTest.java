@@ -2,12 +2,16 @@ package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.identity.infra.read.UserQueries;
+import br.org.catolicasc.pug.identity.infra.read.UsersQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
+import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -19,11 +23,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("UserReadServiceImpl Coverage")
-class UserReadServiceImplTest {
+@DisplayName("UsersReadServiceImpl Coverage")
+class UsersReadServiceImplTest {
 
-  @Inject UserReadServiceImpl service;
-  @InjectMock UserQueries queries;
+  @Inject UsersReadServiceImpl service;
+  @InjectMock UsersQueries queries;
 
   @Test
   @DisplayName("Should return user view by ID")
@@ -46,16 +50,6 @@ class UserReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return user view by CPF")
-  void getByCpfSuccess() {
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-    UserView view = new UserView(UuidCreator.getTimeOrderedEpoch(), cpf, "Test User", null, null);
-    when(queries.findOptionalByCpf(cpf)).thenReturn(Optional.of(view));
-
-    assertThat(service.getViewByCpf(cpf)).isEqualTo(view);
-  }
-
-  @Test
   @DisplayName("Should list all users")
   void listAll() {
     when(queries.listAllUsers())
@@ -65,11 +59,36 @@ class UserReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should search users by name")
+  @DisplayName("Should list users by IDs")
+  void listByIds() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    when(queries.listAllByIds(List.of(id)))
+        .thenReturn(List.of(new UserView(id, "111", "User", null, null)));
+
+    assertThat(service.listViewsByIds(List.of(id))).hasSize(1);
+  }
+
+  @Test
+  @DisplayName("Should return empty list when provided IDs are null or empty")
+  void listByIdsInvalid() {
+    assertThat(service.listViewsByIds(null)).isEmpty();
+    assertThat(service.listViewsByIds(List.of())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should execute paginated user search")
   void search() {
-    when(queries.searchByName("ana"))
-        .thenReturn(
-            List.of(new UserView(UuidCreator.getTimeOrderedEpoch(), "111", "Ana", null, null)));
-    assertThat(service.search("  Ana  ")).isNotEmpty();
+    PageQuery pageQuery = new PageQuery(0, 10);
+    PageResult<UserView> pageResult =
+        new PageResult<>(
+            List.of(new UserView(UuidCreator.getTimeOrderedEpoch(), "111", "Ana", null, null)),
+            0,
+            10,
+            1,
+            1);
+    when(queries.search(any(), any())).thenReturn(pageResult);
+
+    assertThat(service.search(pageQuery, new UserComplexSearchCriteria("111", null, null, "Ana")))
+        .isEqualTo(pageResult);
   }
 }

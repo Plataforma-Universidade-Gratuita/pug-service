@@ -29,10 +29,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("UserServiceImpl Coverage")
-class UserServiceImplTest {
+@DisplayName("UsersServiceImpl Coverage")
+class UsersServiceImplTest {
 
-  @Inject UserServiceImpl service;
+  @Inject UsersServiceImpl service;
   @InjectMock UserRepository repository;
   @InjectMock AuditPublisher audit;
 

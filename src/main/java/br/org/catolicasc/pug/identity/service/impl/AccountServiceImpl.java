@@ -6,7 +6,7 @@ import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.identity.service.AccountService;
-import br.org.catolicasc.pug.identity.service.UserService;
+import br.org.catolicasc.pug.identity.service.UsersService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
@@ -29,7 +29,7 @@ import org.jboss.logging.Logger;
  * Implementation of the {@link AccountService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for authentication accounts. It
- * coordinates with the {@link UserService} to ensure that user identity records are properly
+ * coordinates with the {@link UsersService} to ensure that user identity records are properly
  * provisioned or pruned in tandem with account lifecycles, and relies on {@link AccountProcessor}
  * to isolate complex domain instantiation logic.
  */
@@ -42,7 +42,7 @@ public class AccountServiceImpl implements AccountService {
 
   @Inject AccountRepository repo;
 
-  @Inject UserService userService;
+  @Inject UsersService userService;
 
   /** {@inheritDoc} */
   @Transactional

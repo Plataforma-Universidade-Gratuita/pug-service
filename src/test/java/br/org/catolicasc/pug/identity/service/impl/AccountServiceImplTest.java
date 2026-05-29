@@ -15,7 +15,7 @@ import br.org.catolicasc.pug.identity.domain.AccountRepository;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
-import br.org.catolicasc.pug.identity.service.UserService;
+import br.org.catolicasc.pug.identity.service.UsersService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
@@ -36,7 +36,7 @@ class AccountServiceImplTest {
 
   @Inject AccountServiceImpl service;
   @InjectMock AccountRepository repository;
-  @InjectMock UserService userService;
+  @InjectMock UsersService userService;
   @InjectMock AuditPublisher audit;
 
   @Test

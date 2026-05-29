@@ -2,20 +2,28 @@ package br.org.catolicasc.pug.identity.presenter;
 
 import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
+import br.org.catolicasc.pug.identity.presenter.dtos.UserComplexSearchRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
 import br.org.catolicasc.pug.identity.presenter.mappers.UserPresenter;
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.identity.service.UserReadService;
+import br.org.catolicasc.pug.identity.service.UsersReadService;
+import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
-import br.org.catolicasc.pug.shared.utils.StringUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
@@ -31,18 +39,18 @@ import java.util.UUID;
 /**
  * REST API Resource controller for read-only operations on Users.
  *
- * <p>This class exposes endpoints to retrieve existing user identities (names and CPFs). It acts as
- * the HTTP entry point, delegating queries to the {@link UserReadService} and adhering to CQRS
- * principles. Direct write operations for users are typically orchestrated through account-creation
- * endpoints (like Admins or Students) rather than standalone user endpoints.
+ * <p>This class exposes endpoints to retrieve existing user identities. It acts as the HTTP entry
+ * point, delegating queries to the {@link UsersReadService} and adhering to CQRS principles. Direct
+ * write operations for users are typically orchestrated through account-creation endpoints (like
+ * Admins or Students) rather than standalone user endpoints.
  */
 @Path(IdentityApiPaths.USERS)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")
-public class UserReadOnlyResource {
+public class UsersReadOnlyResource {
 
-  @Inject UserReadService readService;
+  @Inject UsersReadService readService;
 
   @Inject AuthService authService;
 
@@ -83,36 +91,56 @@ public class UserReadOnlyResource {
   }
 
   /**
-   * Retrieves users, optionally filtered by query parameters.
+   * Retrieves users, optionally filtered by a collection of identifiers.
    *
-   * <p>When {@code cpf} is provided, this endpoint returns the single user associated with that
-   * CPF. Otherwise, it falls back to name-based search with {@code q} or lists all users when no
-   * filters are supplied.
+   * <p>When one or more {@code ids} query parameters are provided, this endpoint returns only the
+   * corresponding users. Otherwise, it returns the complete user list ordered according to the
+   * underlying query implementation.
    *
-   * @param query the optional search query string used to filter by name
-   * @param cpfRaw the optional CPF used to retrieve a single user
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with either a single {@link
-   *     UserResponse} or a list of {@link UserResponse}
+   * @param ids the optional user identifiers used to restrict the returned collection
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     UserResponse}
    */
   @GET
-  public Response list(@QueryParam("q") String query, @QueryParam("cpf") String cpfRaw) {
-    if (StringUtils.isNotEmpty(cpfRaw)) {
-      UserResponse body = UserPresenter.toResponse(readService.getViewByCpf(cpfRaw), locale());
-      return Response.ok(ApiEnvelope.ok(body)).build();
-    }
-
-    List<UserView> views;
-
-    if (StringUtils.isNotEmpty(query)) {
-      views = readService.search(query);
-    } else {
-      views = readService.listViews();
-    }
-
+  public Response list(@QueryParam("ids") List<UUID> ids) {
+    List<UserView> views =
+        CollectionUtils.isEmpty(ids) ? readService.listViews() : readService.listViewsByIds(ids);
     List<UserResponse> list =
         views.stream().map(v -> UserPresenter.toResponse(v, locale())).toList();
 
     return Response.ok(ApiEnvelope.ok(list)).build();
+  }
+
+  /**
+   * Executes paginated user search using the complex-search contract.
+   *
+   * @param page the zero-based page index
+   * @param size the requested page size; {@code 1} returns the full result set in a single page
+   * @param request the optional complex-search filters
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the paginated search
+   *     result
+   */
+  @POST
+  @Path("search")
+  public Response search(
+      @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+      @QueryParam("size") @DefaultValue("25") @Min(1) int size,
+      @Valid UserComplexSearchRequest request) {
+    UserComplexSearchCriteria criteria =
+        request == null
+            ? new UserComplexSearchCriteria(null, null, null, null)
+            : new UserComplexSearchCriteria(
+                request.cpf(), request.dateFrom(), request.dateTo(), request.name());
+    var result = readService.search(new PageQuery(page, size), criteria);
+    var responseBody =
+        new PageResponse<>(
+            result.content().stream().map(v -> UserPresenter.toResponse(v, locale())).toList(),
+            result.page(),
+            result.size(),
+            result.totalElements(),
+            result.totalPages());
+
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
   /** Helper method to determine the preferred locale from the incoming request headers. */

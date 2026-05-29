@@ -18,7 +18,7 @@ import java.util.UUID;
  * constraints (such as CPF uniqueness), and coordinates with the persistence layer to ensure the
  * integrity of user identity data.
  */
-public interface UserService {
+public interface UsersService {
 
   /**
    * Removes a {@link User} from the system by its unique identifier.
