@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
- * REST API Resource controller for managing student Attendances.
+ * REST API Resource controller for managing formerStudent Attendances.
  *
  * <p>Methods are ordered strictly by HTTP verb (GET, POST, PATCH, DELETE) with single-item
  * endpoints preceding collections.
@@ -77,11 +77,11 @@ public class AttendanceResource {
    * Retrieves a collection of attendance records.
    *
    * <p>If both {@code projectId} and {@code studentId} are provided, it filters by enrollment.
-   * Otherwise, it filters by project or student individually. If all are omitted, returns all
+   * Otherwise, it filters by project or formerStudent individually. If all are omitted, returns all
    * attendance records.
    *
    * @param projectId the optional project identifier to filter by
-   * @param studentId the optional student identifier to filter by
+   * @param studentId the optional formerStudent identifier to filter by
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     AttendanceResponse}
    */
@@ -169,3 +169,4 @@ public class AttendanceResource {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
+

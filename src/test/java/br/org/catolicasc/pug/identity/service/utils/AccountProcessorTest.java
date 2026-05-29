@@ -24,7 +24,7 @@ class AccountProcessorTest {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
-        new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
+        new AccountCreateCommand("a@a.com", AccountType.FORMER_STUDENT, "hash", cmd);
 
     List<UserCreateCommand> missing =
         AccountProcessor.extractMissingUserCommands(List.of(accCmd), Map.of());
@@ -37,7 +37,7 @@ class AccountProcessorTest {
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
     UserCreateCommand cmd = new UserCreateCommand(cpf, "Name");
     AccountCreateCommand accCmd =
-        new AccountCreateCommand("a@a.com", AccountType.STUDENT, "hash", cmd);
+        new AccountCreateCommand("a@a.com", AccountType.FORMER_STUDENT, "hash", cmd);
 
     List<Account> accounts =
         AccountProcessor.processBulkCreateInput(
@@ -79,3 +79,4 @@ class AccountProcessorTest {
     assertThat(AccountProcessor.processUpdateInput(acc, null, null, null)).isEqualTo(acc);
   }
 }
+

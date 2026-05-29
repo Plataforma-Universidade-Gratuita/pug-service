@@ -22,7 +22,7 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 /**
- * JPA entity representing a Student's Attendance record within the persistence layer.
+ * JPA entity representing a FormerStudent's Attendance record within the persistence layer.
  *
  * <p>This class acts as the database-mapped counterpart to the {@link Attendance} domain aggregate.
  * It inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
@@ -54,12 +54,12 @@ public class AttendanceEntity extends BaseAuditedEntity {
   @Column(name = "project_id", nullable = false)
   private UUID projectId;
 
-  /** The unique identifier (Account ID UUID) of the associated Student. */
+  /** The unique identifier (Account ID UUID) of the associated FormerStudent. */
   @NotNull
   @Column(name = "student_id", nullable = false)
   private UUID studentId;
 
-  /** The recorded time duration the student spent on the project. */
+  /** The recorded time duration the formerStudent spent on the project. */
   @NotNull
   @DecimalMin(value = "0.00", inclusive = false)
   @Column(name = "duration", nullable = false, precision = 4, scale = 2)
@@ -85,3 +85,4 @@ public class AttendanceEntity extends BaseAuditedEntity {
   @Column(name = "validated_at")
   private OffsetDateTime validatedAt;
 }
+

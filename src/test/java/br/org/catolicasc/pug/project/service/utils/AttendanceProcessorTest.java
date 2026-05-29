@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -20,16 +20,16 @@ class AttendanceProcessorTest {
   @DisplayName("Should create attendance with valid inputs")
   void processCreateInputValid() {
     var project = ProjectBuilder.aProject().build();
-    var student = StudentBuilder.aStudent().build();
+    var formerStudent = FormerStudentBuilder.aStudent().build();
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(
-            project, student, new BigDecimal("2.00"), "hash-test-123");
+            project, formerStudent, new BigDecimal("2.00"), "hash-test-123");
 
     assertThat(attendance).isNotNull();
     assertThat(attendance.getEnrollmentIdentifier().getProjectId()).isEqualTo(project.getId());
     assertThat(attendance.getEnrollmentIdentifier().getStudentId())
-        .isEqualTo(student.getAccountId());
+        .isEqualTo(formerStudent.getAccountId());
     assertThat(attendance.getQrValidationInfo().getDuration())
         .isEqualByComparingTo(new BigDecimal("2.00"));
     assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("hash-test-123");
@@ -64,3 +64,4 @@ class AttendanceProcessorTest {
     assertThat(validated.getAttendanceInfo().getValidatedBy()).isEqualTo(validatorId);
   }
 }
+

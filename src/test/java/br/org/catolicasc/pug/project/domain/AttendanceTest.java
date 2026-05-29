@@ -3,9 +3,9 @@ package br.org.catolicasc.pug.project.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 class AttendanceTest {
 
   private final Project project = ProjectBuilder.aProject().build();
-  private final Student student = StudentBuilder.aStudent().build();
+  private final FormerStudent formerStudent = FormerStudentBuilder.aStudent().build();
 
   @Nested
   @DisplayName("Factory and Validation")
@@ -30,7 +30,7 @@ class AttendanceTest {
     @DisplayName("Should create valid Attendance in WAITING status")
     void shouldCreateValidAttendance() {
       Attendance attendance =
-          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
 
       assertThat(attendance.hasFieldErrors()).isFalse();
       assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
@@ -59,7 +59,7 @@ class AttendanceTest {
     @DisplayName("Should transition status to PRESENT or ABSENT when validated")
     void shouldValidatePresence() {
       Attendance attendance =
-          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       Attendance updatedPresent = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
@@ -74,7 +74,7 @@ class AttendanceTest {
     @DisplayName("Should throw BusinessRuleException for invalid status update")
     void shouldFailOnInvalidStatus() {
       Attendance attendance =
-          Attendance.factory(project, student, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       assertThrows(
@@ -85,3 +85,4 @@ class AttendanceTest {
     }
   }
 }
+

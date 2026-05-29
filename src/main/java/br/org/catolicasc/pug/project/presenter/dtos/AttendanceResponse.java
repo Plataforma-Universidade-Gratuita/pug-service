@@ -11,7 +11,7 @@ import java.util.UUID;
  *
  * @param id the unique identifier (UUIDv7) of the attendance record
  * @param projectId the unique identifier (UUIDv7) of the associated project
- * @param studentId the unique identifier (UUIDv7) of the student account
+ * @param studentId the unique identifier (UUIDv7) of the formerStudent account
  * @param duration the recorded time duration
  * @param qrValidationHash the unique cryptographic hash of the QR code used
  * @param status the current validation status (enum)
@@ -33,3 +33,4 @@ public record AttendanceResponse(
     OffsetDateTime validatedAt,
     String validatedAtFormatted,
     AuditInfoResponse auditInfo) {}
+

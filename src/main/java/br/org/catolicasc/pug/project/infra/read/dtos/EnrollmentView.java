@@ -9,10 +9,10 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this record is intentionally minimal and exposes only identifiers
  * and lifecycle metadata. It is optimized for list and filter operations, allowing clients to
- * resolve detailed project and student information on demand via dedicated endpoints.
+ * resolve detailed project and formerStudent information on demand via dedicated endpoints.
  *
  * @param projectId the unique identifier (UUID) of the associated project
- * @param studentId the unique identifier (UUID) of the associated student account
+ * @param studentId the unique identifier (UUID) of the associated formerStudent account
  * @param status the current lifecycle {@link EnrollmentStatus} of the enrollment
  * @param createdAt the exact timestamp when the enrollment record was initially created
  * @param updatedAt the exact timestamp when the enrollment record was last modified
@@ -57,3 +57,4 @@ public record EnrollmentView(
         closingStatusAt);
   }
 }
+

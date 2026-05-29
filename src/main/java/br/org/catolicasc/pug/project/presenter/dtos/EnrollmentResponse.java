@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.presenter.dtos;
 
-import br.org.catolicasc.pug.academic.presenter.dtos.StudentResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentResponse;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.time.OffsetDateTime;
@@ -10,12 +10,12 @@ import java.util.UUID;
  * Data Transfer Object (DTO) used as the standardized API JSON response for Enrollment records.
  *
  * <p>This record provides a lightweight, identifier-centric view of an enrollment. Instead of
- * nesting the full {@link ProjectResponse} or {@link StudentResponse}, it exposes only the {@code
- * projectId} and {@code studentId}, allowing API clients to resolve detailed project and student
+ * nesting the full {@link ProjectResponse} or {@link FormerStudentResponse}, it exposes only the {@code
+ * projectId} and {@code studentId}, allowing API clients to resolve detailed project and formerStudent
  * information on demand via dedicated endpoints.
  *
  * @param projectId the unique identifier (UUIDv7) of the associated project
- * @param studentId the unique identifier (UUIDv7) of the associated student account
+ * @param studentId the unique identifier (UUIDv7) of the associated formerStudent account
  * @param status the current lifecycle {@link EnrollmentStatus} of the enrollment
  * @param statusFormatted the localized, human-readable enrollment status (e.g., "Aprovado",
  *     "Concluído")
@@ -39,3 +39,4 @@ public record EnrollmentResponse(
     OffsetDateTime closingStatusAt,
     String closingStatusAtFormatted,
     AuditInfoResponse auditInfo) {}
+

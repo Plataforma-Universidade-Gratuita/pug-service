@@ -62,10 +62,10 @@ public class EnrollmentResource {
   @Context HttpHeaders headers;
 
   /**
-   * Retrieves a specific enrollment by project and student identifiers.
+   * Retrieves a specific enrollment by project and formerStudent identifiers.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
-   * @param studentId the unique identifier (UUIDv7) of the enrolled student account
+   * @param studentId the unique identifier (UUIDv7) of the enrolled formerStudent account
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
    *     EnrollmentResponse}
    */
@@ -81,7 +81,7 @@ public class EnrollmentResource {
   }
 
   /**
-   * Retrieves the current authenticated student's enrollment for the specified project.
+   * Retrieves the current authenticated formerStudent's enrollment for the specified project.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the {@link
@@ -98,14 +98,14 @@ public class EnrollmentResource {
   }
 
   /**
-   * Retrieves enrollments, optionally filtered by project or student identifiers.
+   * Retrieves enrollments, optionally filtered by project or formerStudent identifiers.
    *
    * <p>When {@code projectId} is provided, it returns the enrollments for that project. When {@code
-   * studentId} is provided, it returns the enrollments for that student. If both are omitted, it
+   * studentId} is provided, it returns the enrollments for that formerStudent. If both are omitted, it
    * returns all enrollments visible to the caller.
    *
    * @param projectId the optional project identifier filter
-   * @param studentId the optional student account identifier filter
+   * @param studentId the optional formerStudent account identifier filter
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     EnrollmentResponse}
    */
@@ -134,7 +134,7 @@ public class EnrollmentResource {
   }
 
   /**
-   * Retrieves all enrollments belonging to the currently authenticated student.
+   * Retrieves all enrollments belonging to the currently authenticated formerStudent.
    *
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     EnrollmentResponse}
@@ -192,7 +192,7 @@ public class EnrollmentResource {
    * Transitions a specific enrollment to a new status.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
-   * @param studentId the unique identifier (UUIDv7) of the enrolled student account
+   * @param studentId the unique identifier (UUIDv7) of the enrolled formerStudent account
    * @param req the validated {@link EnrollmentUpdateRequest} containing the target status
    * @return an HTTP 200 OK response containing the updated {@link EnrollmentResponse}
    */
@@ -211,7 +211,7 @@ public class EnrollmentResource {
   }
 
   /**
-   * Transitions the current authenticated student's enrollment in the specified project to a new
+   * Transitions the current authenticated formerStudent's enrollment in the specified project to a new
    * status.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
@@ -235,7 +235,7 @@ public class EnrollmentResource {
    * Permanently removes an enrollment association from the system.
    *
    * @param projectId the unique identifier (UUIDv7) of the project
-   * @param studentId the unique identifier (UUIDv7) of the enrolled student account
+   * @param studentId the unique identifier (UUIDv7) of the enrolled formerStudent account
    * @return an HTTP 204 No Content response when deletion succeeds
    */
   @DELETE
@@ -252,7 +252,7 @@ public class EnrollmentResource {
    * Builds the enrollment composite identifier from route parameters.
    *
    * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student account
+   * @param studentId the unique identifier of the formerStudent account
    * @return the composed {@link EnrollmentIdentifier}
    */
   private EnrollmentIdentifier identifier(UUID projectId, UUID studentId) {
@@ -289,3 +289,4 @@ public class EnrollmentResource {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }
 }
+

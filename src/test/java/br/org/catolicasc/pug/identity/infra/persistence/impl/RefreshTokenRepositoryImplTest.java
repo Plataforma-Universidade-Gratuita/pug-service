@@ -50,7 +50,7 @@ class RefreshTokenRepositoryImplTest {
     Account[] acc = new Account[1];
     utx.begin();
     User user = factory.createUser();
-    acc[0] = factory.createAccount(user, AccountType.STUDENT);
+    acc[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
     em.flush();
     utx.commit();
     return acc[0];
@@ -124,3 +124,4 @@ class RefreshTokenRepositoryImplTest {
     assertThat(repo.findByTokenHash(expiredHash)).isEmpty();
   }
 }
+

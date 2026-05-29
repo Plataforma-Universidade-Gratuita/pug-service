@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -24,29 +24,29 @@ class EnrollmentQueriesImplTest {
   @Inject EnrollmentQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
 
   @BeforeEach
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(acc, course);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(acc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     project =
         factory.createProject(
             entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
 
-    factory.createEnrollment(student, project);
+    factory.createEnrollment(formerStudent, project);
   }
 
   @Test
   @Transactional
   @DisplayName("Should retrieve EnrollmentView by composite ID")
   void shouldFindByIds() {
-    var view = queries.findOptionalByIds(project.getId(), student.getAccountId());
+    var view = queries.findOptionalByIds(project.getId(), formerStudent.getAccountId());
 
     assertThat(view).isPresent();
     assertThat(view.get().projectId()).isEqualTo(project.getId());
@@ -56,12 +56,12 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty when project ID is null")
   void shouldReturnEmptyForNullProjectId() {
-    assertThat(queries.findOptionalByIds(null, student.getAccountId())).isEmpty();
+    assertThat(queries.findOptionalByIds(null, formerStudent.getAccountId())).isEmpty();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should return empty when student ID is null")
+  @DisplayName("Should return empty when formerStudent ID is null")
   void shouldReturnEmptyForNullStudentId() {
     assertThat(queries.findOptionalByIds(project.getId(), null)).isEmpty();
   }
@@ -102,16 +102,16 @@ class EnrollmentQueriesImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should list enrollments by student ID")
+  @DisplayName("Should list enrollments by formerStudent ID")
   void shouldListByStudentId() {
-    var list = queries.listByStudentId(student.getAccountId());
+    var list = queries.listByStudentId(formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
-    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(student.getAccountId()));
+    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
   }
 
   @Test
   @Transactional
-  @DisplayName("Should return empty list for null student ID")
+  @DisplayName("Should return empty list for null formerStudent ID")
   void shouldReturnEmptyListForNullStudentId() {
     assertThat(queries.listByStudentId(null)).isEmpty();
   }
@@ -120,14 +120,15 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should verify all fields in enrollment view")
   void shouldVerifyAllFieldsInView() {
-    var view = queries.findOptionalByIds(project.getId(), student.getAccountId());
+    var view = queries.findOptionalByIds(project.getId(), formerStudent.getAccountId());
 
     assertThat(view).isPresent();
     var ev = view.get();
     assertThat(ev.projectId()).isEqualTo(project.getId());
-    assertThat(ev.studentId()).isEqualTo(student.getAccountId());
+    assertThat(ev.studentId()).isEqualTo(formerStudent.getAccountId());
     assertThat(ev.status()).isNotNull();
     assertThat(ev.createdAt()).isNotNull();
     assertThat(ev.updatedAt()).isNotNull();
   }
 }
+

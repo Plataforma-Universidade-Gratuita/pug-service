@@ -7,7 +7,7 @@ import static org.hamcrest.Matchers.is;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -24,25 +24,25 @@ import org.junit.jupiter.api.Test;
 @DisplayName("AttendanceResource Integration Tests")
 class AttendanceResourceTest extends BaseResourceTest {
 
-  private record AttendanceGraph(Project project, Student student, Attendance attendance) {}
+  private record AttendanceGraph(Project project, FormerStudent formerStudent, Attendance attendance) {}
 
   private AttendanceGraph createAttendanceGraph() throws Exception {
     Project[] project = new Project[1];
-    Student[] student = new Student[1];
+    FormerStudent[] formerStudent = new FormerStudent[1];
     Attendance[] attendance = new Attendance[1];
     doInTransaction(
         () -> {
           School school = factory.createSchool();
           Course course = factory.createCourse(school);
-          Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-          student[0] = factory.createStudent(acc, course);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+          formerStudent[0] = factory.createStudent(acc, course);
           Entity entity = factory.createEntity(factory.getAnyCity());
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
-          factory.createEnrollment(student[0], project[0]);
-          attendance[0] = factory.createAttendance(project[0], student[0]);
+          factory.createEnrollment(formerStudent[0], project[0]);
+          attendance[0] = factory.createAttendance(project[0], formerStudent[0]);
         });
-    return new AttendanceGraph(project[0], student[0], attendance[0]);
+    return new AttendanceGraph(project[0], formerStudent[0], attendance[0]);
   }
 
   @Test
@@ -114,12 +114,12 @@ class AttendanceResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/projects/attendances?studentId= - Filter by Student")
+  @DisplayName("GET /v1/projects/attendances?studentId= - Filter by FormerStudent")
   void listByStudentId() throws Exception {
     AttendanceGraph g = createAttendanceGraph();
 
     given()
-        .queryParam("studentId", g.student().getAccountId().toString())
+        .queryParam("studentId", g.formerStudent().getAccountId().toString())
         .when()
         .get("/v1/projects/attendances")
         .then()
@@ -137,7 +137,7 @@ class AttendanceResourceTest extends BaseResourceTest {
 
     given()
         .queryParam("projectId", g.project().getId().toString())
-        .queryParam("studentId", g.student().getAccountId().toString())
+        .queryParam("studentId", g.formerStudent().getAccountId().toString())
         .when()
         .get("/v1/projects/attendances")
         .then()
@@ -167,3 +167,4 @@ class AttendanceResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/projects/attendances");
   }
 }
+

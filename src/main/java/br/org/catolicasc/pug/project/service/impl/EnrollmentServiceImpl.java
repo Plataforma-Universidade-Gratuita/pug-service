@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
-import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.academic.service.StudentService;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.EnrollmentRepository;
@@ -25,8 +25,8 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of the {@link EnrollmentService} command interface.
  *
- * <p>This application-scoped service orchestrates state mutations for student enrollments. It
- * coordinates with {@link ProjectService} and {@link StudentService} to validate structural
+ * <p>This application-scoped service orchestrates state mutations for formerStudent enrollments. It
+ * coordinates with {@link ProjectService} and {@link FormerStudentsService} to validate structural
  * references and delegates pure lifecycle transitions to the {@link Enrollment} aggregate.
  */
 @ApplicationScoped
@@ -38,7 +38,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Inject EnrollmentRepository repo;
   @Inject AuthService authService;
   @Inject ProjectService projectService;
-  @Inject StudentService studentService;
+  @Inject FormerStudentsService studentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -139,24 +139,24 @@ public class EnrollmentServiceImpl implements EnrollmentService {
   @Override
   public Enrollment save(EnrollmentCreateCommand cmd) {
     LOG.debugf("Attempting to create Enrollment for Project ID: %s", cmd.projectId());
-    authService.requireCurrentAccountOfType(AccountType.STUDENT);
+    authService.requireCurrentAccountOfType(AccountType.FORMER_STUDENT);
     Project project = projectService.getById(cmd.projectId());
-    Student student = studentService.getById(authService.getCurrentAccountId());
+    FormerStudent formerStudent = studentService.getById(authService.getCurrentAccountId());
 
     EnrollmentIdentifier identifier =
-        EnrollmentIdentifier.factory(student.getAccountId(), project.getId());
+        EnrollmentIdentifier.factory(formerStudent.getAccountId(), project.getId());
 
     if (identifier.hasFieldErrors()) {
       throw new AppValidationException(identifier.getFieldErrors());
     }
     if (repo.existsById(identifier)) {
       LOG.warnf(
-          "Creation failed: Enrollment already exists for Project: %s, Student: %s",
-          project.getId(), student.getAccountId());
+          "Creation failed: Enrollment already exists for Project: %s, FormerStudent: %s",
+          project.getId(), formerStudent.getAccountId());
       throw ExceptionHelper.enrollmentAlreadyExists();
     }
 
-    Enrollment enrollment = EnrollmentProcessor.processCreateInput(student, project);
+    Enrollment enrollment = EnrollmentProcessor.processCreateInput(formerStudent, project);
 
     if (enrollment.hasFieldErrors()) {
       throw new AppValidationException(enrollment.getFieldErrors());
@@ -177,7 +177,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
    * aggregate, and persists the updated state.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @param newStatus the target {@link EnrollmentStatus} to transition to
    * @return the updated {@link Enrollment} aggregate
    * @throws AppValidationException if the updated enrollment violates domain constraints
@@ -199,3 +199,4 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     return updated;
   }
 }
+

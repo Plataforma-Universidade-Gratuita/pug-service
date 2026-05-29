@@ -21,7 +21,7 @@ public enum AcademicErrorCodes implements GenericCodes {
   COURSE_ALREADY_EXISTS("error.domain.academic.course.already.exists"),
 
   /**
-   * Indicates an attempt to delete or modify an academic course that currently has active student
+   * Indicates an attempt to delete or modify an academic course that currently has active formerStudent
    * enrollments associated with it, violating relational integrity.
    */
   COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
@@ -51,22 +51,22 @@ public enum AcademicErrorCodes implements GenericCodes {
   SCHOOL_NOT_FOUND("error.domain.academic.school.not.found"),
 
   /**
-   * Indicates an attempt to enroll a student using an academic registration string that is already
-   * assigned to an existing student.
+   * Indicates an attempt to enroll a formerStudent using an academic registration string that is already
+   * assigned to an existing formerStudent.
    */
-  STUDENT_ALREADY_EXISTS("error.domain.academic.student.already.exists"),
+  STUDENT_ALREADY_EXISTS("error.domain.academic.formerStudent.already.exists"),
 
   /**
-   * Indicates an attempt to remove or alter a student profile that still retains active or
+   * Indicates an attempt to remove or alter a formerStudent profile that still retains active or
    * historical academic enrollments, violating relational integrity.
    */
-  STUDENT_HAS_ENROLLMENTS("error.domain.academic.student.has.enrollments"),
+  STUDENT_HAS_ENROLLMENTS("error.domain.academic.formerStudent.has.enrollments"),
 
   /**
-   * Indicates that a requested student enrollment record could not be located in the underlying
+   * Indicates that a requested formerStudent enrollment record could not be located in the underlying
    * data store by its linked account ID, CPF, or academic registration.
    */
-  STUDENT_NOT_FOUND("error.domain.academic.student.not.found");
+  STUDENT_NOT_FOUND("error.domain.academic.formerStudent.not.found");
 
   /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
@@ -81,3 +81,4 @@ public enum AcademicErrorCodes implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
+

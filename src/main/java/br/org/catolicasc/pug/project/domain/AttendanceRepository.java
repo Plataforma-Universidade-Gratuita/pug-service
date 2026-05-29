@@ -6,16 +6,16 @@ import java.util.UUID;
 /**
  * Domain repository interface for managing {@link Attendance} aggregate roots.
  *
- * <p>This interface defines the contract for tracking student participation in projects, including
+ * <p>This interface defines the contract for tracking formerStudent participation in projects, including
  * QR code validations and temporal checks.
  */
 public interface AttendanceRepository {
 
   /**
-   * Removes all attendance records associated with a specific project/student pair.
+   * Removes all attendance records associated with a specific project/formerStudent pair.
    *
    * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student account
+   * @param studentId the unique identifier of the formerStudent account
    * @return the total number of attendance records successfully deleted
    */
   long deleteAllByEnrollmentId(UUID projectId, UUID studentId);
@@ -76,3 +76,4 @@ public interface AttendanceRepository {
    */
   void update(Attendance entity);
 }
+

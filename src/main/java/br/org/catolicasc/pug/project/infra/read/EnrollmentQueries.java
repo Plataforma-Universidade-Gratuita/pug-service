@@ -22,7 +22,7 @@ public interface EnrollmentQueries {
    * together uniquely identify an enrollment record.
    *
    * @param projectId the unique identifier (UUID) of the project
-   * @param studentId the unique identifier (UUID) of the student account
+   * @param studentId the unique identifier (UUID) of the formerStudent account
    * @return an {@link Optional} containing the {@link EnrollmentView} if found, or {@link
    *     Optional#empty()} if no matching enrollment exists
    */
@@ -42,7 +42,7 @@ public interface EnrollmentQueries {
    * Retrieves a list of enrollments associated with a specific project.
    *
    * <p>Each {@link EnrollmentView} in the result set typically includes the fully resolved {@code
-   * ProjectView} and {@code StudentView} data required by the presentation layer in a single query
+   * ProjectView} and {@code FormerStudentView} data required by the presentation layer in a single query
    * round-trip.
    *
    * @param projectId the unique identifier (UUID) of the project
@@ -52,15 +52,16 @@ public interface EnrollmentQueries {
   List<EnrollmentView> listByProjectId(UUID projectId);
 
   /**
-   * Retrieves a list of enrollments associated with a specific student.
+   * Retrieves a list of enrollments associated with a specific formerStudent.
    *
    * <p>Each {@link EnrollmentView} in the result set typically includes the fully resolved {@code
-   * ProjectView} and {@code StudentView} data required by the presentation layer in a single query
+   * ProjectView} and {@code FormerStudentView} data required by the presentation layer in a single query
    * round-trip.
    *
-   * @param studentId the unique identifier (UUID) of the student account
-   * @return a {@link List} of {@link EnrollmentView} entries linked to the given student, or an
+   * @param studentId the unique identifier (UUID) of the formerStudent account
+   * @return a {@link List} of {@link EnrollmentView} entries linked to the given formerStudent, or an
    *     empty list if none are found
    */
   List<EnrollmentView> listByStudentId(UUID studentId);
 }
+

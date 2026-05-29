@@ -9,7 +9,8 @@ import java.util.UUID;
  * <p>This command captures the essential data needed to register an attendance instance.
  *
  * @param projectId the unique identifier of the project
- * @param studentId the unique identifier of the student account
- * @param duration the total hours the student claims to have worked
+ * @param studentId the unique identifier of the formerStudent account
+ * @param duration the total hours the formerStudent claims to have worked
  */
 public record AttendanceCreateCommand(UUID projectId, UUID studentId, BigDecimal duration) {}
+

@@ -105,7 +105,7 @@ class StaffResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("GET /v1/partners/staff - List All")
   void listAll() throws Exception {
@@ -290,7 +290,7 @@ class StaffResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("POST /v1/partners/staff - Forbidden for STUDENT")
   void createForbiddenForStudent() {
@@ -307,7 +307,7 @@ class StaffResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
@@ -333,3 +333,4 @@ class StaffResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
+

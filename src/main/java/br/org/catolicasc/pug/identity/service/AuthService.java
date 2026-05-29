@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
@@ -53,7 +54,10 @@ public interface AuthService {
    *
    * <p>This method evaluates the provided email and plaintext password. If the credentials are
    * valid and the underlying {@link Account} is active, it issues a signed short-lived JWT access
-   * token and a long-lived opaque refresh token persisted in the database.
+   * token and a long-lived opaque refresh token persisted in the database. Accounts provisioned
+   * without a password hash are still allowed to authenticate so they can complete the
+   * credential-wiring flow, but their issued token is flagged to restrict protected operations
+   * until a password is set.
    *
    * @param request the structured {@link LoginRequest} containing the user's email and plaintext
    *     password
@@ -75,6 +79,22 @@ public interface AuthService {
    *     associated account is inactive
    */
   TokenResponse refresh(RefreshRequest request);
+
+  /**
+   * Wires the first password, or replaces the current password, for the account identified by the
+   * supplied email address.
+   *
+   * <p>This operation centralizes the password onboarding flow for accounts that were provisioned
+   * without credentials during admin, partner, or former-student creation workflows.
+   *
+   * @param request the structured {@link CredentialsRequest} containing the target email and the
+   *     desired raw password
+   * @throws br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException if the account does
+   *     not exist
+   * @throws br.org.catolicasc.pug.shared.exceptions.BusinessRuleException if the proposed password
+   *     does not satisfy the platform's strength policy
+   */
+  void wireCredentials(CredentialsRequest request);
 
   /**
    * Revokes a refresh token, effectively logging the user out.

@@ -42,7 +42,7 @@ public interface CourseService {
    * Retrieves a full {@link Course} domain aggregate by its unique identifier.
    *
    * <p><b>Note:</b> This method is intended strictly for internal domain orchestration (e.g.,
-   * validating a course before enrolling a Student). For API responses, use {@link
+   * validating a course before enrolling a FormerStudent). For API responses, use {@link
    * CourseReadService#getViewById(UUID)} instead.
    *
    * @param id the unique identifier (UUID) of the course
@@ -83,3 +83,4 @@ public interface CourseService {
    */
   Course update(UUID id, CourseUpdateCommand cmd);
 }
+

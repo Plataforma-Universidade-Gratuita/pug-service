@@ -2,10 +2,10 @@ package br.org.catolicasc.pug.helpers;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.CourseRepositoryImpl;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.SchoolRepositoryImpl;
-import br.org.catolicasc.pug.academic.infra.persistence.impl.StudentRepositoryImpl;
+import br.org.catolicasc.pug.academic.infra.persistence.impl.FormerFormerStudentRepositoryImpl;
 import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.geo.infra.CityMapper;
 import br.org.catolicasc.pug.geo.infra.persistence.impl.CityRepositoryImpl;
@@ -17,7 +17,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.EntityBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.SchoolBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.StaffBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
@@ -52,7 +52,7 @@ public class TestDataFactory {
   @Inject AccountRepositoryImpl accountRepository;
   @Inject SchoolRepositoryImpl schoolRepository;
   @Inject CourseRepositoryImpl courseRepository;
-  @Inject StudentRepositoryImpl studentRepository;
+  @Inject FormerFormerStudentRepositoryImpl studentRepository;
   @Inject EntityRepositoryImpl entityRepository;
   @Inject StaffRepositoryImpl staffRepository;
   @Inject ProjectRepositoryImpl projectRepository;
@@ -110,9 +110,9 @@ public class TestDataFactory {
     return adminRepository.persist(AdminBuilder.anAdmin().forAccount(account.getId()).build());
   }
 
-  public Student createStudent(Account account, Course course) {
+  public FormerStudent createStudent(Account account, Course course) {
     return studentRepository.persist(
-        StudentBuilder.aStudent()
+        FormerStudentBuilder.aStudent()
             .withAccountId(account.getId())
             .withCourse(course.getId())
             .build());
@@ -128,12 +128,13 @@ public class TestDataFactory {
         ProjectBuilder.aProject().withEntity(entity.getId()).withCreator(creator.getId()).build());
   }
 
-  public Enrollment createEnrollment(Student student, Project project) {
-    return enrollmentRepository.persist(Enrollment.factory(student, project));
+  public Enrollment createEnrollment(FormerStudent formerStudent, Project project) {
+    return enrollmentRepository.persist(Enrollment.factory(formerStudent, project));
   }
 
-  public Attendance createAttendance(Project project, Student student) {
+  public Attendance createAttendance(Project project, FormerStudent formerStudent) {
     return attendanceRepository.persist(
-        AttendanceBuilder.anAttendance().withProject(project).withStudent(student).build());
+        AttendanceBuilder.anAttendance().withProject(project).withStudent(formerStudent).build());
   }
 }
+

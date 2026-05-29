@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.service.utils;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -18,20 +18,21 @@ public final class EnrollmentProcessor {
   /**
    * Processes raw creation inputs and constructs a new {@link Enrollment} domain aggregate.
    *
-   * <p>This method expects fully reconstituted {@link Student} and {@link Project} aggregates, and
-   * delegates the initialization of the enrollment to {@link Enrollment#factory(Student, Project)}.
+   * <p>This method expects fully reconstituted {@link FormerStudent} and {@link Project} aggregates, and
+   * delegates the initialization of the enrollment to {@link Enrollment#factory(FormerStudent, Project)}.
    * The returned instance is immediately self-validated; any accumulated domain validation problems
    * can be inspected via {@link Enrollment#hasFieldErrors()} and {@link
    * Enrollment#getFieldErrors()} and should be translated into an {@link AppValidationException} by
    * the calling service when appropriate.
    *
-   * @param student the fully reconstituted {@link Student} aggregate to enroll
+   * @param formerStudent the fully reconstituted {@link FormerStudent} aggregate to enroll
    * @param project the fully reconstituted {@link Project} aggregate representing the target
    *     project
    * @return a fully instantiated {@link Enrollment} domain aggregate, potentially containing
    *     validation errors
    */
-  public static Enrollment processCreateInput(Student student, Project project) {
-    return Enrollment.factory(student, project);
+  public static Enrollment processCreateInput(FormerStudent formerStudent, Project project) {
+    return Enrollment.factory(formerStudent, project);
   }
 }
+

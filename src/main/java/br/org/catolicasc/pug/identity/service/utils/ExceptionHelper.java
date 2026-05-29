@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.service.utils;
 
 import br.org.catolicasc.pug.identity.domain.enums.IdentityErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.ws.rs.NotAuthorizedException;
@@ -48,6 +49,16 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that the authenticated
+   * account still needs to wire a password before it can use protected operations.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException accountPasswordSetupRequired() {
+    return new BusinessRuleException(IdentityErrorCodes.ACCOUNT_PASSWORD_SETUP_REQUIRED);
+  }
+
+  /**
    * Instantiates a standardized {@link NotAuthorizedException} indicating that an authentication
    * attempt failed due to invalid credentials or an inactive account state.
    *
@@ -68,6 +79,16 @@ public final class ExceptionHelper {
    */
   public static DuplicateResourceException userAlreadyExists() {
     return new DuplicateResourceException(IdentityErrorCodes.USER_ALREADY_EXISTS);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a proposed password
+   * failed the platform's strength policy.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException weakPassword() {
+    return new BusinessRuleException(IdentityErrorCodes.WEAK_PASSWORD);
   }
 
   /**

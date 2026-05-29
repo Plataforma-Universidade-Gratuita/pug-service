@@ -46,7 +46,7 @@ class AccountsServiceImplTest {
     AccountCreateCommand cmd =
         anAccountCreateCommand()
             .withEmail("new@pug.com")
-            .withType(AccountType.STUDENT)
+            .withType(AccountType.FORMER_STUDENT)
             .withPasswordHash("pass")
             .withUserCpf(cpf)
             .withUserName("New User")
@@ -71,7 +71,7 @@ class AccountsServiceImplTest {
         Account.factory(
             UuidCreator.getTimeOrderedEpoch(),
             br.org.catolicasc.pug.identity.domain.vos.Email.factory("a@a.com"),
-            AccountType.STUDENT,
+            AccountType.FORMER_STUDENT,
             "hash");
 
     when(repository.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
@@ -96,7 +96,7 @@ class AccountsServiceImplTest {
     AccountCreateCommand cmd =
         anAccountCreateCommand()
             .withEmail("exists@pug.com")
-            .withType(AccountType.STUDENT)
+            .withType(AccountType.FORMER_STUDENT)
             .withPasswordHash("p")
             .withUserCpf(cpf)
             .withUserName("N")
@@ -113,7 +113,7 @@ class AccountsServiceImplTest {
         Account.factory(
             UuidCreator.getTimeOrderedEpoch(),
             Email.factory("a@a.com"),
-            AccountType.STUDENT,
+            AccountType.FORMER_STUDENT,
             "hash");
     Account updatedAcc = acc.changeEmail(Email.factory("new@email.com"));
 
@@ -137,7 +137,7 @@ class AccountsServiceImplTest {
     AccountCreateCommand cmd =
         anAccountCreateCommand()
             .withEmail("a@a.com")
-            .withType(AccountType.STUDENT)
+            .withType(AccountType.FORMER_STUDENT)
             .withPasswordHash("hash")
             .withUserCpf(cpf)
             .withUserName("Name")
@@ -159,7 +159,7 @@ class AccountsServiceImplTest {
     AccountCreateCommand cmd =
         anAccountCreateCommand()
             .withEmail("dup@a.com")
-            .withType(AccountType.STUDENT)
+            .withType(AccountType.FORMER_STUDENT)
             .withPasswordHash("hash")
             .withoutUser()
             .build();
@@ -175,7 +175,7 @@ class AccountsServiceImplTest {
         Account.factory(
             UuidCreator.getTimeOrderedEpoch(),
             Email.factory("a@a.com"),
-            AccountType.STUDENT,
+            AccountType.FORMER_STUDENT,
             "hash");
     when(repository.findOptionalByEmail("a@a.com")).thenReturn(Optional.of(acc));
 
@@ -204,7 +204,7 @@ class AccountsServiceImplTest {
         Account.factory(
             UuidCreator.getTimeOrderedEpoch(),
             Email.factory("a@a.com"),
-            AccountType.STUDENT,
+            AccountType.FORMER_STUDENT,
             "hash");
     when(repository.findOptionalById(acc.getId())).thenReturn(Optional.of(acc));
 
@@ -215,3 +215,4 @@ class AccountsServiceImplTest {
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 }
+

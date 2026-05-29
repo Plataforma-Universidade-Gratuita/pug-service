@@ -212,7 +212,7 @@ class CourseResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("POST /v1/academic/courses - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
@@ -232,7 +232,7 @@ class CourseResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("DELETE /v1/academic/courses/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
@@ -244,3 +244,4 @@ class CourseResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
+

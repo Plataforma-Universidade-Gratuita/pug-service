@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -24,15 +24,15 @@ class EnrollmentRepositoryImplTest {
   @Inject EnrollmentRepositoryImpl repository;
   @Inject TestDataFactory factory;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
 
   @BeforeEach
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(acc, course);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(acc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     project =
@@ -44,9 +44,10 @@ class EnrollmentRepositoryImplTest {
   @Transactional
   @DisplayName("Should persist and find Enrollment")
   void shouldPersistAndFind() {
-    Enrollment enrollment = factory.createEnrollment(student, project);
+    Enrollment enrollment = factory.createEnrollment(formerStudent, project);
 
     var found = repository.findOptionalById(enrollment.getIdentifier());
     assertThat(found).isPresent();
   }
 }
+

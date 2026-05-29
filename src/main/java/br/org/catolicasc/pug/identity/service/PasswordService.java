@@ -21,6 +21,32 @@ public interface PasswordService {
   String hash(String raw);
 
   /**
+   * Evaluates whether a stored password hash represents a fully wired credential.
+   *
+   * <p>Accounts created through onboarding flows may intentionally start without any persisted
+   * password hash. In those cases, authentication is temporarily passwordless until the user wires
+   * their credentials for the first time.
+   *
+   * @param storedHash the persisted password hash retrieved from the data store
+   * @return {@code true} when the account already has a configured password hash, {@code false}
+   *     otherwise
+   */
+  boolean isConfigured(String storedHash);
+
+  /**
+   * Validates whether a raw password satisfies the platform's strength policy.
+   *
+   * <p>Implementations are expected to centralize all password-quality rules here so higher-level
+   * services can reuse one consistent definition when wiring credentials or evolving password
+   * policies in the future.
+   *
+   * @param raw the raw plaintext password proposed by the user
+   * @throws br.org.catolicasc.pug.shared.exceptions.BusinessRuleException when the supplied
+   *     password does not satisfy the platform's strength requirements
+   */
+  void validateStrength(String raw);
+
+  /**
    * Evaluates whether a raw, plaintext password matches a previously stored hash.
    *
    * <p>This method applies the same system pepper to the raw input before performing the

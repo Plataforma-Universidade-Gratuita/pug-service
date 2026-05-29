@@ -174,7 +174,7 @@ class CourseServiceImplTest {
 
     var user = factory.createUser();
     var account =
-        factory.createAccount(user, br.org.catolicasc.pug.shared.domain.enums.AccountType.STUDENT);
+        factory.createAccount(user, br.org.catolicasc.pug.shared.domain.enums.AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
     em.flush();
 
@@ -187,3 +187,4 @@ class CourseServiceImplTest {
     assertThat(service.existsAnyBySchoolId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }
+

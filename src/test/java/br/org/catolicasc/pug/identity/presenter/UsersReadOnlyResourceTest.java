@@ -60,7 +60,7 @@ class UsersReadOnlyResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("GET /v1/identity/users/me - Authenticated Success")
   void getMeSuccess() throws Exception {
@@ -146,3 +146,4 @@ class UsersReadOnlyResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/identity/users");
   }
 }
+

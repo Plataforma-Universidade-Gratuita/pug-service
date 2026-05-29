@@ -12,10 +12,10 @@ import lombok.Getter;
 @Getter
 public enum AttendanceStatus implements GenericCodes {
 
-  /** Indicates the student was absent or the attendance was rejected. */
+  /** Indicates the formerStudent was absent or the attendance was rejected. */
   ABSENT("attendance.status.absent"),
 
-  /** Indicates the attendance has been successfully validated and the student was present. */
+  /** Indicates the attendance has been successfully validated and the formerStudent was present. */
   PRESENT("attendance.status.present"),
 
   /** Indicates the attendance has been recorded but is pending staff validation. */
@@ -27,3 +27,4 @@ public enum AttendanceStatus implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
+

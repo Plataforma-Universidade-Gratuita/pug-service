@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.identity.presenter;
 
 import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
@@ -18,12 +19,13 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import io.quarkus.security.Authenticated;
 
 /**
  * REST API Resource controller for handling authentication operations.
  *
- * <p>This class exposes public endpoints allowing users to authenticate, refresh their access
- * tokens, and log out by revoking refresh tokens.
+ * <p>This class exposes endpoints allowing users to authenticate, refresh their access tokens,
+ * wire first-time credentials, and log out by revoking refresh tokens.
  */
 @ApplicationScoped
 @Path(IdentityApiPaths.AUTH)
@@ -64,6 +66,24 @@ public class AuthResource {
   }
 
   /**
+   * Wires the password credentials for an already provisioned account.
+   *
+   * <p>This endpoint is intended for first-access onboarding flows where the underlying account was
+   * created without an initial password hash.
+   *
+   * @param request the validated {@link CredentialsRequest} containing the account email and the
+   *     desired raw password
+   * @return an HTTP 204 No Content response
+   */
+  @POST
+  @Path("/wire-credentials")
+  @Authenticated
+  public Response wireCredentials(@Valid CredentialsRequest request) {
+    authService.wireCredentials(request);
+    return Response.noContent().build();
+  }
+
+  /**
    * Revokes a refresh token, effectively logging the user out.
    *
    * @param request the validated {@link LogoutRequest} containing the refresh token to revoke
@@ -86,7 +106,7 @@ public class AuthResource {
   @POST
   @Path("/logout-all")
   @Consumes(MediaType.WILDCARD)
-  @RolesAllowed({"ADMIN", "PARTNER", "STUDENT"})
+  @RolesAllowed({"ADMIN", "PARTNER", "FORMER_STUDENT"})
   public Response logoutAll() {
     authService.logoutAll();
     return Response.noContent().build();

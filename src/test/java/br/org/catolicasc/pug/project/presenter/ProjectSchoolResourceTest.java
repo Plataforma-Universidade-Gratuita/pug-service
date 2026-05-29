@@ -170,7 +170,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("POST /v1/projects/{projectId}/schools - Forbidden for STUDENT")
   void createForbiddenForStudent() {
@@ -195,3 +195,4 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
         .post("/v1/projects/{projectId}/schools");
   }
 }
+

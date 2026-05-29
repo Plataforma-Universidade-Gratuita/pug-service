@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Value Object (VO) representing a student's Academic Registration identifier.
+ * Immutable Value Object (VO) representing a formerStudent's Academic Registration identifier.
  *
  * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules specific to
  * university registration formats without throwing immediate exceptions.
@@ -19,7 +19,7 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AcademicRegistration extends DomainError {
 
-  /** The raw string representing the student's registration identifier. */
+  /** The raw string representing the formerStudent's registration identifier. */
   String value;
 
   /**
@@ -69,3 +69,4 @@ public class AcademicRegistration extends DomainError {
     }
   }
 }
+

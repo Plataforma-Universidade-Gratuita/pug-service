@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.service;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
@@ -33,7 +33,7 @@ public interface EnrollmentService {
    * currently pending is rejected at the domain level.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#APPROVED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -50,7 +50,7 @@ public interface EnrollmentService {
    * transition to any other status.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#CANCELED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -59,7 +59,7 @@ public interface EnrollmentService {
   Enrollment cancel(EnrollmentIdentifier identifier);
 
   /**
-   * Marks a student's participation in a project as completed.
+   * Marks a formerStudent's participation in a project as completed.
    *
    * <p>This operation transitions the underlying {@link Enrollment} from {@link
    * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#COMPLETED}, stamping the {@code
@@ -67,7 +67,7 @@ public interface EnrollmentService {
    * transition to any other status.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#COMPLETED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -79,24 +79,24 @@ public interface EnrollmentService {
    * Physically removes an {@link Enrollment} record from the system.
    *
    * <p>This operation executes a hard delete against the persistence layer using the composite key
-   * (project + student). It is expected to be idempotent: if the enrollment does not exist, the
+   * (project + formerStudent). It is expected to be idempotent: if the enrollment does not exist, the
    * implementation should simply return {@code false} without raising an exception.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return {@code true} if the enrollment was successfully deleted, {@code false} if it was not
    *     found
    */
   boolean delete(EnrollmentIdentifier identifier);
 
   /**
-   * Checks if a student is enrolled in any project.
+   * Checks if a formerStudent is enrolled in any project.
    *
-   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link Student}
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link FormerStudent}
    * cannot be deleted while they still have historical enrollments registered in projects.
    *
-   * @param studentId the unique identifier (UUID) of the student account
-   * @return {@code true} if at least one {@link Enrollment} exists for the given student, {@code
+   * @param studentId the unique identifier (UUID) of the formerStudent account
+   * @return {@code true} if at least one {@link Enrollment} exists for the given formerStudent, {@code
    *     false} otherwise
    */
   boolean existsAnyByStudentId(UUID studentId);
@@ -115,7 +115,7 @@ public interface EnrollmentService {
   boolean existsAnyByProjectId(UUID projectId);
 
   /**
-   * Records a student's voluntary exit from a project.
+   * Records a formerStudent's voluntary exit from a project.
    *
    * <p>This operation transitions the underlying {@link Enrollment} from {@link
    * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#EXITED}, stamping the {@code
@@ -123,7 +123,7 @@ public interface EnrollmentService {
    * transition to any other status.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#EXITED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -139,7 +139,7 @@ public interface EnrollmentService {
    * the {@link EnrollmentReadService} projections.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the fully reconstituted {@link Enrollment} aggregate
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws AppValidationException if the stored enrollment violates strict domain invariants
@@ -156,7 +156,7 @@ public interface EnrollmentService {
    * to any other status.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REJECTED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -165,7 +165,7 @@ public interface EnrollmentService {
   Enrollment reject(EnrollmentIdentifier identifier);
 
   /**
-   * Administratively removes a student from a project.
+   * Administratively removes a formerStudent from a project.
    *
    * <p>This operation transitions the underlying {@link Enrollment} from {@link
    * EnrollmentStatus#APPROVED} to {@link EnrollmentStatus#REMOVED}, stamping the {@code
@@ -174,7 +174,7 @@ public interface EnrollmentService {
    * other status.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return the updated {@link Enrollment} aggregate in {@link EnrollmentStatus#REMOVED} state
    * @throws ResourceNotFoundException if the enrollment does not exist
    * @throws BusinessRuleException if the current status does not allow a transition to {@code
@@ -185,17 +185,18 @@ public interface EnrollmentService {
   /**
    * Instantiates and requests a new {@link Enrollment}.
    *
-   * <p>This method verifies the existence of the associated {@link Project} and {@link Student},
-   * checks for duplicate enrollments for the same (project, student) pair, and delegates the
+   * <p>This method verifies the existence of the associated {@link Project} and {@link FormerStudent},
+   * checks for duplicate enrollments for the same (project, formerStudent) pair, and delegates the
    * aggregate initialization to {@link EnrollmentProcessor}. The resulting aggregate is
    * self-validated before being persisted.
    *
    * @param cmd the structured {@link EnrollmentCreateCommand} containing enrollment data
    * @return the fully instantiated and persisted {@link Enrollment} aggregate
-   * @throws DuplicateResourceException if an enrollment for the given project and student already
+   * @throws DuplicateResourceException if an enrollment for the given project and formerStudent already
    *     exists
-   * @throws ResourceNotFoundException if the associated project or student does not exist
+   * @throws ResourceNotFoundException if the associated project or formerStudent does not exist
    * @throws AppValidationException if the created enrollment violates domain constraints
    */
   Enrollment save(EnrollmentCreateCommand cmd);
 }
+

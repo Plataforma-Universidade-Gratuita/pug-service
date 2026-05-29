@@ -16,7 +16,7 @@ import java.util.UUID;
  *
  * <p>This application-scoped bean executes read-only operations for enrollments. It projects {@link
  * EnrollmentEntity} rows into lightweight {@link EnrollmentView} DTOs containing only identifiers
- * and lifecycle metadata, leaving project and student details to be resolved on demand via
+ * and lifecycle metadata, leaving project and formerStudent details to be resolved on demand via
  * dedicated endpoints.
  */
 @ApplicationScoped
@@ -83,3 +83,4 @@ public class EnrollmentQueriesImpl implements EnrollmentQueries {
     return q.getResultList();
   }
 }
+

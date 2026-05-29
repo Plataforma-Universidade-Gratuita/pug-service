@@ -4,6 +4,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
 import br.org.catolicasc.pug.identity.infra.persistence.RefreshTokenEntity;
 import br.org.catolicasc.pug.identity.infra.persistence.impl.RefreshTokenRepositoryImpl;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
@@ -11,6 +12,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
+import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -144,7 +146,8 @@ public class AuthServiceImpl implements AuthService {
       throw ExceptionHelper.unauthorized();
     }
 
-    if (!passwordService.verify(account.getPasswordHash(), request.password())) {
+    if (passwordService.isConfigured(account.getPasswordHash())
+        && !passwordService.verify(account.getPasswordHash(), request.password())) {
       LOG.warnf("Authentication failed: Invalid password for account %s", account.getId());
       throw ExceptionHelper.unauthorized();
     }
@@ -161,6 +164,18 @@ public class AuthServiceImpl implements AuthService {
         account.getAccountType(),
         accessTokenLifespan,
         refreshTokenLifespan);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  @Transactional
+  public void wireCredentials(CredentialsRequest request) {
+    Account account = accountService.getByEmail(request.email());
+    passwordService.validateStrength(request.password());
+
+    accountService.update(
+        account.getId(),
+        new AccountUpdateCommand(null, passwordService.hash(request.password()), null, null));
   }
 
   /** {@inheritDoc} */
@@ -248,6 +263,7 @@ public class AuthServiceImpl implements AuthService {
         .groups(Set.of(account.getAccountType().name()))
         .claim("accountId", account.getId().toString())
         .claim("userId", account.getUserId().toString())
+        .claim("passwordWired", passwordService.isConfigured(account.getPasswordHash()))
         .sign();
   }
 

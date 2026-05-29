@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
-import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.academic.service.StudentService;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.AttendanceRepository;
@@ -40,7 +40,7 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Inject AuditPublisher auditPublisher;
   @Inject AttendanceRepository repo;
   @Inject ProjectService projectService;
-  @Inject StudentService studentService;
+  @Inject FormerStudentsService studentService;
   @Inject AuthService authService;
 
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
@@ -109,15 +109,15 @@ public class AttendanceServiceImpl implements AttendanceService {
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
     LOG.debugf(
-        "Attempting to create Attendance for Project: %s, Student: %s",
+        "Attempting to create Attendance for Project: %s, FormerStudent: %s",
         cmd.projectId(), cmd.studentId());
     Project project = projectService.getById(cmd.projectId());
-    Student student = studentService.getById(cmd.studentId());
+    FormerStudent formerStudent = studentService.getById(cmd.studentId());
 
     String qrHash = generateQrHash(cmd.projectId(), cmd.studentId());
 
     Attendance attendance =
-        AttendanceProcessor.processCreateInput(project, student, cmd.duration(), qrHash);
+        AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), qrHash);
 
     if (attendance.hasFieldErrors()) {
       throw new AppValidationException(attendance.getFieldErrors());
@@ -137,7 +137,7 @@ public class AttendanceServiceImpl implements AttendanceService {
     LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);
     UUID validatorAccountId = authService.getCurrentAccountId();
-    authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
+    authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
 
     if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
       LOG.warnf("Validation failed: QR Hash mismatch for Attendance ID: %s", id);
@@ -167,9 +167,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     return getById(id);
   }
 
-  /** Generates a unique QR hash based on project, student, timestamp, and system pepper. */
+  /** Generates a unique QR hash based on project, formerStudent, timestamp, and system pepper. */
   private String generateQrHash(UUID projectId, UUID studentId) {
     String raw = projectId.toString() + studentId.toString() + LocalDateTime.now() + pepper;
     return BcryptUtil.bcryptHash(raw);
   }
 }
+

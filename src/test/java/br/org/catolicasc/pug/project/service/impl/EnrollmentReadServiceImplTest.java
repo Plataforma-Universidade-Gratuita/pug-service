@@ -82,7 +82,7 @@ class EnrollmentReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list views by student ID")
+  @DisplayName("Should list views by formerStudent ID")
   void listViewsByStudentId() {
     UUID sid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
@@ -90,8 +90,9 @@ class EnrollmentReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for null student ID")
+  @DisplayName("Should return empty list for null formerStudent ID")
   void listViewsByStudentIdNull() {
     assertThat(service.listViewsByStudentId(null)).isEmpty();
   }
 }
+

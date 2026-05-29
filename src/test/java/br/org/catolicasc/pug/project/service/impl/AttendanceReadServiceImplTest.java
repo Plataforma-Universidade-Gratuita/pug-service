@@ -77,7 +77,7 @@ class AttendanceReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for null enrollment student ID")
+  @DisplayName("Should return empty list for null enrollment formerStudent ID")
   void listByEnrollmentIdNullStudent() {
     assertThat(service.listByEnrollmentId(UuidCreator.getTimeOrderedEpoch(), null)).isEmpty();
   }
@@ -97,7 +97,7 @@ class AttendanceReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list by student ID")
+  @DisplayName("Should list by formerStudent ID")
   void listByStudentId() {
     UUID sid = UuidCreator.getTimeOrderedEpoch();
     when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
@@ -105,7 +105,7 @@ class AttendanceReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for null student ID")
+  @DisplayName("Should return empty list for null formerStudent ID")
   void listByStudentIdNull() {
     assertThat(service.listByStudentId(null)).isEmpty();
   }
@@ -117,3 +117,4 @@ class AttendanceReadServiceImplTest {
     assertThat(service.listViews()).hasSize(1);
   }
 }
+

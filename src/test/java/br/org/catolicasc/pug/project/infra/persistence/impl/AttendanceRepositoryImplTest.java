@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -25,28 +25,28 @@ class AttendanceRepositoryImplTest {
   @Inject AttendanceRepositoryImpl repository;
   @Inject TestDataFactory factory;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
 
   @BeforeEach
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account sAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(sAcc, course);
+    Account sAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(sAcc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creator);
 
-    factory.createEnrollment(student, project);
+    factory.createEnrollment(formerStudent, project);
   }
 
   @Test
   @Transactional
   @DisplayName("Should persist and find Attendance")
   void shouldPersistAndFind() {
-    Attendance attendance = factory.createAttendance(project, student);
+    Attendance attendance = factory.createAttendance(project, formerStudent);
 
     var found = repository.findOptionalById(attendance.getId());
     assertThat(found).isPresent();
@@ -58,7 +58,7 @@ class AttendanceRepositoryImplTest {
   @Transactional
   @DisplayName("Should handle existsByQrHash and findOptionalByQrHash")
   void shouldHandleQrHashOperations() {
-    Attendance attendance = factory.createAttendance(project, student);
+    Attendance attendance = factory.createAttendance(project, formerStudent);
     String hash = attendance.getQrValidationInfo().getQrValidationHash();
 
     assertThat(repository.existsByQrHash(hash)).isTrue();
@@ -74,7 +74,7 @@ class AttendanceRepositoryImplTest {
   @DisplayName("Should update Attendance state")
   void shouldUpdateAttendance() {
     Account staffAccount = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Attendance attendance = factory.createAttendance(project, student);
+    Attendance attendance = factory.createAttendance(project, formerStudent);
 
     Attendance updated =
         attendance.validatePresence(staffAccount.getId(), AttendanceStatus.PRESENT);
@@ -101,3 +101,4 @@ class AttendanceRepositoryImplTest {
     assertThat(repository.existsByValidatedBy(null)).isFalse();
   }
 }
+

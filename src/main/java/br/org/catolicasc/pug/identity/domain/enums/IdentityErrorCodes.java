@@ -32,6 +32,12 @@ public enum IdentityErrorCodes implements GenericCodes {
    */
   ADMIN_NOT_FOUND("error.domain.identity.admin.not.found"),
 
+  /**
+   * Indicates that the authenticated account must wire a password before it can access protected
+   * application operations.
+   */
+  ACCOUNT_PASSWORD_SETUP_REQUIRED("error.domain.identity.account.password.setup.required"),
+
   /** Indicates an attempt to register a user using a CPF that is already present in the system. */
   USER_ALREADY_EXISTS("error.domain.identity.user.already.exists"),
 
@@ -39,7 +45,13 @@ public enum IdentityErrorCodes implements GenericCodes {
    * Indicates that a requested user could not be located in the underlying data store by their
    * unique identifier or CPF.
    */
-  USER_NOT_FOUND("error.domain.identity.user.not.found");
+  USER_NOT_FOUND("error.domain.identity.user.not.found"),
+
+  /**
+   * Indicates that a provided raw password does not satisfy the platform's password-strength
+   * policy.
+   */
+  WEAK_PASSWORD("error.domain.identity.password.weak");
 
   /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;

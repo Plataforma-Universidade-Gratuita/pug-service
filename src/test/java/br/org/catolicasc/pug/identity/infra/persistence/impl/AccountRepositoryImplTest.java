@@ -38,7 +38,7 @@ class AccountRepositoryImplTest {
   @DisplayName("Should count accounts correctly")
   void countSuccess() {
     User user = factory.createUser();
-    factory.createAccount(user, AccountType.STUDENT);
+    factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createAccount(user, AccountType.PARTNER);
     assertThat(repository.countAllAccountsByUserId(user.getId())).isEqualTo(2);
   }
@@ -53,7 +53,7 @@ class AccountRepositoryImplTest {
   @DisplayName("Should delete account successfully")
   void deleteSuccess() {
     User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.STUDENT);
+    Account acc = factory.createAccount(user, AccountType.FORMER_STUDENT);
     assertThat(repository.deleteById(acc.getId())).isTrue();
     em.clear();
     assertThat(repository.findOptionalById(acc.getId())).isEmpty();
@@ -69,7 +69,7 @@ class AccountRepositoryImplTest {
   @DisplayName("Should bulk delete multiple accounts successfully")
   void deleteAllSuccess() {
     User user = factory.createUser();
-    Account a1 = factory.createAccount(user, AccountType.STUDENT);
+    Account a1 = factory.createAccount(user, AccountType.FORMER_STUDENT);
     Account a2 = factory.createAccount(user, AccountType.PARTNER);
 
     long deleted = repository.deleteAllByIds(List.of(a1.getId(), a2.getId()));
@@ -91,7 +91,7 @@ class AccountRepositoryImplTest {
   @DisplayName("Should detect existence in batch")
   void existsAnyByEmailsSuccess() {
     User user = factory.createUser();
-    Account acc1 = factory.createAccount(user, AccountType.STUDENT);
+    Account acc1 = factory.createAccount(user, AccountType.FORMER_STUDENT);
     Account acc2 = factory.createAccount(user, AccountType.PARTNER);
 
     assertThat(
@@ -105,7 +105,7 @@ class AccountRepositoryImplTest {
   @DisplayName("Should find accounts and detect orphans")
   void findFlow() {
     User user = factory.createUser();
-    Account acc = factory.createAccount(user, AccountType.STUDENT);
+    Account acc = factory.createAccount(user, AccountType.FORMER_STUDENT);
     em.flush();
 
     assertThat(repository.existsByEmail(acc.getEmail().getValue())).isTrue();
@@ -155,3 +155,4 @@ class AccountRepositoryImplTest {
     assertThat(repository.findOptionalById(saved.get(1).getId())).isPresent();
   }
 }
+

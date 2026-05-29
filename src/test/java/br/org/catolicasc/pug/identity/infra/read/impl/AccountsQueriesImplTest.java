@@ -39,7 +39,7 @@ class AccountsQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should find account by ID successfully")
   void findOptionalByIdSuccess() {
     User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
+    Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
 
     Optional<AccountView> found = queries.findOptionalById(account.getId());
     assertThat(found).isPresent();
@@ -50,7 +50,7 @@ class AccountsQueriesImplTest extends BaseSearchTest {
   @Transactional
   @DisplayName("Should list all accounts")
   void listAllAccounts() {
-    factory.createAccount(factory.createUser(), AccountType.STUDENT);
+    factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     assertThat(queries.listAllAccounts()).isNotEmpty();
   }
 
@@ -66,7 +66,7 @@ class AccountsQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should list accounts by IDs successfully")
   void listAllByIdsSuccess() {
     User user = factory.createUser();
-    Account account = factory.createAccount(user, AccountType.STUDENT);
+    Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
 
     List<AccountView> found = queries.listAllByIds(List.of(account.getId()));
     assertThat(found).hasSize(1);
@@ -81,7 +81,7 @@ class AccountsQueriesImplTest extends BaseSearchTest {
     runInTransaction(
         () -> {
           user[0] = factory.createUser();
-          account[0] = factory.createAccount(user[0], AccountType.STUDENT);
+          account[0] = factory.createAccount(user[0], AccountType.FORMER_STUDENT);
         });
 
     var result =
@@ -106,7 +106,7 @@ class AccountsQueriesImplTest extends BaseSearchTest {
   void searchByTimestampSuccess() throws Exception {
     Account[] account = new Account[1];
     runInTransaction(
-        () -> account[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT));
+        () -> account[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT));
 
     OffsetDateTime createdAt = account[0].getAuditInfo().getCreatedAt();
     var result =
@@ -125,3 +125,4 @@ class AccountsQueriesImplTest extends BaseSearchTest {
     assertThat(result.content()).hasSizeLessThanOrEqualTo(10);
   }
 }
+

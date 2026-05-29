@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.domain;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
@@ -18,9 +18,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Immutable Domain Entity representing a Student's Enrollment in a Project.
+ * Immutable Domain Entity representing a FormerStudent's Enrollment in a Project.
  *
- * <p>This class maps a specific {@link Student} directly to a {@link Project} and tracks the
+ * <p>This class maps a specific {@link FormerStudent} directly to a {@link Project} and tracks the
  * lifecycle state of that relationship (e.g., {@link EnrollmentStatus#PENDING}, {@link
  * EnrollmentStatus#APPROVED}, {@link EnrollmentStatus#COMPLETED}). It extends {@link DomainError}
  * to accumulate structural validation failures and bubble up problems from nested value objects.
@@ -32,7 +32,7 @@ import lombok.Getter;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Enrollment extends DomainError {
 
-  /** The composite identifier uniquely linking the student to the project. */
+  /** The composite identifier uniquely linking the formerStudent to the project. */
   EnrollmentIdentifier identifier;
 
   /** The current lifecycle status of the enrollment. */
@@ -46,18 +46,18 @@ public class Enrollment extends DomainError {
    * EnrollmentStatus#PENDING} state.
    *
    * <p>The returned aggregate is initialized with a freshly created {@link EnrollmentIdentifier}
-   * based on the provided {@link Student} and {@link Project}, and a default {@link EnrollmentInfo}
+   * based on the provided {@link FormerStudent} and {@link Project}, and a default {@link EnrollmentInfo}
    * with no acceptance or closing timestamps set. The instance is immediately self-validated; any
    * problems are accumulated internally and can be inspected via {@link #hasFieldErrors()} and
    * {@link #getFieldErrors()}.
    *
-   * @param student the {@link Student} requesting enrollment
-   * @param project the {@link Project} the student wishes to join
+   * @param formerStudent the {@link FormerStudent} requesting enrollment
+   * @param project the {@link Project} the formerStudent wishes to join
    * @return a new, self-validated {@link Enrollment} instance in {@link EnrollmentStatus#PENDING}
    *     state
    */
-  public static Enrollment factory(Student student, Project project) {
-    UUID studentId = (student != null) ? student.getAccountId() : null;
+  public static Enrollment factory(FormerStudent formerStudent, Project project) {
+    UUID studentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
     UUID projectId = (project != null) ? project.getId() : null;
 
     Enrollment enrollment =
@@ -194,3 +194,4 @@ public class Enrollment extends DomainError {
     }
   }
 }
+

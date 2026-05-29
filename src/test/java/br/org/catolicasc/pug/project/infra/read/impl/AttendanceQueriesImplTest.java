@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -25,7 +25,7 @@ class AttendanceQueriesImplTest {
   @Inject AttendanceQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
   private Attendance attendance;
 
@@ -33,16 +33,16 @@ class AttendanceQueriesImplTest {
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account acc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(acc, course);
+    Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(acc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     project =
         factory.createProject(
             entity, factory.createAccount(factory.createUser(), AccountType.PARTNER));
 
-    factory.createEnrollment(student, project);
-    attendance = factory.createAttendance(project, student);
+    factory.createEnrollment(formerStudent, project);
+    attendance = factory.createAttendance(project, formerStudent);
   }
 
   @Test
@@ -73,13 +73,13 @@ class AttendanceQueriesImplTest {
   @Transactional
   @DisplayName("Should list by enrollment ID")
   void shouldListByEnrollmentId() {
-    var list = queries.listByEnrollmentId(project.getId(), student.getAccountId());
+    var list = queries.listByEnrollmentId(project.getId(), formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
     assertThat(list)
         .allSatisfy(
             v -> {
               assertThat(v.projectId()).isEqualTo(project.getId());
-              assertThat(v.studentId()).isEqualTo(student.getAccountId());
+              assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId());
             });
   }
 
@@ -87,12 +87,12 @@ class AttendanceQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty list for null enrollment project ID")
   void shouldReturnEmptyForNullEnrollmentProjectId() {
-    assertThat(queries.listByEnrollmentId(null, student.getAccountId())).isEmpty();
+    assertThat(queries.listByEnrollmentId(null, formerStudent.getAccountId())).isEmpty();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should return empty list for null enrollment student ID")
+  @DisplayName("Should return empty list for null enrollment formerStudent ID")
   void shouldReturnEmptyForNullEnrollmentStudentId() {
     assertThat(queries.listByEnrollmentId(project.getId(), null)).isEmpty();
   }
@@ -115,16 +115,16 @@ class AttendanceQueriesImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should list by student ID")
+  @DisplayName("Should list by formerStudent ID")
   void shouldListByStudentId() {
-    var list = queries.listByStudentId(student.getAccountId());
+    var list = queries.listByStudentId(formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
-    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(student.getAccountId()));
+    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
   }
 
   @Test
   @Transactional
-  @DisplayName("Should return empty list for null student ID")
+  @DisplayName("Should return empty list for null formerStudent ID")
   void shouldReturnEmptyForNullStudentId() {
     assertThat(queries.listByStudentId(null)).isEmpty();
   }
@@ -156,3 +156,4 @@ class AttendanceQueriesImplTest {
     assertThat(av.updatedAt()).isNotNull();
   }
 }
+

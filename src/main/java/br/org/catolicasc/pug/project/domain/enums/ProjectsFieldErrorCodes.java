@@ -29,8 +29,8 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that the status of an attendance record is null. */
   INVALID_ATTENDANCE_STATUS_BLANK("error.domain.projects.attendance.status.blank", "status"),
 
-  /** Indicates that the student ID for an attendance record is null. */
-  INVALID_ATTENDANCE_STUDENT_BLANK("error.domain.projects.attendance.student.blank", "studentId"),
+  /** Indicates that the formerStudent ID for an attendance record is null. */
+  INVALID_ATTENDANCE_STUDENT_BLANK("error.domain.projects.attendance.formerStudent.blank", "studentId"),
 
   /** Indicates that the creation timestamp was provided as null. */
   INVALID_CREATED_AT_BLANK("error.domain.projects.createdat.blank", "createdAt"),
@@ -57,8 +57,8 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that the status for an enrollment is null. */
   INVALID_ENROLLMENT_STATUS_BLANK("error.domain.projects.enrollment.status.blank", "status"),
 
-  /** Indicates that the student ID for an enrollment is null. */
-  INVALID_ENROLLMENT_STUDENT_BLANK("error.domain.projects.enrollment.student.blank", "studentId"),
+  /** Indicates that the formerStudent ID for an enrollment is null. */
+  INVALID_ENROLLMENT_STUDENT_BLANK("error.domain.projects.enrollment.formerStudent.blank", "studentId"),
 
   /** Indicates that the maximum number of participants is negative. */
   INVALID_MAX_PARTICIPANTS_NEGATIVE(
@@ -127,3 +127,4 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
     this.fieldName = fieldName;
   }
 }
+

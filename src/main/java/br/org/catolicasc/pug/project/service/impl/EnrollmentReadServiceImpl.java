@@ -32,7 +32,7 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
         .findOptionalByIds(projectId, studentId)
         .orElseThrow(
             () -> {
-              LOG.debugf("Enrollment lookup failed: Project %s, Student %s", projectId, studentId);
+              LOG.debugf("Enrollment lookup failed: Project %s, FormerStudent %s", projectId, studentId);
               return ExceptionHelper.enrollmentNotFound();
             });
   }
@@ -61,3 +61,4 @@ public class EnrollmentReadServiceImpl implements EnrollmentReadService {
     return queries.listByStudentId(studentId);
   }
 }
+

@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.service.utils;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
@@ -25,14 +25,14 @@ public final class AttendanceProcessor {
    * WAITING state.
    *
    * @param project the fully reconstituted {@link Project} aggregate
-   * @param student the fully reconstituted {@link Student} aggregate
-   * @param duration the duration of time the student spent on the project
+   * @param formerStudent the fully reconstituted {@link FormerStudent} aggregate
+   * @param duration the duration of time the formerStudent spent on the project
    * @param qrHash the unique cryptographic hash for the new QR code
    * @return a fully instantiated {@link Attendance} domain aggregate, potentially containing errors
    */
   public static Attendance processCreateInput(
-      Project project, Student student, BigDecimal duration, String qrHash) {
-    return Attendance.factory(project, student, duration, qrHash);
+      Project project, FormerStudent formerStudent, BigDecimal duration, String qrHash) {
+    return Attendance.factory(project, formerStudent, duration, qrHash);
   }
 
   /**
@@ -49,3 +49,4 @@ public final class AttendanceProcessor {
     return existing.validatePresence(validatorId, status);
   }
 }
+

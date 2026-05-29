@@ -87,7 +87,7 @@ class EntityResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("GET /v1/partners/entities - List All")
   void listAll() throws Exception {
@@ -272,7 +272,7 @@ class EntityResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("POST /v1/partners/entities - Forbidden for STUDENT")
   void createForbiddenForStudent() throws Exception {
@@ -292,7 +292,7 @@ class EntityResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("DELETE /v1/partners/entities/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
@@ -318,3 +318,4 @@ class EntityResourceTest extends BaseResourceTest {
         .statusCode(403);
   }
 }
+

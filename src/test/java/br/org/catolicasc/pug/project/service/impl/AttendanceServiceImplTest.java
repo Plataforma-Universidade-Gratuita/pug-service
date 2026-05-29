@@ -11,8 +11,8 @@ import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
-import br.org.catolicasc.pug.academic.service.StudentService;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -43,10 +43,10 @@ class AttendanceServiceImplTest {
 
   @InjectMock AuditPublisher audit;
   @InjectMock AuthService authService;
-  @InjectMock StudentService studentService;
+  @InjectMock FormerStudentsService studentService;
   @InjectMock ProjectService projectService;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
   private Attendance attendance;
   private Account creatorAcc;
@@ -55,15 +55,15 @@ class AttendanceServiceImplTest {
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(studentAcc, course);
+    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(studentAcc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creatorAcc);
 
-    factory.createEnrollment(student, project);
-    attendance = factory.createAttendance(project, student);
+    factory.createEnrollment(formerStudent, project);
+    attendance = factory.createAttendance(project, formerStudent);
 
     doNothing().when(authService).requireCurrentAccountNotOfType(any());
     doNothing().when(authService).requireCurrentAccountOfType(any());
@@ -75,12 +75,12 @@ class AttendanceServiceImplTest {
   @DisplayName("Should save attendance successfully")
   void saveSuccess() {
     when(projectService.getById(project.getId())).thenReturn(project);
-    when(studentService.getById(student.getAccountId())).thenReturn(student);
+    when(studentService.getById(formerStudent.getAccountId())).thenReturn(formerStudent);
 
     var cmd =
         anAttendanceCreateCommand()
             .withProjectId(project.getId())
-            .withStudentId(student.getAccountId())
+            .withStudentId(formerStudent.getAccountId())
             .build();
     Attendance saved = service.save(cmd);
 
@@ -150,7 +150,7 @@ class AttendanceServiceImplTest {
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.builder()
             .projectId(project.getId())
-            .studentId(student.getAccountId())
+            .studentId(formerStudent.getAccountId())
             .build();
     long deleted = service.deleteAllByEnrollmentIdentifier(identifier);
     assertThat(deleted).isGreaterThanOrEqualTo(1);
@@ -163,3 +163,4 @@ class AttendanceServiceImplTest {
     assertThat(service.existsByValidatedBy(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }
+

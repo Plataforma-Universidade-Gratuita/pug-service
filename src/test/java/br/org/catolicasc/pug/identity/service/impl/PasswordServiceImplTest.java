@@ -1,7 +1,10 @@
 package br.org.catolicasc.pug.identity.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.DisplayName;
@@ -34,5 +37,25 @@ class PasswordServiceImplTest {
 
     boolean matches = passwordService.verify(hash, wrong);
     assertThat(matches).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should report whether a password hash is configured")
+  void shouldReportConfiguredPassword() {
+    assertThat(passwordService.isConfigured("hash")).isTrue();
+    assertThat(passwordService.isConfigured(" ")).isFalse();
+    assertThat(passwordService.isConfigured(null)).isFalse();
+  }
+
+  @Test
+  @DisplayName("Should accept a strong password")
+  void shouldAcceptStrongPassword() {
+    assertDoesNotThrow(() -> passwordService.validateStrength("StrongPass1!"));
+  }
+
+  @Test
+  @DisplayName("Should reject a weak password")
+  void shouldRejectWeakPassword() {
+    assertThrows(BusinessRuleException.class, () -> passwordService.validateStrength("weakpass"));
   }
 }

@@ -33,7 +33,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     doInTransaction(
         () -> {
           User user = factory.createUser();
-          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
         });
 
     given()
@@ -48,7 +48,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("GET /v1/identity/accounts/me - Authenticated Success")
   void getMeSuccess() throws Exception {
@@ -56,7 +56,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     doInTransaction(
         () -> {
           User user = factory.createUser();
-          account[0] = factory.createAccount(user, AccountType.STUDENT);
+          account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
         });
 
     when(authService.getCurrentAccountId()).thenReturn(account[0].getId());
@@ -78,7 +78,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     doInTransaction(
         () -> {
           User user = factory.createUser();
-          factory.createAccount(user, AccountType.STUDENT);
+          factory.createAccount(user, AccountType.FORMER_STUDENT);
         });
 
     given()
@@ -98,7 +98,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     Account[] accounts = new Account[2];
     doInTransaction(
         () -> {
-          accounts[0] = factory.createAccount(factory.createUser(), AccountType.STUDENT);
+          accounts[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           accounts[1] = factory.createAccount(factory.createUser(), AccountType.PARTNER);
         });
 
@@ -123,7 +123,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     doInTransaction(
         () -> {
           user[0] = factory.createUser();
-          account[0] = factory.createAccount(user[0], AccountType.STUDENT);
+          account[0] = factory.createAccount(user[0], AccountType.FORMER_STUDENT);
         });
 
     given()
@@ -162,3 +162,4 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/identity/accounts");
   }
 }
+

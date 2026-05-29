@@ -18,7 +18,7 @@ import java.util.Locale;
  * <p>This presenter acts as a translation layer, converting lightweight CQRS query views ({@link
  * EnrollmentView}) into client-ready representations ({@link EnrollmentResponse}). It also applies
  * presentation-specific formatting for dates and localized status labels, while keeping project and
- * student details referenced only by their identifiers.
+ * formerStudent details referenced only by their identifiers.
  */
 public final class EnrollmentPresenter {
 
@@ -29,7 +29,7 @@ public final class EnrollmentPresenter {
    * Maps an incoming REST creation request into an application layer enrollment creation command.
    *
    * <p>This helper extracts the {@code projectId} from the payload and encapsulates it into an
-   * {@link EnrollmentCreateCommand}, leaving student resolution and domain validation to the
+   * {@link EnrollmentCreateCommand}, leaving formerStudent resolution and domain validation to the
    * application service layer.
    *
    * @param req the validated {@link EnrollmentCreateRequest} payload
@@ -88,3 +88,4 @@ public final class EnrollmentPresenter {
         auditInfo);
   }
 }
+

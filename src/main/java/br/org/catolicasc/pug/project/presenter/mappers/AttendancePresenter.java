@@ -54,7 +54,7 @@ public final class AttendancePresenter {
   /**
    * Projects a read-only {@link AttendanceView} into a client-facing {@link AttendanceResponse}.
    *
-   * <p>This mapping flattens the response, returning only the identifiers for project, student, and
+   * <p>This mapping flattens the response, returning only the identifiers for project, formerStudent, and
    * validator, while resolving localized labels and formatting dates based on the client's {@link
    * Locale}.
    *
@@ -89,3 +89,4 @@ public final class AttendancePresenter {
         auditInfo);
   }
 }
+

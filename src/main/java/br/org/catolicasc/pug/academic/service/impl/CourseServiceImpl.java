@@ -4,7 +4,7 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.CourseRepository;
 import br.org.catolicasc.pug.academic.service.CourseService;
 import br.org.catolicasc.pug.academic.service.SchoolService;
-import br.org.catolicasc.pug.academic.service.StudentService;
+import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.CourseProcessor;
@@ -37,7 +37,7 @@ public class CourseServiceImpl implements CourseService {
 
   @Inject SchoolService schoolService;
 
-  @Inject StudentService studentService;
+  @Inject FormerStudentsService studentService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -161,3 +161,4 @@ public class CourseServiceImpl implements CourseService {
     return repo.existsByName(name);
   }
 }
+

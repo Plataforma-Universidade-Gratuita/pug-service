@@ -13,7 +13,7 @@ import lombok.Value;
  * Immutable Value Object (VO) representing the composite natural identifier for an Enrollment.
  *
  * <p>Extends {@link DomainError} to encapsulate and accumulate domain validation rules, ensuring an
- * enrollment is always tied to both a specific student and a specific project.
+ * enrollment is always tied to both a specific formerStudent and a specific project.
  */
 @Getter
 @Value
@@ -21,16 +21,16 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class EnrollmentIdentifier extends DomainError {
 
-  /** The unique identifier (Account ID) of the enrolled student. */
+  /** The unique identifier (Account ID) of the enrolled formerStudent. */
   UUID studentId;
 
-  /** The unique identifier of the project the student is enrolled in. */
+  /** The unique identifier of the project the formerStudent is enrolled in. */
   UUID projectId;
 
   /**
    * Constructs an {@code EnrollmentIdentifier} instance.
    *
-   * @param studentId the unique identifier of the student
+   * @param studentId the unique identifier of the formerStudent
    * @param projectId the unique identifier of the project
    */
   @Builder(toBuilder = true)
@@ -44,7 +44,7 @@ public class EnrollmentIdentifier extends DomainError {
    *
    * <p>The instance is created and immediately self-validated.
    *
-   * @param studentId the unique identifier of the student
+   * @param studentId the unique identifier of the formerStudent
    * @param projectId the unique identifier of the project
    * @return a self-validated {@link EnrollmentIdentifier} instance
    */
@@ -61,7 +61,7 @@ public class EnrollmentIdentifier extends DomainError {
    * <p>Business rules applied:
    *
    * <ul>
-   *   <li>The student ID must not be null (appends {@link
+   *   <li>The formerStudent ID must not be null (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK}).
    *   <li>The project ID must not be null (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK}).
@@ -76,3 +76,4 @@ public class EnrollmentIdentifier extends DomainError {
     }
   }
 }
+

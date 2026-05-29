@@ -42,7 +42,7 @@ class AccountPresenterTest {
               UuidCreator.getTimeOrderedEpoch(),
               UuidCreator.getTimeOrderedEpoch(),
               "test@pug.com",
-              AccountType.STUDENT,
+              AccountType.FORMER_STUDENT,
               null,
               null,
               true);
@@ -56,7 +56,7 @@ class AccountPresenterTest {
       UUID userId = UuidCreator.getTimeOrderedEpoch();
       OffsetDateTime now = OffsetDateTime.now();
       AccountView view =
-          new AccountView(id, userId, "test@pug.com", AccountType.STUDENT, now, now, true);
+          new AccountView(id, userId, "test@pug.com", AccountType.FORMER_STUDENT, now, now, true);
 
       AccountResponse response = AccountPresenter.toResponse(view, Locale.US, i18n);
 
@@ -64,9 +64,9 @@ class AccountPresenterTest {
       assertThat(response.id()).isEqualTo(id);
       assertThat(response.userId()).isEqualTo(userId);
       assertThat(response.email()).isEqualTo("test@pug.com");
-      assertThat(response.accountType()).isEqualTo(AccountType.STUDENT);
+      assertThat(response.accountType()).isEqualTo(AccountType.FORMER_STUDENT);
       assertThat(response.accountTypeFormatted())
-          .isEqualTo(i18n.translation(AccountType.STUDENT.getBundleKey(), Locale.US));
+          .isEqualTo(i18n.translation(AccountType.FORMER_STUDENT.getBundleKey(), Locale.US));
       assertThat(response.active()).isTrue();
       assertThat(response.auditInfo()).isNotNull();
     }
@@ -79,7 +79,7 @@ class AccountPresenterTest {
       OffsetDateTime now = OffsetDateTime.now();
       AccountComplexSearchView view =
           new AccountComplexSearchView(
-              id, userId, "Test User", "test@pug.com", AccountType.STUDENT, now, now, true);
+              id, userId, "Test User", "test@pug.com", AccountType.FORMER_STUDENT, now, now, true);
 
       AccountComplexSearchResponse response =
           AccountPresenter.toComplexSearchResponse(view, Locale.US, i18n);
@@ -89,11 +89,12 @@ class AccountPresenterTest {
       assertThat(response.user().id()).isEqualTo(userId);
       assertThat(response.user().name()).isEqualTo("Test User");
       assertThat(response.email()).isEqualTo("test@pug.com");
-      assertThat(response.accountType()).isEqualTo(AccountType.STUDENT);
+      assertThat(response.accountType()).isEqualTo(AccountType.FORMER_STUDENT);
       assertThat(response.accountTypeFormatted())
-          .isEqualTo(i18n.translation(AccountType.STUDENT.getBundleKey(), Locale.US));
+          .isEqualTo(i18n.translation(AccountType.FORMER_STUDENT.getBundleKey(), Locale.US));
       assertThat(response.active()).isTrue();
       assertThat(response.auditInfo()).isNotNull();
     }
   }
 }
+

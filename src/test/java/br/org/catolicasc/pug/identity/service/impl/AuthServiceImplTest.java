@@ -4,21 +4,26 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.enums.IdentityErrorCodes;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.identity.infra.persistence.AccountEntity;
 import br.org.catolicasc.pug.identity.infra.persistence.RefreshTokenEntity;
 import br.org.catolicasc.pug.identity.infra.persistence.impl.RefreshTokenRepositoryImpl;
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
+import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -51,15 +56,16 @@ class AuthServiceImplTest {
   @DisplayName("Should login successfully and return token")
   void loginSuccess() {
     String email = "test@pug.com";
-    String raw = "password";
+    String raw = "Password1!";
     String hash = "hashed";
 
     Account acc =
         Account.factory(
-            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.STUDENT, hash);
+            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, hash);
     acc = acc.toBuilder().active(true).build();
 
     when(accountService.getByEmail(email)).thenReturn(acc);
+    when(passwordService.isConfigured(hash)).thenReturn(true);
     when(passwordService.verify(hash, raw)).thenReturn(true);
 
     TokenResponse response = authService.login(new LoginRequest(email, raw));
@@ -67,6 +73,31 @@ class AuthServiceImplTest {
     assertThat(response.token()).isNotBlank();
     assertThat(response.refreshToken()).isNotBlank();
     assertThat(response.accountId()).isEqualTo(acc.getId());
+  }
+
+  @Test
+  @DisplayName("Should login successfully when account has no wired password yet")
+  void loginSuccessWithoutConfiguredPassword() {
+    String email = "test@pug.com";
+
+    Account acc =
+        Account.factory(
+                UuidCreator.getTimeOrderedEpoch(),
+                Email.factory(email),
+                AccountType.FORMER_STUDENT,
+                null)
+            .toBuilder()
+            .active(true)
+            .build();
+
+    when(accountService.getByEmail(email)).thenReturn(acc);
+    when(passwordService.isConfigured(null)).thenReturn(false);
+
+    TokenResponse response = authService.login(new LoginRequest(email, "AnyPassword1!"));
+
+    assertThat(response.token()).isNotBlank();
+    assertThat(response.refreshToken()).isNotBlank();
+    verify(passwordService, never()).verify(null, "AnyPassword1!");
   }
 
   @Test
@@ -89,9 +120,10 @@ class AuthServiceImplTest {
     String hash = "hashed";
     Account acc =
         Account.factory(
-            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.STUDENT, hash);
+            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, hash);
 
     when(accountService.getByEmail(email)).thenReturn(acc);
+    when(passwordService.isConfigured(hash)).thenReturn(true);
     when(passwordService.verify(hash, "wrong")).thenReturn(false);
 
     assertThrows(
@@ -106,7 +138,7 @@ class AuthServiceImplTest {
         Account.factory(
                 UuidCreator.getTimeOrderedEpoch(),
                 Email.factory(email),
-                AccountType.STUDENT,
+                AccountType.FORMER_STUDENT,
                 "hash")
             .toBuilder()
             .active(false)
@@ -136,7 +168,7 @@ class AuthServiceImplTest {
     when(refreshTokenRepository.findByTokenHash(hash)).thenReturn(Optional.of(entity));
 
     Account account =
-        Account.factory(accId, Email.factory("r@pug.com"), AccountType.STUDENT, "hash");
+        Account.factory(accId, Email.factory("r@pug.com"), AccountType.FORMER_STUDENT, "hash");
     when(accountService.getById(accId)).thenReturn(account);
 
     TokenResponse response = authService.refresh(new RefreshRequest(rawToken));
@@ -228,6 +260,46 @@ class AuthServiceImplTest {
   }
 
   @Test
+  @DisplayName("Should wire credentials successfully")
+  void wireCredentialsSuccess() {
+    String email = "test@pug.com";
+    String rawPassword = "StrongPass1!";
+    String hashedPassword = "hashed-password";
+    UUID accountId = UuidCreator.getTimeOrderedEpoch();
+
+    Account account =
+        Account.factory(accountId, Email.factory(email), AccountType.FORMER_STUDENT, null);
+
+    when(accountService.getByEmail(email)).thenReturn(account);
+    when(passwordService.hash(rawPassword)).thenReturn(hashedPassword);
+
+    authService.wireCredentials(new CredentialsRequest(email, rawPassword));
+
+    verify(passwordService).validateStrength(rawPassword);
+    verify(passwordService).hash(rawPassword);
+    verify(accountService)
+        .update(accountId, new AccountUpdateCommand(null, hashedPassword, null, null));
+  }
+
+  @Test
+  @DisplayName("Should reject weak passwords when wiring credentials")
+  void wireCredentialsWeakPassword() {
+    String email = "test@pug.com";
+    String rawPassword = "weakpass";
+    Account account =
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, null);
+
+    when(accountService.getByEmail(email)).thenReturn(account);
+    BusinessRuleException exception = new BusinessRuleException(IdentityErrorCodes.WEAK_PASSWORD);
+    org.mockito.Mockito.doThrow(exception).when(passwordService).validateStrength(rawPassword);
+
+    assertThrows(
+        BusinessRuleException.class,
+        () -> authService.wireCredentials(new CredentialsRequest(email, rawPassword)));
+  }
+
+  @Test
   @DisplayName("Should throw NotAuthorized when identity is anonymous")
   void getCurrentAccountTypeAnonymous() {
     when(securityIdentity.isAnonymous()).thenReturn(true);
@@ -311,9 +383,9 @@ class AuthServiceImplTest {
     JsonWebToken jwtMock = mock(JsonWebToken.class);
     when(securityIdentity.isAnonymous()).thenReturn(false);
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
-    when(jwtMock.getGroups()).thenReturn(Set.of("STUDENT"));
+    when(jwtMock.getGroups()).thenReturn(Set.of("FORMER_STUDENT"));
 
-    assertThat(authService.getCurrentAccountType()).isEqualTo(AccountType.STUDENT);
+    assertThat(authService.getCurrentAccountType()).isEqualTo(AccountType.FORMER_STUDENT);
   }
 
   @Test
@@ -322,9 +394,9 @@ class AuthServiceImplTest {
     JsonWebToken jwtMock = mock(JsonWebToken.class);
     when(securityIdentity.isAnonymous()).thenReturn(false);
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
-    when(jwtMock.getGroups()).thenReturn(Set.of("STUDENT"));
+    when(jwtMock.getGroups()).thenReturn(Set.of("FORMER_STUDENT"));
 
-    authService.requireCurrentAccountOfType(AccountType.STUDENT);
+    authService.requireCurrentAccountOfType(AccountType.FORMER_STUDENT);
     assertThrows(
         NotAuthorizedException.class,
         () -> authService.requireCurrentAccountOfType(AccountType.ADMIN));
@@ -336,12 +408,12 @@ class AuthServiceImplTest {
     JsonWebToken jwtMock = mock(JsonWebToken.class);
     when(securityIdentity.isAnonymous()).thenReturn(false);
     when(securityIdentity.getPrincipal()).thenReturn(jwtMock);
-    when(jwtMock.getGroups()).thenReturn(Set.of("STUDENT"));
+    when(jwtMock.getGroups()).thenReturn(Set.of("FORMER_STUDENT"));
 
     authService.requireCurrentAccountNotOfType(AccountType.ADMIN);
     assertThrows(
         NotAuthorizedException.class,
-        () -> authService.requireCurrentAccountNotOfType(AccountType.STUDENT));
+        () -> authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT));
   }
 
   @Test
@@ -363,3 +435,4 @@ class AuthServiceImplTest {
     assertThat(hash1).isEqualTo(hash2).hasSize(64);
   }
 }
+

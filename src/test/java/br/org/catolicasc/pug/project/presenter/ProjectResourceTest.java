@@ -218,7 +218,7 @@ class ProjectResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("POST /v1/projects - Forbidden for STUDENT")
   void createForbiddenForStudent() {
@@ -235,7 +235,7 @@ class ProjectResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "student",
+      user = "formerStudent",
       roles = {"STUDENT"})
   @DisplayName("DELETE /v1/projects/{id} - Forbidden for STUDENT")
   void deleteForbiddenForStudent() {
@@ -399,3 +399,4 @@ class ProjectResourceTest extends BaseResourceTest {
         .body("data.status", is("IN_PROGRESS"));
   }
 }
+

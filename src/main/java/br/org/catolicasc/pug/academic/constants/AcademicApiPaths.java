@@ -17,9 +17,10 @@ public final class AcademicApiPaths {
   /** Root collection endpoint for academic courses. */
   public static final String COURSES = "/v1/academic/courses";
 
-  /** Root collection endpoint for academic students. */
-  public static final String STUDENTS = "/v1/academic/students";
+  /** Root collection endpoint for academic former students. */
+  public static final String FORMER_STUDENTS = "/v1/academic/former-students";
 
   /** Private constructor to prevent instantiation. */
   private AcademicApiPaths() {}
 }
+

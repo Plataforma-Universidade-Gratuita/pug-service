@@ -2,9 +2,9 @@ package br.org.catolicasc.pug.project.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.StudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Enrollment Aggregate Tests")
 class EnrollmentTest {
 
-  private final Student student = StudentBuilder.aStudent().build();
+  private final FormerStudent formerStudent = FormerStudentBuilder.aStudent().build();
   private final Project project = ProjectBuilder.aProject().build();
 
   @Nested
@@ -26,7 +26,7 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should create valid Enrollment in PENDING status")
     void shouldCreateValidEnrollment() {
-      Enrollment enrollment = Enrollment.factory(student, project);
+      Enrollment enrollment = Enrollment.factory(formerStudent, project);
 
       assertThat(enrollment.hasFieldErrors()).isFalse();
       assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
@@ -52,14 +52,14 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should be idempotent when status is the same")
     void shouldBeIdempotent() {
-      Enrollment enrollment = Enrollment.factory(student, project);
+      Enrollment enrollment = Enrollment.factory(formerStudent, project);
       assertThat(enrollment.changeStatus(EnrollmentStatus.PENDING)).isEqualTo(enrollment);
     }
 
     @Test
     @DisplayName("Should transition from PENDING to APPROVED successfully")
     void shouldApproveEnrollment() {
-      Enrollment enrollment = Enrollment.factory(student, project);
+      Enrollment enrollment = Enrollment.factory(formerStudent, project);
       Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED);
 
       assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
@@ -70,7 +70,7 @@ class EnrollmentTest {
     @DisplayName("Should transition from APPROVED to various closing statuses")
     void shouldCloseEnrollment() {
       Enrollment base =
-          Enrollment.factory(student, project).changeStatus(EnrollmentStatus.APPROVED);
+          Enrollment.factory(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
 
       for (EnrollmentStatus status :
           new EnrollmentStatus[] {
@@ -90,7 +90,7 @@ class EnrollmentTest {
     @DisplayName("Should fail when transitioning from closed state")
     void shouldFailFromClosed() {
       Enrollment completed =
-          Enrollment.factory(student, project)
+          Enrollment.factory(formerStudent, project)
               .changeStatus(EnrollmentStatus.APPROVED)
               .changeStatus(EnrollmentStatus.COMPLETED);
 
@@ -101,7 +101,7 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should fail for invalid status transitions")
     void shouldFailInvalidTransitions() {
-      Enrollment pending = Enrollment.factory(student, project);
+      Enrollment pending = Enrollment.factory(formerStudent, project);
 
       Assertions.assertThrows(
           BusinessRuleException.class, () -> pending.changeStatus(EnrollmentStatus.COMPLETED));
@@ -115,3 +115,4 @@ class EnrollmentTest {
     }
   }
 }
+

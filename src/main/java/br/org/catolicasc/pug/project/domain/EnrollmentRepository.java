@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.domain;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import java.util.Optional;
 import java.util.UUID;
@@ -8,9 +8,9 @@ import java.util.UUID;
 /**
  * Domain repository interface for managing {@link Enrollment} aggregate roots.
  *
- * <p>This interface defines the contract for persisting, retrieving, updating, and deleting student
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting formerStudent
  * enrollments in projects. It utilizes a composite natural key represented by {@link
- * EnrollmentIdentifier} (Project ID + Student ID).
+ * EnrollmentIdentifier} (Project ID + FormerStudent ID).
  */
 public interface EnrollmentRepository {
 
@@ -21,7 +21,7 @@ public interface EnrollmentRepository {
    * implementation should simply return {@code false} without raising an exception.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return {@code true} if the enrollment was successfully deleted, {@code false} if it was not
    *     found
    */
@@ -34,7 +34,7 @@ public interface EnrollmentRepository {
    * EnrollmentIdentifier}.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return {@code true} if an enrollment with the given identifier exists, {@code false} otherwise
    */
   boolean existsById(EnrollmentIdentifier identifier);
@@ -53,14 +53,14 @@ public interface EnrollmentRepository {
   boolean existsByProjectId(UUID projectId);
 
   /**
-   * Checks whether any {@link Enrollment} associated with the specified student identifier exists
+   * Checks whether any {@link Enrollment} associated with the specified formerStudent identifier exists
    * in the repository.
    *
-   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link Student}
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link FormerStudent}
    * cannot be deleted while they still have project enrollments.
    *
-   * @param studentId the unique identifier (UUID) of the student account
-   * @return {@code true} if at least one enrollment is linked to the student, {@code false}
+   * @param studentId the unique identifier (UUID) of the formerStudent account
+   * @return {@code true} if at least one enrollment is linked to the formerStudent, {@code false}
    *     otherwise
    */
   boolean existsByStudentId(UUID studentId);
@@ -74,7 +74,7 @@ public interface EnrollmentRepository {
    * Enrollment#hasFieldErrors()}) if the stored data violates current domain rules.
    *
    * @param identifier the composite {@link EnrollmentIdentifier} uniquely identifying the
-   *     enrollment (project + student)
+   *     enrollment (project + formerStudent)
    * @return an {@link Optional} containing the found {@link Enrollment}, or {@link
    *     Optional#empty()} if not found
    */
@@ -103,3 +103,4 @@ public interface EnrollmentRepository {
    */
   void update(Enrollment entity);
 }
+

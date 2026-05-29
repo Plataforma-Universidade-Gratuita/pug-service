@@ -23,10 +23,10 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * JPA entity representing a Student's Enrollment in a Project within the persistence layer.
+ * JPA entity representing a FormerStudent's Enrollment in a Project within the persistence layer.
  *
  * <p>This class is the database-mapped counterpart to the {@link Enrollment} domain aggregate.
- * Because an enrollment is uniquely identified by the combination of a student and a project, this
+ * Because an enrollment is uniquely identified by the combination of a formerStudent and a project, this
  * entity utilizes a composite primary key ({@link EnrollmentsId}).
  */
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
@@ -46,7 +46,7 @@ import lombok.ToString;
     })
 public class EnrollmentEntity {
 
-  /** Embeddable composite primary key mapping the intersection of a Project and a Student. */
+  /** Embeddable composite primary key mapping the intersection of a Project and a FormerStudent. */
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
   @Embeddable
   @Getter
@@ -91,3 +91,4 @@ public class EnrollmentEntity {
   @Column(name = "closing_status_at")
   private OffsetDateTime closingStatusAt;
 }
+

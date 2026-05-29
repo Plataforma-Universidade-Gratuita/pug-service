@@ -40,7 +40,7 @@ class AccountsReadServiceImplTest {
             id,
             UuidCreator.getTimeOrderedEpoch(),
             "test@pug.com",
-            AccountType.STUDENT,
+            AccountType.FORMER_STUDENT,
             OffsetDateTime.now(),
             OffsetDateTime.now(),
             true);
@@ -68,7 +68,7 @@ class AccountsReadServiceImplTest {
                     UuidCreator.getTimeOrderedEpoch(),
                     UuidCreator.getTimeOrderedEpoch(),
                     "a@a.com",
-                    AccountType.STUDENT,
+                    AccountType.FORMER_STUDENT,
                     null,
                     null,
                     true)));
@@ -92,7 +92,7 @@ class AccountsReadServiceImplTest {
                     id,
                     UuidCreator.getTimeOrderedEpoch(),
                     "a@a.com",
-                    AccountType.STUDENT,
+                    AccountType.FORMER_STUDENT,
                     null,
                     null,
                     true)));
@@ -105,7 +105,7 @@ class AccountsReadServiceImplTest {
   void search() {
     var criteria =
         new AccountComplexSearchCriteria(
-            "Ana", null, null, List.of(AccountType.STUDENT), null, null, true);
+            "Ana", null, null, List.of(AccountType.FORMER_STUDENT), null, null, true);
     var pageResult =
         new PageResult<>(
             List.of(
@@ -114,7 +114,7 @@ class AccountsReadServiceImplTest {
                     UuidCreator.getTimeOrderedEpoch(),
                     "Ana Silva",
                     "ana@pug.com",
-                    AccountType.STUDENT,
+                    AccountType.FORMER_STUDENT,
                     OffsetDateTime.now(),
                     OffsetDateTime.now(),
                     true)),
@@ -128,3 +128,4 @@ class AccountsReadServiceImplTest {
     assertThat(service.search(new PageQuery(0, 10), criteria)).isEqualTo(pageResult);
   }
 }
+

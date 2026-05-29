@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.domain;
 
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
@@ -21,7 +21,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Immutable Domain Entity representing a Student's Attendance record for a Project.
+ * Immutable Domain Entity representing a FormerStudent's Attendance record for a Project.
  *
  * <p>This class acts as an aggregate containing the unique identifier, the linked enrollment, the
  * QR validation data, and the staff validation metadata. It extends {@link DomainError} to
@@ -37,7 +37,7 @@ public class Attendance extends DomainError {
   /** The unique identifier for the attendance record (UUIDv7). */
   UUID id;
 
-  /** The composite identifier linking this attendance to a specific student and project. */
+  /** The composite identifier linking this attendance to a specific formerStudent and project. */
   EnrollmentIdentifier enrollmentIdentifier;
 
   /** The temporal data and unique QR validation hash recorded. */
@@ -55,14 +55,14 @@ public class Attendance extends DomainError {
    * <p>Initializes the attendance in a {@code WAITING} state with empty validation info.
    *
    * @param project the associated project
-   * @param student the associated student
-   * @param duration the duration of time the student spent on the project
+   * @param formerStudent the associated formerStudent
+   * @param duration the duration of time the formerStudent spent on the project
    * @param qrHash the unique hash of the QR code being registered
    * @return a newly created and self-validated {@link Attendance} instance
    */
   public static Attendance factory(
-      Project project, Student student, BigDecimal duration, String qrHash) {
-    UUID studentId = (student != null) ? student.getAccountId() : null;
+      Project project, FormerStudent formerStudent, BigDecimal duration, String qrHash) {
+    UUID studentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
     UUID projectId = (project != null) ? project.getId() : null;
 
     Attendance att =
@@ -131,3 +131,4 @@ public class Attendance extends DomainError {
     return enrollmentIdentifier != null && enrollmentIdentifier.hasFieldErrors();
   }
 }
+

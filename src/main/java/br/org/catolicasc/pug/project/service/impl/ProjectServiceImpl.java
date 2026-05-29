@@ -119,7 +119,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Override
   public Project save(ProjectCreateCommand cmd) {
     LOG.debugf("Attempting to create Project: %s", cmd.name());
-    authService.requireCurrentAccountNotOfType(AccountType.STUDENT);
+    authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
     entityService.getById(cmd.entityId());
 
     if (repo.existsByNameAndEntityId(cmd.name(), cmd.entityId())) {
@@ -201,3 +201,4 @@ public class ProjectServiceImpl implements ProjectService {
     return getById(id);
   }
 }
+

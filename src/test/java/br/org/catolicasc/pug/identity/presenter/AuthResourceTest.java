@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
@@ -30,7 +31,7 @@ class AuthResourceTest {
   void loginSuccess() {
     var req = aLoginRequest().withEmail("test@pug.com").withPassword("password").build();
     TokenResponse token =
-        new TokenResponse("mocked-token", "mocked-refresh", null, AccountType.STUDENT, 900, 604800);
+        new TokenResponse("mocked-token", "mocked-refresh", null, AccountType.FORMER_STUDENT, 900, 604800);
 
     when(authService.login(req)).thenReturn(token);
 
@@ -62,12 +63,59 @@ class AuthResourceTest {
   }
 
   @Test
+  @TestSecurity(
+      user = "former.student@pug.com",
+      roles = {"FORMER_STUDENT"})
+  @DisplayName("POST /v1/auth/wire-credentials - Success")
+  void wireCredentialsSuccess() {
+    var req = new CredentialsRequest("former.student@pug.com", "StrongPass1!");
+    doNothing().when(authService).wireCredentials(req);
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/v1/auth/wire-credentials")
+        .then()
+        .statusCode(204);
+  }
+
+  @Test
+  @DisplayName("POST /v1/auth/wire-credentials - Unauthorized without token")
+  void wireCredentialsUnauthorized() {
+    var req = new CredentialsRequest("former.student@pug.com", "StrongPass1!");
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(req)
+        .when()
+        .post("/v1/auth/wire-credentials")
+        .then()
+        .statusCode(401);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "former.student@pug.com",
+      roles = {"FORMER_STUDENT"})
+  @DisplayName("POST /v1/auth/wire-credentials - Validation error with short password")
+  void wireCredentialsValidationError() {
+    given()
+        .contentType(ContentType.JSON)
+        .body("{\"email\":\"former.student@pug.com\",\"password\":\"short\"}")
+        .when()
+        .post("/v1/auth/wire-credentials")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
   @DisplayName("POST /v1/auth/refresh - Success")
   void refreshSuccess() {
     var req = new RefreshRequest("valid-refresh-token");
     TokenResponse token =
         new TokenResponse(
-            "new-access", "valid-refresh-token", null, AccountType.STUDENT, 900, 604800);
+            "new-access", "valid-refresh-token", null, AccountType.FORMER_STUDENT, 900, 604800);
 
     when(authService.refresh(req)).thenReturn(token);
 
@@ -142,3 +190,4 @@ class AuthResourceTest {
     given().when().post("/v1/auth/logout-all").then().statusCode(401);
   }
 }
+

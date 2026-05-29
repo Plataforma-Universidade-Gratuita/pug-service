@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.Student;
+import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -40,15 +40,15 @@ class EnrollmentServiceImplTest {
 
   @InjectMock AuthService authService;
 
-  private Student student;
+  private FormerStudent formerStudent;
   private Project project;
 
   @BeforeEach
   void setup() {
     School school = factory.createSchool();
     Course course = factory.createCourse(school);
-    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.STUDENT);
-    student = factory.createStudent(studentAcc, course);
+    Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    formerStudent = factory.createStudent(studentAcc, course);
 
     Entity entity = factory.createEntity(factory.getAnyCity());
     Account creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
@@ -84,7 +84,7 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should accept enrollment")
   void acceptSuccess() {
-    Enrollment enr = factory.createEnrollment(student, project);
+    Enrollment enr = factory.createEnrollment(formerStudent, project);
     Enrollment accepted = service.accept(enr.getIdentifier());
     assertThat(accepted.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
   }
@@ -94,7 +94,7 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should cancel approved enrollment")
   void cancelSuccess() {
     Enrollment enr =
-        factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
+        factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
     em.flush();
 
@@ -107,7 +107,7 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should complete approved enrollment")
   void completeSuccess() {
     Enrollment enr =
-        factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
+        factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
     em.flush();
 
@@ -120,7 +120,7 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should exit approved enrollment")
   void exitSuccess() {
     Enrollment enr =
-        factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
+        factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
     em.flush();
 
@@ -133,7 +133,7 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should remove approved enrollment")
   void removeSuccess() {
     Enrollment enr =
-        factory.createEnrollment(student, project).changeStatus(EnrollmentStatus.APPROVED);
+        factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
     em.flush();
 
@@ -145,7 +145,7 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should reject pending enrollment")
   void rejectSuccess() {
-    Enrollment enr = factory.createEnrollment(student, project);
+    Enrollment enr = factory.createEnrollment(formerStudent, project);
     Enrollment rejected = service.reject(enr.getIdentifier());
     assertThat(rejected.getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
   }
@@ -157,7 +157,7 @@ class EnrollmentServiceImplTest {
     // Tentando rejeitar algo já completado
     Enrollment enr =
         factory
-            .createEnrollment(student, project)
+            .createEnrollment(formerStudent, project)
             .changeStatus(EnrollmentStatus.APPROVED)
             .changeStatus(EnrollmentStatus.COMPLETED);
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
@@ -170,11 +170,11 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should delete enrollment successfully")
   void deleteSuccess() {
-    factory.createEnrollment(student, project);
+    factory.createEnrollment(formerStudent, project);
     EnrollmentIdentifier id =
         EnrollmentIdentifier.builder()
             .projectId(project.getId())
-            .studentId(student.getAccountId())
+            .studentId(formerStudent.getAccountId())
             .build();
     assertThat(service.delete(id)).isTrue();
   }
@@ -191,8 +191,9 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should check existence")
   void exists() {
-    factory.createEnrollment(student, project);
-    assertThat(service.existsAnyByStudentId(student.getAccountId())).isTrue();
+    factory.createEnrollment(formerStudent, project);
+    assertThat(service.existsAnyByStudentId(formerStudent.getAccountId())).isTrue();
     assertThat(service.existsAnyByProjectId(project.getId())).isTrue();
   }
 }
+

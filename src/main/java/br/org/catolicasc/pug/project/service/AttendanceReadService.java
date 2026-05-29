@@ -24,10 +24,10 @@ public interface AttendanceReadService {
   AttendanceView getViewById(UUID id);
 
   /**
-   * Retrieves a list of attendance records associated with a specific project and student.
+   * Retrieves a list of attendance records associated with a specific project and formerStudent.
    *
    * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the student account
+   * @param studentId the unique identifier of the formerStudent account
    * @return a {@link List} of matching {@link AttendanceView} entries
    */
   List<AttendanceView> listByEnrollmentId(UUID projectId, UUID studentId);
@@ -41,9 +41,9 @@ public interface AttendanceReadService {
   List<AttendanceView> listByProjectId(UUID projectId);
 
   /**
-   * Retrieves a list of attendance records for a specific student.
+   * Retrieves a list of attendance records for a specific formerStudent.
    *
-   * @param studentId the unique identifier (UUID) of the student account
+   * @param studentId the unique identifier (UUID) of the formerStudent account
    * @return a {@link List} of matching {@link AttendanceView} entries
    */
   List<AttendanceView> listByStudentId(UUID studentId);
@@ -55,3 +55,4 @@ public interface AttendanceReadService {
    */
   List<AttendanceView> listViews();
 }
+
