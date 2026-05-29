@@ -1,0 +1,182 @@
+package br.org.catolicasc.pug.academic.presenter.mappers;
+
+import br.org.catolicasc.pug.academic.infra.read.dtos.CourseComplexSearchView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearchView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolComplexSearchView;
+import br.org.catolicasc.pug.academic.presenter.dtos.CounterpartHoursResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.PeriodResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolComplexSearchResponse;
+import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.FormerStudentUpdateCommand;
+import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.mappers.AccountPresenter;
+import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.i18n.I18n;
+import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
+import br.org.catolicasc.pug.shared.presenter.dtos.CampusResponse;
+import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
+import br.org.catolicasc.pug.shared.utils.StringUtils;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Locale;
+
+/**
+ * Stateless mapper responsible for translating former-student requests and query projections.
+ */
+public final class FormerStudentPresenter {
+
+  private FormerStudentPresenter() {}
+
+  public static FormerStudentCreateCommand toCommand(FormerStudentCreateRequest request) {
+    if (request == null) {
+      return null;
+    }
+
+    UserCreateCommand userCommand = new UserCreateCommand(request.cpf(), request.name());
+    AccountCreateCommand accountCommand =
+        new AccountCreateCommand(request.email(), AccountType.FORMER_STUDENT, null, userCommand);
+
+    return new FormerStudentCreateCommand(
+        accountCommand,
+        request.academicRegistration(),
+        request.campus(),
+        request.courseId(),
+        request.requiredHours(),
+        request.startDate(),
+        request.dueDate());
+  }
+
+  public static FormerStudentUpdateCommand toCommand(FormerStudentUpdateRequest request) {
+    if (request == null) {
+      return null;
+    }
+
+    UserUpdateCommand userCommand = new UserUpdateCommand(request.name());
+    AccountUpdateCommand accountCommand =
+        new AccountUpdateCommand(request.email(), null, null, userCommand);
+
+    return new FormerStudentUpdateCommand(
+        accountCommand,
+        request.academicRegistration(),
+        request.campus(),
+        request.courseId(),
+        request.requiredHours(),
+        request.startDate(),
+        request.dueDate());
+  }
+
+  public static FormerStudentResponse toResponse(
+      FormerStudentView view, Locale locale, I18n i18n) {
+    if (view == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    return new FormerStudentResponse(
+        view.accountId(),
+        view.academicRegistration(),
+        SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n),
+        view.courseId(),
+        createCounterpartHoursResponse(view.requiredHours(), view.completedHours(), view.concluded()),
+        createPeriodResponse(view.startDate(), view.dueDate(), locale, i18n),
+        SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale));
+  }
+
+  public static FormerStudentComplexSearchResponse toComplexSearchResponse(
+      FormerStudentComplexSearchView view, Locale locale, I18n i18n) {
+    if (view == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    AccountComplexSearchResponse account =
+        AccountPresenter.toComplexSearchResponse(view.account(), locale, i18n);
+    CampusResponse campus = SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n);
+    CounterpartHoursResponse counterpartHours =
+        createCounterpartHoursResponse(view.requiredHours(), view.completedHours(), view.concluded());
+    PeriodResponse period = createPeriodResponse(view.startDate(), view.dueDate(), locale, i18n);
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale);
+
+    return new FormerStudentComplexSearchResponse(
+        account,
+        view.academicRegistration(),
+        campus,
+        counterpartHours,
+        period,
+        auditInfo,
+        toCourseComplexSearchResponse(view.course()));
+  }
+
+  private static CounterpartHoursResponse createCounterpartHoursResponse(
+      BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
+    BigDecimal safeRequired = requiredHours == null ? BigDecimal.ZERO : requiredHours;
+    BigDecimal safeCompleted = completedHours == null ? BigDecimal.ZERO : completedHours;
+    boolean safeConcluded = Boolean.TRUE.equals(concluded);
+    BigDecimal missingHours =
+        safeConcluded ? BigDecimal.ZERO : safeRequired.subtract(safeCompleted).max(BigDecimal.ZERO);
+    BigDecimal progress =
+        safeRequired.signum() == 0
+            ? BigDecimal.ZERO
+            : safeCompleted
+                .multiply(BigDecimal.valueOf(100))
+                .divide(safeRequired, 2, RoundingMode.HALF_UP)
+                .max(BigDecimal.ZERO);
+
+    return new CounterpartHoursResponse(
+        safeRequired, safeCompleted, missingHours, progress.min(BigDecimal.valueOf(100)), safeConcluded);
+  }
+
+  private static PeriodResponse createPeriodResponse(
+      LocalDate startDate, LocalDate dueDate, Locale locale, I18n i18n) {
+    String startDateFormatted = StringUtils.toStringFormatted(startDate, locale);
+    String dueDateFormatted = StringUtils.toStringFormatted(dueDate, locale);
+    long remainingDays = dueDate == null ? 0 : ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+    String remainingDaysFormatted = formatRemainingDays(dueDate, locale, i18n);
+
+    return new PeriodResponse(
+        startDate, startDateFormatted, dueDate, dueDateFormatted, remainingDays, remainingDaysFormatted);
+  }
+
+  private static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
+    if (dueDate == null) {
+      return "";
+    }
+
+    long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+    if (remainingDays < 0) {
+      return i18n.translation("academic.formerStudent.days.overdue", locale, Math.abs(remainingDays));
+    }
+    if (remainingDays == 0) {
+      return i18n.translation("academic.formerStudent.days.today", locale);
+    }
+    if (remainingDays == 1) {
+      return i18n.translation("academic.formerStudent.days.tomorrow", locale);
+    }
+    return i18n.translation("academic.formerStudent.days.remaining", locale, remainingDays);
+  }
+
+  private static CourseComplexSearchResponse toCourseComplexSearchResponse(CourseComplexSearchView view) {
+    if (view == null) {
+      return null;
+    }
+    return new CourseComplexSearchResponse(view.id(), view.name(), toSchoolComplexSearchResponse(view.school()));
+  }
+
+  private static SchoolComplexSearchResponse toSchoolComplexSearchResponse(SchoolComplexSearchView view) {
+    if (view == null) {
+      return null;
+    }
+    return new SchoolComplexSearchResponse(view.id(), view.name());
+  }
+}
