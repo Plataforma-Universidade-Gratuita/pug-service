@@ -149,7 +149,16 @@ class StaffPresenterTest {
                   OffsetDateTime.now(),
                   OffsetDateTime.now(),
                   true),
-              new EntityComplexSearchView(entityId, "Entity A"));
+              new EntityComplexSearchView(
+                  entityId,
+                  TestBrazilianIdentifierGenerator.generateValidCnpj(),
+                  "Entity A",
+                  "Rua A, 123",
+                  UuidCreator.getTimeOrderedEpoch(),
+                  "Blumenau",
+                  "1234567",
+                  OffsetDateTime.now(),
+                  OffsetDateTime.now()));
 
       StaffComplexSearchResponse response =
           StaffPresenter.toComplexSearchResponse(view, Locale.US, i18n);

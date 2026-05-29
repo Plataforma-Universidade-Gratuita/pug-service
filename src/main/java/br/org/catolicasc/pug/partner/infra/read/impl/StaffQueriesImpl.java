@@ -65,13 +65,21 @@ public class StaffQueriesImpl implements StaffQueries {
         ),
         new br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView(
           e.id,
-          e.name
+          e.cnpj,
+          e.name,
+          e.address,
+          c.id,
+          c.name,
+          c.ibgeCode,
+          e.createdAt,
+          e.updatedAt
         )
       )
       from StaffEntity s
         join AccountEntity acc on acc.id = s.accountId
         join UserEntity u on u.id = acc.userId
         join EntityEntity e on e.id = s.entityId
+        join CityEntity c on c.id = e.cityId
       """;
 
   private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";

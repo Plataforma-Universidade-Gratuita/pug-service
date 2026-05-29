@@ -4,7 +4,7 @@ import br.org.catolicasc.pug.geo.service.CitiesReadService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.EntityRepository;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
-import br.org.catolicasc.pug.partner.service.EntityService;
+import br.org.catolicasc.pug.partner.service.EntitiesService;
 import br.org.catolicasc.pug.partner.service.StaffService;
 import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
@@ -20,26 +20,21 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link EntityService} command interface.
+ * Implementation of the {@link EntitiesService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
- * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link CitiesReadService}), and manages the lifecycle cascading to {@link StaffService}
- * during deletion operations.
+ * manages transaction boundaries, enforces cross-domain constraints, and manages lifecycle
+ * cascading to {@link StaffService} during deletion operations.
  */
 @ApplicationScoped
-public class EntityServiceImpl implements EntityService {
+public class EntitiesServiceImpl implements EntitiesService {
 
-  private static final Logger LOG = Logger.getLogger(EntityServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(EntitiesServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
-
   @Inject EntityRepository repo;
-
   @Inject CitiesReadService cityReadService;
-
   @Inject StaffService staffService;
-
   @Inject ProjectService projectService;
 
   /** {@inheritDoc} */
@@ -77,12 +72,6 @@ public class EntityServiceImpl implements EntityService {
     return repo.existsByCityId(cityId);
   }
 
-  /**
-   * Checks if a Partner Entity with the given CNPJ already exists.
-   *
-   * @param cnpj the validated CNPJ to check for existence
-   * @return {@code true} if an entity with the given CNPJ exists, {@code false} otherwise
-   */
   private boolean existsByCnpj(Cnpj cnpj) {
     if (cnpj == null) {
       return false;

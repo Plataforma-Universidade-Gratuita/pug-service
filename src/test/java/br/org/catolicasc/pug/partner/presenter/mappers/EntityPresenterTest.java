@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.partner.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.geo.presenter.dtos.CityResponse;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
@@ -125,9 +126,45 @@ class EntityPresenterTest {
     @DisplayName("Should map EntityComplexSearchView to EntityComplexSearchResponse correctly")
     void toComplexSearchResponseSuccess() {
       UUID id = UuidCreator.getTimeOrderedEpoch();
-      EntityComplexSearchView view = new EntityComplexSearchView(id, "Acme Corp");
+      UUID cityId = UuidCreator.getTimeOrderedEpoch();
+      OffsetDateTime now = OffsetDateTime.now();
+      String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
+      EntityComplexSearchView view =
+          new EntityComplexSearchView(
+              id, cnpj, "Acme Corp", "Rua A, 123", cityId, "Blumenau", "1234567", now, now);
 
-      EntityComplexSearchResponse response = EntityPresenter.toComplexSearchResponse(view);
+      EntityComplexSearchResponse response =
+          EntityPresenter.toComplexSearchResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(id);
+      assertThat(response.cnpj()).isEqualTo(cnpj);
+      assertThat(response.cnpjFormatted()).isNotBlank();
+      assertThat(response.name()).isEqualTo("Acme Corp");
+      assertThat(response.address()).isEqualTo("Rua A, 123");
+      assertThat(response.city())
+          .isEqualTo(new CityResponse(cityId, "Blumenau", "1234567"));
+      assertThat(response.auditInfo()).isNotNull();
+      assertThat(response.auditInfo().createdAt()).isEqualTo(now);
+    }
+
+    @Test
+    @DisplayName("Should map EntityComplexSearchView to EntitySimpleComplexSearchResponse correctly")
+    void toSimpleComplexSearchResponseSuccess() {
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      EntityComplexSearchView view =
+          new EntityComplexSearchView(
+              id,
+              TestBrazilianIdentifierGenerator.generateValidCnpj(),
+              "Acme Corp",
+              "Rua A, 123",
+              UuidCreator.getTimeOrderedEpoch(),
+              "Blumenau",
+              "1234567",
+              OffsetDateTime.now(),
+              OffsetDateTime.now());
+
+      var response = EntityPresenter.toSimpleComplexSearchResponse(view);
 
       assertThat(response).isNotNull();
       assertThat(response.id()).isEqualTo(id);

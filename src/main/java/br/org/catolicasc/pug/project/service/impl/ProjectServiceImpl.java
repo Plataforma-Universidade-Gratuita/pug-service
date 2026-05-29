@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.partner.service.EntityService;
+import br.org.catolicasc.pug.partner.service.EntitiesService;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectRepository;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
@@ -38,7 +38,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject ProjectRepository repo;
   @Inject ProjectSchoolService associationService;
   @Inject AuthService authService;
-  @Inject EntityService entityService;
+  @Inject EntitiesService entityService;
   @Inject EnrollmentService enrollmentService;
 
   /** {@inheritDoc} */

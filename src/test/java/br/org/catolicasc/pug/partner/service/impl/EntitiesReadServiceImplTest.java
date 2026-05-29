@@ -5,12 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
-import br.org.catolicasc.pug.geo.service.CitiesReadService;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
-import br.org.catolicasc.pug.partner.infra.read.EntityQueries;
+import br.org.catolicasc.pug.partner.infra.read.EntitiesQueries;
+import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
+import br.org.catolicasc.pug.partner.service.dtos.EntityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -23,12 +25,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("EntityReadServiceImpl Coverage")
-class EntityReadServiceImplTest {
+@DisplayName("EntitiesReadServiceImpl Coverage")
+class EntitiesReadServiceImplTest {
 
-  @Inject EntityReadServiceImpl service;
-  @InjectMock EntityQueries queries;
-  @InjectMock CitiesReadService cityReadService;
+  @Inject EntitiesReadServiceImpl service;
+  @InjectMock EntitiesQueries queries;
 
   @Test
   @DisplayName("Should return entity view by ID")
@@ -59,49 +60,6 @@ class EntityReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list used cities via cityReadService")
-  void listCityViews() {
-    UUID cityId = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listAllCityIds()).thenReturn(List.of(cityId));
-    when(cityReadService.listViewsByIds(List.of(cityId)))
-        .thenReturn(List.of(new CityView(cityId, "Name", "123")));
-
-    assertThat(service.listCityViews()).hasSize(1);
-  }
-
-  @Test
-  @DisplayName("Should normalize search query and delegate")
-  void search() {
-    when(queries.searchByName("weg")).thenReturn(List.of());
-    assertThat(service.searchViews("  WEG  ")).isEmpty();
-  }
-
-  @Test
-  @DisplayName("Should retrieve EntityView by CNPJ successfully")
-  void getViewByCnpjSuccess() {
-    String cnpj = TestBrazilianIdentifierGenerator.generateValidCnpj();
-    EntityView view =
-        new EntityView(
-            UuidCreator.getTimeOrderedEpoch(),
-            cnpj,
-            "WEG S.A.",
-            "Addr",
-            UuidCreator.getTimeOrderedEpoch(),
-            OffsetDateTime.now(),
-            OffsetDateTime.now());
-    when(queries.findOptionalByCnpj(cnpj)).thenReturn(Optional.of(view));
-
-    assertThat(service.getViewByCnpj(cnpj)).isEqualTo(view);
-  }
-
-  @Test
-  @DisplayName("Should throw ResourceNotFound when CNPJ not found")
-  void getViewByCnpjNotFound() {
-    when(queries.findOptionalByCnpj("00000000000000")).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewByCnpj("00000000000000"));
-  }
-
-  @Test
   @DisplayName("Should list all entity views")
   void listViews() {
     EntityView view =
@@ -121,28 +79,52 @@ class EntityReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list entity views by city ID")
-  void listViewsByCityId() {
-    UUID cityId = UuidCreator.getTimeOrderedEpoch();
+  @DisplayName("Should list entity views by IDs")
+  void listViewsByIds() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     EntityView view =
         new EntityView(
+            id,
+            TestBrazilianIdentifierGenerator.generateValidCnpj(),
+            "WEG S.A.",
+            "Addr",
+            UuidCreator.getTimeOrderedEpoch(),
+            OffsetDateTime.now(),
+            OffsetDateTime.now());
+    when(queries.listAllByIds(List.of(id))).thenReturn(List.of(view));
+
+    List<EntityView> result = service.listViewsByIds(List.of(id));
+    assertThat(result).hasSize(1);
+    assertThat(result.getFirst().id()).isEqualTo(id);
+  }
+
+  @Test
+  @DisplayName("Should return empty list for empty IDs")
+  void listViewsByIdsEmpty() {
+    assertThat(service.listViewsByIds(List.of())).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should delegate complex search")
+  void search() {
+    EntityComplexSearchView view =
+        new EntityComplexSearchView(
             UuidCreator.getTimeOrderedEpoch(),
             TestBrazilianIdentifierGenerator.generateValidCnpj(),
             "WEG S.A.",
             "Addr",
-            cityId,
+            UuidCreator.getTimeOrderedEpoch(),
+            "Blumenau",
+            "1234567",
             OffsetDateTime.now(),
             OffsetDateTime.now());
-    when(queries.listAllByCityId(cityId)).thenReturn(List.of(view));
+    PageResult<EntityComplexSearchView> result = new PageResult<>(List.of(view), 0, 25, 1, 1);
+    PageQuery pageQuery = new PageQuery(0, 25);
+    EntityComplexSearchCriteria criteria =
+        new EntityComplexSearchCriteria("weg", null, null, null, null, null);
 
-    List<EntityView> result = service.listViewsByCityId(cityId);
-    assertThat(result).hasSize(1);
-    assertThat(result.getFirst().cityId()).isEqualTo(cityId);
-  }
+    when(queries.search(pageQuery, criteria)).thenReturn(result);
 
-  @Test
-  @DisplayName("Should return empty list for null city ID")
-  void listViewsByCityIdNull() {
-    assertThat(service.listViewsByCityId(null)).isEmpty();
+    assertThat(service.search(pageQuery, criteria)).isEqualTo(result);
   }
 }

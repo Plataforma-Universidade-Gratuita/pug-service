@@ -6,7 +6,7 @@ import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.partner.domain.Staff;
 import br.org.catolicasc.pug.partner.domain.StaffRepository;
-import br.org.catolicasc.pug.partner.service.EntityService;
+import br.org.catolicasc.pug.partner.service.EntitiesService;
 import br.org.catolicasc.pug.partner.service.StaffService;
 import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
@@ -33,7 +33,7 @@ public class StaffServiceImpl implements StaffService {
   @Inject AuditPublisher auditPublisher;
   @Inject StaffRepository repo;
   @Inject AccountsService accountService;
-  @Inject EntityService entityService;
+  @Inject EntitiesService entityService;
   @Inject ProjectService projectService;
   @Inject AttendanceService attendanceService;
 

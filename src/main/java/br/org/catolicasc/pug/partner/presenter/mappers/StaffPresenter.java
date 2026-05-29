@@ -56,7 +56,7 @@ public final class StaffPresenter {
     AccountComplexSearchResponse account =
         AccountPresenter.toComplexSearchResponse(view.account(), locale, i18n);
     return new StaffComplexSearchResponse(
-        account, EntityPresenter.toComplexSearchResponse(view.entity()));
+        account, EntityPresenter.toSimpleComplexSearchResponse(view.entity()));
   }
 
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {

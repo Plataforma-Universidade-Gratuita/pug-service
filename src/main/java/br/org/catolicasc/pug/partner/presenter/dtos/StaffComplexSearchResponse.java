@@ -8,4 +8,4 @@ package br.org.catolicasc.pug.partner.presenter.dtos;
  */
 public record StaffComplexSearchResponse(
     br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse account,
-    EntityComplexSearchResponse entity) {}
+    EntitySimpleComplexSearchResponse entity) {}

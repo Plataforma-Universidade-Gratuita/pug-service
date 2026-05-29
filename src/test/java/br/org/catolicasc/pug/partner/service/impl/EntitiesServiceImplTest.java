@@ -28,10 +28,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("EntityServiceImpl Integration Tests")
-class EntityServiceImplTest {
+@DisplayName("EntitiesServiceImpl Integration Tests")
+class EntitiesServiceImplTest {
 
-  @Inject EntityServiceImpl service;
+  @Inject EntitiesServiceImpl service;
   @Inject TestDataFactory factory;
   @Inject EntityManager em;
 
