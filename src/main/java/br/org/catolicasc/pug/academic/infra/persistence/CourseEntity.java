@@ -37,9 +37,7 @@ import lombok.experimental.SuperBuilder;
     indexes = {@Index(name = "idx_courses_school", columnList = "school_id")})
 public class CourseEntity extends BaseAuditedEntity {
 
-  /**
-   * The name of the academic course.
-   */
+  /** The name of the academic course. */
   @Column(name = "name", nullable = false, length = 120, unique = true)
   private String name;
 

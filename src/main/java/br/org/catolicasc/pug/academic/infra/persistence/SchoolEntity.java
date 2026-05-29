@@ -40,9 +40,7 @@ import lombok.experimental.SuperBuilder;
     })
 public class SchoolEntity extends BaseAuditedEntity {
 
-  /**
-   * The name of the academic school.
-   */
+  /** The name of the academic school. */
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 }

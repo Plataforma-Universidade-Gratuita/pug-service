@@ -58,9 +58,7 @@ public class UserEntity extends BaseAuditedEntity {
   @Column(name = "cpf", nullable = false, length = 11)
   private String cpf;
 
-  /**
-   * The full name of the user.
-   */
+  /** The full name of the user. */
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 }

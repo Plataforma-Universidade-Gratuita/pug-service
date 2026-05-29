@@ -72,8 +72,8 @@ public class AdminReadServiceImpl implements AdminReadService {
    * {@inheritDoc}
    *
    * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
-   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database filtering
-   * rules.
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database
+   * filtering rules.
    */
   @Override
   public List<AdminView> search(String query) {

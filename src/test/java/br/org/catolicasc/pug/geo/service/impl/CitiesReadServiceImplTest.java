@@ -5,9 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.geo.infra.read.CityQueries;
+import br.org.catolicasc.pug.geo.infra.read.CitiesQueries;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.geo.service.dtos.CityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -17,15 +20,13 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 @QuarkusTest
-@DisplayName("CityReadServiceImpl Coverage")
-class CityReadServiceImplTest {
+@DisplayName("CitiesReadServiceImpl Coverage")
+class CitiesReadServiceImplTest {
 
-  @Inject CityReadServiceImpl service;
-  @InjectMock CityQueries queries;
+  @Inject CitiesReadServiceImpl service;
+  @InjectMock CitiesQueries queries;
 
   @Test
   @DisplayName("Should return city view by ID")
@@ -47,23 +48,6 @@ class CityReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return city view by IBGE code")
-  void getViewByIbgeSuccess() {
-    String ibge = "4209106";
-    CityView view = new CityView(UuidCreator.getTimeOrderedEpoch(), "Joinville", ibge);
-    when(queries.findOptionalByIbgeCode(ibge)).thenReturn(Optional.of(view));
-
-    assertThat(service.getViewByIbgeCode(ibge)).isEqualTo(view);
-  }
-
-  @ParameterizedTest
-  @NullAndEmptySource
-  @DisplayName("Should throw ResourceNotFound for invalid IBGE code")
-  void getViewByIbgeInvalid(String ibge) {
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewByIbgeCode(ibge));
-  }
-
-  @Test
   @DisplayName("Should list all city views")
   void listViews() {
     when(queries.listAllCities())
@@ -73,10 +57,20 @@ class CityReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should search cities by normalized query")
+  @DisplayName("Should execute paginated city search")
   void search() {
-    when(queries.searchByName("joinville")).thenReturn(List.of());
-    assertThat(service.search("  Joinville  ")).isEmpty();
+    PageQuery pageQuery = new PageQuery(0, 10);
+    PageResult<CityView> pageResult =
+        new PageResult<>(
+            List.of(new CityView(UuidCreator.getTimeOrderedEpoch(), "Joinville", "4209106")),
+            0,
+            10,
+            1,
+            1);
+    when(queries.search(any(), any())).thenReturn(pageResult);
+
+    assertThat(service.search(pageQuery, new CityComplexSearchCriteria("Joinville")))
+        .isEqualTo(pageResult);
   }
 
   @Test

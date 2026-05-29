@@ -92,10 +92,10 @@ public class AdminQueriesImpl implements AdminQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>This implementation preserves the relevance order returned by the name-based search in {@link
-   * UserEntity}. For each user found, the function loads the associated pairs ({@link AdminEntity},
-   * {@link AccountEntity}) and projects them into {@link AdminView} using the mapper {@link
-   * AdminMapper#toView(AdminEntity, AccountEntity)}.
+   * <p>This implementation preserves the relevance order returned by the name-based search in
+   * {@link UserEntity}. For each user found, the function loads the associated pairs ({@link
+   * AdminEntity}, {@link AccountEntity}) and projects them into {@link AdminView} using the mapper
+   * {@link AdminMapper#toView(AdminEntity, AccountEntity)}.
    */
   @Override
   public List<AdminView> searchByName(String key) {

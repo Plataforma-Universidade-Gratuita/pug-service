@@ -57,9 +57,7 @@ import lombok.experimental.SuperBuilder;
     })
 public class ProjectEntity extends BaseAuditedEntity {
 
-  /**
-   * The title or name of the project.
-   */
+  /** The title or name of the project. */
   @NotBlank
   @Size(max = 150)
   @Column(name = "name", nullable = false, length = 150)

@@ -46,8 +46,7 @@ public interface UserQueries {
    * Executes a robust name-based search against user names.
    *
    * <p>This method typically leverages underlying indexing engines (e.g., database-backed
-   * filtering) to provide flexible matching, accent-insensitivity, and autocomplete
-   * capabilities.
+   * filtering) to provide flexible matching, accent-insensitivity, and autocomplete capabilities.
    *
    * @param key the raw search string or partial name provided by the client
    * @return a sorted {@link List} of {@link UserView} entries matching the search criteria, ordered

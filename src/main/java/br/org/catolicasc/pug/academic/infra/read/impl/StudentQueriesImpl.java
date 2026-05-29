@@ -134,8 +134,8 @@ public class StudentQueriesImpl implements StudentQueries {
   /**
    * {@inheritDoc}
    *
-   * <p>Utiliza filtering para localizar os usuários pelo nome e, em seguida, busca os
-   * estudantes correspondentes.
+   * <p>Utiliza filtering para localizar os usuários pelo nome e, em seguida, busca os estudantes
+   * correspondentes.
    */
   @Override
   public List<StudentView> searchByName(String key) {

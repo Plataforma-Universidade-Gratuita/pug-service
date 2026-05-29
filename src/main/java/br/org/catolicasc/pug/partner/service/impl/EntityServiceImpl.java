@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
-import br.org.catolicasc.pug.geo.service.CityReadService;
+import br.org.catolicasc.pug.geo.service.CitiesReadService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.EntityRepository;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
@@ -24,8 +24,8 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped service orchestrates state mutations for partner organizations. It
  * manages transaction boundaries, enforces cross-domain constraints (like verifying the city exists
- * via {@link CityReadService}), and manages the lifecycle cascading to {@link StaffService} during
- * deletion operations.
+ * via {@link CitiesReadService}), and manages the lifecycle cascading to {@link StaffService}
+ * during deletion operations.
  */
 @ApplicationScoped
 public class EntityServiceImpl implements EntityService {
@@ -36,7 +36,7 @@ public class EntityServiceImpl implements EntityService {
 
   @Inject EntityRepository repo;
 
-  @Inject CityReadService cityReadService;
+  @Inject CitiesReadService cityReadService;
 
   @Inject StaffService staffService;
 

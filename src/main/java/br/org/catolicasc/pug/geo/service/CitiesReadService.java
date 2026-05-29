@@ -1,7 +1,10 @@
 package br.org.catolicasc.pug.geo.service;
 
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.geo.service.dtos.CityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,10 +13,9 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
  * domain logic and instantiates lightweight {@link CityView} Data Transfer Objects directly from
- * the underlying data store or search indices. This is heavily optimized for fast, read-only API
- * responses.
+ * the underlying data store.
  */
-public interface CityReadService {
+public interface CitiesReadService {
 
   /**
    * Retrieves a read-only projection of a city based on its unique identifier.
@@ -23,15 +25,6 @@ public interface CityReadService {
    * @throws ResourceNotFoundException if no city matches the provided ID
    */
   CityView getViewById(UUID id);
-
-  /**
-   * Retrieves a read-only projection of a city based on its natural natural key (IBGE code).
-   *
-   * @param ibgeCode the exact 7-digit IBGE code of the requested city
-   * @return the populated {@link CityView} DTO
-   * @throws ResourceNotFoundException if no city matches the provided IBGE code
-   */
-  CityView getViewByIbgeCode(String ibgeCode);
 
   /**
    * Retrieves a comprehensive list of all cities registered in the system.
@@ -55,14 +48,11 @@ public interface CityReadService {
   List<CityView> listViewsByIds(List<UUID> ids);
 
   /**
-   * Executes a robust name-based search against the names of registered cities.
+   * Executes paginated city search using the provided page request and complex-search criteria.
    *
-   * <p>Leverages database-backed filtering (e.g., database-backed filtering) to provide fuzzy
-   * matching, accent-insensitivity, and name matching. The results are
-   * automatically sorted by relevance score.
-   *
-   * @param q the raw search string or partial name provided by the client
-   * @return a scored and sorted {@link List} of matching {@link CityView} entries
+   * @param pageQuery the requested page and page size
+   * @param criteria the optional search criteria
+   * @return a paginated result of matching {@link CityView} entries
    */
-  List<CityView> search(String q);
+  PageResult<CityView> search(PageQuery pageQuery, CityComplexSearchCriteria criteria);
 }

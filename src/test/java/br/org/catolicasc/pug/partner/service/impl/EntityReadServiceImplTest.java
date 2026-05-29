@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
-import br.org.catolicasc.pug.geo.service.CityReadService;
+import br.org.catolicasc.pug.geo.service.CitiesReadService;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.infra.read.EntityQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
@@ -28,7 +28,7 @@ class EntityReadServiceImplTest {
 
   @Inject EntityReadServiceImpl service;
   @InjectMock EntityQueries queries;
-  @InjectMock CityReadService cityReadService;
+  @InjectMock CitiesReadService cityReadService;
 
   @Test
   @DisplayName("Should return entity view by ID")

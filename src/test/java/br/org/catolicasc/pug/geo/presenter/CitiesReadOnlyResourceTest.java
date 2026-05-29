@@ -1,9 +1,7 @@
 package br.org.catolicasc.pug.geo.presenter;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
@@ -16,8 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("CityReadOnlyResource Integration Tests")
-class CityReadOnlyResourceTest extends BaseResourceTest {
+@DisplayName("CitiesReadOnlyResource Integration Tests")
+class CitiesReadOnlyResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
@@ -59,21 +57,6 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/geo/cities/by-ibge/{ibgeCode} - Success")
-  void getByIbgeSuccess() {
-    given()
-        .pathParam("ibgeCode", "4209106")
-        .when()
-        .get("/v1/geo/cities/by-ibge/{ibgeCode}")
-        .then()
-        .statusCode(200)
-        .body("data.ibgeCode", is("4209106"));
-  }
-
-  @Test
-  @TestSecurity(
-      user = "admin",
-      roles = {"ADMIN"})
   @DisplayName("GET /v1/geo/cities - List All")
   void listCities() {
     given()
@@ -88,16 +71,21 @@ class CityReadOnlyResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/geo/cities - Search")
+  @DisplayName("POST /v1/geo/cities/search - Paginated Search")
   void searchCities() {
     given()
-        .queryParam("q", "Joinville")
+        .queryParam("page", 0)
+        .queryParam("size", 10)
+        .contentType("application/json")
+        .body("{\"name\":\"Joinville\"}")
         .when()
-        .get("/v1/geo/cities")
+        .post("/v1/geo/cities/search")
         .then()
         .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)))
-        .body("data[0].name", containsString("Joinville"));
+        .body("data.content", hasSize(greaterThan(0)))
+        .body("data.page", is(0))
+        .body("data.size", is(10))
+        .body("data.totalElements", greaterThan(0));
   }
 
   @Test

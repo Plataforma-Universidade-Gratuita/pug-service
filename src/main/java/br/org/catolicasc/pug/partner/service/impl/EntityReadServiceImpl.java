@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.partner.service.impl;
 
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
-import br.org.catolicasc.pug.geo.service.CityReadService;
+import br.org.catolicasc.pug.geo.service.CitiesReadService;
 import br.org.catolicasc.pug.partner.infra.read.EntityQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
 import br.org.catolicasc.pug.partner.service.EntityReadService;
@@ -27,7 +27,7 @@ public class EntityReadServiceImpl implements EntityReadService {
 
   @Inject EntityQueries queries;
 
-  @Inject CityReadService cityReadService;
+  @Inject CitiesReadService cityReadService;
 
   /** {@inheritDoc} */
   @Override
@@ -83,8 +83,8 @@ public class EntityReadServiceImpl implements EntityReadService {
    * {@inheritDoc}
    *
    * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
-   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database filtering
-   * rules.
+   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database
+   * filtering rules.
    */
   @Override
   public List<EntityView> searchViews(String query) {

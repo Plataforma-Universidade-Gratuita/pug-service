@@ -16,8 +16,8 @@ import java.util.UUID;
  * Implementation of the {@link UserQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles the execution of read-only queries. It uses JPQL
- * constructor expressions to directly project database rows into lightweight {@link UserView}
- * DTOs, completely bypassing the overhead of instantiating managed JPA entities.
+ * constructor expressions to directly project database rows into lightweight {@link UserView} DTOs,
+ * completely bypassing the overhead of instantiating managed JPA entities.
  */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)

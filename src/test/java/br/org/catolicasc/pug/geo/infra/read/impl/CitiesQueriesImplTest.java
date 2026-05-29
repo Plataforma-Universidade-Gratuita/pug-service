@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.geo.infra.persistence.CityEntity;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.geo.service.dtos.CityComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -12,14 +14,12 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
 
 @QuarkusTest
-@DisplayName("CityQueriesImpl Coverage")
-class CityQueriesImplTest extends BaseSearchTest {
+@DisplayName("CitiesQueriesImpl Coverage")
+class CitiesQueriesImplTest extends BaseSearchTest {
 
-  @Inject CityQueriesImpl queries;
+  @Inject CitiesQueriesImpl queries;
 
   @Test
   @DisplayName("Should return empty when ID is null")
@@ -35,21 +35,6 @@ class CityQueriesImplTest extends BaseSearchTest {
     Optional<CityView> found = queries.findOptionalById(entity.getId());
     assertThat(found).isPresent();
     assertThat(found.get().id()).isEqualTo(entity.getId());
-  }
-
-  @ParameterizedTest
-  @NullAndEmptySource
-  @DisplayName("Should return empty when IBGE code is null or empty")
-  void findByIbgeInvalid(String code) {
-    assertThat(queries.findOptionalByIbgeCode(code)).isEmpty();
-  }
-
-  @Test
-  @DisplayName("Should find city by IBGE code successfully")
-  void findByIbgeSuccess() {
-    Optional<CityView> found = queries.findOptionalByIbgeCode("4209106"); // Joinville
-    assertThat(found).isPresent();
-    assertThat(found.get().ibgeCode()).isEqualTo("4209106");
   }
 
   @Test
@@ -77,14 +62,35 @@ class CityQueriesImplTest extends BaseSearchTest {
 
   @Test
   @DisplayName("Should search cities by name successfully")
-  void searchByNameSuccess() throws Exception {
-    List<CityView> found = queries.searchByName("Joinville");
-    assertThat(found).anyMatch(c -> c.name().equals("Joinville"));
+  void searchByNameSuccess() {
+    var result = queries.search(new PageQuery(0, 10), new CityComplexSearchCriteria("Joinville"));
+    assertThat(result.content()).anyMatch(c -> c.name().equals("Joinville"));
+    assertThat(result.page()).isEqualTo(0);
+    assertThat(result.size()).isEqualTo(10);
   }
 
   @Test
-  @DisplayName("Should handle invalid search inputs gracefully")
-  void shouldHandleInvalidSearchInputs() {
-    assertSearchHandlesInvalidInput(queries::searchByName);
+  @DisplayName("Should return paginated city list when no name filter is provided")
+  void shouldReturnPaginatedListWithoutNameFilter() {
+    var result = queries.search(new PageQuery(0, 5), new CityComplexSearchCriteria(null));
+    assertThat(result.content()).hasSizeLessThanOrEqualTo(5);
+    assertThat(result.totalElements()).isGreaterThan(200);
+  }
+
+  @Test
+  @DisplayName("Should return paginated city list when search criteria is null")
+  void shouldHandleNullSearchCriteria() {
+    var result = queries.search(new PageQuery(0, 10), null);
+    assertThat(result.content()).hasSizeLessThanOrEqualTo(10);
+  }
+
+  @Test
+  @DisplayName("Should return full result set when page size is the fetch-all sentinel")
+  void shouldFetchAllWhenPageSizeIsOne() {
+    var result = queries.search(new PageQuery(3, 1), new CityComplexSearchCriteria("Join"));
+    assertThat(result.page()).isZero();
+    assertThat(result.totalPages()).isLessThanOrEqualTo(1);
+    assertThat(result.content().size()).isEqualTo(result.totalElements());
+    assertThat(result.size()).isEqualTo(Math.max((int) result.totalElements(), 1));
   }
 }

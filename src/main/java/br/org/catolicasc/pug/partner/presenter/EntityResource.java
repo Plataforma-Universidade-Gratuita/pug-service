@@ -80,8 +80,8 @@ public class EntityResource {
    * Retrieves partner entities, optionally filtered by query parameters.
    *
    * <p>When {@code cnpj} is provided, this endpoint returns the single entity associated with that
-   * identifier. Otherwise, it filters by {@code cityId}, falls back to name-based search with {@code
-   * q}, or lists all entities when no filters are supplied.
+   * identifier. Otherwise, it filters by {@code cityId}, falls back to name-based search with
+   * {@code q}, or lists all entities when no filters are supplied.
    *
    * @param q the optional search query string
    * @param cityId the optional geographic filter

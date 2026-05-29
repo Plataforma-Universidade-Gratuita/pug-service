@@ -54,9 +54,7 @@ public class EntityEntity extends BaseAuditedEntity {
   @Column(name = "cnpj", nullable = false, length = 14, unique = true)
   private String cnpj;
 
-  /**
-   * The registered name or corporate reason of the partner entity.
-   */
+  /** The registered name or corporate reason of the partner entity. */
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 

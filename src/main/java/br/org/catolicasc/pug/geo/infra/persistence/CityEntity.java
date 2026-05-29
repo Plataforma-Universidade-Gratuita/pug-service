@@ -42,9 +42,7 @@ import org.hibernate.type.SqlTypes;
     })
 public class CityEntity extends BaseUuidV7Entity {
 
-  /**
-   * The name of the city.
-   */
+  /** The name of the city. */
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 

@@ -55,8 +55,7 @@ public interface AdminQueries {
    * Executes a robust name-based search against the names of the associated administrators.
    *
    * <p>This method typically leverages underlying indexing engines (e.g., database-backed
-   * filtering) to provide flexible matching and name matching based on
-   * the admin's name.
+   * filtering) to provide flexible matching and name matching based on the admin's name.
    *
    * @param key the raw search string or partial name provided by the client
    * @return a sorted {@link List} of matching {@link AdminView} entries, ordered by relevance

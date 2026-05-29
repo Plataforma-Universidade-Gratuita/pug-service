@@ -16,8 +16,7 @@ public abstract class BaseSearchTest {
   @Inject protected EntityManager em;
 
   /** Compatibility hook kept for existing query tests after the move to DB-backed filtering. */
-  protected void syncIndex(Class<?> entityClass) {
-  }
+  protected void syncIndex(Class<?> entityClass) {}
 
   /** Helper to perform setup and commit so indexer can see the data. */
   protected void runInTransaction(Runnable runnable) throws Exception {

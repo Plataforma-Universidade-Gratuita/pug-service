@@ -1,6 +1,9 @@
 package br.org.catolicasc.pug.geo.infra.read;
 
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
+import br.org.catolicasc.pug.geo.service.dtos.CityComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -12,7 +15,7 @@ import java.util.UUID;
  * retrieving geographic data directly into lightweight {@link CityView} projections, bypassing the
  * overhead of instantiating full JPA entities or domain aggregates.
  */
-public interface CityQueries {
+public interface CitiesQueries {
 
   /**
    * Retrieves a read-only view of a city based on its unique identifier.
@@ -24,21 +27,14 @@ public interface CityQueries {
   Optional<CityView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a read-only view of a city based on its unique IBGE code.
+   * Retrieves city projections for a provided collection of unique identifiers.
    *
-   * @param ibgeCode the exact 7-digit IBGE code string
-   * @return an {@link Optional} containing the {@link CityView} if found, or {@link
-   *     Optional#empty()} otherwise
-   */
-  Optional<CityView> findOptionalByIbgeCode(String ibgeCode);
-
-  /**
-   * Retrieves a comprehensive list of all cities registered in the system.
+   * <p>This query supports batch lookup scenarios where multiple cities must be resolved in a
+   * single round-trip to the persistence layer. Only cities matching the supplied identifiers are
+   * returned.
    *
-   * <p><i>Note:</i> This method returns the entire dataset. It should be used judiciously in
-   * contexts where the dataset size is known to be safely bounded.
-   *
-   * @return a {@link List} containing all available {@link CityView} entries
+   * @param ids a {@link List} of city identifiers to resolve
+   * @return a {@link List} containing the matching {@link CityView} projections
    */
   List<CityView> listAllByIds(List<UUID> ids);
 
@@ -53,15 +49,11 @@ public interface CityQueries {
   List<CityView> listAllCities();
 
   /**
-   * Executes a robust name-based search against city names.
+   * Executes paginated city search using the provided page request and complex-search criteria.
    *
-   * <p>This method typically leverages underlying indexing engines (e.g., database-backed
-   * filtering) to provide flexible matching, accent-insensitivity, and autocomplete
-   * capabilities.
-   *
-   * @param key the raw search string or partial name provided by the user
-   * @return a sorted {@link List} of {@link CityView} entries matching the search criteria, ordered
-   *     by search relevance
+   * @param pageQuery the requested page and page size
+   * @param criteria the optional search criteria
+   * @return a paginated result of matching {@link CityView} entries
    */
-  List<CityView> searchByName(String key);
+  PageResult<CityView> search(PageQuery pageQuery, CityComplexSearchCriteria criteria);
 }
