@@ -2,6 +2,8 @@ package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffUpdateRequest;
+import com.github.f4b6a3.uuid.UuidCreator;
+import java.util.UUID;
 
 /**
  * Builder class for creating {@link StaffUpdateRequest} DTOs in test scenarios.
@@ -11,8 +13,7 @@ import br.org.catolicasc.pug.partner.presenter.dtos.StaffUpdateRequest;
 public class StaffUpdateRequestBuilder {
   private String name = TestNameGenerator.generateRandomName();
   private String emailString = null;
-  private String password = null;
-  private Boolean active = null;
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
   private StaffUpdateRequestBuilder() {}
 
@@ -30,17 +31,12 @@ public class StaffUpdateRequestBuilder {
     return this;
   }
 
-  public StaffUpdateRequestBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
-  public StaffUpdateRequestBuilder withActive(Boolean active) {
-    this.active = active;
+  public StaffUpdateRequestBuilder withEntityId(UUID entityId) {
+    this.entityId = entityId;
     return this;
   }
 
   public StaffUpdateRequest build() {
-    return new StaffUpdateRequest(name, emailString, password, active);
+    return new StaffUpdateRequest(name, emailString, entityId);
   }
 }

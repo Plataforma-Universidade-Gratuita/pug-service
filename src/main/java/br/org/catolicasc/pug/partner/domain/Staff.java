@@ -8,65 +8,42 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Value;
 
-/**
- * Immutable Domain Entity representing a Staff member of a Partner Organization.
- *
- * <p>This class maps a specific authentication account directly to a partner {@link Entity}. It
- * serves as an aggregate for managing employment or organizational affiliations within the partner
- * domain. It extends {@link DomainError} to accumulate validation failures.
- */
+/** Immutable Domain Entity representing a Staff member of a Partner Organization. */
 @Getter
 @Value
 @EqualsAndHashCode(callSuper = false)
 public class Staff extends DomainError {
 
-  /** The unique identifier of the linked authentication account. */
   UUID accountId;
-
-  /** The unique identifier of the linked partner entity. */
   UUID entityId;
 
-  /**
-   * Constructs a {@code Staff} instance.
-   *
-   * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the partner entity
-   */
   @Builder(toBuilder = true)
   private Staff(UUID accountId, UUID entityId) {
     this.accountId = accountId;
     this.entityId = entityId;
   }
 
-  /**
-   * Factory method to create a new {@code Staff} instance.
-   *
-   * <p>The instance is created and immediately self-validated. Any validation failures are
-   * accumulated internally and can be retrieved via {@link #getFieldErrors()}.
-   *
-   * @param accountId the unique identifier of the account
-   * @param entityId the unique identifier of the partner entity
-   * @return a self-validated {@link Staff} instance
-   */
   public static Staff factory(UUID accountId, UUID entityId) {
     Staff staff = Staff.builder().accountId(accountId).entityId(entityId).build();
-
     staff.collectValidationProblems();
     return staff;
   }
 
   /**
-   * Evaluates constraints for the Staff entity and aggregates any validation problems.
+   * Moves the staff member to a different partner entity.
    *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Ensures the {@code accountId} is not null (appends {@link
-   *       PartnerFieldErrorCodes#INVALID_ACCOUNT_ID_BLANK})
-   *   <li>Ensures the {@code entityId} is not null (appends {@link
-   *       PartnerFieldErrorCodes#INVALID_ENTITY_ID_BLANK})
-   * </ul>
+   * @param newEntityId the identifier of the target partner entity
+   * @return a new {@link Staff} instance reflecting the requested transfer
    */
+  public Staff moveToEntity(UUID newEntityId) {
+    if (entityId != null && entityId.equals(newEntityId)) {
+      return this;
+    }
+    Staff updated = toBuilder().entityId(newEntityId).build();
+    updated.collectValidationProblems();
+    return updated;
+  }
+
   private void collectValidationProblems() {
     if (accountId == null) {
       addFieldError(PartnerFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK);

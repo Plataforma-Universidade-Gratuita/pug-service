@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -56,12 +57,13 @@ class StaffServiceImplTest {
     when(accountService.save(any())).thenReturn(account);
 
     Staff saved = service.save(cmd);
+
     assertThat(saved.getEntityId()).isEqualTo(entity.getId());
     verify(audit).fireCreate(Staff.class.getName(), saved.getAccountId());
   }
 
   @Test
-  @DisplayName("Should throw DuplicateResourceException when already assigned")
+  @DisplayName("Should throw DuplicateResourceException when already assigned to the same entity")
   void saveDuplicate() {
     var entity = factory.createEntity(factory.getAnyCity());
     var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
@@ -73,9 +75,30 @@ class StaffServiceImplTest {
             .withEmail(account.getEmail().getValue())
             .withoutUser()
             .build();
+
     when(accountService.save(any())).thenReturn(account);
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @DisplayName("Should throw exception when staff account is already assigned to another entity")
+  void saveAssignedToOtherEntity() {
+    var entityA = factory.createEntity(factory.getAnyCity());
+    var entityB = factory.createEntity(factory.getAnyCity());
+    var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    factory.createStaff(account, entityA);
+
+    var cmd =
+        aStaffCreateCommand()
+            .withEntityId(entityB.getId())
+            .withEmail(account.getEmail().getValue())
+            .withoutUser()
+            .build();
+
+    when(accountService.save(any())).thenReturn(account);
+
+    assertThrows(BusinessRuleException.class, () -> service.save(cmd));
   }
 
   @Test
@@ -87,10 +110,13 @@ class StaffServiceImplTest {
     factory.createStaff(account, entity);
 
     when(projectService.existsByCreatedBy(account.getId())).thenReturn(false);
+    when(attendanceService.existsByValidatedBy(account.getId())).thenReturn(false);
 
     boolean deleted = service.delete(account.getId());
+
     assertThat(deleted).isTrue();
     verify(audit).fireDelete(Staff.class.getName(), account.getId());
+    verify(accountService).delete(account.getId());
   }
 
   @Test
@@ -102,27 +128,59 @@ class StaffServiceImplTest {
     factory.createStaff(account, entity);
 
     var cmd =
-        aStaffUpdateCommand().withName("New Name").withEmail(account.getEmail().getValue()).build();
+        aStaffUpdateCommand()
+            .withName("New Name")
+            .withEmail(account.getEmail().getValue())
+            .withEntityId(entity.getId())
+            .build();
 
-    var updated = service.update(account.getId(), cmd);
+    when(accountService.getById(account.getId())).thenReturn(account);
+
+    Staff updated = service.update(account.getId(), cmd);
 
     assertThat(updated).isNotNull();
+    assertThat(updated.getEntityId()).isEqualTo(entity.getId());
     verify(accountService).update(eq(account.getId()), any());
     verify(audit).fireUpdate(eq(Staff.class.getName()), eq(account.getId()), any(), any());
   }
 
   @Test
   @Transactional
-  @DisplayName("Should deactivate staff successfully")
-  void deactivateSuccess() {
+  @DisplayName("Should update staff entity assignment successfully")
+  void updateMoveEntitySuccess() {
+    var originalEntity = factory.createEntity(factory.getAnyCity());
+    var targetEntity = factory.createEntity(factory.getAnyCity());
+    var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    factory.createStaff(account, originalEntity);
+
+    var cmd =
+        aStaffUpdateCommand()
+            .withName("Moved Staff")
+            .withEmail(account.getEmail().getValue())
+            .withEntityId(targetEntity.getId())
+            .build();
+
+    when(accountService.getById(account.getId())).thenReturn(account);
+
+    Staff updated = service.update(account.getId(), cmd);
+
+    assertThat(updated.getEntityId()).isEqualTo(targetEntity.getId());
+    verify(accountService).update(eq(account.getId()), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should update staff account status successfully")
+  void updateStatusSuccess() {
     var entity = factory.createEntity(factory.getAnyCity());
     var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     factory.createStaff(account, entity);
 
-    boolean result = service.deactivate(account.getId());
+    Staff updated = service.updateStatus(account.getId(), false);
 
-    assertThat(result).isTrue();
-    verify(accountService).deactivate(account.getId());
+    assertThat(updated).isNotNull();
+    verify(accountService).update(eq(account.getId()), any());
+    verify(audit).fireUpdate(eq(Staff.class.getName()), eq(account.getId()), any(), any());
   }
 
   @Test
@@ -147,31 +205,10 @@ class StaffServiceImplTest {
   }
 
   @Test
-  @DisplayName(
-      "Should throw Exception when staff account is already assigned to a DIFFERENT entity")
-  void saveAssignedToOtherEntity() {
-    var entityA = factory.createEntity(factory.getAnyCity());
-    var entityB = factory.createEntity(factory.getAnyCity());
-    var account = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-
-    factory.createStaff(account, entityA);
-
-    var cmd =
-        aStaffCreateCommand()
-            .withEntityId(entityB.getId())
-            .withEmail(account.getEmail().getValue())
-            .withoutUser()
-            .build();
-
-    when(accountService.save(any())).thenReturn(account);
-
-    assertThrows(BusinessRuleException.class, () -> service.save(cmd));
-  }
-
-  @Test
   @DisplayName("Should return false when accountId is null on delete")
   void deleteNullId() {
     assertThat(service.delete(null)).isFalse();
+    verify(accountService, never()).delete(any());
   }
 
   @Test
@@ -212,23 +249,15 @@ class StaffServiceImplTest {
   @Transactional
   @DisplayName("Should delete multiple staff members for an entity")
   void deleteAllByEntityIdSuccess() {
-    var city = factory.getAnyCity();
-    var entity = factory.createEntity(city);
-
-    var acc1 = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    var acc2 = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    factory.createStaff(acc1, entity);
-    factory.createStaff(acc2, entity);
+    var entity = factory.createEntity(factory.getAnyCity());
+    var firstAccount = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    var secondAccount = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    factory.createStaff(firstAccount, entity);
+    factory.createStaff(secondAccount, entity);
 
     long count = service.deleteAllByEntityId(entity.getId());
 
     assertThat(count).isEqualTo(2);
     verify(accountService).deleteAll(any());
-  }
-
-  @Test
-  @DisplayName("Should return false when accountId is null on deactivate")
-  void deactivateNullId() {
-    assertThat(service.deactivate(null)).isFalse();
   }
 }

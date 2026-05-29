@@ -26,63 +26,98 @@ class StaffRepositoryImplTest {
   @Inject TestDataFactory factory;
   @Inject EntityManager em;
 
-  private Account setup() {
+  private Account setupAccount() {
     User user = factory.createUser();
     return factory.createAccount(user, AccountType.PARTNER);
   }
 
   @Test
-  @DisplayName("Should persist and find Staff")
+  @DisplayName("Should persist and find staff")
   void shouldPersistAndFind() {
-    Account acc = setup();
-    Entity ent = factory.createEntity(factory.getAnyCity());
-    factory.createStaff(acc, ent);
+    Account account = setupAccount();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    factory.createStaff(account, entity);
     em.flush();
 
-    Optional<Staff> found = repository.findOptionalByAccountId(acc.getId());
+    Optional<Staff> found = repository.findOptionalByAccountId(account.getId());
     assertThat(found).isPresent();
-    assertThat(found.get().getEntityId()).isEqualTo(ent.getId());
+    assertThat(found.get().getEntityId()).isEqualTo(entity.getId());
   }
 
   @Test
-  @DisplayName("Should check existence by Account and Entity")
+  @DisplayName("Should check existence by account and entity")
   void shouldCheckExistence() {
-    Account acc = setup();
-    Entity ent = factory.createEntity(factory.getAnyCity());
-    factory.createStaff(acc, ent);
+    Account account = setupAccount();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    factory.createStaff(account, entity);
     em.flush();
 
-    assertThat(repository.existsByAccountIdAndEntityId(acc.getId(), ent.getId())).isTrue();
+    assertThat(repository.existsByAccountIdAndEntityId(account.getId(), entity.getId())).isTrue();
     assertThat(
-            repository.existsByAccountIdAndEntityId(acc.getId(), UuidCreator.getTimeOrderedEpoch()))
+            repository.existsByAccountIdAndEntityId(
+                account.getId(), UuidCreator.getTimeOrderedEpoch()))
         .isFalse();
   }
 
   @Test
-  @DisplayName("Should list all staff by Entity")
+  @DisplayName("Should list all staff by entity")
   void listByEntity() {
-    Account acc = setup();
-    Entity ent = factory.createEntity(factory.getAnyCity());
-    factory.createStaff(acc, ent);
+    Account account = setupAccount();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    factory.createStaff(account, entity);
     em.flush();
 
-    assertThat(repository.listAllByEntityId(ent.getId())).hasSize(1);
+    assertThat(repository.listAllByEntityId(entity.getId())).hasSize(1);
   }
 
   @Test
-  @DisplayName("Should delete staff by ID or Entity ID")
+  @DisplayName(
+      "Should return false when no other staff uses the informed email in the target entity")
+  void shouldCheckExistingEmailInEntity() {
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account account = setupAccount();
+    factory.createStaff(account, entity);
+    em.flush();
+
+    assertThat(
+            repository.existsAnotherByEntityIdAndEmail(
+                entity.getId(), account.getEmail().getValue(), account.getId()))
+        .isFalse();
+  }
+
+  @Test
+  @DisplayName("Should update staff entity assignment")
+  void shouldUpdate() {
+    Account account = setupAccount();
+    Entity originalEntity = factory.createEntity(factory.getAnyCity());
+    Entity targetEntity = factory.createEntity(factory.getAnyCity());
+    factory.createStaff(account, originalEntity);
+    em.flush();
+
+    Staff updated = Staff.factory(account.getId(), targetEntity.getId());
+    repository.update(updated);
+    em.flush();
+    em.clear();
+
+    Optional<Staff> found = repository.findOptionalByAccountId(account.getId());
+    assertThat(found).isPresent();
+    assertThat(found.get().getEntityId()).isEqualTo(targetEntity.getId());
+  }
+
+  @Test
+  @DisplayName("Should delete staff by account ID or entity ID")
   void deleteOperations() {
-    Account acc = setup();
-    Entity ent = factory.createEntity(factory.getAnyCity());
-    factory.createStaff(acc, ent);
+    Account account = setupAccount();
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    factory.createStaff(account, entity);
     em.flush();
 
-    assertThat(repository.deleteByAccountId(acc.getId())).isTrue();
+    assertThat(repository.deleteByAccountId(account.getId())).isTrue();
 
-    Account acc2 = setup();
-    factory.createStaff(acc2, ent);
+    Account secondAccount = setupAccount();
+    factory.createStaff(secondAccount, entity);
     em.flush();
 
-    assertThat(repository.deleteByEntityId(ent.getId())).isEqualTo(1);
+    assertThat(repository.deleteByEntityId(entity.getId())).isEqualTo(1);
   }
 }

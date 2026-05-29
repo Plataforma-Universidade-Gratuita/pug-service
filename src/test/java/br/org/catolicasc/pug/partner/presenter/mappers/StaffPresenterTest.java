@@ -3,8 +3,12 @@ package br.org.catolicasc.pug.partner.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
+import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
+import br.org.catolicasc.pug.partner.infra.read.dtos.StaffComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
+import br.org.catolicasc.pug.partner.presenter.dtos.StaffComplexSearchResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffCreateRequest;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.StaffUpdateRequest;
@@ -37,16 +41,15 @@ class StaffPresenterTest {
     void toCreateCommand() {
       UUID entityId = UuidCreator.getTimeOrderedEpoch();
       String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
-      StaffCreateRequest req =
-          new StaffCreateRequest(cpf, "Staff User", "staff@pug.com", "password123", entityId);
+      StaffCreateRequest req = new StaffCreateRequest(cpf, "Staff User", "staff@pug.com", entityId);
 
-      StaffCreateCommand cmd = StaffPresenter.toCommand(req, "hashedPass");
+      StaffCreateCommand cmd = StaffPresenter.toCommand(req);
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.entityId()).isEqualTo(entityId);
       assertThat(cmd.accountCommand()).isNotNull();
       assertThat(cmd.accountCommand().emailString()).isEqualTo("staff@pug.com");
-      assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedPass");
+      assertThat(cmd.accountCommand().passwordHash()).isNull();
       assertThat(cmd.accountCommand().userCommand()).isNotNull();
       assertThat(cmd.accountCommand().userCommand().cpfString()).isEqualTo(cpf);
       assertThat(cmd.accountCommand().userCommand().name()).isEqualTo("Staff User");
@@ -55,7 +58,7 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should return null when StaffCreateRequest is null")
     void toCreateCommandNull() {
-      assertThat(StaffPresenter.toCommand((StaffCreateRequest) null, "hash")).isNull();
+      assertThat(StaffPresenter.toCommand((StaffCreateRequest) null)).isNull();
     }
   }
 
@@ -66,36 +69,40 @@ class StaffPresenterTest {
     @Test
     @DisplayName("Should map StaffUpdateRequest to StaffUpdateCommand")
     void toUpdateCommand() {
-      StaffUpdateRequest req = new StaffUpdateRequest("New Name", "new@pug.com", "newPass", false);
+      UUID entityId = UuidCreator.getTimeOrderedEpoch();
+      StaffUpdateRequest req = new StaffUpdateRequest("New Name", "new@pug.com", entityId);
 
-      StaffUpdateCommand cmd = StaffPresenter.toCommand(req, "hashedNew");
+      StaffUpdateCommand cmd = StaffPresenter.toCommand(req);
 
       assertThat(cmd).isNotNull();
+      assertThat(cmd.entityId()).isEqualTo(entityId);
       assertThat(cmd.accountCommand()).isNotNull();
       assertThat(cmd.accountCommand().emailString()).isEqualTo("new@pug.com");
-      assertThat(cmd.accountCommand().passwordHash()).isEqualTo("hashedNew");
-      assertThat(cmd.accountCommand().active()).isFalse();
+      assertThat(cmd.accountCommand().passwordHash()).isNull();
+      assertThat(cmd.accountCommand().active()).isNull();
       assertThat(cmd.accountCommand().userCommand()).isNotNull();
       assertThat(cmd.accountCommand().userCommand().name()).isEqualTo("New Name");
     }
 
     @Test
-    @DisplayName("Should map partial StaffUpdateRequest (all nulls)")
+    @DisplayName("Should map partial StaffUpdateRequest")
     void toUpdateCommandPartial() {
-      StaffUpdateRequest req = new StaffUpdateRequest(null, null, null, null);
+      StaffUpdateRequest req = new StaffUpdateRequest(null, null, null);
 
-      StaffUpdateCommand cmd = StaffPresenter.toCommand(req, null);
+      StaffUpdateCommand cmd = StaffPresenter.toCommand(req);
 
       assertThat(cmd).isNotNull();
+      assertThat(cmd.entityId()).isNull();
       assertThat(cmd.accountCommand().emailString()).isNull();
       assertThat(cmd.accountCommand().passwordHash()).isNull();
+      assertThat(cmd.accountCommand().active()).isNull();
       assertThat(cmd.accountCommand().userCommand().name()).isNull();
     }
 
     @Test
     @DisplayName("Should return null when StaffUpdateRequest is null")
     void toUpdateCommandNull() {
-      assertThat(StaffPresenter.toCommand((StaffUpdateRequest) null, "hash")).isNull();
+      assertThat(StaffPresenter.toCommand((StaffUpdateRequest) null)).isNull();
     }
   }
 
@@ -110,32 +117,11 @@ class StaffPresenterTest {
     }
 
     @Test
-    @DisplayName("Should return null when locale is null")
-    void toResponseNullLocale() {
-      AccountView acc = buildAccountView();
-      StaffView view =
-          new StaffView(acc, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
-
-      assertThat(StaffPresenter.toResponse(view, null, i18n)).isNull();
-    }
-
-    @Test
-    @DisplayName("Should return null when i18n is null")
-    void toResponseNullI18n() {
-      AccountView acc = buildAccountView();
-      StaffView view =
-          new StaffView(acc, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
-
-      assertThat(StaffPresenter.toResponse(view, Locale.US, null)).isNull();
-    }
-
-    @Test
     @DisplayName("Should map StaffView to StaffResponse correctly")
     void toResponseSuccess() {
       UUID entityId = UuidCreator.getTimeOrderedEpoch();
       UUID cityId = UuidCreator.getTimeOrderedEpoch();
-      AccountView acc = buildAccountView();
-      StaffView view = new StaffView(acc, entityId, cityId);
+      StaffView view = new StaffView(buildAccountView(), entityId, cityId);
 
       StaffResponse response = StaffPresenter.toResponse(view, Locale.US, i18n);
 
@@ -146,6 +132,34 @@ class StaffPresenterTest {
       assertThat(response.account().email()).isEqualTo("staff@pug.com");
       assertThat(response.account().accountType()).isEqualTo(AccountType.PARTNER);
       assertThat(response.account().active()).isTrue();
+    }
+
+    @Test
+    @DisplayName("Should map StaffComplexSearchView to StaffComplexSearchResponse correctly")
+    void toComplexSearchResponseSuccess() {
+      UUID entityId = UuidCreator.getTimeOrderedEpoch();
+      StaffComplexSearchView view =
+          new StaffComplexSearchView(
+              new AccountComplexSearchView(
+                  UuidCreator.getTimeOrderedEpoch(),
+                  UuidCreator.getTimeOrderedEpoch(),
+                  "Staff User",
+                  "staff@pug.com",
+                  AccountType.PARTNER,
+                  OffsetDateTime.now(),
+                  OffsetDateTime.now(),
+                  true),
+              new EntityComplexSearchView(entityId, "Entity A"));
+
+      StaffComplexSearchResponse response =
+          StaffPresenter.toComplexSearchResponse(view, Locale.US, i18n);
+
+      assertThat(response).isNotNull();
+      assertThat(response.account()).isNotNull();
+      assertThat(response.account().email()).isEqualTo("staff@pug.com");
+      assertThat(response.entity()).isNotNull();
+      assertThat(response.entity().id()).isEqualTo(entityId);
+      assertThat(response.entity().name()).isEqualTo("Entity A");
     }
 
     private AccountView buildAccountView() {

@@ -3,7 +3,9 @@ package br.org.catolicasc.pug.partner.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
+import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
+import br.org.catolicasc.pug.partner.presenter.dtos.EntityComplexSearchResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityCreateRequest;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.EntityUpdateRequest;
@@ -117,6 +119,19 @@ class EntityPresenterTest {
       assertThat(response.auditInfo()).isNotNull();
       assertThat(response.auditInfo().createdAt()).isEqualTo(now);
       assertThat(response.auditInfo().updatedAt()).isEqualTo(now);
+    }
+
+    @Test
+    @DisplayName("Should map EntityComplexSearchView to EntityComplexSearchResponse correctly")
+    void toComplexSearchResponseSuccess() {
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      EntityComplexSearchView view = new EntityComplexSearchView(id, "Acme Corp");
+
+      EntityComplexSearchResponse response = EntityPresenter.toComplexSearchResponse(view);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(id);
+      assertThat(response.name()).isEqualTo("Acme Corp");
     }
 
     @Test

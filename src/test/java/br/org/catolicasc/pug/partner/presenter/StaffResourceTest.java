@@ -56,17 +56,17 @@ class StaffResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /v1/partners/staff/{id} - Success")
   void getByIdSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+    StaffGraph graph = createStaffGraph();
 
     given()
-        .pathParam("id", g.account().getId())
+        .pathParam("id", graph.account().getId())
         .when()
         .get("/v1/partners/staff/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.account.id", is(g.account().getId().toString()))
-        .body("data.entityId", is(g.entity().getId().toString()))
+        .body("data.account.id", is(graph.account().getId().toString()))
+        .body("data.entityId", is(graph.entity().getId().toString()))
         .body("data.cityId", notNullValue());
   }
 
@@ -88,36 +88,19 @@ class StaffResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "admin",
-      roles = {"ADMIN"})
-  @DisplayName("GET /v1/partners/staff?email= - Success")
-  void getByEmailSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
-
-    given()
-        .queryParam("email", g.account().getEmail().getValue())
-        .when()
-        .get("/v1/partners/staff")
-        .then()
-        .statusCode(200)
-        .body("data.account.email", is(g.account().getEmail().getValue()));
-  }
-
-  @Test
-  @TestSecurity(
       user = "staff",
       roles = {"STAFF"})
   @DisplayName("GET /v1/partners/staff/me - Success")
   void getMeSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
-    when(authService.getCurrentAccountId()).thenReturn(g.account().getId());
+    StaffGraph graph = createStaffGraph();
+    when(authService.getCurrentAccountId()).thenReturn(graph.account().getId());
 
     given()
         .when()
         .get("/v1/partners/staff/me")
         .then()
         .statusCode(200)
-        .body("data.account.id", is(g.account().getId().toString()));
+        .body("data.account.id", is(graph.account().getId().toString()));
   }
 
   @Test
@@ -140,35 +123,57 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/partners/staff?cpf= - Success")
-  void listByCpfSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+  @DisplayName("GET /v1/partners/staff?ids= - Filter By Ids")
+  void listByIdsSuccess() throws Exception {
+    StaffGraph graph = createStaffGraph();
 
     given()
-        .queryParam("cpf", g.user().getCpf().getValue())
+        .queryParam("ids", graph.account().getId())
         .when()
         .get("/v1/partners/staff")
         .then()
         .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)))
-        .body("data[0].account.userId", is(g.user().getId().toString()));
+        .body("data", hasSize(1))
+        .body("data[0].account.id", is(graph.account().getId().toString()));
   }
 
   @Test
   @TestSecurity(
-      user = "student",
-      roles = {"STUDENT"})
-  @DisplayName("GET /v1/partners/staff?entityId= - Success")
-  void listByEntitySuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+      user = "admin",
+      roles = {"ADMIN"})
+  @DisplayName("POST /v1/partners/staff/search - Paginated Search")
+  void searchSuccess() throws Exception {
+    StaffGraph graph = createStaffGraph();
 
     given()
-        .queryParam("entityId", g.entity().getId())
+        .queryParam("page", 0)
+        .queryParam("size", 10)
+        .contentType(ContentType.JSON)
+        .body(
+            """
+            {
+              "name": "%s",
+              "cpf": "%s",
+              "email": "%s",
+              "entityIds": ["%s"]
+            }
+            """
+                .formatted(
+                    graph.user().getName().split(" ")[0],
+                    graph.user().getCpf().getValue().substring(0, 3),
+                    graph.account().getEmail().getValue().substring(0, 4),
+                    graph.entity().getId()))
         .when()
-        .get("/v1/partners/staff")
+        .post("/v1/partners/staff/search")
         .then()
         .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)));
+        .body("data.content", hasSize(1))
+        .body("data.content[0].account.id", is(graph.account().getId().toString()))
+        .body("data.content[0].account.user.id", is(graph.user().getId().toString()))
+        .body("data.content[0].entity.id", is(graph.entity().getId().toString()))
+        .body("data.content[0].entity.name", is(graph.entity().getName()))
+        .body("data.page", is(0))
+        .body("data.size", is(10));
   }
 
   @Test
@@ -184,11 +189,11 @@ class StaffResourceTest extends BaseResourceTest {
           entity[0] = factory.createEntity(city);
         });
 
-    var req = aStaffCreateRequest().withEntityId(entity[0].getId()).build();
+    var request = aStaffCreateRequest().withEntityId(entity[0].getId()).build();
 
     given()
         .contentType(ContentType.JSON)
-        .body(req)
+        .body(request)
         .when()
         .post("/v1/partners/staff")
         .then()
@@ -202,20 +207,27 @@ class StaffResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /v1/partners/staff/{id} - Success")
   void updateSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+    StaffGraph graph = createStaffGraph();
+    Entity[] targetEntity = new Entity[1];
+    doInTransaction(() -> targetEntity[0] = factory.createEntity(factory.getAnyCity()));
 
-    var req = aStaffUpdateRequest().withName("Updated Staff Name").build();
+    var request =
+        aStaffUpdateRequest()
+            .withName("Updated Staff Name")
+            .withEntityId(targetEntity[0].getId())
+            .build();
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", g.account().getId())
-        .body(req)
+        .pathParam("id", graph.account().getId())
+        .body(request)
         .when()
         .put("/v1/partners/staff/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.account.id", is(g.account().getId().toString()));
+        .body("data.account.id", is(graph.account().getId().toString()))
+        .body("data.entityId", is(targetEntity[0].getId().toString()));
   }
 
   @Test
@@ -224,12 +236,12 @@ class StaffResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /v1/partners/staff/{id} - Not Found")
   void updateNotFound() {
-    var req = aStaffUpdateRequest().build();
+    var request = aStaffUpdateRequest().build();
 
     given()
         .contentType(ContentType.JSON)
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
-        .body(req)
+        .body(request)
         .when()
         .put("/v1/partners/staff/{id}")
         .then()
@@ -240,16 +252,16 @@ class StaffResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/partners/staff/{id} - Success")
-  void deactivateSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+  @DisplayName("PATCH /v1/partners/staff/{id}/status - Success")
+  void updateStatusSuccess() throws Exception {
+    StaffGraph graph = createStaffGraph();
 
     given()
         .contentType(ContentType.JSON)
-        .pathParam("id", g.account().getId())
-        .body(aStaffUpdateRequest().withName(null).withActive(false).build())
+        .pathParam("id", graph.account().getId())
+        .body("{\"active\": false}")
         .when()
-        .patch("/v1/partners/staff/{id}")
+        .patch("/v1/partners/staff/{id}/status")
         .then()
         .statusCode(204);
   }
@@ -260,10 +272,10 @@ class StaffResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /v1/partners/staff/{id} - Success")
   void deleteSuccess() throws Exception {
-    StaffGraph g = createStaffGraph();
+    StaffGraph graph = createStaffGraph();
 
     given()
-        .pathParam("id", g.account().getId())
+        .pathParam("id", graph.account().getId())
         .when()
         .delete("/v1/partners/staff/{id}")
         .then()
@@ -282,11 +294,11 @@ class StaffResourceTest extends BaseResourceTest {
       roles = {"STUDENT"})
   @DisplayName("POST /v1/partners/staff - Forbidden for STUDENT")
   void createForbiddenForStudent() {
-    var req = aStaffCreateRequest().build();
+    var request = aStaffCreateRequest().build();
 
     given()
         .contentType(ContentType.JSON)
-        .body(req)
+        .body(request)
         .when()
         .post("/v1/partners/staff")
         .then()

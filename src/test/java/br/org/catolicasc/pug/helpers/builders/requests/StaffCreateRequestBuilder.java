@@ -15,7 +15,6 @@ public class StaffCreateRequestBuilder {
   private String cpfString = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
   private String emailString = TestNameGenerator.generateUniqueEmail("pug.com");
-  private String password = "password123";
   private UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
   private StaffCreateRequestBuilder() {}
@@ -39,17 +38,12 @@ public class StaffCreateRequestBuilder {
     return this;
   }
 
-  public StaffCreateRequestBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
   public StaffCreateRequestBuilder withEntityId(UUID entityId) {
     this.entityId = entityId;
     return this;
   }
 
   public StaffCreateRequest build() {
-    return new StaffCreateRequest(cpfString, name, emailString, password, entityId);
+    return new StaffCreateRequest(cpfString, name, emailString, entityId);
   }
 }

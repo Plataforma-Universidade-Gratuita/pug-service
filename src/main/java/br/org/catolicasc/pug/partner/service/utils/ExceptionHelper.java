@@ -6,108 +6,46 @@ import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import jakarta.ws.rs.NotAuthorizedException;
 
-/**
- * Utility class for centralizing the creation of common Partner domain exceptions.
- *
- * <p>This helper reduces boilerplate code across services by providing pre-configured exception
- * instances ready to be thrown, ensuring consistent error codes are used throughout the partner
- * module.
- */
 public final class ExceptionHelper {
 
-  /** Private constructor to prevent instantiation. */
   private ExceptionHelper() {}
 
-  /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Partner Entity
-   * with the specified CNPJ already exists in the system.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
   public static DuplicateResourceException entityAlreadyExists() {
     return new DuplicateResourceException(PartnerErrorCodes.ENTITY_ALREADY_EXISTS);
   }
 
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that a Partner Entity
-   * cannot be deleted because it currently has registered projects.
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
   public static BusinessRuleException entityHasProjects() {
     return new BusinessRuleException(PartnerErrorCodes.ENTITY_HAS_PROJECTS);
   }
 
-  /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
-   * Partner Entity could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
   public static ResourceNotFoundException entityNotFound() {
     return new ResourceNotFoundException(PartnerErrorCodes.ENTITY_NOT_FOUND);
   }
 
-  /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a Staff member
-   * assignment already exists for the given account and entity.
-   *
-   * @return a fully configured {@link DuplicateResourceException} instance
-   */
   public static DuplicateResourceException staffAlreadyExists() {
     return new DuplicateResourceException(PartnerErrorCodes.STAFF_ALREADY_EXISTS);
   }
 
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that an account is already
-   * assigned as Staff to a different partner entity.
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
   public static BusinessRuleException staffAssignedToOtherEntity() {
     return new BusinessRuleException(PartnerErrorCodes.STAFF_ASSIGNED_TO_OTHER_ENTITY);
   }
 
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that a Staff member cannot
-   * be deleted because they have validated attendance records.
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
+  public static BusinessRuleException staffEmailAlreadyExistsInEntity() {
+    return new BusinessRuleException(PartnerErrorCodes.STAFF_EMAIL_ALREADY_EXISTS_IN_ENTITY);
+  }
+
   public static BusinessRuleException staffHasAttendances() {
     return new BusinessRuleException(PartnerErrorCodes.STAFF_HAS_ATTENDANCES);
   }
 
-  /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that a Staff member cannot
-   * be deleted because they are the creator of one or more projects.
-   *
-   * @return a fully configured {@link BusinessRuleException} instance
-   */
   public static BusinessRuleException staffHasProjects() {
     return new BusinessRuleException(PartnerErrorCodes.STAFF_HAS_PROJECTS);
   }
 
-  /**
-   * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested Staff
-   * assignment could not be located.
-   *
-   * @return a fully configured {@link ResourceNotFoundException} instance
-   */
   public static ResourceNotFoundException staffNotFound() {
     return new ResourceNotFoundException(PartnerErrorCodes.STAFF_NOT_FOUND);
   }
 
-  /**
-   * Instantiates a standardized {@link NotAuthorizedException} indicating that an authentication
-   * attempt or secure request failed due to invalid credentials, an inactive account state, or a
-   * missing token.
-   *
-   * <p>This exception is intercepted by the platform's global exception mapper to return a generic,
-   * safe HTTP 401 response without leaking which part of the validation failed.
-   *
-   * @return a fully configured {@link NotAuthorizedException} instance
-   */
   public static NotAuthorizedException unauthorized() {
     return new NotAuthorizedException("Invalid credentials or inactive account");
   }

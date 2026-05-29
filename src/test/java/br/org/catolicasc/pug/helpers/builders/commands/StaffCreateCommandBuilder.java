@@ -20,7 +20,6 @@ public class StaffCreateCommandBuilder {
   private String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
   private String email = TestNameGenerator.generateUniqueEmail("pug.com");
-  private String password = "hashed-password";
   private boolean includeUser = true;
 
   private StaffCreateCommandBuilder() {}
@@ -49,11 +48,6 @@ public class StaffCreateCommandBuilder {
     return this;
   }
 
-  public StaffCreateCommandBuilder withPassword(String password) {
-    this.password = password;
-    return this;
-  }
-
   /**
    * Excludes the nested user command (sets it to {@code null}).
    *
@@ -67,7 +61,7 @@ public class StaffCreateCommandBuilder {
   public StaffCreateCommand build() {
     UserCreateCommand userCmd = includeUser ? new UserCreateCommand(cpf, name) : null;
     AccountCreateCommand accCmd =
-        new AccountCreateCommand(email, AccountType.PARTNER, password, userCmd);
+        new AccountCreateCommand(email, AccountType.PARTNER, null, userCmd);
     return new StaffCreateCommand(entityId, accCmd);
   }
 }

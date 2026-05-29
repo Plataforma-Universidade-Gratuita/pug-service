@@ -3,26 +3,20 @@ package br.org.catolicasc.pug.partner.presenter.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
+import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) used as the JSON request payload for partially updating a Staff
- * member's underlying account and user details.
+ * Data Transfer Object (DTO) used as the JSON request payload for updating an existing Staff
+ * member's underlying account and organizational assignment.
  *
- * <p>Because updates can be partial, all fields in this record are inherently optional. If a field
- * is provided as {@code null} or omitted from the JSON payload, the application service will ignore
- * it and retain the existing value for that specific attribute. The structural links (Account ID
- * and Entity ID) cannot be changed via this payload.
+ * <p>Because updates can be partial, all fields in this record are optional. When {@code entityId}
+ * is provided, the staff member is transferred from the current partner entity to the supplied one.
  *
- * @param name the new name of the staff member, or {@code null} to leave unchanged (if provided,
- *     max 100 characters)
- * @param emailString the new email address, or {@code null} to leave unchanged (if provided, must
- *     be a valid email up to 100 characters)
- * @param password the new raw password, or {@code null} to leave unchanged (if provided, must be
- *     between 8 and 100 characters)
- * @param active the new activation flag, or {@code null} to leave the current status unchanged
+ * @param name the new name of the staff member, or {@code null} to leave unchanged
+ * @param emailString the new email address, or {@code null} to leave unchanged
+ * @param entityId the new partner entity identifier, or {@code null} to preserve the current one
  */
 public record StaffUpdateRequest(
     @Size(max = 100) String name,
     @Email @Size(max = 100) @JsonProperty("email") String emailString,
-    @Size(max = 100) String password,
-    Boolean active) {}
+    UUID entityId) {}

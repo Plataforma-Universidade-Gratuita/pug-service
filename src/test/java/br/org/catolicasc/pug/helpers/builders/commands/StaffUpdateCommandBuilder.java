@@ -4,6 +4,8 @@ import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
+import com.github.f4b6a3.uuid.UuidCreator;
+import java.util.UUID;
 
 /**
  * Builder class for creating {@link StaffUpdateCommand} DTOs in test scenarios.
@@ -14,7 +16,7 @@ import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
 public class StaffUpdateCommandBuilder {
   private String name = TestNameGenerator.generateRandomName();
   private String email = null;
-  private String password = null;
+  private UUID entityId = UuidCreator.getTimeOrderedEpoch();
 
   private StaffUpdateCommandBuilder() {}
 
@@ -32,17 +34,17 @@ public class StaffUpdateCommandBuilder {
     return this;
   }
 
-  public StaffUpdateCommandBuilder withPassword(String password) {
-    this.password = password;
+  public StaffUpdateCommandBuilder withEntityId(UUID entityId) {
+    this.entityId = entityId;
     return this;
   }
 
   public StaffUpdateCommand build() {
     UserUpdateCommand userCmd = (name != null) ? new UserUpdateCommand(name) : null;
     AccountUpdateCommand accCmd =
-        (email != null || password != null || userCmd != null)
-            ? new AccountUpdateCommand(email, password, null, userCmd)
+        (email != null || userCmd != null)
+            ? new AccountUpdateCommand(email, null, null, userCmd)
             : null;
-    return new StaffUpdateCommand(accCmd);
+    return new StaffUpdateCommand(accCmd, entityId);
   }
 }

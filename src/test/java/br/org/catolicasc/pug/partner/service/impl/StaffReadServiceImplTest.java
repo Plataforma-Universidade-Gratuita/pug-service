@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.partner.infra.read.StaffQueries;
+import br.org.catolicasc.pug.partner.infra.read.dtos.StaffComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
+import br.org.catolicasc.pug.partner.service.dtos.StaffComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -41,26 +44,10 @@ class StaffReadServiceImplTest {
   @DisplayName("Should throw ResourceNotFound when staff not found")
   void getByAccountIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
+
     assertThrows(
         ResourceNotFoundException.class,
         () -> service.getViewByAccountId(UuidCreator.getTimeOrderedEpoch()));
-  }
-
-  @Test
-  @DisplayName("Should list staff views by entity ID")
-  void listByEntityId() {
-    UUID entityId = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listAllByEntityId(entityId))
-        .thenReturn(List.of(new StaffView(null, entityId, UuidCreator.getTimeOrderedEpoch())));
-
-    assertThat(service.listViewsByEntityId(entityId)).hasSize(1);
-  }
-
-  @Test
-  @DisplayName("Should fold search term and search by name")
-  void search() {
-    when(queries.searchByName("joao")).thenReturn(List.of());
-    assertThat(service.search("  João  ")).isEmpty();
   }
 
   @Test
@@ -70,46 +57,36 @@ class StaffReadServiceImplTest {
         new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
     when(queries.listAllStaff()).thenReturn(List.of(view));
 
-    List<StaffView> result = service.listViews();
-    assertThat(result).hasSize(1);
-    assertThat(result.getFirst()).isEqualTo(view);
+    assertThat(service.listViews()).containsExactly(view);
   }
 
   @Test
-  @DisplayName("Should list staff views by CPF successfully")
-  void listViewsByCpfSuccess() {
-    String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
+  @DisplayName("Should return empty list for null IDs lookup")
+  void listViewsByIdsInvalid() {
+    assertThat(service.listViewsByIds(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should list staff views by IDs successfully")
+  void listViewsByIdsSuccess() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
     StaffView view =
         new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
-    when(queries.listByCpf(cpf)).thenReturn(List.of(view));
+    when(queries.listAllByIds(List.of(id))).thenReturn(List.of(view));
 
-    List<StaffView> result = service.listViewsByCpf(cpf);
-    assertThat(result).hasSize(1);
-    assertThat(result.getFirst()).isEqualTo(view);
+    assertThat(service.listViewsByIds(List.of(id))).containsExactly(view);
   }
 
   @Test
-  @DisplayName("Should return empty list for null or empty CPF")
-  void listViewsByCpfInvalid() {
-    assertThat(service.listViewsByCpf(null)).isEmpty();
-    assertThat(service.listViewsByCpf("")).isEmpty();
-  }
+  @DisplayName("Should search staff by complex criteria")
+  void search() {
+    PageQuery pageQuery = new PageQuery(0, 10);
+    StaffComplexSearchCriteria criteria =
+        new StaffComplexSearchCriteria("Ana", null, null, null, null, true, List.of());
+    PageResult<StaffComplexSearchView> pageResult = new PageResult<>(List.of(), 0, 10, 0, 0);
 
-  @Test
-  @DisplayName("Should return staff view by email successfully")
-  void getViewByEmailSuccess() {
-    String email = "test@pug.com";
-    StaffView view =
-        new StaffView(null, UuidCreator.getTimeOrderedEpoch(), UuidCreator.getTimeOrderedEpoch());
-    when(queries.findOptionalByEmail(email)).thenReturn(Optional.of(view));
+    when(queries.search(pageQuery, criteria)).thenReturn(pageResult);
 
-    assertThat(service.getViewByEmail(email)).isEqualTo(view);
-  }
-
-  @Test
-  @DisplayName("Should throw ResourceNotFound when email not found")
-  void getViewByEmailNotFound() {
-    when(queries.findOptionalByEmail("missing@pug.com")).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewByEmail("missing@pug.com"));
+    assertThat(service.search(pageQuery, criteria)).isEqualTo(pageResult);
   }
 }
