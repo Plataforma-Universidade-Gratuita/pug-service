@@ -7,6 +7,7 @@ import java.util.UUID;
  *
  * @param id course identifier
  * @param name course name
- * @param school lightweight school projection associated with the course
+ * @param areaOfExpertise lightweight area-of-expertise projection associated with the course
  */
-public record CourseComplexSearchResponse(UUID id, String name, SchoolComplexSearchResponse school) {}
+public record CourseComplexSearchResponse(
+    UUID id, String name, AreaOfExpertiseComplexSearchResponse areaOfExpertise) {}

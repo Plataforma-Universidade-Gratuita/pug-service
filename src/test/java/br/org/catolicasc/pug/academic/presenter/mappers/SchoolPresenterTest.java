@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
@@ -113,6 +114,19 @@ class SchoolPresenterTest {
       SchoolResponse response = SchoolPresenter.toResponse(view, Locale.US);
 
       assertThat(response).isNotNull();
+    }
+
+    @Test
+    @DisplayName("Should map view to lightweight complex-search response")
+    void toComplexSearchResponseSuccess() {
+      UUID id = UuidCreator.getTimeOrderedEpoch();
+      SchoolView view = new SchoolView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
+
+      SchoolComplexSearchResponse response = SchoolPresenter.toComplexSearchResponse(view);
+
+      assertThat(response).isNotNull();
+      assertThat(response.id()).isEqualTo(id);
+      assertThat(response.name()).isEqualTo("Engineering");
     }
   }
 }

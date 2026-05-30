@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.presenter.dtos.SchoolComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
@@ -72,5 +73,19 @@ public final class SchoolPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new SchoolResponse(v.id(), v.name(), auditInfo);
+  }
+
+  /**
+   * Projects a read-only {@link SchoolView} into the lightweight school response shared by
+   * complex-search payloads.
+   *
+   * @param view the internal read-model projection of the school
+   * @return the lightweight complex-search response, or {@code null} if the input view is null
+   */
+  public static SchoolComplexSearchResponse toComplexSearchResponse(SchoolView view) {
+    if (view == null) {
+      return null;
+    }
+    return new SchoolComplexSearchResponse(view.id(), view.name());
   }
 }

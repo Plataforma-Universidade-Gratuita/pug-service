@@ -22,6 +22,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.PATCH;
@@ -199,7 +200,7 @@ public class EnrollmentResource {
   @PATCH
   @Path("/{projectId}/enrollments/{studentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
-  @jakarta.ws.rs.Consumes(MediaType.APPLICATION_JSON)
+  @Consumes(MediaType.APPLICATION_JSON)
   public Response patch(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId,

@@ -2,9 +2,9 @@ package br.org.catolicasc.pug.academic.service.impl;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.CourseRepository;
-import br.org.catolicasc.pug.academic.service.CourseService;
-import br.org.catolicasc.pug.academic.service.SchoolService;
+import br.org.catolicasc.pug.academic.service.CoursesService;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
+import br.org.catolicasc.pug.academic.service.SchoolService;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.CourseProcessor;
@@ -19,17 +19,16 @@ import java.util.UUID;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link CourseService} command interface.
+ * Implementation of the {@link CoursesService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for academic courses. It manages
- * transaction boundaries, enforces cross-domain constraints (such as verifying school existence via
- * {@link SchoolService}), and relies on the {@link CourseProcessor} to isolate domain
- * initialization logic.
+ * transaction boundaries, enforces cross-domain constraints, and relies on the {@link
+ * CourseProcessor} to isolate domain initialization logic.
  */
 @ApplicationScoped
-public class CourseServiceImpl implements CourseService {
+public class CoursesServiceImpl implements CoursesService {
 
-  private static final Logger LOG = Logger.getLogger(CourseServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(CoursesServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
 
@@ -161,4 +160,3 @@ public class CourseServiceImpl implements CourseService {
     return repo.existsByName(name);
   }
 }
-

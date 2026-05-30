@@ -4,22 +4,25 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
+import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("CourseQueriesImpl Coverage")
-class CourseQueriesImplTest extends BaseSearchTest {
+@DisplayName("CoursesQueriesImpl Coverage")
+class CoursesQueriesImplTest extends BaseSearchTest {
 
-  @Inject CourseQueriesImpl queries;
+  @Inject CoursesQueriesImpl queries;
   @Inject TestDataFactory factory;
 
   private School school;
@@ -57,18 +60,18 @@ class CourseQueriesImplTest extends BaseSearchTest {
 
   @Test
   @Transactional
-  @DisplayName("Should list all courses by school ID")
-  void shouldListAllBySchoolId() {
-    var list = queries.listAllBySchoolId(school.getId());
-    assertThat(list).isNotEmpty();
-    assertThat(list).allSatisfy(v -> assertThat(v.school().name()).isEqualTo(school.getName()));
+  @DisplayName("Should list courses by IDs")
+  void shouldListAllByIds() {
+    var list = queries.listAllByIds(List.of(course.getId()));
+    assertThat(list).hasSize(1);
+    assertThat(list.get(0).id()).isEqualTo(course.getId());
   }
 
   @Test
   @Transactional
-  @DisplayName("Should return empty list for null school ID")
-  void shouldReturnEmptyForNullSchoolId() {
-    assertThat(queries.listAllBySchoolId(null)).isEmpty();
+  @DisplayName("Should return empty list for null IDs")
+  void shouldReturnEmptyForNullIds() {
+    assertThat(queries.listAllByIds(null)).isEmpty();
   }
 
   @Test
@@ -95,18 +98,44 @@ class CourseQueriesImplTest extends BaseSearchTest {
 
   @Test
   @DisplayName("Should search courses by name successfully")
-  void shouldSearchByNameSuccess() throws Exception {
-    syncIndex(CourseEntity.class);
-
+  void shouldSearchByNameSuccess() {
     String searchKey = course.getName().substring(0, 3);
-    var results = queries.searchByName(searchKey);
+    var result =
+        queries.search(new PageQuery(0, 10), new CourseComplexSearchCriteria(searchKey, null));
 
-    assertThat(results).anyMatch(v -> v.id().equals(course.getId()));
+    assertThat(result.content()).anyMatch(v -> v.id().equals(course.getId()));
+    assertThat(result.page()).isZero();
+    assertThat(result.size()).isEqualTo(10);
   }
 
   @Test
-  @DisplayName("Should handle invalid search inputs gracefully")
-  void shouldHandleInvalidSearchInputs() {
-    assertSearchHandlesInvalidInput(queries::searchByName);
+  @DisplayName("Should search courses by school successfully")
+  void shouldSearchBySchoolSuccess() {
+    var result =
+        queries.search(
+            new PageQuery(0, 10),
+            new CourseComplexSearchCriteria(null, List.of(school.getId())));
+
+    assertThat(result.content()).anyMatch(v -> v.id().equals(course.getId()));
+  }
+
+  @Test
+  @DisplayName("Should return paginated course list when search criteria is null")
+  void shouldHandleNullSearchCriteria() {
+    var result = queries.search(new PageQuery(0, 10), null);
+    assertThat(result.content()).hasSizeLessThanOrEqualTo(10);
+  }
+
+  @Test
+  @DisplayName("Should return full result set when page size is the fetch-all sentinel")
+  void shouldFetchAllWhenPageSizeIsOne() {
+    String searchKey = course.getName().substring(0, 3);
+    var result =
+        queries.search(new PageQuery(4, 1), new CourseComplexSearchCriteria(searchKey, null));
+
+    assertThat(result.page()).isZero();
+    assertThat(result.totalPages()).isLessThanOrEqualTo(1);
+    assertThat(result.content().size()).isEqualTo(result.totalElements());
+    assertThat(result.size()).isEqualTo(Math.max((int) result.totalElements(), 1));
   }
 }

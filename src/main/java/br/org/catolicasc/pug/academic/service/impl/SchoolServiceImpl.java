@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.service.impl;
 
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.SchoolRepository;
-import br.org.catolicasc.pug.academic.service.CourseService;
+import br.org.catolicasc.pug.academic.service.CoursesService;
 import br.org.catolicasc.pug.academic.service.SchoolService;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
@@ -34,7 +34,7 @@ public class SchoolServiceImpl implements SchoolService {
 
   @Inject SchoolRepository repo;
 
-  @Inject CourseService courseService;
+  @Inject CoursesService courseService;
 
   @Inject ProjectSchoolService projectSchoolService;
 

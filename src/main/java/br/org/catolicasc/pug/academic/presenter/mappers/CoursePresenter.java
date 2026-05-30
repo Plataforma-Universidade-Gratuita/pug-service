@@ -1,9 +1,11 @@
 package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseWithAuditInfoComplexSearchResponse;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
@@ -16,7 +18,7 @@ import java.util.Locale;
  *
  * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
  * CourseView}) into client-ready representations ({@link CourseResponse}). It also delegates the
- * mapping of the nested academic school data to the {@link SchoolPresenter}.
+ * mapping of the nested academic area-of-expertise data to the {@link AreaOfExpertisePresenter}.
  */
 public final class CoursePresenter {
   /** Private constructor to prevent instantiation. */
@@ -74,6 +76,45 @@ public final class CoursePresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new CourseResponse(
-        v.id(), v.name(), SchoolPresenter.toResponse(v.school(), locale), auditInfo);
+        v.id(), v.name(), AreaOfExpertisePresenter.toResponse(v.school(), locale), auditInfo);
+  }
+
+  /**
+   * Projects a read-only {@link CourseView} into the lightweight course response used by nested
+   * complex-search payloads.
+   *
+   * @param view the internal read-model projection of the course
+   * @return the lightweight nested complex-search response, or {@code null} if the input is null
+   */
+  public static CourseComplexSearchResponse toComplexSearchResponse(CourseView view) {
+    if (view == null) {
+      return null;
+    }
+    return new CourseComplexSearchResponse(
+        view.id(), view.name(), AreaOfExpertisePresenter.toComplexSearchResponse(view.school()));
+  }
+
+  /**
+   * Projects a read-only {@link CourseView} into the public response used by the course
+   * complex-search endpoint.
+   *
+   * @param view the internal read-model projection of the course
+   * @param locale the locale extracted from the client's request headers
+   * @return the paginated course-search response payload, or {@code null} if the input is invalid
+   */
+  public static CourseWithAuditInfoComplexSearchResponse toWithAuditInfoComplexSearchResponse(
+      CourseView view, Locale locale) {
+    if (view == null || locale == null) {
+      return null;
+    }
+
+    AuditInfoResponse auditInfo =
+        SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale);
+
+    return new CourseWithAuditInfoComplexSearchResponse(
+        view.id(),
+        view.name(),
+        AreaOfExpertisePresenter.toComplexSearchResponse(view.school()),
+        auditInfo);
   }
 }

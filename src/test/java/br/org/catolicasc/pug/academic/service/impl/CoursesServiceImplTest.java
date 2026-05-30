@@ -25,10 +25,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("CourseServiceImpl Integration Tests")
-class CourseServiceImplTest {
+@DisplayName("CoursesServiceImpl Integration Tests")
+class CoursesServiceImplTest {
 
-  @Inject CourseServiceImpl service;
+  @Inject CoursesServiceImpl service;
   @Inject TestDataFactory factory;
   @Inject EntityManager em;
 
@@ -174,7 +174,8 @@ class CourseServiceImplTest {
 
     var user = factory.createUser();
     var account =
-        factory.createAccount(user, br.org.catolicasc.pug.shared.domain.enums.AccountType.FORMER_STUDENT);
+        factory.createAccount(
+            user, br.org.catolicasc.pug.shared.domain.enums.AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
     em.flush();
 
@@ -187,4 +188,3 @@ class CourseServiceImplTest {
     assertThat(service.existsAnyBySchoolId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }
-

@@ -3,13 +3,13 @@ package br.org.catolicasc.pug.academic.constants;
 /**
  * Centralizes the canonical HTTP route strings exposed by the academic module.
  *
- * <p>These constants define the public REST contract for schools, courses, students, and academic
- * school-to-project navigation under the versioned API namespace.
+ * <p>These constants define the public REST contract for areas of expertise, courses, former
+ * students, and academic school-to-project navigation under the versioned API namespace.
  */
 public final class AcademicApiPaths {
 
-  /** Root collection endpoint for academic schools. */
-  public static final String SCHOOLS = "/v1/academic/schools";
+  /** Root collection endpoint for academic areas of expertise. */
+  public static final String AREAS_OF_EXPERTISE = "/v1/academic/areas-of-expertise";
 
   /** Nested project association endpoint for a specific academic school. */
   public static final String SCHOOL_PROJECTS = "/v1/academic/schools/{schoolId}/projects";

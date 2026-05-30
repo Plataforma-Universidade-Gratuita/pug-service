@@ -3,27 +3,33 @@ package br.org.catolicasc.pug.academic.presenter;
 import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
 import br.org.catolicasc.pug.academic.presenter.mappers.CoursePresenter;
-import br.org.catolicasc.pug.academic.service.CourseReadService;
-import br.org.catolicasc.pug.academic.service.CourseService;
+import br.org.catolicasc.pug.academic.service.CoursesReadService;
+import br.org.catolicasc.pug.academic.service.CoursesService;
+import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
-import br.org.catolicasc.pug.shared.utils.StringUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
 import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -40,23 +46,22 @@ import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * REST API resource controller for managing academic courses.
  *
- * <p>This class exposes endpoints to create, retrieve, update, and delete courses. It delegates
- * commands to the {@link CourseService} (writes) and queries to the {@link CourseReadService}
- * (reads), strictly adhering to CQRS principles.
+ * <p>This class exposes endpoints to create, retrieve, update, delete, and search courses. It
+ * delegates commands to the {@link CoursesService} and queries to the {@link CoursesReadService},
+ * strictly adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path(AcademicApiPaths.COURSES)
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
-public class CourseResource {
+public class CoursesResource {
 
-  @Inject CourseService writeService;
-  @Inject CourseReadService readService;
+  @Inject CoursesService writeService;
+  @Inject CoursesReadService readService;
 
   @Context UriInfo uri;
   @Context HttpHeaders headers;
@@ -79,38 +84,59 @@ public class CourseResource {
   }
 
   /**
-   * Retrieves a collection of courses.
+   * Retrieves courses, optionally restricted to a provided collection of identifiers.
    *
-   * <p>If the optional {@code q} parameter is provided, it executes a name-based search against the
-   * courses' names. If the {@code schoolId} is provided, it filters the courses by that school. If
-   * omitted, it returns an unfiltered list of all courses.
+   * <p>When one or more {@code ids} query parameters are present, this endpoint returns only the
+   * matching courses. Otherwise, it returns the complete course list ordered according to the
+   * underlying query implementation.
    *
-   * @param q the optional search query string
-   * @param schoolId the optional school identifier to filter by
+   * @param ids the optional course identifiers used to restrict the returned collection
    * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
    *     CourseResponse}
    */
   @GET
   @Authenticated
-  public Response listOrSearch(
-      @QueryParam("q") String q, @QueryParam("schoolId") @UuidV7 UUID schoolId) {
-
-    List<CourseView> views;
-
-    if (schoolId != null) {
-      views = readService.listViewsBySchoolId(schoolId);
-    } else if (StringUtils.isNotEmpty(q)) {
-      views = readService.searchByName(q);
-    } else {
-      views = readService.listViews();
-    }
-
+  public Response list(@QueryParam("ids") List<UUID> ids) {
+    List<CourseView> views =
+        CollectionUtils.isEmpty(ids) ? readService.listViews() : readService.listViewsByIds(ids);
     List<CourseResponse> body =
-        views.stream()
-            .map(v -> CoursePresenter.toResponse(v, locale()))
-            .collect(Collectors.toList());
+        views.stream().map(v -> CoursePresenter.toResponse(v, locale())).toList();
 
     return Response.ok(ApiEnvelope.ok(body)).build();
+  }
+
+  /**
+   * Executes paginated course search using the academic complex-search contract.
+   *
+   * @param page the zero-based page index
+   * @param size the requested page size; {@code 1} returns the full result set in a single page
+   * @param request the optional complex-search filters
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the paginated search
+   *     result
+   */
+  @POST
+  @Path("search")
+  @Authenticated
+  public Response search(
+      @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+      @QueryParam("size") @DefaultValue("25") @Min(1) int size,
+      @Valid CourseComplexSearchRequest request) {
+    CourseComplexSearchCriteria criteria =
+        request == null
+            ? new CourseComplexSearchCriteria(null, null)
+            : new CourseComplexSearchCriteria(request.name(), request.schoolIds());
+    var result = readService.search(new PageQuery(page, size), criteria);
+    var responseBody =
+        new PageResponse<>(
+            result.content().stream()
+                .map(view -> CoursePresenter.toWithAuditInfoComplexSearchResponse(view, locale()))
+                .toList(),
+            result.page(),
+            result.size(),
+            result.totalElements(),
+            result.totalPages());
+
+    return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
   /**
@@ -135,7 +161,7 @@ public class CourseResource {
   }
 
   /**
-   * Partially updates an existing course's details.
+   * Updates an existing course's details.
    *
    * @param id the unique identifier (UUIDv7) of the course to update
    * @param req the validated {@link CourseUpdateRequest} containing the modified data
@@ -168,11 +194,7 @@ public class CourseResource {
     return Response.noContent().build();
   }
 
-  /**
-   * Helper method to determine the preferred locale from the incoming request headers.
-   *
-   * @return the resolved {@link Locale}
-   */
+  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

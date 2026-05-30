@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.service.impl;
 
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.domain.FormerStudentRepository;
-import br.org.catolicasc.pug.academic.service.CourseService;
+import br.org.catolicasc.pug.academic.service.CoursesService;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.FormerStudentUpdateCommand;
@@ -31,7 +31,7 @@ import org.jboss.logging.Logger;
  * <p>This application-scoped service orchestrates state mutations for formerStudent enrollments. Because
  * a formerStudent is inherently an extension of an authentication account tied to a specific course, this
  * service delegates identity concerns down to the {@link AccountsService} and structural course
- * validations to the {@link CourseService}.
+ * validations to the {@link CoursesService}.
  */
 @ApplicationScoped
 public class FormerStudentsServiceImpl implements FormerStudentsService {
@@ -44,7 +44,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
 
   @Inject AccountsService accountService;
 
-  @Inject CourseService courseService;
+  @Inject CoursesService courseService;
 
   @Inject EnrollmentService enrollmentService;
 

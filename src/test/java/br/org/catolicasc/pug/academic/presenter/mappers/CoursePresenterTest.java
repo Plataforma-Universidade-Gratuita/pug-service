@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.CourseWithAuditInfoComplexSearchResponse;
 import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -95,27 +97,52 @@ class CoursePresenterTest {
     }
 
     @Test
-    @DisplayName("Should map view to response correctly with nested school")
+    @DisplayName("Should map view to response correctly with nested area of expertise")
     void toResponseSuccess() {
       CourseView view = buildCourseView();
       CourseResponse response = CoursePresenter.toResponse(view, Locale.US);
 
       assertThat(response).isNotNull();
       assertThat(response.name()).isEqualTo("Computer Science");
-      assertThat(response.school()).isNotNull();
-      assertThat(response.school().name()).isEqualTo("Engineering");
+      assertThat(response.areaOfExpertise()).isNotNull();
+      assertThat(response.areaOfExpertise().name()).isEqualTo("Engineering");
       assertThat(response.auditInfo()).isNotNull();
     }
 
     @Test
-    @DisplayName("Should handle null school in view")
-    void toResponseNullSchool() {
+    @DisplayName("Should handle null area of expertise in view")
+    void toResponseNullAreaOfExpertise() {
       OffsetDateTime now = OffsetDateTime.now();
       CourseView view = new CourseView(UuidCreator.getTimeOrderedEpoch(), "CS", null, now, now);
       CourseResponse response = CoursePresenter.toResponse(view, Locale.US);
 
       assertThat(response).isNotNull();
-      assertThat(response.school()).isNull();
+      assertThat(response.areaOfExpertise()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should map view to lightweight complex-search response")
+    void toComplexSearchResponseSuccess() {
+      CourseView view = buildCourseView();
+      CourseComplexSearchResponse response = CoursePresenter.toComplexSearchResponse(view);
+
+      assertThat(response).isNotNull();
+      assertThat(response.name()).isEqualTo("Computer Science");
+      assertThat(response.areaOfExpertise()).isNotNull();
+      assertThat(response.areaOfExpertise().name()).isEqualTo("Engineering");
+    }
+
+    @Test
+    @DisplayName("Should map view to course search response with audit info")
+    void toWithAuditInfoComplexSearchResponseSuccess() {
+      CourseView view = buildCourseView();
+      CourseWithAuditInfoComplexSearchResponse response =
+          CoursePresenter.toWithAuditInfoComplexSearchResponse(view, Locale.US);
+
+      assertThat(response).isNotNull();
+      assertThat(response.name()).isEqualTo("Computer Science");
+      assertThat(response.areaOfExpertise()).isNotNull();
+      assertThat(response.auditInfo()).isNotNull();
     }
 
     private CourseView buildCourseView() {

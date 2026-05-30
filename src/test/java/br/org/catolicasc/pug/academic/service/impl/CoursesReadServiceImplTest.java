@@ -5,10 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.academic.infra.read.CourseQueries;
+import br.org.catolicasc.pug.academic.infra.read.CoursesQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -21,11 +24,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("CourseReadServiceImpl Coverage")
-class CourseReadServiceImplTest {
+@DisplayName("CoursesReadServiceImpl Coverage")
+class CoursesReadServiceImplTest {
 
-  @Inject CourseReadServiceImpl service;
-  @InjectMock CourseQueries queries;
+  @Inject CoursesReadServiceImpl service;
+  @InjectMock CoursesQueries queries;
 
   @Test
   @DisplayName("Should return course view by ID")
@@ -55,31 +58,29 @@ class CourseReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list courses by school ID")
-  void listViewsBySchoolId() {
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listAllBySchoolId(schoolId))
-        .thenReturn(List.of(buildView(UuidCreator.getTimeOrderedEpoch())));
+  @DisplayName("Should list courses by IDs")
+  void listViewsByIds() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    when(queries.listAllByIds(List.of(id))).thenReturn(List.of(buildView(id)));
 
-    assertThat(service.listViewsBySchoolId(schoolId)).hasSize(1);
+    assertThat(service.listViewsByIds(List.of(id))).hasSize(1);
   }
 
   @Test
-  @DisplayName("Should return empty list for null school ID")
-  void listViewsBySchoolIdNull() {
-    assertThat(service.listViewsBySchoolId(null)).isEmpty();
-  }
+  @DisplayName("Should delegate paginated search")
+  void search() {
+    PageQuery pageQuery = new PageQuery(0, 25);
+    CourseComplexSearchCriteria criteria = new CourseComplexSearchCriteria("Comp", List.of());
+    PageResult<CourseView> expected =
+        new PageResult<>(List.of(buildView(UuidCreator.getTimeOrderedEpoch())), 0, 25, 1, 1);
+    when(queries.search(pageQuery, criteria)).thenReturn(expected);
 
-  @Test
-  @DisplayName("Should fold input and delegate search")
-  void searchByName() {
-    when(queries.searchByName("computer")).thenReturn(List.of());
-    assertThat(service.searchByName("  Computer  ")).isEmpty();
+    assertThat(service.search(pageQuery, criteria)).isEqualTo(expected);
   }
 
   private CourseView buildView(UUID id) {
     OffsetDateTime now = OffsetDateTime.now();
-    SchoolView school = new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Eng", now, now);
-    return new CourseView(id, "CS", school, now, now);
+    SchoolView school = new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
+    return new CourseView(id, "Computer Science", school, now, now);
   }
 }

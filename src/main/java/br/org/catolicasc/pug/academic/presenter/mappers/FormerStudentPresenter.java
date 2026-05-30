@@ -4,6 +4,7 @@ import br.org.catolicasc.pug.academic.infra.read.dtos.CourseComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolComplexSearchView;
+import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CounterpartHoursResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentComplexSearchResponse;
@@ -11,7 +12,6 @@ import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.PeriodResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolComplexSearchResponse;
 import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.FormerStudentUpdateCommand;
 import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
@@ -170,13 +170,15 @@ public final class FormerStudentPresenter {
     if (view == null) {
       return null;
     }
-    return new CourseComplexSearchResponse(view.id(), view.name(), toSchoolComplexSearchResponse(view.school()));
+    return new CourseComplexSearchResponse(
+        view.id(), view.name(), toAreaOfExpertiseComplexSearchResponse(view.school()));
   }
 
-  private static SchoolComplexSearchResponse toSchoolComplexSearchResponse(SchoolComplexSearchView view) {
+  private static AreaOfExpertiseComplexSearchResponse toAreaOfExpertiseComplexSearchResponse(
+      SchoolComplexSearchView view) {
     if (view == null) {
       return null;
     }
-    return new SchoolComplexSearchResponse(view.id(), view.name());
+    return new AreaOfExpertiseComplexSearchResponse(view.id(), view.name());
   }
 }
