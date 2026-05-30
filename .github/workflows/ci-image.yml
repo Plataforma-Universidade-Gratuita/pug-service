@@ -18,6 +18,33 @@ jobs:
     name: Validate
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: pug_test
+          POSTGRES_PASSWORD: pug_test
+          POSTGRES_DB: pug_test
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U pug_test -d pug_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+      mongo:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: pug_test
+          MONGO_INITDB_ROOT_PASSWORD: pug_test
+        ports:
+          - 27019:27017
+        options: >-
+          --health-cmd "mongosh mongodb://pug_test:pug_test@localhost:27017/admin --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 10
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,7 +62,12 @@ jobs:
       - name: Run Maven verify
         run: ./mvnw -B clean verify
         env:
-          TESTCONTAINERS_RYUK_DISABLED: false
+          QUARKUS_DATASOURCE_DEVSERVICES_ENABLED: "false"
+          QUARKUS_MONGODB_DEVSERVICES_ENABLED: "false"
+          QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost:5434/pug_test
+          QUARKUS_DATASOURCE_USERNAME: pug_test
+          QUARKUS_DATASOURCE_PASSWORD: pug_test
+          QUARKUS_MONGODB_CONNECTION_STRING: mongodb://pug_test:pug_test@localhost:27019
 
   build-image:
     name: Build Image
