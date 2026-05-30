@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
@@ -22,11 +22,11 @@ class AreasOfExpertiseQueriesImplTest extends BaseSearchTest {
   @Inject AreasOfExpertiseQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private School area;
+  private AreaOfExpertise area;
 
   @BeforeEach
   void setup() {
-    area = factory.createSchool();
+    area = factory.createAreaOfExpertise();
   }
 
   @Test

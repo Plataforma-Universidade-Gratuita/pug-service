@@ -88,7 +88,7 @@ class EntitiesResourceTest extends BaseResourceTest {
       user = "admin",
       roles = {"ADMIN"})
   @DisplayName("GET /v1/partners/entities?ids= - Filter by IDs")
-  void listByIds() throws Exception {
+  void listAllByIds() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(
         () -> {

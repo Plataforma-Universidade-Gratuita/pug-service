@@ -40,7 +40,7 @@ class EnrollmentReadServiceImplTest {
         "Student Name",
         "student@example.com",
         "20260001",
-        Campi.ITAJAI,
+        Campi.JOINVILLE,
         LocalDate.now(),
         LocalDate.now().plusMonths(6),
         EnrollmentStatus.PENDING,
@@ -95,16 +95,16 @@ class EnrollmentReadServiceImplTest {
 
   @Test
   @DisplayName("Should list views by formerStudent ID")
-  void listViewsByStudentId() {
+  void listViewsByFormerStudentId() {
     UUID sid = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listAllByStudentId(sid)).thenReturn(List.of(sampleView()));
-    assertThat(service.listViewsByStudentId(sid)).hasSize(1);
+    when(queries.listAllByFormerStudentId(sid)).thenReturn(List.of(sampleView()));
+    assertThat(service.listViewsByFormerStudentId(sid)).hasSize(1);
   }
 
   @Test
   @DisplayName("Should return empty list for null formerStudent ID")
-  void listViewsByStudentIdNull() {
-    assertThat(service.listViewsByStudentId(null)).isEmpty();
+  void listViewsByFormerStudentIdNull() {
+    assertThat(service.listViewsByFormerStudentId(null)).isEmpty();
   }
 
   @Test

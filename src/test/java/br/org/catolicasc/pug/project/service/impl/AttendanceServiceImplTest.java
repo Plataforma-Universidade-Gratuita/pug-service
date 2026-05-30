@@ -9,9 +9,9 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
@@ -53,7 +53,7 @@ class AttendanceServiceImplTest {
 
   @BeforeEach
   void setup() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(studentAcc, course);

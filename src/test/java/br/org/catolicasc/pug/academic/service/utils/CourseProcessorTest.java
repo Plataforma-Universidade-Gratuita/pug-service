@@ -19,7 +19,7 @@ class CourseProcessorTest {
 
     assertThat(course.hasFieldErrors()).isFalse();
     assertThat(course.getName()).isEqualTo("Computer Science");
-    assertThat(course.getSchoolId()).isEqualTo(areaOfExpertiseId);
+    assertThat(course.getAreaOfExpertiseId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test
@@ -37,17 +37,17 @@ class CourseProcessorTest {
     Course updated = CourseProcessor.processUpdateInput(existing, "New Name", null);
 
     assertThat(updated.getName()).isEqualTo("New Name");
-    assertThat(updated.getSchoolId()).isEqualTo(existing.getSchoolId());
+    assertThat(updated.getAreaOfExpertiseId()).isEqualTo(existing.getAreaOfExpertiseId());
   }
 
   @Test
   @DisplayName("Should update areaOfExpertiseId via processUpdateInput")
-  void shouldUpdateSchoolId() {
+  void shouldUpdateAreaOfExpertiseId() {
     Course existing = Course.factory("Course", UuidCreator.getTimeOrderedEpoch());
-    UUID newSchoolId = UuidCreator.getTimeOrderedEpoch();
-    Course updated = CourseProcessor.processUpdateInput(existing, null, newSchoolId);
+    UUID newAreaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+    Course updated = CourseProcessor.processUpdateInput(existing, null, newAreaOfExpertiseId);
 
-    assertThat(updated.getSchoolId()).isEqualTo(newSchoolId);
+    assertThat(updated.getAreaOfExpertiseId()).isEqualTo(newAreaOfExpertiseId);
     assertThat(updated.getName()).isEqualTo("Course");
   }
 

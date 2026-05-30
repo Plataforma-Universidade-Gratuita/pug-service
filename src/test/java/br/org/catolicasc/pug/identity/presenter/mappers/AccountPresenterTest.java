@@ -64,8 +64,8 @@ class AccountPresenterTest {
       assertThat(response.id()).isEqualTo(id);
       assertThat(response.userId()).isEqualTo(userId);
       assertThat(response.email()).isEqualTo("test@pug.com");
-      assertThat(response.accountType()).isEqualTo(AccountType.FORMER_STUDENT);
-      assertThat(response.accountTypeFormatted())
+      assertThat(response.accountType().accountType()).isEqualTo(AccountType.FORMER_STUDENT);
+      assertThat(response.accountType().accountTypeFormatted())
           .isEqualTo(i18n.translation(AccountType.FORMER_STUDENT.getBundleKey(), Locale.US));
       assertThat(response.active()).isTrue();
       assertThat(response.auditInfo()).isNotNull();
@@ -89,8 +89,8 @@ class AccountPresenterTest {
       assertThat(response.user().id()).isEqualTo(userId);
       assertThat(response.user().name()).isEqualTo("Test User");
       assertThat(response.email()).isEqualTo("test@pug.com");
-      assertThat(response.accountType()).isEqualTo(AccountType.FORMER_STUDENT);
-      assertThat(response.accountTypeFormatted())
+      assertThat(response.accountType().accountType()).isEqualTo(AccountType.FORMER_STUDENT);
+      assertThat(response.accountType().accountTypeFormatted())
           .isEqualTo(i18n.translation(AccountType.FORMER_STUDENT.getBundleKey(), Locale.US));
       assertThat(response.active()).isTrue();
       assertThat(response.auditInfo()).isNotNull();

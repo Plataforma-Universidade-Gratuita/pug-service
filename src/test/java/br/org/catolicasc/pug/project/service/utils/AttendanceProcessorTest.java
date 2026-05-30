@@ -28,7 +28,7 @@ class AttendanceProcessorTest {
 
     assertThat(attendance).isNotNull();
     assertThat(attendance.getEnrollmentIdentifier().getProjectId()).isEqualTo(project.getId());
-    assertThat(attendance.getEnrollmentIdentifier().getStudentId())
+    assertThat(attendance.getEnrollmentIdentifier().getFormerStudentId())
         .isEqualTo(formerStudent.getAccountId());
     assertThat(attendance.getQrValidationInfo().getDuration())
         .isEqualByComparingTo(new BigDecimal("2.00"));

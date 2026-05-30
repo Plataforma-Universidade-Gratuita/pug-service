@@ -43,7 +43,7 @@ public class CourseUpdateRequestBuilder {
    * @param areaOfExpertiseId the new areaOfExpertise UUID, or {@code null} to leave unchanged
    * @return this builder instance
    */
-  public CourseUpdateRequestBuilder withSchoolId(UUID areaOfExpertiseId) {
+  public CourseUpdateRequestBuilder withAreaOfExpertiseId(UUID areaOfExpertiseId) {
     this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }

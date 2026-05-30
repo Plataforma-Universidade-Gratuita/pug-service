@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -45,7 +45,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -88,7 +88,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           FormerStudent formerStudent = factory.createStudent(acc, course);
@@ -115,7 +115,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           FormerStudent formerStudent = factory.createStudent(acc, course);
@@ -144,7 +144,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     FormerStudent[] formerStudent = new FormerStudent[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -173,7 +173,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           acc[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           FormerStudent formerStudent = factory.createStudent(acc[0], course);
@@ -203,7 +203,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Account[] acc = new Account[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           acc[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           FormerStudent formerStudent = factory.createStudent(acc[0], course);
@@ -233,7 +233,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -274,7 +274,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           acc[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           factory.createStudent(acc[0], course);
@@ -305,7 +305,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -344,7 +344,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
-        .pathParam("formerStudentId", enr[0].getIdentifier().getStudentId())
+        .pathParam("formerStudentId", enr[0].getIdentifier().getFormerStudentId())
         .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.CANCELED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{formerStudentId}")
@@ -370,7 +370,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
-        .pathParam("formerStudentId", enr[0].getIdentifier().getStudentId())
+        .pathParam("formerStudentId", enr[0].getIdentifier().getFormerStudentId())
         .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.COMPLETED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{formerStudentId}")
@@ -389,7 +389,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           acc[0] = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           FormerStudent formerStudent = factory.createStudent(acc[0], course);
@@ -427,7 +427,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -466,7 +466,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
-        .pathParam("formerStudentId", enr[0].getIdentifier().getStudentId())
+        .pathParam("formerStudentId", enr[0].getIdentifier().getFormerStudentId())
         .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.REMOVED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{formerStudentId}")
@@ -485,7 +485,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -505,7 +505,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   }
 
   private Enrollment setupApprovedEnrollment() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     FormerStudent formerStudent = factory.createStudent(acc, course);

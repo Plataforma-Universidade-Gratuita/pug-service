@@ -2,9 +2,9 @@ package br.org.catolicasc.pug.project.infra.persistence.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -29,7 +29,7 @@ class EnrollmentRepositoryImplTest {
 
   @BeforeEach
   void setup() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(acc, course);

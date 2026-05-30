@@ -87,6 +87,7 @@ class AdminPresenterTest {
                   OffsetDateTime.now(),
                   OffsetDateTime.now(),
                   true),
+              Campi.JOINVILLE,
               OffsetDateTime.now());
 
       var response = AdminPresenter.toComplexSearchResponse(view, Locale.US, i18n);

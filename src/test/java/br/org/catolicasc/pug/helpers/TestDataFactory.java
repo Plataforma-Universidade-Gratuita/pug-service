@@ -1,22 +1,22 @@
 package br.org.catolicasc.pug.helpers;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.infra.persistence.impl.AreaOfExpertiseRepositoryImpl;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.CourseRepositoryImpl;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.FormerStudentRepositoryImpl;
-import br.org.catolicasc.pug.academic.infra.persistence.impl.SchoolRepositoryImpl;
 import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.geo.infra.CityMapper;
 import br.org.catolicasc.pug.geo.infra.persistence.impl.CityRepositoryImpl;
 import br.org.catolicasc.pug.helpers.builders.domain.AccountBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.AdminBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.AreaOfExpertiseBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.CourseBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.EntityBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.SchoolBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.StaffBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
@@ -50,7 +50,7 @@ public class TestDataFactory {
 
   @Inject UserRepositoryImpl userRepository;
   @Inject AccountRepositoryImpl accountRepository;
-  @Inject SchoolRepositoryImpl areaOfExpertiseRepository;
+  @Inject AreaOfExpertiseRepositoryImpl areaOfExpertiseRepository;
   @Inject CourseRepositoryImpl courseRepository;
   @Inject FormerStudentRepositoryImpl studentRepository;
   @Inject EntityRepositoryImpl entityRepository;
@@ -69,11 +69,11 @@ public class TestDataFactory {
     return userRepository.persist(user);
   }
 
-  public School createSchool() {
-    return areaOfExpertiseRepository.persist(SchoolBuilder.aSchool().build());
+  public AreaOfExpertise createAreaOfExpertise() {
+    return areaOfExpertiseRepository.persist(AreaOfExpertiseBuilder.aAreaOfExpertise().build());
   }
 
-  public School createSchool(School areaOfExpertise) {
+  public AreaOfExpertise createAreaOfExpertise(AreaOfExpertise areaOfExpertise) {
     return areaOfExpertiseRepository.persist(areaOfExpertise);
   }
 
@@ -90,9 +90,9 @@ public class TestDataFactory {
     return accountRepository.persist(account);
   }
 
-  public Course createCourse(School areaOfExpertise) {
+  public Course createCourse(AreaOfExpertise areaOfExpertise) {
     return courseRepository.persist(
-        CourseBuilder.aCourse().withSchool(areaOfExpertise.getId()).build());
+        CourseBuilder.aCourse().withAreaOfExpertise(areaOfExpertise.getId()).build());
   }
 
   public Course createCourse(Course course) {

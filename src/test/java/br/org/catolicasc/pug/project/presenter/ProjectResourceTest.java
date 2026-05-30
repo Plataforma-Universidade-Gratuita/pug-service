@@ -78,7 +78,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  void listByIds() throws Exception {
+  void listAllByIds() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
         () -> {

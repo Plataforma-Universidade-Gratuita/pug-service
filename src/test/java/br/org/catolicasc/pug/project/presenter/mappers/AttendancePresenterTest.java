@@ -122,7 +122,7 @@ class AttendancePresenterTest {
           "Student Name",
           "student@example.com",
           "20260001",
-          Campi.ITAJAI,
+          Campi.JOINVILLE,
           new BigDecimal("2.00"),
           "hash-123",
           AttendanceStatus.WAITING,

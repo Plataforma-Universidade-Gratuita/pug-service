@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
@@ -42,7 +42,7 @@ class AreaOfExpertisePresenterTest {
   void toResponse() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
-    SchoolView view = new SchoolView(id, "Engineering", now, now);
+    AreaOfExpertiseView view = new AreaOfExpertiseView(id, "Engineering", now, now);
     AreaOfExpertiseResponse response = AreaOfExpertisePresenter.toResponse(view, Locale.US);
     assertThat(response).isNotNull();
     assertThat(response.id()).isEqualTo(id);
@@ -54,7 +54,8 @@ class AreaOfExpertisePresenterTest {
   @DisplayName("Should map view to lightweight complex-search response")
   void toComplexSearchResponse() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
-    SchoolView view = new SchoolView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
+    AreaOfExpertiseView view =
+        new AreaOfExpertiseView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
     AreaOfExpertiseComplexSearchResponse response =
         AreaOfExpertisePresenter.toComplexSearchResponse(view);
     assertThat(response).isNotNull();

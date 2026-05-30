@@ -43,7 +43,7 @@ public class CourseCreateRequestBuilder {
    * @param areaOfExpertiseId the UUID of the parent areaOfExpertise
    * @return this builder instance
    */
-  public CourseCreateRequestBuilder withSchoolId(UUID areaOfExpertiseId) {
+  public CourseCreateRequestBuilder withAreaOfExpertiseId(UUID areaOfExpertiseId) {
     this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }

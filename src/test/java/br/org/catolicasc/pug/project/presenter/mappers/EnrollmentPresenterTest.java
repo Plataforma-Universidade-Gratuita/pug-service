@@ -108,7 +108,7 @@ class EnrollmentPresenterTest {
           "Student Name",
           "student@example.com",
           "20260001",
-          Campi.ITAJAI,
+          Campi.JOINVILLE,
           LocalDate.now(),
           LocalDate.now().plusMonths(6),
           EnrollmentStatus.PENDING,

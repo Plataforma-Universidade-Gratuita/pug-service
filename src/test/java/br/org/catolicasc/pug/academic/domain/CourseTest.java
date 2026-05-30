@@ -21,7 +21,7 @@ class CourseTest {
 
     assertThat(course.hasFieldErrors()).isFalse();
     assertThat(course.getName()).isEqualTo("Software Engineering");
-    assertThat(course.getSchoolId()).isEqualTo(areaOfExpertiseId);
+    assertThat(course.getAreaOfExpertiseId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test
@@ -32,7 +32,8 @@ class CourseTest {
     assertThat(course.hasFieldErrors()).isTrue();
     assertThat(course.getFieldErrors())
         .contains(
-            SharedFieldErrorCodes.INVALID_NAME_BLANK, AcademicFieldErrorCodes.INVALID_SCHOOL_BLANK);
+            SharedFieldErrorCodes.INVALID_NAME_BLANK,
+            AcademicFieldErrorCodes.INVALID_AREA_OF_EXPERTISE_BLANK);
   }
 
   @Nested
@@ -52,14 +53,14 @@ class CourseTest {
 
     @Test
     @DisplayName("Should move course to another areaOfExpertise successfully")
-    void shouldMoveToSchool() {
-      UUID originalSchool = UuidCreator.getTimeOrderedEpoch();
-      UUID newSchool = UuidCreator.getTimeOrderedEpoch();
-      Course course = Course.factory("Course Name", originalSchool);
+    void shouldMoveToAreaOfExpertise() {
+      UUID originalAreaOfExpertise = UuidCreator.getTimeOrderedEpoch();
+      UUID newAreaOfExpertise = UuidCreator.getTimeOrderedEpoch();
+      Course course = Course.factory("Course Name", originalAreaOfExpertise);
 
-      Course moved = course.moveToSchool(newSchool);
+      Course moved = course.moveToAreaOfExpertise(newAreaOfExpertise);
 
-      assertThat(moved.getSchoolId()).isEqualTo(newSchool);
+      assertThat(moved.getAreaOfExpertiseId()).isEqualTo(newAreaOfExpertise);
       assertThat(moved.getAuditInfo().getUpdatedAt())
           .isAfterOrEqualTo(course.getAuditInfo().getCreatedAt());
     }

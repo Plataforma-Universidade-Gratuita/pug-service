@@ -20,7 +20,6 @@ public class FormerStudentCreateRequestBuilder {
   private String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
   private String name = TestNameGenerator.generateRandomName();
   private String email = TestNameGenerator.generateUniqueEmail("test.com");
-  private String password = "test-password";
   private String academicRegistration = TestNameGenerator.generateUniqueRegistration();
   private Campi campus = getRandomCampus();
   private UUID courseId = UuidCreator.getTimeOrderedEpoch();
@@ -69,17 +68,6 @@ public class FormerStudentCreateRequestBuilder {
    */
   public FormerStudentCreateRequestBuilder withEmail(String email) {
     this.email = email;
-    return this;
-  }
-
-  /**
-   * Sets the password.
-   *
-   * @param password the raw password
-   * @return this builder instance
-   */
-  public FormerStudentCreateRequestBuilder withPassword(String password) {
-    this.password = password;
     return this;
   }
 
@@ -159,7 +147,6 @@ public class FormerStudentCreateRequestBuilder {
         cpf,
         name,
         email,
-        password,
         academicRegistration,
         campus,
         courseId,

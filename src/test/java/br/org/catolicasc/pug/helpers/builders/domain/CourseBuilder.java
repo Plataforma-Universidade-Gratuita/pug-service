@@ -41,10 +41,10 @@ public class CourseBuilder {
    * Sets the areaOfExpertise identifier linked to this course.
    *
    * @param areaOfExpertiseId the UUID of the parent {@link
-   *     br.org.catolicasc.pug.academic.domain.School}
+   *     br.org.catolicasc.pug.academic.domain.AreaOfExpertise}
    * @return this builder instance
    */
-  public CourseBuilder withSchool(UUID areaOfExpertiseId) {
+  public CourseBuilder withAreaOfExpertise(UUID areaOfExpertiseId) {
     this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }

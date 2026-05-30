@@ -8,7 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("ProjectBySchool Aggregate Tests")
+@DisplayName("ProjectByAreaOfExpertise Aggregate Tests")
 class ProjectAreaOfExpertiseTest {
 
   @Test
@@ -21,7 +21,7 @@ class ProjectAreaOfExpertiseTest {
 
     assertThat(pbs.hasFieldErrors()).isFalse();
     assertThat(pbs.getProjectId()).isEqualTo(projectId);
-    assertThat(pbs.getSchoolId()).isEqualTo(areaOfExpertiseId);
+    assertThat(pbs.getAreaOfExpertiseId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("FormerStudent Aggregate Tests")
-class StudentTest {
+class FormerStudentTest {
 
   private final AcademicRegistration validReg = AcademicRegistration.factory("12345");
   private final CounterpartHours validHours =

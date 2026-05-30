@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
@@ -33,7 +33,8 @@ class AreasOfExpertiseReadServiceImplTest {
   @DisplayName("Should return area-of-expertise view by ID")
   void getViewByIdSuccess() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
-    SchoolView view = new SchoolView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
+    AreaOfExpertiseView view =
+        new AreaOfExpertiseView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
     when(queries.findOptionalById(id)).thenReturn(Optional.of(view));
     assertThat(service.getViewById(id)).isEqualTo(view);
   }
@@ -53,7 +54,7 @@ class AreasOfExpertiseReadServiceImplTest {
     when(queries.listAllViews())
         .thenReturn(
             List.of(
-                new SchoolView(
+                new AreaOfExpertiseView(
                     UuidCreator.getTimeOrderedEpoch(),
                     "Eng",
                     OffsetDateTime.now(),
@@ -66,7 +67,9 @@ class AreasOfExpertiseReadServiceImplTest {
   void listViewsByIds() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     when(queries.listAllByIds(List.of(id)))
-        .thenReturn(List.of(new SchoolView(id, "Eng", OffsetDateTime.now(), OffsetDateTime.now())));
+        .thenReturn(
+            List.of(
+                new AreaOfExpertiseView(id, "Eng", OffsetDateTime.now(), OffsetDateTime.now())));
     assertThat(service.listViewsByIds(List.of(id))).hasSize(1);
   }
 
@@ -75,10 +78,10 @@ class AreasOfExpertiseReadServiceImplTest {
   void search() {
     PageQuery pageQuery = new PageQuery(0, 25);
     AreaOfExpertiseComplexSearchCriteria criteria = new AreaOfExpertiseComplexSearchCriteria("Eng");
-    PageResult<SchoolView> expected =
+    PageResult<AreaOfExpertiseView> expected =
         new PageResult<>(
             List.of(
-                new SchoolView(
+                new AreaOfExpertiseView(
                     UuidCreator.getTimeOrderedEpoch(),
                     "Eng",
                     OffsetDateTime.now(),

@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -38,21 +38,21 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should save course successfully")
   void saveSuccess() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     em.flush();
 
-    var cmd = aCourseCreateCommand().withSchoolId(areaOfExpertise.getId()).build();
+    var cmd = aCourseCreateCommand().withAreaOfExpertiseId(areaOfExpertise.getId()).build();
     Course saved = service.save(cmd);
 
     assertThat(saved.getName()).isEqualTo(cmd.name());
-    assertThat(saved.getSchoolId()).isEqualTo(areaOfExpertise.getId());
+    assertThat(saved.getAreaOfExpertiseId()).isEqualTo(areaOfExpertise.getId());
     verify(audit).fireCreate(Course.class.getName(), saved.getId());
   }
 
   @Test
   @Transactional
   @DisplayName("Should throw when areaOfExpertise not found on save")
-  void saveSchoolNotFound() {
+  void saveAreaOfExpertiseNotFound() {
     var cmd = aCourseCreateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
   }
@@ -61,14 +61,14 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw DuplicateResourceException for same name")
   void saveDuplicate() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course existing = factory.createCourse(areaOfExpertise);
     em.flush();
 
     var cmd =
         aCourseCreateCommand()
             .withName(existing.getName())
-            .withSchoolId(areaOfExpertise.getId())
+            .withAreaOfExpertiseId(areaOfExpertise.getId())
             .build();
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
@@ -77,10 +77,14 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw validation exception for blank name")
   void saveValidationError() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     em.flush();
 
-    var cmd = aCourseCreateCommand().withName("   ").withSchoolId(areaOfExpertise.getId()).build();
+    var cmd =
+        aCourseCreateCommand()
+            .withName("   ")
+            .withAreaOfExpertiseId(areaOfExpertise.getId())
+            .build();
     assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
 
@@ -88,7 +92,7 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should get course by ID")
   void getByIdSuccess() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
@@ -107,11 +111,11 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should update course successfully")
   void updateSuccess() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
-    var cmd = aCourseUpdateCommand().withSchoolId(null).build();
+    var cmd = aCourseUpdateCommand().withAreaOfExpertiseId(null).build();
     Course updated = service.update(course.getId(), cmd);
 
     assertThat(updated.getName()).isEqualTo(cmd.name());
@@ -121,16 +125,20 @@ class CoursesServiceImplTest {
   @Test
   @Transactional
   @DisplayName("Should update course with new areaOfExpertise")
-  void updateWithNewSchool() {
-    School areaOfExpertise1 = factory.createSchool();
-    School areaOfExpertise2 = factory.createSchool();
+  void updateWithNewAreaOfExpertise() {
+    AreaOfExpertise areaOfExpertise1 = factory.createAreaOfExpertise();
+    AreaOfExpertise areaOfExpertise2 = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise1);
     em.flush();
 
-    var cmd = aCourseUpdateCommand().withName(null).withSchoolId(areaOfExpertise2.getId()).build();
+    var cmd =
+        aCourseUpdateCommand()
+            .withName(null)
+            .withAreaOfExpertiseId(areaOfExpertise2.getId())
+            .build();
     Course updated = service.update(course.getId(), cmd);
 
-    assertThat(updated.getSchoolId()).isEqualTo(areaOfExpertise2.getId());
+    assertThat(updated.getAreaOfExpertiseId()).isEqualTo(areaOfExpertise2.getId());
   }
 
   @Test
@@ -146,7 +154,7 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should delete course successfully")
   void deleteSuccess() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
@@ -172,7 +180,7 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw when deleting course with students")
   void deleteWithStudents() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
 
     var user = factory.createUser();
@@ -186,8 +194,8 @@ class CoursesServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should delegate existsAnyBySchoolId to repo")
-  void existsAnyBySchoolId() {
-    assertThat(service.existsAnyBySchoolId(UuidCreator.getTimeOrderedEpoch())).isFalse();
+  @DisplayName("Should delegate existsAnyByAreaOfExpertiseId to repo")
+  void existsAnyByAreaOfExpertiseId() {
+    assertThat(service.existsAnyByAreaOfExpertiseId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }

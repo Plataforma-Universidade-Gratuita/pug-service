@@ -12,6 +12,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -32,7 +33,13 @@ class AuthResourceTest {
     var req = aLoginRequest().withEmail("test@pug.com").withPassword("password").build();
     TokenResponse token =
         new TokenResponse(
-            "mocked-token", "mocked-refresh", null, AccountType.FORMER_STUDENT, 900, 604800);
+            "mocked-token",
+            "mocked-refresh",
+            UuidCreator.getTimeOrderedEpoch(),
+            AccountType.FORMER_STUDENT,
+            true,
+            900,
+            604800);
 
     when(authService.login(req)).thenReturn(token);
 
@@ -116,7 +123,13 @@ class AuthResourceTest {
     var req = new RefreshRequest("valid-refresh-token");
     TokenResponse token =
         new TokenResponse(
-            "new-access", "valid-refresh-token", null, AccountType.FORMER_STUDENT, 900, 604800);
+            "new-access",
+            "valid-refresh-token",
+            UuidCreator.getTimeOrderedEpoch(),
+            AccountType.FORMER_STUDENT,
+            true,
+            900,
+            604800);
 
     when(authService.refresh(req)).thenReturn(token);
 

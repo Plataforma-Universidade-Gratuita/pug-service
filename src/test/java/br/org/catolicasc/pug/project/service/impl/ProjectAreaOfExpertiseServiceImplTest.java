@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.project.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -21,7 +21,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("ProjectSchoolServiceImpl Integration Tests")
+@DisplayName("ProjectAreasOfExpertiseServiceImpl Integration Tests")
 class ProjectAreaOfExpertiseServiceImplTest {
 
   @Inject ProjectAreaOfExpertiseServiceImpl service;
@@ -30,14 +30,14 @@ class ProjectAreaOfExpertiseServiceImplTest {
   @InjectMock AuditPublisher audit;
 
   private Project project;
-  private School areaOfExpertise;
+  private AreaOfExpertise areaOfExpertise;
 
   @BeforeEach
   void setup() {
     Entity entity = factory.createEntity(factory.getAnyCity());
     Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creator);
-    areaOfExpertise = factory.createSchool();
+    areaOfExpertise = factory.createAreaOfExpertise();
   }
 
   @Test
@@ -58,13 +58,13 @@ class ProjectAreaOfExpertiseServiceImplTest {
 
   @Test
   @DisplayName("Should return empty list for null areaOfExpertise IDs")
-  void saveNullSchoolIds() {
+  void saveNullAreaOfExpertiseIds() {
     assertThat(service.save(project.getId(), null)).isEmpty();
   }
 
   @Test
   @DisplayName("Should return empty list for empty areaOfExpertise IDs")
-  void saveEmptySchoolIds() {
+  void saveEmptyAreaOfExpertiseIds() {
     assertThat(service.save(project.getId(), List.of())).isEmpty();
   }
 
@@ -99,7 +99,7 @@ class ProjectAreaOfExpertiseServiceImplTest {
 
   @Test
   @DisplayName("Should return false for null areaOfExpertise ID in delete")
-  void deleteNullSchoolId() {
+  void deleteNullAreaOfExpertiseId() {
     assertThat(service.delete(UuidCreator.getTimeOrderedEpoch(), null)).isFalse();
   }
 
@@ -123,17 +123,17 @@ class ProjectAreaOfExpertiseServiceImplTest {
   @Test
   @Transactional
   @DisplayName("Should delete all by areaOfExpertise ID")
-  void deleteAllBySchoolId() {
+  void deleteAllByAreaOfExpertiseId() {
     service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
-    long deleted = service.deleteAllBySchoolId(areaOfExpertise.getId());
+    long deleted = service.deleteAllByAreaOfExpertiseId(areaOfExpertise.getId());
 
     assertThat(deleted).isGreaterThanOrEqualTo(1);
   }
 
   @Test
-  @DisplayName("Should return 0 for null areaOfExpertise ID in deleteAllBySchoolId")
-  void deleteAllBySchoolIdNull() {
-    assertThat(service.deleteAllBySchoolId(null)).isZero();
+  @DisplayName("Should return 0 for null areaOfExpertise ID in deleteAllByAreaOfExpertiseId")
+  void deleteAllByAreaOfExpertiseIdNull() {
+    assertThat(service.deleteAllByAreaOfExpertiseId(null)).isZero();
   }
 }

@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseResponse;
@@ -147,8 +147,8 @@ class CoursePresenterTest {
 
     private CourseView buildCourseView() {
       OffsetDateTime now = OffsetDateTime.now();
-      SchoolView areaOfExpertiseView =
-          new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
+      AreaOfExpertiseView areaOfExpertiseView =
+          new AreaOfExpertiseView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
       return new CourseView(
           UuidCreator.getTimeOrderedEpoch(), "Computer Science", areaOfExpertiseView, now, now);
     }

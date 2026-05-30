@@ -1,11 +1,11 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import static br.org.catolicasc.pug.helpers.builders.requests.ProjectSchoolRequestBuilder.aProjectSchoolRequest;
+import static br.org.catolicasc.pug.helpers.builders.requests.ProjectAreaOfExpertiseRequestBuilder.aProjectAreaOfExpertiseRequest;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -20,20 +20,20 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("ProjectsSchoolsResource Integration Tests")
+@DisplayName("ProjectsAreaOfExpertisesResource Integration Tests")
 class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
 
-  private record Graph(Project project, School areaOfExpertise) {}
+  private record Graph(Project project, AreaOfExpertise areaOfExpertise) {}
 
   private Graph createGraph() throws Exception {
     Project[] project = new Project[1];
-    School[] areaOfExpertise = new School[1];
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
     doInTransaction(
         () -> {
           Entity entity = factory.createEntity(factory.getAnyCity());
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
-          areaOfExpertise[0] = factory.createSchool();
+          areaOfExpertise[0] = factory.createAreaOfExpertise();
         });
     return new Graph(project[0], areaOfExpertise[0]);
   }
@@ -49,7 +49,7 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
         .body(
-            aProjectSchoolRequest()
+            aProjectAreaOfExpertiseRequest()
                 .withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId()))
                 .build())
         .when()
@@ -79,7 +79,7 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  void listProjectsBySchoolId() throws Exception {
+  void listProjectsByAreaOfExpertiseId() throws Exception {
     Graph g = createGraph();
     createAssociation(g);
 
@@ -107,7 +107,7 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
         .body(
-            aProjectSchoolRequest()
+            aProjectAreaOfExpertiseRequest()
                 .withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId()))
                 .build())
         .post("/v1/projects/{projectId}/areas-of-expertise");

@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertiseRepository;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
@@ -23,54 +23,55 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("ProjectSchoolReadServiceImpl Coverage")
+@DisplayName("ProjectAreasOfExpertiseReadServiceImpl Coverage")
 class ProjectAreaOfExpertiseReadServiceImplTest {
 
   @Inject ProjectAreaOfExpertiseReadServiceImpl service;
   @InjectMock ProjectAreaOfExpertiseRepository associationRepo;
-  @InjectMock SchoolQueries areaOfExpertiseQueries;
+  @InjectMock AreasOfExpertiseQueries areaOfExpertiseQueries;
   @InjectMock ProjectQueries projectQueries;
 
   @Test
   @DisplayName("Should list areaOfExpertises by project ID")
-  void listAllSchoolsByProjectId() {
+  void listAllAreasOfExpertiseByProjectId() {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
     UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
-    when(associationRepo.findAllSchoolIdsByProjectId(projectId))
+    when(associationRepo.findAllAreaOfExpertiseIdsByProjectId(projectId))
         .thenReturn(Set.of(areaOfExpertiseId));
-    when(areaOfExpertiseQueries.listByIds(any()))
-        .thenReturn(List.of(new SchoolView(areaOfExpertiseId, "School", now, now)));
+    when(areaOfExpertiseQueries.listAllByIds(any()))
+        .thenReturn(
+            List.of(new AreaOfExpertiseView(areaOfExpertiseId, "AreaOfExpertise", now, now)));
 
-    Set<SchoolView> result = service.listAllSchoolsByProjectId(projectId);
+    Set<AreaOfExpertiseView> result = service.listAllAreasOfExpertiseByProjectId(projectId);
 
     assertThat(result).hasSize(1);
   }
 
   @Test
   @DisplayName("Should return empty set for null project ID")
-  void listAllSchoolsByProjectIdNull() {
-    assertThat(service.listAllSchoolsByProjectId(null)).isEmpty();
+  void listAllAreasOfExpertiseByProjectIdNull() {
+    assertThat(service.listAllAreasOfExpertiseByProjectId(null)).isEmpty();
   }
 
   @Test
   @DisplayName("Should return empty set when no associations found for project")
-  void listAllSchoolsByProjectIdNoAssociations() {
+  void listAllAreasOfExpertiseByProjectIdNoAssociations() {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
-    when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of());
+    when(associationRepo.findAllAreaOfExpertiseIdsByProjectId(projectId)).thenReturn(Set.of());
 
-    assertThat(service.listAllSchoolsByProjectId(projectId)).isEmpty();
+    assertThat(service.listAllAreasOfExpertiseByProjectId(projectId)).isEmpty();
   }
 
   @Test
   @DisplayName("Should list projects by areaOfExpertise ID")
-  void listAllProjectsBySchoolId() {
+  void listAllProjectsByAreaOfExpertiseId() {
     UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
-    when(associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId))
+    when(associationRepo.findAllProjectIdsByAreaOfExpertiseId(areaOfExpertiseId))
         .thenReturn(Set.of(projectId));
     when(projectQueries.listAllByIds(any()))
         .thenReturn(
@@ -90,23 +91,24 @@ class ProjectAreaOfExpertiseReadServiceImplTest {
                     now,
                     now)));
 
-    Set<ProjectView> result = service.listAllProjectsBySchoolId(areaOfExpertiseId);
+    Set<ProjectView> result = service.listAllProjectsByAreaOfExpertiseId(areaOfExpertiseId);
 
     assertThat(result).hasSize(1);
   }
 
   @Test
   @DisplayName("Should return empty set for null areaOfExpertise ID")
-  void listAllProjectsBySchoolIdNull() {
-    assertThat(service.listAllProjectsBySchoolId(null)).isEmpty();
+  void listAllProjectsByAreaOfExpertiseIdNull() {
+    assertThat(service.listAllProjectsByAreaOfExpertiseId(null)).isEmpty();
   }
 
   @Test
   @DisplayName("Should return empty set when no associations found for areaOfExpertise")
-  void listAllProjectsBySchoolIdNoAssociations() {
+  void listAllProjectsByAreaOfExpertiseIdNoAssociations() {
     UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
-    when(associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId)).thenReturn(Set.of());
+    when(associationRepo.findAllProjectIdsByAreaOfExpertiseId(areaOfExpertiseId))
+        .thenReturn(Set.of());
 
-    assertThat(service.listAllProjectsBySchoolId(areaOfExpertiseId)).isEmpty();
+    assertThat(service.listAllProjectsByAreaOfExpertiseId(areaOfExpertiseId)).isEmpty();
   }
 }

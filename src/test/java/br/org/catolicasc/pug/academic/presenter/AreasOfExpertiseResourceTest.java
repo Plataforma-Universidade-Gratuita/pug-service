@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseUpdateRequest;
@@ -32,8 +32,8 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /v1/academic/areas-of-expertise/{id} - Success")
   void getByIdSuccess() throws Exception {
-    School[] area = new School[1];
-    doInTransaction(() -> area[0] = factory.createSchool());
+    AreaOfExpertise[] area = new AreaOfExpertise[1];
+    doInTransaction(() -> area[0] = factory.createAreaOfExpertise());
 
     given()
         .pathParam("id", area[0].getId())
@@ -67,7 +67,7 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/academic/areas-of-expertise - List All")
   void listAll() throws Exception {
-    doInTransaction(() -> factory.createSchool());
+    doInTransaction(() -> factory.createAreaOfExpertise());
 
     given()
         .when()
@@ -82,9 +82,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       user = "formerStudent",
       roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/academic/areas-of-expertise?ids= - Filter by IDs")
-  void listByIds() throws Exception {
-    School[] area = new School[1];
-    doInTransaction(() -> area[0] = factory.createSchool());
+  void listAllByIds() throws Exception {
+    AreaOfExpertise[] area = new AreaOfExpertise[1];
+    doInTransaction(() -> area[0] = factory.createAreaOfExpertise());
 
     given()
         .queryParam("ids", area[0].getId().toString())
@@ -102,8 +102,8 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/areas-of-expertise/search - Success")
   void searchSuccess() throws Exception {
-    School[] area = new School[1];
-    doInTransaction(() -> area[0] = factory.createSchool());
+    AreaOfExpertise[] area = new AreaOfExpertise[1];
+    doInTransaction(() -> area[0] = factory.createAreaOfExpertise());
 
     AreaOfExpertiseComplexSearchRequest request =
         new AreaOfExpertiseComplexSearchRequest(area[0].getName().substring(0, 3));
@@ -145,8 +145,8 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/areas-of-expertise - Duplicate Name")
   void createDuplicate() throws Exception {
-    School[] existing = new School[1];
-    doInTransaction(() -> existing[0] = factory.createSchool());
+    AreaOfExpertise[] existing = new AreaOfExpertise[1];
+    doInTransaction(() -> existing[0] = factory.createAreaOfExpertise());
 
     AreaOfExpertiseCreateRequest req = new AreaOfExpertiseCreateRequest(existing[0].getName());
 
@@ -165,8 +165,8 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("PUT /v1/academic/areas-of-expertise/{id} - Success")
   void updateSuccess() throws Exception {
-    School[] area = new School[1];
-    doInTransaction(() -> area[0] = factory.createSchool());
+    AreaOfExpertise[] area = new AreaOfExpertise[1];
+    doInTransaction(() -> area[0] = factory.createAreaOfExpertise());
 
     AreaOfExpertiseUpdateRequest req =
         new AreaOfExpertiseUpdateRequest("Updated " + UuidCreator.getTimeOrderedEpoch());
@@ -188,8 +188,8 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /v1/academic/areas-of-expertise/{id} - Success")
   void deleteSuccess() throws Exception {
-    School[] area = new School[1];
-    doInTransaction(() -> area[0] = factory.createSchool());
+    AreaOfExpertise[] area = new AreaOfExpertise[1];
+    doInTransaction(() -> area[0] = factory.createAreaOfExpertise());
 
     given()
         .pathParam("id", area[0].getId())

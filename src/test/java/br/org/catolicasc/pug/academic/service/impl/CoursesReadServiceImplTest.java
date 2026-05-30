@@ -6,8 +6,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.infra.read.CoursesQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
@@ -80,8 +80,8 @@ class CoursesReadServiceImplTest {
 
   private CourseView buildView(UUID id) {
     OffsetDateTime now = OffsetDateTime.now();
-    SchoolView areaOfExpertise =
-        new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
+    AreaOfExpertiseView areaOfExpertise =
+        new AreaOfExpertiseView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
     return new CourseView(id, "Computer Science", areaOfExpertise, now, now);
   }
 }

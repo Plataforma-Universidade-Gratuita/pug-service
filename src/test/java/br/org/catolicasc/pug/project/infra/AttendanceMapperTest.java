@@ -51,8 +51,8 @@ class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEnti
         .isEqualTo(original.getQrValidationInfo().getQrValidationHash());
     assertThat(mapped.getEnrollmentIdentifier().getProjectId())
         .isEqualTo(original.getEnrollmentIdentifier().getProjectId());
-    assertThat(mapped.getEnrollmentIdentifier().getStudentId())
-        .isEqualTo(original.getEnrollmentIdentifier().getStudentId());
+    assertThat(mapped.getEnrollmentIdentifier().getFormerStudentId())
+        .isEqualTo(original.getEnrollmentIdentifier().getFormerStudentId());
     assertThat(mapped.getQrValidationInfo().getDuration())
         .isEqualByComparingTo(original.getQrValidationInfo().getDuration());
     assertThat(mapped.getAttendanceInfo().getAuditInfo().getCreatedAt())

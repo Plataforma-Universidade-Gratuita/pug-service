@@ -22,7 +22,8 @@ class EnrollmentProcessorTest {
 
     assertThat(enrollment).isNotNull();
     assertThat(enrollment.getIdentifier().getProjectId()).isEqualTo(project.getId());
-    assertThat(enrollment.getIdentifier().getStudentId()).isEqualTo(formerStudent.getAccountId());
+    assertThat(enrollment.getIdentifier().getFormerStudentId())
+        .isEqualTo(formerStudent.getAccountId());
     assertThat(enrollment.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
     assertThat(enrollment.hasFieldErrors()).isFalse();
   }

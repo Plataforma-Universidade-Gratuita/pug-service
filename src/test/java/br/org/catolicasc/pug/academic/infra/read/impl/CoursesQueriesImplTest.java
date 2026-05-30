@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
@@ -24,19 +24,19 @@ class CoursesQueriesImplTest extends BaseSearchTest {
   @Inject CoursesQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private School areaOfExpertise;
+  private AreaOfExpertise areaOfExpertise;
   private Course course;
 
   @BeforeEach
   void setup() {
-    areaOfExpertise = factory.createSchool();
+    areaOfExpertise = factory.createAreaOfExpertise();
     course = factory.createCourse(areaOfExpertise);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should find CourseView with School details")
-  void shouldFindWithSchoolDetails() {
+  @DisplayName("Should find CourseView with AreaOfExpertise details")
+  void shouldFindWithAreaOfExpertiseDetails() {
     var view = queries.findOptionalById(course.getId());
 
     assertThat(view).isPresent();
@@ -109,7 +109,7 @@ class CoursesQueriesImplTest extends BaseSearchTest {
 
   @Test
   @DisplayName("Should search courses by areaOfExpertise successfully")
-  void shouldSearchBySchoolSuccess() {
+  void shouldSearchByAreaOfExpertiseSuccess() {
     var result =
         queries.search(
             new PageQuery(0, 10),

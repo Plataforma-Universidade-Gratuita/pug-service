@@ -60,7 +60,7 @@ class UsersReadServiceImplTest {
 
   @Test
   @DisplayName("Should list users by IDs")
-  void listByIds() {
+  void listAllByIds() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     when(queries.listAllByIds(List.of(id)))
         .thenReturn(List.of(new UserView(id, "111", "User", null, null)));

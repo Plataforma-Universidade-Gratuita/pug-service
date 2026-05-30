@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseUpdateRequest;
@@ -33,11 +33,11 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /v1/academic/courses/{id} - Success")
   void getByIdSuccess() throws Exception {
-    School[] areaOfExpertise = new School[1];
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          areaOfExpertise[0] = factory.createSchool();
+          areaOfExpertise[0] = factory.createAreaOfExpertise();
           course[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
@@ -74,7 +74,7 @@ class CoursesResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           factory.createCourse(areaOfExpertise);
         });
 
@@ -91,11 +91,11 @@ class CoursesResourceTest extends BaseResourceTest {
       user = "formerStudent",
       roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/academic/courses?ids= - Filter by IDs")
-  void listByIds() throws Exception {
+  void listAllByIds() throws Exception {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           course[0] = factory.createCourse(areaOfExpertise);
         });
 
@@ -115,11 +115,11 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/courses/search - Success")
   void searchSuccess() throws Exception {
-    School[] areaOfExpertise = new School[1];
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          areaOfExpertise[0] = factory.createSchool();
+          areaOfExpertise[0] = factory.createAreaOfExpertise();
           course[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
@@ -146,8 +146,8 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/courses - Success")
   void createSuccess() throws Exception {
-    School[] areaOfExpertise = new School[1];
-    doInTransaction(() -> areaOfExpertise[0] = factory.createSchool());
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
+    doInTransaction(() -> areaOfExpertise[0] = factory.createAreaOfExpertise());
 
     CourseCreateRequest req =
         new CourseCreateRequest(
@@ -170,11 +170,11 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/courses - Duplicate Name")
   void createDuplicate() throws Exception {
-    School[] areaOfExpertise = new School[1];
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
     Course[] existing = new Course[1];
     doInTransaction(
         () -> {
-          areaOfExpertise[0] = factory.createSchool();
+          areaOfExpertise[0] = factory.createAreaOfExpertise();
           existing[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
@@ -199,7 +199,7 @@ class CoursesResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           course[0] = factory.createCourse(areaOfExpertise);
         });
 
@@ -226,7 +226,7 @@ class CoursesResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           course[0] = factory.createCourse(areaOfExpertise);
         });
 
@@ -250,8 +250,8 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/courses - Forbidden for FORMER_STUDENT")
   void createForbiddenForFormerStudent() throws Exception {
-    School[] areaOfExpertise = new School[1];
-    doInTransaction(() -> areaOfExpertise[0] = factory.createSchool());
+    AreaOfExpertise[] areaOfExpertise = new AreaOfExpertise[1];
+    doInTransaction(() -> areaOfExpertise[0] = factory.createAreaOfExpertise());
 
     CourseCreateRequest req = new CourseCreateRequest("Forbidden", areaOfExpertise[0].getId());
 

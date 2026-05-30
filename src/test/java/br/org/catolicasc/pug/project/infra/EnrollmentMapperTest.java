@@ -41,8 +41,8 @@ class EnrollmentMapperTest extends CopyableMapperTest<Enrollment, EnrollmentEnti
   protected void assertRoundTrip(Enrollment original, Enrollment mapped) {
     assertThat(mapped.getIdentifier().getProjectId())
         .isEqualTo(original.getIdentifier().getProjectId());
-    assertThat(mapped.getIdentifier().getStudentId())
-        .isEqualTo(original.getIdentifier().getStudentId());
+    assertThat(mapped.getIdentifier().getFormerStudentId())
+        .isEqualTo(original.getIdentifier().getFormerStudentId());
     assertThat(mapped.getStatus()).isEqualTo(original.getStatus());
     assertThat(mapped.getEnrollmentInfo().getAuditInfo().getCreatedAt())
         .isEqualTo(original.getEnrollmentInfo().getAuditInfo().getCreatedAt());

@@ -92,7 +92,7 @@ public final class TestNameGenerator {
    *
    * @return a unique string representing a areaOfExpertise name
    */
-  public static String generateRandomSchoolName() {
+  public static String generateRandomAreaOfExpertiseName() {
     String prefix = SCHOOL_PREFIXES[(int) (Math.random() * SCHOOL_PREFIXES.length)];
     String theme = SCHOOL_THEMES[(int) (Math.random() * SCHOOL_THEMES.length)];
     String suffix = uniqueSuffix();

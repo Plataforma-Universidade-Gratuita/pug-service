@@ -18,7 +18,6 @@ public class FormerStudentUpdateRequestBuilder {
   private String name = TestNameGenerator.generateRandomName();
   private String cpf = null;
   private String email = null;
-  private String password = null;
   private String academicRegistration = null;
   private Campi campus = getRandomCampus();
   private UUID courseId = null;
@@ -67,17 +66,6 @@ public class FormerStudentUpdateRequestBuilder {
    */
   public FormerStudentUpdateRequestBuilder withEmail(String email) {
     this.email = email;
-    return this;
-  }
-
-  /**
-   * Sets the password.
-   *
-   * @param password the new password, or {@code null} to leave unchanged
-   * @return this builder instance
-   */
-  public FormerStudentUpdateRequestBuilder withPassword(String password) {
-    this.password = password;
     return this;
   }
 
@@ -157,7 +145,6 @@ public class FormerStudentUpdateRequestBuilder {
         name,
         cpf,
         email,
-        password,
         academicRegistration,
         campus,
         courseId,

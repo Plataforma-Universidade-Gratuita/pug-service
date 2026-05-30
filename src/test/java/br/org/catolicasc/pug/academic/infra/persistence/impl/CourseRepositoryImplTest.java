@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.academic.infra.persistence.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
@@ -17,21 +17,21 @@ class CourseRepositoryImplTest {
 
   @Inject CourseRepositoryImpl repository;
   @Inject TestDataFactory factory;
-  private School areaOfExpertise;
+  private AreaOfExpertise areaOfExpertise;
 
   @BeforeEach
   void setup() {
-    areaOfExpertise = factory.createSchool();
+    areaOfExpertise = factory.createAreaOfExpertise();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should persist and find Course linked to School")
+  @DisplayName("Should persist and find Course linked to AreaOfExpertise")
   void shouldPersistAndFind() {
     Course course = factory.createCourse(areaOfExpertise);
 
     var found = repository.findOptionalById(course.getId());
     assertThat(found).isPresent();
-    assertThat(found.get().getSchoolId()).isEqualTo(areaOfExpertise.getId());
+    assertThat(found.get().getAreaOfExpertiseId()).isEqualTo(areaOfExpertise.getId());
   }
 }

@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
+import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
@@ -55,4 +56,7 @@ public class MockAuthService implements AuthService {
 
   @Override
   public void requireCurrentAccountOfType(AccountType allowed) {}
+
+  @Override
+  public void wireCredentials(CredentialsRequest request) {}
 }

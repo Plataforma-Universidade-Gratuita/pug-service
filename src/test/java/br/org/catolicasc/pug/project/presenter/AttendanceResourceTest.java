@@ -5,9 +5,9 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -37,7 +37,7 @@ class AttendanceResourceTest extends BaseResourceTest {
     Attendance[] attendance = new Attendance[1];
     doInTransaction(
         () -> {
-          School areaOfExpertise = factory.createSchool();
+          AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
@@ -104,7 +104,7 @@ class AttendanceResourceTest extends BaseResourceTest {
       user = "admin",
       roles = {"ADMIN"})
   @DisplayName("GET /v1/projects/attendances?ids= - Filter by IDs")
-  void listByIds() throws Exception {
+  void listAllByIds() throws Exception {
     AttendanceGraph graph = createAttendanceGraph();
 
     given()

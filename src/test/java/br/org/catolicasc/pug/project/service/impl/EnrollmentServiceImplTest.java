@@ -7,9 +7,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -45,7 +45,7 @@ class EnrollmentServiceImplTest {
 
   @BeforeEach
   void setup() {
-    School areaOfExpertise = factory.createSchool();
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(studentAcc, course);
@@ -96,7 +96,7 @@ class EnrollmentServiceImplTest {
                 .withStudentId(formerStudent.getAccountId())
                 .build());
 
-    assertThat(saved.getIdentifier().getStudentId()).isEqualTo(formerStudent.getAccountId());
+    assertThat(saved.getIdentifier().getFormerStudentId()).isEqualTo(formerStudent.getAccountId());
   }
 
   @Test
@@ -216,7 +216,7 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should return false for nulls")
   void nullChecks() {
     assertThat(service.delete(null)).isFalse();
-    assertThat(service.existsAnyByStudentId(null)).isFalse();
+    assertThat(service.existsAnyByFormerStudentId(null)).isFalse();
     assertThat(service.existsAnyByProjectId(null)).isFalse();
   }
 
@@ -226,7 +226,7 @@ class EnrollmentServiceImplTest {
   void exists() {
     factory.createEnrollment(formerStudent, project);
 
-    assertThat(service.existsAnyByStudentId(formerStudent.getAccountId())).isTrue();
+    assertThat(service.existsAnyByFormerStudentId(formerStudent.getAccountId())).isTrue();
     assertThat(service.existsAnyByProjectId(project.getId())).isTrue();
   }
 }
