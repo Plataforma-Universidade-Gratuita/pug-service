@@ -11,18 +11,18 @@ import java.util.UUID;
  * using logical {@code AND}.
  *
  * @param name optional course-name fragment used in a {@code like} filter
- * @param schoolIds optional school identifiers used in an {@code in} filter
+ * @param areaOfExpertiseIds optional area-of-expertise identifiers used in an {@code in} filter
  */
 public record CourseComplexSearchRequest(
-    @Pattern(regexp = ".*\\S.*") String name, List<UUID> schoolIds) {
+    @Pattern(regexp = ".*\\S.*") String name, List<UUID> areaOfExpertiseIds) {
 
   /**
    * Creates an immutable complex-search request payload for academic-course queries.
    *
-   * <p>The {@code schoolIds} collection is defensively copied to prevent accidental mutation after
-   * request instantiation.
+   * <p>The {@code areaOfExpertiseIds} collection is defensively copied to prevent accidental
+   * mutation after request instantiation.
    */
   public CourseComplexSearchRequest {
-    schoolIds = schoolIds == null ? List.of() : List.copyOf(schoolIds);
+    areaOfExpertiseIds = areaOfExpertiseIds == null ? List.of() : List.copyOf(areaOfExpertiseIds);
   }
 }

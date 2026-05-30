@@ -38,7 +38,7 @@ public final class CoursePresenter {
     if (req == null) {
       return null;
     }
-    return new CourseCreateCommand(req.name(), req.schoolId());
+    return new CourseCreateCommand(req.name(), req.areaOfExpertiseId());
   }
 
   /**
@@ -56,7 +56,7 @@ public final class CoursePresenter {
     if (req == null) {
       return null;
     }
-    return new CourseUpdateCommand(req.name(), req.schoolId());
+    return new CourseUpdateCommand(req.name(), req.areaOfExpertiseId());
   }
 
   /**

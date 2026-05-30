@@ -9,8 +9,7 @@ import java.util.UUID;
  * Command-side service interface for managing academic areas of expertise.
  *
  * <p>This service exposes operations to create, retrieve, update, and delete academic areas of
- * expertise. Implementations may delegate to the school command flow while preserving the public
- * area-of-expertise nomenclature used by the application API.
+ * expertise while preserving the public nomenclature used by the application API.
  */
 public interface AreasOfExpertiseService {
 

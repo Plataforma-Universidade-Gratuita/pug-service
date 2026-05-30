@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
@@ -25,50 +25,54 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
 
   @Inject EntityManager entityManager;
 
+  /** {@inheritDoc} */
   @Override
-  public Optional<SchoolView> findOptionalById(UUID id) {
+  public Optional<AreaOfExpertiseView> findOptionalById(UUID id) {
     if (id == null) {
       return Optional.empty();
     }
     return entityManager
         .createQuery(
-            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id = :id",
-            SchoolView.class)
+            AreaOfExpertiseView.class)
         .setParameter("id", id)
         .getResultStream()
         .findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<SchoolView> listAllByIds(List<UUID> ids) {
+  public List<AreaOfExpertiseView> listAllByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return List.of();
     }
     return entityManager
         .createQuery(
-            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s where s.id in :ids order by s.name asc",
-            SchoolView.class)
+            AreaOfExpertiseView.class)
         .setParameter("ids", ids)
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<SchoolView> listAllViews() {
+  public List<AreaOfExpertiseView> listAllViews() {
     return entityManager
         .createQuery(
-            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s order by s.name asc",
-            SchoolView.class)
+            AreaOfExpertiseView.class)
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public PageResult<SchoolView> search(
+  public PageResult<AreaOfExpertiseView> search(
       PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
     String name = criteria == null ? null : criteria.name();
     String whereClause =
@@ -85,12 +89,12 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
 
     var dataQuery =
         entityManager.createQuery(
-            "select new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView("
+            "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
                 + "from SchoolEntity s"
                 + whereClause
                 + " order by s.name asc",
-            SchoolView.class);
+            AreaOfExpertiseView.class);
     bindSearchParameters(dataQuery, name);
 
     return new PageResult<>(

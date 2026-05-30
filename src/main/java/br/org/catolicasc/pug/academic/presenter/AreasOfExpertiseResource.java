@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.presenter;
 
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
@@ -77,7 +77,7 @@ public class AreasOfExpertiseResource {
   @Path("/{id}")
   @Authenticated
   public Response get(@PathParam("id") @UuidV7 UUID id) {
-    SchoolView view = readService.getViewById(id);
+    AreaOfExpertiseView view = readService.getViewById(id);
     AreaOfExpertiseResponse body = AreaOfExpertisePresenter.toResponse(view, locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
@@ -96,7 +96,7 @@ public class AreasOfExpertiseResource {
   @GET
   @Authenticated
   public Response list(@QueryParam("ids") List<UUID> ids) {
-    List<SchoolView> views =
+    List<AreaOfExpertiseView> views =
         CollectionUtils.isEmpty(ids) ? readService.listViews() : readService.listViewsByIds(ids);
     List<AreaOfExpertiseResponse> body =
         views.stream().map(view -> AreaOfExpertisePresenter.toResponse(view, locale())).toList();
@@ -152,7 +152,7 @@ public class AreasOfExpertiseResource {
     AreaOfExpertiseCreateCommand cmd = AreaOfExpertisePresenter.toCommand(req);
     School created = writeService.save(cmd);
 
-    SchoolView view = readService.getViewById(created.getId());
+    AreaOfExpertiseView view = readService.getViewById(created.getId());
     AreaOfExpertiseResponse body = AreaOfExpertisePresenter.toResponse(view, locale());
 
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
@@ -174,7 +174,7 @@ public class AreasOfExpertiseResource {
     AreaOfExpertiseUpdateCommand cmd = AreaOfExpertisePresenter.toCommand(req);
     writeService.update(id, cmd);
 
-    SchoolView view = readService.getViewById(id);
+    AreaOfExpertiseView view = readService.getViewById(id);
     AreaOfExpertiseResponse body = AreaOfExpertisePresenter.toResponse(view, locale());
 
     return Response.ok(ApiEnvelope.ok(body)).build();

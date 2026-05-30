@@ -123,7 +123,7 @@ public class CoursesResource {
     CourseComplexSearchCriteria criteria =
         request == null
             ? new CourseComplexSearchCriteria(null, null)
-            : new CourseComplexSearchCriteria(request.name(), request.schoolIds());
+            : new CourseComplexSearchCriteria(request.name(), request.areaOfExpertiseIds());
     var result = readService.search(new PageQuery(page, size), criteria);
     var responseBody =
         new PageResponse<>(

@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service.impl;
 
-import br.org.catolicasc.pug.academic.infra.read.SchoolQueries;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
@@ -18,9 +18,9 @@ import org.jboss.logging.Logger;
  * Implementation of the {@link ProjectSchoolReadService}.
  *
  * <p>This application-scoped bean delegates read-only operations to the underlying association
- * repository and the existing {@link SchoolQueries} and {@link ProjectQueries} components. It
- * resolves identifier sets via {@link ProjectSchoolRepository} and then projects them into read
- * models without instantiating full domain aggregates.
+ * repository and the existing {@link AreasOfExpertiseQueries} and {@link ProjectQueries}
+ * components. It resolves identifier sets via {@link ProjectSchoolRepository} and then projects
+ * them into read models without instantiating full domain aggregates.
  */
 @ApplicationScoped
 public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
@@ -29,38 +29,42 @@ public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
 
   @Inject ProjectSchoolRepository associationRepo;
 
-  @Inject SchoolQueries schoolQueries;
+  @Inject AreasOfExpertiseQueries areasOfExpertiseQueries;
 
   @Inject ProjectQueries projectQueries;
 
+  /** {@inheritDoc} */
   @Override
-  public Set<SchoolView> listAllSchoolsByProjectId(UUID projectId) {
+  public Set<AreaOfExpertiseView> listAllAreasOfExpertiseByProjectId(UUID projectId) {
     if (projectId == null) {
       return Set.of();
     }
 
-    var schoolIds = associationRepo.findAllSchoolIdsByProjectId(projectId);
-    if (schoolIds.isEmpty()) {
+    var areaOfExpertiseIds = associationRepo.findAllSchoolIdsByProjectId(projectId);
+    if (areaOfExpertiseIds.isEmpty()) {
       LOG.debugf(
-          "No ProjectsBySchool associations found for projectId=%s when listing schools",
+          "No ProjectsBySchool associations found for projectId=%s when listing areas of expertise",
           projectId);
       return Set.of();
     }
 
-    List<SchoolView> schools = schoolQueries.listByIds(List.copyOf(schoolIds));
-    return new HashSet<>(schools);
+    List<AreaOfExpertiseView> areasOfExpertise =
+        areasOfExpertiseQueries.listAllByIds(List.copyOf(areaOfExpertiseIds));
+    return new HashSet<>(areasOfExpertise);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public Set<ProjectView> listAllProjectsBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
+  public Set<ProjectView> listAllProjectsByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    if (areaOfExpertiseId == null) {
       return Set.of();
     }
 
-    var projectIds = associationRepo.findAllProjectIdsBySchoolId(schoolId);
+    var projectIds = associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId);
     if (projectIds.isEmpty()) {
       LOG.debugf(
-          "No ProjectsBySchool associations found for schoolId=%s when listing projects", schoolId);
+          "No ProjectsBySchool associations found for areaOfExpertiseId=%s when listing projects",
+          areaOfExpertiseId);
       return Set.of();
     }
 

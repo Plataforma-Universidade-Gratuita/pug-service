@@ -88,7 +88,7 @@ public class CoursesQueriesImpl implements CoursesQueries {
   public PageResult<CourseView> search(PageQuery pageQuery, CourseComplexSearchCriteria criteria) {
     List<String> clauses = new ArrayList<>();
     String name = criteria == null ? null : criteria.name();
-    List<UUID> schoolIds = criteria == null ? List.of() : criteria.schoolIds();
+    List<UUID> schoolIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
 
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("c.name", "namePattern"));

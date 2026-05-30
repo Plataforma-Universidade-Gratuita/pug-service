@@ -120,7 +120,7 @@ public class FormerStudentsResource {
                 request.dateTo(),
                 request.activeOnly() == null || request.activeOnly(),
                 request.courseIds(),
-                request.schoolIds());
+                request.areaOfExpertiseIds());
 
     var result = readService.search(new PageQuery(page, size), criteria);
     var responseBody =

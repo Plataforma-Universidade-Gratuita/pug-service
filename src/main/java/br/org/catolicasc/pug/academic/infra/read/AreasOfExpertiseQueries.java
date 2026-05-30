@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.academic.infra.read;
 
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
@@ -10,11 +10,12 @@ import java.util.UUID;
 
 /** Read-only query contract for academic areas of expertise. */
 public interface AreasOfExpertiseQueries {
-  Optional<SchoolView> findOptionalById(UUID id);
+  Optional<AreaOfExpertiseView> findOptionalById(UUID id);
 
-  List<SchoolView> listAllByIds(List<UUID> ids);
+  List<AreaOfExpertiseView> listAllByIds(List<UUID> ids);
 
-  List<SchoolView> listAllViews();
+  List<AreaOfExpertiseView> listAllViews();
 
-  PageResult<SchoolView> search(PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria);
+  PageResult<AreaOfExpertiseView> search(
+      PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria);
 }

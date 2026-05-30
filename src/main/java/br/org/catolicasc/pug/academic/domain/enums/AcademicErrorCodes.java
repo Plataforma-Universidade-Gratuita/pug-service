@@ -36,19 +36,19 @@ public enum AcademicErrorCodes implements GenericCodes {
    * Indicates an attempt to create or update an academic school using a name that is already
    * registered to another school in the system.
    */
-  SCHOOL_ALREADY_EXISTS("error.domain.academic.school.already.exists"),
+  SCHOOL_ALREADY_EXISTS("error.domain.academic.areaOfExpertise.already.exists"),
 
   /**
    * Indicates an attempt to delete or modify an academic school that currently has registered
    * courses under its hierarchy, violating relational integrity.
    */
-  SCHOOL_HAS_COURSES("error.domain.academic.school.has.courses"),
+  SCHOOL_HAS_COURSES("error.domain.academic.areaOfExpertise.has.courses"),
 
   /**
    * Indicates that a requested academic school could not be located in the underlying data store by
    * its unique identifier.
    */
-  SCHOOL_NOT_FOUND("error.domain.academic.school.not.found"),
+  SCHOOL_NOT_FOUND("error.domain.academic.areaOfExpertise.not.found"),
 
   /**
    * Indicates an attempt to enroll a formerStudent using an academic registration string that is

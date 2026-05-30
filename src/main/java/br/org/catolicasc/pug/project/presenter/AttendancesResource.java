@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchResponse;
@@ -49,7 +48,7 @@ import java.util.UUID;
  * endpoints inside each verb group.
  */
 @ApplicationScoped
-@Path(ProjectApiPaths.ATTENDANCES)
+@Path("/v1/projects/attendances")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -89,7 +88,8 @@ public class AttendancesResource {
       @QueryParam("size") Integer size) {
     AttendanceComplexSearchCriteria criteria =
         req == null
-            ? new AttendanceComplexSearchCriteria(List.of(), List.of(), List.of(), List.of(), null, null, null, null)
+            ? new AttendanceComplexSearchCriteria(
+                List.of(), List.of(), List.of(), List.of(), null, null, null, null)
             : new AttendanceComplexSearchCriteria(
                 req.projectIds(),
                 req.studentIds(),
@@ -101,7 +101,8 @@ public class AttendancesResource {
                 req.dateTo());
 
     PageResult<AttendanceView> result =
-        readService.search(criteria, new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
+        readService.search(
+            criteria, new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
 
     PageResponse<AttendanceComplexSearchResponse> body =
         new PageResponse<>(

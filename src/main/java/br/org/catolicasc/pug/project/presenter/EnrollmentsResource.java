@@ -132,10 +132,7 @@ public class EnrollmentsResource {
             created.getIdentifier().getProjectId(), created.getIdentifier().getStudentId());
 
     URI location =
-        uri.getBaseUriBuilder()
-            .path("projects")
-            .path(created.getIdentifier().getProjectId().toString())
-            .path("enrollments")
+        uri.getAbsolutePathBuilder()
             .path(created.getIdentifier().getStudentId().toString())
             .build();
 

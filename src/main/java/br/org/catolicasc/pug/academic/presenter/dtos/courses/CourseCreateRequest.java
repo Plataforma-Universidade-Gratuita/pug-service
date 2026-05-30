@@ -12,6 +12,8 @@ import java.util.UUID;
  * structurally sound before it reaches the application service layer.
  *
  * @param name the raw name of the academic course (must not be blank and max 120 characters)
- * @param schoolId the unique identifier (UUID) of the school offering the course (must not be null)
+ * @param areaOfExpertiseId the unique identifier (UUID) of the area of expertise offering the
+ *     course (must not be null)
  */
-public record CourseCreateRequest(@NotBlank @Size(max = 120) String name, @NotNull UUID schoolId) {}
+public record CourseCreateRequest(
+    @NotBlank @Size(max = 120) String name, @NotNull UUID areaOfExpertiseId) {}

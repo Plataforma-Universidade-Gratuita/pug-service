@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.academic.service;
 
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
@@ -21,31 +21,32 @@ public interface AreasOfExpertiseReadService {
    * Retrieves an area-of-expertise read-model projection by its unique identifier.
    *
    * @param id the unique identifier of the area of expertise
-   * @return the matching {@link SchoolView}
+   * @return the matching {@link AreaOfExpertiseView}
    */
-  SchoolView getViewById(UUID id);
+  AreaOfExpertiseView getViewById(UUID id);
 
   /**
    * Retrieves all area-of-expertise read-model projections.
    *
-   * @return a list containing all available {@link SchoolView} projections
+   * @return a list containing all available {@link AreaOfExpertiseView} projections
    */
-  List<SchoolView> listViews();
+  List<AreaOfExpertiseView> listViews();
 
   /**
    * Retrieves area-of-expertise read-model projections restricted to the provided identifiers.
    *
    * @param ids the identifiers used to restrict the returned areas of expertise
-   * @return a list containing the matching {@link SchoolView} projections
+   * @return a list containing the matching {@link AreaOfExpertiseView} projections
    */
-  List<SchoolView> listViewsByIds(List<UUID> ids);
+  List<AreaOfExpertiseView> listViewsByIds(List<UUID> ids);
 
   /**
    * Executes paginated area-of-expertise search using the complex-search criteria.
    *
    * @param pageQuery the pagination request containing page, size, and fetch-all behavior
    * @param criteria the area-of-expertise search filters to apply
-   * @return a paginated {@link PageResult} containing {@link SchoolView} projections
+   * @return a paginated {@link PageResult} containing {@link AreaOfExpertiseView} projections
    */
-  PageResult<SchoolView> search(PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria);
+  PageResult<AreaOfExpertiseView> search(
+      PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria);
 }

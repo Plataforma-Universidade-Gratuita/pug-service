@@ -21,7 +21,7 @@ import java.util.UUID;
  * @param dateTo optional upper bound applied to timestamp fields
  * @param activeOnly whether only active accounts should be returned
  * @param courseIds optional course identifiers used in an {@code in} filter
- * @param schoolIds optional school identifiers used in an {@code in} filter
+ * @param areaOfExpertiseIds optional area-of-expertise identifiers used in an {@code in} filter
  */
 public record FormerStudentComplexSearchCriteria(
     String name,
@@ -36,11 +36,11 @@ public record FormerStudentComplexSearchCriteria(
     OffsetDateTime dateTo,
     boolean activeOnly,
     List<UUID> courseIds,
-    List<UUID> schoolIds) {
+    List<UUID> areaOfExpertiseIds) {
 
   public FormerStudentComplexSearchCriteria {
     campi = campi == null ? List.of() : List.copyOf(campi);
     courseIds = courseIds == null ? List.of() : List.copyOf(courseIds);
-    schoolIds = schoolIds == null ? List.of() : List.copyOf(schoolIds);
+    areaOfExpertiseIds = areaOfExpertiseIds == null ? List.of() : List.copyOf(areaOfExpertiseIds);
   }
 }

@@ -33,7 +33,7 @@ import java.util.UUID;
  * expertise side.
  */
 @ApplicationScoped
-@Path("/v1/academic/areas-of-expertise/{schoolId}/projects")
+@Path("/v1/academic/areas-of-expertise/{areaOfExpertiseId}/projects")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated
@@ -46,8 +46,9 @@ public class SchoolsProjectsResource {
   @Context HttpHeaders headers;
 
   @GET
-  public Response listProjectsBySchoolId(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    Set<ProjectView> views = readService.listAllProjectsBySchoolId(schoolId);
+  public Response listProjectsByAreaOfExpertiseId(
+      @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
+    Set<ProjectView> views = readService.listAllProjectsByAreaOfExpertiseId(areaOfExpertiseId);
     List<ProjectResponse> body =
         views.stream().map(view -> ProjectPresenter.toResponse(view, locale(), i18n)).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -55,8 +56,9 @@ public class SchoolsProjectsResource {
 
   @DELETE
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response deleteAllBySchool(@PathParam("schoolId") @UuidV7 UUID schoolId) {
-    writeService.deleteAllBySchoolId(schoolId);
+  public Response deleteAllByAreaOfExpertise(
+      @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
+    writeService.deleteAllBySchoolId(areaOfExpertiseId);
     return Response.noContent().build();
   }
 

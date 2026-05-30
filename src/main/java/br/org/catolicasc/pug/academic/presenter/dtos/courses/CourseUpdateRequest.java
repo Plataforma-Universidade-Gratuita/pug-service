@@ -11,7 +11,7 @@ import java.util.UUID;
  * it and retain the existing value for that specific attribute in the database.
  *
  * @param name the new name of the course, or {@code null} to leave unchanged
- * @param schoolId the new unique identifier of the school offering the course, or {@code null} to
- *     leave unchanged
+ * @param areaOfExpertiseId the new unique identifier of the area of expertise offering the course,
+ *     or {@code null} to leave unchanged
  */
-public record CourseUpdateRequest(String name, UUID schoolId) {}
+public record CourseUpdateRequest(String name, UUID areaOfExpertiseId) {}

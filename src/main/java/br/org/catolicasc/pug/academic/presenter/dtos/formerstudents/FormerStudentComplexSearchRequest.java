@@ -24,7 +24,7 @@ import java.util.UUID;
  * @param activeOnly optional flag indicating whether only active accounts should be returned;
  *     defaults to {@code true}
  * @param courseIds optional course identifiers used in an {@code in} filter
- * @param schoolIds optional school identifiers used in an {@code in} filter
+ * @param areaOfExpertiseIds optional area-of-expertise identifiers used in an {@code in} filter
  */
 public record FormerStudentComplexSearchRequest(
     @Pattern(regexp = ".*\\S.*") String name,
@@ -39,11 +39,11 @@ public record FormerStudentComplexSearchRequest(
     OffsetDateTime dateTo,
     Boolean activeOnly,
     List<UUID> courseIds,
-    List<UUID> schoolIds) {
+    List<UUID> areaOfExpertiseIds) {
 
   public FormerStudentComplexSearchRequest {
     campi = campi == null ? List.of() : List.copyOf(campi);
     courseIds = courseIds == null ? List.of() : List.copyOf(courseIds);
-    schoolIds = schoolIds == null ? List.of() : List.copyOf(schoolIds);
+    areaOfExpertiseIds = areaOfExpertiseIds == null ? List.of() : List.copyOf(areaOfExpertiseIds);
   }
 }

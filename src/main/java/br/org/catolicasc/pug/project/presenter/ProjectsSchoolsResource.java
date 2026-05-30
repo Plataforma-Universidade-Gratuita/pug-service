@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
 import br.org.catolicasc.pug.academic.presenter.mappers.AreaOfExpertisePresenter;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectSchoolRequest;
@@ -48,7 +48,7 @@ public class ProjectsSchoolsResource {
 
   @GET
   public Response listAreasOfExpertiseByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
-    Set<SchoolView> views = readService.listAllSchoolsByProjectId(projectId);
+    Set<AreaOfExpertiseView> views = readService.listAllAreasOfExpertiseByProjectId(projectId);
     List<AreaOfExpertiseResponse> body =
         views.stream().map(view -> AreaOfExpertisePresenter.toResponse(view, locale())).toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -63,12 +63,12 @@ public class ProjectsSchoolsResource {
   }
 
   @DELETE
-  @Path("/{schoolId}")
+  @Path("/{areaOfExpertiseId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAssociation(
       @PathParam("projectId") @UuidV7 UUID projectId,
-      @PathParam("schoolId") @UuidV7 UUID schoolId) {
-    writeService.delete(projectId, schoolId);
+      @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
+    writeService.delete(projectId, areaOfExpertiseId);
     return Response.noContent().build();
   }
 

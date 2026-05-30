@@ -87,6 +87,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
 
   private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<FormerStudentView> findOptionalById(UUID accountId) {
     if (accountId == null) {
@@ -98,6 +99,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         .findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<FormerStudentView> listAllByIds(List<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
@@ -110,6 +112,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<FormerStudentView> listAllFormerStudents() {
     return em.createQuery(
@@ -117,6 +120,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<FormerStudentComplexSearchView> search(
       PageQuery pageQuery, FormerStudentComplexSearchCriteria criteria) {
@@ -131,7 +135,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
     LocalDate periodFrom = criteria == null ? null : criteria.periodFrom();
     LocalDate periodTo = criteria == null ? null : criteria.periodTo();
     String cpf = criteria == null ? null : criteria.cpf();
-    List<UUID> schoolIds = criteria == null ? List.of() : criteria.schoolIds();
+    List<UUID> schoolIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
     boolean activeOnly = criteria == null || criteria.activeOnly();
 
     List<String> clauses = new ArrayList<>();

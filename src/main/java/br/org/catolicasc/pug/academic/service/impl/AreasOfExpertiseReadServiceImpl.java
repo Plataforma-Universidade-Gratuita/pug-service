@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.AreasOfExpertiseReadService;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
@@ -19,8 +19,9 @@ public class AreasOfExpertiseReadServiceImpl implements AreasOfExpertiseReadServ
 
   @jakarta.inject.Inject AreasOfExpertiseQueries queries;
 
+  /** {@inheritDoc} */
   @Override
-  public SchoolView getViewById(UUID id) {
+  public AreaOfExpertiseView getViewById(UUID id) {
     return queries
         .findOptionalById(id)
         .orElseThrow(
@@ -30,18 +31,21 @@ public class AreasOfExpertiseReadServiceImpl implements AreasOfExpertiseReadServ
             });
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<SchoolView> listViews() {
+  public List<AreaOfExpertiseView> listViews() {
     return queries.listAllViews();
   }
 
+  /** {@inheritDoc} */
   @Override
-  public List<SchoolView> listViewsByIds(List<UUID> ids) {
+  public List<AreaOfExpertiseView> listViewsByIds(List<UUID> ids) {
     return queries.listAllByIds(ids);
   }
 
+  /** {@inheritDoc} */
   @Override
-  public PageResult<SchoolView> search(
+  public PageResult<AreaOfExpertiseView> search(
       PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
     return queries.search(pageQuery, criteria);
   }
