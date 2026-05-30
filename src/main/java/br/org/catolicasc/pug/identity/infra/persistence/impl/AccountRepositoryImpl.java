@@ -137,7 +137,6 @@ public class AccountRepositoryImpl
     }
     List<AccountEntity> entities = accounts.stream().map(AccountMapper::toEntity).toList();
 
-    // Executes a batch insert and a single flush to minimize JDBC round-trips
     persist(entities);
     flush();
 

@@ -51,6 +51,13 @@ public class Staff extends DomainError {
     return updated;
   }
 
+  /**
+   * Aggregates the structural validation rules that define a valid staff assignment.
+   *
+   * <p>A staff aggregate is valid only when both the linked account identifier and the linked
+   * partner-entity identifier are present. Violations are collected into this aggregate through the
+   * inherited field-error accumulator.
+   */
   private void collectValidationProblems() {
     if (accountId == null) {
       addFieldError(PartnerFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK);

@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Query-side service interface for academic areas of expertise.
+ * Query-side service contract for academic areas-of-expertise projections.
  *
- * <p>This read-side service exposes lookup, listing, and complex-search operations for academic
- * areas of expertise. It returns immutable read-model projections and delegates
- * persistence-specific query behavior to the infrastructure layer, keeping query flows separated
- * from command operations.
+ * <p>This read-side boundary exposes lookup, listing, and paginated complex-search operations for
+ * academic areas of expertise. It returns immutable read-model projections and keeps query flows
+ * explicitly separated from command operations.
  */
 public interface AreasOfExpertiseReadService {
 

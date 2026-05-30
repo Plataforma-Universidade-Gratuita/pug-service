@@ -44,8 +44,9 @@ import java.util.UUID;
 /**
  * REST API resource controller responsible for attendance endpoints.
  *
- * <p>Methods are ordered strictly by HTTP verb with single-item endpoints preceding collection
- * endpoints inside each verb group.
+ * <p>This resource exposes lookup, collection, complex-search, creation, validation, and deletion
+ * flows for project attendances. Methods are ordered strictly by HTTP verb with single-item
+ * endpoints preceding collection endpoints inside each verb group.
  */
 @ApplicationScoped
 @Path("/v1/projects/attendances")
@@ -82,7 +83,10 @@ public class AttendancesResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /** Executes the paginated attendance complex-search flow. */
+  /**
+   * Executes the paginated attendance complex-search flow using the optional filters accepted by
+   * the presenter contract.
+   */
   @POST
   @Path("/search")
   public Response search(

@@ -3,7 +3,12 @@ package br.org.catolicasc.pug.partner.domain.enums;
 import br.org.catolicasc.pug.shared.domain.enums.GenericCodes;
 import lombok.Getter;
 
-/** Error codes emitted by the partner module domain and service flows. */
+/**
+ * Error codes emitted by partner-domain and partner-service workflows.
+ *
+ * <p>Each enum constant resolves to a message-bundle key consumed by exception mappers and
+ * localized API error payloads.
+ */
 @Getter
 public enum PartnerErrorCodes implements GenericCodes {
   ENTITY_ALREADY_EXISTS("error.domain.partner.entity.exists"),

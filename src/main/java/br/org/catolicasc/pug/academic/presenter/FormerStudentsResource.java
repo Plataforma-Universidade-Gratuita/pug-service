@@ -147,6 +147,13 @@ public class FormerStudentsResource {
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
+  /**
+   * Creates a single former-student record, including the linked identity structures required by
+   * the academic module contract.
+   *
+   * @param request the validated creation payload received from the presenter layer
+   * @return HTTP 201 containing the canonical former-student response and its resource location
+   */
   @POST
   @RolesAllowed("ADMIN")
   public Response create(@Valid FormerStudentCreateRequest request) {

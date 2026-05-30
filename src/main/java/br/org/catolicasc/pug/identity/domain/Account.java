@@ -167,6 +167,13 @@ public class Account extends DomainError {
     return updated;
   }
 
+  /**
+   * Aggregates every structural validation rule that defines a valid account aggregate.
+   *
+   * <p>This method validates identifiers, linked value objects, account type, optional password
+   * hash length, audit information, and activation state. Any failure is collected into this
+   * aggregate through the inherited field-error accumulator instead of failing fast.
+   */
   private void collectValidationProblems() {
     validateIdField(id);
     if (userId == null) {

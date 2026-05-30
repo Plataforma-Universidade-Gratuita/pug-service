@@ -1,4 +1,9 @@
 package br.org.catolicasc.pug.academic.service.dtos.areasofexpertise;
 
-/** Command DTO used to create a new academic area of expertise. */
+/**
+ * Service-layer command that carries the data required to create a new academic area of expertise.
+ *
+ * @param name the canonical display name that will be validated and persisted for the new area of
+ *     expertise
+ */
 public record AreaOfExpertiseCreateCommand(String name) {}

@@ -10,8 +10,7 @@ import java.util.UUID;
  * Service-layer criteria object used to execute paginated enrollment complex-search queries.
  *
  * @param projectIds optional project identifiers applied with an {@code in} operation
- * @param formerStudentIds optional former-student identifiers applied with an {@code in}
- *     operation
+ * @param formerStudentIds optional former-student identifiers applied with an {@code in} operation
  * @param statuses optional enrollment statuses applied with an {@code in} operation
  * @param dateFrom optional lower timestamp bound for enrollment lifecycle fields
  * @param dateTo optional upper timestamp bound for enrollment lifecycle fields

@@ -8,7 +8,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Read-only query contract for academic areas of expertise. */
+/**
+ * Read-only query contract for academic areas-of-expertise projections.
+ *
+ * <p>This boundary centralizes the lookup, listing, and paginated complex-search operations used by
+ * the academic read side. Implementations are expected to return lightweight projections rather
+ * than managed entities so presenter flows can remain decoupled from persistence concerns.
+ */
 public interface AreasOfExpertiseQueries {
   Optional<AreaOfExpertiseView> findOptionalById(UUID id);
 

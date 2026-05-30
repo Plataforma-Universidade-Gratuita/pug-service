@@ -50,8 +50,10 @@ import java.util.UUID;
 /**
  * REST API resource controller for enrollment endpoints.
  *
- * <p>Methods are ordered strictly by HTTP verb with single-item endpoints preceding collection
- * endpoints inside each verb group.
+ * <p>This resource exposes the enrollment flows used by administrators, staff members, and former
+ * students, including direct lookup, self-service lookup, collection reads, status transitions,
+ * creation, deletion, and paginated complex search. Methods are ordered strictly by HTTP verb with
+ * single-item endpoints preceding collection endpoints inside each verb group.
  */
 @ApplicationScoped
 @Path("/v1/projects")
@@ -152,7 +154,10 @@ public class EnrollmentsResource {
         .build();
   }
 
-  /** Executes the paginated enrollment complex-search flow. */
+  /**
+   * Executes the paginated enrollment complex-search flow using the optional presenter-level
+   * filters accepted by the project module contract.
+   */
   @POST
   @Path("/enrollments/search")
   @RolesAllowed({"ADMIN", "STAFF"})

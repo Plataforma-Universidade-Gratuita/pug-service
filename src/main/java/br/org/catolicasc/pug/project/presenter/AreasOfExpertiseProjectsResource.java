@@ -29,8 +29,11 @@ import java.util.Set;
 import java.util.UUID;
 
 /**
- * REST API resource controller for managing project associations from the academic area-of-
- * expertise side.
+ * REST API resource controller for managing project associations from the academic
+ * area-of-expertise side.
+ *
+ * <p>This resource exposes the academic-facing view of the project-to-area-of-expertise association
+ * so callers can list or clear every project linked to a specific area of expertise.
  */
 @ApplicationScoped
 @Path("/v1/academic/areas-of-expertise/{areaOfExpertiseId}/projects")
@@ -45,7 +48,10 @@ public class AreasOfExpertiseProjectsResource {
 
   @Context HttpHeaders headers;
 
-  /** Lists every project associated with the provided academic area-of-expertise identifier. */
+  /**
+   * Lists every project currently associated with the provided academic area-of-expertise
+   * identifier.
+   */
   @GET
   public Response listProjectsByAreaOfExpertiseId(
       @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {

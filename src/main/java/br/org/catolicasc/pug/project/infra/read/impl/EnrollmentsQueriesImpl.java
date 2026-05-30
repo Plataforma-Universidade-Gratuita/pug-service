@@ -69,7 +69,8 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     }
     return em.createQuery(
             SELECT_BASE
-                + " where en.id.projectId = :projectId and en.id.formerStudentId = :formerStudentId",
+                + " where en.id.projectId = :projectId"
+                + " and en.id.formerStudentId = :formerStudentId",
             EnrollmentView.class)
         .setParameter("projectId", projectId)
         .setParameter("formerStudentId", formerStudentId)

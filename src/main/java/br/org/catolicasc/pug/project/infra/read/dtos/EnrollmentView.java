@@ -6,7 +6,12 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
-/** Read-side projection used by enrollment queries and presenter mappings. */
+/**
+ * Read-side projection used by enrollment queries and presenter mappings.
+ *
+ * <p>This projection flattens the enrollment, project, former-student, and period information
+ * required by both the canonical enrollment response and the enrollment complex-search response.
+ */
 public record EnrollmentView(
     UUID projectId,
     String projectName,

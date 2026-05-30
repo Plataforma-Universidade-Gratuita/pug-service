@@ -32,7 +32,14 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-/** Stateless mapper responsible for translating former-student requests and query projections. */
+/**
+ * Stateless mapper responsible for translating former-student presenter payloads and read
+ * projections.
+ *
+ * <p>This component owns the boundary formatting rules for former-student responses, including the
+ * derived counterpart-hours summary, period metadata, and nested account/course projections used by
+ * complex-search contracts.
+ */
 public final class FormerStudentPresenter {
 
   private FormerStudentPresenter() {}

@@ -6,10 +6,11 @@ import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpert
 import java.util.UUID;
 
 /**
- * Command-side service interface for managing academic areas of expertise.
+ * Command-side service contract for managing academic areas of expertise.
  *
- * <p>This service exposes operations to create, retrieve, update, and delete academic areas of
- * expertise while preserving the public nomenclature used by the application API.
+ * <p>This boundary orchestrates lifecycle mutations for the area-of-expertise aggregate, including
+ * creation, lookup for write flows, updates, and deletion. It preserves the public academic
+ * nomenclature while leaving validation and persistence details to lower layers.
  */
 public interface AreasOfExpertiseService {
 

@@ -8,7 +8,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Read-side contract for retrieving enrollment projections from the persistence layer. */
+/**
+ * Read-side contract for retrieving enrollment projections from the persistence layer.
+ *
+ * <p>This boundary centralizes direct enrollment lookups, collection reads, and paginated
+ * complex-search queries used by the project presenter and application read services.
+ */
 public interface EnrollmentsQueries {
 
   Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID formerStudentId);

@@ -8,7 +8,13 @@ import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
-/** Application service dedicated exclusively to former-student read operations. */
+/**
+ * Application-layer read contract dedicated to former-student views and search results.
+ *
+ * <p>This service exposes the academic read use cases consumed by the presenter layer while hiding
+ * the underlying query implementation details. It returns immutable read projections instead of
+ * domain aggregates because these flows are display-oriented.
+ */
 public interface FormerStudentsReadService {
 
   FormerStudentView getViewByAccountId(UUID accountId);

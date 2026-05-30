@@ -50,8 +50,9 @@ import java.util.UUID;
 /**
  * REST API resource controller for managing project endpoints.
  *
- * <p>Methods are ordered strictly by HTTP verb with single-item endpoints preceding collection
- * endpoints within each verb group.
+ * <p>This resource exposes project lookup, collection listing, creator/entity filters,
+ * complex-search, creation, updates, status transitions, and deletion. Methods are ordered strictly
+ * by HTTP verb with single-item endpoints preceding collection endpoints within each verb group.
  */
 @ApplicationScoped
 @Path("/v1/projects")
@@ -114,7 +115,10 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /** Executes the paginated project complex-search flow. */
+  /**
+   * Executes the paginated project complex-search flow using the optional filters defined by the
+   * presenter contract.
+   */
   @POST
   @Path("/search")
   @Authenticated
