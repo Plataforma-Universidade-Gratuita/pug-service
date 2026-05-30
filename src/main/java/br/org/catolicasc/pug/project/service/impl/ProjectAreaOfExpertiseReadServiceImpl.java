@@ -19,16 +19,15 @@ import org.jboss.logging.Logger;
  *
  * <p>This application-scoped bean delegates read-only operations to the underlying association
  * repository and the existing {@link AreasOfExpertiseQueries} and {@link ProjectQueries}
- * components. It resolves identifier sets via {@link ProjectAreaOfExpertiseRepository} and then projects
- * them into read models without instantiating full domain aggregates.
+ * components. It resolves identifier sets via {@link ProjectAreaOfExpertiseRepository} and then
+ * projects them into read models without instantiating full domain aggregates.
  */
 @ApplicationScoped
 public class ProjectAreaOfExpertiseReadServiceImpl implements ProjectAreaOfExpertiseReadService {
 
   private static final Logger LOG = Logger.getLogger(ProjectAreaOfExpertiseReadServiceImpl.class);
 
-  @Inject
-  ProjectAreaOfExpertiseRepository associationRepo;
+  @Inject ProjectAreaOfExpertiseRepository associationRepo;
 
   @Inject AreasOfExpertiseQueries areasOfExpertiseQueries;
 

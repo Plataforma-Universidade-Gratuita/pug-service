@@ -16,7 +16,8 @@ public interface AreaOfExpertiseRepository {
    * Removes a {@link AreaOfExpertise} from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the areaOfExpertise to delete
-   * @return {@code true} if the areaOfExpertise was successfully deleted, {@code false} if it was not found
+   * @return {@code true} if the areaOfExpertise was successfully deleted, {@code false} if it was
+   *     not found
    */
   boolean deleteById(UUID id);
 
@@ -32,8 +33,8 @@ public interface AreaOfExpertiseRepository {
   /**
    * Retrieves a {@link AreaOfExpertise} by its unique identifier.
    *
-   * <p>When a areaOfExpertise is reconstituted from the persistence layer, it typically undergoes the same
-   * domain validations as a newly created aggregate. Therefore, the returned {@link
+   * <p>When a areaOfExpertise is reconstituted from the persistence layer, it typically undergoes
+   * the same domain validations as a newly created aggregate. Therefore, the returned {@link
    * AreaOfExpertise} might contain validation errors (verifiable via {@link
    * AreaOfExpertise#hasFieldErrors()}) if the stored data violates current domain rules.
    *

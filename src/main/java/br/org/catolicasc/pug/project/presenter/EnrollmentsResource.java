@@ -80,10 +80,10 @@ public class EnrollmentsResource {
 
   @GET
   @Path("/{projectId}/enrollments/me")
-  @RolesAllowed("STUDENT")
+  @RolesAllowed("FORMER_STUDENT")
   public Response getMine(@PathParam("projectId") @UuidV7 UUID projectId) {
-    UUID studentAccountId = authService.getCurrentAccountId();
-    EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
+    UUID formerStudentAccountId = authService.getCurrentAccountId();
+    EnrollmentView view = readService.getViewByIds(projectId, formerStudentAccountId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
@@ -108,11 +108,11 @@ public class EnrollmentsResource {
 
   @GET
   @Path("/enrollments/me")
-  @RolesAllowed("STUDENT")
+  @RolesAllowed("FORMER_STUDENT")
   public Response listMine() {
-    UUID studentAccountId = authService.getCurrentAccountId();
+    UUID formerStudentAccountId = authService.getCurrentAccountId();
     List<EnrollmentResponse> body =
-        readService.listViewsByFormerStudentId(studentAccountId).stream()
+        readService.listViewsByFormerStudentId(formerStudentAccountId).stream()
             .map(view -> EnrollmentPresenter.toResponse(view, locale(), i18n))
             .toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -120,7 +120,7 @@ public class EnrollmentsResource {
 
   @POST
   @Path("/{projectId}/enrollments")
-  @RolesAllowed({"ADMIN", "STUDENT"})
+  @RolesAllowed({"ADMIN", "FORMER_STUDENT"})
   public Response create(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("formerStudentId") @UuidV7 UUID formerStudentId) {
@@ -205,7 +205,7 @@ public class EnrollmentsResource {
 
   @PATCH
   @Path("/{projectId}/enrollments/me")
-  @RolesAllowed("STUDENT")
+  @RolesAllowed("FORMER_STUDENT")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateStatusMine(
       @PathParam("projectId") @UuidV7 UUID projectId, @Valid EnrollmentUpdateStatusRequest req) {
@@ -213,15 +213,15 @@ public class EnrollmentsResource {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
 
-    UUID studentAccountId = authService.getCurrentAccountId();
+    UUID formerStudentAccountId = authService.getCurrentAccountId();
     writeService.changeStatus(
         EnrollmentIdentifier.builder()
             .projectId(projectId)
-            .formerStudentId(studentAccountId)
+            .formerStudentId(formerStudentAccountId)
             .build(),
         req.status());
 
-    EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
+    EnrollmentView view = readService.getViewByIds(projectId, formerStudentAccountId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }

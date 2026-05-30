@@ -11,8 +11,9 @@ import java.util.UUID;
  * and areas of expertise.
  *
  * <p>Following CQRS principles, this service handles the query operations for the
- * project-to-area-of-expertise link. It leverages the underlying {@link ProjectAreaOfExpertiseRepository} to
- * resolve identifiers and then projects them into lightweight read models.
+ * project-to-area-of-expertise link. It leverages the underlying {@link
+ * ProjectAreaOfExpertiseRepository} to resolve identifiers and then projects them into lightweight
+ * read models.
  */
 public interface ProjectAreaOfExpertiseReadService {
 

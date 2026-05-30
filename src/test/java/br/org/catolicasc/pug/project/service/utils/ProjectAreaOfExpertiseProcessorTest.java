@@ -17,7 +17,8 @@ class ProjectAreaOfExpertiseProcessorTest {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
     UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
-    ProjectAreaOfExpertise association = ProjectAreaOfExpertiseProcessor.processCreateInput(projectId, areaOfExpertiseId);
+    ProjectAreaOfExpertise association =
+        ProjectAreaOfExpertiseProcessor.processCreateInput(projectId, areaOfExpertiseId);
 
     assertThat(association).isNotNull();
     assertThat(association.getProjectId()).isEqualTo(projectId);

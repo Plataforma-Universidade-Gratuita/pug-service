@@ -104,7 +104,8 @@ class SchoolServiceImplTest {
     em.flush();
 
     var cmd = aSchoolUpdateCommand().withName(areaOfExpertise2.getName()).build();
-    assertThrows(DuplicateResourceException.class, () -> service.update(areaOfExpertise1.getId(), cmd));
+    assertThrows(
+        DuplicateResourceException.class, () -> service.update(areaOfExpertise1.getId(), cmd));
   }
 
   @Test

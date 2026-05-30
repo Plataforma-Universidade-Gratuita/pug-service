@@ -68,7 +68,7 @@ public class AccountEntity extends BaseAuditedEntity {
   private String email;
 
   /**
-   * The designated authorization role for this account (e.g., ADMIN, STUDENT).
+   * The designated authorization role for this account (e.g., ADMIN, FORMER_STUDENT).
    *
    * <p>Stored as a string representation of the {@link AccountType} enum.
    */

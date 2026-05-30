@@ -59,8 +59,9 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic areaOfExpertise
-   * cannot be modified or deleted because it currently has active courses associated with it.
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic
+   * areaOfExpertise cannot be modified or deleted because it currently has active courses
+   * associated with it.
    *
    * @return a fully configured {@link BusinessRuleException} instance
    */

@@ -12,8 +12,8 @@ import java.util.UUID;
  * areas of expertise via {@link ProjectAreaOfExpertise}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
- * project–areaOfExpertise link: creation and deletion of associations. It orchestrates validation and
- * delegates persistence concerns to the {@link ProjectAreaOfExpertiseRepository}.
+ * project–areaOfExpertise link: creation and deletion of associations. It orchestrates validation
+ * and delegates persistence concerns to the {@link ProjectAreaOfExpertiseRepository}.
  */
 public interface ProjectAreaOfExpertiseService {
 
@@ -23,16 +23,16 @@ public interface ProjectAreaOfExpertiseService {
    * <p>This operation:
    *
    * <ul>
-   *   <li>Constructs a {@link ProjectAreaOfExpertise} aggregate for each provided areaOfExpertise ID via its factory
-   *       method,
+   *   <li>Constructs a {@link ProjectAreaOfExpertise} aggregate for each provided areaOfExpertise
+   *       ID via its factory method,
    *   <li>validates structural constraints for every association (non-null IDs), and
    *   <li>persists all valid associations using the underlying repository.
    * </ul>
    *
    * @param projectId the unique identifier of the project to link
    * @param areaOfExpertiseIds the unique identifiers of the areaOfExpertises to link to the project
-   * @return a {@link List} of fully instantiated and persisted {@link ProjectAreaOfExpertise} aggregates
-   *     corresponding to the provided areaOfExpertise IDs
+   * @return a {@link List} of fully instantiated and persisted {@link ProjectAreaOfExpertise}
+   *     aggregates corresponding to the provided areaOfExpertise IDs
    * @throws AppValidationException if any created association violates domain constraints (e.g.,
    *     null IDs)
    */
@@ -65,8 +65,8 @@ public interface ProjectAreaOfExpertiseService {
   /**
    * Removes all associations for the specified areaOfExpertise.
    *
-   * <p>This is typically used when deleting or restructuring a areaOfExpertise and needing to clean up all
-   * of its project links in a single operation.
+   * <p>This is typically used when deleting or restructuring a areaOfExpertise and needing to clean
+   * up all of its project links in a single operation.
    *
    * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
    * @return the number of associations deleted (zero if {@code areaOfExpertiseId} is {@code null}

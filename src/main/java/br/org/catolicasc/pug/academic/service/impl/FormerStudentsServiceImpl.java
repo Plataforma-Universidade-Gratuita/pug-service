@@ -52,7 +52,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   @Transactional
   @Override
   public FormerStudent addCompletedHours(UUID accountId, BigDecimal hours) {
-    LOG.debugf("Adicionando %s horas completadas ao estudante: %s", hours, accountId);
+    LOG.debugf("Adding %s completed hours to former student: %s", hours, accountId);
     FormerStudent current = getById(accountId);
 
     FormerStudent updated = current.addCompletedHours(hours);
@@ -66,7 +66,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
         && Boolean.TRUE.equals(updated.getCounterpartHours().getConcluded())) {
       enrollmentsService.completeAllByFormerStudentId(accountId);
     }
-    LOG.infof("Horas adicionadas com sucesso ao estudante %s", accountId);
+    LOG.infof("Completed hours added successfully to former student %s", accountId);
     return updated;
   }
 
@@ -133,7 +133,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     courseService.getById(cmd.courseId());
     Account account = accountService.save(cmd.accountCreateCommand());
 
-    FormerStudent studentToPersist =
+    FormerStudent formerStudentToPersist =
         FormerStudentProcessor.processCreateInput(
             account.getId(),
             cmd.academicRegistration(),
@@ -143,22 +143,23 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
             cmd.startDate(),
             cmd.dueDate());
 
-    if (studentToPersist.hasFieldErrors()) {
-      throw new AppValidationException(studentToPersist.getFieldErrors());
+    if (formerStudentToPersist.hasFieldErrors()) {
+      throw new AppValidationException(formerStudentToPersist.getFieldErrors());
     }
 
-    if (existsByRegistration(studentToPersist.getAcademicRegistration().getValue())) {
+    if (existsByRegistration(formerStudentToPersist.getAcademicRegistration().getValue())) {
       LOG.warnf(
           "Creation failed: FormerStudent with registration %s already exists",
-          studentToPersist.getAcademicRegistration());
+          formerStudentToPersist.getAcademicRegistration());
       throw ExceptionHelper.formerStudentAlreadyExists();
     }
 
-    FormerStudent savedStudent = repo.persist(studentToPersist);
-    LOG.infof("FormerStudent created successfully. Account ID: %s", savedStudent.getAccountId());
+    FormerStudent savedFormerStudent = repo.persist(formerStudentToPersist);
+    LOG.infof(
+        "FormerStudent created successfully. Account ID: %s", savedFormerStudent.getAccountId());
 
-    auditPublisher.fireCreate(FormerStudent.class.getName(), savedStudent.getAccountId());
-    return savedStudent;
+    auditPublisher.fireCreate(FormerStudent.class.getName(), savedFormerStudent.getAccountId());
+    return savedFormerStudent;
   }
 
   /** {@inheritDoc} */
@@ -168,7 +169,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
     }
-    LOG.debugf("Attempting to bulk create %d Students", cmds.size());
+    LOG.debugf("Attempting to bulk create %d former students", cmds.size());
 
     cmds.stream()
         .map(FormerStudentCreateCommand::courseId)
@@ -191,13 +192,13 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     List<Account> createdAccounts = accountService.saveInBulk(accountCmds);
     List<UUID> accountIds = createdAccounts.stream().map(Account::getId).toList();
 
-    List<FormerStudent> studentsToPersist =
+    List<FormerStudent> formerStudentsToPersist =
         FormerStudentProcessor.processBulkCreateInput(cmds, accountIds);
 
-    List<FormerStudent> savedStudents = repo.persistAll(studentsToPersist);
-    LOG.infof("Successfully bulk created %d Students", savedStudents.size());
+    List<FormerStudent> savedFormerStudents = repo.persistAll(formerStudentsToPersist);
+    LOG.infof("Successfully bulk created %d former students", savedFormerStudents.size());
 
-    return savedStudents;
+    return savedFormerStudents;
   }
 
   /** {@inheritDoc} */

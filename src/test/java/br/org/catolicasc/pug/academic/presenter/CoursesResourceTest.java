@@ -178,7 +178,8 @@ class CoursesResourceTest extends BaseResourceTest {
           existing[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
-    CourseCreateRequest req = new CourseCreateRequest(existing[0].getName(), areaOfExpertise[0].getId());
+    CourseCreateRequest req =
+        new CourseCreateRequest(existing[0].getName(), areaOfExpertise[0].getId());
 
     given()
         .contentType(ContentType.JSON)

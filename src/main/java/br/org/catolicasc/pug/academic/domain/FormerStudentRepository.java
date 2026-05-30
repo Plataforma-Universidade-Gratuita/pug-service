@@ -34,7 +34,7 @@ public interface FormerStudentRepository {
    * in the repository.
    *
    * <p>This query enforces relational integrity, ensuring academic courses are not deleted if they
-   * still have students actively enrolled in them.
+   * still have former students actively enrolled in them.
    *
    * @param courseId the unique identifier (UUID) of the enrolled course
    * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false}
@@ -75,10 +75,10 @@ public interface FormerStudentRepository {
   /**
    * Persists a collection of newly created {@link FormerStudent} aggregates in a single batch.
    *
-   * @param students a {@link List} of {@link FormerStudent} aggregates to persist
+   * @param formerStudents a {@link List} of {@link FormerStudent} aggregates to persist
    * @return the fully persisted {@link List} of {@link FormerStudent} instances
    */
-  List<FormerStudent> persistAll(List<FormerStudent> students);
+  List<FormerStudent> persistAll(List<FormerStudent> formerStudents);
 
   /**
    * Updates the state of an existing {@link FormerStudent} aggregate in the repository.

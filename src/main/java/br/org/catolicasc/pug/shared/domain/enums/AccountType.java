@@ -24,8 +24,8 @@ public enum AccountType implements GenericCodes {
   PARTNER("shared.account.type.partner"),
 
   /**
-   * FormerStudent account type, representing alumni participating in academic workflows and
-   * project activities.
+   * FormerStudent account type, representing alumni participating in academic workflows and project
+   * activities.
    */
   FORMER_STUDENT("shared.account.type.formerStudent");
 

@@ -85,12 +85,12 @@ public class FormerStudentRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public List<FormerStudent> persistAll(List<FormerStudent> students) {
-    if (CollectionUtils.isEmpty(students)) {
+  public List<FormerStudent> persistAll(List<FormerStudent> formerStudents) {
+    if (CollectionUtils.isEmpty(formerStudents)) {
       return List.of();
     }
     List<FormerStudentEntity> entities =
-        students.stream().map(FormerStudentMapper::toEntity).toList();
+        formerStudents.stream().map(FormerStudentMapper::toEntity).toList();
     persist(entities);
     flush();
 

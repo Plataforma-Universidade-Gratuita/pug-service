@@ -25,7 +25,7 @@ public enum EnrollmentStatus implements GenericCodes {
   EXITED("enrollment.status.exited"),
 
   /** Indicates the enrollment is temporarily suspended because the project is on hold. */
-  ON_HOLD("enrollment.status.on_hold"),
+  ON_HOLD("enrollment.status.on.hold"),
 
   /** Indicates the enrollment request is awaiting staff review. */
   PENDING("enrollment.status.pending"),

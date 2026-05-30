@@ -39,10 +39,8 @@ import java.util.UUID;
 @Authenticated
 public class AreasOfExpertiseProjectsResource {
 
-  @Inject
-  ProjectAreaOfExpertiseService writeService;
-  @Inject
-  ProjectAreaOfExpertiseReadService readService;
+  @Inject ProjectAreaOfExpertiseService writeService;
+  @Inject ProjectAreaOfExpertiseReadService readService;
   @Inject I18n i18n;
 
   @Context HttpHeaders headers;

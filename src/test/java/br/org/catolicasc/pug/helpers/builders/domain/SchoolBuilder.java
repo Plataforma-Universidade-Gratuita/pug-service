@@ -6,8 +6,8 @@ import br.org.catolicasc.pug.helpers.TestNameGenerator;
 /**
  * Builder class for creating {@link School} domain aggregates in test scenarios.
  *
- * <p>Provides a fluent API to define areaOfExpertise properties, utilizing a random unique name generator by
- * default.
+ * <p>Provides a fluent API to define areaOfExpertise properties, utilizing a random unique name
+ * generator by default.
  */
 public class SchoolBuilder {
   private String name = TestNameGenerator.generateRandomSchoolName();

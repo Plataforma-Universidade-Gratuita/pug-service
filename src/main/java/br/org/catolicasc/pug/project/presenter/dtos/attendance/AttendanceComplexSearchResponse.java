@@ -1,10 +1,9 @@
 package br.org.catolicasc.pug.project.presenter.dtos.attendance;
 
-import java.util.UUID;
-
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentSimpleComplexSearchResponse;
+import java.util.UUID;
 
 /**
  * Data Transfer Object used as the content payload for paginated attendance complex-search

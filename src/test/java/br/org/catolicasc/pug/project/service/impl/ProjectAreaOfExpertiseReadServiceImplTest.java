@@ -26,10 +26,8 @@ import org.junit.jupiter.api.Test;
 @DisplayName("ProjectSchoolReadServiceImpl Coverage")
 class ProjectAreaOfExpertiseReadServiceImplTest {
 
-  @Inject
-  ProjectAreaOfExpertiseReadServiceImpl service;
-  @InjectMock
-  ProjectAreaOfExpertiseRepository associationRepo;
+  @Inject ProjectAreaOfExpertiseReadServiceImpl service;
+  @InjectMock ProjectAreaOfExpertiseRepository associationRepo;
   @InjectMock SchoolQueries areaOfExpertiseQueries;
   @InjectMock ProjectQueries projectQueries;
 
@@ -40,7 +38,8 @@ class ProjectAreaOfExpertiseReadServiceImplTest {
     UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
-    when(associationRepo.findAllSchoolIdsByProjectId(projectId)).thenReturn(Set.of(areaOfExpertiseId));
+    when(associationRepo.findAllSchoolIdsByProjectId(projectId))
+        .thenReturn(Set.of(areaOfExpertiseId));
     when(areaOfExpertiseQueries.listByIds(any()))
         .thenReturn(List.of(new SchoolView(areaOfExpertiseId, "School", now, now)));
 
@@ -71,7 +70,8 @@ class ProjectAreaOfExpertiseReadServiceImplTest {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
-    when(associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId)).thenReturn(Set.of(projectId));
+    when(associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId))
+        .thenReturn(Set.of(projectId));
     when(projectQueries.listAllByIds(any()))
         .thenReturn(
             List.of(

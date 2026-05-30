@@ -11,11 +11,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 /**
- * Domain aggregate representing the association between a Project and a School.
+ * Domain aggregate representing the association between a Project and an Area of Expertise.
  *
- * <p>This aggregate ensures that a project is strictly linked to a valid areaOfExpertise. It provides
- * methods to manage and transition this association, extending {@link DomainError} for structural
- * validation.
+ * <p>This aggregate ensures that a project is strictly linked to a valid areaOfExpertise. It
+ * provides methods to manage and transition this association, extending {@link DomainError} for
+ * structural validation.
  */
 @Getter
 @Builder(toBuilder = true)
@@ -31,7 +31,7 @@ public class ProjectAreaOfExpertise extends DomainError {
   private final UUID areaOfExpertiseId;
 
   /**
-   * Factory method to create a new {@code ProjectsBySchool} instance.
+   * Factory method to create a new {@code ProjectAreaOfExpertise} instance.
    *
    * @param projectId the unique identifier of the project
    * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
@@ -39,7 +39,10 @@ public class ProjectAreaOfExpertise extends DomainError {
    */
   public static ProjectAreaOfExpertise factory(UUID projectId, UUID areaOfExpertiseId) {
     ProjectAreaOfExpertise association =
-        ProjectAreaOfExpertise.builder().projectId(projectId).areaOfExpertiseId(areaOfExpertiseId).build();
+        ProjectAreaOfExpertise.builder()
+            .projectId(projectId)
+            .areaOfExpertiseId(areaOfExpertiseId)
+            .build();
     association.collectValidationProblems();
     return association;
   }

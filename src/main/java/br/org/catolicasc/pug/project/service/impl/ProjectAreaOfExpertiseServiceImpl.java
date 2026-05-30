@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.project.service.impl;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertiseRepository;
 import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
-import br.org.catolicasc.pug.project.service.utils.ProjectProcessor;
 import br.org.catolicasc.pug.project.service.utils.ProjectAreaOfExpertiseProcessor;
+import br.org.catolicasc.pug.project.service.utils.ProjectProcessor;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
@@ -22,9 +22,9 @@ import org.jboss.logging.Logger;
  * Implementation of the {@link ProjectAreaOfExpertiseService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for the association between
- * projects and areaOfExpertises. It delegates aggregate construction to {@link ProjectProcessor} and
- * persistence concerns to the {@link ProjectAreaOfExpertiseRepository}, enforcing domain validation before
- * write operations.
+ * projects and areaOfExpertises. It delegates aggregate construction to {@link ProjectProcessor}
+ * and persistence concerns to the {@link ProjectAreaOfExpertiseRepository}, enforcing domain
+ * validation before write operations.
  */
 @ApplicationScoped
 public class ProjectAreaOfExpertiseServiceImpl implements ProjectAreaOfExpertiseService {
@@ -32,8 +32,7 @@ public class ProjectAreaOfExpertiseServiceImpl implements ProjectAreaOfExpertise
   private static final Logger LOG = Logger.getLogger(ProjectAreaOfExpertiseServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
-  @Inject
-  ProjectAreaOfExpertiseRepository repo;
+  @Inject ProjectAreaOfExpertiseRepository repo;
 
   /** {@inheritDoc} */
   @Transactional
@@ -99,7 +98,10 @@ public class ProjectAreaOfExpertiseServiceImpl implements ProjectAreaOfExpertise
         projectId, areaOfExpertiseId);
 
     ProjectAreaOfExpertise association =
-        ProjectAreaOfExpertise.builder().projectId(projectId).areaOfExpertiseId(areaOfExpertiseId).build();
+        ProjectAreaOfExpertise.builder()
+            .projectId(projectId)
+            .areaOfExpertiseId(areaOfExpertiseId)
+            .build();
 
     boolean deleted = repo.delete(association);
     if (deleted) {

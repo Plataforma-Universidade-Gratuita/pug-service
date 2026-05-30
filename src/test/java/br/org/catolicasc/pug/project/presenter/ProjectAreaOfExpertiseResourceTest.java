@@ -48,7 +48,10 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
-        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId())).build())
+        .body(
+            aProjectSchoolRequest()
+                .withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId()))
+                .build())
         .when()
         .post("/v1/projects/{projectId}/areas-of-expertise")
         .then()
@@ -103,7 +106,10 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
-        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId())).build())
+        .body(
+            aProjectSchoolRequest()
+                .withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId()))
+                .build())
         .post("/v1/projects/{projectId}/areas-of-expertise");
   }
 }

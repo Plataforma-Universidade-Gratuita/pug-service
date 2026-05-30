@@ -37,7 +37,7 @@ public class Account extends DomainError {
   /** The validated email address used for logging into the account. */
   Email email;
 
-  /** The defined role/type of the account (e.g., ADMIN, STUDENT). */
+  /** The defined role/type of the account (e.g., ADMIN, FORMER_STUDENT). */
   AccountType accountType;
 
   /** The securely hashed representation of the user's password. */

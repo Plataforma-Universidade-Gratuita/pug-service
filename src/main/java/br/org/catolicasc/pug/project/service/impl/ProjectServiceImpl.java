@@ -37,8 +37,7 @@ public class ProjectServiceImpl implements ProjectService {
 
   @Inject AuditPublisher auditPublisher;
   @Inject ProjectRepository repo;
-  @Inject
-  ProjectAreaOfExpertiseService associationService;
+  @Inject ProjectAreaOfExpertiseService associationService;
   @Inject AuthService authService;
   @Inject EntitiesService entityService;
   @Inject EnrollmentsService enrollmentsService;

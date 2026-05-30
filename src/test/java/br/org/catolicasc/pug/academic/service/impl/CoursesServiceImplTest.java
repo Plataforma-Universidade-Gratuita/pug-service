@@ -66,7 +66,10 @@ class CoursesServiceImplTest {
     em.flush();
 
     var cmd =
-        aCourseCreateCommand().withName(existing.getName()).withSchoolId(areaOfExpertise.getId()).build();
+        aCourseCreateCommand()
+            .withName(existing.getName())
+            .withSchoolId(areaOfExpertise.getId())
+            .build();
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
 

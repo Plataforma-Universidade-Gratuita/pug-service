@@ -103,8 +103,8 @@ public class Course extends DomainError {
    * Updates the association of the course to a different areaOfExpertise.
    *
    * @param newAreaOfExpertiseId the unique identifier of the new areaOfExpertise
-   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the areaOfExpertise is
-   *     unchanged
+   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the
+   *     areaOfExpertise is unchanged
    */
   public Course moveToAreaOfExpertise(UUID newAreaOfExpertiseId) {
     if (areaOfExpertiseId.equals(newAreaOfExpertiseId)) {

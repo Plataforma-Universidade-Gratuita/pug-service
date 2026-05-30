@@ -16,7 +16,8 @@ import java.util.UUID;
  * @param areaOfExpertiseIds the non-empty list of area-of-expertise identifiers to associate with
  *     the target project
  */
-public record ProjectAreaOfExpertiseRequest(@NotEmpty List<@NotNull @UuidV7 UUID> areaOfExpertiseIds) {
+public record ProjectAreaOfExpertiseRequest(
+    @NotEmpty List<@NotNull @UuidV7 UUID> areaOfExpertiseIds) {
 
   public ProjectAreaOfExpertiseRequest {
     areaOfExpertiseIds = areaOfExpertiseIds == null ? null : List.copyOf(areaOfExpertiseIds);

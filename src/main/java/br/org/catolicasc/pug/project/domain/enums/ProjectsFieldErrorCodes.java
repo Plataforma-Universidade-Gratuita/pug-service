@@ -107,7 +107,8 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
 
   /** Indicates that a areaOfExpertise ID was provided as null. */
-  INVALID_AREA_OF_EXPERTISE_ID_BLANK("error.domain.projects.areaOfExpertise.id.blank", "areaOfExpertiseId");
+  INVALID_AREA_OF_EXPERTISE_ID_BLANK(
+      "error.domain.projects.areaOfExpertise.id.blank", "areaOfExpertiseId");
 
   /**
    * The property key used to resolve the localized error message in the application's resource

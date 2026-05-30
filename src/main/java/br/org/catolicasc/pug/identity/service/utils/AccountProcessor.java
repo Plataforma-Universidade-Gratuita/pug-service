@@ -94,7 +94,8 @@ public class AccountProcessor {
    *
    * @param userId the unique identifier of the user who owns this account
    * @param emailString the raw email address string
-   * @param accountTypeStr the raw string representing the account role (e.g., "ADMIN", "STUDENT")
+   * @param accountTypeStr the raw string representing the account role (e.g., "ADMIN",
+   *     "FORMER_STUDENT")
    * @param passwordHash the securely hashed password string
    * @return a fully instantiated {@link Account} domain aggregate, potentially containing
    *     validation errors

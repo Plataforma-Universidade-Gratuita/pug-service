@@ -43,7 +43,7 @@ public class FormerStudentProcessor {
           "Commands and Account IDs lists must be of the same size.");
     }
 
-    List<FormerStudent> students = new ArrayList<>(cmds.size());
+    List<FormerStudent> formerStudents = new ArrayList<>(cmds.size());
 
     for (int i = 0; i < cmds.size(); i++) {
       FormerStudentCreateCommand cmd = cmds.get(i);
@@ -62,16 +62,16 @@ public class FormerStudentProcessor {
       if (formerStudent.hasFieldErrors()) {
         throw new AppValidationException(formerStudent.getFieldErrors());
       }
-      students.add(formerStudent);
+      formerStudents.add(formerStudent);
     }
 
-    return students;
+    return formerStudents;
   }
 
   /**
    * Processes raw creation inputs and constructs a new {@link FormerStudent} domain aggregate.
    *
-   * <p>New students are initialized with {@code completedHours} as zero.
+   * <p>New former students are initialized with {@code completedHours} as zero.
    *
    * @param accountId the unique identifier of the linked authentication account
    * @param regString the raw academic registration string
@@ -103,7 +103,7 @@ public class FormerStudentProcessor {
    * Processes raw update inputs and conditionally mutates the state of an existing {@link
    * FormerStudent}.
    *
-   * @param existingStudent the current, reconstituted {@link FormerStudent} aggregate
+   * @param existingFormerStudent the current, reconstituted {@link FormerStudent} aggregate
    * @param regString the proposed new academic registration, or {@code null}/empty to skip
    * @param campus the proposed new campus, or {@code null} to skip
    * @param courseId the proposed new course ID, or {@code null} to skip
@@ -113,7 +113,7 @@ public class FormerStudentProcessor {
    * @return a new {@link FormerStudent} domain aggregate reflecting the requested updates
    */
   public static FormerStudent processUpdateInput(
-      FormerStudent existingStudent,
+      FormerStudent existingFormerStudent,
       String regString,
       Campi campus,
       UUID courseId,
@@ -121,7 +121,7 @@ public class FormerStudentProcessor {
       LocalDate startDate,
       LocalDate dueDate) {
 
-    FormerStudent updated = existingStudent;
+    FormerStudent updated = existingFormerStudent;
 
     if (StringUtils.isNotEmpty(regString)) {
       AcademicRegistration newReg = AcademicRegistration.factory(regString);
@@ -148,8 +148,8 @@ public class FormerStudentProcessor {
     boolean periodChanged = startDate != null || dueDate != null;
     if (periodChanged) {
       LocalDate newStart =
-          startDate != null ? startDate : existingStudent.getPeriod().getStartDate();
-      LocalDate newDue = dueDate != null ? dueDate : existingStudent.getPeriod().getDueDate();
+          startDate != null ? startDate : existingFormerStudent.getPeriod().getStartDate();
+      LocalDate newDue = dueDate != null ? dueDate : existingFormerStudent.getPeriod().getDueDate();
       Period newPeriod = Period.factory(newStart, newDue);
       updated = updated.updateDateWindow(newPeriod);
     }

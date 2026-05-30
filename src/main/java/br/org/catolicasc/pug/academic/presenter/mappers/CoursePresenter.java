@@ -28,8 +28,8 @@ public final class CoursePresenter {
    * Maps an incoming REST creation request into an application layer course creation command.
    *
    * <p>This helper is responsible only for the course portion of the payload. It extracts the raw
-   * name and areaOfExpertise identifier and encapsulates them into a {@link CourseCreateCommand}, leaving
-   * domain validation and orchestration to the application service layer.
+   * name and areaOfExpertise identifier and encapsulates them into a {@link CourseCreateCommand},
+   * leaving domain validation and orchestration to the application service layer.
    *
    * @param req the validated {@link CourseCreateRequest} payload
    * @return the corresponding {@link CourseCreateCommand}, or {@code null} if the request is null
@@ -76,7 +76,10 @@ public final class CoursePresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new CourseResponse(
-        v.id(), v.name(), AreaOfExpertisePresenter.toResponse(v.areaOfExpertise(), locale), auditInfo);
+        v.id(),
+        v.name(),
+        AreaOfExpertisePresenter.toResponse(v.areaOfExpertise(), locale),
+        auditInfo);
   }
 
   /**
@@ -91,7 +94,9 @@ public final class CoursePresenter {
       return null;
     }
     return new CourseComplexSearchResponse(
-        view.id(), view.name(), AreaOfExpertisePresenter.toComplexSearchResponse(view.areaOfExpertise()));
+        view.id(),
+        view.name(),
+        AreaOfExpertisePresenter.toComplexSearchResponse(view.areaOfExpertise()));
   }
 
   /**

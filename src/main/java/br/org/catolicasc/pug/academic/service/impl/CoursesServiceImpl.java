@@ -36,7 +36,7 @@ public class CoursesServiceImpl implements CoursesService {
 
   @Inject AreasOfExpertiseService areasOfExpertiseService;
 
-  @Inject FormerStudentsService studentService;
+  @Inject FormerStudentsService formerStudentsService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -47,8 +47,8 @@ public class CoursesServiceImpl implements CoursesService {
       return false;
     }
 
-    if (studentService.existsAnyByCourseId(id)) {
-      LOG.warnf("Delete failed: Course ID %s has active students", id);
+    if (formerStudentsService.existsAnyByCourseId(id)) {
+      LOG.warnf("Delete failed: Course ID %s has active former students", id);
       throw ExceptionHelper.courseHasStudents();
     }
 

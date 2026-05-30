@@ -53,7 +53,7 @@ public interface FormerStudentsService {
    * Checks whether any active formerStudent enrollment associated with a specific course exists.
    *
    * <p>This method is utilized to enforce relational integrity, ensuring that an academic {@link
-   * Course} cannot be deleted if it still has enrolled students.
+   * Course} cannot be deleted if it still has enrolled former students.
    *
    * @param courseId the unique identifier (UUID) of the course to check
    * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false}
@@ -100,7 +100,8 @@ public interface FormerStudentsService {
    * validations, and cascading identity provisions as a single creation, ensuring that the entire
    * batch operation succeeds or fails together.
    *
-   * @param cmds a {@link List} of structured commands containing the data to create the students
+   * @param cmds a {@link List} of structured commands containing the data to create former-student
+   *     records
    * @return a {@link List} of the fully instantiated and persisted {@link FormerStudent} aggregates
    * @throws DuplicateResourceException if any academic registration or email already exists
    * @throws ResourceNotFoundException if any associated course does not exist

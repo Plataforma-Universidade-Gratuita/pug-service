@@ -18,7 +18,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 /**
- * JPA entity representing the many-to-many relationship between Projects and Schools.
+ * JPA entity representing the many-to-many relationship between Projects and Areas of Expertise.
  *
  * <p>This entity is intended strictly for read-only query projections and relational mapping.
  */
@@ -35,7 +35,10 @@ import lombok.ToString;
     indexes = {@Index(name = "idx_pbs_areas_of_expertise", columnList = "area_of_expertise_id")})
 public class ProjectAreaOfExpertiseEntity {
 
-  /** Embeddable composite primary key mapping the intersection of a Project and a School. */
+  /**
+   * Embeddable composite primary key mapping the intersection of a Project and an Area of
+   * Expertise.
+   */
   @SuppressFBWarnings("SE_NO_SERIALVERSIONID")
   @Embeddable
   @Getter

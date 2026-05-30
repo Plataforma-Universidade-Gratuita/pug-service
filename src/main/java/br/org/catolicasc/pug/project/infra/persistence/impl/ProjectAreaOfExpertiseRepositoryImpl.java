@@ -12,11 +12,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/** Implementation of the {@link ProjectAreaOfExpertiseRepository} utilizing Hibernate ORM with Panache. */
+/**
+ * Implementation of the {@link ProjectAreaOfExpertiseRepository} utilizing Hibernate ORM with
+ * Panache.
+ */
 @ApplicationScoped
 public class ProjectAreaOfExpertiseRepositoryImpl
     implements ProjectAreaOfExpertiseRepository,
-        PanacheRepositoryBase<ProjectAreaOfExpertiseEntity, ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId> {
+        PanacheRepositoryBase<
+            ProjectAreaOfExpertiseEntity, ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId> {
 
   /** {@inheritDoc} */
   @Transactional

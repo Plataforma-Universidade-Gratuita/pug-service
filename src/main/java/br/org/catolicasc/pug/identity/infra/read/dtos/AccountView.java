@@ -15,7 +15,8 @@ import java.util.UUID;
  * @param id the unique identifier (UUIDv7) of the account
  * @param userId the unique identifier (UUIDv7) of the user linked to this account
  * @param email the email address registered for authentication
- * @param accountType the assigned role or classification of the account (e.g., ADMIN, STUDENT)
+ * @param accountType the assigned role or classification of the account (e.g., ADMIN,
+ *     FORMER_STUDENT)
  * @param createdAt the exact timestamp when the account record was created
  * @param updatedAt the exact timestamp when the account record was last modified
  * @param active flag indicating whether the account is currently active

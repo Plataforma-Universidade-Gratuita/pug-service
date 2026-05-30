@@ -27,8 +27,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   @Inject AuditPublisher auditPublisher;
   @Inject AreaOfExpertiseRepository repo;
   @Inject CoursesService coursesService;
-  @Inject
-  ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
+  @Inject ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
   /** {@inheritDoc} */
   @Transactional

@@ -24,8 +24,7 @@ import org.junit.jupiter.api.Test;
 @DisplayName("ProjectSchoolServiceImpl Integration Tests")
 class ProjectAreaOfExpertiseServiceImplTest {
 
-  @Inject
-  ProjectAreaOfExpertiseServiceImpl service;
+  @Inject ProjectAreaOfExpertiseServiceImpl service;
   @Inject TestDataFactory factory;
 
   @InjectMock AuditPublisher audit;
@@ -45,7 +44,8 @@ class ProjectAreaOfExpertiseServiceImplTest {
   @Transactional
   @DisplayName("Should save project-areaOfExpertise association")
   void saveSuccess() {
-    List<ProjectAreaOfExpertise> created = service.save(project.getId(), List.of(areaOfExpertise.getId()));
+    List<ProjectAreaOfExpertise> created =
+        service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
     assertThat(created).hasSize(1);
   }
@@ -74,7 +74,8 @@ class ProjectAreaOfExpertiseServiceImplTest {
   void saveSkipExisting() {
     service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
-    List<ProjectAreaOfExpertise> second = service.save(project.getId(), List.of(areaOfExpertise.getId()));
+    List<ProjectAreaOfExpertise> second =
+        service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
     assertThat(second).isEmpty();
   }

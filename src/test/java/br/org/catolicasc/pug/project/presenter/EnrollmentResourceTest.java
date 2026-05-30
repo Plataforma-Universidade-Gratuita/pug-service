@@ -138,7 +138,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/projects/enrollments?formerStudentId={formerStudentId} - List By FormerStudent")
+  @DisplayName(
+      "GET /v1/projects/enrollments?formerStudentId={formerStudentId} - List By FormerStudent")
   void listByStudentId() throws Exception {
     FormerStudent[] formerStudent = new FormerStudent[1];
     doInTransaction(
@@ -297,7 +298,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=APPROVED - Success")
+  @DisplayName(
+      "PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=APPROVED - Success")
   void acceptSuccess() throws Exception {
     FormerStudent[] formerStudent = new FormerStudent[1];
     Project[] project = new Project[1];
@@ -329,7 +331,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=CANCELED - Success")
+  @DisplayName(
+      "PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=CANCELED - Success")
   void cancelSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -354,7 +357,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=COMPLETED - Success")
+  @DisplayName(
+      "PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=COMPLETED - Success")
   void completeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(
@@ -416,7 +420,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=REJECTED - Success")
+  @DisplayName(
+      "PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=REJECTED - Success")
   void rejectSuccess() throws Exception {
     FormerStudent[] formerStudent = new FormerStudent[1];
     Project[] project = new Project[1];
@@ -448,7 +453,8 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=REMOVED - Success")
+  @DisplayName(
+      "PATCH /v1/projects/{projectId}/enrollments/{formerStudentId} status=REMOVED - Success")
   void removeSuccess() throws Exception {
     Enrollment[] enr = new Enrollment[1];
     doInTransaction(

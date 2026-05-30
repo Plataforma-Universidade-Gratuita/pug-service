@@ -14,23 +14,23 @@ import lombok.Getter;
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
 
-    /**
-     * Indicates an attempt to create or update an academic area of expertise using a name that is already
-     * registered to another area of expertise in the system.
-     */
-    AREA_OF_EXPERTISE_ALREADY_EXISTS("error.domain.academic.areaOfExpertise.already.exists"),
+  /**
+   * Indicates an attempt to create or update an academic area of expertise using a name that is
+   * already registered to another area of expertise in the system.
+   */
+  AREA_OF_EXPERTISE_ALREADY_EXISTS("error.domain.academic.areaOfExpertise.already.exists"),
 
-    /**
-     * Indicates an attempt to delete or modify an academic area of expertise that currently has registered
-     * courses under its hierarchy, violating relational integrity.
-     */
-    AREA_OF_EXPERTISE_HAS_COURSES("error.domain.academic.areaOfExpertise.has.courses"),
+  /**
+   * Indicates an attempt to delete or modify an academic area of expertise that currently has
+   * registered courses under its hierarchy, violating relational integrity.
+   */
+  AREA_OF_EXPERTISE_HAS_COURSES("error.domain.academic.areaOfExpertise.has.courses"),
 
-    /**
-     * Indicates that a requested academic area of expertise could not be located in the underlying data store by
-     * its unique identifier.
-     */
-    AREA_OF_EXPERTISE_NOT_FOUND("error.domain.academic.areaOfExpertise.not.found"),
+  /**
+   * Indicates that a requested academic area of expertise could not be located in the underlying
+   * data store by its unique identifier.
+   */
+  AREA_OF_EXPERTISE_NOT_FOUND("error.domain.academic.areaOfExpertise.not.found"),
 
   /**
    * Indicates an attempt to create or update an academic course using a name that is already

@@ -90,6 +90,7 @@ public final class CourseMapper {
         (s != null)
             ? new AreaOfExpertiseView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
             : null;
-    return new CourseView(c.getId(), c.getName(), areaOfExpertiseView, c.getCreatedAt(), c.getUpdatedAt());
+    return new CourseView(
+        c.getId(), c.getName(), areaOfExpertiseView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }

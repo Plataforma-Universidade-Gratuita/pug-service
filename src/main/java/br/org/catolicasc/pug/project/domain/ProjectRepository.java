@@ -4,12 +4,12 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Domain repository interface for managing {@link Project} and {@link ProjectAreaOfExpertise} aggregate
- * roots.
+ * Domain repository interface for managing {@link Project} and {@link ProjectAreaOfExpertise}
+ * aggregate roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
- * projects and their areaOfExpertise associations. It abstracts the underlying data storage mechanism to
- * maintain a pure, infrastructure-agnostic domain model.
+ * projects and their areaOfExpertise associations. It abstracts the underlying data storage
+ * mechanism to maintain a pure, infrastructure-agnostic domain model.
  */
 public interface ProjectRepository {
 

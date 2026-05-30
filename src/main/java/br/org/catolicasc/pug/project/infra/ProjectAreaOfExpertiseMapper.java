@@ -8,7 +8,8 @@ import br.org.catolicasc.pug.project.infra.persistence.ProjectAreaOfExpertiseEnt
  *
  * <p>This mapper acts as an anti-corruption layer for the association aggregate {@link
  * ProjectAreaOfExpertise}, handling conversions to and from the JPA persistence model ({@link
- * ProjectAreaOfExpertiseEntity}) as well as consolidated read models that join projects and areaOfExpertises.
+ * ProjectAreaOfExpertiseEntity}) as well as consolidated read models that join projects and
+ * areaOfExpertises.
  */
 public final class ProjectAreaOfExpertiseMapper {
 
@@ -16,10 +17,12 @@ public final class ProjectAreaOfExpertiseMapper {
   private ProjectAreaOfExpertiseMapper() {}
 
   /**
-   * Reconstitutes a {@link ProjectAreaOfExpertise} aggregate from a JPA {@link ProjectAreaOfExpertiseEntity}.
+   * Reconstitutes a {@link ProjectAreaOfExpertise} aggregate from a JPA {@link
+   * ProjectAreaOfExpertiseEntity}.
    *
    * @param e the JPA persistence entity to convert
-   * @return a fully constructed {@link ProjectAreaOfExpertise}, or {@code null} if the input entity is null
+   * @return a fully constructed {@link ProjectAreaOfExpertise}, or {@code null} if the input entity
+   *     is null
    */
   public static ProjectAreaOfExpertise toDomain(ProjectAreaOfExpertiseEntity e) {
     if (e == null || e.getId() == null) {
@@ -36,15 +39,16 @@ public final class ProjectAreaOfExpertiseMapper {
    * ProjectAreaOfExpertiseEntity}.
    *
    * @param d the Domain aggregate to convert
-   * @return a newly constructed {@link ProjectAreaOfExpertiseEntity}, or {@code null} if the input aggregate
-   *     is null
+   * @return a newly constructed {@link ProjectAreaOfExpertiseEntity}, or {@code null} if the input
+   *     aggregate is null
    */
   public static ProjectAreaOfExpertiseEntity toEntity(ProjectAreaOfExpertise d) {
     if (d == null) {
       return null;
     }
     ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId id =
-        new ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId(d.getProjectId(), d.getAreaOfExpertiseId());
+        new ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId(
+            d.getProjectId(), d.getAreaOfExpertiseId());
     return new ProjectAreaOfExpertiseEntity(id);
   }
 }

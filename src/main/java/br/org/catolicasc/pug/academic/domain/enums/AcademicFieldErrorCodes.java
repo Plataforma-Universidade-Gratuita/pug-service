@@ -57,7 +57,8 @@ public enum AcademicFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_REGISTRATION_TOO_LONG("error.domain.academic.registration.tooLong", "registration"),
 
   /** Indicates that a area of expertise ID was provided as null. */
-  INVALID_AREA_OF_EXPERTISE_BLANK("error.domain.academic.areaOfExpertise.blank", "areaOfExpertiseId");
+  INVALID_AREA_OF_EXPERTISE_BLANK(
+      "error.domain.academic.areaOfExpertise.blank", "areaOfExpertiseId");
 
   /**
    * The property key used to resolve the localized error message in the application's resource

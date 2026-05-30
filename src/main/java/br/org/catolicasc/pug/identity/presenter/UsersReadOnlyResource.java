@@ -41,7 +41,7 @@ import java.util.UUID;
  * <p>This class exposes endpoints to retrieve existing user identities. It acts as the HTTP entry
  * point, delegating queries to the {@link UsersReadService} and adhering to CQRS principles. Direct
  * write operations for users are typically orchestrated through account-creation endpoints (like
- * Admins or Students) rather than standalone user endpoints.
+ * Admins or Former Students) rather than standalone user endpoints.
  */
 @Path("/v1/identity/users")
 @Consumes(MediaType.APPLICATION_JSON)

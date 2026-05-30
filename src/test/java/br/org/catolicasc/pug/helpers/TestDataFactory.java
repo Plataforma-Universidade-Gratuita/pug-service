@@ -91,7 +91,8 @@ public class TestDataFactory {
   }
 
   public Course createCourse(School areaOfExpertise) {
-    return courseRepository.persist(CourseBuilder.aCourse().withSchool(areaOfExpertise.getId()).build());
+    return courseRepository.persist(
+        CourseBuilder.aCourse().withSchool(areaOfExpertise.getId()).build());
   }
 
   public Course createCourse(Course course) {
