@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.domain;
 
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -79,6 +80,10 @@ public interface EnrollmentRepository {
    *     Optional#empty()} if not found
    */
   Optional<Enrollment> findOptionalById(EnrollmentIdentifier identifier);
+
+  List<Enrollment> listAllByProjectId(UUID projectId);
+
+  List<Enrollment> listAllByStudentId(UUID studentId);
 
   /**
    * Persists a newly created {@link Enrollment} aggregate into the repository.

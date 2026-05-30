@@ -1,16 +1,17 @@
 package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * Application service interface dedicated exclusively to querying Project data.
+ * Application service interface dedicated exclusively to querying project data.
  *
- * <p>Following CQRS principles, this service handles the "Query" operations. It bypasses complex
- * domain logic and retrieves lightweight {@link ProjectView} Data Transfer Objects directly from
- * the underlying data store or search indices.
+ * <p>Following CQRS principles, this service handles read-only project operations, from direct
+ * lookups to collection filters and paginated complex-search execution.
  */
 public interface ProjectReadService {
 
@@ -19,41 +20,46 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
-   * @throws ResourceNotFoundException if no project matches the provided ID
    */
   ProjectView getViewById(UUID id);
 
   /**
-   * Retrieves a comprehensive list of all projects registered in the system.
+   * Retrieves every project currently available in the read model.
    *
-   * @return a {@link List} containing all available {@link ProjectView} entries
+   * @return a sorted {@link List} containing every available {@link ProjectView}
    */
   List<ProjectView> listViews();
 
   /**
-   * Retrieves a list of projects created by a specific member.
+   * Retrieves every project whose identifier is contained in the provided collection.
    *
-   * @param accountId the unique identifier of the account
-   * @return a {@link List} of projects created by the member
+   * @param ids the project identifiers that should be resolved
+   * @return a sorted {@link List} of projects matching the provided identifiers
+   */
+  List<ProjectView> listViewsByIds(List<UUID> ids);
+
+  /**
+   * Retrieves every project created by the provided account identifier.
+   *
+   * @param accountId the unique identifier of the creator account
+   * @return a sorted {@link List} of projects created by the provided account
    */
   List<ProjectView> listViewsByCreatedBy(UUID accountId);
 
   /**
-   * Retrieves a list of projects offered by a specific partner entity.
+   * Retrieves every project associated with the provided partner-entity identifier.
    *
    * @param entityId the unique identifier of the partner entity
-   * @return a {@link List} of matching {@link ProjectView} entries
+   * @return a sorted {@link List} of projects associated with the provided entity
    */
   List<ProjectView> listViewsByEntityId(UUID entityId);
 
   /**
-   * Executes a robust name-based search against the names of projects.
+   * Executes the paginated complex-search flow for projects.
    *
-   * <p>Leverages database-backed filtering to provide flexible matching, accent-insensitivity, and
-   * name matching.
-   *
-   * @param query the raw search string or partial name provided by the client
-   * @return a sorted {@link List} of matching {@link ProjectView} entries
+   * @param criteria the optional search criteria supplied by the caller
+   * @param pageQuery the requested pagination window
+   * @return the paginated result containing the matching project projections
    */
-  List<ProjectView> searchByName(String query);
+  PageResult<ProjectView> search(ProjectComplexSearchCriteria criteria, PageQuery pageQuery);
 }

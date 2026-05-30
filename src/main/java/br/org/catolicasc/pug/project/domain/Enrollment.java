@@ -83,14 +83,21 @@ public class Enrollment extends DomainError {
    *       #isClosingStatus(EnrollmentStatus)}), no further transitions are allowed and a {@link
    *       BusinessRuleException} is thrown with {@link
    *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
-   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current {@code
-   *       status} is {@link EnrollmentStatus#PENDING}. On success, {@link EnrollmentInfo#accept()}
-   *       is applied, stamping {@code acceptedAt}.
+   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current
+   *       {@code status} is {@link EnrollmentStatus#PENDING} or {@link EnrollmentStatus#ON_HOLD}.
+   *       When moving from {@code PENDING}, {@link EnrollmentInfo#accept()} is applied, stamping
+   *       {@code acceptedAt}. When moving from {@code ON_HOLD}, the existing acceptance timestamp
+   *       is preserved and only the audit metadata is refreshed through {@link
+   *       EnrollmentInfo#update()}.
+   *   <li>A transition to {@link EnrollmentStatus#ON_HOLD} is only allowed when the current
+   *       {@code status} is {@link EnrollmentStatus#APPROVED}. On success, {@link
+   *       EnrollmentInfo#update()} is applied so the enrollment keeps its lifecycle timestamps while
+   *       still tracking the state change.
    *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
    *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
    *       EnrollmentStatus#REMOVED}) are only allowed when the current {@code status} is {@link
-   *       EnrollmentStatus#APPROVED}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
-   *       stamping {@code closingStatusAt}.
+   *       EnrollmentStatus#APPROVED} or {@link EnrollmentStatus#ON_HOLD}. On success, {@link
+   *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
    *   <li>A transition to {@link EnrollmentStatus#REJECTED} is allowed from both {@link
    *       EnrollmentStatus#PENDING} and {@link EnrollmentStatus#APPROVED}. On success, {@link
    *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
@@ -119,10 +126,15 @@ public class Enrollment extends DomainError {
     EnrollmentInfo newInfo;
 
     if (Objects.requireNonNull(newStatus) == EnrollmentStatus.APPROVED) {
-      if (status != EnrollmentStatus.PENDING) {
+      if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.ON_HOLD) {
         throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
       }
-      newInfo = enrollmentInfo.accept();
+      newInfo = status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
+    } else if (newStatus == EnrollmentStatus.ON_HOLD) {
+      if (status != EnrollmentStatus.APPROVED) {
+        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
+      }
+      newInfo = enrollmentInfo.update();
     } else if (newStatus == EnrollmentStatus.REJECTED) {
       if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.APPROVED) {
         throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
@@ -130,7 +142,7 @@ public class Enrollment extends DomainError {
       newInfo = enrollmentInfo.closeStatus();
     } else {
       if (isClosingStatus(newStatus)) {
-        if (status != EnrollmentStatus.APPROVED) {
+        if (status != EnrollmentStatus.APPROVED && status != EnrollmentStatus.ON_HOLD) {
           throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
         }
         newInfo = enrollmentInfo.closeStatus();

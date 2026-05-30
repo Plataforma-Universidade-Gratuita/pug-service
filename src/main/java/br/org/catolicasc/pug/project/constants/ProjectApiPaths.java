@@ -14,8 +14,8 @@ public final class ProjectApiPaths {
   /** Root collection endpoint for attendance records. */
   public static final String ATTENDANCES = "/v1/projects/attendances";
 
-  /** Nested collection endpoint for project-to-school associations. */
-  public static final String PROJECT_SCHOOLS = "/v1/projects/{projectId}/schools";
+  /** Nested collection endpoint for project-to-area-of-expertise associations. */
+  public static final String PROJECTS_SCHOOLS = "/v1/projects/{projectId}/areas-of-expertise";
 
   /** Private constructor to prevent instantiation. */
   private ProjectApiPaths() {}

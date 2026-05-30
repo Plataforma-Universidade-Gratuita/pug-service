@@ -9,13 +9,13 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only view of a Project.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It provides a lightweight projection of the project, holding only the necessary
- * identifiers for related resources (Entity and Creator Account) to keep the response payload
- * optimized for JSON serialization.
+ * client. It provides a lightweight projection of the project, including the minimal partner
+ * entity data required by the presenter contract, while still avoiding full aggregate hydration.
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project
  * @param entityId the unique identifier of the partner organization offering the project
+ * @param entityName the registered name of the partner organization offering the project
  * @param description the detailed description of the project
  * @param creatorId the unique identifier of the staff account who created the project
  * @param maxParticipants the maximum number of students allowed to enroll
@@ -30,6 +30,7 @@ public record ProjectView(
     UUID id,
     String name,
     UUID entityId,
+    String entityName,
     String description,
     UUID creatorId,
     Integer maxParticipants,
@@ -40,25 +41,28 @@ public record ProjectView(
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {
   /**
-   * Construtor auxiliar para mapeamento JPA.
+   * Convenience constructor used by JPQL constructor expressions that still project status as a raw
+   * database string.
    *
-   * @param id o identificador único (UUIDv7) do projeto
-   * @param name o nome do projeto
-   * @param entityId o identificador da entidade parceira
-   * @param description a descrição do projeto
-   * @param creatorId o identificador do criador
-   * @param maxParticipants o número máximo de participantes
-   * @param offeredHours as horas oferecidas
-   * @param completedHours as horas completadas
-   * @param status a string representando o status do projeto para conversão em enum
-   * @param closedAt o timestamp de fechamento
-   * @param createdAt o timestamp de criação
-   * @param updatedAt o timestamp da última modificação
+   * @param id the unique identifier (UUIDv7) of the project
+   * @param name the title or name of the project
+   * @param entityId the unique identifier of the partner organization offering the project
+   * @param entityName the registered name of the partner organization offering the project
+   * @param description the detailed description of the project
+   * @param creatorId the unique identifier of the creator account
+   * @param maxParticipants the maximum number of students allowed to enroll
+   * @param offeredHours the total counterpart hours the project offers
+   * @param completedHours the total counterpart hours that have been completed to date
+   * @param status the raw project-status value returned by the database
+   * @param closedAt the exact timestamp when the project reached a terminal state
+   * @param createdAt the exact timestamp when the project record was created
+   * @param updatedAt the exact timestamp when the project record was last modified
    */
   public ProjectView(
       UUID id,
       String name,
       UUID entityId,
+      String entityName,
       String description,
       UUID creatorId,
       Integer maxParticipants,
@@ -72,6 +76,7 @@ public record ProjectView(
         id,
         name,
         entityId,
+        entityName,
         description,
         creatorId,
         maxParticipants,

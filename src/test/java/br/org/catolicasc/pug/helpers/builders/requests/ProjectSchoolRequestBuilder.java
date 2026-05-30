@@ -11,7 +11,7 @@ import java.util.UUID;
  * <p>Provides a fluent API with random defaults for all fields.
  */
 public class ProjectSchoolRequestBuilder {
-  private List<UUID> schoolIds = List.of(UuidCreator.getTimeOrderedEpoch());
+  private List<UUID> areaOfExpertiseIds = List.of(UuidCreator.getTimeOrderedEpoch());
 
   private ProjectSchoolRequestBuilder() {}
 
@@ -19,12 +19,12 @@ public class ProjectSchoolRequestBuilder {
     return new ProjectSchoolRequestBuilder();
   }
 
-  public ProjectSchoolRequestBuilder withSchoolIds(List<UUID> schoolIds) {
-    this.schoolIds = schoolIds;
+  public ProjectSchoolRequestBuilder withAreaOfExpertiseIds(List<UUID> areaOfExpertiseIds) {
+    this.areaOfExpertiseIds = areaOfExpertiseIds;
     return this;
   }
 
   public ProjectSchoolRequest build() {
-    return new ProjectSchoolRequest(schoolIds);
+    return new ProjectSchoolRequest(areaOfExpertiseIds);
   }
 }

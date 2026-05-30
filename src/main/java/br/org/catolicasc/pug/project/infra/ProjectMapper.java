@@ -117,6 +117,7 @@ public final class ProjectMapper {
         p.getId(),
         p.getName(),
         p.getEntityId(),
+        null,
         p.getDescription(),
         p.getCreatedBy(),
         p.getMaxParticipants(),

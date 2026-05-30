@@ -70,13 +70,14 @@ class ProjectSchoolReadServiceImplTest {
     OffsetDateTime now = OffsetDateTime.now();
 
     when(associationRepo.findAllProjectIdsBySchoolId(schoolId)).thenReturn(Set.of(projectId));
-    when(projectQueries.listByIds(any()))
+    when(projectQueries.listAllByIds(any()))
         .thenReturn(
             List.of(
                 new ProjectView(
                     projectId,
                     "Project",
                     UuidCreator.getTimeOrderedEpoch(),
+                    "Entity Name",
                     "desc",
                     UuidCreator.getTimeOrderedEpoch(),
                     10,

@@ -7,22 +7,23 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Data Transfer Object (DTO) used as the JSON request payload for associating schools to an
- * existing Project.
+ * Data Transfer Object (DTO) used as the JSON request payload for associating academic areas of
+ * expertise to an existing project.
  *
  * <p>The project identifier is supplied in the request path, so this payload contains only the
- * collection of school identifiers to associate.
+ * collection of academic area-of-expertise identifiers to associate.
  *
- * @param schoolIds the non-empty list of school identifiers to associate with the target project
+ * @param areaOfExpertiseIds the non-empty list of area-of-expertise identifiers to associate with
+ *     the target project
  */
-public record ProjectSchoolRequest(@NotEmpty List<@NotNull @UuidV7 UUID> schoolIds) {
+public record ProjectSchoolRequest(@NotEmpty List<@NotNull @UuidV7 UUID> areaOfExpertiseIds) {
 
   public ProjectSchoolRequest {
-    schoolIds = (schoolIds != null) ? List.copyOf(schoolIds) : null;
+    areaOfExpertiseIds = areaOfExpertiseIds == null ? null : List.copyOf(areaOfExpertiseIds);
   }
 
   @Override
-  public List<UUID> schoolIds() {
-    return schoolIds;
+  public List<UUID> areaOfExpertiseIds() {
+    return areaOfExpertiseIds;
   }
 }

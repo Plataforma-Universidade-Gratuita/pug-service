@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.project.infra.persistence.EnrollmentEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -82,6 +83,22 @@ public class EnrollmentRepositoryImpl
         new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
 
     return findByIdOptional(id).map(EnrollmentMapper::toDomain);
+  }
+
+  @Override
+  public List<Enrollment> listAllByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
+    return find("id.projectId", projectId).list().stream().map(EnrollmentMapper::toDomain).toList();
+  }
+
+  @Override
+  public List<Enrollment> listAllByStudentId(UUID studentId) {
+    if (studentId == null) {
+      return List.of();
+    }
+    return find("id.studentId", studentId).list().stream().map(EnrollmentMapper::toDomain).toList();
   }
 
   /** {@inheritDoc} */

@@ -6,13 +6,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
-import br.org.catolicasc.pug.project.infra.read.EnrollmentQueries;
+import br.org.catolicasc.pug.project.infra.read.EnrollmentsQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
+import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -21,16 +26,23 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("EnrollmentReadServiceImpl Coverage")
+@DisplayName("EnrollmentsReadServiceImpl Coverage")
 class EnrollmentReadServiceImplTest {
 
-  @Inject EnrollmentReadServiceImpl service;
-  @InjectMock EnrollmentQueries queries;
+  @Inject EnrollmentsReadServiceImpl service;
+  @InjectMock EnrollmentsQueries queries;
 
   private EnrollmentView sampleView() {
     return new EnrollmentView(
         UuidCreator.getTimeOrderedEpoch(),
+        "Project Name",
         UuidCreator.getTimeOrderedEpoch(),
+        "Student Name",
+        "student@example.com",
+        "20260001",
+        Campi.ITAJAI,
+        LocalDate.now(),
+        LocalDate.now().plusMonths(6),
         EnrollmentStatus.PENDING,
         OffsetDateTime.now(),
         OffsetDateTime.now(),
@@ -63,7 +75,7 @@ class EnrollmentReadServiceImplTest {
   @Test
   @DisplayName("Should list all enrollment views")
   void listViews() {
-    when(queries.listAllEnrollments()).thenReturn(List.of(sampleView()));
+    when(queries.listAll()).thenReturn(List.of(sampleView()));
     assertThat(service.listViews()).hasSize(1);
   }
 
@@ -71,7 +83,7 @@ class EnrollmentReadServiceImplTest {
   @DisplayName("Should list views by project ID")
   void listViewsByProjectId() {
     UUID pid = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listByProjectId(pid)).thenReturn(List.of(sampleView()));
+    when(queries.listAllByProjectId(pid)).thenReturn(List.of(sampleView()));
     assertThat(service.listViewsByProjectId(pid)).hasSize(1);
   }
 
@@ -85,7 +97,7 @@ class EnrollmentReadServiceImplTest {
   @DisplayName("Should list views by formerStudent ID")
   void listViewsByStudentId() {
     UUID sid = UuidCreator.getTimeOrderedEpoch();
-    when(queries.listByStudentId(sid)).thenReturn(List.of(sampleView()));
+    when(queries.listAllByStudentId(sid)).thenReturn(List.of(sampleView()));
     assertThat(service.listViewsByStudentId(sid)).hasSize(1);
   }
 
@@ -93,6 +105,19 @@ class EnrollmentReadServiceImplTest {
   @DisplayName("Should return empty list for null formerStudent ID")
   void listViewsByStudentIdNull() {
     assertThat(service.listViewsByStudentId(null)).isEmpty();
+  }
+
+  @Test
+  @DisplayName("Should delegate paginated search")
+  void search() {
+    EnrollmentComplexSearchCriteria criteria =
+        new EnrollmentComplexSearchCriteria(List.of(), List.of(), List.of(), null, null, null, null);
+    PageQuery pageQuery = new PageQuery(0, 25);
+    PageResult<EnrollmentView> result = new PageResult<>(List.of(sampleView()), 0, 25, 1, 1);
+
+    when(queries.search(criteria, pageQuery)).thenReturn(result);
+
+    assertThat(service.search(criteria, pageQuery)).isEqualTo(result);
   }
 }
 

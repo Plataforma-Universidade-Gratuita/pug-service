@@ -15,7 +15,7 @@ import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
-import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
@@ -41,7 +41,7 @@ class ProjectServiceImplTest {
 
   @InjectMock AuditPublisher audit;
   @InjectMock AuthService authService;
-  @InjectMock EnrollmentService enrollmentService;
+  @InjectMock EnrollmentsService enrollmentsService;
 
   private Entity partnerEntity;
   private Account creator;
@@ -111,7 +111,7 @@ class ProjectServiceImplTest {
   @DisplayName("Should delete project successfully")
   void deleteSuccess() {
     Project project = factory.createProject(partnerEntity, creator);
-    when(enrollmentService.existsAnyByProjectId(project.getId())).thenReturn(false);
+    when(enrollmentsService.existsAnyByProjectId(project.getId())).thenReturn(false);
 
     boolean deleted = service.delete(project.getId());
 
@@ -130,7 +130,7 @@ class ProjectServiceImplTest {
   @DisplayName("Should throw when deleting project with enrollments")
   void deleteWithEnrollments() {
     Project project = factory.createProject(partnerEntity, creator);
-    when(enrollmentService.existsAnyByProjectId(project.getId())).thenReturn(true);
+    when(enrollmentsService.existsAnyByProjectId(project.getId())).thenReturn(true);
 
     assertThrows(BusinessRuleException.class, () -> service.delete(project.getId()));
   }
@@ -140,7 +140,7 @@ class ProjectServiceImplTest {
   @DisplayName("Should return false when deleting non-existing project")
   void deleteNonExisting() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
-    when(enrollmentService.existsAnyByProjectId(id)).thenReturn(false);
+    when(enrollmentsService.existsAnyByProjectId(id)).thenReturn(false);
 
     assertThat(service.delete(id)).isFalse();
   }

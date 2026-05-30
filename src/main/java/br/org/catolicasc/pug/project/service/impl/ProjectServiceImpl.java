@@ -5,7 +5,8 @@ import br.org.catolicasc.pug.partner.service.EntitiesService;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectRepository;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
-import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
@@ -39,7 +40,7 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject ProjectSchoolService associationService;
   @Inject AuthService authService;
   @Inject EntitiesService entityService;
-  @Inject EnrollmentService enrollmentService;
+  @Inject EnrollmentsService enrollmentsService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -68,7 +69,7 @@ public class ProjectServiceImpl implements ProjectService {
       return false;
     }
 
-    if (enrollmentService.existsAnyByProjectId(id)) {
+    if (enrollmentsService.existsAnyByProjectId(id)) {
       LOG.warnf("Delete failed: Project ID %s has active enrollments", id);
       throw ExceptionHelper.projectHasEnrollments();
     }
@@ -166,6 +167,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
+    propagateEnrollmentStatusChange(id, status);
 
     auditPublisher.fireUpdate(Project.class.getName(), id, project, updated);
     return updated;
@@ -199,6 +201,26 @@ public class ProjectServiceImpl implements ProjectService {
 
     auditPublisher.fireUpdate(Project.class.getName(), id, current, updated);
     return getById(id);
+  }
+
+  private void propagateEnrollmentStatusChange(UUID projectId, ProjectStatus status) {
+    if (projectId == null || status == null) {
+      return;
+    }
+
+    switch (status) {
+      case CANCELED ->
+          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.CANCELED);
+      case COMPLETED ->
+          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.COMPLETED);
+      case ON_HOLD ->
+          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+      case PLANNED ->
+          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.ON_HOLD, EnrollmentStatus.APPROVED);
+      default -> {
+        // No enrollment status propagation is required for this transition.
+      }
+    }
   }
 }
 

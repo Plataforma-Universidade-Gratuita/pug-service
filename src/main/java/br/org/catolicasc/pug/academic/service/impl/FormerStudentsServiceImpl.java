@@ -12,7 +12,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
@@ -46,7 +46,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
 
   @Inject CoursesService courseService;
 
-  @Inject EnrollmentService enrollmentService;
+  @Inject EnrollmentsService enrollmentsService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -62,6 +62,10 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     }
 
     repo.update(updated);
+    if (Boolean.FALSE.equals(current.getCounterpartHours().getConcluded())
+        && Boolean.TRUE.equals(updated.getCounterpartHours().getConcluded())) {
+      enrollmentsService.completeAllByStudentId(accountId);
+    }
     LOG.infof("Horas adicionadas com sucesso ao estudante %s", accountId);
     return updated;
   }
@@ -75,7 +79,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
       return false;
     }
 
-    if (enrollmentService.existsAnyByStudentId(accountId)) {
+    if (enrollmentsService.existsAnyByStudentId(accountId)) {
       LOG.warnf("Delete failed: FormerStudent ID %s is enrolled in projects", accountId);
       throw ExceptionHelper.studentHasEnrollments();
     }

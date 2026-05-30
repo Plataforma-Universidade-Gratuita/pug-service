@@ -1,9 +1,6 @@
 package br.org.catolicasc.pug.project.presenter.dtos;
 
-import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
-import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
+import br.org.catolicasc.pug.partner.presenter.dtos.EntitySimpleComplexSearchResponse;
 import java.util.UUID;
 
 /**
@@ -11,29 +8,15 @@ import java.util.UUID;
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project
- * @param entityId the unique identifier of the partner organization
+ * @param entity the lightweight partner-entity projection associated with the project
  * @param description the project description
- * @param createdBy the unique identifier of the creator
- * @param maxParticipants the maximum number of students allowed
- * @param offeredHours the total counterpart hours the project offers
- * @param completedHours the total counterpart hours already completed
- * @param status the current execution state
- * @param statusFormatted the localized project status string
- * @param closedAt the exact timestamp when the project was closed
- * @param closedAtFormatted the localized closure date
- * @param auditInfo the nested audit information
+ * @param projectInfo the grouped operational metadata associated with the project
+ * @param status the grouped lifecycle status associated with the project
  */
 public record ProjectResponse(
     UUID id,
     String name,
-    UUID entityId,
+    EntitySimpleComplexSearchResponse entity,
     String description,
-    UUID createdBy,
-    Integer maxParticipants,
-    BigDecimal offeredHours,
-    BigDecimal completedHours,
-    ProjectStatus status,
-    String statusFormatted,
-    OffsetDateTime closedAt,
-    String closedAtFormatted,
-    AuditInfoResponse auditInfo) {}
+    ProjectInfoResponse projectInfo,
+    ProjectStatusResponse status) {}

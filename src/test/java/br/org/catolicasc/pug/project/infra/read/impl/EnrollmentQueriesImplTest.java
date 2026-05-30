@@ -9,11 +9,15 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +25,7 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 class EnrollmentQueriesImplTest {
 
-  @Inject EnrollmentQueriesImpl queries;
+  @Inject EnrollmentsQueriesImpl queries;
   @Inject TestDataFactory factory;
 
   private FormerStudent formerStudent;
@@ -80,7 +84,7 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should list all enrollments")
   void shouldListAllEnrollments() {
-    var list = queries.listAllEnrollments();
+    var list = queries.listAll();
     assertThat(list).isNotEmpty();
   }
 
@@ -88,7 +92,7 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should list enrollments by project ID")
   void shouldListByProjectId() {
-    var list = queries.listByProjectId(project.getId());
+    var list = queries.listAllByProjectId(project.getId());
     assertThat(list).isNotEmpty();
     assertThat(list).allSatisfy(v -> assertThat(v.projectId()).isEqualTo(project.getId()));
   }
@@ -97,14 +101,14 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty list for null project ID")
   void shouldReturnEmptyListForNullProjectId() {
-    assertThat(queries.listByProjectId(null)).isEmpty();
+    assertThat(queries.listAllByProjectId(null)).isEmpty();
   }
 
   @Test
   @Transactional
   @DisplayName("Should list enrollments by formerStudent ID")
   void shouldListByStudentId() {
-    var list = queries.listByStudentId(formerStudent.getAccountId());
+    var list = queries.listAllByStudentId(formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
     assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
   }
@@ -113,7 +117,7 @@ class EnrollmentQueriesImplTest {
   @Transactional
   @DisplayName("Should return empty list for null formerStudent ID")
   void shouldReturnEmptyListForNullStudentId() {
-    assertThat(queries.listByStudentId(null)).isEmpty();
+    assertThat(queries.listAllByStudentId(null)).isEmpty();
   }
 
   @Test
@@ -129,6 +133,32 @@ class EnrollmentQueriesImplTest {
     assertThat(ev.status()).isNotNull();
     assertThat(ev.createdAt()).isNotNull();
     assertThat(ev.updatedAt()).isNotNull();
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should search enrollments by project, student, and status")
+  void shouldSearchByFilters() {
+    var result =
+        queries.search(
+            new EnrollmentComplexSearchCriteria(
+                List.of(project.getId()),
+                List.of(formerStudent.getAccountId()),
+                List.of(EnrollmentStatus.PENDING),
+                null,
+                null,
+                null,
+                null),
+            new PageQuery(0, 1));
+
+    assertThat(result.content()).isNotEmpty();
+    assertThat(result.content())
+        .allSatisfy(
+            view -> {
+              assertThat(view.projectId()).isEqualTo(project.getId());
+              assertThat(view.studentId()).isEqualTo(formerStudent.getAccountId());
+              assertThat(view.status()).isEqualTo(EnrollmentStatus.PENDING);
+            });
   }
 }
 

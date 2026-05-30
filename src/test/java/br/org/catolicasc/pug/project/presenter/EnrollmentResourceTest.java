@@ -17,7 +17,8 @@ import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.EnrollmentMapper;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentUpdateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentComplexSearchRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentUpdateStatusRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
@@ -224,6 +225,47 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
+  @DisplayName("POST /v1/projects/enrollments/search - Success")
+  void searchSuccess() throws Exception {
+    FormerStudent[] formerStudent = new FormerStudent[1];
+    Project[] project = new Project[1];
+    doInTransaction(
+        () -> {
+          School school = factory.createSchool();
+          Course course = factory.createCourse(school);
+          Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+          formerStudent[0] = factory.createStudent(acc, course);
+          Entity entity = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator);
+          factory.createEnrollment(formerStudent[0], project[0]);
+        });
+
+    given()
+        .contentType(ContentType.JSON)
+        .queryParam("page", 0)
+        .queryParam("size", 25)
+        .body(
+            new EnrollmentComplexSearchRequest(
+                java.util.List.of(project[0].getId()),
+                java.util.List.of(formerStudent[0].getAccountId()),
+                java.util.List.of(EnrollmentStatus.PENDING),
+                null,
+                null,
+                null,
+                null))
+        .when()
+        .post("/v1/projects/enrollments/search")
+        .then()
+        .statusCode(200)
+        .body("data.content", hasSize(greaterThanOrEqualTo(1)))
+        .body("data.content[0].status.status", is("PENDING"));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("POST /v1/projects/{projectId}/enrollments - Success")
   void createSuccess() throws Exception {
     Account[] acc = new Account[1];
@@ -239,10 +281,11 @@ class EnrollmentResourceTest extends BaseResourceTest {
           project[0] = factory.createProject(entity, creator);
         });
 
-    when(authService.getCurrentAccountId()).thenReturn(acc[0].getId());
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.ADMIN);
 
     given()
         .pathParam("projectId", project[0].getId())
+        .queryParam("studentId", acc[0].getId())
         .when()
         .post("/v1/projects/{projectId}/enrollments")
         .then()
@@ -273,12 +316,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", formerStudent[0].getAccountId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.APPROVED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.APPROVED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.status", is("APPROVED"));
+        .body("data.status.status", is("APPROVED"));
   }
 
   @Test
@@ -298,12 +341,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.CANCELED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.CANCELED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.status", is("CANCELED"));
+        .body("data.status.status", is("CANCELED"));
   }
 
   @Test
@@ -323,12 +366,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.COMPLETED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.COMPLETED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.status", is("COMPLETED"));
+        .body("data.status.status", is("COMPLETED"));
   }
 
   @Test
@@ -358,12 +401,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.EXITED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.EXITED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/me")
         .then()
         .statusCode(200)
-        .body("data.status", is("EXITED"));
+        .body("data.status.status", is("EXITED"));
   }
 
   @Test
@@ -390,12 +433,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", project[0].getId())
         .pathParam("studentId", formerStudent[0].getAccountId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.REJECTED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.REJECTED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.status", is("REJECTED"));
+        .body("data.status.status", is("REJECTED"));
   }
 
   @Test
@@ -415,12 +458,12 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .contentType(ContentType.JSON)
         .pathParam("projectId", enr[0].getIdentifier().getProjectId())
         .pathParam("studentId", enr[0].getIdentifier().getStudentId())
-        .body(new EnrollmentUpdateRequest(EnrollmentStatus.REMOVED))
+        .body(new EnrollmentUpdateStatusRequest(EnrollmentStatus.REMOVED))
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{studentId}")
         .then()
         .statusCode(200)
-        .body("data.status", is("REMOVED"));
+        .body("data.status.status", is("REMOVED"));
   }
 
   @Test

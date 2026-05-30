@@ -1,11 +1,15 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectComplexSearchResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectInfoResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectStatusResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.partner.presenter.dtos.EntitySimpleComplexSearchResponse;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -72,23 +76,60 @@ public final class ProjectPresenter {
 
     String statusFormatted = i18n.translation(v.status().getBundleKey(), locale);
     String closedAtFormatted = StringUtils.toStringFormatted(v.closedAt(), locale);
+    return new ProjectResponse(
+        v.id(),
+        v.name(),
+        toEntityResponse(v),
+        v.description(),
+        toProjectInfoResponse(v, locale),
+        new ProjectStatusResponse(v.status(), statusFormatted));
+  }
+
+  /**
+   * Projects a read-only {@link ProjectView} into a client-facing complex-search response.
+   *
+   * @param v the internal read-model projection of the project
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service
+   * @return a fully populated {@link ProjectComplexSearchResponse} ready for JSON serialization
+   */
+  public static ProjectComplexSearchResponse toComplexSearchResponse(
+      ProjectView v, Locale locale, I18n i18n) {
+    if (v == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    return new ProjectComplexSearchResponse(
+        v.id(),
+        v.name(),
+        toEntityResponse(v),
+        v.description(),
+        toProjectInfoResponse(v, locale),
+        new ProjectStatusResponse(v.status(), i18n.translation(v.status().getBundleKey(), locale)));
+  }
+
+  private static EntitySimpleComplexSearchResponse toEntityResponse(ProjectView v) {
+    if (v == null) {
+      return null;
+    }
+    return new EntitySimpleComplexSearchResponse(v.entityId(), v.entityName());
+  }
+
+  private static ProjectInfoResponse toProjectInfoResponse(ProjectView v, Locale locale) {
+    if (v == null || locale == null) {
+      return null;
+    }
 
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
-    return new ProjectResponse(
-        v.id(),
-        v.name(),
-        v.entityId(),
-        v.description(),
+    return new ProjectInfoResponse(
         v.creatorId(),
         v.maxParticipants(),
         v.offeredHours(),
         v.completedHours(),
-        v.status(),
-        statusFormatted,
         v.closedAt(),
-        closedAtFormatted,
+        StringUtils.toStringFormatted(v.closedAt(), locale),
         auditInfo);
   }
 }

@@ -2,15 +2,16 @@ package br.org.catolicasc.pug.project.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentResponse;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.UUID;
@@ -29,21 +30,25 @@ class EnrollmentPresenterTest {
   class CreateCommandTests {
 
     @Test
-    @DisplayName("Should map EnrollmentCreateRequest to command")
+    @DisplayName("Should map project and student identifiers to command")
     void toCommand() {
       UUID projectId = UuidCreator.getTimeOrderedEpoch();
-      var req = new EnrollmentCreateRequest(projectId);
+      UUID studentId = UuidCreator.getTimeOrderedEpoch();
 
-      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(req);
+      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(projectId, studentId);
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.projectId()).isEqualTo(projectId);
+      assertThat(cmd.studentId()).isEqualTo(studentId);
     }
 
     @Test
-    @DisplayName("Should return null when request is null")
+    @DisplayName("Should keep null identifiers untouched")
     void toCommandNull() {
-      assertThat(EnrollmentPresenter.toCommand(null)).isNull();
+      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(null, null);
+      assertThat(cmd).isNotNull();
+      assertThat(cmd.projectId()).isNull();
+      assertThat(cmd.studentId()).isNull();
     }
   }
 
@@ -79,9 +84,9 @@ class EnrollmentPresenterTest {
       assertThat(response).isNotNull();
       assertThat(response.projectId()).isEqualTo(view.projectId());
       assertThat(response.studentId()).isEqualTo(view.studentId());
-      assertThat(response.status()).isEqualTo(EnrollmentStatus.PENDING);
-      assertThat(response.statusFormatted()).isNotBlank();
-      assertThat(response.auditInfo()).isNotNull();
+      assertThat(response.status().status()).isEqualTo(EnrollmentStatus.PENDING);
+      assertThat(response.status().statusFormatted()).isNotBlank();
+      assertThat(response.enrollmentInfo().auditInfo()).isNotNull();
     }
 
     @Test
@@ -91,14 +96,21 @@ class EnrollmentPresenterTest {
 
       EnrollmentResponse response = EnrollmentPresenter.toResponse(view, Locale.US, i18n);
 
-      assertThat(response.acceptedAt()).isNull();
-      assertThat(response.closingStatusAt()).isNull();
+      assertThat(response.enrollmentInfo().acceptedAt()).isNull();
+      assertThat(response.enrollmentInfo().closingStatusAt()).isNull();
     }
 
     private EnrollmentView sampleView() {
       return new EnrollmentView(
           UuidCreator.getTimeOrderedEpoch(),
+          "Project Name",
           UuidCreator.getTimeOrderedEpoch(),
+          "Student Name",
+          "student@example.com",
+          "20260001",
+          Campi.ITAJAI,
+          LocalDate.now(),
+          LocalDate.now().plusMonths(6),
           EnrollmentStatus.PENDING,
           OffsetDateTime.now(),
           OffsetDateTime.now(),

@@ -64,7 +64,7 @@ public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
       return Set.of();
     }
 
-    List<ProjectView> result = projectQueries.listByIds(List.copyOf(projectIds));
+    List<ProjectView> result = projectQueries.listAllByIds(List.copyOf(projectIds));
     return new HashSet<>(result);
   }
 }

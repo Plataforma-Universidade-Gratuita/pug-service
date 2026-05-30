@@ -8,8 +8,8 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -31,10 +31,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("EnrollmentServiceImpl Coverage")
+@DisplayName("EnrollmentsServiceImpl Coverage")
 class EnrollmentServiceImplTest {
 
-  @Inject EnrollmentServiceImpl service;
+  @Inject EnrollmentsServiceImpl service;
   @Inject TestDataFactory factory;
   @Inject EntityManager em;
 
@@ -57,14 +57,15 @@ class EnrollmentServiceImplTest {
     doNothing().when(authService).requireCurrentAccountOfType(any());
     doNothing().when(authService).requireCurrentAccountNotOfType(any());
     when(authService.getCurrentAccountId()).thenReturn(studentAcc.getId());
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.FORMER_STUDENT);
   }
 
   @Test
   @Transactional
   @DisplayName("Should save enrollment successfully")
   void saveSuccess() {
-    var cmd = anEnrollmentCreateCommand().withProjectId(project.getId()).build();
-    Enrollment saved = service.save(cmd);
+    Enrollment saved = service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build());
+
     assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
   }
 
@@ -75,6 +76,7 @@ class EnrollmentServiceImplTest {
     service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build());
     em.flush();
     em.clear();
+
     assertThrows(
         DuplicateResourceException.class,
         () -> service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build()));
@@ -82,88 +84,113 @@ class EnrollmentServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should accept enrollment")
-  void acceptSuccess() {
-    Enrollment enr = factory.createEnrollment(formerStudent, project);
-    Enrollment accepted = service.accept(enr.getIdentifier());
-    assertThat(accepted.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+  @DisplayName("Should allow admin to create enrollment for a given student")
+  void saveAsAdminForStudentSuccess() {
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.ADMIN);
+
+    Enrollment saved =
+        service.save(
+            anEnrollmentCreateCommand()
+                .withProjectId(project.getId())
+                .withStudentId(formerStudent.getAccountId())
+                .build());
+
+    assertThat(saved.getIdentifier().getStudentId()).isEqualTo(formerStudent.getAccountId());
   }
 
   @Test
   @Transactional
-  @DisplayName("Should cancel approved enrollment")
-  void cancelSuccess() {
-    Enrollment enr =
+  @DisplayName("Should change enrollment status to approved")
+  void changeStatusToApprovedSuccess() {
+    Enrollment enrollment = factory.createEnrollment(formerStudent, project);
+
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should change approved enrollment status to canceled")
+  void changeStatusToCanceledSuccess() {
+    Enrollment enrollment =
         factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
-    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
+    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment canceled = service.cancel(enr.getIdentifier());
-    assertThat(canceled.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.CANCELED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should complete approved enrollment")
-  void completeSuccess() {
-    Enrollment enr =
+  @DisplayName("Should change approved enrollment status to completed")
+  void changeStatusToCompletedSuccess() {
+    Enrollment enrollment =
         factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
-    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
+    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment completed = service.complete(enr.getIdentifier());
-    assertThat(completed.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.COMPLETED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should exit approved enrollment")
-  void exitSuccess() {
-    Enrollment enr =
+  @DisplayName("Should change approved enrollment status to exited")
+  void changeStatusToExitedSuccess() {
+    Enrollment enrollment =
         factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
-    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
+    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment exited = service.exit(enr.getIdentifier());
-    assertThat(exited.getStatus()).isEqualTo(EnrollmentStatus.EXITED);
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.EXITED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.EXITED);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should remove approved enrollment")
-  void removeSuccess() {
-    Enrollment enr =
+  @DisplayName("Should change approved enrollment status to removed")
+  void changeStatusToRemovedSuccess() {
+    Enrollment enrollment =
         factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
-    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
+    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment removed = service.remove(enr.getIdentifier());
-    assertThat(removed.getStatus()).isEqualTo(EnrollmentStatus.REMOVED);
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.REMOVED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.REMOVED);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should reject pending enrollment")
-  void rejectSuccess() {
-    Enrollment enr = factory.createEnrollment(formerStudent, project);
-    Enrollment rejected = service.reject(enr.getIdentifier());
-    assertThat(rejected.getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
+  @DisplayName("Should change pending enrollment status to rejected")
+  void changeStatusToRejectedSuccess() {
+    Enrollment enrollment = factory.createEnrollment(formerStudent, project);
+
+    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.REJECTED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
   }
 
   @Test
   @Transactional
-  @DisplayName("Should fail to reject if transition is invalid")
-  void rejectInvalid() {
-    // Tentando rejeitar algo já completado
-    Enrollment enr =
+  @DisplayName("Should fail when transition is invalid")
+  void changeStatusInvalid() {
+    Enrollment enrollment =
         factory
             .createEnrollment(formerStudent, project)
             .changeStatus(EnrollmentStatus.APPROVED)
             .changeStatus(EnrollmentStatus.COMPLETED);
-    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enr));
+    em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    assertThrows(BusinessRuleException.class, () -> service.reject(enr.getIdentifier()));
+    assertThrows(
+        BusinessRuleException.class,
+        () -> service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.REJECTED));
   }
 
   @Test
@@ -171,12 +198,13 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should delete enrollment successfully")
   void deleteSuccess() {
     factory.createEnrollment(formerStudent, project);
-    EnrollmentIdentifier id =
+    EnrollmentIdentifier identifier =
         EnrollmentIdentifier.builder()
             .projectId(project.getId())
             .studentId(formerStudent.getAccountId())
             .build();
-    assertThat(service.delete(id)).isTrue();
+
+    assertThat(service.delete(identifier)).isTrue();
   }
 
   @Test
@@ -192,8 +220,8 @@ class EnrollmentServiceImplTest {
   @DisplayName("Should check existence")
   void exists() {
     factory.createEnrollment(formerStudent, project);
+
     assertThat(service.existsAnyByStudentId(formerStudent.getAccountId())).isTrue();
     assertThat(service.existsAnyByProjectId(project.getId())).isTrue();
   }
 }
-

@@ -16,7 +16,7 @@ import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -38,7 +38,7 @@ class FormerStudentsResourceTest extends BaseResourceTest {
 
   @InjectMock AuditPublisher audit;
   @InjectMock AuthService authService;
-  @InjectMock EnrollmentService enrollmentService;
+  @InjectMock EnrollmentsService enrollmentsService;
 
   @Test
   @TestSecurity(
@@ -238,7 +238,7 @@ class FormerStudentsResourceTest extends BaseResourceTest {
           factory.createStudent(account[0], course);
         });
 
-    when(enrollmentService.existsAnyByStudentId(account[0].getId())).thenReturn(false);
+    when(enrollmentsService.existsAnyByStudentId(account[0].getId())).thenReturn(false);
 
     given()
         .pathParam("id", account[0].getId())

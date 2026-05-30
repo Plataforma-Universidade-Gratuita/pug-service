@@ -87,6 +87,23 @@ class EnrollmentTest {
     }
 
     @Test
+    @DisplayName("Should transition from APPROVED to ON_HOLD and then back to APPROVED")
+    void shouldPauseAndResumeEnrollment() {
+      Enrollment approved =
+          Enrollment.factory(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
+
+      Enrollment onHold = approved.changeStatus(EnrollmentStatus.ON_HOLD);
+      Enrollment resumed = onHold.changeStatus(EnrollmentStatus.APPROVED);
+
+      assertThat(onHold.getStatus()).isEqualTo(EnrollmentStatus.ON_HOLD);
+      assertThat(onHold.getEnrollmentInfo().getAcceptedAt())
+          .isEqualTo(approved.getEnrollmentInfo().getAcceptedAt());
+      assertThat(resumed.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+      assertThat(resumed.getEnrollmentInfo().getAcceptedAt())
+          .isEqualTo(approved.getEnrollmentInfo().getAcceptedAt());
+    }
+
+    @Test
     @DisplayName("Should fail when transitioning from closed state")
     void shouldFailFromClosed() {
       Enrollment completed =

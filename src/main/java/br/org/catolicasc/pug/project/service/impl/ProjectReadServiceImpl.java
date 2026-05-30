@@ -3,8 +3,11 @@ package br.org.catolicasc.pug.project.service.impl;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.service.ProjectReadService;
+import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
-import br.org.catolicasc.pug.shared.utils.StringUtils;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
+import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.List;
@@ -14,9 +17,8 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of the {@link ProjectReadService}.
  *
- * <p>This application-scoped bean delegates read-only operations to the underlying infrastructure
- * components. It handles basic input validation and translates "not found" states into standardized
- * domain exceptions.
+ * <p>This application-scoped bean delegates project queries to the underlying infrastructure
+ * components and translates missing rows into the module's standardized not-found exception.
  */
 @ApplicationScoped
 public class ProjectReadServiceImpl implements ProjectReadService {
@@ -40,7 +42,16 @@ public class ProjectReadServiceImpl implements ProjectReadService {
   /** {@inheritDoc} */
   @Override
   public List<ProjectView> listViews() {
-    return queries.listAllProjects();
+    return queries.listAll();
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<ProjectView> listViewsByIds(List<UUID> ids) {
+    if (CollectionUtils.isEmpty(ids)) {
+      return queries.listAll();
+    }
+    return queries.listAllByIds(ids);
   }
 
   /** {@inheritDoc} */
@@ -49,7 +60,7 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     if (accountId == null) {
       return List.of();
     }
-    return queries.listByCreatedBy(accountId);
+    return queries.listAllByCreatedBy(accountId);
   }
 
   /** {@inheritDoc} */
@@ -58,22 +69,12 @@ public class ProjectReadServiceImpl implements ProjectReadService {
     if (entityId == null) {
       return List.of();
     }
-    return queries.listByEntityId(entityId);
+    return queries.listAllByEntityId(entityId);
   }
 
-  /**
-   * {@inheritDoc}
-   *
-   * <p>Prior to execution, the input query is "folded" (lowercased and accents removed via {@link
-   * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database
-   * filtering rules.
-   */
+  /** {@inheritDoc} */
   @Override
-  public List<ProjectView> searchByName(String query) {
-    if (StringUtils.isEmpty(query)) {
-      return List.of();
-    }
-    String key = StringUtils.fold(query);
-    return queries.searchByName(key);
+  public PageResult<ProjectView> search(ProjectComplexSearchCriteria criteria, PageQuery pageQuery) {
+    return queries.search(criteria, pageQuery);
   }
 }

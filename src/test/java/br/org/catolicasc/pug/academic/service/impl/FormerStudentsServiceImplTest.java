@@ -14,7 +14,7 @@ import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
-import br.org.catolicasc.pug.project.service.EnrollmentService;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -41,7 +41,7 @@ class FormerStudentsServiceImplTest {
   @Inject EntityManager em;
 
   @InjectMock AuditPublisher audit;
-  @InjectMock EnrollmentService enrollmentService;
+  @InjectMock EnrollmentsService enrollmentsService;
 
   @Test
   @Transactional
@@ -148,7 +148,7 @@ class FormerStudentsServiceImplTest {
     factory.createStudent(account, course);
     em.flush();
 
-    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(false);
+    when(enrollmentsService.existsAnyByStudentId(account.getId())).thenReturn(false);
     boolean deleted = service.delete(account.getId());
 
     assertThat(deleted).isTrue();
@@ -172,7 +172,7 @@ class FormerStudentsServiceImplTest {
     factory.createStudent(account, course);
     em.flush();
 
-    when(enrollmentService.existsAnyByStudentId(account.getId())).thenReturn(true);
+    when(enrollmentsService.existsAnyByStudentId(account.getId())).thenReturn(true);
     assertThrows(BusinessRuleException.class, () -> service.delete(account.getId()));
   }
 

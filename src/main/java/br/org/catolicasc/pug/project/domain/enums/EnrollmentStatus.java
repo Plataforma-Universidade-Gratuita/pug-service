@@ -24,6 +24,9 @@ public enum EnrollmentStatus implements GenericCodes {
   /** Indicates the formerStudent voluntarily withdrew from the project. */
   EXITED("enrollment.status.exited"),
 
+  /** Indicates the enrollment is temporarily suspended because the project is on hold. */
+  ON_HOLD("enrollment.status.on_hold"),
+
   /** Indicates the enrollment request is awaiting staff review. */
   PENDING("enrollment.status.pending"),
 

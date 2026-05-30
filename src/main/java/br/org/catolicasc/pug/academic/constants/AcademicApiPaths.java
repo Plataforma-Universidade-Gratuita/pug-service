@@ -11,8 +11,9 @@ public final class AcademicApiPaths {
   /** Root collection endpoint for academic areas of expertise. */
   public static final String AREAS_OF_EXPERTISE = "/v1/academic/areas-of-expertise";
 
-  /** Nested project association endpoint for a specific academic school. */
-  public static final String SCHOOL_PROJECTS = "/v1/academic/schools/{schoolId}/projects";
+  /** Nested project association endpoint for a specific academic area of expertise. */
+  public static final String AREAS_OF_EXPERTISE_PROJECTS =
+      "/v1/academic/areas-of-expertise/{schoolId}/projects";
 
   /** Root collection endpoint for academic courses. */
   public static final String COURSES = "/v1/academic/courses";

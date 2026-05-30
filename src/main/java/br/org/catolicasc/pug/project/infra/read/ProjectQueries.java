@@ -1,15 +1,19 @@
 package br.org.catolicasc.pug.project.infra.read;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
+import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
+import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Read-only interface for executing queries against Projects.
+ * Read-only interface for executing project queries and paginated project searches.
  *
- * <p>This interface represents the "Query" side of a CQRS architecture, defining operations for
- * retrieving project data directly into lightweight {@link ProjectView} projections.
+ * <p>This interface represents the "Query" side of the project module. It exposes lightweight
+ * projection-based reads for direct lookups, collection filters, and the complex-search flow used
+ * by the presenter contract.
  */
 public interface ProjectQueries {
 
@@ -18,46 +22,47 @@ public interface ProjectQueries {
    *
    * @param id the unique identifier (UUID) of the project to find
    * @return an {@link Optional} containing the found {@link ProjectView}, or {@link
-   *     Optional#empty()} if not found
+   *     Optional#empty()} when no matching project exists
    */
   Optional<ProjectView> findOptionalById(UUID id);
 
   /**
-   * Retrieves a comprehensive list of all projects registered in the system.
+   * Retrieves every project currently available in the read model.
    *
-   * @return a {@link List} containing all available {@link ProjectView} entries
+   * @return a sorted {@link List} containing every available {@link ProjectView}
    */
-  List<ProjectView> listAllProjects();
+  List<ProjectView> listAll();
 
   /**
-   * Retrieves a list of all projects created by a specific staff account.
+   * Retrieves every project created by the provided account identifier.
    *
-   * @param accountId the unique identifier (UUID) of the staff account
-   * @return a {@link List} of projects created by the staff member
+   * @param accountId the unique identifier of the creator account
+   * @return a sorted {@link List} of projects created by the provided account
    */
-  List<ProjectView> listByCreatedBy(UUID accountId);
+  List<ProjectView> listAllByCreatedBy(UUID accountId);
 
   /**
-   * Retrieves a list of projects offered by a specific partner entity.
+   * Retrieves every project associated with the provided partner-entity identifier.
    *
-   * @param entityId the unique identifier (UUID) of the partner entity
-   * @return a {@link List} of matching {@link ProjectView} entries
+   * @param entityId the unique identifier of the partner entity
+   * @return a sorted {@link List} of projects associated with the provided entity
    */
-  List<ProjectView> listByEntityId(UUID entityId);
+  List<ProjectView> listAllByEntityId(UUID entityId);
 
   /**
-   * Retrieves a list of projects matching the provided list of unique identifiers.
+   * Retrieves every project whose identifier is contained in the provided collection.
    *
-   * @param ids a {@link List} of project UUIDs to retrieve
-   * @return a {@link List} of {@link ProjectView} entries corresponding to the provided IDs
+   * @param ids the project identifiers that should be resolved
+   * @return a sorted {@link List} of projects matching the provided identifiers
    */
-  List<ProjectView> listByIds(List<UUID> ids);
+  List<ProjectView> listAllByIds(List<UUID> ids);
 
   /**
-   * Executes a robust name-based search against the names of projects.
+   * Executes the paginated complex-search flow for projects.
    *
-   * @param query the raw search string or partial name provided by the client
-   * @return a sorted {@link List} of {@link ProjectView} entries matching the search criteria
+   * @param criteria the optional search criteria supplied by the caller
+   * @param pageQuery the requested pagination window
+   * @return the paginated result containing the matching project projections
    */
-  List<ProjectView> searchByName(String query);
+  PageResult<ProjectView> search(ProjectComplexSearchCriteria criteria, PageQuery pageQuery);
 }
