@@ -44,6 +44,5 @@ public interface AttendancesQueries {
    * @param pageQuery the normalized paging request
    * @return a paginated collection of matching attendance projections
    */
-  PageResult<AttendanceView> search(
-      AttendanceComplexSearchCriteria criteria, PageQuery pageQuery);
+  PageResult<AttendanceView> search(AttendanceComplexSearchCriteria criteria, PageQuery pageQuery);
 }

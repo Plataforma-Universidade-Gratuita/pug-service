@@ -14,7 +14,6 @@ import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
-import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;

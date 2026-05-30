@@ -26,9 +26,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
-/**
- * Implementation of the attendance command-side application service.
- */
+/** Implementation of the attendance command-side application service. */
 @ApplicationScoped
 public class AttendancesServiceImpl implements AttendancesService {
 
@@ -43,6 +41,7 @@ public class AttendancesServiceImpl implements AttendancesService {
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
   String pepper;
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
@@ -58,6 +57,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -76,6 +76,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByValidatedBy(UUID accountId) {
     if (accountId == null) {
@@ -84,6 +85,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     return repo.existsByValidatedBy(accountId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Attendance getById(UUID id) {
     Attendance attendance =
@@ -97,6 +99,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     return attendance;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
@@ -122,6 +125,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     return saved;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {

@@ -58,7 +58,8 @@ public final class AttendancePresenter {
    * @param view the internal read-model projection of the attendance
    * @param locale the locale extracted from the client's request headers
    * @param i18n the internationalization service for resolving bundle keys
-   * @return a fully populated single-record response, or {@code null} when any required input is null
+   * @return a fully populated single-record response, or {@code null} when any required input is
+   *     null
    */
   public static AttendanceResponse toResponse(AttendanceView view, Locale locale, I18n i18n) {
     if (view == null || locale == null || i18n == null) {
@@ -80,7 +81,8 @@ public final class AttendancePresenter {
    * @param view the internal read-model projection of the attendance
    * @param locale the locale extracted from the client's request headers
    * @param i18n the internationalization service for resolving bundle keys
-   * @return a fully populated complex-search response, or {@code null} when any required input is null
+   * @return a fully populated complex-search response, or {@code null} when any required input is
+   *     null
    */
   public static AttendanceComplexSearchResponse toComplexSearchResponse(
       AttendanceView view, Locale locale, I18n i18n) {

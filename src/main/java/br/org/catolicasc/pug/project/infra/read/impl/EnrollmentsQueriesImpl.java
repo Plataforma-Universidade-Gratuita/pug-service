@@ -58,6 +58,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
 
   private static final String ORDER_BY = " order by en.createdAt desc";
 
+  /** {@inheritDoc} */
   @Inject EntityManager em;
 
   @Override
@@ -74,11 +75,13 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
         .findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listAll() {
     return em.createQuery(SELECT_BASE + ORDER_BY, EnrollmentView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listAllByProjectId(UUID projectId) {
     if (projectId == null) {
@@ -90,6 +93,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listAllByStudentId(UUID studentId) {
     if (studentId == null) {
@@ -101,6 +105,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<EnrollmentView> search(
       EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery) {

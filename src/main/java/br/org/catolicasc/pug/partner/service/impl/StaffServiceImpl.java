@@ -30,7 +30,9 @@ public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject AuditPublisher auditPublisher;
+
   @Inject StaffRepository repo;
   @Inject AccountsService accountService;
   @Inject EntitiesService entityService;
@@ -61,6 +63,7 @@ public class StaffServiceImpl implements StaffService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByEntityId(UUID entityId) {
@@ -79,6 +82,7 @@ public class StaffServiceImpl implements StaffService {
     return deletedCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Staff getByAccountId(UUID accountId) {
     Staff staff =
@@ -91,6 +95,7 @@ public class StaffServiceImpl implements StaffService {
     return staff;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff save(StaffCreateCommand cmd) {
@@ -116,6 +121,7 @@ public class StaffServiceImpl implements StaffService {
     return savedStaff;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff update(UUID accountId, StaffUpdateCommand cmd) {
@@ -147,6 +153,7 @@ public class StaffServiceImpl implements StaffService {
     return updated;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff updateStatus(UUID accountId, boolean active) {

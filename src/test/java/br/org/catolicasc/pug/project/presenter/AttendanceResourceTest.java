@@ -91,7 +91,12 @@ class AttendanceResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     createAttendanceGraph();
 
-    given().when().get("/v1/projects/attendances").then().statusCode(200).body("data", hasSize(greaterThanOrEqualTo(1)));
+    given()
+        .when()
+        .get("/v1/projects/attendances")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
   }
 
   @Test
@@ -141,7 +146,9 @@ class AttendanceResourceTest extends BaseResourceTest {
         .body("data.content", hasSize(greaterThanOrEqualTo(1)))
         .body("data.content[0].status.status", is("WAITING"))
         .body("data.content[0].project.id", is(graph.project().getId().toString()))
-        .body("data.content[0].student.account.id", is(graph.formerStudent().getAccountId().toString()));
+        .body(
+            "data.content[0].student.account.id",
+            is(graph.formerStudent().getAccountId().toString()));
   }
 
   @Test

@@ -15,7 +15,7 @@ import java.util.UUID;
 @ApplicationScoped
 public class StaffRepositoryImpl
     implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
-
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean deleteByAccountId(UUID accountId) {
@@ -27,6 +27,7 @@ public class StaffRepositoryImpl
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteByEntityId(UUID entityId) {
@@ -38,6 +39,7 @@ public class StaffRepositoryImpl
     return deletedCount;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsByAccountIdAndEntityId(UUID accountId, UUID entityId) {
     if (accountId == null || entityId == null) {
@@ -46,6 +48,7 @@ public class StaffRepositoryImpl
     return count("accountId = ?1 and entityId = ?2", accountId, entityId) > 0;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnotherByEntityIdAndEmail(
       UUID entityId, String email, UUID excludedAccountId) {
@@ -69,16 +72,19 @@ public class StaffRepositoryImpl
     return count != null && count > 0;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Optional<Staff> findOptionalByAccountId(UUID accountId) {
     return find("accountId = ?1", accountId).firstResultOptional().map(StaffMapper::toDomain);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<Staff> listAllByEntityId(UUID entityId) {
     return find("entityId = ?1", entityId).list().stream().map(StaffMapper::toDomain).toList();
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Staff persist(Staff entity) {
@@ -91,6 +97,7 @@ public class StaffRepositoryImpl
     return StaffMapper.toDomain(loaded);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public void update(Staff entity) {

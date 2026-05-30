@@ -46,6 +46,7 @@ public class UsersReadServiceImpl implements UsersReadService {
     return queries.listAllUsers();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<UserView> listViewsByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {

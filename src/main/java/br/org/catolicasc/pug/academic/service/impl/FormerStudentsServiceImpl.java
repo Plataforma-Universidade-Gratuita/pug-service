@@ -244,6 +244,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     return getById(accountId);
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public FormerStudent updateStatus(UUID accountId, boolean active) {

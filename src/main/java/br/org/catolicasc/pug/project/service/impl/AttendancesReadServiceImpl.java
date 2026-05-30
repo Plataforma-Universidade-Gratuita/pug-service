@@ -14,14 +14,13 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/**
- * Implementation of the attendance read-side application service.
- */
+/** Implementation of the attendance read-side application service. */
 @ApplicationScoped
 public class AttendancesReadServiceImpl implements AttendancesReadService {
 
   private static final Logger LOG = Logger.getLogger(AttendancesReadServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject AttendancesQueries queries;
 
   @Override
@@ -35,16 +34,19 @@ public class AttendancesReadServiceImpl implements AttendancesReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listViews() {
     return queries.listAll();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listViewsByIds(List<UUID> ids) {
     return CollectionUtils.isEmpty(ids) ? List.of() : queries.listAllByIds(ids);
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<AttendanceView> search(
       AttendanceComplexSearchCriteria criteria, PageQuery pageQuery) {

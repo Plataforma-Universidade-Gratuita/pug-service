@@ -70,7 +70,8 @@ class AttendanceReadServiceImplTest {
   @DisplayName("Should delegate search")
   void search() {
     AttendanceComplexSearchCriteria criteria =
-        new AttendanceComplexSearchCriteria(List.of(), List.of(), List.of(), List.of(), null, null, null, null);
+        new AttendanceComplexSearchCriteria(
+            List.of(), List.of(), List.of(), List.of(), null, null, null, null);
     PageQuery pageQuery = new PageQuery(0, 25);
     PageResult<AttendanceView> result = new PageResult<>(List.of(sampleView()), 0, 25, 1, 1);
 

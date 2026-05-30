@@ -27,7 +27,9 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentsServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject AuditPublisher auditPublisher;
+
   @Inject EnrollmentRepository repo;
   @Inject AuthService authService;
   @Inject ProjectService projectService;
@@ -50,6 +52,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return updated;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long changeStatusByProjectId(UUID projectId, EnrollmentStatus targetStatus) {
@@ -69,6 +72,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return changed;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long changeStatusByProjectId(
@@ -91,6 +95,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return changed;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public long completeAllByStudentId(UUID studentId) {
@@ -112,6 +117,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return changed;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(EnrollmentIdentifier identifier) {
@@ -125,16 +131,19 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByProjectId(UUID projectId) {
     return projectId != null && repo.existsByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public boolean existsAnyByStudentId(UUID studentId) {
     return studentId != null && repo.existsByStudentId(studentId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public Enrollment getByIds(EnrollmentIdentifier identifier) {
     Enrollment enrollment =
@@ -146,6 +155,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     return enrollment;
   }
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Enrollment save(EnrollmentCreateCommand cmd) {

@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.service;
 
-import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -9,9 +8,7 @@ import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Application service interface dedicated exclusively to querying attendance projections.
- */
+/** Application service interface dedicated exclusively to querying attendance projections. */
 public interface AttendancesReadService {
 
   /**
@@ -45,6 +42,5 @@ public interface AttendancesReadService {
    * @param pageQuery the normalized paging request
    * @return a paginated collection of matching attendance projections
    */
-  PageResult<AttendanceView> search(
-      AttendanceComplexSearchCriteria criteria, PageQuery pageQuery);
+  PageResult<AttendanceView> search(AttendanceComplexSearchCriteria criteria, PageQuery pageQuery);
 }

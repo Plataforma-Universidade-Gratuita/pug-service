@@ -6,9 +6,7 @@ import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
 import java.util.UUID;
 
-/**
- * Application service interface for managing attendance aggregates.
- */
+/** Application service interface for managing attendance aggregates. */
 public interface AttendancesService {
 
   /**

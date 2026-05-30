@@ -50,6 +50,7 @@ public class SchoolReadServiceImpl implements SchoolReadService {
    * StringUtils#fold(String)}) to ensure maximum compatibility with the underlying database
    * filtering rules.
    */
+  /** {@inheritDoc} */
   @Override
   public List<SchoolView> searchByName(String key) {
     return queries.searchByName(StringUtils.fold(key));

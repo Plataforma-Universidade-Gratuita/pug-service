@@ -21,6 +21,7 @@ public class FormerStudentsReadServiceImpl implements FormerStudentsReadService 
 
   private static final Logger LOG = Logger.getLogger(FormerStudentsReadServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject FormerStudentsQueries queries;
 
   @Override
@@ -34,11 +35,13 @@ public class FormerStudentsReadServiceImpl implements FormerStudentsReadService 
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<FormerStudentView> listViews() {
     return queries.listAllFormerStudents();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<FormerStudentView> listViewsByIds(List<UUID> accountIds) {
     if (CollectionUtils.isEmpty(accountIds)) {
@@ -47,6 +50,7 @@ public class FormerStudentsReadServiceImpl implements FormerStudentsReadService 
     return queries.listAllByIds(accountIds);
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<FormerStudentComplexSearchView> search(
       PageQuery pageQuery, FormerStudentComplexSearchCriteria criteria) {

@@ -18,6 +18,7 @@ public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentsReadServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject EnrollmentsQueries queries;
 
   @Override
@@ -32,21 +33,25 @@ public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViews() {
     return queries.listAll();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByProjectId(UUID projectId) {
     return projectId == null ? List.of() : queries.listAllByProjectId(projectId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<EnrollmentView> listViewsByStudentId(UUID studentId) {
     return studentId == null ? List.of() : queries.listAllByStudentId(studentId);
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<EnrollmentView> search(
       EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery) {

@@ -21,6 +21,7 @@ public class StaffReadServiceImpl implements StaffReadService {
 
   private static final Logger LOG = Logger.getLogger(StaffReadServiceImpl.class);
 
+  /** {@inheritDoc} */
   @Inject StaffQueries queries;
 
   @Override
@@ -34,11 +35,13 @@ public class StaffReadServiceImpl implements StaffReadService {
             });
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listViews() {
     return queries.listAllStaff();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listViewsByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
@@ -47,6 +50,7 @@ public class StaffReadServiceImpl implements StaffReadService {
     return queries.listAllByIds(ids);
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<StaffComplexSearchView> search(
       PageQuery pageQuery, StaffComplexSearchCriteria criteria) {

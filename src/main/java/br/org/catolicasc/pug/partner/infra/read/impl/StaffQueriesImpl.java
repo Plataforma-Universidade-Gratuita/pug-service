@@ -84,6 +84,7 @@ public class StaffQueriesImpl implements StaffQueries {
 
   private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
 
+  /** {@inheritDoc} */
   @Override
   public Optional<StaffView> findOptionalById(UUID accountId) {
     if (accountId == null) {
@@ -94,6 +95,7 @@ public class StaffQueriesImpl implements StaffQueries {
     return query.getResultStream().findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listAllByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
@@ -105,11 +107,13 @@ public class StaffQueriesImpl implements StaffQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<StaffView> listAllStaff() {
     return em.createQuery(SELECT_BASE + ORDER_BY_PERSON_NAME_ASC, StaffView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<StaffComplexSearchView> search(
       PageQuery pageQuery, StaffComplexSearchCriteria criteria) {

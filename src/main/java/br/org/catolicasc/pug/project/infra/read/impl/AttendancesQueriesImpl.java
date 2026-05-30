@@ -71,6 +71,7 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
 
   private static final String ORDER_BY = " order by a.createdAt desc";
 
+  /** {@inheritDoc} */
   @Inject EntityManager em;
 
   @Override
@@ -84,11 +85,13 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
         .findFirst();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listAll() {
     return em.createQuery(SELECT_BASE + ORDER_BY, AttendanceView.class).getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<AttendanceView> listAllByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
@@ -99,12 +102,14 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
         .getResultList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<AttendanceView> search(
       AttendanceComplexSearchCriteria criteria, PageQuery pageQuery) {
     AttendanceComplexSearchCriteria safeCriteria =
         criteria == null
-            ? new AttendanceComplexSearchCriteria(List.of(), List.of(), List.of(), List.of(), null, null, null, null)
+            ? new AttendanceComplexSearchCriteria(
+                List.of(), List.of(), List.of(), List.of(), null, null, null, null)
             : criteria;
     PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
@@ -128,7 +133,8 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
       clauses.add("a.duration <= :durationTo");
     }
     if (safeCriteria.dateFrom() != null) {
-      clauses.add("(a.createdAt >= :dateFrom or a.updatedAt >= :dateFrom or a.validatedAt >= :dateFrom)");
+      clauses.add(
+          "(a.createdAt >= :dateFrom or a.updatedAt >= :dateFrom or a.validatedAt >= :dateFrom)");
     }
     if (safeCriteria.dateTo() != null) {
       clauses.add("(a.createdAt <= :dateTo or a.updatedAt <= :dateTo or a.validatedAt <= :dateTo)");
@@ -148,7 +154,11 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
     List<AttendanceView> content = execution.apply(dataQuery).getResultList();
 
     return new PageResult<>(
-        content, execution.page(), execution.size(), execution.totalElements(), execution.totalPages());
+        content,
+        execution.page(),
+        execution.size(),
+        execution.totalElements(),
+        execution.totalPages());
   }
 
   private <T> void bindFilters(TypedQuery<T> query, AttendanceComplexSearchCriteria criteria) {

@@ -85,6 +85,7 @@ public class EnrollmentRepositoryImpl
     return findByIdOptional(id).map(EnrollmentMapper::toDomain);
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<Enrollment> listAllByProjectId(UUID projectId) {
     if (projectId == null) {
@@ -93,6 +94,7 @@ public class EnrollmentRepositoryImpl
     return find("id.projectId", projectId).list().stream().map(EnrollmentMapper::toDomain).toList();
   }
 
+  /** {@inheritDoc} */
   @Override
   public List<Enrollment> listAllByStudentId(UUID studentId) {
     if (studentId == null) {

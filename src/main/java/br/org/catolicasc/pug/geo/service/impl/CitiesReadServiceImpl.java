@@ -54,6 +54,7 @@ public class CitiesReadServiceImpl implements CitiesReadService {
     return queries.listAllByIds(ids);
   }
 
+  /** {@inheritDoc} */
   @Override
   public PageResult<CityView> search(PageQuery pageQuery, CityComplexSearchCriteria criteria) {
     return queries.search(pageQuery, criteria);
