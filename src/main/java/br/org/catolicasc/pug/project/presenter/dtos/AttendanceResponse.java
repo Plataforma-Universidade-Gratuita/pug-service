@@ -7,7 +7,7 @@ import java.util.UUID;
  *
  * @param id the unique identifier of the attendance record
  * @param projectId the unique identifier of the associated project
- * @param formerStudentId the unique identifier of the associated former student account
+ * @param formerStudentId the unique identifier of the associated formerStudent account
  * @param status the nested lifecycle status payload
  * @param attendanceInfo the nested validation and audit metadata payload
  * @param qrValidationInfo the nested QR validation payload

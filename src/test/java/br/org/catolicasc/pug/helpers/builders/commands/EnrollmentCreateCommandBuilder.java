@@ -11,7 +11,7 @@ import java.util.UUID;
  */
 public class EnrollmentCreateCommandBuilder {
   private UUID projectId = UuidCreator.getTimeOrderedEpoch();
-  private UUID studentId;
+  private UUID formerStudentId;
 
   private EnrollmentCreateCommandBuilder() {}
 
@@ -24,12 +24,12 @@ public class EnrollmentCreateCommandBuilder {
     return this;
   }
 
-  public EnrollmentCreateCommandBuilder withStudentId(UUID studentId) {
-    this.studentId = studentId;
+  public EnrollmentCreateCommandBuilder withStudentId(UUID formerStudentId) {
+    this.formerStudentId = formerStudentId;
     return this;
   }
 
   public EnrollmentCreateCommand build() {
-    return new EnrollmentCreateCommand(projectId, studentId);
+    return new EnrollmentCreateCommand(projectId, formerStudentId);
   }
 }

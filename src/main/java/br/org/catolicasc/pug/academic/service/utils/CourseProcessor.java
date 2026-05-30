@@ -22,7 +22,7 @@ public class CourseProcessor {
    * them appropriately.
    *
    * @param name the raw name of the course requested for creation
-   * @param areaOfExpertiseId the unique identifier of the school offering the course
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise offering the course
    * @return a fully instantiated {@link Course} domain aggregate, potentially containing validation
    *     errors
    */
@@ -41,7 +41,7 @@ public class CourseProcessor {
    *
    * @param existingCourse the current, reconstituted {@link Course} aggregate from the repository
    * @param name the proposed new course name, or {@code null}/empty to skip updating
-   * @param areaOfExpertiseId the proposed new school ID, or {@code null} to skip updating
+   * @param areaOfExpertiseId the proposed new areaOfExpertise ID, or {@code null} to skip updating
    * @return a new {@link Course} domain aggregate reflecting the requested updates, potentially
    *     containing validation errors
    */

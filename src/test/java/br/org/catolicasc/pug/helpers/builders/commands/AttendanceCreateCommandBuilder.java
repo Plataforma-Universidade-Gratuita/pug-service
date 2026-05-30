@@ -12,7 +12,7 @@ import java.util.UUID;
  */
 public class AttendanceCreateCommandBuilder {
   private UUID projectId = UuidCreator.getTimeOrderedEpoch();
-  private UUID studentId = UuidCreator.getTimeOrderedEpoch();
+  private UUID formerStudentId = UuidCreator.getTimeOrderedEpoch();
   private BigDecimal duration = new BigDecimal("2.0");
 
   private AttendanceCreateCommandBuilder() {}
@@ -26,8 +26,8 @@ public class AttendanceCreateCommandBuilder {
     return this;
   }
 
-  public AttendanceCreateCommandBuilder withStudentId(UUID studentId) {
-    this.studentId = studentId;
+  public AttendanceCreateCommandBuilder withStudentId(UUID formerStudentId) {
+    this.formerStudentId = formerStudentId;
     return this;
   }
 
@@ -37,6 +37,6 @@ public class AttendanceCreateCommandBuilder {
   }
 
   public AttendanceCreateCommand build() {
-    return new AttendanceCreateCommand(projectId, studentId, duration);
+    return new AttendanceCreateCommand(projectId, formerStudentId, duration);
   }
 }

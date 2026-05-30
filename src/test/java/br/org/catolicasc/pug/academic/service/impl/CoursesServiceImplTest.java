@@ -38,20 +38,20 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should save course successfully")
   void saveSuccess() {
-    School school = factory.createSchool();
+    School areaOfExpertise = factory.createSchool();
     em.flush();
 
-    var cmd = aCourseCreateCommand().withSchoolId(school.getId()).build();
+    var cmd = aCourseCreateCommand().withSchoolId(areaOfExpertise.getId()).build();
     Course saved = service.save(cmd);
 
     assertThat(saved.getName()).isEqualTo(cmd.name());
-    assertThat(saved.getSchoolId()).isEqualTo(school.getId());
+    assertThat(saved.getSchoolId()).isEqualTo(areaOfExpertise.getId());
     verify(audit).fireCreate(Course.class.getName(), saved.getId());
   }
 
   @Test
   @Transactional
-  @DisplayName("Should throw when school not found on save")
+  @DisplayName("Should throw when areaOfExpertise not found on save")
   void saveSchoolNotFound() {
     var cmd = aCourseCreateCommand().build();
     assertThrows(ResourceNotFoundException.class, () -> service.save(cmd));
@@ -61,12 +61,12 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw DuplicateResourceException for same name")
   void saveDuplicate() {
-    School school = factory.createSchool();
-    Course existing = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course existing = factory.createCourse(areaOfExpertise);
     em.flush();
 
     var cmd =
-        aCourseCreateCommand().withName(existing.getName()).withSchoolId(school.getId()).build();
+        aCourseCreateCommand().withName(existing.getName()).withSchoolId(areaOfExpertise.getId()).build();
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
   }
 
@@ -74,10 +74,10 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw validation exception for blank name")
   void saveValidationError() {
-    School school = factory.createSchool();
+    School areaOfExpertise = factory.createSchool();
     em.flush();
 
-    var cmd = aCourseCreateCommand().withName("   ").withSchoolId(school.getId()).build();
+    var cmd = aCourseCreateCommand().withName("   ").withSchoolId(areaOfExpertise.getId()).build();
     assertThrows(AppValidationException.class, () -> service.save(cmd));
   }
 
@@ -85,8 +85,8 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should get course by ID")
   void getByIdSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
     Course found = service.getById(course.getId());
@@ -104,8 +104,8 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should update course successfully")
   void updateSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
     var cmd = aCourseUpdateCommand().withSchoolId(null).build();
@@ -117,17 +117,17 @@ class CoursesServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should update course with new school")
+  @DisplayName("Should update course with new areaOfExpertise")
   void updateWithNewSchool() {
-    School school1 = factory.createSchool();
-    School school2 = factory.createSchool();
-    Course course = factory.createCourse(school1);
+    School areaOfExpertise1 = factory.createSchool();
+    School areaOfExpertise2 = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise1);
     em.flush();
 
-    var cmd = aCourseUpdateCommand().withName(null).withSchoolId(school2.getId()).build();
+    var cmd = aCourseUpdateCommand().withName(null).withSchoolId(areaOfExpertise2.getId()).build();
     Course updated = service.update(course.getId(), cmd);
 
-    assertThat(updated.getSchoolId()).isEqualTo(school2.getId());
+    assertThat(updated.getSchoolId()).isEqualTo(areaOfExpertise2.getId());
   }
 
   @Test
@@ -143,8 +143,8 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should delete course successfully")
   void deleteSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
     boolean deleted = service.delete(course.getId());
@@ -169,8 +169,8 @@ class CoursesServiceImplTest {
   @Transactional
   @DisplayName("Should throw when deleting course with students")
   void deleteWithStudents() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
 
     var user = factory.createUser();
     var account =

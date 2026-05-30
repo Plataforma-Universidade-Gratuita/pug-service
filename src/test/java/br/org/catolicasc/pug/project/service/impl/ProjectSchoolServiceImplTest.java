@@ -30,21 +30,21 @@ class ProjectSchoolServiceImplTest {
   @InjectMock AuditPublisher audit;
 
   private Project project;
-  private School school;
+  private School areaOfExpertise;
 
   @BeforeEach
   void setup() {
     Entity entity = factory.createEntity(factory.getAnyCity());
     Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creator);
-    school = factory.createSchool();
+    areaOfExpertise = factory.createSchool();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should save project-school association")
+  @DisplayName("Should save project-areaOfExpertise association")
   void saveSuccess() {
-    List<ProjectSchool> created = service.save(project.getId(), List.of(school.getId()));
+    List<ProjectSchool> created = service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
     assertThat(created).hasSize(1);
   }
@@ -56,13 +56,13 @@ class ProjectSchoolServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return empty list for null school IDs")
+  @DisplayName("Should return empty list for null areaOfExpertise IDs")
   void saveNullSchoolIds() {
     assertThat(service.save(project.getId(), null)).isEmpty();
   }
 
   @Test
-  @DisplayName("Should return empty list for empty school IDs")
+  @DisplayName("Should return empty list for empty areaOfExpertise IDs")
   void saveEmptySchoolIds() {
     assertThat(service.save(project.getId(), List.of())).isEmpty();
   }
@@ -71,20 +71,20 @@ class ProjectSchoolServiceImplTest {
   @Transactional
   @DisplayName("Should skip already existing associations")
   void saveSkipExisting() {
-    service.save(project.getId(), List.of(school.getId()));
+    service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
-    List<ProjectSchool> second = service.save(project.getId(), List.of(school.getId()));
+    List<ProjectSchool> second = service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
     assertThat(second).isEmpty();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should delete project-school association")
+  @DisplayName("Should delete project-areaOfExpertise association")
   void deleteSuccess() {
-    service.save(project.getId(), List.of(school.getId()));
+    service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
-    boolean deleted = service.delete(project.getId(), school.getId());
+    boolean deleted = service.delete(project.getId(), areaOfExpertise.getId());
 
     assertThat(deleted).isTrue();
   }
@@ -96,7 +96,7 @@ class ProjectSchoolServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should return false for null school ID in delete")
+  @DisplayName("Should return false for null areaOfExpertise ID in delete")
   void deleteNullSchoolId() {
     assertThat(service.delete(UuidCreator.getTimeOrderedEpoch(), null)).isFalse();
   }
@@ -105,7 +105,7 @@ class ProjectSchoolServiceImplTest {
   @Transactional
   @DisplayName("Should delete all by project ID")
   void deleteAllByProjectId() {
-    service.save(project.getId(), List.of(school.getId()));
+    service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
     long deleted = service.deleteAllByProjectId(project.getId());
 
@@ -120,17 +120,17 @@ class ProjectSchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should delete all by school ID")
+  @DisplayName("Should delete all by areaOfExpertise ID")
   void deleteAllBySchoolId() {
-    service.save(project.getId(), List.of(school.getId()));
+    service.save(project.getId(), List.of(areaOfExpertise.getId()));
 
-    long deleted = service.deleteAllBySchoolId(school.getId());
+    long deleted = service.deleteAllBySchoolId(areaOfExpertise.getId());
 
     assertThat(deleted).isGreaterThanOrEqualTo(1);
   }
 
   @Test
-  @DisplayName("Should return 0 for null school ID in deleteAllBySchoolId")
+  @DisplayName("Should return 0 for null areaOfExpertise ID in deleteAllBySchoolId")
   void deleteAllBySchoolIdNull() {
     assertThat(service.deleteAllBySchoolId(null)).isZero();
   }

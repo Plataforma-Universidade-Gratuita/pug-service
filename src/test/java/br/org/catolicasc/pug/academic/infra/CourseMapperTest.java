@@ -25,7 +25,7 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   protected CourseEntity createEntity() {
     return CourseEntity.builder()
         .name("Original")
-        .schoolId(UuidCreator.getTimeOrderedEpoch())
+        .areaOfExpertiseId(UuidCreator.getTimeOrderedEpoch())
         .build();
   }
 
@@ -58,14 +58,14 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   @Test
   @DisplayName("copy should update entity fields from domain")
   void copyShouldUpdateEntityFields() {
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-    Course course = Course.factory("Updated Course", schoolId);
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+    Course course = Course.factory("Updated Course", areaOfExpertiseId);
     CourseEntity entity = createEntity();
 
     CourseMapper.copy(course, entity);
 
     assertThat(entity.getName()).isEqualTo("Updated Course");
-    assertThat(entity.getSchoolId()).isEqualTo(schoolId);
+    assertThat(entity.getSchoolId()).isEqualTo(areaOfExpertiseId);
     assertThat(entity.getCreatedAt()).isEqualTo(course.getAuditInfo().getCreatedAt());
     assertThat(entity.getUpdatedAt()).isEqualTo(course.getAuditInfo().getUpdatedAt());
   }
@@ -77,39 +77,39 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
   }
 
   @Test
-  @DisplayName("toView should map correctly with school")
+  @DisplayName("toView should map correctly with areaOfExpertise")
   void toViewShouldMapWithSchool() {
     UUID courseId = UuidCreator.getTimeOrderedEpoch();
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
     CourseEntity courseEntity =
         CourseEntity.builder()
             .id(courseId)
             .name("Software Engineering")
-            .schoolId(schoolId)
+            .areaOfExpertiseId(areaOfExpertiseId)
             .createdAt(now)
             .updatedAt(now)
             .build();
-    SchoolEntity schoolEntity =
+    SchoolEntity areaOfExpertiseEntity =
         SchoolEntity.builder()
-            .id(schoolId)
+            .id(areaOfExpertiseId)
             .name("School of Tech")
             .createdAt(now)
             .updatedAt(now)
             .build();
 
-    CourseView view = CourseMapper.toView(courseEntity, schoolEntity);
+    CourseView view = CourseMapper.toView(courseEntity, areaOfExpertiseEntity);
 
     assertThat(view).isNotNull();
     assertThat(view.id()).isEqualTo(courseId);
     assertThat(view.name()).isEqualTo("Software Engineering");
-    assertThat(view.school()).isNotNull();
-    assertThat(view.school().name()).isEqualTo("School of Tech");
+    assertThat(view.areaOfExpertise()).isNotNull();
+    assertThat(view.areaOfExpertise().name()).isEqualTo("School of Tech");
   }
 
   @Test
-  @DisplayName("toView should handle null school")
+  @DisplayName("toView should handle null areaOfExpertise")
   void toViewShouldHandleNullSchool() {
     UUID courseId = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
@@ -117,7 +117,7 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
         CourseEntity.builder()
             .id(courseId)
             .name("Course")
-            .schoolId(UuidCreator.getTimeOrderedEpoch())
+            .areaOfExpertiseId(UuidCreator.getTimeOrderedEpoch())
             .createdAt(now)
             .updatedAt(now)
             .build();
@@ -125,6 +125,6 @@ class CourseMapperTest extends CopyableMapperTest<Course, CourseEntity> {
     CourseView view = CourseMapper.toView(courseEntity, null);
 
     assertThat(view).isNotNull();
-    assertThat(view.school()).isNull();
+    assertThat(view.areaOfExpertise()).isNull();
   }
 }

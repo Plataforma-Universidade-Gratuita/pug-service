@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.project.infra.persistence.ProjectSchoolEntity;
  *
  * <p>This mapper acts as an anti-corruption layer for the association aggregate {@link
  * ProjectSchool}, handling conversions to and from the JPA persistence model ({@link
- * ProjectSchoolEntity}) as well as consolidated read models that join projects and schools.
+ * ProjectSchoolEntity}) as well as consolidated read models that join projects and areaOfExpertises.
  */
 public final class ProjectSchoolMapper {
 

@@ -24,13 +24,13 @@ class CoursesQueriesImplTest extends BaseSearchTest {
   @Inject CoursesQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private School school;
+  private School areaOfExpertise;
   private Course course;
 
   @BeforeEach
   void setup() {
-    school = factory.createSchool();
-    course = factory.createCourse(school);
+    areaOfExpertise = factory.createSchool();
+    course = factory.createCourse(areaOfExpertise);
   }
 
   @Test
@@ -40,7 +40,7 @@ class CoursesQueriesImplTest extends BaseSearchTest {
     var view = queries.findOptionalById(course.getId());
 
     assertThat(view).isPresent();
-    assertThat(view.get().school().name()).isEqualTo(school.getName());
+    assertThat(view.get().areaOfExpertise().name()).isEqualTo(areaOfExpertise.getName());
   }
 
   @Test
@@ -108,11 +108,11 @@ class CoursesQueriesImplTest extends BaseSearchTest {
   }
 
   @Test
-  @DisplayName("Should search courses by school successfully")
+  @DisplayName("Should search courses by areaOfExpertise successfully")
   void shouldSearchBySchoolSuccess() {
     var result =
         queries.search(
-            new PageQuery(0, 10), new CourseComplexSearchCriteria(null, List.of(school.getId())));
+            new PageQuery(0, 10), new CourseComplexSearchCriteria(null, List.of(areaOfExpertise.getId())));
 
     assertThat(result.content()).anyMatch(v -> v.id().equals(course.getId()));
   }

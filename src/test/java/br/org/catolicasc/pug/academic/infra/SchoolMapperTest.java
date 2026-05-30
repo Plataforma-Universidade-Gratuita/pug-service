@@ -49,14 +49,14 @@ class SchoolMapperTest extends CopyableMapperTest<School, SchoolEntity> {
   @Test
   @DisplayName("copy should update entity fields from domain")
   void copyShouldUpdateEntityFields() {
-    School school = School.factory("Updated School");
+    School areaOfExpertise = School.factory("Updated School");
     SchoolEntity entity = createEntity();
 
-    SchoolMapper.copy(school, entity);
+    SchoolMapper.copy(areaOfExpertise, entity);
 
     assertThat(entity.getName()).isEqualTo("Updated School");
-    assertThat(entity.getCreatedAt()).isEqualTo(school.getAuditInfo().getCreatedAt());
-    assertThat(entity.getUpdatedAt()).isEqualTo(school.getAuditInfo().getUpdatedAt());
+    assertThat(entity.getCreatedAt()).isEqualTo(areaOfExpertise.getAuditInfo().getCreatedAt());
+    assertThat(entity.getUpdatedAt()).isEqualTo(areaOfExpertise.getAuditInfo().getUpdatedAt());
   }
 
   @Test

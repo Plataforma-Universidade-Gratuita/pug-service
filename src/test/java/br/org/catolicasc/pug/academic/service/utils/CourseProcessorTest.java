@@ -14,16 +14,16 @@ class CourseProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-    Course course = CourseProcessor.processCreateInput("Computer Science", schoolId);
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+    Course course = CourseProcessor.processCreateInput("Computer Science", areaOfExpertiseId);
 
     assertThat(course.hasFieldErrors()).isFalse();
     assertThat(course.getName()).isEqualTo("Computer Science");
-    assertThat(course.getSchoolId()).isEqualTo(schoolId);
+    assertThat(course.getSchoolId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test
-  @DisplayName("Should collect errors for blank name and null schoolId")
+  @DisplayName("Should collect errors for blank name and null areaOfExpertiseId")
   void shouldCollectErrors() {
     Course course = CourseProcessor.processCreateInput("", null);
 
@@ -41,7 +41,7 @@ class CourseProcessorTest {
   }
 
   @Test
-  @DisplayName("Should update schoolId via processUpdateInput")
+  @DisplayName("Should update areaOfExpertiseId via processUpdateInput")
   void shouldUpdateSchoolId() {
     Course existing = Course.factory("Course", UuidCreator.getTimeOrderedEpoch());
     UUID newSchoolId = UuidCreator.getTimeOrderedEpoch();

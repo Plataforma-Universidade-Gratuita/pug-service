@@ -24,9 +24,9 @@ public class SchoolUpdateCommandBuilder {
   }
 
   /**
-   * Sets the school name.
+   * Sets the areaOfExpertise name.
    *
-   * @param name the new school name, or {@code null} to leave unchanged
+   * @param name the new areaOfExpertise name, or {@code null} to leave unchanged
    * @return this builder instance
    */
   public SchoolUpdateCommandBuilder withName(String name) {

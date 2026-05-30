@@ -18,7 +18,7 @@ public enum ProjectStatus implements GenericCodes {
   /** Indicates the project has successfully finished. */
   COMPLETED("project.status.completed"),
 
-  /** Indicates the project is currently active and students are participating. */
+  /** Indicates the project is currently active and formerStudents are participating. */
   IN_PROGRESS("project.status.in.progress"),
 
   /** Indicates the project is temporarily paused. */

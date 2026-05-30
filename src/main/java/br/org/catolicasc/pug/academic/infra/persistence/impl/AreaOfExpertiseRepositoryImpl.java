@@ -49,11 +49,11 @@ public class AreaOfExpertiseRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public AreaOfExpertise persist(AreaOfExpertise school) {
-    if (school == null) {
+  public AreaOfExpertise persist(AreaOfExpertise areaOfExpertise) {
+    if (areaOfExpertise == null) {
       return null;
     }
-    var e = AreaOfExpertiseMapper.toEntity(school);
+    var e = AreaOfExpertiseMapper.toEntity(areaOfExpertise);
     persistAndFlush(e);
     return AreaOfExpertiseMapper.toDomain(e);
   }
@@ -61,13 +61,13 @@ public class AreaOfExpertiseRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public void update(AreaOfExpertise school) {
-    if (school == null || school.getId() == null) {
+  public void update(AreaOfExpertise areaOfExpertise) {
+    if (areaOfExpertise == null || areaOfExpertise.getId() == null) {
       return;
     }
-    AreaOfExpertiseEntity managed = findById(school.getId());
+    AreaOfExpertiseEntity managed = findById(areaOfExpertise.getId());
     if (managed != null) {
-      AreaOfExpertiseMapper.copy(school, managed);
+      AreaOfExpertiseMapper.copy(areaOfExpertise, managed);
     }
   }
 }

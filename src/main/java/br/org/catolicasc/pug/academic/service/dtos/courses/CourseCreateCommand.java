@@ -10,6 +10,6 @@ import java.util.UUID;
  * a new {@link Course} aggregate.
  *
  * @param name the raw name of the academic course
- * @param areaOfExpertiseId the unique identifier of the school offering this course
+ * @param areaOfExpertiseId the unique identifier of the areaOfExpertise offering this course
  */
 public record CourseCreateCommand(String name, UUID areaOfExpertiseId) {}

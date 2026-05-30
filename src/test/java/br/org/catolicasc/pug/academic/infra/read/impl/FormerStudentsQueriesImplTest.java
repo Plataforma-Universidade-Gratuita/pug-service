@@ -35,8 +35,8 @@ class FormerStudentsQueriesImplTest extends BaseSearchTest {
   void setup() {
     user = factory.createUser();
     account = factory.createAccount(user, AccountType.FORMER_STUDENT);
-    School school = factory.createSchool();
-    course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    course = factory.createCourse(areaOfExpertise);
     formerStudent = factory.createStudent(account, course);
   }
 

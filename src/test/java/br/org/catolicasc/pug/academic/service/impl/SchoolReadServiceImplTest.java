@@ -27,7 +27,7 @@ class SchoolReadServiceImplTest {
   @InjectMock SchoolQueries queries;
 
   @Test
-  @DisplayName("Should return school view by ID")
+  @DisplayName("Should return areaOfExpertise view by ID")
   void getViewByIdSuccess() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
@@ -38,7 +38,7 @@ class SchoolReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should throw when school not found")
+  @DisplayName("Should throw when areaOfExpertise not found")
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
     assertThrows(
@@ -47,7 +47,7 @@ class SchoolReadServiceImplTest {
   }
 
   @Test
-  @DisplayName("Should list all schools")
+  @DisplayName("Should list all areaOfExpertises")
   void listAll() {
     OffsetDateTime now = OffsetDateTime.now();
     when(queries.listAllSchools())

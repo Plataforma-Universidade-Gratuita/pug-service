@@ -13,7 +13,7 @@ import lombok.Getter;
 /**
  * Domain aggregate representing the association between a Project and a School.
  *
- * <p>This aggregate ensures that a project is strictly linked to a valid school. It provides
+ * <p>This aggregate ensures that a project is strictly linked to a valid areaOfExpertise. It provides
  * methods to manage and transition this association, extending {@link DomainError} for structural
  * validation.
  */
@@ -27,14 +27,14 @@ public class ProjectSchool extends DomainError {
   /** The unique identifier of the project. */
   private final UUID projectId;
 
-  /** The unique identifier of the school. */
+  /** The unique identifier of the areaOfExpertise. */
   private final UUID areaOfExpertiseId;
 
   /**
    * Factory method to create a new {@code ProjectsBySchool} instance.
    *
    * @param projectId the unique identifier of the project
-   * @param areaOfExpertiseId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
    * @return a self-validated {@link ProjectSchool} instance
    */
   public static ProjectSchool factory(UUID projectId, UUID areaOfExpertiseId) {
@@ -50,7 +50,7 @@ public class ProjectSchool extends DomainError {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
     }
     if (areaOfExpertiseId == null) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_AREA_OF_EXPERTISE_ID_BLANK);
     }
   }
 }

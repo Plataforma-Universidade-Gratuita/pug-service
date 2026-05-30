@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class CourseUpdateCommandBuilder {
   private String name = TestNameGenerator.generateRandomCourseName();
-  private UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+  private UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
   private CourseUpdateCommandBuilder() {}
 
@@ -38,13 +38,13 @@ public class CourseUpdateCommandBuilder {
   }
 
   /**
-   * Sets the school identifier.
+   * Sets the areaOfExpertise identifier.
    *
-   * @param schoolId the new school UUID, or {@code null} to leave unchanged
+   * @param areaOfExpertiseId the new areaOfExpertise UUID, or {@code null} to leave unchanged
    * @return this builder instance
    */
-  public CourseUpdateCommandBuilder withSchoolId(UUID schoolId) {
-    this.schoolId = schoolId;
+  public CourseUpdateCommandBuilder withSchoolId(UUID areaOfExpertiseId) {
+    this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }
 
@@ -54,6 +54,6 @@ public class CourseUpdateCommandBuilder {
    * @return a configured {@link CourseUpdateCommand} instance
    */
   public CourseUpdateCommand build() {
-    return new CourseUpdateCommand(name, schoolId);
+    return new CourseUpdateCommand(name, areaOfExpertiseId);
   }
 }

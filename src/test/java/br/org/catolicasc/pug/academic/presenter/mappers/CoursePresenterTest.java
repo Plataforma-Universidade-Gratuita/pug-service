@@ -29,13 +29,13 @@ class CoursePresenterTest {
     @Test
     @DisplayName("Should map request to command")
     void toCreateCommand() {
-      UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-      CourseCreateRequest req = new CourseCreateRequest("CS", schoolId);
+      UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+      CourseCreateRequest req = new CourseCreateRequest("CS", areaOfExpertiseId);
       CourseCreateCommand cmd = CoursePresenter.toCommand(req);
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.name()).isEqualTo("CS");
-      assertThat(cmd.schoolId()).isEqualTo(schoolId);
+      assertThat(cmd.areaOfExpertiseId()).isEqualTo(areaOfExpertiseId);
     }
 
     @Test
@@ -52,13 +52,13 @@ class CoursePresenterTest {
     @Test
     @DisplayName("Should map update request to command")
     void toUpdateCommand() {
-      UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-      CourseUpdateRequest req = new CourseUpdateRequest("New Name", schoolId);
+      UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+      CourseUpdateRequest req = new CourseUpdateRequest("New Name", areaOfExpertiseId);
       CourseUpdateCommand cmd = CoursePresenter.toCommand(req);
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.name()).isEqualTo("New Name");
-      assertThat(cmd.schoolId()).isEqualTo(schoolId);
+      assertThat(cmd.areaOfExpertiseId()).isEqualTo(areaOfExpertiseId);
     }
 
     @Test
@@ -69,7 +69,7 @@ class CoursePresenterTest {
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.name()).isNull();
-      assertThat(cmd.schoolId()).isNull();
+      assertThat(cmd.areaOfExpertiseId()).isNull();
     }
 
     @Test
@@ -147,10 +147,10 @@ class CoursePresenterTest {
 
     private CourseView buildCourseView() {
       OffsetDateTime now = OffsetDateTime.now();
-      SchoolView schoolView =
+      SchoolView areaOfExpertiseView =
           new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
       return new CourseView(
-          UuidCreator.getTimeOrderedEpoch(), "Computer Science", schoolView, now, now);
+          UuidCreator.getTimeOrderedEpoch(), "Computer Science", areaOfExpertiseView, now, now);
     }
   }
 }

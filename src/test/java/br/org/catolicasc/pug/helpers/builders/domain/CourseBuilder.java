@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class CourseBuilder {
   private String name = TestNameGenerator.generateRandomCourseName();
-  private UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+  private UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
   private CourseBuilder() {}
 
@@ -38,13 +38,13 @@ public class CourseBuilder {
   }
 
   /**
-   * Sets the school identifier linked to this course.
+   * Sets the areaOfExpertise identifier linked to this course.
    *
-   * @param schoolId the UUID of the parent {@link br.org.catolicasc.pug.academic.domain.School}
+   * @param areaOfExpertiseId the UUID of the parent {@link br.org.catolicasc.pug.academic.domain.School}
    * @return this builder instance
    */
-  public CourseBuilder withSchool(UUID schoolId) {
-    this.schoolId = schoolId;
+  public CourseBuilder withSchool(UUID areaOfExpertiseId) {
+    this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }
 
@@ -54,6 +54,6 @@ public class CourseBuilder {
    * @return a configured {@link Course} instance
    */
   public Course build() {
-    return Course.factory(name, schoolId);
+    return Course.factory(name, areaOfExpertiseId);
   }
 }

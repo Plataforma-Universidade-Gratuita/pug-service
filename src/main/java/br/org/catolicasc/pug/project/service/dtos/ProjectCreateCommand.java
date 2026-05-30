@@ -12,7 +12,7 @@ import java.util.UUID;
  *
  * @param description the optional detailed description of the project's objectives
  * @param entityId the unique identifier of the partner organization offering the project
- * @param maxParticipants the maximum number of students allowed to enroll (optional)
+ * @param maxParticipants the maximum number of formerStudents allowed to enroll (optional)
  * @param name the title or name of the project
  * @param offeredHours the total counterpart hours the project offers to participants
  */

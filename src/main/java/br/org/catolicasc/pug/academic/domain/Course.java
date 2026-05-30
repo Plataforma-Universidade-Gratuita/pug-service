@@ -43,7 +43,7 @@ public class Course extends DomainError {
    *
    * @param id the unique identifier
    * @param name the name of the course
-   * @param areaOfExpertiseId the unique identifier of the associated school
+   * @param areaOfExpertiseId the unique identifier of the associated areaOfExpertise
    * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
@@ -62,7 +62,7 @@ public class Course extends DomainError {
    * of the aggregate.
    *
    * @param name the name of the course
-   * @param areaOfExpertiseId the unique identifier of the school offering the course
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise offering the course
    * @return a newly created and self-validated {@link Course} instance
    */
   public static Course factory(String name, UUID areaOfExpertiseId) {
@@ -100,10 +100,10 @@ public class Course extends DomainError {
   }
 
   /**
-   * Updates the association of the course to a different school.
+   * Updates the association of the course to a different areaOfExpertise.
    *
-   * @param newAreaOfExpertiseId the unique identifier of the new school
-   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the school is
+   * @param newAreaOfExpertiseId the unique identifier of the new areaOfExpertise
+   * @return a new, updated, and validated {@link Course} instance, or {@code this} if the areaOfExpertise is
    *     unchanged
    */
   public Course moveToAreaOfExpertise(UUID newAreaOfExpertiseId) {
@@ -125,7 +125,7 @@ public class Course extends DomainError {
    *   <li>Validates the UUID (inherited from {@link DomainError})
    *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
    *   <li>Ensures the {@code areaOfExpertiseId} is not null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_SCHOOL_BLANK})
+   *       AcademicFieldErrorCodes#INVALID_AREA_OF_EXPERTISE_BLANK})
    *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
    * </ul>
    */
@@ -133,7 +133,7 @@ public class Course extends DomainError {
     validateIdField(id);
     validateNameField(name);
     if (areaOfExpertiseId == null) {
-      addFieldError(AcademicFieldErrorCodes.INVALID_SCHOOL_BLANK);
+      addFieldError(AcademicFieldErrorCodes.INVALID_AREA_OF_EXPERTISE_BLANK);
     }
     if (auditInfo == null) {
       addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);

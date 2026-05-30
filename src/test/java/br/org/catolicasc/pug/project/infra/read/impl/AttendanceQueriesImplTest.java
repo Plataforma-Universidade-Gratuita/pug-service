@@ -35,8 +35,8 @@ class AttendanceQueriesImplTest {
 
   @BeforeEach
   void setup() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(acc, course);
 
@@ -99,7 +99,7 @@ class AttendanceQueriesImplTest {
         .allSatisfy(
             view -> {
               assertThat(view.projectId()).isEqualTo(project.getId());
-              assertThat(view.studentId()).isEqualTo(formerStudent.getAccountId());
+              assertThat(view.formerStudentId()).isEqualTo(formerStudent.getAccountId());
               assertThat(view.status()).isEqualTo(AttendanceStatus.WAITING);
             });
   }

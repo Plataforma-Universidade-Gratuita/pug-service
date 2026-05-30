@@ -44,7 +44,7 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
 - Use `ApiEnvelope` for response bodies that return content.
 - Use `204 No Content` for endpoints whose contract is void.
 - Prefer query parameters on collection `GET` endpoints over ad hoc `by-*` route proliferation, except where the existing contract intentionally preserves a special route such as `geo/cities/by-ibge/{ibgeCode}`.
-- Prefer nested routes for relationship-oriented operations, for example project enrollments and project-school associations.
+- Prefer nested routes for relationship-oriented operations, for example project enrollments and project-areaOfExpertise associations.
 - Do not bypass module boundaries by reaching directly into another module's infrastructure layer.
 - Keep changes scoped. Avoid opportunistic cross-module refactors unless the task actually requires them.
 

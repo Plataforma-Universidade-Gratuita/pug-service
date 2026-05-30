@@ -24,9 +24,9 @@ public class SchoolCreateCommandBuilder {
   }
 
   /**
-   * Sets the school name.
+   * Sets the areaOfExpertise name.
    *
-   * @param name the school name
+   * @param name the areaOfExpertise name
    * @return this builder instance
    */
   public SchoolCreateCommandBuilder withName(String name) {

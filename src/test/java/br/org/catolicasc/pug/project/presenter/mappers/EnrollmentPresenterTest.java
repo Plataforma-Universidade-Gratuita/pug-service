@@ -33,13 +33,13 @@ class EnrollmentPresenterTest {
     @DisplayName("Should map project and student identifiers to command")
     void toCommand() {
       UUID projectId = UuidCreator.getTimeOrderedEpoch();
-      UUID studentId = UuidCreator.getTimeOrderedEpoch();
+      UUID formerStudentId = UuidCreator.getTimeOrderedEpoch();
 
-      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(projectId, studentId);
+      EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(projectId, formerStudentId);
 
       assertThat(cmd).isNotNull();
       assertThat(cmd.projectId()).isEqualTo(projectId);
-      assertThat(cmd.studentId()).isEqualTo(studentId);
+      assertThat(cmd.formerStudentId()).isEqualTo(formerStudentId);
     }
 
     @Test
@@ -48,7 +48,7 @@ class EnrollmentPresenterTest {
       EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(null, null);
       assertThat(cmd).isNotNull();
       assertThat(cmd.projectId()).isNull();
-      assertThat(cmd.studentId()).isNull();
+      assertThat(cmd.formerStudentId()).isNull();
     }
   }
 
@@ -83,7 +83,7 @@ class EnrollmentPresenterTest {
 
       assertThat(response).isNotNull();
       assertThat(response.projectId()).isEqualTo(view.projectId());
-      assertThat(response.studentId()).isEqualTo(view.studentId());
+      assertThat(response.formerStudentId()).isEqualTo(view.formerStudentId());
       assertThat(response.status().status()).isEqualTo(EnrollmentStatus.PENDING);
       assertThat(response.status().statusFormatted()).isNotBlank();
       assertThat(response.enrollmentInfo().auditInfo()).isNotNull();

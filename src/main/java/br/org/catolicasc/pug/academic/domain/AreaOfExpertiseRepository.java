@@ -15,8 +15,8 @@ public interface AreaOfExpertiseRepository {
   /**
    * Removes a {@link AreaOfExpertise} from the repository based on its unique identifier.
    *
-   * @param id the unique identifier (UUIDv7) of the school to delete
-   * @return {@code true} if the school was successfully deleted, {@code false} if it was not found
+   * @param id the unique identifier (UUIDv7) of the areaOfExpertise to delete
+   * @return {@code true} if the areaOfExpertise was successfully deleted, {@code false} if it was not found
    */
   boolean deleteById(UUID id);
 
@@ -24,20 +24,20 @@ public interface AreaOfExpertiseRepository {
    * Checks whether a {@link AreaOfExpertise} with the specified name already exists in the
    * repository.
    *
-   * @param name the exact name of the school
-   * @return {@code true} if a school with the given name exists, {@code false} otherwise
+   * @param name the exact name of the areaOfExpertise
+   * @return {@code true} if a areaOfExpertise with the given name exists, {@code false} otherwise
    */
   boolean existsByName(String name);
 
   /**
    * Retrieves a {@link AreaOfExpertise} by its unique identifier.
    *
-   * <p>When a school is reconstituted from the persistence layer, it typically undergoes the same
+   * <p>When a areaOfExpertise is reconstituted from the persistence layer, it typically undergoes the same
    * domain validations as a newly created aggregate. Therefore, the returned {@link
    * AreaOfExpertise} might contain validation errors (verifiable via {@link
    * AreaOfExpertise#hasFieldErrors()}) if the stored data violates current domain rules.
    *
-   * @param id the unique identifier (UUID) of the school
+   * @param id the unique identifier (UUID) of the areaOfExpertise
    * @return an {@link Optional} containing the found {@link AreaOfExpertise}, or {@link
    *     Optional#empty()} if not found
    */

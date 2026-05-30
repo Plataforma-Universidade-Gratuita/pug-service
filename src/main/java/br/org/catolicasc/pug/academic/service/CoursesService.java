@@ -26,13 +26,13 @@ public interface CoursesService {
   boolean delete(UUID id);
 
   /**
-   * Checks whether any academic course associated with the specified school identifier exists.
+   * Checks whether any academic course associated with the specified areaOfExpertise identifier exists.
    *
    * <p>This method is utilized to enforce relational integrity, ensuring that a {@link
    * AreaOfExpertise} cannot be deleted if it still has active courses linked to it.
    *
-   * @param areaOfExpertiseId the unique identifier (UUID) of the school to check
-   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   * @param areaOfExpertiseId the unique identifier (UUID) of the areaOfExpertise to check
+   * @return {@code true} if at least one course is linked to the areaOfExpertise, {@code false} otherwise
    */
   boolean existsAnyByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
@@ -56,7 +56,7 @@ public interface CoursesService {
    * @param cmd the structured command containing the data to create the new course
    * @return the fully instantiated and persisted {@link Course} aggregate
    * @throws DuplicateResourceException if a course with the exact same name already exists
-   * @throws ResourceNotFoundException if the associated school does not exist
+   * @throws ResourceNotFoundException if the associated areaOfExpertise does not exist
    * @throws AppValidationException if input validation fails
    */
   Course save(CourseCreateCommand cmd);
@@ -67,7 +67,7 @@ public interface CoursesService {
    * @param id the unique identifier (UUIDv7) of the course to update
    * @param cmd the structured command containing the new data for the course
    * @return the mutated and persisted {@link Course} aggregate
-   * @throws ResourceNotFoundException if the course does not exist, or if the new school does not
+   * @throws ResourceNotFoundException if the course does not exist, or if the new areaOfExpertise does not
    *     exist
    * @throws DuplicateResourceException if the updated name conflicts with an existing course
    * @throws AppValidationException if input validation fails

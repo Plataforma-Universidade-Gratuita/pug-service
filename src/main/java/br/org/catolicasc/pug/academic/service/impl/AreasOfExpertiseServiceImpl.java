@@ -40,7 +40,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
 
     if (coursesService.existsAnyByAreaOfExpertiseId(id)) {
       LOG.warnf("Delete failed: AreaOfExpertise ID %s has active courses", id);
-      throw ExceptionHelper.schoolHasCourses();
+      throw ExceptionHelper.areaOfExpertiseHasCourses();
     }
 
     boolean deleted = repo.deleteById(id);
@@ -63,14 +63,14 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
             .orElseThrow(
                 () -> {
                   LOG.debugf("AreaOfExpertise lookup failed: ID %s not found", id);
-                  return ExceptionHelper.schoolNotFound();
+                  return ExceptionHelper.areaOfExpertiseNotFound();
                 });
 
     if (areaOfExpertise.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: AreaOfExpertise %s violates domain rules: %s",
           id, areaOfExpertise.getProblemsSummary());
-      throw ExceptionHelper.schoolNotFound();
+      throw ExceptionHelper.areaOfExpertiseNotFound();
     }
     return areaOfExpertise;
   }
@@ -91,7 +91,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
       LOG.warnf(
           "Creation failed: AreaOfExpertise with name %s already exists",
           areaOfExpertiseToPersist.getName());
-      throw ExceptionHelper.schoolAlreadyExists();
+      throw ExceptionHelper.areOfExpertiseAlreadyExists();
     }
 
     AreaOfExpertise savedAreaOfExpertise = repo.persist(areaOfExpertiseToPersist);
@@ -119,7 +119,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
       LOG.warnf(
           "Update failed: AreaOfExpertise ID %s tried to use existing name %s",
           id, updatedAreaOfExpertise.getName());
-      throw ExceptionHelper.schoolAlreadyExists();
+      throw ExceptionHelper.areOfExpertiseAlreadyExists();
     }
 
     repo.update(updatedAreaOfExpertise);

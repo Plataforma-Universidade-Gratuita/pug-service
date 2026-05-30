@@ -25,10 +25,10 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class AreaOfExpertise extends DomainError {
 
-  /** The unique identifier for the school (UUIDv7). */
+  /** The unique identifier for the areaOfExpertise (UUIDv7). */
   UUID id;
 
-  /** The name of the academic school. */
+  /** The name of the academic areaOfExpertise. */
   String name;
 
   /** The audit tracking information (creation and update timestamps). */
@@ -38,7 +38,7 @@ public class AreaOfExpertise extends DomainError {
    * Constructs a {@code AreaOfExpertise} instance.
    *
    * @param id the unique identifier
-   * @param name the name of the school
+   * @param name the name of the areaOfExpertise
    * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
@@ -55,29 +55,29 @@ public class AreaOfExpertise extends DomainError {
    * provided name, initializes standard audit tracking information, and performs a full validation
    * of the aggregate.
    *
-   * @param name the name of the school
+   * @param name the name of the areaOfExpertise
    * @return a newly created and self-validated {@link AreaOfExpertise} instance
    */
   public static AreaOfExpertise factory(String name) {
     String trimmedName = StringUtils.trim(name);
-    AreaOfExpertise school =
+    AreaOfExpertise areaOfExpertise =
         AreaOfExpertise.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .name(trimmedName)
             .auditInfo(AuditInfo.factory())
             .build();
 
-    school.collectValidationProblems();
-    return school;
+    areaOfExpertise.collectValidationProblems();
+    return areaOfExpertise;
   }
 
   /**
-   * Updates the school's name.
+   * Updates the areaOfExpertise's name.
    *
    * <p>Since this entity is immutable, this method returns a new {@code AreaOfExpertise} instance
    * with the updated, trimmed name and a refreshed {@link AuditInfo} timestamp.
    *
-   * @param newName the new name for the school
+   * @param newName the new name for the areaOfExpertise
    * @return a new, updated, and validated {@link AreaOfExpertise} instance, or {@code this} if the
    *     name is unchanged
    */

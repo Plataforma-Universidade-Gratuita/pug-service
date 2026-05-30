@@ -37,8 +37,8 @@ class AttendanceResourceTest extends BaseResourceTest {
     Attendance[] attendance = new Attendance[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
           Entity entity = factory.createEntity(factory.getAnyCity());

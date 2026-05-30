@@ -15,13 +15,13 @@ class ProjectSchoolTest {
   @DisplayName("Should create valid association")
   void shouldCreateValidAssociation() {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
-    ProjectSchool pbs = ProjectSchool.factory(projectId, schoolId);
+    ProjectSchool pbs = ProjectSchool.factory(projectId, areaOfExpertiseId);
 
     assertThat(pbs.hasFieldErrors()).isFalse();
     assertThat(pbs.getProjectId()).isEqualTo(projectId);
-    assertThat(pbs.getSchoolId()).isEqualTo(schoolId);
+    assertThat(pbs.getSchoolId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test
@@ -33,6 +33,6 @@ class ProjectSchoolTest {
     assertThat(pbs.getFieldErrors())
         .contains(
             ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
-            ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
+            ProjectsFieldErrorCodes.INVALID_AREA_OF_EXPERTISE_ID_BLANK);
   }
 }

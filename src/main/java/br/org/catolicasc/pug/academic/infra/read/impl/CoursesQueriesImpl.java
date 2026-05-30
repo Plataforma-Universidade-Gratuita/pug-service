@@ -23,7 +23,7 @@ import java.util.UUID;
  * Implementation of the {@link CoursesQueries} interface using JPA.
  *
  * <p>This application-scoped bean handles read-only course queries. It uses JPQL constructor
- * expressions to project course rows, together with their linked school data, into lightweight
+ * expressions to project course rows, together with their linked areaOfExpertise data, into lightweight
  * {@link CourseView} DTOs in a single round-trip.
  */
 @ApplicationScoped

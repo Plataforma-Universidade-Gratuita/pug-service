@@ -36,14 +36,14 @@ class AttendancePresenterTest {
     @DisplayName("Should map AttendanceCreateRequest to command")
     void toCommand() {
       UUID projectId = UuidCreator.getTimeOrderedEpoch();
-      UUID studentId = UuidCreator.getTimeOrderedEpoch();
+      UUID formerStudentId = UuidCreator.getTimeOrderedEpoch();
       AttendanceCreateCommand command =
           AttendancePresenter.toCommand(
-              new AttendanceCreateRequest(projectId, studentId, new BigDecimal("2.00")));
+              new AttendanceCreateRequest(projectId, formerStudentId, new BigDecimal("2.00")));
 
       assertThat(command).isNotNull();
       assertThat(command.projectId()).isEqualTo(projectId);
-      assertThat(command.studentId()).isEqualTo(studentId);
+      assertThat(command.formerStudentId()).isEqualTo(formerStudentId);
       assertThat(command.duration()).isEqualByComparingTo("2.00");
     }
 
@@ -90,7 +90,7 @@ class AttendancePresenterTest {
       assertThat(response).isNotNull();
       assertThat(response.id()).isEqualTo(view.id());
       assertThat(response.projectId()).isEqualTo(view.projectId());
-      assertThat(response.studentId()).isEqualTo(view.studentId());
+      assertThat(response.formerStudentId()).isEqualTo(view.formerStudentId());
       assertThat(response.status().status()).isEqualTo(AttendanceStatus.WAITING);
       assertThat(response.status().statusFormatted()).isNotBlank();
       assertThat(response.attendanceInfo().auditInfo()).isNotNull();
@@ -106,8 +106,8 @@ class AttendancePresenterTest {
       assertThat(response).isNotNull();
       assertThat(response.project().id()).isEqualTo(view.projectId());
       assertThat(response.project().name()).isEqualTo(view.projectName());
-      assertThat(response.student().account().id()).isEqualTo(view.studentId());
-      assertThat(response.student().account().email()).isEqualTo(view.studentEmail());
+      assertThat(response.student().account().id()).isEqualTo(view.formerStudentId());
+      assertThat(response.student().account().email()).isEqualTo(view.formerStudentEmail());
       assertThat(response.validator()).isNotNull();
       assertThat(response.validator().id()).isEqualTo(view.validatedById());
     }

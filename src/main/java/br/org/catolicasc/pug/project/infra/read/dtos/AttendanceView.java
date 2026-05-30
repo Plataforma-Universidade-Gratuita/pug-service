@@ -13,11 +13,11 @@ import java.util.UUID;
  * @param id the unique identifier of the attendance record
  * @param projectId the unique identifier of the associated project
  * @param projectName the display name of the associated project
- * @param formerStudentId the unique identifier of the associated former student account
- * @param studentName the display name of the associated former student
- * @param studentEmail the email address of the associated former student account
- * @param academicRegistration the academic registration of the associated former student
- * @param campus the campus of the associated former student
+ * @param formerStudentId the unique identifier of the associated formerStudent account
+ * @param formerStudentName the display name of the associated formerStudent
+ * @param formerStudentEmail the email address of the associated formerStudent account
+ * @param academicRegistration the academic registration of the associated formerStudent
+ * @param campus the campus of the associated formerStudent
  * @param duration the recorded attendance duration
  * @param qrValidationHash the QR validation hash of the attendance
  * @param status the current attendance lifecycle status
@@ -33,8 +33,8 @@ public record AttendanceView(
     UUID projectId,
     String projectName,
     UUID formerStudentId,
-    String studentName,
-    String studentEmail,
+    String formerStudentName,
+    String formerStudentEmail,
     String academicRegistration,
     Campi campus,
     BigDecimal duration,
@@ -56,8 +56,8 @@ public record AttendanceView(
       UUID projectId,
       String projectName,
       UUID formerStudentId,
-      String studentName,
-      String studentEmail,
+      String formerStudentName,
+      String formerStudentEmail,
       String academicRegistration,
       Campi campus,
       BigDecimal duration,
@@ -74,8 +74,8 @@ public record AttendanceView(
         projectId,
         projectName,
         formerStudentId,
-        studentName,
-        studentEmail,
+        formerStudentName,
+        formerStudentEmail,
         academicRegistration,
         campus,
         duration,

@@ -112,7 +112,7 @@ public class Attendance extends DomainError {
     validateIdField(id);
     if (enrollmentIdentifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_PROJECT_BLANK);
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_STUDENT_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_FORMER_STUDENT_BLANK);
     } else if (identifierHasFieldErrors()) {
       addFieldErrors(enrollmentIdentifier.getFieldErrors());
     }

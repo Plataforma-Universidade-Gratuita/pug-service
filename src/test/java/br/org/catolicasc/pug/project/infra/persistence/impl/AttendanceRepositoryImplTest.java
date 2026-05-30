@@ -30,8 +30,8 @@ class AttendanceRepositoryImplTest {
 
   @BeforeEach
   void setup() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     Account sAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(sAcc, course);
 

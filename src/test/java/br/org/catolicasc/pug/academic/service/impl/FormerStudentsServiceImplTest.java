@@ -47,8 +47,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should save formerStudent successfully")
   void saveSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
     FormerStudentCreateCommand cmd =
@@ -72,8 +72,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should throw DuplicateResourceException for same registration")
   void saveDuplicateRegistration() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -94,8 +94,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should get formerStudent by ID")
   void getByIdSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -116,8 +116,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should update formerStudent successfully")
   void updateSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -142,8 +142,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should delete formerStudent successfully")
   void deleteSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -166,8 +166,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should throw when deleting formerStudent with enrollments")
   void deleteWithEnrollments() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -181,8 +181,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should add completed hours successfully")
   void addCompletedHoursSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     User user = factory.createUser();
     Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
     factory.createStudent(account, course);
@@ -205,8 +205,8 @@ class FormerStudentsServiceImplTest {
   @Transactional
   @DisplayName("Should save in bulk successfully")
   void saveInBulkSuccess() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     em.flush();
 
     FormerStudentCreateCommand cmd1 =

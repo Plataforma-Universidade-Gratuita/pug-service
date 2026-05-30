@@ -40,7 +40,7 @@ class EnrollmentTest {
       assertThat(enrollment.hasFieldErrors()).isTrue();
       assertThat(enrollment.getFieldErrors())
           .contains(
-              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK,
               ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
     }
   }

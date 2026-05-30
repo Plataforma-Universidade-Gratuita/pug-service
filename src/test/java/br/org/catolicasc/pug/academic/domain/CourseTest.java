@@ -16,12 +16,12 @@ class CourseTest {
   @Test
   @DisplayName("Should create valid Course")
   void shouldCreateCourse() {
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
-    Course course = Course.factory("Software Engineering", schoolId);
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
+    Course course = Course.factory("Software Engineering", areaOfExpertiseId);
 
     assertThat(course.hasFieldErrors()).isFalse();
     assertThat(course.getName()).isEqualTo("Software Engineering");
-    assertThat(course.getSchoolId()).isEqualTo(schoolId);
+    assertThat(course.getSchoolId()).isEqualTo(areaOfExpertiseId);
   }
 
   @Test
@@ -51,7 +51,7 @@ class CourseTest {
     }
 
     @Test
-    @DisplayName("Should move course to another school successfully")
+    @DisplayName("Should move course to another areaOfExpertise successfully")
     void shouldMoveToSchool() {
       UUID originalSchool = UuidCreator.getTimeOrderedEpoch();
       UUID newSchool = UuidCreator.getTimeOrderedEpoch();

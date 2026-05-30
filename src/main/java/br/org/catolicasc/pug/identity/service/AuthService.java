@@ -121,7 +121,7 @@ public interface AuthService {
    * supplied email address.
    *
    * <p>This operation centralizes the password onboarding flow for accounts that were provisioned
-   * without credentials during admin, partner, or former-student creation workflows.
+   * without credentials during admin, partner, or formerStudent creation workflows.
    *
    * @param request the structured {@link CredentialsRequest} containing the target email and the
    *     desired raw password

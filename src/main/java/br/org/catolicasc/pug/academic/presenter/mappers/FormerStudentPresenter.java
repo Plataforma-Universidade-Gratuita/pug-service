@@ -181,7 +181,7 @@ public final class FormerStudentPresenter {
       return null;
     }
     return new CourseComplexSearchResponse(
-        view.id(), view.name(), toAreaOfExpertiseComplexSearchResponse(view.school()));
+        view.id(), view.name(), toAreaOfExpertiseComplexSearchResponse(view.areaOfExpertise()));
   }
 
   private static AreaOfExpertiseComplexSearchResponse toAreaOfExpertiseComplexSearchResponse(

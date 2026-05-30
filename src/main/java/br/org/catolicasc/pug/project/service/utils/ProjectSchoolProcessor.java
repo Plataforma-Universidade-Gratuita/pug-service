@@ -26,7 +26,7 @@ public final class ProjectSchoolProcessor {
    * throwing an {@link AppValidationException}).
    *
    * @param projectId the unique identifier of the project
-   * @param areaOfExpertiseId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
    * @return a fully instantiated {@link ProjectSchool} domain aggregate, potentially containing
    *     validation errors
    */

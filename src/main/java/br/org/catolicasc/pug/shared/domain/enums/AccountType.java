@@ -24,10 +24,10 @@ public enum AccountType implements GenericCodes {
   PARTNER("shared.account.type.partner"),
 
   /**
-   * Former student account type, representing alumni participating in academic workflows and
+   * FormerStudent account type, representing alumni participating in academic workflows and
    * project activities.
    */
-  FORMER_STUDENT("shared.account.type.former.student");
+  FORMER_STUDENT("shared.account.type.formerStudent");
 
   /** The property key used to resolve the localized name of the account type. */
   private final String bundleKey;

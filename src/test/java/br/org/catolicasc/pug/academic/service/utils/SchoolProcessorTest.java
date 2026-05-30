@@ -12,19 +12,19 @@ class SchoolProcessorTest {
   @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
-    School school = SchoolProcessor.processCreateInput("Engineering");
+    School areaOfExpertise = SchoolProcessor.processCreateInput("Engineering");
 
-    assertThat(school.hasFieldErrors()).isFalse();
-    assertThat(school.getName()).isEqualTo("Engineering");
-    assertThat(school.getId()).isNotNull();
+    assertThat(areaOfExpertise.hasFieldErrors()).isFalse();
+    assertThat(areaOfExpertise.getName()).isEqualTo("Engineering");
+    assertThat(areaOfExpertise.getId()).isNotNull();
   }
 
   @Test
   @DisplayName("Should collect errors for blank name")
   void shouldCollectErrorsForBlankName() {
-    School school = SchoolProcessor.processCreateInput("   ");
+    School areaOfExpertise = SchoolProcessor.processCreateInput("   ");
 
-    assertThat(school.hasFieldErrors()).isTrue();
+    assertThat(areaOfExpertise.hasFieldErrors()).isTrue();
   }
 
   @Test

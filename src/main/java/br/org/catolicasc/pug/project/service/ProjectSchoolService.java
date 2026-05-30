@@ -12,40 +12,40 @@ import java.util.UUID;
  * areas of expertise via {@link ProjectSchool}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
- * project–school link: creation and deletion of associations. It orchestrates validation and
+ * project–areaOfExpertise link: creation and deletion of associations. It orchestrates validation and
  * delegates persistence concerns to the {@link ProjectSchoolRepository}.
  */
 public interface ProjectSchoolService {
 
   /**
-   * Creates new associations between a project and one or more schools.
+   * Creates new associations between a project and one or more areaOfExpertises.
    *
    * <p>This operation:
    *
    * <ul>
-   *   <li>Constructs a {@link ProjectSchool} aggregate for each provided school ID via its factory
+   *   <li>Constructs a {@link ProjectSchool} aggregate for each provided areaOfExpertise ID via its factory
    *       method,
    *   <li>validates structural constraints for every association (non-null IDs), and
    *   <li>persists all valid associations using the underlying repository.
    * </ul>
    *
    * @param projectId the unique identifier of the project to link
-   * @param areaOfExpertiseIds the unique identifiers of the schools to link to the project
+   * @param areaOfExpertiseIds the unique identifiers of the areaOfExpertises to link to the project
    * @return a {@link List} of fully instantiated and persisted {@link ProjectSchool} aggregates
-   *     corresponding to the provided school IDs
+   *     corresponding to the provided areaOfExpertise IDs
    * @throws AppValidationException if any created association violates domain constraints (e.g.,
    *     null IDs)
    */
   List<ProjectSchool> save(UUID projectId, List<UUID> areaOfExpertiseIds);
 
   /**
-   * Removes a specific association between a project and a school.
+   * Removes a specific association between a project and a areaOfExpertise.
    *
    * <p>This operation is expected to be idempotent: if the association does not exist, the
    * implementation should simply return {@code false} without raising an exception.
    *
    * @param projectId the unique identifier of the project
-   * @param areaOfExpertiseId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
    * @return {@code true} if an association was deleted, {@code false} otherwise
    */
   boolean delete(UUID projectId, UUID areaOfExpertiseId);
@@ -54,7 +54,7 @@ public interface ProjectSchoolService {
    * Removes all associations for the specified project.
    *
    * <p>This is typically used when deleting or restructuring a project and needing to clean up all
-   * of its school links in a single operation.
+   * of its areaOfExpertise links in a single operation.
    *
    * @param projectId the unique identifier of the project
    * @return the number of associations deleted (zero if {@code projectId} is {@code null} or no
@@ -63,12 +63,12 @@ public interface ProjectSchoolService {
   long deleteAllByProjectId(UUID projectId);
 
   /**
-   * Removes all associations for the specified school.
+   * Removes all associations for the specified areaOfExpertise.
    *
-   * <p>This is typically used when deleting or restructuring a school and needing to clean up all
+   * <p>This is typically used when deleting or restructuring a areaOfExpertise and needing to clean up all
    * of its project links in a single operation.
    *
-   * @param areaOfExpertiseId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the areaOfExpertise
    * @return the number of associations deleted (zero if {@code areaOfExpertiseId} is {@code null}
    *     or no associations exist)
    */

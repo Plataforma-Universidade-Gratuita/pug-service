@@ -29,14 +29,14 @@ public interface CourseRepository {
   boolean existsByName(String name);
 
   /**
-   * Checks whether any {@link Course} associated with the specified school identifier exists in the
+   * Checks whether any {@link Course} associated with the specified areaOfExpertise identifier exists in the
    * repository.
    *
    * <p>This query is crucial for enforcing relational integrity, ensuring areasOfExpertise are not
    * deleted if they still offer active courses.
    *
-   * @param areaOfExpertiseId the unique identifier (UUID) of the associated school
-   * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
+   * @param areaOfExpertiseId the unique identifier (UUID) of the associated areaOfExpertise
+   * @return {@code true} if at least one course is linked to the areaOfExpertise, {@code false} otherwise
    */
   boolean existsByAreaOfExpertiseId(UUID areaOfExpertiseId);
 

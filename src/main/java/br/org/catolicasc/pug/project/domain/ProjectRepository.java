@@ -8,7 +8,7 @@ import java.util.UUID;
  * roots.
  *
  * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
- * projects and their school associations. It abstracts the underlying data storage mechanism to
+ * projects and their areaOfExpertise associations. It abstracts the underlying data storage mechanism to
  * maintain a pure, infrastructure-agnostic domain model.
  */
 public interface ProjectRepository {

@@ -49,8 +49,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);
@@ -88,8 +88,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account, course);
@@ -112,8 +112,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           Account account = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account, course[0]);
@@ -137,8 +137,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     String cpf = TestBrazilianIdentifierGenerator.generateValidCpf();
@@ -174,8 +174,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     FormerStudentCreateRequest req1 = buildCreateRequest(course[0].getId());
@@ -200,8 +200,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);
@@ -231,8 +231,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);
@@ -257,8 +257,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);
@@ -289,8 +289,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     FormerStudentCreateRequest req = buildCreateRequest(course[0].getId());
@@ -328,8 +328,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           user[0] = factory.createUser();
           account[0] = factory.createAccount(user[0], AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);
@@ -353,8 +353,8 @@ class FormerStudentsResourceTest extends BaseResourceTest {
     Account[] account = new Account[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          Course course = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          Course course = factory.createCourse(areaOfExpertise);
           User user = factory.createUser();
           account[0] = factory.createAccount(user, AccountType.FORMER_STUDENT);
           factory.createStudent(account[0], course);

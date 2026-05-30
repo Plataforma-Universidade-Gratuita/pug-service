@@ -15,13 +15,13 @@ class ProjectSchoolProcessorTest {
   @DisplayName("Should create valid ProjectSchool association")
   void processCreateInputValid() {
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
-    UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+    UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
-    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, schoolId);
+    ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, areaOfExpertiseId);
 
     assertThat(association).isNotNull();
     assertThat(association.getProjectId()).isEqualTo(projectId);
-    assertThat(association.getSchoolId()).isEqualTo(schoolId);
+    assertThat(association.getSchoolId()).isEqualTo(areaOfExpertiseId);
     assertThat(association.hasFieldErrors()).isFalse();
   }
 
@@ -35,7 +35,7 @@ class ProjectSchoolProcessorTest {
   }
 
   @Test
-  @DisplayName("Should create ProjectSchool with errors for null school ID")
+  @DisplayName("Should create ProjectSchool with errors for null areaOfExpertise ID")
   void processCreateInputNullSchoolId() {
     ProjectSchool association =
         ProjectSchoolProcessor.processCreateInput(UuidCreator.getTimeOrderedEpoch(), null);

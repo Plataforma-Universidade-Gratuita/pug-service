@@ -23,19 +23,19 @@ import org.junit.jupiter.api.Test;
 @DisplayName("ProjectsSchoolsResource Integration Tests")
 class ProjectSchoolResourceTest extends BaseResourceTest {
 
-  private record Graph(Project project, School school) {}
+  private record Graph(Project project, School areaOfExpertise) {}
 
   private Graph createGraph() throws Exception {
     Project[] project = new Project[1];
-    School[] school = new School[1];
+    School[] areaOfExpertise = new School[1];
     doInTransaction(
         () -> {
           Entity entity = factory.createEntity(factory.getAnyCity());
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
-          school[0] = factory.createSchool();
+          areaOfExpertise[0] = factory.createSchool();
         });
-    return new Graph(project[0], school[0]);
+    return new Graph(project[0], areaOfExpertise[0]);
   }
 
   @Test
@@ -48,7 +48,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
-        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.school().getId())).build())
+        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId())).build())
         .when()
         .post("/v1/projects/{projectId}/areas-of-expertise")
         .then()
@@ -81,9 +81,9 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     createAssociation(g);
 
     given()
-        .pathParam("schoolId", g.school().getId())
+        .pathParam("areaOfExpertiseId", g.areaOfExpertise().getId())
         .when()
-        .get("/v1/academic/areas-of-expertise/{schoolId}/projects")
+        .get("/v1/academic/areas-of-expertise/{areaOfExpertiseId}/projects")
         .then()
         .statusCode(200)
         .body("data", hasSize(greaterThanOrEqualTo(1)));
@@ -103,7 +103,7 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("projectId", g.project().getId())
-        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.school().getId())).build())
+        .body(aProjectSchoolRequest().withAreaOfExpertiseIds(List.of(g.areaOfExpertise().getId())).build())
         .post("/v1/projects/{projectId}/areas-of-expertise");
   }
 }

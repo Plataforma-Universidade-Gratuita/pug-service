@@ -79,17 +79,17 @@ public final class CourseMapper {
    * consolidated {@link CourseView} DTO.
    *
    * @param c the JPA persistence entity representing the course
-   * @param s the JPA persistence entity representing the linked school
+   * @param s the JPA persistence entity representing the linked areaOfExpertise
    * @return a populated {@link CourseView} DTO, or {@code null} if the course entity is null
    */
   public static CourseView toView(CourseEntity c, AreaOfExpertiseEntity s) {
     if (c == null) {
       return null;
     }
-    AreaOfExpertiseView schoolView =
+    AreaOfExpertiseView areaOfExpertiseView =
         (s != null)
             ? new AreaOfExpertiseView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
             : null;
-    return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
+    return new CourseView(c.getId(), c.getName(), areaOfExpertiseView, c.getCreatedAt(), c.getUpdatedAt());
   }
 }

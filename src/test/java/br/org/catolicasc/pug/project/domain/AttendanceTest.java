@@ -44,7 +44,7 @@ class AttendanceTest {
       assertThat(attendance.hasFieldErrors()).isTrue();
       assertThat(attendance.getFieldErrors())
           .contains(
-              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK,
+              ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK,
               ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK,
               ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID,
               ProjectsFieldErrorCodes.INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY);

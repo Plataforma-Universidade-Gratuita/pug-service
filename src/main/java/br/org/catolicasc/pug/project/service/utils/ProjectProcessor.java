@@ -24,7 +24,7 @@ public final class ProjectProcessor {
    * @param entityId the unique identifier of the partner entity
    * @param description the optional detailed project description
    * @param createdBy the unique identifier of the staff account
-   * @param maxParticipants the maximum number of students allowed
+   * @param maxParticipants the maximum number of formerStudents allowed
    * @param offeredHours the total counterpart hours offered
    * @return a fully instantiated {@link Project} domain aggregate
    */

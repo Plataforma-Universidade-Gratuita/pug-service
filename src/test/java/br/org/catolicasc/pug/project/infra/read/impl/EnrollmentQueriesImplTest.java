@@ -33,8 +33,8 @@ class EnrollmentQueriesImplTest {
 
   @BeforeEach
   void setup() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(acc, course);
 
@@ -111,7 +111,7 @@ class EnrollmentQueriesImplTest {
     var list = queries.listAllByStudentId(formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
     assertThat(list)
-        .allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
+        .allSatisfy(v -> assertThat(v.formerStudentId()).isEqualTo(formerStudent.getAccountId()));
   }
 
   @Test
@@ -130,7 +130,7 @@ class EnrollmentQueriesImplTest {
     assertThat(view).isPresent();
     var ev = view.get();
     assertThat(ev.projectId()).isEqualTo(project.getId());
-    assertThat(ev.studentId()).isEqualTo(formerStudent.getAccountId());
+    assertThat(ev.formerStudentId()).isEqualTo(formerStudent.getAccountId());
     assertThat(ev.status()).isNotNull();
     assertThat(ev.createdAt()).isNotNull();
     assertThat(ev.updatedAt()).isNotNull();
@@ -157,7 +157,7 @@ class EnrollmentQueriesImplTest {
         .allSatisfy(
             view -> {
               assertThat(view.projectId()).isEqualTo(project.getId());
-              assertThat(view.studentId()).isEqualTo(formerStudent.getAccountId());
+              assertThat(view.formerStudentId()).isEqualTo(formerStudent.getAccountId());
               assertThat(view.status()).isEqualTo(EnrollmentStatus.PENDING);
             });
   }

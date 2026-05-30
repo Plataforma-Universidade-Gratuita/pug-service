@@ -9,7 +9,7 @@ import java.util.UUID;
  * optional for partial updates; omitting a value will retain the current state in the database.
  *
  * @param name the new name of the course, or {@code null} to leave unchanged
- * @param areaOfExpertiseId the new unique identifier of the school, or {@code null} to leave
+ * @param areaOfExpertiseId the new unique identifier of the areaOfExpertise, or {@code null} to leave
  *     unchanged
  */
 public record CourseUpdateCommand(String name, UUID areaOfExpertiseId) {}

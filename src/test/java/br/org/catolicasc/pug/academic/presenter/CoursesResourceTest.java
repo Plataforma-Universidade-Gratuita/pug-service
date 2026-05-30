@@ -33,12 +33,12 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /v1/academic/courses/{id} - Success")
   void getByIdSuccess() throws Exception {
-    School[] school = new School[1];
+    School[] areaOfExpertise = new School[1];
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          school[0] = factory.createSchool();
-          course[0] = factory.createCourse(school[0]);
+          areaOfExpertise[0] = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
     given()
@@ -74,8 +74,8 @@ class CoursesResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          factory.createCourse(areaOfExpertise);
         });
 
     given()
@@ -95,8 +95,8 @@ class CoursesResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     given()
@@ -115,12 +115,12 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/courses/search - Success")
   void searchSuccess() throws Exception {
-    School[] school = new School[1];
+    School[] areaOfExpertise = new School[1];
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          school[0] = factory.createSchool();
-          course[0] = factory.createCourse(school[0]);
+          areaOfExpertise[0] = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
     CourseComplexSearchRequest request =
@@ -146,12 +146,12 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/courses - Success")
   void createSuccess() throws Exception {
-    School[] school = new School[1];
-    doInTransaction(() -> school[0] = factory.createSchool());
+    School[] areaOfExpertise = new School[1];
+    doInTransaction(() -> areaOfExpertise[0] = factory.createSchool());
 
     CourseCreateRequest req =
         new CourseCreateRequest(
-            "New Course " + UuidCreator.getTimeOrderedEpoch(), school[0].getId());
+            "New Course " + UuidCreator.getTimeOrderedEpoch(), areaOfExpertise[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -170,15 +170,15 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/courses - Duplicate Name")
   void createDuplicate() throws Exception {
-    School[] school = new School[1];
+    School[] areaOfExpertise = new School[1];
     Course[] existing = new Course[1];
     doInTransaction(
         () -> {
-          school[0] = factory.createSchool();
-          existing[0] = factory.createCourse(school[0]);
+          areaOfExpertise[0] = factory.createSchool();
+          existing[0] = factory.createCourse(areaOfExpertise[0]);
         });
 
-    CourseCreateRequest req = new CourseCreateRequest(existing[0].getName(), school[0].getId());
+    CourseCreateRequest req = new CourseCreateRequest(existing[0].getName(), areaOfExpertise[0].getId());
 
     given()
         .contentType(ContentType.JSON)
@@ -198,8 +198,8 @@ class CoursesResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     CourseUpdateRequest req =
@@ -225,8 +225,8 @@ class CoursesResourceTest extends BaseResourceTest {
     Course[] course = new Course[1];
     doInTransaction(
         () -> {
-          School school = factory.createSchool();
-          course[0] = factory.createCourse(school);
+          School areaOfExpertise = factory.createSchool();
+          course[0] = factory.createCourse(areaOfExpertise);
         });
 
     given()
@@ -249,10 +249,10 @@ class CoursesResourceTest extends BaseResourceTest {
       roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/courses - Forbidden for FORMER_STUDENT")
   void createForbiddenForFormerStudent() throws Exception {
-    School[] school = new School[1];
-    doInTransaction(() -> school[0] = factory.createSchool());
+    School[] areaOfExpertise = new School[1];
+    doInTransaction(() -> areaOfExpertise[0] = factory.createSchool());
 
-    CourseCreateRequest req = new CourseCreateRequest("Forbidden", school[0].getId());
+    CourseCreateRequest req = new CourseCreateRequest("Forbidden", areaOfExpertise[0].getId());
 
     given()
         .contentType(ContentType.JSON)

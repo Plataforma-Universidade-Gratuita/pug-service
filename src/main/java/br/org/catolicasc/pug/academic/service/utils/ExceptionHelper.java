@@ -35,7 +35,7 @@ public final class ExceptionHelper {
    * @return a fully configured {@link BusinessRuleException} instance
    */
   public static BusinessRuleException courseHasStudents() {
-    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_STUDENTS);
+    return new BusinessRuleException(AcademicErrorCodes.COURSE_HAS_FORMER_STUDENTS);
   }
 
   /**
@@ -54,18 +54,18 @@ public final class ExceptionHelper {
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
-  public static DuplicateResourceException schoolAlreadyExists() {
-    return new DuplicateResourceException(AcademicErrorCodes.SCHOOL_ALREADY_EXISTS);
+  public static DuplicateResourceException areOfExpertiseAlreadyExists() {
+    return new DuplicateResourceException(AcademicErrorCodes.AREA_OF_EXPERTISE_ALREADY_EXISTS);
   }
 
   /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic school
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an academic areaOfExpertise
    * cannot be modified or deleted because it currently has active courses associated with it.
    *
    * @return a fully configured {@link BusinessRuleException} instance
    */
-  public static BusinessRuleException schoolHasCourses() {
-    return new BusinessRuleException(AcademicErrorCodes.SCHOOL_HAS_COURSES);
+  public static BusinessRuleException areaOfExpertiseHasCourses() {
+    return new BusinessRuleException(AcademicErrorCodes.AREA_OF_EXPERTISE_HAS_COURSES);
   }
 
   /**
@@ -74,8 +74,8 @@ public final class ExceptionHelper {
    *
    * @return a fully configured {@link ResourceNotFoundException} instance
    */
-  public static ResourceNotFoundException schoolNotFound() {
-    return new ResourceNotFoundException(AcademicErrorCodes.SCHOOL_NOT_FOUND);
+  public static ResourceNotFoundException areaOfExpertiseNotFound() {
+    return new ResourceNotFoundException(AcademicErrorCodes.AREA_OF_EXPERTISE_NOT_FOUND);
   }
 
   /**
@@ -84,8 +84,8 @@ public final class ExceptionHelper {
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
-  public static DuplicateResourceException studentAlreadyExists() {
-    return new DuplicateResourceException(AcademicErrorCodes.STUDENT_ALREADY_EXISTS);
+  public static DuplicateResourceException formerStudentAlreadyExists() {
+    return new DuplicateResourceException(AcademicErrorCodes.FORMER_STUDENT_ALREADY_EXISTS);
   }
 
   /**
@@ -95,8 +95,8 @@ public final class ExceptionHelper {
    *
    * @return a fully configured {@link BusinessRuleException} instance
    */
-  public static BusinessRuleException studentHasEnrollments() {
-    return new BusinessRuleException(AcademicErrorCodes.STUDENT_HAS_ENROLLMENTS);
+  public static BusinessRuleException formerStudentHasEnrollments() {
+    return new BusinessRuleException(AcademicErrorCodes.FORMER_STUDENT_HAS_ENROLLMENTS);
   }
 
   /**
@@ -105,8 +105,8 @@ public final class ExceptionHelper {
    *
    * @return a fully configured {@link ResourceNotFoundException} instance
    */
-  public static ResourceNotFoundException studentNotFound() {
-    return new ResourceNotFoundException(AcademicErrorCodes.STUDENT_NOT_FOUND);
+  public static ResourceNotFoundException formerStudentNotFound() {
+    return new ResourceNotFoundException(AcademicErrorCodes.FORMER_STUDENT_NOT_FOUND);
   }
 
   /**

@@ -95,7 +95,7 @@ public final class AttendancePresenter {
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
         new StudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
-                view.formerStudentId(), view.studentName(), view.studentEmail()),
+                view.formerStudentId(), view.formerStudentName(), view.formerStudentEmail()),
             view.academicRegistration(),
             SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n)),
         toStatusResponse(view, locale, i18n),

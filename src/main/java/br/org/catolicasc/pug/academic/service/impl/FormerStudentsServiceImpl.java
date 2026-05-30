@@ -81,7 +81,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
 
     if (enrollmentsService.existsAnyByFormerStudentId(accountId)) {
       LOG.warnf("Delete failed: FormerStudent ID %s is enrolled in projects", accountId);
-      throw ExceptionHelper.studentHasEnrollments();
+      throw ExceptionHelper.formerStudentHasEnrollments();
     }
 
     boolean deleted = repo.deleteById(accountId);
@@ -111,14 +111,14 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
             .orElseThrow(
                 () -> {
                   LOG.debugf("FormerStudent lookup failed: Account ID %s not found", accountId);
-                  return ExceptionHelper.studentNotFound();
+                  return ExceptionHelper.formerStudentNotFound();
                 });
 
     if (formerStudent.hasFieldErrors()) {
       LOG.errorf(
           "DATA CORRUPTION DETECTED: FormerStudent %s violates domain rules: %s",
           accountId, formerStudent.getProblemsSummary());
-      throw ExceptionHelper.studentNotFound();
+      throw ExceptionHelper.formerStudentNotFound();
     }
 
     return formerStudent;
@@ -151,7 +151,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
       LOG.warnf(
           "Creation failed: FormerStudent with registration %s already exists",
           studentToPersist.getAcademicRegistration());
-      throw ExceptionHelper.studentAlreadyExists();
+      throw ExceptionHelper.formerStudentAlreadyExists();
     }
 
     FormerStudent savedStudent = repo.persist(studentToPersist);
@@ -182,7 +182,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     if (uniqueCount < cmds.size() || repo.existsAnyByRegistrations(registrations)) {
       LOG.warn(
           "Bulk creation failed: Duplicate academic registrations detected in payload or database");
-      throw ExceptionHelper.studentAlreadyExists();
+      throw ExceptionHelper.formerStudentAlreadyExists();
     }
 
     List<AccountCreateCommand> accountCmds =
@@ -234,7 +234,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
       LOG.warnf(
           "Update failed: FormerStudent Account ID %s tried to use existing registration %s",
           accountId, cmd.academicRegistration());
-      throw ExceptionHelper.studentAlreadyExists();
+      throw ExceptionHelper.formerStudentAlreadyExists();
     }
 
     repo.update(studentToUpdate);

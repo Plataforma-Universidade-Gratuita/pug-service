@@ -80,7 +80,7 @@ class CoursesReadServiceImplTest {
 
   private CourseView buildView(UUID id) {
     OffsetDateTime now = OffsetDateTime.now();
-    SchoolView school = new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
-    return new CourseView(id, "Computer Science", school, now, now);
+    SchoolView areaOfExpertise = new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Engineering", now, now);
+    return new CourseView(id, "Computer Science", areaOfExpertise, now, now);
   }
 }

@@ -15,7 +15,7 @@ public class AreaOfExpertiseProcessor {
    * <p><b>Note:</b> The caller is responsible for checking {@link AreaOfExpertise#hasFieldErrors()}
    * on the returned object and throwing standard validation exceptions if necessary.
    *
-   * @param name the raw name of the school requested for creation
+   * @param name the raw name of the areaOfExpertise requested for creation
    * @return a fully instantiated {@link AreaOfExpertise} domain aggregate, potentially containing
    *     validation errors
    */

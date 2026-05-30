@@ -35,7 +35,7 @@ class SchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should save school successfully")
+  @DisplayName("Should save areaOfExpertise successfully")
   void saveSuccess() {
     var cmd = aSchoolCreateCommand().build();
     School saved = service.save(cmd);
@@ -65,17 +65,17 @@ class SchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should get school by ID")
+  @DisplayName("Should get areaOfExpertise by ID")
   void getByIdSuccess() {
-    School school = factory.createSchool();
+    School areaOfExpertise = factory.createSchool();
     em.flush();
 
-    School found = service.getById(school.getId());
-    assertThat(found.getId()).isEqualTo(school.getId());
+    School found = service.getById(areaOfExpertise.getId());
+    assertThat(found.getId()).isEqualTo(areaOfExpertise.getId());
   }
 
   @Test
-  @DisplayName("Should throw when school not found")
+  @DisplayName("Should throw when areaOfExpertise not found")
   void getByIdNotFound() {
     assertThrows(
         ResourceNotFoundException.class, () -> service.getById(UuidCreator.getTimeOrderedEpoch()));
@@ -83,13 +83,13 @@ class SchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should update school successfully")
+  @DisplayName("Should update areaOfExpertise successfully")
   void updateSuccess() {
-    School school = factory.createSchool();
+    School areaOfExpertise = factory.createSchool();
     em.flush();
 
     var cmd = aSchoolUpdateCommand().build();
-    School updated = service.update(school.getId(), cmd);
+    School updated = service.update(areaOfExpertise.getId(), cmd);
 
     assertThat(updated.getName()).isEqualTo(cmd.name());
     verify(audit).fireUpdate(any(), any(), any(), any());
@@ -99,16 +99,16 @@ class SchoolServiceImplTest {
   @Transactional
   @DisplayName("Should throw DuplicateResourceException when updating to existing name")
   void updateDuplicateName() {
-    School school1 = factory.createSchool();
-    School school2 = factory.createSchool();
+    School areaOfExpertise1 = factory.createSchool();
+    School areaOfExpertise2 = factory.createSchool();
     em.flush();
 
-    var cmd = aSchoolUpdateCommand().withName(school2.getName()).build();
-    assertThrows(DuplicateResourceException.class, () -> service.update(school1.getId(), cmd));
+    var cmd = aSchoolUpdateCommand().withName(areaOfExpertise2.getName()).build();
+    assertThrows(DuplicateResourceException.class, () -> service.update(areaOfExpertise1.getId(), cmd));
   }
 
   @Test
-  @DisplayName("Should throw when updating non-existing school")
+  @DisplayName("Should throw when updating non-existing areaOfExpertise")
   void updateNotFound() {
     var cmd = aSchoolUpdateCommand().build();
     assertThrows(
@@ -118,15 +118,15 @@ class SchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should delete school successfully")
+  @DisplayName("Should delete areaOfExpertise successfully")
   void deleteSuccess() {
-    School school = factory.createSchool();
+    School areaOfExpertise = factory.createSchool();
     em.flush();
 
-    boolean deleted = service.delete(school.getId());
+    boolean deleted = service.delete(areaOfExpertise.getId());
 
     assertThat(deleted).isTrue();
-    verify(audit).fireDelete(School.class.getName(), school.getId());
+    verify(audit).fireDelete(School.class.getName(), areaOfExpertise.getId());
   }
 
   @Test
@@ -137,19 +137,19 @@ class SchoolServiceImplTest {
 
   @Test
   @Transactional
-  @DisplayName("Should return false when deleting non-existing school")
+  @DisplayName("Should return false when deleting non-existing areaOfExpertise")
   void deleteNonExisting() {
     assertThat(service.delete(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 
   @Test
   @Transactional
-  @DisplayName("Should throw when deleting school with courses")
+  @DisplayName("Should throw when deleting areaOfExpertise with courses")
   void deleteWithCourses() {
-    School school = factory.createSchool();
-    factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    factory.createCourse(areaOfExpertise);
     em.flush();
 
-    assertThrows(BusinessRuleException.class, () -> service.delete(school.getId()));
+    assertThrows(BusinessRuleException.class, () -> service.delete(areaOfExpertise.getId()));
   }
 }

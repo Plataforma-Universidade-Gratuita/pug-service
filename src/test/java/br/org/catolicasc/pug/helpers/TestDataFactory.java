@@ -50,7 +50,7 @@ public class TestDataFactory {
 
   @Inject UserRepositoryImpl userRepository;
   @Inject AccountRepositoryImpl accountRepository;
-  @Inject SchoolRepositoryImpl schoolRepository;
+  @Inject SchoolRepositoryImpl areaOfExpertiseRepository;
   @Inject CourseRepositoryImpl courseRepository;
   @Inject FormerStudentRepositoryImpl studentRepository;
   @Inject EntityRepositoryImpl entityRepository;
@@ -70,11 +70,11 @@ public class TestDataFactory {
   }
 
   public School createSchool() {
-    return schoolRepository.persist(SchoolBuilder.aSchool().build());
+    return areaOfExpertiseRepository.persist(SchoolBuilder.aSchool().build());
   }
 
-  public School createSchool(School school) {
-    return schoolRepository.persist(school);
+  public School createSchool(School areaOfExpertise) {
+    return areaOfExpertiseRepository.persist(areaOfExpertise);
   }
 
   public City getAnyCity() {
@@ -90,8 +90,8 @@ public class TestDataFactory {
     return accountRepository.persist(account);
   }
 
-  public Course createCourse(School school) {
-    return courseRepository.persist(CourseBuilder.aCourse().withSchool(school.getId()).build());
+  public Course createCourse(School areaOfExpertise) {
+    return courseRepository.persist(CourseBuilder.aCourse().withSchool(areaOfExpertise.getId()).build());
   }
 
   public Course createCourse(Course course) {

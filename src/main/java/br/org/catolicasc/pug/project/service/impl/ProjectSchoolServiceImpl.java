@@ -22,7 +22,7 @@ import org.jboss.logging.Logger;
  * Implementation of the {@link ProjectSchoolService} command interface.
  *
  * <p>This application-scoped service orchestrates state mutations for the association between
- * projects and schools. It delegates aggregate construction to {@link ProjectProcessor} and
+ * projects and areaOfExpertises. It delegates aggregate construction to {@link ProjectProcessor} and
  * persistence concerns to the {@link ProjectSchoolRepository}, enforcing domain validation before
  * write operations.
  */

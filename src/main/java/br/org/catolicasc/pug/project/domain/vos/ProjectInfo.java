@@ -29,7 +29,7 @@ public class ProjectInfo extends DomainError {
   /** The unique identifier (Account ID) of the staff member who created the project. */
   UUID createdBy;
 
-  /** The maximum number of students allowed to enroll in the project. */
+  /** The maximum number of formerStudents allowed to enroll in the project. */
   Integer maxParticipants;
 
   /** The total amount of counterpart hours the project offers to its participants. */

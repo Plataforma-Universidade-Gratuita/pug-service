@@ -10,4 +10,4 @@ CREATE TABLE courses
     UNIQUE (name)
 );
 
-CREATE INDEX idx_courses_school ON courses (area_of_expertise_id);
+CREATE INDEX idx_courses_areaOfExpertise ON courses (area_of_expertise_id);

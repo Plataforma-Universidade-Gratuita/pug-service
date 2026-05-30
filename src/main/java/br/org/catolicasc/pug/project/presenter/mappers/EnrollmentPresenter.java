@@ -48,7 +48,7 @@ public final class EnrollmentPresenter {
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
         new StudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
-                view.formerStudentId(), view.studentName(), view.studentEmail()),
+                view.formerStudentId(), view.formerStudentName(), view.formerStudentEmail()),
             view.academicRegistration(),
             campus),
         createStatusResponse(view, locale, i18n),

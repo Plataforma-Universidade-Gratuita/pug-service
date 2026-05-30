@@ -87,7 +87,7 @@ class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEnti
   void toViewShouldMapAllFields() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     UUID projectId = UuidCreator.getTimeOrderedEpoch();
-    UUID studentId = UuidCreator.getTimeOrderedEpoch();
+    UUID formerStudentId = UuidCreator.getTimeOrderedEpoch();
     UUID validatedBy = UuidCreator.getTimeOrderedEpoch();
     OffsetDateTime now = OffsetDateTime.now();
 
@@ -95,7 +95,7 @@ class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEnti
         AttendanceEntity.builder()
             .id(id)
             .projectId(projectId)
-            .studentId(studentId)
+            .formerStudentId(formerStudentId)
             .duration(new BigDecimal("2.50"))
             .qrValidationHash("hash-123")
             .status("WAITING")
@@ -110,7 +110,7 @@ class AttendanceMapperTest extends CopyableMapperTest<Attendance, AttendanceEnti
     assertThat(view).isNotNull();
     assertThat(view.id()).isEqualTo(id);
     assertThat(view.projectId()).isEqualTo(projectId);
-    assertThat(view.studentId()).isEqualTo(studentId);
+    assertThat(view.formerStudentId()).isEqualTo(formerStudentId);
     assertThat(view.duration()).isEqualByComparingTo(new BigDecimal("2.50"));
     assertThat(view.qrValidationHash()).isEqualTo("hash-123");
     assertThat(view.status()).isEqualTo(AttendanceStatus.WAITING);

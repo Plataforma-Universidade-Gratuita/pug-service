@@ -40,7 +40,7 @@ import lombok.experimental.SuperBuilder;
     })
 public class AreaOfExpertiseEntity extends BaseAuditedEntity {
 
-  /** The name of the academic school. */
+  /** The name of the academic areaOfExpertise. */
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 }

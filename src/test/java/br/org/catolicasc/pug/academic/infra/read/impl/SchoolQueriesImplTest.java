@@ -22,20 +22,20 @@ class SchoolQueriesImplTest extends BaseSearchTest {
   @Inject SchoolQueriesImpl queries;
   @Inject TestDataFactory factory;
 
-  private School school;
+  private School areaOfExpertise;
 
   @BeforeEach
   void setup() {
-    school = factory.createSchool();
+    areaOfExpertise = factory.createSchool();
   }
 
   @Test
   @Transactional
   @DisplayName("Should find SchoolView by ID")
   void shouldFindById() {
-    var view = queries.findOptionalById(school.getId());
+    var view = queries.findOptionalById(areaOfExpertise.getId());
     assertThat(view).isPresent();
-    assertThat(view.get().name()).isEqualTo(school.getName());
+    assertThat(view.get().name()).isEqualTo(areaOfExpertise.getName());
   }
 
   @Test
@@ -54,7 +54,7 @@ class SchoolQueriesImplTest extends BaseSearchTest {
 
   @Test
   @Transactional
-  @DisplayName("Should list all schools")
+  @DisplayName("Should list all areaOfExpertises")
   void shouldListAllSchools() {
     assertThat(queries.listAllSchools()).isNotEmpty();
   }
@@ -63,9 +63,9 @@ class SchoolQueriesImplTest extends BaseSearchTest {
   @Transactional
   @DisplayName("Should list by IDs")
   void shouldListByIds() {
-    var list = queries.listByIds(List.of(school.getId()));
+    var list = queries.listByIds(List.of(areaOfExpertise.getId()));
     assertThat(list).hasSize(1);
-    assertThat(list.get(0).name()).isEqualTo(school.getName());
+    assertThat(list.get(0).name()).isEqualTo(areaOfExpertise.getName());
   }
 
   @Test
@@ -77,11 +77,11 @@ class SchoolQueriesImplTest extends BaseSearchTest {
   }
 
   @Test
-  @DisplayName("Should search schools by name successfully")
+  @DisplayName("Should search areaOfExpertises by name successfully")
   void shouldSearchByNameSuccess() throws Exception {
     syncIndex(SchoolEntity.class);
-    var results = queries.searchByName(school.getName().substring(0, 3));
-    assertThat(results).anyMatch(v -> v.id().equals(school.getId()));
+    var results = queries.searchByName(areaOfExpertise.getName().substring(0, 3));
+    assertThat(results).anyMatch(v -> v.id().equals(areaOfExpertise.getId()));
   }
 
   @Test

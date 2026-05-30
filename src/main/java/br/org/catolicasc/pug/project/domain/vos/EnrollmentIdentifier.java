@@ -65,14 +65,14 @@ public class EnrollmentIdentifier extends DomainError {
    *
    * <ul>
    *   <li>The formerStudent ID must not be null (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK}).
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_FORMER_STUDENT_BLANK}).
    *   <li>The project ID must not be null (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK}).
    * </ul>
    */
   private void collectValidationProblems() {
     if (formerStudentId == null) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK);
     }
     if (projectId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);

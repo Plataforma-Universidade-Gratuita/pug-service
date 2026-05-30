@@ -13,20 +13,20 @@ class SchoolTest {
   @Test
   @DisplayName("Should create valid School")
   void shouldCreateSchool() {
-    School school = School.factory("School of Engineering");
+    School areaOfExpertise = School.factory("School of Engineering");
 
-    assertThat(school.hasFieldErrors()).isFalse();
-    assertThat(school.getName()).isEqualTo("School of Engineering");
-    assertThat(school.getAuditInfo()).isNotNull();
+    assertThat(areaOfExpertise.hasFieldErrors()).isFalse();
+    assertThat(areaOfExpertise.getName()).isEqualTo("School of Engineering");
+    assertThat(areaOfExpertise.getAuditInfo()).isNotNull();
   }
 
   @Test
   @DisplayName("Should collect errors for blank name")
   void shouldCollectValidationErrors() {
-    School school = School.factory("   ");
+    School areaOfExpertise = School.factory("   ");
 
-    assertThat(school.hasFieldErrors()).isTrue();
-    assertThat(school.getFieldErrors()).contains(SharedFieldErrorCodes.INVALID_NAME_BLANK);
+    assertThat(areaOfExpertise.hasFieldErrors()).isTrue();
+    assertThat(areaOfExpertise.getFieldErrors()).contains(SharedFieldErrorCodes.INVALID_NAME_BLANK);
   }
 
   @Nested
@@ -34,24 +34,24 @@ class SchoolTest {
   class BehaviorTests {
 
     @Test
-    @DisplayName("Should rename school successfully")
+    @DisplayName("Should rename areaOfExpertise successfully")
     void shouldRename() {
-      School school = School.factory("Old Name");
-      School renamed = school.rename("New Name");
+      School areaOfExpertise = School.factory("Old Name");
+      School renamed = areaOfExpertise.rename("New Name");
 
       assertThat(renamed.getName()).isEqualTo("New Name");
-      assertThat(renamed.getId()).isEqualTo(school.getId());
+      assertThat(renamed.getId()).isEqualTo(areaOfExpertise.getId());
       assertThat(renamed.getAuditInfo().getUpdatedAt())
-          .isAfterOrEqualTo(school.getAuditInfo().getCreatedAt());
+          .isAfterOrEqualTo(areaOfExpertise.getAuditInfo().getCreatedAt());
     }
 
     @Test
     @DisplayName("Should be idempotent when renaming to the same name")
     void shouldBeIdempotent() {
-      School school = School.factory("Same Name");
-      School renamed = school.rename("Same Name");
+      School areaOfExpertise = School.factory("Same Name");
+      School renamed = areaOfExpertise.rename("Same Name");
 
-      assertThat(renamed).isSameAs(school);
+      assertThat(renamed).isSameAs(areaOfExpertise);
     }
   }
 }

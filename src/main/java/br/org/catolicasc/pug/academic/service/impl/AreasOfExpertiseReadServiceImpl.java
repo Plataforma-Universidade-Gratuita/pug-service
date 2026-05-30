@@ -27,7 +27,7 @@ public class AreasOfExpertiseReadServiceImpl implements AreasOfExpertiseReadServ
         .orElseThrow(
             () -> {
               LOG.debugf("Area of expertise lookup failed: ID %s not found", id);
-              return ExceptionHelper.schoolNotFound();
+              return ExceptionHelper.areaOfExpertiseNotFound();
             });
   }
 

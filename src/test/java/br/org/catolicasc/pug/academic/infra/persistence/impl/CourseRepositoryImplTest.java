@@ -17,21 +17,21 @@ class CourseRepositoryImplTest {
 
   @Inject CourseRepositoryImpl repository;
   @Inject TestDataFactory factory;
-  private School school;
+  private School areaOfExpertise;
 
   @BeforeEach
   void setup() {
-    school = factory.createSchool();
+    areaOfExpertise = factory.createSchool();
   }
 
   @Test
   @Transactional
   @DisplayName("Should persist and find Course linked to School")
   void shouldPersistAndFind() {
-    Course course = factory.createCourse(school);
+    Course course = factory.createCourse(areaOfExpertise);
 
     var found = repository.findOptionalById(course.getId());
     assertThat(found).isPresent();
-    assertThat(found.get().getSchoolId()).isEqualTo(school.getId());
+    assertThat(found.get().getSchoolId()).isEqualTo(areaOfExpertise.getId());
   }
 }

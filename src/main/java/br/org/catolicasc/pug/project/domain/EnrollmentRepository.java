@@ -45,7 +45,7 @@ public interface EnrollmentRepository {
    * in the repository.
    *
    * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link Project}
-   * cannot be deleted while it still has students enrolled.
+   * cannot be deleted while it still has formerStudents enrolled.
    *
    * @param projectId the unique identifier (UUID) of the project
    * @return {@code true} if at least one enrollment is linked to the project, {@code false}

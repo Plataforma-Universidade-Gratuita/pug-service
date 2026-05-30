@@ -88,9 +88,9 @@ public final class TestNameGenerator {
   };
 
   /**
-   * Generates a random academic school name with a unique UUID suffix.
+   * Generates a random academic areaOfExpertise name with a unique UUID suffix.
    *
-   * @return a unique string representing a school name
+   * @return a unique string representing a areaOfExpertise name
    */
   public static String generateRandomSchoolName() {
     String prefix = SCHOOL_PREFIXES[(int) (Math.random() * SCHOOL_PREFIXES.length)];

@@ -13,7 +13,7 @@ import java.util.UUID;
  */
 public class CourseCreateRequestBuilder {
   private String name = TestNameGenerator.generateRandomCourseName();
-  private UUID schoolId = UuidCreator.getTimeOrderedEpoch();
+  private UUID areaOfExpertiseId = UuidCreator.getTimeOrderedEpoch();
 
   private CourseCreateRequestBuilder() {}
 
@@ -38,13 +38,13 @@ public class CourseCreateRequestBuilder {
   }
 
   /**
-   * Sets the school identifier.
+   * Sets the areaOfExpertise identifier.
    *
-   * @param schoolId the UUID of the parent school
+   * @param areaOfExpertiseId the UUID of the parent areaOfExpertise
    * @return this builder instance
    */
-  public CourseCreateRequestBuilder withSchoolId(UUID schoolId) {
-    this.schoolId = schoolId;
+  public CourseCreateRequestBuilder withSchoolId(UUID areaOfExpertiseId) {
+    this.areaOfExpertiseId = areaOfExpertiseId;
     return this;
   }
 
@@ -54,6 +54,6 @@ public class CourseCreateRequestBuilder {
    * @return a configured {@link CourseCreateRequest} instance
    */
   public CourseCreateRequest build() {
-    return new CourseCreateRequest(name, schoolId);
+    return new CourseCreateRequest(name, areaOfExpertiseId);
   }
 }

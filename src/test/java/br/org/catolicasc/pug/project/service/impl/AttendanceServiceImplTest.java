@@ -53,8 +53,8 @@ class AttendanceServiceImplTest {
 
   @BeforeEach
   void setup() {
-    School school = factory.createSchool();
-    Course course = factory.createCourse(school);
+    School areaOfExpertise = factory.createSchool();
+    Course course = factory.createCourse(areaOfExpertise);
     Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(studentAcc, course);
 
@@ -153,7 +153,7 @@ class AttendanceServiceImplTest {
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.builder()
             .projectId(project.getId())
-            .studentId(formerStudent.getAccountId())
+            .formerStudentId(formerStudent.getAccountId())
             .build();
 
     assertThat(service.deleteAllByEnrollmentIdentifier(identifier)).isGreaterThanOrEqualTo(1);

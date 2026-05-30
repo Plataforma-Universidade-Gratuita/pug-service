@@ -44,7 +44,7 @@ public class CourseEntity extends BaseAuditedEntity {
   /**
    * The unique identifier (UUID) of the associated {@link AreaOfExpertiseEntity}.
    *
-   * <p>Acts as a foreign key linking this course to its parent academic school.
+   * <p>Acts as a foreign key linking this course to its parent academic areaOfExpertise.
    */
   @Column(name = "area_of_expertise_id", nullable = false)
   private UUID areaOfExpertiseId;

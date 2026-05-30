@@ -100,7 +100,7 @@ public class ProjectEntity extends BaseAuditedEntity {
   @Column(name = "status", nullable = false, length = 16)
   private String status;
 
-  /** The maximum number of students allowed to enroll in the project. */
+  /** The maximum number of formerStudents allowed to enroll in the project. */
   @Min(0)
   @Column(name = "max_participants")
   private Integer maxParticipants;

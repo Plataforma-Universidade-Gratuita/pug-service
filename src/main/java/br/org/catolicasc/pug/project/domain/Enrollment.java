@@ -182,7 +182,7 @@ public class Enrollment extends DomainError {
    * <ul>
    *   <li>Ensures the {@code identifier} is not {@code null} and bubbles up any internal errors
    *       from {@link EnrollmentIdentifier}. If {@code identifier} is {@code null}, both {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STUDENT_BLANK} and {@link
+   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_FORMER_STUDENT_BLANK} and {@link
    *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK} are appended.
    *   <li>Ensures the {@code status} is not {@code null} (appends {@link
    *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STATUS_BLANK}).
@@ -192,7 +192,7 @@ public class Enrollment extends DomainError {
    */
   private void collectValidationProblems() {
     if (identifier == null) {
-      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
+      addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK);
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
     } else if (identifier.hasFieldErrors()) {
       addFieldErrors(identifier.getFieldErrors());

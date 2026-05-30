@@ -14,6 +14,24 @@ import lombok.Getter;
 @Getter
 public enum AcademicErrorCodes implements GenericCodes {
 
+    /**
+     * Indicates an attempt to create or update an academic area of expertise using a name that is already
+     * registered to another area of expertise in the system.
+     */
+    AREA_OF_EXPERTISE_ALREADY_EXISTS("error.domain.academic.areaOfExpertise.already.exists"),
+
+    /**
+     * Indicates an attempt to delete or modify an academic area of expertise that currently has registered
+     * courses under its hierarchy, violating relational integrity.
+     */
+    AREA_OF_EXPERTISE_HAS_COURSES("error.domain.academic.areaOfExpertise.has.courses"),
+
+    /**
+     * Indicates that a requested academic area of expertise could not be located in the underlying data store by
+     * its unique identifier.
+     */
+    AREA_OF_EXPERTISE_NOT_FOUND("error.domain.academic.areaOfExpertise.not.found"),
+
   /**
    * Indicates an attempt to create or update an academic course using a name that is already
    * registered in the system.
@@ -24,7 +42,7 @@ public enum AcademicErrorCodes implements GenericCodes {
    * Indicates an attempt to delete or modify an academic course that currently has active
    * formerStudent enrollments associated with it, violating relational integrity.
    */
-  COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
+  COURSE_HAS_FORMER_STUDENTS("error.domain.academic.course.has.formerStudents"),
 
   /**
    * Indicates that a requested academic course could not be located in the underlying data store by
@@ -33,40 +51,22 @@ public enum AcademicErrorCodes implements GenericCodes {
   COURSE_NOT_FOUND("error.domain.academic.course.not.found"),
 
   /**
-   * Indicates an attempt to create or update an academic school using a name that is already
-   * registered to another school in the system.
-   */
-  SCHOOL_ALREADY_EXISTS("error.domain.academic.areaOfExpertise.already.exists"),
-
-  /**
-   * Indicates an attempt to delete or modify an academic school that currently has registered
-   * courses under its hierarchy, violating relational integrity.
-   */
-  SCHOOL_HAS_COURSES("error.domain.academic.areaOfExpertise.has.courses"),
-
-  /**
-   * Indicates that a requested academic school could not be located in the underlying data store by
-   * its unique identifier.
-   */
-  SCHOOL_NOT_FOUND("error.domain.academic.areaOfExpertise.not.found"),
-
-  /**
    * Indicates an attempt to enroll a formerStudent using an academic registration string that is
    * already assigned to an existing formerStudent.
    */
-  STUDENT_ALREADY_EXISTS("error.domain.academic.formerStudent.already.exists"),
+  FORMER_STUDENT_ALREADY_EXISTS("error.domain.academic.formerStudent.already.exists"),
 
   /**
    * Indicates an attempt to remove or alter a formerStudent profile that still retains active or
    * historical academic enrollments, violating relational integrity.
    */
-  STUDENT_HAS_ENROLLMENTS("error.domain.academic.formerStudent.has.enrollments"),
+  FORMER_STUDENT_HAS_ENROLLMENTS("error.domain.academic.formerStudent.has.enrollments"),
 
   /**
    * Indicates that a requested formerStudent enrollment record could not be located in the
    * underlying data store by its linked account ID, CPF, or academic registration.
    */
-  STUDENT_NOT_FOUND("error.domain.academic.formerStudent.not.found");
+  FORMER_STUDENT_NOT_FOUND("error.domain.academic.formerStudent.not.found");
 
   /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;

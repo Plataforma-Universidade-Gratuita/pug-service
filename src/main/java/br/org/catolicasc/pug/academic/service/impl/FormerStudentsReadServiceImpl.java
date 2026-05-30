@@ -31,7 +31,7 @@ public class FormerStudentsReadServiceImpl implements FormerStudentsReadService 
         .orElseThrow(
             () -> {
               LOG.debugf("Former student lookup failed: account ID %s not found", accountId);
-              return ExceptionHelper.studentNotFound();
+              return ExceptionHelper.formerStudentNotFound();
             });
   }
 
