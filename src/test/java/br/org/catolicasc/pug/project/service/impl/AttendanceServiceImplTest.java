@@ -35,10 +35,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("AttendanceServiceImpl Integration Tests")
+@DisplayName("AttendancesServiceImpl Integration Tests")
 class AttendanceServiceImplTest {
 
-  @Inject AttendanceServiceImpl service;
+  @Inject AttendancesServiceImpl service;
   @Inject TestDataFactory factory;
 
   @InjectMock AuditPublisher audit;
@@ -77,12 +77,12 @@ class AttendanceServiceImplTest {
     when(projectService.getById(project.getId())).thenReturn(project);
     when(studentService.getById(formerStudent.getAccountId())).thenReturn(formerStudent);
 
-    var cmd =
-        anAttendanceCreateCommand()
-            .withProjectId(project.getId())
-            .withStudentId(formerStudent.getAccountId())
-            .build();
-    Attendance saved = service.save(cmd);
+    Attendance saved =
+        service.save(
+            anAttendanceCreateCommand()
+                .withProjectId(project.getId())
+                .withStudentId(formerStudent.getAccountId())
+                .build());
 
     assertThat(saved).isNotNull();
     assertThat(saved.getStatus()).isEqualTo(AttendanceStatus.WAITING);
@@ -93,13 +93,13 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should validate attendance successfully")
   void validateSuccess() {
-    var cmd =
-        anAttendanceValidateCommand()
-            .withQrValidationHash(attendance.getQrValidationInfo().getQrValidationHash())
-            .withStatus(AttendanceStatus.PRESENT)
-            .build();
-
-    Attendance validated = service.validate(attendance.getId(), cmd);
+    Attendance validated =
+        service.validate(
+            attendance.getId(),
+            anAttendanceValidateCommand()
+                .withQrValidationHash(attendance.getQrValidationInfo().getQrValidationHash())
+                .withStatus(AttendanceStatus.PRESENT)
+                .build());
 
     assertThat(validated.getStatus()).isEqualTo(AttendanceStatus.PRESENT);
     verify(studentService).addCompletedHours(any(), any());
@@ -110,8 +110,12 @@ class AttendanceServiceImplTest {
   @Test
   @DisplayName("Should fail validation on wrong hash")
   void validateWrongHash() {
-    var cmd = anAttendanceValidateCommand().withQrValidationHash("wrong-hash").build();
-    assertThrows(ResourceNotFoundException.class, () -> service.validate(attendance.getId(), cmd));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () ->
+            service.validate(
+                attendance.getId(),
+                anAttendanceValidateCommand().withQrValidationHash("wrong-hash").build()));
   }
 
   @Test
@@ -133,8 +137,7 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should delete attendance successfully")
   void deleteSuccess() {
-    boolean deleted = service.delete(attendance.getId());
-    assertThat(deleted).isTrue();
+    assertThat(service.delete(attendance.getId())).isTrue();
   }
 
   @Test
@@ -152,8 +155,8 @@ class AttendanceServiceImplTest {
             .projectId(project.getId())
             .studentId(formerStudent.getAccountId())
             .build();
-    long deleted = service.deleteAllByEnrollmentIdentifier(identifier);
-    assertThat(deleted).isGreaterThanOrEqualTo(1);
+
+    assertThat(service.deleteAllByEnrollmentIdentifier(identifier)).isGreaterThanOrEqualTo(1);
   }
 
   @Test

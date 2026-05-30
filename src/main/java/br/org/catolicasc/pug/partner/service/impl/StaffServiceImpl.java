@@ -12,7 +12,7 @@ import br.org.catolicasc.pug.partner.service.dtos.staff.StaffCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.staff.StaffUpdateCommand;
 import br.org.catolicasc.pug.partner.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.partner.service.utils.StaffProcessor;
-import br.org.catolicasc.pug.project.service.AttendanceService;
+import br.org.catolicasc.pug.project.service.AttendancesService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -35,7 +35,7 @@ public class StaffServiceImpl implements StaffService {
   @Inject AccountsService accountService;
   @Inject EntitiesService entityService;
   @Inject ProjectService projectService;
-  @Inject AttendanceService attendanceService;
+  @Inject AttendancesService attendancesService;
 
   @Transactional
   @Override
@@ -48,7 +48,7 @@ public class StaffServiceImpl implements StaffService {
     if (projectService.existsByCreatedBy(accountId)) {
       throw ExceptionHelper.staffHasProjects();
     }
-    if (attendanceService.existsByValidatedBy(accountId)) {
+    if (attendancesService.existsByValidatedBy(accountId)) {
       throw ExceptionHelper.staffHasAttendances();
     }
 

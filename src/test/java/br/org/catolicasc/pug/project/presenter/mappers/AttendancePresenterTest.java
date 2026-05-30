@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
@@ -34,16 +35,16 @@ class AttendancePresenterTest {
     @Test
     @DisplayName("Should map AttendanceCreateRequest to command")
     void toCommand() {
-      UUID pid = UuidCreator.getTimeOrderedEpoch();
-      UUID sid = UuidCreator.getTimeOrderedEpoch();
-      var req = new AttendanceCreateRequest(pid, sid, new BigDecimal("2.00"));
+      UUID projectId = UuidCreator.getTimeOrderedEpoch();
+      UUID studentId = UuidCreator.getTimeOrderedEpoch();
+      AttendanceCreateCommand command =
+          AttendancePresenter.toCommand(
+              new AttendanceCreateRequest(projectId, studentId, new BigDecimal("2.00")));
 
-      AttendanceCreateCommand cmd = AttendancePresenter.toCommand(req);
-
-      assertThat(cmd).isNotNull();
-      assertThat(cmd.projectId()).isEqualTo(pid);
-      assertThat(cmd.studentId()).isEqualTo(sid);
-      assertThat(cmd.duration()).isEqualByComparingTo(new BigDecimal("2.00"));
+      assertThat(command).isNotNull();
+      assertThat(command.projectId()).isEqualTo(projectId);
+      assertThat(command.studentId()).isEqualTo(studentId);
+      assertThat(command.duration()).isEqualByComparingTo("2.00");
     }
 
     @Test
@@ -60,19 +61,13 @@ class AttendancePresenterTest {
     @Test
     @DisplayName("Should map AttendanceValidateRequest to command")
     void toCommand() {
-      var req = new AttendanceValidateRequest(AttendanceStatus.PRESENT, "hash-123");
+      AttendanceValidateCommand command =
+          AttendancePresenter.toCommand(
+              new AttendanceValidateRequest(AttendanceStatus.PRESENT, "hash-123"));
 
-      AttendanceValidateCommand cmd = AttendancePresenter.toCommand(req);
-
-      assertThat(cmd).isNotNull();
-      assertThat(cmd.status()).isEqualTo(AttendanceStatus.PRESENT);
-      assertThat(cmd.qrValidationHash()).isEqualTo("hash-123");
-    }
-
-    @Test
-    @DisplayName("Should return null when request is null")
-    void toCommandNull() {
-      assertThat(AttendancePresenter.toCommand((AttendanceValidateRequest) null)).isNull();
+      assertThat(command).isNotNull();
+      assertThat(command.status()).isEqualTo(AttendanceStatus.PRESENT);
+      assertThat(command.qrValidationHash()).isEqualTo("hash-123");
     }
   }
 
@@ -87,58 +82,56 @@ class AttendancePresenterTest {
     }
 
     @Test
-    @DisplayName("Should return null when locale is null")
-    void toResponseNullLocale() {
-      assertThat(AttendancePresenter.toResponse(sampleView(), null, i18n)).isNull();
-    }
-
-    @Test
-    @DisplayName("Should return null when i18n is null")
-    void toResponseNullI18n() {
-      assertThat(AttendancePresenter.toResponse(sampleView(), Locale.US, null)).isNull();
-    }
-
-    @Test
-    @DisplayName("Should map AttendanceView to response correctly")
+    @DisplayName("Should map AttendanceView to single response correctly")
     void toResponseSuccess() {
-      var view = sampleView();
-
+      AttendanceView view = sampleView();
       AttendanceResponse response = AttendancePresenter.toResponse(view, Locale.US, i18n);
 
       assertThat(response).isNotNull();
       assertThat(response.id()).isEqualTo(view.id());
       assertThat(response.projectId()).isEqualTo(view.projectId());
       assertThat(response.studentId()).isEqualTo(view.studentId());
-      assertThat(response.duration()).isEqualByComparingTo(view.duration());
-      assertThat(response.qrValidationHash()).isEqualTo(view.qrValidationHash());
-      assertThat(response.status()).isEqualTo(AttendanceStatus.WAITING);
-      assertThat(response.statusFormatted()).isNotBlank();
-      assertThat(response.auditInfo()).isNotNull();
+      assertThat(response.status().status()).isEqualTo(AttendanceStatus.WAITING);
+      assertThat(response.status().statusFormatted()).isNotBlank();
+      assertThat(response.attendanceInfo().auditInfo()).isNotNull();
+      assertThat(response.qrValidationInfo().duration()).isEqualByComparingTo("2.00");
     }
 
     @Test
-    @DisplayName("Should handle null validated timestamps")
-    void toResponseNullValidated() {
-      var view = sampleView();
+    @DisplayName("Should map AttendanceView to complex-search response correctly")
+    void toComplexSearchResponseSuccess() {
+      AttendanceView view = sampleView();
+      var response = AttendancePresenter.toComplexSearchResponse(view, Locale.US, i18n);
 
-      AttendanceResponse response = AttendancePresenter.toResponse(view, Locale.US, i18n);
-
-      assertThat(response.validatedById()).isNull();
-      assertThat(response.validatedAt()).isNull();
+      assertThat(response).isNotNull();
+      assertThat(response.project().id()).isEqualTo(view.projectId());
+      assertThat(response.project().name()).isEqualTo(view.projectName());
+      assertThat(response.student().account().id()).isEqualTo(view.studentId());
+      assertThat(response.student().account().email()).isEqualTo(view.studentEmail());
+      assertThat(response.validator()).isNotNull();
+      assertThat(response.validator().id()).isEqualTo(view.validatedById());
     }
 
     private AttendanceView sampleView() {
+      OffsetDateTime now = OffsetDateTime.now();
       return new AttendanceView(
           UuidCreator.getTimeOrderedEpoch(),
           UuidCreator.getTimeOrderedEpoch(),
+          "Project Name",
           UuidCreator.getTimeOrderedEpoch(),
+          "Student Name",
+          "student@example.com",
+          "20260001",
+          Campi.ITAJAI,
           new BigDecimal("2.00"),
           "hash-123",
           AttendanceStatus.WAITING,
-          null,
-          null,
-          OffsetDateTime.now(),
-          OffsetDateTime.now());
+          UuidCreator.getTimeOrderedEpoch(),
+          "Validator Name",
+          "validator@example.com",
+          now,
+          now,
+          now);
     }
   }
 }

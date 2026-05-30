@@ -105,9 +105,9 @@ public final class AttendanceMapper {
   /**
    * Projects a raw JPA {@link AttendanceEntity} into a lightweight {@link AttendanceView} DTO.
    *
-   * <p>This mapping flattens the persistence entity into a CQRS read model, exposing only the
-   * necessary identifiers (e.g., {@code projectId}, {@code studentId}, {@code validatedById})
-   * rather than nesting complex objects.
+   * <p>This mapper is only used in simple infrastructure tests and fallback scenarios. Because the
+   * richer attendance query projections are assembled directly in JPQL with the required joins, the
+   * fields that depend on related entities are intentionally left null here.
    *
    * @param e the JPA entity representing the raw attendance record
    * @return a fully populated {@link AttendanceView} DTO
@@ -120,11 +120,18 @@ public final class AttendanceMapper {
     return new AttendanceView(
         e.getId(),
         e.getProjectId(),
+        null,
         e.getStudentId(),
+        null,
+        null,
+        null,
+        null,
         e.getDuration(),
         e.getQrValidationHash(),
         AttendanceStatus.valueOf(e.getStatus()),
         e.getValidatedBy(),
+        null,
+        null,
         e.getValidatedAt(),
         e.getCreatedAt(),
         e.getUpdatedAt());

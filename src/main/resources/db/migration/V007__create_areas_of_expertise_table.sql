@@ -1,4 +1,4 @@
-CREATE TABLE schools
+CREATE TABLE areas_of_expertise
 (
     id         uuid,
     name       varchar(150)             NOT NULL,

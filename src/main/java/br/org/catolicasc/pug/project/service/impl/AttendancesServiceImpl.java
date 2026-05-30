@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.project.domain.AttendanceRepository;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
-import br.org.catolicasc.pug.project.service.AttendanceService;
+import br.org.catolicasc.pug.project.service.AttendancesService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
@@ -27,15 +27,12 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 /**
- * Implementation of the {@link AttendanceService} command interface.
- *
- * <p>Orchestrates state mutations for attendance records, coordinating with domain services and
- * utilizing the {@link AttendanceProcessor} for logic encapsulation.
+ * Implementation of the attendance command-side application service.
  */
 @ApplicationScoped
-public class AttendanceServiceImpl implements AttendanceService {
+public class AttendancesServiceImpl implements AttendancesService {
 
-  private static final Logger LOG = Logger.getLogger(AttendanceServiceImpl.class);
+  private static final Logger LOG = Logger.getLogger(AttendancesServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
   @Inject AttendanceRepository repo;
@@ -46,7 +43,6 @@ public class AttendanceServiceImpl implements AttendanceService {
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
   String pepper;
 
-  /** {@inheritDoc} */
   @Transactional
   @Override
   public long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
@@ -62,7 +58,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return deleted;
   }
 
-  /** {@inheritDoc} */
   @Transactional
   @Override
   public boolean delete(UUID id) {
@@ -81,7 +76,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return deleted;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean existsByValidatedBy(UUID accountId) {
     if (accountId == null) {
@@ -90,7 +84,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return repo.existsByValidatedBy(accountId);
   }
 
-  /** {@inheritDoc} */
   @Override
   public Attendance getById(UUID id) {
     Attendance attendance =
@@ -104,7 +97,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return attendance;
   }
 
-  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance save(AttendanceCreateCommand cmd) {
@@ -130,7 +122,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return saved;
   }
 
-  /** {@inheritDoc} */
   @Transactional
   @Override
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
@@ -167,7 +158,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     return getById(id);
   }
 
-  /** Generates a unique QR hash based on project, formerStudent, timestamp, and system pepper. */
   private String generateQrHash(UUID projectId, UUID studentId) {
     String raw = projectId.toString() + studentId.toString() + LocalDateTime.now() + pepper;
     return BcryptUtil.bcryptHash(raw);

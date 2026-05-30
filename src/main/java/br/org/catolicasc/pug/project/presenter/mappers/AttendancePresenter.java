@@ -1,9 +1,16 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
+import br.org.catolicasc.pug.project.presenter.dtos.AccountSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceInfoResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceStatusResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.ProjectSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.QrValidationInfoResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.StudentSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
@@ -13,23 +20,17 @@ import br.org.catolicasc.pug.shared.utils.StringUtils;
 import java.util.Locale;
 
 /**
- * Stateless utility class responsible for mapping internal attendance projections to external API
- * responses and REST payloads to application commands.
- *
- * <p>This presenter acts as a translation layer, converting raw CQRS query views ({@link
- * AttendanceView}) into client-ready representations ({@link AttendanceResponse}), and mapping
- * incoming data transfers to command structures.
+ * Stateless utility class responsible for mapping attendance requests and read-side projections.
  */
 public final class AttendancePresenter {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private AttendancePresenter() {}
 
   /**
-   * Maps an incoming REST creation request into an application layer creation command.
+   * Maps an incoming REST creation request into an application-layer creation command.
    *
-   * @param req the validated {@link AttendanceCreateRequest} payload
-   * @return the corresponding {@link AttendanceCreateCommand}, or {@code null} if input is null
+   * @param req the validated attendance creation payload
+   * @return the corresponding command, or {@code null} when the input payload is null
    */
   public static AttendanceCreateCommand toCommand(AttendanceCreateRequest req) {
     if (req == null) {
@@ -39,10 +40,10 @@ public final class AttendancePresenter {
   }
 
   /**
-   * Maps an incoming REST validation request into an application layer validation command.
+   * Maps an incoming REST validation request into an application-layer validation command.
    *
-   * @param req the validated {@link AttendanceValidateRequest} payload
-   * @return the corresponding {@link AttendanceValidateCommand}, or {@code null} if input is null
+   * @param req the validated attendance validation payload
+   * @return the corresponding command, or {@code null} when the input payload is null
    */
   public static AttendanceValidateCommand toCommand(AttendanceValidateRequest req) {
     if (req == null) {
@@ -52,40 +53,87 @@ public final class AttendancePresenter {
   }
 
   /**
-   * Projects a read-only {@link AttendanceView} into a client-facing {@link AttendanceResponse}.
+   * Projects a read-side attendance view into the canonical single-record attendance response.
    *
-   * <p>This mapping flattens the response, returning only the identifiers for project,
-   * formerStudent, and validator, while resolving localized labels and formatting dates based on
-   * the client's {@link Locale}.
-   *
-   * @param v the internal read-model projection of the attendance
+   * @param view the internal read-model projection of the attendance
    * @param locale the locale extracted from the client's request headers
    * @param i18n the internationalization service for resolving bundle keys
-   * @return a fully populated {@link AttendanceResponse} ready for JSON serialization, or {@code
-   *     null} if any required input is null
+   * @return a fully populated single-record response, or {@code null} when any required input is null
    */
-  public static AttendanceResponse toResponse(AttendanceView v, Locale locale, I18n i18n) {
-    if (v == null || locale == null || i18n == null) {
+  public static AttendanceResponse toResponse(AttendanceView view, Locale locale, I18n i18n) {
+    if (view == null || locale == null || i18n == null) {
       return null;
     }
 
-    String statusFormatted = i18n.translation(v.status().getBundleKey(), locale);
-    String validatedAtFormatted = StringUtils.toStringFormatted(v.validatedAt(), locale);
+    return new AttendanceResponse(
+        view.id(),
+        view.projectId(),
+        view.studentId(),
+        toStatusResponse(view, locale, i18n),
+        toAttendanceInfoResponse(view, locale),
+        toQrValidationInfoResponse(view));
+  }
+
+  /**
+   * Projects a read-side attendance view into the paginated complex-search response payload.
+   *
+   * @param view the internal read-model projection of the attendance
+   * @param locale the locale extracted from the client's request headers
+   * @param i18n the internationalization service for resolving bundle keys
+   * @return a fully populated complex-search response, or {@code null} when any required input is null
+   */
+  public static AttendanceComplexSearchResponse toComplexSearchResponse(
+      AttendanceView view, Locale locale, I18n i18n) {
+    if (view == null || locale == null || i18n == null) {
+      return null;
+    }
+
+    return new AttendanceComplexSearchResponse(
+        view.id(),
+        new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
+        new StudentSimpleComplexSearchResponse(
+            new AccountSimpleComplexSearchResponse(
+                view.studentId(), view.studentName(), view.studentEmail()),
+            view.academicRegistration(),
+            SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n)),
+        toStatusResponse(view, locale, i18n),
+        toAttendanceInfoResponse(view, locale),
+        view.validatedById() == null
+            ? null
+            : new AccountSimpleComplexSearchResponse(
+                view.validatedById(), view.validatedByName(), view.validatedByEmail()),
+        toQrValidationInfoResponse(view));
+  }
+
+  private static AttendanceInfoResponse toAttendanceInfoResponse(
+      AttendanceView view, Locale locale) {
+    if (view == null || locale == null) {
+      return null;
+    }
 
     AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
+        SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale);
 
-    return new AttendanceResponse(
-        v.id(),
-        v.projectId(),
-        v.studentId(),
-        v.duration(),
-        v.qrValidationHash(),
-        v.status(),
-        statusFormatted,
-        v.validatedById(),
-        v.validatedAt(),
-        validatedAtFormatted,
+    return new AttendanceInfoResponse(
+        view.validatedById(),
+        view.validatedAt(),
+        StringUtils.toStringFormatted(view.validatedAt(), locale),
         auditInfo);
+  }
+
+  private static QrValidationInfoResponse toQrValidationInfoResponse(AttendanceView view) {
+    if (view == null) {
+      return null;
+    }
+    return new QrValidationInfoResponse(view.duration(), view.qrValidationHash());
+  }
+
+  private static AttendanceStatusResponse toStatusResponse(
+      AttendanceView view, Locale locale, I18n i18n) {
+    if (view == null || locale == null || i18n == null) {
+      return null;
+    }
+    return new AttendanceStatusResponse(
+        view.status(), i18n.translation(view.status().getBundleKey(), locale));
   }
 }

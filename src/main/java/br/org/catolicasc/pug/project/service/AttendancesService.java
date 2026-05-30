@@ -7,12 +7,9 @@ import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
 import java.util.UUID;
 
 /**
- * Application service interface for managing the state of {@link Attendance} domain aggregates.
- *
- * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
- * Delete) and strict domain-level retrievals.
+ * Application service interface for managing attendance aggregates.
  */
-public interface AttendanceService {
+public interface AttendancesService {
 
   /**
    * Removes all attendance records associated with a specific enrollment.
@@ -23,10 +20,10 @@ public interface AttendanceService {
   long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier);
 
   /**
-   * Removes an {@link Attendance} record from the system.
+   * Removes an attendance record from the system.
    *
-   * @param id the unique identifier (UUID) of the attendance
-   * @return {@code true} if deleted, {@code false} if not found
+   * @param id the unique identifier of the attendance
+   * @return {@code true} when the record was deleted, {@code false} otherwise
    */
   boolean delete(UUID id);
 
@@ -39,27 +36,27 @@ public interface AttendanceService {
   boolean existsByValidatedBy(UUID accountId);
 
   /**
-   * Retrieves a full {@link Attendance} aggregate by its identifier.
+   * Retrieves a full attendance aggregate by its identifier.
    *
-   * @param id the unique identifier (UUID) of the attendance
-   * @return the {@link Attendance} aggregate
+   * @param id the unique identifier of the attendance
+   * @return the matching attendance aggregate
    */
   Attendance getById(UUID id);
 
   /**
-   * Instantiates and persists a new {@link Attendance} entry.
+   * Instantiates and persists a new attendance entry.
    *
    * @param cmd the command containing attendance creation data
-   * @return the persisted {@link Attendance}
+   * @return the persisted attendance aggregate
    */
   Attendance save(AttendanceCreateCommand cmd);
 
   /**
    * Validates an attendance record, transitioning its state and applying staff authorization.
    *
-   * @param id the unique identifier (UUID) of the attendance
+   * @param id the unique identifier of the attendance
    * @param cmd the command containing validation status and hash
-   * @return the updated {@link Attendance}
+   * @return the updated attendance aggregate
    */
   Attendance validate(UUID id, AttendanceValidateCommand cmd);
 }

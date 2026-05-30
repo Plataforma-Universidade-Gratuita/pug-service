@@ -1,4 +1,4 @@
-CREATE TABLE students
+CREATE TABLE former_students
 (
     account_id            uuid,
     academic_registration varchar(15)              NOT NULL,
@@ -15,10 +15,10 @@ CREATE TABLE students
     FOREIGN KEY (account_id) REFERENCES accounts (id),
     FOREIGN KEY (course_id) REFERENCES courses (id),
     UNIQUE (academic_registration),
-    CONSTRAINT chk_students_dates CHECK (due_date >= start_date),
-    CONSTRAINT chk_students_required_nonneg CHECK (required_hours > 0),
-    CONSTRAINT chk_students_completed_hours_nonneg CHECK (completed_hours >= 0)
+    CONSTRAINT chk_former_students_dates CHECK (due_date >= start_date),
+    CONSTRAINT chk_former_students_required_nonneg CHECK (required_hours > 0),
+    CONSTRAINT chk_former_students_completed_hours_nonneg CHECK (completed_hours >= 0)
 );
 
-CREATE INDEX idx_students_course ON students (course_id);
-CREATE INDEX idx_students_window ON students (start_date, due_date);
+CREATE INDEX idx_former_students_course ON former_students (course_id);
+CREATE INDEX idx_former_students_window ON former_students (start_date, due_date);

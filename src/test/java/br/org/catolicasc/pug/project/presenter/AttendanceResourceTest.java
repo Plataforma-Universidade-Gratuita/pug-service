@@ -13,15 +13,19 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
+import io.restassured.http.ContentType;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-@DisplayName("AttendanceResource Integration Tests")
+@DisplayName("AttendancesResource Integration Tests")
 class AttendanceResourceTest extends BaseResourceTest {
 
   private record AttendanceGraph(
@@ -52,16 +56,17 @@ class AttendanceResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("GET /v1/projects/attendances/{id} - Success")
   void getByIdSuccess() throws Exception {
-    AttendanceGraph g = createAttendanceGraph();
+    AttendanceGraph graph = createAttendanceGraph();
 
     given()
-        .pathParam("id", g.attendance().getId())
+        .pathParam("id", graph.attendance().getId())
         .when()
         .get("/v1/projects/attendances/{id}")
         .then()
         .statusCode(200)
         .body("success", is(true))
-        .body("data.id", is(g.attendance().getId().toString()));
+        .body("data.id", is(graph.attendance().getId().toString()))
+        .body("data.status.status", is("WAITING"));
   }
 
   @Test
@@ -86,64 +91,57 @@ class AttendanceResourceTest extends BaseResourceTest {
   void listAll() throws Exception {
     createAttendanceGraph();
 
-    given()
-        .when()
-        .get("/v1/projects/attendances")
-        .then()
-        .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)));
+    given().when().get("/v1/projects/attendances").then().statusCode(200).body("data", hasSize(greaterThanOrEqualTo(1)));
   }
 
   @Test
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/projects/attendances?projectId= - Filter by Project")
-  void listByProjectId() throws Exception {
-    AttendanceGraph g = createAttendanceGraph();
+  @DisplayName("GET /v1/projects/attendances?ids= - Filter by IDs")
+  void listByIds() throws Exception {
+    AttendanceGraph graph = createAttendanceGraph();
 
     given()
-        .queryParam("projectId", g.project().getId().toString())
+        .queryParam("ids", graph.attendance().getId().toString())
         .when()
         .get("/v1/projects/attendances")
         .then()
         .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)));
+        .body("data", hasSize(greaterThanOrEqualTo(1)))
+        .body("data[0].id", is(graph.attendance().getId().toString()));
   }
 
   @Test
   @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
-  @DisplayName("GET /v1/projects/attendances?studentId= - Filter by FormerStudent")
-  void listByStudentId() throws Exception {
-    AttendanceGraph g = createAttendanceGraph();
+  @DisplayName("POST /v1/projects/attendances/search - Success")
+  void searchSuccess() throws Exception {
+    AttendanceGraph graph = createAttendanceGraph();
 
     given()
-        .queryParam("studentId", g.formerStudent().getAccountId().toString())
+        .contentType(ContentType.JSON)
+        .queryParam("page", 0)
+        .queryParam("size", 25)
+        .body(
+            new AttendanceComplexSearchRequest(
+                List.of(graph.project().getId()),
+                List.of(graph.formerStudent().getAccountId()),
+                List.of(AttendanceStatus.WAITING),
+                List.of(),
+                null,
+                null,
+                null,
+                null))
         .when()
-        .get("/v1/projects/attendances")
+        .post("/v1/projects/attendances/search")
         .then()
         .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)));
-  }
-
-  @Test
-  @TestSecurity(
-      user = "admin",
-      roles = {"ADMIN"})
-  @DisplayName("GET /v1/projects/attendances?projectId=&studentId= - Filter by Enrollment")
-  void listByEnrollmentId() throws Exception {
-    AttendanceGraph g = createAttendanceGraph();
-
-    given()
-        .queryParam("projectId", g.project().getId().toString())
-        .queryParam("studentId", g.formerStudent().getAccountId().toString())
-        .when()
-        .get("/v1/projects/attendances")
-        .then()
-        .statusCode(200)
-        .body("data", hasSize(greaterThanOrEqualTo(1)));
+        .body("data.content", hasSize(greaterThanOrEqualTo(1)))
+        .body("data.content[0].status.status", is("WAITING"))
+        .body("data.content[0].project.id", is(graph.project().getId().toString()))
+        .body("data.content[0].student.account.id", is(graph.formerStudent().getAccountId().toString()));
   }
 
   @Test
@@ -152,10 +150,10 @@ class AttendanceResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   @DisplayName("DELETE /v1/projects/attendances/{id} - Success")
   void deleteSuccess() throws Exception {
-    AttendanceGraph g = createAttendanceGraph();
+    AttendanceGraph graph = createAttendanceGraph();
 
     given()
-        .pathParam("id", g.attendance().getId())
+        .pathParam("id", graph.attendance().getId())
         .when()
         .delete("/v1/projects/attendances/{id}")
         .then()

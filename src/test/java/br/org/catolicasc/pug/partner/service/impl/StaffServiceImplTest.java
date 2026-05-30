@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.project.service.AttendanceService;
+import br.org.catolicasc.pug.project.service.AttendancesService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
@@ -38,7 +38,7 @@ class StaffServiceImplTest {
   @InjectMock AccountsService accountService;
   @InjectMock AuditPublisher audit;
   @InjectMock ProjectService projectService;
-  @InjectMock AttendanceService attendanceService;
+  @InjectMock AttendancesService attendancesService;
 
   @Test
   @Transactional
@@ -110,7 +110,7 @@ class StaffServiceImplTest {
     factory.createStaff(account, entity);
 
     when(projectService.existsByCreatedBy(account.getId())).thenReturn(false);
-    when(attendanceService.existsByValidatedBy(account.getId())).thenReturn(false);
+    when(attendancesService.existsByValidatedBy(account.getId())).thenReturn(false);
 
     boolean deleted = service.delete(account.getId());
 
@@ -225,7 +225,7 @@ class StaffServiceImplTest {
   void deleteHasAttendances() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
     when(projectService.existsByCreatedBy(id)).thenReturn(false);
-    when(attendanceService.existsByValidatedBy(id)).thenReturn(true);
+    when(attendancesService.existsByValidatedBy(id)).thenReturn(true);
 
     assertThrows(BusinessRuleException.class, () -> service.delete(id));
   }
