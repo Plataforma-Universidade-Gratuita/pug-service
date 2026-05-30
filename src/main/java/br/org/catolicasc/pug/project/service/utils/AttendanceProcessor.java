@@ -49,4 +49,3 @@ public final class AttendanceProcessor {
     return existing.validatePresence(validatorId, status);
   }
 }
-

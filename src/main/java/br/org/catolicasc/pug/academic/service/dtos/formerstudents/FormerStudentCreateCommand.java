@@ -31,4 +31,3 @@ public record FormerStudentCreateCommand(
     BigDecimal requiredHours,
     LocalDate startDate,
     LocalDate dueDate) {}
-

@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.project.service.utils;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -64,4 +64,3 @@ class AttendanceProcessorTest {
     assertThat(validated.getAttendanceInfo().getValidatedBy()).isEqualTo(validatorId);
   }
 }
-

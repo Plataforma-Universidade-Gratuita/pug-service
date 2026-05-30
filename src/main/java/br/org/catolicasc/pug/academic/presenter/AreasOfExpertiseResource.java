@@ -49,9 +49,9 @@ import java.util.UUID;
 /**
  * REST API resource controller for managing academic areas of expertise.
  *
- * <p>This class exposes endpoints to create, retrieve, update, delete, and search academic areas
- * of expertise. It delegates commands to the {@link AreasOfExpertiseService} and queries to the
- * {@link AreasOfExpertiseReadService}, adhering to CQRS principles.
+ * <p>This class exposes endpoints to create, retrieve, update, delete, and search academic areas of
+ * expertise. It delegates commands to the {@link AreasOfExpertiseService} and queries to the {@link
+ * AreasOfExpertiseReadService}, adhering to CQRS principles.
  */
 @ApplicationScoped
 @Path("/v1/academic/areas-of-expertise")
@@ -121,7 +121,9 @@ public class AreasOfExpertiseResource {
       @QueryParam("size") @DefaultValue("25") @Min(1) int size,
       @Valid AreaOfExpertiseComplexSearchRequest request) {
     AreaOfExpertiseComplexSearchCriteria criteria =
-        request == null ? new AreaOfExpertiseComplexSearchCriteria(null) : new AreaOfExpertiseComplexSearchCriteria(request.name());
+        request == null
+            ? new AreaOfExpertiseComplexSearchCriteria(null)
+            : new AreaOfExpertiseComplexSearchCriteria(request.name());
     var result = readService.search(new PageQuery(page, size), criteria);
     var responseBody =
         new PageResponse<>(
@@ -167,7 +169,8 @@ public class AreasOfExpertiseResource {
   @PUT
   @Path("/{id}")
   @RolesAllowed("ADMIN")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid AreaOfExpertiseUpdateRequest req) {
+  public Response update(
+      @PathParam("id") @UuidV7 UUID id, @Valid AreaOfExpertiseUpdateRequest req) {
     AreaOfExpertiseUpdateCommand cmd = AreaOfExpertisePresenter.toCommand(req);
     writeService.update(id, cmd);
 

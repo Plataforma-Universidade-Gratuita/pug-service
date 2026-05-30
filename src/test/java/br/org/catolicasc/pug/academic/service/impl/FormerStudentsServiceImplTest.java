@@ -8,8 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
@@ -51,7 +51,8 @@ class FormerStudentsServiceImplTest {
     Course course = factory.createCourse(school);
     em.flush();
 
-    FormerStudentCreateCommand cmd = aFormerStudentCreateCommand().withCourseId(course.getId()).build();
+    FormerStudentCreateCommand cmd =
+        aFormerStudentCreateCommand().withCourseId(course.getId()).build();
     FormerStudent saved = service.save(cmd);
 
     assertThat(saved.getAccountId()).isNotNull();
@@ -208,8 +209,10 @@ class FormerStudentsServiceImplTest {
     Course course = factory.createCourse(school);
     em.flush();
 
-    FormerStudentCreateCommand cmd1 = aFormerStudentCreateCommand().withCourseId(course.getId()).build();
-    FormerStudentCreateCommand cmd2 = aFormerStudentCreateCommand().withCourseId(course.getId()).build();
+    FormerStudentCreateCommand cmd1 =
+        aFormerStudentCreateCommand().withCourseId(course.getId()).build();
+    FormerStudentCreateCommand cmd2 =
+        aFormerStudentCreateCommand().withCourseId(course.getId()).build();
 
     List<FormerStudent> students = service.saveInBulk(List.of(cmd1, cmd2));
     assertThat(students).hasSize(2);
@@ -227,4 +230,3 @@ class FormerStudentsServiceImplTest {
     assertThat(service.existsAnyByCourseId(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }
-

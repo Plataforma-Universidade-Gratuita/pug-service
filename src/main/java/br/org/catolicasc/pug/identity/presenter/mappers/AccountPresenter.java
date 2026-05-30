@@ -45,7 +45,8 @@ public final class AccountPresenter {
     }
 
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
-    AccountTypeResponse accountTypeResponse = new AccountTypeResponse(v.accountType(), typeFormatted);
+    AccountTypeResponse accountTypeResponse =
+        new AccountTypeResponse(v.accountType(), typeFormatted);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
@@ -74,10 +75,12 @@ public final class AccountPresenter {
     }
 
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
-    AccountTypeResponse accountTypeResponse = new AccountTypeResponse(v.accountType(), typeFormatted);
+    AccountTypeResponse accountTypeResponse =
+        new AccountTypeResponse(v.accountType(), typeFormatted);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
-    UserSimpleComplexSearchResponse user = new UserSimpleComplexSearchResponse(v.userId(), v.userName());
+    UserSimpleComplexSearchResponse user =
+        new UserSimpleComplexSearchResponse(v.userId(), v.userName());
 
     return new AccountComplexSearchResponse(
         v.id(), user, v.email(), accountTypeResponse, auditInfo, v.active());

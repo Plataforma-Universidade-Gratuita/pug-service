@@ -11,9 +11,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/**
- * Query-side service implementation for academic areas of expertise.
- */
+/** Query-side service implementation for academic areas of expertise. */
 @jakarta.enterprise.context.ApplicationScoped
 public class AreasOfExpertiseReadServiceImpl implements AreasOfExpertiseReadService {
 
@@ -43,7 +41,8 @@ public class AreasOfExpertiseReadServiceImpl implements AreasOfExpertiseReadServ
   }
 
   @Override
-  public PageResult<SchoolView> search(PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
+  public PageResult<SchoolView> search(
+      PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
     return queries.search(pageQuery, criteria);
   }
 }

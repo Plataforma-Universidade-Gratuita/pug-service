@@ -21,8 +21,8 @@ public enum AcademicErrorCodes implements GenericCodes {
   COURSE_ALREADY_EXISTS("error.domain.academic.course.already.exists"),
 
   /**
-   * Indicates an attempt to delete or modify an academic course that currently has active formerStudent
-   * enrollments associated with it, violating relational integrity.
+   * Indicates an attempt to delete or modify an academic course that currently has active
+   * formerStudent enrollments associated with it, violating relational integrity.
    */
   COURSE_HAS_STUDENTS("error.domain.academic.course.has.students"),
 
@@ -51,8 +51,8 @@ public enum AcademicErrorCodes implements GenericCodes {
   SCHOOL_NOT_FOUND("error.domain.academic.school.not.found"),
 
   /**
-   * Indicates an attempt to enroll a formerStudent using an academic registration string that is already
-   * assigned to an existing formerStudent.
+   * Indicates an attempt to enroll a formerStudent using an academic registration string that is
+   * already assigned to an existing formerStudent.
    */
   STUDENT_ALREADY_EXISTS("error.domain.academic.formerStudent.already.exists"),
 
@@ -63,8 +63,8 @@ public enum AcademicErrorCodes implements GenericCodes {
   STUDENT_HAS_ENROLLMENTS("error.domain.academic.formerStudent.has.enrollments"),
 
   /**
-   * Indicates that a requested formerStudent enrollment record could not be located in the underlying
-   * data store by its linked account ID, CPF, or academic registration.
+   * Indicates that a requested formerStudent enrollment record could not be located in the
+   * underlying data store by its linked account ID, CPF, or academic registration.
    */
   STUDENT_NOT_FOUND("error.domain.academic.formerStudent.not.found");
 
@@ -81,4 +81,3 @@ public enum AcademicErrorCodes implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
-

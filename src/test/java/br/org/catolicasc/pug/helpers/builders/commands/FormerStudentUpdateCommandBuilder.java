@@ -139,8 +139,8 @@ public class FormerStudentUpdateCommandBuilder {
   }
 
   /**
-   * Constructs the {@link FormerStudentUpdateCommand} using the current builder state, composing the
-   * nested {@link AccountUpdateCommand} and {@link UserUpdateCommand} internally.
+   * Constructs the {@link FormerStudentUpdateCommand} using the current builder state, composing
+   * the nested {@link AccountUpdateCommand} and {@link UserUpdateCommand} internally.
    *
    * @return a configured {@link FormerStudentUpdateCommand} instance
    */
@@ -159,4 +159,3 @@ public class FormerStudentUpdateCommandBuilder {
     return values[new Random().nextInt(values.length)];
   }
 }
-

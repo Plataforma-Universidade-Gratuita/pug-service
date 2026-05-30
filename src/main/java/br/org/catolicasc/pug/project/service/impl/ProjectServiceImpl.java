@@ -4,8 +4,8 @@ import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.service.EntitiesService;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectRepository;
-import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.project.service.ProjectService;
@@ -214,13 +214,14 @@ public class ProjectServiceImpl implements ProjectService {
       case COMPLETED ->
           enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.COMPLETED);
       case ON_HOLD ->
-          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+          enrollmentsService.changeStatusByProjectId(
+              projectId, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
       case PLANNED ->
-          enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.ON_HOLD, EnrollmentStatus.APPROVED);
+          enrollmentsService.changeStatusByProjectId(
+              projectId, EnrollmentStatus.ON_HOLD, EnrollmentStatus.APPROVED);
       default -> {
         // No enrollment status propagation is required for this transition.
       }
     }
   }
 }
-

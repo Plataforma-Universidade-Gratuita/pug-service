@@ -39,7 +39,9 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void createAssociations() throws Exception {
     Graph g = createGraph();
 
@@ -54,7 +56,9 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void listAreasOfExpertiseByProjectId() throws Exception {
     Graph g = createGraph();
     createAssociation(g);
@@ -69,7 +73,9 @@ class ProjectSchoolResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void listProjectsBySchoolId() throws Exception {
     Graph g = createGraph();
     createAssociation(g);

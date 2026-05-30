@@ -10,8 +10,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
@@ -163,4 +163,3 @@ class AttendanceServiceImplTest {
     assertThat(service.existsByValidatedBy(UuidCreator.getTimeOrderedEpoch())).isFalse();
   }
 }
-

@@ -17,17 +17,17 @@ import java.util.UUID;
  * Application service interface for managing the state of {@link FormerStudent} domain aggregates.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
- * Delete). It orchestrates the complex lifecycle relationship between a FormerStudent enrollment, their
- * underlying {@link Account}, and the {@link Course} they are enrolled in, ensuring that academic
- * records and authentication credentials cascade correctly.
+ * Delete). It orchestrates the complex lifecycle relationship between a FormerStudent enrollment,
+ * their underlying {@link Account}, and the {@link Course} they are enrolled in, ensuring that
+ * academic records and authentication credentials cascade correctly.
  */
 public interface FormerStudentsService {
 
   /**
    * Adds completed hours to a formerStudent's academic progress.
    *
-   * <p>This method updates the formerStudent's record, recalculating whether the formerStudent has reached the
-   * total required counterpart hours.
+   * <p>This method updates the formerStudent's record, recalculating whether the formerStudent has
+   * reached the total required counterpart hours.
    *
    * @param accountId the formerStudent's account identifier
    * @param hours the amount of hours to add
@@ -44,8 +44,8 @@ public interface FormerStudentsService {
    * credentials tied strictly to formerStudent roles are wiped out.
    *
    * @param accountId the unique identifier of the FormerStudent to delete (Account ID)
-   * @return {@code true} if the formerStudent was successfully deleted, {@code false} if they were not
-   *     found
+   * @return {@code true} if the formerStudent was successfully deleted, {@code false} if they were
+   *     not found
    */
   boolean delete(UUID accountId);
 
@@ -56,7 +56,8 @@ public interface FormerStudentsService {
    * Course} cannot be deleted if it still has enrolled students.
    *
    * @param courseId the unique identifier (UUID) of the course to check
-   * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false} otherwise
+   * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false}
+   *     otherwise
    */
   boolean existsAnyByCourseId(UUID courseId);
 
@@ -82,7 +83,8 @@ public interface FormerStudentsService {
    * identity) to the {@link AccountsService} before saving the formerStudent's academic enrollment
    * records.
    *
-   * @param cmd the structured command containing the data to create the formerStudent and linked account
+   * @param cmd the structured command containing the data to create the formerStudent and linked
+   *     account
    * @return the fully instantiated and persisted {@link FormerStudent} aggregate
    * @throws DuplicateResourceException if the academic registration or account email already exists
    * @throws ResourceNotFoundException if the associated course does not exist
@@ -91,7 +93,8 @@ public interface FormerStudentsService {
   FormerStudent save(FormerStudentCreateCommand cmd);
 
   /**
-   * Instantiates and persists multiple {@link FormerStudent} aggregates in a single batch transaction.
+   * Instantiates and persists multiple {@link FormerStudent} aggregates in a single batch
+   * transaction.
    *
    * <p>This method iterates over the provided commands, applying the exact same domain rules,
    * validations, and cascading identity provisions as a single creation, ensuring that the entire
@@ -106,8 +109,8 @@ public interface FormerStudentsService {
   List<FormerStudent> saveInBulk(List<FormerStudentCreateCommand> cmds);
 
   /**
-   * Updates an existing {@link FormerStudent} and optionally its underlying account using the provided
-   * data.
+   * Updates an existing {@link FormerStudent} and optionally its underlying account using the
+   * provided data.
    *
    * <p>This method applies partial updates. If account data is provided in the command, the update
    * is cascaded down to the underlying account aggregate. If a new course ID is provided, the
@@ -117,7 +120,8 @@ public interface FormerStudentsService {
    *     Account ID)
    * @param cmd the structured command containing the new data for the formerStudent and/or account
    * @return the mutated and persisted {@link FormerStudent} aggregate
-   * @throws ResourceNotFoundException if the formerStudent does not exist, or the new course is not found
+   * @throws ResourceNotFoundException if the formerStudent does not exist, or the new course is not
+   *     found
    * @throws DuplicateResourceException if the updated academic registration or email conflicts with
    *     existing records
    * @throws AppValidationException if input validation fails
@@ -133,4 +137,3 @@ public interface FormerStudentsService {
    */
   FormerStudent updateStatus(UUID accountId, boolean active);
 }
-

@@ -17,10 +17,12 @@ import java.util.UUID;
  * @param campi optional campus collection used in an {@code in} filter
  * @param periodFrom optional lower bound applied to start and due dates
  * @param periodTo optional upper bound applied to start and due dates
- * @param includeConcluded optional flag indicating whether concluded obligations should also be returned
+ * @param includeConcluded optional flag indicating whether concluded obligations should also be
+ *     returned
  * @param dateFrom optional lower bound applied to timestamp fields
  * @param dateTo optional upper bound applied to timestamp fields
- * @param activeOnly optional flag indicating whether only active accounts should be returned; defaults to {@code true}
+ * @param activeOnly optional flag indicating whether only active accounts should be returned;
+ *     defaults to {@code true}
  * @param courseIds optional course identifiers used in an {@code in} filter
  * @param schoolIds optional school identifiers used in an {@code in} filter
  */

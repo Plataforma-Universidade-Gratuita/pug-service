@@ -17,4 +17,3 @@ public record AttendanceCreateRequest(
     @NotNull @UuidV7 UUID projectId,
     @NotNull @UuidV7 UUID studentId,
     @NotNull @DecimalMin(value = "0.01") BigDecimal duration) {}
-

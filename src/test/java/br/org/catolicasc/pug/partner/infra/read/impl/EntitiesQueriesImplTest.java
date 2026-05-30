@@ -59,9 +59,7 @@ class EntitiesQueriesImplTest extends BaseSearchTest {
             new EntityComplexSearchCriteria(
                 entity.getName().substring(0, 3), null, null, null, null, null));
 
-    assertThat(result.content())
-        .extracting(EntityComplexSearchView::id)
-        .contains(entity.getId());
+    assertThat(result.content()).extracting(EntityComplexSearchView::id).contains(entity.getId());
   }
 
   @Test
@@ -78,9 +76,7 @@ class EntitiesQueriesImplTest extends BaseSearchTest {
             new EntityComplexSearchCriteria(
                 null, null, null, null, center.minusSeconds(1), center.plusSeconds(1)));
 
-    assertThat(result.content())
-        .extracting(EntityComplexSearchView::id)
-        .contains(entity.getId());
+    assertThat(result.content()).extracting(EntityComplexSearchView::id).contains(entity.getId());
   }
 
   @Test
@@ -93,11 +89,10 @@ class EntitiesQueriesImplTest extends BaseSearchTest {
     var result =
         queries.search(
             new PageQuery(0, 1),
-            new EntityComplexSearchCriteria(entity.getName().substring(0, 2), null, null, null, null, null));
+            new EntityComplexSearchCriteria(
+                entity.getName().substring(0, 2), null, null, null, null, null));
 
-    assertThat(result.content())
-        .extracting(EntityComplexSearchView::id)
-        .contains(entity.getId());
+    assertThat(result.content()).extracting(EntityComplexSearchView::id).contains(entity.getId());
     assertThat(result.totalElements()).isGreaterThanOrEqualTo(1);
   }
 }

@@ -154,8 +154,8 @@ public class FormerStudentCreateCommandBuilder {
   }
 
   /**
-   * Constructs the {@link FormerStudentCreateCommand} using the current builder state, composing the
-   * nested {@link AccountCreateCommand} and {@link UserCreateCommand} internally.
+   * Constructs the {@link FormerStudentCreateCommand} using the current builder state, composing
+   * the nested {@link AccountCreateCommand} and {@link UserCreateCommand} internally.
    *
    * @return a configured {@link FormerStudentCreateCommand} instance
    */
@@ -172,4 +172,3 @@ public class FormerStudentCreateCommandBuilder {
     return values[new Random().nextInt(values.length)];
   }
 }
-

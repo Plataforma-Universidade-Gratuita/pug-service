@@ -69,4 +69,3 @@ public class AcademicRegistration extends DomainError {
     }
   }
 }
-

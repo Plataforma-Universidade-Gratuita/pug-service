@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.partner.presenter.mappers;
 
+import br.org.catolicasc.pug.geo.presenter.dtos.CityResponse;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
 import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityComplexSearchResponse;
@@ -9,7 +10,6 @@ import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplex
 import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityUpdateRequest;
 import br.org.catolicasc.pug.partner.service.dtos.entities.EntityCreateCommand;
 import br.org.catolicasc.pug.partner.service.dtos.entities.EntityUpdateCommand;
-import br.org.catolicasc.pug.geo.presenter.dtos.CityResponse;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;

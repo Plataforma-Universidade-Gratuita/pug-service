@@ -87,7 +87,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
       return List.of();
     }
 
-    return em.createQuery(SELECT_BASE + " where p.createdBy = :createdBy" + ORDER_BY, ProjectView.class)
+    return em.createQuery(
+            SELECT_BASE + " where p.createdBy = :createdBy" + ORDER_BY, ProjectView.class)
         .setParameter("createdBy", accountId)
         .getResultList();
   }
@@ -99,7 +100,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
       return List.of();
     }
 
-    return em.createQuery(SELECT_BASE + " where p.entityId = :entityId" + ORDER_BY, ProjectView.class)
+    return em.createQuery(
+            SELECT_BASE + " where p.entityId = :entityId" + ORDER_BY, ProjectView.class)
         .setParameter("entityId", entityId)
         .getResultList();
   }
@@ -118,10 +120,12 @@ public class ProjectQueriesImpl implements ProjectQueries {
 
   /** {@inheritDoc} */
   @Override
-  public PageResult<ProjectView> search(ProjectComplexSearchCriteria criteria, PageQuery pageQuery) {
+  public PageResult<ProjectView> search(
+      ProjectComplexSearchCriteria criteria, PageQuery pageQuery) {
     ProjectComplexSearchCriteria safeCriteria =
         criteria == null
-            ? new ProjectComplexSearchCriteria(null, List.of(), null, List.of(), null, null, List.of(), null, null)
+            ? new ProjectComplexSearchCriteria(
+                null, List.of(), null, List.of(), null, null, List.of(), null, null)
             : criteria;
     PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
@@ -140,7 +144,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
       clauses.add("p.createdBy in :createdByIds");
     }
     if (safeCriteria.dateFrom() != null) {
-      clauses.add("(p.createdAt >= :dateFrom or p.updatedAt >= :dateFrom or p.closedAt >= :dateFrom)");
+      clauses.add(
+          "(p.createdAt >= :dateFrom or p.updatedAt >= :dateFrom or p.closedAt >= :dateFrom)");
     }
     if (safeCriteria.dateTo() != null) {
       clauses.add("(p.createdAt <= :dateTo or p.updatedAt <= :dateTo or p.closedAt <= :dateTo)");
@@ -196,8 +201,7 @@ public class ProjectQueriesImpl implements ProjectQueries {
       query.setParameter("dateTo", criteria.dateTo());
     }
     if (CollectionUtils.isNotEmpty(criteria.statuses())) {
-      query.setParameter(
-          "statuses", criteria.statuses().stream().map(Enum::name).toList());
+      query.setParameter("statuses", criteria.statuses().stream().map(Enum::name).toList());
     }
     if (criteria.maxOfferedHours() != null) {
       query.setParameter("maxOfferedHours", criteria.maxOfferedHours());

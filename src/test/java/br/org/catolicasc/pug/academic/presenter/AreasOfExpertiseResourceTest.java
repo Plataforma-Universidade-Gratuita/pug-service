@@ -27,7 +27,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   @InjectMock AuditPublisher audit;
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("GET /v1/academic/areas-of-expertise/{id} - Success")
   void getByIdSuccess() throws Exception {
     School[] area = new School[1];
@@ -45,7 +47,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("GET /v1/academic/areas-of-expertise/{id} - Not Found")
   void getByIdNotFound() {
     given()
@@ -58,7 +62,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "formerStudent", roles = {"FORMER_STUDENT"})
+  @TestSecurity(
+      user = "formerStudent",
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/academic/areas-of-expertise - List All")
   void listAll() throws Exception {
     doInTransaction(() -> factory.createSchool());
@@ -72,7 +78,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "formerStudent", roles = {"FORMER_STUDENT"})
+  @TestSecurity(
+      user = "formerStudent",
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/academic/areas-of-expertise?ids= - Filter by IDs")
   void listByIds() throws Exception {
     School[] area = new School[1];
@@ -89,7 +97,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "formerStudent", roles = {"FORMER_STUDENT"})
+  @TestSecurity(
+      user = "formerStudent",
+      roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/academic/areas-of-expertise/search - Success")
   void searchSuccess() throws Exception {
     School[] area = new School[1];
@@ -111,7 +121,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/areas-of-expertise - Success")
   void createSuccess() {
     AreaOfExpertiseCreateRequest req =
@@ -128,7 +140,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("POST /v1/academic/areas-of-expertise - Duplicate Name")
   void createDuplicate() throws Exception {
     School[] existing = new School[1];
@@ -146,7 +160,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("PUT /v1/academic/areas-of-expertise/{id} - Success")
   void updateSuccess() throws Exception {
     School[] area = new School[1];
@@ -167,7 +183,9 @@ class AreasOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   @DisplayName("DELETE /v1/academic/areas-of-expertise/{id} - Success")
   void deleteSuccess() throws Exception {
     School[] area = new School[1];

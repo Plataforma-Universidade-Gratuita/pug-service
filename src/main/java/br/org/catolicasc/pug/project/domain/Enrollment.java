@@ -46,10 +46,10 @@ public class Enrollment extends DomainError {
    * EnrollmentStatus#PENDING} state.
    *
    * <p>The returned aggregate is initialized with a freshly created {@link EnrollmentIdentifier}
-   * based on the provided {@link FormerStudent} and {@link Project}, and a default {@link EnrollmentInfo}
-   * with no acceptance or closing timestamps set. The instance is immediately self-validated; any
-   * problems are accumulated internally and can be inspected via {@link #hasFieldErrors()} and
-   * {@link #getFieldErrors()}.
+   * based on the provided {@link FormerStudent} and {@link Project}, and a default {@link
+   * EnrollmentInfo} with no acceptance or closing timestamps set. The instance is immediately
+   * self-validated; any problems are accumulated internally and can be inspected via {@link
+   * #hasFieldErrors()} and {@link #getFieldErrors()}.
    *
    * @param formerStudent the {@link FormerStudent} requesting enrollment
    * @param project the {@link Project} the formerStudent wishes to join
@@ -83,16 +83,16 @@ public class Enrollment extends DomainError {
    *       #isClosingStatus(EnrollmentStatus)}), no further transitions are allowed and a {@link
    *       BusinessRuleException} is thrown with {@link
    *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
-   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current
-   *       {@code status} is {@link EnrollmentStatus#PENDING} or {@link EnrollmentStatus#ON_HOLD}.
-   *       When moving from {@code PENDING}, {@link EnrollmentInfo#accept()} is applied, stamping
-   *       {@code acceptedAt}. When moving from {@code ON_HOLD}, the existing acceptance timestamp
-   *       is preserved and only the audit metadata is refreshed through {@link
+   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current {@code
+   *       status} is {@link EnrollmentStatus#PENDING} or {@link EnrollmentStatus#ON_HOLD}. When
+   *       moving from {@code PENDING}, {@link EnrollmentInfo#accept()} is applied, stamping {@code
+   *       acceptedAt}. When moving from {@code ON_HOLD}, the existing acceptance timestamp is
+   *       preserved and only the audit metadata is refreshed through {@link
    *       EnrollmentInfo#update()}.
-   *   <li>A transition to {@link EnrollmentStatus#ON_HOLD} is only allowed when the current
-   *       {@code status} is {@link EnrollmentStatus#APPROVED}. On success, {@link
-   *       EnrollmentInfo#update()} is applied so the enrollment keeps its lifecycle timestamps while
-   *       still tracking the state change.
+   *   <li>A transition to {@link EnrollmentStatus#ON_HOLD} is only allowed when the current {@code
+   *       status} is {@link EnrollmentStatus#APPROVED}. On success, {@link EnrollmentInfo#update()}
+   *       is applied so the enrollment keeps its lifecycle timestamps while still tracking the
+   *       state change.
    *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
    *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
    *       EnrollmentStatus#REMOVED}) are only allowed when the current {@code status} is {@link
@@ -129,7 +129,8 @@ public class Enrollment extends DomainError {
       if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.ON_HOLD) {
         throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
       }
-      newInfo = status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
+      newInfo =
+          status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
     } else if (newStatus == EnrollmentStatus.ON_HOLD) {
       if (status != EnrollmentStatus.APPROVED) {
         throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
@@ -206,4 +207,3 @@ public class Enrollment extends DomainError {
     }
   }
 }
-

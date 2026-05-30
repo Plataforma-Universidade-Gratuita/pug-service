@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
@@ -45,7 +45,8 @@ class FormerStudentsQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should retrieve FormerStudentView by Registration")
   void shouldFindByRegistration() {
     var view =
-        queries.findOptionalByAcademicRegistration(formerStudent.getAcademicRegistration().getValue());
+        queries.findOptionalByAcademicRegistration(
+            formerStudent.getAcademicRegistration().getValue());
 
     assertThat(view).isPresent();
     assertThat(view.get().academicRegistration())
@@ -186,7 +187,8 @@ class FormerStudentsQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should verify all fields in formerStudent view")
   void shouldVerifyAllFieldsInView() {
     var view =
-        queries.findOptionalByAcademicRegistration(formerStudent.getAcademicRegistration().getValue());
+        queries.findOptionalByAcademicRegistration(
+            formerStudent.getAcademicRegistration().getValue());
 
     assertThat(view).isPresent();
     var sv = view.get();
@@ -228,4 +230,3 @@ class FormerStudentsQueriesImplTest extends BaseSearchTest {
     assertSearchHandlesInvalidInput(queries::searchByName);
   }
 }
-

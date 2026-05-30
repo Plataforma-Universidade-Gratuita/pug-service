@@ -10,7 +10,8 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only, flattened view of an enrolled FormerStudent.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It exposes only the identifiers and scalar attributes intrinsic to the FormerStudent entity.
+ * client. It exposes only the identifiers and scalar attributes intrinsic to the FormerStudent
+ * entity.
  *
  * @param accountId the unique identifier (UUIDv7) of the formerStudent's authentication account
  * @param academicRegistration the raw academic registration string of the formerStudent
@@ -36,4 +37,3 @@ public record FormerStudentView(
     LocalDate dueDate,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt) {}
-

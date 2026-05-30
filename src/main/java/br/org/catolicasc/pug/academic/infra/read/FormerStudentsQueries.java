@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * Read-only interface for executing former-student queries.
- */
+/** Read-only interface for executing former-student queries. */
 public interface FormerStudentsQueries {
 
   Optional<FormerStudentView> findOptionalById(UUID accountId);

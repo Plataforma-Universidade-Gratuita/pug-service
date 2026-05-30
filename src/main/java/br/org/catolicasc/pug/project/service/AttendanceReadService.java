@@ -55,4 +55,3 @@ public interface AttendanceReadService {
    */
   List<AttendanceView> listViews();
 }
-

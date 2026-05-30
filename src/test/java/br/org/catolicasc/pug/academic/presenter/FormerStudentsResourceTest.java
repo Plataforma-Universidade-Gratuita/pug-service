@@ -387,4 +387,3 @@ class FormerStudentsResourceTest extends BaseResourceTest {
         LocalDate.now().plusMonths(6));
   }
 }
-

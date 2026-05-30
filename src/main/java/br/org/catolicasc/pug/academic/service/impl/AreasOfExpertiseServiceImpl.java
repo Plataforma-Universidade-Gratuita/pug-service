@@ -9,9 +9,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import java.util.UUID;
 
-/**
- * Adapter that exposes the school command flow under the public area-of-expertise nomenclature.
- */
+/** Adapter that exposes the school command flow under the public area-of-expertise nomenclature. */
 @ApplicationScoped
 public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
 
@@ -29,11 +27,13 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
 
   @Override
   public School save(AreaOfExpertiseCreateCommand cmd) {
-    return delegate.save(new br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand(cmd.name()));
+    return delegate.save(
+        new br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand(cmd.name()));
   }
 
   @Override
   public School update(UUID id, AreaOfExpertiseUpdateCommand cmd) {
-    return delegate.update(id, new br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand(cmd.name()));
+    return delegate.update(
+        id, new br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand(cmd.name()));
   }
 }

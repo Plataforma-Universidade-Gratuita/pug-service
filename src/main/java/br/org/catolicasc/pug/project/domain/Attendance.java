@@ -131,4 +131,3 @@ public class Attendance extends DomainError {
     return enrollmentIdentifier != null && enrollmentIdentifier.hasFieldErrors();
   }
 }
-

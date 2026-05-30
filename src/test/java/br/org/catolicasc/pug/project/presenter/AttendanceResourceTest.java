@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -24,7 +24,8 @@ import org.junit.jupiter.api.Test;
 @DisplayName("AttendanceResource Integration Tests")
 class AttendanceResourceTest extends BaseResourceTest {
 
-  private record AttendanceGraph(Project project, FormerStudent formerStudent, Attendance attendance) {}
+  private record AttendanceGraph(
+      Project project, FormerStudent formerStudent, Attendance attendance) {}
 
   private AttendanceGraph createAttendanceGraph() throws Exception {
     Project[] project = new Project[1];
@@ -167,4 +168,3 @@ class AttendanceResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/projects/attendances");
   }
 }
-

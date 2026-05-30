@@ -17,7 +17,4 @@ import java.util.UUID;
  * @param auditInfo the nested audit information containing creation and update timestamps
  */
 public record CourseResponse(
-    UUID id,
-    String name,
-    AreaOfExpertiseResponse areaOfExpertise,
-    AuditInfoResponse auditInfo) {}
+    UUID id, String name, AreaOfExpertiseResponse areaOfExpertise, AuditInfoResponse auditInfo) {}

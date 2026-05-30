@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.project.infra.read.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -110,7 +110,8 @@ class EnrollmentQueriesImplTest {
   void shouldListByStudentId() {
     var list = queries.listAllByStudentId(formerStudent.getAccountId());
     assertThat(list).isNotEmpty();
-    assertThat(list).allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
+    assertThat(list)
+        .allSatisfy(v -> assertThat(v.studentId()).isEqualTo(formerStudent.getAccountId()));
   }
 
   @Test
@@ -161,4 +162,3 @@ class EnrollmentQueriesImplTest {
             });
   }
 }
-

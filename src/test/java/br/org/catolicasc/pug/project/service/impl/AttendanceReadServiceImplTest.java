@@ -117,4 +117,3 @@ class AttendanceReadServiceImplTest {
     assertThat(service.listViews()).hasSize(1);
   }
 }
-

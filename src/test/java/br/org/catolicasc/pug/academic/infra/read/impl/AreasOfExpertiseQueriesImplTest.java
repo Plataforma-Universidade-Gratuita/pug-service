@@ -65,7 +65,8 @@ class AreasOfExpertiseQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should search areas of expertise by name successfully")
   void searchByNameSuccess() {
     String searchKey = area.getName().substring(0, 3);
-    var result = queries.search(new PageQuery(0, 10), new AreaOfExpertiseComplexSearchCriteria(searchKey));
+    var result =
+        queries.search(new PageQuery(0, 10), new AreaOfExpertiseComplexSearchCriteria(searchKey));
     assertThat(result.content()).anyMatch(v -> v.id().equals(area.getId()));
     assertThat(result.page()).isZero();
     assertThat(result.size()).isEqualTo(10);
@@ -75,7 +76,8 @@ class AreasOfExpertiseQueriesImplTest extends BaseSearchTest {
   @DisplayName("Should return full result set when page size is the fetch-all sentinel")
   void fetchAllSuccess() {
     String searchKey = area.getName().substring(0, 3);
-    var result = queries.search(new PageQuery(2, 1), new AreaOfExpertiseComplexSearchCriteria(searchKey));
+    var result =
+        queries.search(new PageQuery(2, 1), new AreaOfExpertiseComplexSearchCriteria(searchKey));
     assertThat(result.page()).isZero();
     assertThat(result.content().size()).isEqualTo(result.totalElements());
   }

@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.academic.infra.persistence.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
@@ -17,9 +17,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
-class FormerFormerStudentRepositoryImplTest {
+class FormerStudentRepositoryImplTest {
 
-  @Inject FormerFormerStudentRepositoryImpl repository;
+  @Inject FormerStudentRepositoryImpl repository;
   @Inject TestDataFactory factory;
 
   private Account account;
@@ -46,4 +46,3 @@ class FormerFormerStudentRepositoryImplTest {
         .isEqualTo(formerStudent.getAcademicRegistration().getValue());
   }
 }
-

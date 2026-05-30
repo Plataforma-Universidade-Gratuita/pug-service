@@ -173,4 +173,3 @@ public class FormerStudentCreateRequestBuilder {
     return values[new Random().nextInt(values.length)];
   }
 }
-

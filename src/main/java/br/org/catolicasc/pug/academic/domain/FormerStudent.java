@@ -20,9 +20,9 @@ import lombok.Value;
  * Immutable Domain Entity representing an enrolled FormerStudent.
  *
  * <p>This class maps a specific authentication account to academic records. It serves as an
- * aggregate for managing a formerStudent's enrollment status, including their academic registration,
- * campus, course, and required counterpart hours. It extends {@link DomainError} to accumulate
- * validation failures.
+ * aggregate for managing a formerStudent's enrollment status, including their academic
+ * registration, campus, course, and required counterpart hours. It extends {@link DomainError} to
+ * accumulate validation failures.
  */
 @Getter
 @Value
@@ -43,12 +43,14 @@ public class FormerStudent extends DomainError {
   UUID courseId;
 
   /**
-   * The validated Value Object tracking the required counterpart hours the formerStudent must fulfill.
+   * The validated Value Object tracking the required counterpart hours the formerStudent must
+   * fulfill.
    */
   CounterpartHours counterpartHours;
 
   /**
-   * The validated Value Object representing the chronological validity of the formerStudent's enrollment.
+   * The validated Value Object representing the chronological validity of the formerStudent's
+   * enrollment.
    */
   Period period;
 
@@ -123,18 +125,19 @@ public class FormerStudent extends DomainError {
   /**
    * Updates the campus at which the formerStudent is enrolled.
    *
-   * <p>Since this entity is immutable, this method returns a new {@code FormerStudent} instance with the
-   * updated campus and a refreshed {@link AuditInfo} timestamp.
+   * <p>Since this entity is immutable, this method returns a new {@code FormerStudent} instance
+   * with the updated campus and a refreshed {@link AuditInfo} timestamp.
    *
    * @param newCampus the new {@link Campi} to set
-   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the campus
-   *     is unchanged
+   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the
+   *     campus is unchanged
    */
   public FormerStudent moveToCampus(Campi newCampus) {
     if (campus == newCampus) {
       return this;
     }
-    FormerStudent updatedStudent = toBuilder().campus(newCampus).auditInfo(auditInfo.update()).build();
+    FormerStudent updatedStudent =
+        toBuilder().campus(newCampus).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -160,8 +163,8 @@ public class FormerStudent extends DomainError {
    * Updates the course the formerStudent is enrolled in.
    *
    * @param newCourseId the unique identifier of the new course
-   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the course
-   *     is unchanged
+   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the
+   *     course is unchanged
    */
   public FormerStudent changeCourse(UUID newCourseId) {
     if (courseId.equals(newCourseId)) {
@@ -177,8 +180,8 @@ public class FormerStudent extends DomainError {
    * Updates the required counterpart hours for the formerStudent.
    *
    * @param newHours the new {@link CounterpartHours} value object
-   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the hours
-   *     are unchanged
+   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the
+   *     hours are unchanged
    */
   public FormerStudent updateRequiredHours(CounterpartHours newHours) {
     if (counterpartHours.equals(newHours)) {
@@ -194,14 +197,15 @@ public class FormerStudent extends DomainError {
    * Updates the chronological period of the formerStudent's enrollment.
    *
    * @param newPeriod the new {@link Period} value object
-   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the period
-   *     is unchanged
+   * @return a new, updated, and validated {@link FormerStudent} instance, or {@code this} if the
+   *     period is unchanged
    */
   public FormerStudent updateDateWindow(Period newPeriod) {
     if (period.equals(newPeriod)) {
       return this;
     }
-    FormerStudent updatedStudent = toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
+    FormerStudent updatedStudent =
+        toBuilder().period(newPeriod).auditInfo(auditInfo.update()).build();
     updatedStudent.collectValidationProblems();
     return updatedStudent;
   }
@@ -279,4 +283,3 @@ public class FormerStudent extends DomainError {
     }
   }
 }
-

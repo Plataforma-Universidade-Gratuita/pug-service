@@ -79,8 +79,8 @@ public class FormerStudentBuilder {
   }
 
   /**
-   * Constructs the {@link FormerStudent} aggregate using the current builder state, applying default
-   * academic periods and hour requirements.
+   * Constructs the {@link FormerStudent} aggregate using the current builder state, applying
+   * default academic periods and hour requirements.
    *
    * @return a configured {@link FormerStudent} instance
    */
@@ -94,4 +94,3 @@ public class FormerStudentBuilder {
         Period.factory(LocalDate.now(), LocalDate.now().plusMonths(6)));
   }
 }
-

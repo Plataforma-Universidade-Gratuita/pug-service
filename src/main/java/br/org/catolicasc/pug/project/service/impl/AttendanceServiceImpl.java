@@ -173,4 +173,3 @@ public class AttendanceServiceImpl implements AttendanceService {
     return BcryptUtil.bcryptHash(raw);
   }
 }
-

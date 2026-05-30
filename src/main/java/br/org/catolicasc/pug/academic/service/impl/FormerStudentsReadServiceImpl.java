@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
-/**
- * Default implementation of the former-student read service.
- */
+/** Default implementation of the former-student read service. */
 @ApplicationScoped
 public class FormerStudentsReadServiceImpl implements FormerStudentsReadService {
 

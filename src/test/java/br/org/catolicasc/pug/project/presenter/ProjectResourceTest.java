@@ -6,7 +6,6 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
@@ -16,12 +15,10 @@ import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
-import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
-import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +29,9 @@ class ProjectResourceTest extends BaseResourceTest {
   @InjectMock AuthService authService;
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void getByIdSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -50,11 +49,15 @@ class ProjectResourceTest extends BaseResourceTest {
         .statusCode(200)
         .body("data.id", is(project[0].getId().toString()))
         .body("data.entity.id", is(project[0].getEntityId().toString()))
-        .body("data.projectInfo.createdBy", is(project[0].getProjectInfo().getCreatedBy().toString()));
+        .body(
+            "data.projectInfo.createdBy",
+            is(project[0].getProjectInfo().getCreatedBy().toString()));
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void listAll() throws Exception {
     doInTransaction(
         () -> {
@@ -63,11 +66,18 @@ class ProjectResourceTest extends BaseResourceTest {
           factory.createProject(entity, creator);
         });
 
-    given().when().get("/v1/projects").then().statusCode(200).body("data", hasSize(greaterThanOrEqualTo(1)));
+    given()
+        .when()
+        .get("/v1/projects")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void listByIds() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -87,7 +97,9 @@ class ProjectResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "staff", roles = {"STAFF"})
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
   void createSuccess() throws Exception {
     Account[] staffAccount = new Account[1];
     Entity[] entity = new Entity[1];
@@ -111,7 +123,9 @@ class ProjectResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "staff", roles = {"STAFF"})
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
   void updateSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -133,7 +147,9 @@ class ProjectResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void updateStatusSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -155,7 +171,9 @@ class ProjectResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "staff", roles = {"STAFF"})
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
   void listByCreator() throws Exception {
     Account[] creator = new Account[1];
     doInTransaction(
@@ -175,7 +193,9 @@ class ProjectResourceTest extends BaseResourceTest {
   }
 
   @Test
-  @TestSecurity(user = "admin", roles = {"ADMIN"})
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
   void searchSuccess() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(

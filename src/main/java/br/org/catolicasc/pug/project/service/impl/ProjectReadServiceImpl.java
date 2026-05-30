@@ -74,7 +74,8 @@ public class ProjectReadServiceImpl implements ProjectReadService {
 
   /** {@inheritDoc} */
   @Override
-  public PageResult<ProjectView> search(ProjectComplexSearchCriteria criteria, PageQuery pageQuery) {
+  public PageResult<ProjectView> search(
+      ProjectComplexSearchCriteria criteria, PageQuery pageQuery) {
     return queries.search(criteria, pageQuery);
   }
 }

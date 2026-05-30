@@ -21,7 +21,7 @@ import java.util.UUID;
  * mapping of complex nested Value Objects into the flattened {@link FormerStudentEntity}.
  */
 @ApplicationScoped
-public class FormerFormerStudentRepositoryImpl
+public class FormerStudentRepositoryImpl
     implements FormerStudentRepository, PanacheRepositoryBase<FormerStudentEntity, UUID> {
 
   /** {@inheritDoc} */
@@ -89,7 +89,8 @@ public class FormerFormerStudentRepositoryImpl
     if (CollectionUtils.isEmpty(students)) {
       return List.of();
     }
-    List<FormerStudentEntity> entities = students.stream().map(FormerStudentMapper::toEntity).toList();
+    List<FormerStudentEntity> entities =
+        students.stream().map(FormerStudentMapper::toEntity).toList();
     persist(entities);
     flush();
 
@@ -109,4 +110,3 @@ public class FormerFormerStudentRepositoryImpl
     }
   }
 }
-

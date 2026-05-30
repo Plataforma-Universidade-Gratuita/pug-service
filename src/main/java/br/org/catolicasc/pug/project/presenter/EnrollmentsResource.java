@@ -15,13 +15,12 @@ import br.org.catolicasc.pug.project.service.EnrollmentsReadService;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
-import br.org.catolicasc.pug.shared.constants.ApiVersions;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
-import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
 import jakarta.annotation.security.RolesAllowed;
@@ -75,7 +74,8 @@ public class EnrollmentsResource {
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("studentId") @UuidV7 UUID studentId) {
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
-    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n))).build();
+    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
+        .build();
   }
 
   @GET
@@ -84,7 +84,8 @@ public class EnrollmentsResource {
   public Response getMine(@PathParam("projectId") @UuidV7 UUID projectId) {
     UUID studentAccountId = authService.getCurrentAccountId();
     EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
-    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n))).build();
+    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
+        .build();
   }
 
   @GET
@@ -96,7 +97,9 @@ public class EnrollmentsResource {
     List<EnrollmentView> views =
         projectId != null
             ? readService.listViewsByProjectId(projectId)
-            : studentId != null ? readService.listViewsByStudentId(studentId) : readService.listViews();
+            : studentId != null
+                ? readService.listViewsByStudentId(studentId)
+                : readService.listViews();
 
     List<EnrollmentResponse> body =
         views.stream().map(view -> EnrollmentPresenter.toResponse(view, locale(), i18n)).toList();
@@ -130,7 +133,6 @@ public class EnrollmentsResource {
 
     URI location =
         uri.getBaseUriBuilder()
-            .path(ApiVersions.V1.substring(1))
             .path("projects")
             .path(created.getIdentifier().getProjectId().toString())
             .path("enrollments")
@@ -152,7 +154,8 @@ public class EnrollmentsResource {
       @QueryParam("size") Integer size) {
     EnrollmentComplexSearchCriteria criteria =
         req == null
-            ? new EnrollmentComplexSearchCriteria(List.of(), List.of(), List.of(), null, null, null, null)
+            ? new EnrollmentComplexSearchCriteria(
+                List.of(), List.of(), List.of(), null, null, null, null)
             : new EnrollmentComplexSearchCriteria(
                 req.projectIds(),
                 req.studentIds(),
@@ -163,7 +166,8 @@ public class EnrollmentsResource {
                 req.periodTo());
 
     PageResult<EnrollmentView> result =
-        readService.search(criteria, new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
+        readService.search(
+            criteria, new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
 
     PageResponse<EnrollmentComplexSearchResponse> body =
         new PageResponse<>(
@@ -195,7 +199,8 @@ public class EnrollmentsResource {
         req.status());
 
     EnrollmentView view = readService.getViewByIds(projectId, studentId);
-    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n))).build();
+    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
+        .build();
   }
 
   @PATCH
@@ -203,8 +208,7 @@ public class EnrollmentsResource {
   @RolesAllowed("STUDENT")
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateStatusMine(
-      @PathParam("projectId") @UuidV7 UUID projectId,
-      @Valid EnrollmentUpdateStatusRequest req) {
+      @PathParam("projectId") @UuidV7 UUID projectId, @Valid EnrollmentUpdateStatusRequest req) {
     if (req.status() != EnrollmentStatus.EXITED) {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
@@ -215,7 +219,8 @@ public class EnrollmentsResource {
         req.status());
 
     EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
-    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n))).build();
+    return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
+        .build();
   }
 
   @DELETE

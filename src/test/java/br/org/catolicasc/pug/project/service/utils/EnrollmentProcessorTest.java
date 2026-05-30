@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.project.service.utils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import org.junit.jupiter.api.DisplayName;
@@ -27,4 +27,3 @@ class EnrollmentProcessorTest {
     assertThat(enrollment.hasFieldErrors()).isFalse();
   }
 }
-

@@ -111,7 +111,8 @@ class EnrollmentReadServiceImplTest {
   @DisplayName("Should delegate paginated search")
   void search() {
     EnrollmentComplexSearchCriteria criteria =
-        new EnrollmentComplexSearchCriteria(List.of(), List.of(), List.of(), null, null, null, null);
+        new EnrollmentComplexSearchCriteria(
+            List.of(), List.of(), List.of(), null, null, null, null);
     PageQuery pageQuery = new PageQuery(0, 25);
     PageResult<EnrollmentView> result = new PageResult<>(List.of(sampleView()), 0, 25, 1, 1);
 
@@ -120,4 +121,3 @@ class EnrollmentReadServiceImplTest {
     assertThat(service.search(criteria, pageQuery)).isEqualTo(result);
   }
 }
-

@@ -106,7 +106,8 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
       EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery) {
     EnrollmentComplexSearchCriteria safeCriteria =
         criteria == null
-            ? new EnrollmentComplexSearchCriteria(List.of(), List.of(), List.of(), null, null, null, null)
+            ? new EnrollmentComplexSearchCriteria(
+                List.of(), List.of(), List.of(), null, null, null, null)
             : criteria;
     PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
@@ -149,7 +150,11 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     List<EnrollmentView> content = execution.apply(dataQuery).getResultList();
 
     return new PageResult<>(
-        content, execution.page(), execution.size(), execution.totalElements(), execution.totalPages());
+        content,
+        execution.page(),
+        execution.size(),
+        execution.totalElements(),
+        execution.totalPages());
   }
 
   private <T> void bindFilters(TypedQuery<T> query, EnrollmentComplexSearchCriteria criteria) {

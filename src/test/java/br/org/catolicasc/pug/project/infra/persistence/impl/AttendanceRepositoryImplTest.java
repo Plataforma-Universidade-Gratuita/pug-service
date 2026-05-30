@@ -3,8 +3,8 @@ package br.org.catolicasc.pug.project.infra.persistence.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
@@ -101,4 +101,3 @@ class AttendanceRepositoryImplTest {
     assertThat(repository.existsByValidatedBy(null)).isFalse();
   }
 }
-

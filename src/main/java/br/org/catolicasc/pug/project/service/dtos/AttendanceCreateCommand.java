@@ -13,4 +13,3 @@ import java.util.UUID;
  * @param duration the total hours the formerStudent claims to have worked
  */
 public record AttendanceCreateCommand(UUID projectId, UUID studentId, BigDecimal duration) {}
-

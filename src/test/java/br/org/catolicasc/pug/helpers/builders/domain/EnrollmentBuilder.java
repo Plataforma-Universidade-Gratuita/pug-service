@@ -34,4 +34,3 @@ public class EnrollmentBuilder {
     return Enrollment.factory(formerStudent, project);
   }
 }
-

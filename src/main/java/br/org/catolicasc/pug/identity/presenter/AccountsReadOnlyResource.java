@@ -1,9 +1,5 @@
 package br.org.catolicasc.pug.identity.presenter;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
 import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountComplexSearchRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountResponse;
@@ -35,6 +31,9 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 /**
  * REST API resource controller for read-only operations on Accounts.

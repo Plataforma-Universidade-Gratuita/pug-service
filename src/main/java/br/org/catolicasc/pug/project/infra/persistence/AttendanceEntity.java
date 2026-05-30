@@ -85,4 +85,3 @@ public class AttendanceEntity extends BaseAuditedEntity {
   @Column(name = "validated_at")
   private OffsetDateTime validatedAt;
 }
-

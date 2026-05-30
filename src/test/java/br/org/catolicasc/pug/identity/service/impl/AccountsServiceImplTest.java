@@ -215,4 +215,3 @@ class AccountsServiceImplTest {
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 }
-

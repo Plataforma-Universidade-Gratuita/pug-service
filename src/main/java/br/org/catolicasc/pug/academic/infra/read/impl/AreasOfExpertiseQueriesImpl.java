@@ -18,9 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * JPA implementation of the area-of-expertise query contract.
- */
+/** JPA implementation of the area-of-expertise query contract. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
@@ -70,13 +68,17 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
   }
 
   @Override
-  public PageResult<SchoolView> search(PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
+  public PageResult<SchoolView> search(
+      PageQuery pageQuery, AreaOfExpertiseComplexSearchCriteria criteria) {
     String name = criteria == null ? null : criteria.name();
     String whereClause =
-        StringUtils.isNotEmpty(name) ? " where " + JpaSearchUtils.containsClause("s.name", "namePattern") : "";
+        StringUtils.isNotEmpty(name)
+            ? " where " + JpaSearchUtils.containsClause("s.name", "namePattern")
+            : "";
 
     var countQuery =
-        entityManager.createQuery("select count(s.id) from SchoolEntity s" + whereClause, Long.class);
+        entityManager.createQuery(
+            "select count(s.id) from SchoolEntity s" + whereClause, Long.class);
     bindSearchParameters(countQuery, name);
     long totalElements = countQuery.getSingleResult();
     PageExecution pageExecution = PageExecution.from(pageQuery, totalElements);

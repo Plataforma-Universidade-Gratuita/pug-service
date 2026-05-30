@@ -47,9 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * REST resource exposing former-student read and write operations.
- */
+/** REST resource exposing former-student read and write operations. */
 @ApplicationScoped
 @Path("/v1/academic/former-students")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -91,13 +89,13 @@ public class FormerStudentsResource {
     List<FormerStudentView> views =
         CollectionUtils.isEmpty(ids) ? readService.listViews() : readService.listViewsByIds(ids);
     List<FormerStudentResponse> body =
-        views.stream().map(view -> FormerStudentPresenter.toResponse(view, locale(), i18n)).toList();
+        views.stream()
+            .map(view -> FormerStudentPresenter.toResponse(view, locale(), i18n))
+            .toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /**
-   * Executes paginated former-student complex search.
-   */
+  /** Executes paginated former-student complex search. */
   @POST
   @Path("/search")
   @Authenticated
@@ -153,19 +151,21 @@ public class FormerStudentsResource {
   @RolesAllowed("ADMIN")
   public Response createInBulk(@Valid @NotNull List<FormerStudentCreateRequest> requests) {
     List<FormerStudent> created =
-        writeService.saveInBulk(
-            requests.stream().map(FormerStudentPresenter::toCommand).toList());
+        writeService.saveInBulk(requests.stream().map(FormerStudentPresenter::toCommand).toList());
     List<FormerStudentView> views =
         readService.listViewsByIds(created.stream().map(FormerStudent::getAccountId).toList());
     List<FormerStudentResponse> body =
-        views.stream().map(view -> FormerStudentPresenter.toResponse(view, locale(), i18n)).toList();
+        views.stream()
+            .map(view -> FormerStudentPresenter.toResponse(view, locale(), i18n))
+            .toList();
     return Response.status(Response.Status.CREATED).entity(ApiEnvelope.created(body)).build();
   }
 
   @PUT
   @Path("/{id}")
   @RolesAllowed("ADMIN")
-  public Response update(@PathParam("id") @UuidV7 UUID id, @Valid FormerStudentUpdateRequest request) {
+  public Response update(
+      @PathParam("id") @UuidV7 UUID id, @Valid FormerStudentUpdateRequest request) {
     writeService.update(id, FormerStudentPresenter.toCommand(request));
     FormerStudentView view = readService.getViewByAccountId(id);
     FormerStudentResponse body = FormerStudentPresenter.toResponse(view, locale(), i18n);
@@ -175,7 +175,8 @@ public class FormerStudentsResource {
   @PATCH
   @Path("/{id}/status")
   @RolesAllowed("ADMIN")
-  public Response updateStatus(@PathParam("id") @UuidV7 UUID id, @Valid AccountStatusRequest request) {
+  public Response updateStatus(
+      @PathParam("id") @UuidV7 UUID id, @Valid AccountStatusRequest request) {
     writeService.updateStatus(id, request.active());
     return Response.noContent().build();
   }

@@ -61,7 +61,10 @@ class AuthServiceImplTest {
 
     Account acc =
         Account.factory(
-            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, hash);
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory(email),
+            AccountType.FORMER_STUDENT,
+            hash);
     acc = acc.toBuilder().active(true).build();
 
     when(accountService.getByEmail(email)).thenReturn(acc);
@@ -120,7 +123,10 @@ class AuthServiceImplTest {
     String hash = "hashed";
     Account acc =
         Account.factory(
-            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, hash);
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory(email),
+            AccountType.FORMER_STUDENT,
+            hash);
 
     when(accountService.getByEmail(email)).thenReturn(acc);
     when(passwordService.isConfigured(hash)).thenReturn(true);
@@ -288,7 +294,10 @@ class AuthServiceImplTest {
     String rawPassword = "weakpass";
     Account account =
         Account.factory(
-            UuidCreator.getTimeOrderedEpoch(), Email.factory(email), AccountType.FORMER_STUDENT, null);
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory(email),
+            AccountType.FORMER_STUDENT,
+            null);
 
     when(accountService.getByEmail(email)).thenReturn(account);
     BusinessRuleException exception = new BusinessRuleException(IdentityErrorCodes.WEAK_PASSWORD);
@@ -435,4 +444,3 @@ class AuthServiceImplTest {
     assertThat(hash1).isEqualTo(hash2).hasSize(64);
   }
 }
-

@@ -14,7 +14,4 @@ import java.time.OffsetDateTime;
  * @param grantedAt the timestamp when administrative privileges were granted
  */
 public record AdminComplexSearchView(
-        AccountComplexSearchView accountView,
-        Campi campus,
-        OffsetDateTime grantedAt
-) {}
+    AccountComplexSearchView accountView, Campi campus, OffsetDateTime grantedAt) {}

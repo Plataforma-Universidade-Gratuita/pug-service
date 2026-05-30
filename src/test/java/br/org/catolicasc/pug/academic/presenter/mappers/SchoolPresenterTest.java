@@ -120,7 +120,8 @@ class SchoolPresenterTest {
     @DisplayName("Should map view to lightweight complex-search response")
     void toComplexSearchResponseSuccess() {
       UUID id = UuidCreator.getTimeOrderedEpoch();
-      SchoolView view = new SchoolView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
+      SchoolView view =
+          new SchoolView(id, "Engineering", OffsetDateTime.now(), OffsetDateTime.now());
 
       SchoolComplexSearchResponse response = SchoolPresenter.toComplexSearchResponse(view);
 

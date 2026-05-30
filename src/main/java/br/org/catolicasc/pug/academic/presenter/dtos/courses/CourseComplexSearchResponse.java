@@ -1,8 +1,7 @@
 package br.org.catolicasc.pug.academic.presenter.dtos.courses;
 
-import java.util.UUID;
-
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
+import java.util.UUID;
 
 /**
  * Lightweight course response used by former-student complex-search payloads.

@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Stateless utility class responsible for mapping raw DTO command data into pure {@link FormerStudent}
- * Domain Aggregates and their complex nested Value Objects.
+ * Stateless utility class responsible for mapping raw DTO command data into pure {@link
+ * FormerStudent} Domain Aggregates and their complex nested Value Objects.
  *
  * <p>This processor centralizes the orchestration of domain factory methods and state-mutation
  * behaviors, ensuring that complex initialization or update logic does not pollute the application
@@ -25,8 +25,8 @@ import java.util.UUID;
 public class FormerStudentProcessor {
 
   /**
-   * Processes a bulk list of formerStudent creation commands, combining them with their newly generated
-   * account identifiers to instantiate pure Domain Aggregates.
+   * Processes a bulk list of formerStudent creation commands, combining them with their newly
+   * generated account identifiers to instantiate pure Domain Aggregates.
    *
    * @param cmds the {@link List} of bulk formerStudent creation commands
    * @param accountIds the {@link List} of newly provisioned {@link UUID} account identifiers
@@ -100,7 +100,8 @@ public class FormerStudentProcessor {
   }
 
   /**
-   * Processes raw update inputs and conditionally mutates the state of an existing {@link FormerStudent}.
+   * Processes raw update inputs and conditionally mutates the state of an existing {@link
+   * FormerStudent}.
    *
    * @param existingStudent the current, reconstituted {@link FormerStudent} aggregate
    * @param regString the proposed new academic registration, or {@code null}/empty to skip
@@ -156,4 +157,3 @@ public class FormerStudentProcessor {
     return updated;
   }
 }
-

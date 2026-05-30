@@ -142,14 +142,14 @@ class EntityPresenterTest {
       assertThat(response.cnpjFormatted()).isNotBlank();
       assertThat(response.name()).isEqualTo("Acme Corp");
       assertThat(response.address()).isEqualTo("Rua A, 123");
-      assertThat(response.city())
-          .isEqualTo(new CityResponse(cityId, "Blumenau", "1234567"));
+      assertThat(response.city()).isEqualTo(new CityResponse(cityId, "Blumenau", "1234567"));
       assertThat(response.auditInfo()).isNotNull();
       assertThat(response.auditInfo().createdAt()).isEqualTo(now);
     }
 
     @Test
-    @DisplayName("Should map EntityComplexSearchView to EntitySimpleComplexSearchResponse correctly")
+    @DisplayName(
+        "Should map EntityComplexSearchView to EntitySimpleComplexSearchResponse correctly")
     void toSimpleComplexSearchResponseSuccess() {
       UUID id = UuidCreator.getTimeOrderedEpoch();
       EntityComplexSearchView view =

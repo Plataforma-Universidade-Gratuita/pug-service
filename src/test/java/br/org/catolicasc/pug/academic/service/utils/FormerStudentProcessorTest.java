@@ -134,7 +134,10 @@ class FormerStudentProcessorTest {
   void shouldThrowOnInvalidBulkInput() {
     AccountCreateCommand accCmd =
         new AccountCreateCommand(
-            "x@x.com", AccountType.FORMER_STUDENT, "hash", new UserCreateCommand("12345678901", "Name"));
+            "x@x.com",
+            AccountType.FORMER_STUDENT,
+            "hash",
+            new UserCreateCommand("12345678901", "Name"));
     FormerStudentCreateCommand badCmd =
         new FormerStudentCreateCommand(accCmd, "", null, null, null, null, null);
 
@@ -160,7 +163,10 @@ class FormerStudentProcessorTest {
   private FormerStudentCreateCommand createCmd(String reg, UUID courseId) {
     AccountCreateCommand accCmd =
         new AccountCreateCommand(
-            "x@x.com", AccountType.FORMER_STUDENT, "hash", new UserCreateCommand("12345678901", "Name"));
+            "x@x.com",
+            AccountType.FORMER_STUDENT,
+            "hash",
+            new UserCreateCommand("12345678901", "Name"));
     return new FormerStudentCreateCommand(
         accCmd,
         reg,
@@ -171,4 +177,3 @@ class FormerStudentProcessorTest {
         LocalDate.now().plusMonths(6));
   }
 }
-

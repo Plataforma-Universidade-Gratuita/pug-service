@@ -17,37 +17,37 @@ import java.util.UUID;
  */
 public interface StaffReadService {
 
-    /**
-     * Retrieves a staff read-model projection by its linked account identifier.
-     *
-     * @param accountId the unique identifier of the account linked to the staff member
-     * @return the matching {@link StaffView}
-     */
-    StaffView getViewByAccountId(UUID accountId);
+  /**
+   * Retrieves a staff read-model projection by its linked account identifier.
+   *
+   * @param accountId the unique identifier of the account linked to the staff member
+   * @return the matching {@link StaffView}
+   */
+  StaffView getViewByAccountId(UUID accountId);
 
-    /**
-     * Retrieves all staff read-model projections.
-     *
-     * @return a list containing all available {@link StaffView} projections
-     */
-    List<StaffView> listViews();
+  /**
+   * Retrieves all staff read-model projections.
+   *
+   * @return a list containing all available {@link StaffView} projections
+   */
+  List<StaffView> listViews();
 
-    /**
-     * Retrieves staff read-model projections restricted to the provided linked account identifiers.
-     *
-     * @param ids the linked account identifiers used to restrict the returned staff members
-     * @return a list containing the matching {@link StaffView} projections, or an empty list when no
-     *     identifiers are provided
-     */
-    List<StaffView> listViewsByIds(List<UUID> ids);
+  /**
+   * Retrieves staff read-model projections restricted to the provided linked account identifiers.
+   *
+   * @param ids the linked account identifiers used to restrict the returned staff members
+   * @return a list containing the matching {@link StaffView} projections, or an empty list when no
+   *     identifiers are provided
+   */
+  List<StaffView> listViewsByIds(List<UUID> ids);
 
-    /**
-     * Executes paginated staff search using the complex-search criteria.
-     *
-     * @param pageQuery the pagination request containing page, size, and fetch-all behavior
-     * @param criteria the staff search filters to apply
-     * @return a paginated {@link PageResult} containing {@link StaffComplexSearchView} projections
-     */
-    PageResult<StaffComplexSearchView> search(
-            PageQuery pageQuery, StaffComplexSearchCriteria criteria);
+  /**
+   * Executes paginated staff search using the complex-search criteria.
+   *
+   * @param pageQuery the pagination request containing page, size, and fetch-all behavior
+   * @param criteria the staff search filters to apply
+   * @return a paginated {@link PageResult} containing {@link StaffComplexSearchView} projections
+   */
+  PageResult<StaffComplexSearchView> search(
+      PageQuery pageQuery, StaffComplexSearchCriteria criteria);
 }

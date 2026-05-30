@@ -39,7 +39,9 @@ class ProjectReadServiceImplTest {
   @Test
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
@@ -50,8 +52,16 @@ class ProjectReadServiceImplTest {
 
   @Test
   void searchDelegates() {
-    when(queries.search(any(), any())).thenReturn(new PageResult<>(List.of(sampleView()), 0, 1, 1, 1));
-    assertThat(service.search(new ProjectComplexSearchCriteria(null, List.of(), null, List.of(), null, null, List.of(), null, null), new PageQuery(0, 1)).content()).hasSize(1);
+    when(queries.search(any(), any()))
+        .thenReturn(new PageResult<>(List.of(sampleView()), 0, 1, 1, 1));
+    assertThat(
+            service
+                .search(
+                    new ProjectComplexSearchCriteria(
+                        null, List.of(), null, List.of(), null, null, List.of(), null, null),
+                    new PageQuery(0, 1))
+                .content())
+        .hasSize(1);
   }
 
   private ProjectView sampleView() {

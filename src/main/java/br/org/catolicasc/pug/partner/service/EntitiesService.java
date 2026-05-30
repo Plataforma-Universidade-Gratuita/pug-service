@@ -10,13 +10,11 @@ import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
 
 /**
- * Application service interface for managing the state of partner {@link Entity} domain
- * aggregates.
+ * Application service interface for managing the state of partner {@link Entity} domain aggregates.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations (Create, Update,
- * Delete) and strict domain-level retrievals. It enforces cross-cutting business rules (e.g.,
- * CNPJ uniqueness) and coordinates with the geo module to ensure geographical references are
- * valid.
+ * Delete) and strict domain-level retrievals. It enforces cross-cutting business rules (e.g., CNPJ
+ * uniqueness) and coordinates with the geo module to ensure geographical references are valid.
  */
 public interface EntitiesService {
 
@@ -54,8 +52,7 @@ public interface EntitiesService {
   Entity getById(UUID id);
 
   /**
-   * Instantiates and persists a new partner {@link Entity} aggregate based on the provided
-   * command.
+   * Instantiates and persists a new partner {@link Entity} aggregate based on the provided command.
    *
    * @param cmd the structured command containing the data to create the new partner entity
    * @return the fully instantiated and persisted {@link Entity} aggregate

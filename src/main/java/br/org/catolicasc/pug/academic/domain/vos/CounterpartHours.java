@@ -9,8 +9,8 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Value Object (VO) representing the Counterpart Hours required for a formerStudent's project
- * and the progress made toward completion.
+ * Immutable Value Object (VO) representing the Counterpart Hours required for a formerStudent's
+ * project and the progress made toward completion.
  *
  * <p>Extends {@link DomainError} to encapsulate validations relating to time requirements, ensuring
  * hours remain within logically valid bounds (non-negative and not exceeding requirements).
@@ -88,4 +88,3 @@ public class CounterpartHours extends DomainError {
     }
   }
 }
-

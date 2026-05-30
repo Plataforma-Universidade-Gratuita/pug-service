@@ -112,8 +112,7 @@ class CoursesQueriesImplTest extends BaseSearchTest {
   void shouldSearchBySchoolSuccess() {
     var result =
         queries.search(
-            new PageQuery(0, 10),
-            new CourseComplexSearchCriteria(null, List.of(school.getId())));
+            new PageQuery(0, 10), new CourseComplexSearchCriteria(null, List.of(school.getId())));
 
     assertThat(result.content()).anyMatch(v -> v.id().equals(course.getId()));
   }

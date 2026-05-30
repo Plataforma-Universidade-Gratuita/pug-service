@@ -20,12 +20,12 @@ import java.util.UUID;
  *
  * @param cpf the raw 11-digit numeric CPF string of the formerStudent (must not be blank)
  * @param name the full name of the formerStudent (must not be blank and max 150 characters)
- * @param email the email address for the former-student account (must be a valid format and max
- *     254 characters)
+ * @param email the email address for the former-student account (must be a valid format and max 254
+ *     characters)
  * @param academicRegistration the university-issued academic registration string (must not be blank
  *     and max 15 characters)
- * @param campus the designated university campus enum where the formerStudent is enrolled (must not be
- *     null)
+ * @param campus the designated university campus enum where the formerStudent is enrolled (must not
+ *     be null)
  * @param courseId the unique identifier (UUIDv7) of the enrolled course (must not be null)
  * @param requiredHours the required counterpart hours the formerStudent must complete (must be
  *     non-negative)
@@ -42,4 +42,3 @@ public record FormerStudentCreateRequest(
     @NotNull @DecimalMin("0.00") BigDecimal requiredHours,
     @NotNull LocalDate startDate,
     @NotNull LocalDate dueDate) {}
-

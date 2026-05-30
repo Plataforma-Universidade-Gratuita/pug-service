@@ -60,4 +60,3 @@ public class AttendanceBuilder {
     return Attendance.factory(project, formerStudent, duration, hash);
   }
 }
-

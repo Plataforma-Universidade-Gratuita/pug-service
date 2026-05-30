@@ -27,4 +27,3 @@ public enum AttendanceStatus implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
-

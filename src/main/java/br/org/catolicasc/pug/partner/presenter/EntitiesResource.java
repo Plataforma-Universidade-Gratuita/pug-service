@@ -146,7 +146,8 @@ public class EntitiesResource {
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response create(@Valid EntityCreateRequest req) {
     Entity created = writeService.save(EntityPresenter.toCommand(req));
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewById(created.getId()), locale());
+    EntityResponse body =
+        EntityPresenter.toResponse(readService.getViewById(created.getId()), locale());
     URI location = uri.getAbsolutePathBuilder().path(created.getId().toString()).build();
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
@@ -163,7 +164,8 @@ public class EntitiesResource {
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     Entity updated = writeService.update(id, EntityPresenter.toCommand(req));
-    EntityResponse body = EntityPresenter.toResponse(readService.getViewById(updated.getId()), locale());
+    EntityResponse body =
+        EntityPresenter.toResponse(readService.getViewById(updated.getId()), locale());
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 

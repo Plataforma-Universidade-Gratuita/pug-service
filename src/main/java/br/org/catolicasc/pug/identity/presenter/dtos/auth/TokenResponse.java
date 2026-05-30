@@ -19,10 +19,10 @@ import java.util.UUID;
  * @param refreshExpiresIn the number of seconds until the refresh token expires
  */
 public record TokenResponse(
-        String token,
-        String refreshToken,
-        UUID accountId,
-        AccountType accountType,
-        boolean passwordWired,
-        long expiresIn,
-        long refreshExpiresIn) {}
+    String token,
+    String refreshToken,
+    UUID accountId,
+    AccountType accountType,
+    boolean passwordWired,
+    long expiresIn,
+    long refreshExpiresIn) {}

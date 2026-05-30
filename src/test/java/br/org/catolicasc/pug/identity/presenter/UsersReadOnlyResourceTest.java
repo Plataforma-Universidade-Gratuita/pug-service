@@ -146,4 +146,3 @@ class UsersReadOnlyResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/identity/users");
   }
 }
-

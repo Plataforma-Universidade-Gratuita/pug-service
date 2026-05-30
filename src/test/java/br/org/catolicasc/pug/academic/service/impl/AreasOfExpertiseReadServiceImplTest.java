@@ -42,14 +42,22 @@ class AreasOfExpertiseReadServiceImplTest {
   @DisplayName("Should throw when area of expertise is not found")
   void getViewByIdNotFound() {
     when(queries.findOptionalById(any())).thenReturn(Optional.empty());
-    assertThrows(ResourceNotFoundException.class, () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
+    assertThrows(
+        ResourceNotFoundException.class,
+        () -> service.getViewById(UuidCreator.getTimeOrderedEpoch()));
   }
 
   @Test
   @DisplayName("Should list all areas of expertise")
   void listViews() {
     when(queries.listAllViews())
-        .thenReturn(List.of(new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Eng", OffsetDateTime.now(), OffsetDateTime.now())));
+        .thenReturn(
+            List.of(
+                new SchoolView(
+                    UuidCreator.getTimeOrderedEpoch(),
+                    "Eng",
+                    OffsetDateTime.now(),
+                    OffsetDateTime.now())));
     assertThat(service.listViews()).hasSize(1);
   }
 
@@ -69,7 +77,12 @@ class AreasOfExpertiseReadServiceImplTest {
     AreaOfExpertiseComplexSearchCriteria criteria = new AreaOfExpertiseComplexSearchCriteria("Eng");
     PageResult<SchoolView> expected =
         new PageResult<>(
-            List.of(new SchoolView(UuidCreator.getTimeOrderedEpoch(), "Eng", OffsetDateTime.now(), OffsetDateTime.now())),
+            List.of(
+                new SchoolView(
+                    UuidCreator.getTimeOrderedEpoch(),
+                    "Eng",
+                    OffsetDateTime.now(),
+                    OffsetDateTime.now())),
             0,
             25,
             1,

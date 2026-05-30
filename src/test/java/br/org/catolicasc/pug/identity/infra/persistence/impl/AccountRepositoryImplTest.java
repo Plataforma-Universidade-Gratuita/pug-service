@@ -155,4 +155,3 @@ class AccountRepositoryImplTest {
     assertThat(repository.findOptionalById(saved.get(1).getId())).isPresent();
   }
 }
-

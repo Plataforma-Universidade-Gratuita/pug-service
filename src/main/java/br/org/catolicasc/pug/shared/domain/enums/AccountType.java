@@ -42,4 +42,3 @@ public enum AccountType implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
-

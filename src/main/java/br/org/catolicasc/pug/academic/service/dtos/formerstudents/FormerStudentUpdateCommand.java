@@ -10,8 +10,8 @@ import java.util.UUID;
  * Data Transfer Object (DTO) acting as an application command to update an existing FormerStudent's
  * enrollment.
  *
- * <p>This record encapsulates the requested state changes for a formerStudent. The fields, including the
- * nested account update command, are treated as optional for partial updates.
+ * <p>This record encapsulates the requested state changes for a formerStudent. The fields,
+ * including the nested account update command, are treated as optional for partial updates.
  *
  * @param accountUpdateCommand the nested command containing data to update the authentication
  *     account, or {@code null}
@@ -31,4 +31,3 @@ public record FormerStudentUpdateCommand(
     BigDecimal requiredHours,
     LocalDate startDate,
     LocalDate dueDate) {}
-

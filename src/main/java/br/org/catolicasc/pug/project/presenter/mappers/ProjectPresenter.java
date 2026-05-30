@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplexSearchResponse;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectComplexSearchResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
@@ -9,7 +10,6 @@ import br.org.catolicasc.pug.project.presenter.dtos.ProjectStatusResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
-import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplexSearchResponse;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -75,7 +75,6 @@ public final class ProjectPresenter {
     }
 
     String statusFormatted = i18n.translation(v.status().getBundleKey(), locale);
-    String closedAtFormatted = StringUtils.toStringFormatted(v.closedAt(), locale);
     return new ProjectResponse(
         v.id(),
         v.name(),

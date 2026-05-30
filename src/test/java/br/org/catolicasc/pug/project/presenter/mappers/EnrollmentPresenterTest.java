@@ -2,11 +2,11 @@ package br.org.catolicasc.pug.project.presenter.mappers;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
 import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentResponse;
 import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;

@@ -6,8 +6,8 @@ import java.util.UUID;
 /**
  * Domain repository interface for managing {@link Attendance} aggregate roots.
  *
- * <p>This interface defines the contract for tracking formerStudent participation in projects, including
- * QR code validations and temporal checks.
+ * <p>This interface defines the contract for tracking formerStudent participation in projects,
+ * including QR code validations and temporal checks.
  */
 public interface AttendanceRepository {
 
@@ -76,4 +76,3 @@ public interface AttendanceRepository {
    */
   void update(Attendance entity);
 }
-

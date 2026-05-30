@@ -128,4 +128,3 @@ class AccountsReadServiceImplTest {
     assertThat(service.search(new PageQuery(0, 10), criteria)).isEqualTo(pageResult);
   }
 }
-

@@ -17,6 +17,5 @@ public interface EnrollmentsReadService {
 
   List<EnrollmentView> listViewsByStudentId(UUID studentId);
 
-  PageResult<EnrollmentView> search(
-      EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery);
+  PageResult<EnrollmentView> search(EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery);
 }

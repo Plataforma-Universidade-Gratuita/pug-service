@@ -162,4 +162,3 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
     assertUnauthenticated("/v1/identity/accounts");
   }
 }
-

@@ -137,4 +137,3 @@ class FormerStudentMapperTest extends CopyableMapperTest<FormerStudent, FormerSt
     assertThat(view.dueDate()).isEqualTo(today.plusMonths(12));
   }
 }
-

@@ -79,8 +79,8 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a FormerStudent with
-   * the specified academic registration already exists in the system.
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a FormerStudent
+   * with the specified academic registration already exists in the system.
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
@@ -89,8 +89,8 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link BusinessRuleException} indicating that a formerStudent profile
-   * cannot be modified or deleted because it still retains active or historical project
+   * Instantiates a standardized {@link BusinessRuleException} indicating that a formerStudent
+   * profile cannot be modified or deleted because it still retains active or historical project
    * enrollments.
    *
    * @return a fully configured {@link BusinessRuleException} instance
@@ -123,4 +123,3 @@ public final class ExceptionHelper {
     return new NotAuthorizedException("Invalid credentials or inactive account");
   }
 }
-

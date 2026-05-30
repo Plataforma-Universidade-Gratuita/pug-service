@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -18,13 +19,12 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import io.quarkus.security.Authenticated;
 
 /**
  * REST API Resource controller for handling authentication operations.
  *
- * <p>This class exposes endpoints allowing users to authenticate, refresh their access tokens,
- * wire first-time credentials, and log out by revoking refresh tokens.
+ * <p>This class exposes endpoints allowing users to authenticate, refresh their access tokens, wire
+ * first-time credentials, and log out by revoking refresh tokens.
  */
 @ApplicationScoped
 @Path("/v1/auth")
@@ -78,20 +78,20 @@ public class AuthResource {
     return Response.noContent().build();
   }
 
-    /**
-     * Validates a refresh token and issues a new short-lived access token.
-     *
-     * @param request the validated {@link RefreshRequest} containing the opaque refresh token
-     * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the new {@link
-     *     TokenResponse}
-     */
-    @POST
-    @Path("/refresh")
-    @PermitAll
-    public Response refresh(@Valid RefreshRequest request) {
-        TokenResponse body = authService.refresh(request);
-        return Response.ok(ApiEnvelope.ok(body)).build();
-    }
+  /**
+   * Validates a refresh token and issues a new short-lived access token.
+   *
+   * @param request the validated {@link RefreshRequest} containing the opaque refresh token
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the new {@link
+   *     TokenResponse}
+   */
+  @POST
+  @Path("/refresh")
+  @PermitAll
+  public Response refresh(@Valid RefreshRequest request) {
+    TokenResponse body = authService.refresh(request);
+    return Response.ok(ApiEnvelope.ok(body)).build();
+  }
 
   /**
    * Wires the password credentials for an already provisioned account.

@@ -64,7 +64,8 @@ class EnrollmentServiceImplTest {
   @Transactional
   @DisplayName("Should save enrollment successfully")
   void saveSuccess() {
-    Enrollment saved = service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build());
+    Enrollment saved =
+        service.save(anEnrollmentCreateCommand().withProjectId(project.getId()).build());
 
     assertThat(saved.getStatus()).isEqualTo(EnrollmentStatus.PENDING);
   }
@@ -104,7 +105,8 @@ class EnrollmentServiceImplTest {
   void changeStatusToApprovedSuccess() {
     Enrollment enrollment = factory.createEnrollment(formerStudent, project);
 
-    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
+    Enrollment updated =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
   }
@@ -118,7 +120,8 @@ class EnrollmentServiceImplTest {
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.CANCELED);
+    Enrollment updated =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.CANCELED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
   }
@@ -132,7 +135,8 @@ class EnrollmentServiceImplTest {
     em.merge(br.org.catolicasc.pug.project.infra.EnrollmentMapper.toEntity(enrollment));
     em.flush();
 
-    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.COMPLETED);
+    Enrollment updated =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.COMPLETED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
   }
@@ -171,7 +175,8 @@ class EnrollmentServiceImplTest {
   void changeStatusToRejectedSuccess() {
     Enrollment enrollment = factory.createEnrollment(formerStudent, project);
 
-    Enrollment updated = service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.REJECTED);
+    Enrollment updated =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.REJECTED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
   }

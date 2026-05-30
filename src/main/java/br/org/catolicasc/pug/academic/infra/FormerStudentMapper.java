@@ -21,10 +21,12 @@ public final class FormerStudentMapper {
   private FormerStudentMapper() {}
 
   /**
-   * Reconstitutes a pure Domain {@link FormerStudent} aggregate from a JPA {@link FormerStudentEntity}.
+   * Reconstitutes a pure Domain {@link FormerStudent} aggregate from a JPA {@link
+   * FormerStudentEntity}.
    *
    * @param e the JPA persistence entity to convert
-   * @return a fully constructed Domain {@link FormerStudent}, or {@code null} if the input entity is null
+   * @return a fully constructed Domain {@link FormerStudent}, or {@code null} if the input entity
+   *     is null
    */
   public static FormerStudent toDomain(FormerStudentEntity e) {
     if (e == null) {
@@ -47,8 +49,8 @@ public final class FormerStudentMapper {
    * FormerStudentEntity}.
    *
    * @param d the Domain aggregate to convert
-   * @return a newly constructed JPA {@link FormerStudentEntity}, or {@code null} if the input domain is
-   *     null
+   * @return a newly constructed JPA {@link FormerStudentEntity}, or {@code null} if the input
+   *     domain is null
    */
   public static FormerStudentEntity toEntity(FormerStudent d) {
     if (d == null) {
@@ -70,8 +72,8 @@ public final class FormerStudentMapper {
   }
 
   /**
-   * Updates an existing, attached JPA {@link FormerStudentEntity} with the current state of a Domain
-   * {@link FormerStudent}.
+   * Updates an existing, attached JPA {@link FormerStudentEntity} with the current state of a
+   * Domain {@link FormerStudent}.
    *
    * @param d the Domain aggregate containing the updated state
    * @param e the existing, attached JPA entity to update in-place
@@ -97,8 +99,8 @@ public final class FormerStudentMapper {
    * FormerStudentView} DTO.
    *
    * @param s the JPA entity representing the formerStudent's academic records
-   * @return a fully populated, flattened {@link FormerStudentView} DTO, or {@code null} if the formerStudent
-   *     entity is null
+   * @return a fully populated, flattened {@link FormerStudentView} DTO, or {@code null} if the
+   *     formerStudent entity is null
    */
   public static FormerStudentView toView(FormerStudentEntity s) {
     if (s == null) {
@@ -119,4 +121,3 @@ public final class FormerStudentMapper {
         s.getUpdatedAt());
   }
 }
-

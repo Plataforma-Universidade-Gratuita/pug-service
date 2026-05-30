@@ -10,5 +10,4 @@ import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplex
  * @param entity the lightweight partner-entity projection associated with the staff member
  */
 public record StaffComplexSearchResponse(
-    AccountComplexSearchResponse account,
-    EntitySimpleComplexSearchResponse entity) {}
+    AccountComplexSearchResponse account, EntitySimpleComplexSearchResponse entity) {}

@@ -6,11 +6,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-import java.util.List;
-
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -27,6 +25,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -394,7 +393,9 @@ class EnrollmentResourceTest extends BaseResourceTest {
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
           Enrollment enr =
-              factory.createEnrollment(formerStudent, project[0]).changeStatus(EnrollmentStatus.APPROVED);
+              factory
+                  .createEnrollment(formerStudent, project[0])
+                  .changeStatus(EnrollmentStatus.APPROVED);
           em.merge(EnrollmentMapper.toEntity(enr));
         });
 
@@ -508,4 +509,3 @@ class EnrollmentResourceTest extends BaseResourceTest {
     return factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
   }
 }
-

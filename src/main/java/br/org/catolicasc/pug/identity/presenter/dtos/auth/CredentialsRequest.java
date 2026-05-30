@@ -11,4 +11,5 @@ import jakarta.validation.constraints.Size;
  * @param password the raw password to validate and hash before persistence
  */
 public record CredentialsRequest(
-    @NotBlank @Email @Size(max = 254) String email, @NotBlank @Size(min = 8, max = 255) String password) {}
+    @NotBlank @Email @Size(max = 254) String email,
+    @NotBlank @Size(min = 8, max = 255) String password) {}

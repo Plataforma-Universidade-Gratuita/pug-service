@@ -28,10 +28,10 @@ import org.jboss.logging.Logger;
 /**
  * Implementation of the {@link FormerStudentsService} command interface.
  *
- * <p>This application-scoped service orchestrates state mutations for formerStudent enrollments. Because
- * a formerStudent is inherently an extension of an authentication account tied to a specific course, this
- * service delegates identity concerns down to the {@link AccountsService} and structural course
- * validations to the {@link CoursesService}.
+ * <p>This application-scoped service orchestrates state mutations for formerStudent enrollments.
+ * Because a formerStudent is inherently an extension of an authentication account tied to a
+ * specific course, this service delegates identity concerns down to the {@link AccountsService} and
+ * structural course validations to the {@link CoursesService}.
  */
 @ApplicationScoped
 public class FormerStudentsServiceImpl implements FormerStudentsService {
@@ -128,7 +128,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   @Transactional
   @Override
   public FormerStudent save(FormerStudentCreateCommand cmd) {
-    LOG.debugf("Attempting to create FormerStudent with registration: %s", cmd.academicRegistration());
+    LOG.debugf(
+        "Attempting to create FormerStudent with registration: %s", cmd.academicRegistration());
     courseService.getById(cmd.courseId());
     Account account = accountService.save(cmd.accountCreateCommand());
 
@@ -169,7 +170,10 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     }
     LOG.debugf("Attempting to bulk create %d Students", cmds.size());
 
-    cmds.stream().map(FormerStudentCreateCommand::courseId).distinct().forEach(courseService::getById);
+    cmds.stream()
+        .map(FormerStudentCreateCommand::courseId)
+        .distinct()
+        .forEach(courseService::getById);
 
     List<String> registrations =
         cmds.stream().map(FormerStudentCreateCommand::academicRegistration).toList();
@@ -187,7 +191,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     List<Account> createdAccounts = accountService.saveInBulk(accountCmds);
     List<UUID> accountIds = createdAccounts.stream().map(Account::getId).toList();
 
-    List<FormerStudent> studentsToPersist = FormerStudentProcessor.processBulkCreateInput(cmds, accountIds);
+    List<FormerStudent> studentsToPersist =
+        FormerStudentProcessor.processBulkCreateInput(cmds, accountIds);
 
     List<FormerStudent> savedStudents = repo.persistAll(studentsToPersist);
     LOG.infof("Successfully bulk created %d Students", savedStudents.size());
@@ -255,7 +260,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
    * Checks if a formerStudent with the given academic registration already exists.
    *
    * @param registration the academic registration string to check
-   * @return {@code true} if a formerStudent with the given registration exists, {@code false} otherwise
+   * @return {@code true} if a formerStudent with the given registration exists, {@code false}
+   *     otherwise
    */
   private boolean existsByRegistration(String registration) {
     if (StringUtils.isEmpty(registration)) {
@@ -264,4 +270,3 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     return repo.existsByRegistration(registration);
   }
 }
-

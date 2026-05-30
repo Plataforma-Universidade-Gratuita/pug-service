@@ -68,7 +68,8 @@ class FormerStudentPresenterTest {
     @Test
     @DisplayName("Should return null when request is null")
     void toCreateCommandNull() {
-      assertThat(FormerStudentPresenter.toCommand((FormerStudentCreateRequest) null, "hash")).isNull();
+      assertThat(FormerStudentPresenter.toCommand((FormerStudentCreateRequest) null, "hash"))
+          .isNull();
     }
   }
 
@@ -104,7 +105,8 @@ class FormerStudentPresenterTest {
     @Test
     @DisplayName("Should return null when request is null")
     void toUpdateCommandNull() {
-      assertThat(FormerStudentPresenter.toCommand((FormerStudentUpdateRequest) null, "hash")).isNull();
+      assertThat(FormerStudentPresenter.toCommand((FormerStudentUpdateRequest) null, "hash"))
+          .isNull();
     }
   }
 
@@ -127,7 +129,8 @@ class FormerStudentPresenterTest {
     @Test
     @DisplayName("Should return null when i18n is null")
     void toResponseNullI18n() {
-      assertThat(FormerStudentPresenter.toResponse(buildFormerStudentView(), Locale.US, null)).isNull();
+      assertThat(FormerStudentPresenter.toResponse(buildFormerStudentView(), Locale.US, null))
+          .isNull();
     }
 
     @Test
@@ -221,4 +224,3 @@ class FormerStudentPresenterTest {
     }
   }
 }
-

@@ -1,11 +1,11 @@
 package br.org.catolicasc.pug.helpers;
 
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
+import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.CourseRepositoryImpl;
+import br.org.catolicasc.pug.academic.infra.persistence.impl.FormerStudentRepositoryImpl;
 import br.org.catolicasc.pug.academic.infra.persistence.impl.SchoolRepositoryImpl;
-import br.org.catolicasc.pug.academic.infra.persistence.impl.FormerFormerStudentRepositoryImpl;
 import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.geo.infra.CityMapper;
 import br.org.catolicasc.pug.geo.infra.persistence.impl.CityRepositoryImpl;
@@ -14,10 +14,10 @@ import br.org.catolicasc.pug.helpers.builders.domain.AdminBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.CourseBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.EntityBuilder;
+import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.SchoolBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.StaffBuilder;
-import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.UserBuilder;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
@@ -52,7 +52,7 @@ public class TestDataFactory {
   @Inject AccountRepositoryImpl accountRepository;
   @Inject SchoolRepositoryImpl schoolRepository;
   @Inject CourseRepositoryImpl courseRepository;
-  @Inject FormerFormerStudentRepositoryImpl studentRepository;
+  @Inject FormerStudentRepositoryImpl studentRepository;
   @Inject EntityRepositoryImpl entityRepository;
   @Inject StaffRepositoryImpl staffRepository;
   @Inject ProjectRepositoryImpl projectRepository;
@@ -137,4 +137,3 @@ public class TestDataFactory {
         AttendanceBuilder.anAttendance().withProject(project).withStudent(formerStudent).build());
   }
 }
-

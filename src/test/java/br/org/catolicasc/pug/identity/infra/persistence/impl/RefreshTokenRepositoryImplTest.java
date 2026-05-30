@@ -124,4 +124,3 @@ class RefreshTokenRepositoryImplTest {
     assertThat(repo.findByTokenHash(expiredHash)).isEmpty();
   }
 }
-

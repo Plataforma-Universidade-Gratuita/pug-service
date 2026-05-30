@@ -9,8 +9,8 @@ import java.util.UUID;
  * Data Transfer Object (DTO) representing a read-only view of a Project.
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
- * client. It provides a lightweight projection of the project, including the minimal partner
- * entity data required by the presenter contract, while still avoiding full aggregate hydration.
+ * client. It provides a lightweight projection of the project, including the minimal partner entity
+ * data required by the presenter contract, while still avoiding full aggregate hydration.
  *
  * @param id the unique identifier (UUIDv7) of the project
  * @param name the title or name of the project

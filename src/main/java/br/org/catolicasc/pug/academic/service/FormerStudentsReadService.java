@@ -8,9 +8,7 @@ import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Application service dedicated exclusively to former-student read operations.
- */
+/** Application service dedicated exclusively to former-student read operations. */
 public interface FormerStudentsReadService {
 
   FormerStudentView getViewByAccountId(UUID accountId);

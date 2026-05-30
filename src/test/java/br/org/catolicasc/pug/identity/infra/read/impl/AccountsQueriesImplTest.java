@@ -125,4 +125,3 @@ class AccountsQueriesImplTest extends BaseSearchTest {
     assertThat(result.content()).hasSizeLessThanOrEqualTo(10);
   }
 }
-

@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

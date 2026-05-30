@@ -79,4 +79,3 @@ class AccountProcessorTest {
     assertThat(AccountProcessor.processUpdateInput(acc, null, null, null)).isEqualTo(acc);
   }
 }
-

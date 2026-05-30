@@ -42,4 +42,3 @@ public enum EnrollmentStatus implements GenericCodes {
     this.bundleKey = bundleKey;
   }
 }
-

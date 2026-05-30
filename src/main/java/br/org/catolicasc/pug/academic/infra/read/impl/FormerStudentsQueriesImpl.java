@@ -22,9 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/**
- * JPA-backed implementation of former-student read queries.
- */
+/** JPA-backed implementation of former-student read queries. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
@@ -114,7 +112,8 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
 
   @Override
   public List<FormerStudentView> listAllFormerStudents() {
-    return em.createQuery(SELECT_BASE + " order by s.academicRegistration asc", FormerStudentView.class)
+    return em.createQuery(
+            SELECT_BASE + " order by s.academicRegistration asc", FormerStudentView.class)
         .getResultList();
   }
 
@@ -143,7 +142,8 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
       clauses.add("s.concluded = false");
     }
     if (StringUtils.isNotEmpty(academicRegistration)) {
-      clauses.add(JpaSearchUtils.containsClause("s.academicRegistration", "academicRegistrationPattern"));
+      clauses.add(
+          JpaSearchUtils.containsClause("s.academicRegistration", "academicRegistrationPattern"));
     }
     if (CollectionUtils.isNotEmpty(campi)) {
       clauses.add("s.campus in :campi");

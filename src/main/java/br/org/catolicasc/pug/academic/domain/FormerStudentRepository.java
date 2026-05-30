@@ -7,8 +7,8 @@ import java.util.UUID;
 /**
  * Domain repository interface for managing {@link FormerStudent} aggregate roots.
  *
- * <p>This interface defines the contract for persisting, retrieving, updating, and deleting formerStudent
- * enrollments. It abstracts the underlying data storage mechanism to maintain a pure,
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
+ * formerStudent enrollments. It abstracts the underlying data storage mechanism to maintain a pure,
  * infrastructure-agnostic domain model.
  */
 public interface FormerStudentRepository {
@@ -30,14 +30,15 @@ public interface FormerStudentRepository {
   boolean existsAnyByRegistrations(List<String> registrations);
 
   /**
-   * Checks whether any {@link FormerStudent} associated with the specified course identifier exists in
-   * the repository.
+   * Checks whether any {@link FormerStudent} associated with the specified course identifier exists
+   * in the repository.
    *
    * <p>This query enforces relational integrity, ensuring academic courses are not deleted if they
    * still have students actively enrolled in them.
    *
    * @param courseId the unique identifier (UUID) of the enrolled course
-   * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false} otherwise
+   * @return {@code true} if at least one formerStudent is enrolled in the course, {@code false}
+   *     otherwise
    */
   boolean existsByCourseId(UUID courseId);
 
@@ -45,20 +46,21 @@ public interface FormerStudentRepository {
    * Checks whether a {@link FormerStudent} with the specified academic registration already exists.
    *
    * @param registration the raw academic registration string to check
-   * @return {@code true} if a formerStudent with the given registration exists, {@code false} otherwise
+   * @return {@code true} if a formerStudent with the given registration exists, {@code false}
+   *     otherwise
    */
   boolean existsByRegistration(String registration);
 
   /**
    * Retrieves a {@link FormerStudent} by their linked account identifier.
    *
-   * <p>When a formerStudent is reconstituted from the persistence layer, it might contain validation
-   * errors (verifiable via {@link FormerStudent#hasFieldErrors()}) if the stored data is inconsistent
-   * with current domain rules.
+   * <p>When a formerStudent is reconstituted from the persistence layer, it might contain
+   * validation errors (verifiable via {@link FormerStudent#hasFieldErrors()}) if the stored data is
+   * inconsistent with current domain rules.
    *
    * @param id the unique identifier (UUID) of the formerStudent's linked account
-   * @return an {@link Optional} containing the found {@link FormerStudent}, or {@link Optional#empty()}
-   *     if not found
+   * @return an {@link Optional} containing the found {@link FormerStudent}, or {@link
+   *     Optional#empty()} if not found
    */
   Optional<FormerStudent> findOptionalById(UUID id);
 
@@ -85,4 +87,3 @@ public interface FormerStudentRepository {
    */
   void update(FormerStudent entity);
 }
-

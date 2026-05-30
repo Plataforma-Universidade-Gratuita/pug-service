@@ -34,4 +34,3 @@ public record FormerStudentUpdateRequest(
     BigDecimal requiredHours,
     LocalDate startDate,
     LocalDate dueDate) {}
-

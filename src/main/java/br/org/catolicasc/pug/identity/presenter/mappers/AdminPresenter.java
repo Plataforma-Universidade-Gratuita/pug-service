@@ -86,10 +86,12 @@ public final class AdminPresenter {
 
     AccountComplexSearchResponse account =
         AccountPresenter.toComplexSearchResponse(v.accountView(), locale, i18n);
-    CampusResponse campusResponse = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
+    CampusResponse campusResponse =
+        SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
     String grantedAtFormatted = StringUtils.toStringFormatted(v.grantedAt(), locale);
 
-    return new AdminComplexSearchResponse(account, campusResponse, v.grantedAt(), grantedAtFormatted);
+    return new AdminComplexSearchResponse(
+        account, campusResponse, v.grantedAt(), grantedAtFormatted);
   }
 
   /**

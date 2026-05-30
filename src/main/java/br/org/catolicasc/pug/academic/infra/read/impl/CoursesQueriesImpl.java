@@ -99,7 +99,8 @@ public class CoursesQueriesImpl implements CoursesQueries {
 
     String whereClause = clauses.isEmpty() ? "" : " where " + String.join(" and ", clauses);
     var countQuery =
-        entityManager.createQuery("select count(c.id) from CourseEntity c" + whereClause, Long.class);
+        entityManager.createQuery(
+            "select count(c.id) from CourseEntity c" + whereClause, Long.class);
     bindSearchParameters(countQuery, name, schoolIds);
     long totalElements = countQuery.getSingleResult();
     PageExecution pageExecution = PageExecution.from(pageQuery, totalElements);
@@ -116,8 +117,7 @@ public class CoursesQueriesImpl implements CoursesQueries {
         pageExecution.totalPages());
   }
 
-  private <T> void bindSearchParameters(
-      TypedQuery<T> query, String name, List<UUID> schoolIds) {
+  private <T> void bindSearchParameters(TypedQuery<T> query, String name, List<UUID> schoolIds) {
     if (StringUtils.isNotEmpty(name)) {
       JpaSearchUtils.bindContains(query, "namePattern", name);
     }

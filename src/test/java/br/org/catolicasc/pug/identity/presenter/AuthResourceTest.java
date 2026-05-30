@@ -31,7 +31,8 @@ class AuthResourceTest {
   void loginSuccess() {
     var req = aLoginRequest().withEmail("test@pug.com").withPassword("password").build();
     TokenResponse token =
-        new TokenResponse("mocked-token", "mocked-refresh", null, AccountType.FORMER_STUDENT, 900, 604800);
+        new TokenResponse(
+            "mocked-token", "mocked-refresh", null, AccountType.FORMER_STUDENT, 900, 604800);
 
     when(authService.login(req)).thenReturn(token);
 
@@ -190,4 +191,3 @@ class AuthResourceTest {
     given().when().post("/v1/auth/logout-all").then().statusCode(401);
   }
 }
-

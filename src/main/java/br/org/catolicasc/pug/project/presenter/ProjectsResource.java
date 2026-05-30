@@ -130,7 +130,8 @@ public class ProjectsResource {
             req == null ? null : req.minOfferedHours());
 
     PageResult<ProjectView> result =
-        readService.search(new ProjectComplexSearchCriteria(
+        readService.search(
+            new ProjectComplexSearchCriteria(
                 criteria.name(),
                 criteria.entityIds(),
                 criteria.description(),
@@ -180,8 +181,7 @@ public class ProjectsResource {
   @PATCH
   @Path("/{id}/status")
   @RolesAllowed({"ADMIN", "STAFF"})
-  public Response updateStatus(
-      @PathParam("id") @UuidV7 UUID id, @NotNull ProjectStatus status) {
+  public Response updateStatus(@PathParam("id") @UuidV7 UUID id, @NotNull ProjectStatus status) {
     writeService.transitionStatus(id, status);
     ProjectView view = readService.getViewById(id);
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();

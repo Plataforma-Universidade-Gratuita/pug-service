@@ -9,8 +9,8 @@ import java.util.UUID;
 /**
  * Domain repository interface for managing {@link Enrollment} aggregate roots.
  *
- * <p>This interface defines the contract for persisting, retrieving, updating, and deleting formerStudent
- * enrollments in projects. It utilizes a composite natural key represented by {@link
+ * <p>This interface defines the contract for persisting, retrieving, updating, and deleting
+ * formerStudent enrollments in projects. It utilizes a composite natural key represented by {@link
  * EnrollmentIdentifier} (Project ID + FormerStudent ID).
  */
 public interface EnrollmentRepository {
@@ -54,11 +54,11 @@ public interface EnrollmentRepository {
   boolean existsByProjectId(UUID projectId);
 
   /**
-   * Checks whether any {@link Enrollment} associated with the specified formerStudent identifier exists
-   * in the repository.
+   * Checks whether any {@link Enrollment} associated with the specified formerStudent identifier
+   * exists in the repository.
    *
-   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link FormerStudent}
-   * cannot be deleted while they still have project enrollments.
+   * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
+   * FormerStudent} cannot be deleted while they still have project enrollments.
    *
    * @param studentId the unique identifier (UUID) of the formerStudent account
    * @return {@code true} if at least one enrollment is linked to the formerStudent, {@code false}
@@ -108,4 +108,3 @@ public interface EnrollmentRepository {
    */
   void update(Enrollment entity);
 }
-

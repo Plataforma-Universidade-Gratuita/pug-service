@@ -33,4 +33,3 @@ public record AttendanceResponse(
     OffsetDateTime validatedAt,
     String validatedAtFormatted,
     AuditInfoResponse auditInfo) {}
-

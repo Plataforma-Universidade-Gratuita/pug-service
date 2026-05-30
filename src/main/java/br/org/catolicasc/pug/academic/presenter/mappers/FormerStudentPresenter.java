@@ -5,8 +5,8 @@ import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearch
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolComplexSearchView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.CounterpartHoursResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.CounterpartHoursResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentResponse;
@@ -32,9 +32,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-/**
- * Stateless mapper responsible for translating former-student requests and query projections.
- */
+/** Stateless mapper responsible for translating former-student requests and query projections. */
 public final class FormerStudentPresenter {
 
   private FormerStudentPresenter() {}
@@ -77,8 +75,7 @@ public final class FormerStudentPresenter {
         request.dueDate());
   }
 
-  public static FormerStudentResponse toResponse(
-      FormerStudentView view, Locale locale, I18n i18n) {
+  public static FormerStudentResponse toResponse(FormerStudentView view, Locale locale, I18n i18n) {
     if (view == null || locale == null || i18n == null) {
       return null;
     }
@@ -88,7 +85,8 @@ public final class FormerStudentPresenter {
         view.academicRegistration(),
         SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n),
         view.courseId(),
-        createCounterpartHoursResponse(view.requiredHours(), view.completedHours(), view.concluded()),
+        createCounterpartHoursResponse(
+            view.requiredHours(), view.completedHours(), view.concluded()),
         createPeriodResponse(view.startDate(), view.dueDate(), locale, i18n),
         SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale));
   }
@@ -103,7 +101,8 @@ public final class FormerStudentPresenter {
         AccountPresenter.toComplexSearchResponse(view.account(), locale, i18n);
     CampusResponse campus = SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n);
     CounterpartHoursResponse counterpartHours =
-        createCounterpartHoursResponse(view.requiredHours(), view.completedHours(), view.concluded());
+        createCounterpartHoursResponse(
+            view.requiredHours(), view.completedHours(), view.concluded());
     PeriodResponse period = createPeriodResponse(view.startDate(), view.dueDate(), locale, i18n);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale);
@@ -134,7 +133,11 @@ public final class FormerStudentPresenter {
                 .max(BigDecimal.ZERO);
 
     return new CounterpartHoursResponse(
-        safeRequired, safeCompleted, missingHours, progress.min(BigDecimal.valueOf(100)), safeConcluded);
+        safeRequired,
+        safeCompleted,
+        missingHours,
+        progress.min(BigDecimal.valueOf(100)),
+        safeConcluded);
   }
 
   private static PeriodResponse createPeriodResponse(
@@ -145,7 +148,12 @@ public final class FormerStudentPresenter {
     String remainingDaysFormatted = formatRemainingDays(dueDate, locale, i18n);
 
     return new PeriodResponse(
-        startDate, startDateFormatted, dueDate, dueDateFormatted, remainingDays, remainingDaysFormatted);
+        startDate,
+        startDateFormatted,
+        dueDate,
+        dueDateFormatted,
+        remainingDays,
+        remainingDaysFormatted);
   }
 
   private static String formatRemainingDays(LocalDate dueDate, Locale locale, I18n i18n) {
@@ -155,7 +163,8 @@ public final class FormerStudentPresenter {
 
     long remainingDays = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
     if (remainingDays < 0) {
-      return i18n.translation("academic.formerStudent.days.overdue", locale, Math.abs(remainingDays));
+      return i18n.translation(
+          "academic.formerStudent.days.overdue", locale, Math.abs(remainingDays));
     }
     if (remainingDays == 0) {
       return i18n.translation("academic.formerStudent.days.today", locale);
@@ -166,7 +175,8 @@ public final class FormerStudentPresenter {
     return i18n.translation("academic.formerStudent.days.remaining", locale, remainingDays);
   }
 
-  private static CourseComplexSearchResponse toCourseComplexSearchResponse(CourseComplexSearchView view) {
+  private static CourseComplexSearchResponse toCourseComplexSearchResponse(
+      CourseComplexSearchView view) {
     if (view == null) {
       return null;
     }
