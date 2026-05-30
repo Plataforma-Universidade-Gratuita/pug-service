@@ -124,18 +124,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
   @Override
   public PageResult<FormerStudentComplexSearchView> search(
       PageQuery pageQuery, FormerStudentComplexSearchCriteria criteria) {
-    String academicRegistration = criteria == null ? null : criteria.academicRegistration();
-    List<?> campi = criteria == null ? List.of() : criteria.campi();
-    List<UUID> courseIds = criteria == null ? List.of() : criteria.courseIds();
-    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
-    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String email = criteria == null ? null : criteria.email();
     boolean includeConcluded = criteria != null && criteria.includeConcluded();
-    String name = criteria == null ? null : criteria.name();
-    LocalDate periodFrom = criteria == null ? null : criteria.periodFrom();
-    LocalDate periodTo = criteria == null ? null : criteria.periodTo();
-    String cpf = criteria == null ? null : criteria.cpf();
-    List<UUID> areaOfExpertiseIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
     boolean activeOnly = criteria == null || criteria.activeOnly();
 
     List<String> clauses = new ArrayList<>();
@@ -145,45 +134,58 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
     if (!includeConcluded) {
       clauses.add("s.concluded = false");
     }
+    String academicRegistration = criteria == null ? null : criteria.academicRegistration();
     if (StringUtils.isNotEmpty(academicRegistration)) {
       clauses.add(
           JpaSearchUtils.containsClause("s.academicRegistration", "academicRegistrationPattern"));
     }
+    List<?> campi = criteria == null ? List.of() : criteria.campi();
     if (CollectionUtils.isNotEmpty(campi)) {
       clauses.add("s.campus in :campi");
     }
+    List<UUID> courseIds = criteria == null ? List.of() : criteria.courseIds();
     if (CollectionUtils.isNotEmpty(courseIds)) {
       clauses.add("c.id in :courseIds");
     }
+    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
     if (dateFrom != null) {
       clauses.add(
           "(s.createdAt >= :dateFrom or s.updatedAt >= :dateFrom or acc.createdAt >= :dateFrom"
-              + " or acc.updatedAt >= :dateFrom or u.createdAt >= :dateFrom or u.updatedAt >= :dateFrom"
-              + " or c.createdAt >= :dateFrom or c.updatedAt >= :dateFrom or sch.createdAt >= :dateFrom"
+              + " or acc.updatedAt >= :dateFrom or u.createdAt >= :dateFrom"
+              + " or u.updatedAt >= :dateFrom or c.createdAt >= :dateFrom"
+              + " or c.updatedAt >= :dateFrom or sch.createdAt >= :dateFrom"
               + " or sch.updatedAt >= :dateFrom)");
     }
+    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
     if (dateTo != null) {
       clauses.add(
           "(s.createdAt <= :dateTo or s.updatedAt <= :dateTo or acc.createdAt <= :dateTo"
-              + " or acc.updatedAt <= :dateTo or u.createdAt <= :dateTo or u.updatedAt <= :dateTo"
-              + " or c.createdAt <= :dateTo or c.updatedAt <= :dateTo or sch.createdAt <= :dateTo"
+              + " or acc.updatedAt <= :dateTo or u.createdAt <= :dateTo"
+              + " or u.updatedAt <= :dateTo or c.createdAt <= :dateTo"
+              + " or c.updatedAt <= :dateTo or sch.createdAt <= :dateTo"
               + " or sch.updatedAt <= :dateTo)");
     }
+    String email = criteria == null ? null : criteria.email();
     if (StringUtils.isNotEmpty(email)) {
       clauses.add(JpaSearchUtils.containsClause("acc.email", "emailPattern"));
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("u.name", "namePattern"));
     }
+    LocalDate periodFrom = criteria == null ? null : criteria.periodFrom();
     if (periodFrom != null) {
       clauses.add("(s.startDate >= :periodFrom or s.dueDate >= :periodFrom)");
     }
+    LocalDate periodTo = criteria == null ? null : criteria.periodTo();
     if (periodTo != null) {
       clauses.add("(s.startDate <= :periodTo or s.dueDate <= :periodTo)");
     }
+    String cpf = criteria == null ? null : criteria.cpf();
     if (StringUtils.isNotEmpty(cpf)) {
       clauses.add(JpaSearchUtils.containsClause("u.cpf", "cpfPattern"));
     }
+    List<UUID> areaOfExpertiseIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
     if (CollectionUtils.isNotEmpty(areaOfExpertiseIds)) {
       clauses.add("sch.id in :areaOfExpertiseIds");
     }

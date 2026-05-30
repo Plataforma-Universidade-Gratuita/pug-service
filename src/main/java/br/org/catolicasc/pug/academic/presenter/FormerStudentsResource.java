@@ -62,6 +62,12 @@ public class FormerStudentsResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /**
+   * Retrieves a former-student record by the linked account identifier.
+   *
+   * @param id linked account identifier
+   * @return the requested former-student response
+   */
   @GET
   @Path("/{id}")
   @Authenticated
@@ -71,6 +77,11 @@ public class FormerStudentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Retrieves the former-student record associated with the authenticated account.
+   *
+   * @return the authenticated former-student response
+   */
   @GET
   @Path("/me")
   @Authenticated
@@ -146,6 +157,12 @@ public class FormerStudentsResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Creates multiple former-student records in a single request.
+   *
+   * @param requests validated batch payload
+   * @return the created former-student responses
+   */
   @POST
   @Path("/bulk")
   @RolesAllowed("ADMIN")
@@ -161,6 +178,13 @@ public class FormerStudentsResource {
     return Response.status(Response.Status.CREATED).entity(ApiEnvelope.created(body)).build();
   }
 
+  /**
+   * Updates an existing former-student record.
+   *
+   * @param id linked account identifier
+   * @param request validated update payload
+   * @return the updated former-student response
+   */
   @PUT
   @Path("/{id}")
   @RolesAllowed("ADMIN")
@@ -172,6 +196,13 @@ public class FormerStudentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /**
+   * Updates the activation status of the linked former-student account.
+   *
+   * @param id linked account identifier
+   * @param request validated account-status payload
+   * @return HTTP 204 when the status update succeeds
+   */
   @PATCH
   @Path("/{id}/status")
   @RolesAllowed("ADMIN")
@@ -181,6 +212,12 @@ public class FormerStudentsResource {
     return Response.noContent().build();
   }
 
+  /**
+   * Deletes a former-student record and its linked account according to the module rules.
+   *
+   * @param id linked account identifier
+   * @return HTTP 204 when deletion succeeds
+   */
   @DELETE
   @Path("/{id}")
   @RolesAllowed("ADMIN")

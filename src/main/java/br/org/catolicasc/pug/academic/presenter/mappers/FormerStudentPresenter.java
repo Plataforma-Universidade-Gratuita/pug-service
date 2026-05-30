@@ -37,6 +37,12 @@ public final class FormerStudentPresenter {
 
   private FormerStudentPresenter() {}
 
+  /**
+   * Converts a former-student creation request into the corresponding command graph.
+   *
+   * @param request validated presenter-layer payload
+   * @return command graph used by the service layer, or {@code null} when the request is null
+   */
   public static FormerStudentCreateCommand toCommand(FormerStudentCreateRequest request) {
     if (request == null) {
       return null;
@@ -56,6 +62,12 @@ public final class FormerStudentPresenter {
         request.dueDate());
   }
 
+  /**
+   * Converts a former-student update request into the corresponding command graph.
+   *
+   * @param request validated presenter-layer payload
+   * @return command graph used by the service layer, or {@code null} when the request is null
+   */
   public static FormerStudentUpdateCommand toCommand(FormerStudentUpdateRequest request) {
     if (request == null) {
       return null;
@@ -75,6 +87,14 @@ public final class FormerStudentPresenter {
         request.dueDate());
   }
 
+  /**
+   * Converts a read projection into the standard former-student response.
+   *
+   * @param view query-layer read projection
+   * @param locale locale used for formatting and localization
+   * @param i18n translation helper used by nested presenters
+   * @return presenter response, or {@code null} when any required input is null
+   */
   public static FormerStudentResponse toResponse(FormerStudentView view, Locale locale, I18n i18n) {
     if (view == null || locale == null || i18n == null) {
       return null;
@@ -91,6 +111,15 @@ public final class FormerStudentPresenter {
         SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale));
   }
 
+  /**
+   * Converts a complex-search read projection into the paginated response shape consumed by the
+   * frontend.
+   *
+   * @param view query-layer complex-search projection
+   * @param locale locale used for formatting and localization
+   * @param i18n translation helper used by nested presenters
+   * @return complex-search presenter response, or {@code null} when any required input is null
+   */
   public static FormerStudentComplexSearchResponse toComplexSearchResponse(
       FormerStudentComplexSearchView view, Locale locale, I18n i18n) {
     if (view == null || locale == null || i18n == null) {

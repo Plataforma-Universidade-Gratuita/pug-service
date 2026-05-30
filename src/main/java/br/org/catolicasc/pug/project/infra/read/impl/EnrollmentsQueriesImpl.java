@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/** JPQL-backed implementation of the enrollment read-side contract. */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
@@ -116,7 +117,6 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
             ? new EnrollmentComplexSearchCriteria(
                 List.of(), List.of(), List.of(), null, null, null, null)
             : criteria;
-    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
     List<String> clauses = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(safeCriteria.projectIds())) {
@@ -130,11 +130,13 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     }
     if (safeCriteria.dateFrom() != null) {
       clauses.add(
-          "(en.createdAt >= :dateFrom or en.updatedAt >= :dateFrom or en.acceptedAt >= :dateFrom or en.closingStatusAt >= :dateFrom)");
+          "(en.createdAt >= :dateFrom or en.updatedAt >= :dateFrom or"
+              + " en.acceptedAt >= :dateFrom or en.closingStatusAt >= :dateFrom)");
     }
     if (safeCriteria.dateTo() != null) {
       clauses.add(
-          "(en.createdAt <= :dateTo or en.updatedAt <= :dateTo or en.acceptedAt <= :dateTo or en.closingStatusAt <= :dateTo)");
+          "(en.createdAt <= :dateTo or en.updatedAt <= :dateTo or"
+              + " en.acceptedAt <= :dateTo or en.closingStatusAt <= :dateTo)");
     }
     if (safeCriteria.periodFrom() != null) {
       clauses.add("(fs.startDate >= :periodFrom or fs.dueDate >= :periodFrom)");
@@ -153,6 +155,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     bindFilters(dataQuery, safeCriteria);
 
     long total = countQuery.getSingleResult();
+    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
     PageExecution execution = PageExecution.from(safePageQuery, total);
     List<EnrollmentView> content = execution.apply(dataQuery).getResultList();
 

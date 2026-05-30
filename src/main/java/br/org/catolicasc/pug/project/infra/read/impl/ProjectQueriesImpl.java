@@ -127,7 +127,6 @@ public class ProjectQueriesImpl implements ProjectQueries {
             ? new ProjectComplexSearchCriteria(
                 null, List.of(), null, List.of(), null, null, List.of(), null, null)
             : criteria;
-    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
     List<String> clauses = new ArrayList<>();
 
@@ -170,6 +169,7 @@ public class ProjectQueriesImpl implements ProjectQueries {
     bindFilters(dataQuery, safeCriteria);
 
     long totalElements = countQuery.getSingleResult();
+    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
     PageExecution pageExecution = PageExecution.from(safePageQuery, totalElements);
     List<ProjectView> content = pageExecution.apply(dataQuery).getResultList();
 

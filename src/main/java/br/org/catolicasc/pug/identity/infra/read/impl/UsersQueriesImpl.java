@@ -82,7 +82,6 @@ public class UsersQueriesImpl implements UsersQueries {
     String cpf = criteria == null ? null : criteria.cpf();
     OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
     OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String name = criteria == null ? null : criteria.name();
 
     if (StringUtils.isNotEmpty(cpf)) {
       clauses.add(JpaSearchUtils.containsClause("u.cpf", "cpfPattern"));
@@ -93,6 +92,7 @@ public class UsersQueriesImpl implements UsersQueries {
     if (dateTo != null) {
       clauses.add("(u.createdAt <= :dateTo or u.updatedAt <= :dateTo)");
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("u.name", "namePattern"));
     }

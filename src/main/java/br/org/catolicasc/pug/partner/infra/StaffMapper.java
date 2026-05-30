@@ -11,6 +11,12 @@ import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 public final class StaffMapper {
   private StaffMapper() {}
 
+  /**
+   * Maps a persistence entity to the partner-domain aggregate.
+   *
+   * @param e the persistence entity
+   * @return the mapped aggregate, or {@code null} when the source entity is {@code null}
+   */
   public static Staff toDomain(StaffEntity e) {
     if (e == null) {
       return null;
@@ -18,6 +24,13 @@ public final class StaffMapper {
     return Staff.builder().accountId(e.getAccountId()).entityId(e.getEntityId()).build();
   }
 
+  /**
+   * Maps the partner-domain aggregate to its persistence representation.
+   *
+   * @param d the domain aggregate
+   * @return the mapped persistence entity, or {@code null} when the source aggregate is {@code
+   *     null}
+   */
   public static StaffEntity toEntity(Staff d) {
     if (d == null) {
       return null;
@@ -33,6 +46,13 @@ public final class StaffMapper {
     e.setEntityId(d.getEntityId());
   }
 
+  /**
+   * Maps account and partner-entity persistence data to the read-side staff projection.
+   *
+   * @param accountEntity the linked account persistence entity
+   * @param entityEntity the linked partner entity persistence entity
+   * @return the assembled read-side projection
+   */
   public static StaffView toView(AccountEntity accountEntity, EntityEntity entityEntity) {
     var accountView =
         new AccountView(

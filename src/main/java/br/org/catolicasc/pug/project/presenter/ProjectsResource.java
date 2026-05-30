@@ -66,6 +66,7 @@ public class ProjectsResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /** Returns a single project by identifier. */
   @GET
   @Path("/{id}")
   @Authenticated
@@ -74,6 +75,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /** Lists every project or restricts the result to the provided identifiers. */
   @GET
   @Authenticated
   public Response list(@QueryParam("ids") List<@UuidV7 UUID> ids) {
@@ -86,6 +88,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Lists projects linked to the provided partner entity identifier. */
   @GET
   @Path("/entities/{entityId}")
   @Authenticated
@@ -98,6 +101,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Lists projects created by the provided account identifier. */
   @GET
   @Path("/creators/{createdById}")
   @Authenticated
@@ -110,6 +114,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Executes the paginated project complex-search flow. */
   @POST
   @Path("/search")
   @Authenticated
@@ -156,6 +161,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Creates a new project and returns the canonical response payload. */
   @POST
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response create(@Valid ProjectCreateRequest req) {
@@ -168,6 +174,7 @@ public class ProjectsResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /** Updates a project without changing its lifecycle status. */
   @PUT
   @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -178,6 +185,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /** Updates only the lifecycle status of an existing project. */
   @PATCH
   @Path("/{id}/status")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -187,6 +195,7 @@ public class ProjectsResource {
     return Response.ok(ApiEnvelope.ok(ProjectPresenter.toResponse(view, locale(), i18n))).build();
   }
 
+  /** Deletes a project by identifier. */
   @DELETE
   @Path("/{id}")
   @RolesAllowed({"ADMIN", "STAFF"})

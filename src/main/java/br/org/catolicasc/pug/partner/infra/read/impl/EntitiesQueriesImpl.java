@@ -103,9 +103,6 @@ public class EntitiesQueriesImpl implements EntitiesQueries {
     String address = criteria == null ? null : criteria.address();
     List<UUID> cityIds = criteria == null ? null : criteria.cityIds();
     String cnpj = criteria == null ? null : criteria.cnpj();
-    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
-    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String name = criteria == null ? null : criteria.name();
 
     List<String> clauses = new ArrayList<>();
     if (StringUtils.isNotEmpty(address)) {
@@ -117,12 +114,15 @@ public class EntitiesQueriesImpl implements EntitiesQueries {
     if (StringUtils.isNotEmpty(cnpj)) {
       clauses.add(JpaSearchUtils.containsClause("e.cnpj", "cnpjPattern"));
     }
+    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
     if (dateFrom != null) {
       clauses.add("(e.createdAt >= :dateFrom or e.updatedAt >= :dateFrom)");
     }
+    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
     if (dateTo != null) {
       clauses.add("(e.createdAt <= :dateTo or e.updatedAt <= :dateTo)");
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("e.name", "namePattern"));
     }

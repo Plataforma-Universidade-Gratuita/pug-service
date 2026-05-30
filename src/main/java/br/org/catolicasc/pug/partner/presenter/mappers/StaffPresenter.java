@@ -26,6 +26,12 @@ public final class StaffPresenter {
 
   private StaffPresenter() {}
 
+  /**
+   * Maps the staff-creation request payload to a service-layer command tree.
+   *
+   * @param req the incoming presenter-layer request
+   * @return the mapped service command, or {@code null} when the request is {@code null}
+   */
   public static StaffCreateCommand toCommand(StaffCreateRequest req) {
     if (req == null) {
       return null;
@@ -36,6 +42,12 @@ public final class StaffPresenter {
     return new StaffCreateCommand(req.entityId(), accountCmd);
   }
 
+  /**
+   * Maps the staff-update request payload to a service-layer command tree.
+   *
+   * @param req the incoming presenter-layer request
+   * @return the mapped service command, or {@code null} when the request is {@code null}
+   */
   public static StaffUpdateCommand toCommand(StaffUpdateRequest req) {
     if (req == null) {
       return null;
@@ -59,6 +71,14 @@ public final class StaffPresenter {
         account, EntityPresenter.toSimpleComplexSearchResponse(view.entity()));
   }
 
+  /**
+   * Maps a standard staff read projection to the canonical API response.
+   *
+   * @param v the read-side projection
+   * @param locale the locale used to format localized nested data
+   * @param i18n the translation helper used by nested presenters
+   * @return the mapped response, or {@code null} when any required input is {@code null}
+   */
   public static StaffResponse toResponse(StaffView v, Locale locale, I18n i18n) {
     if (v == null || locale == null || i18n == null) {
       return null;

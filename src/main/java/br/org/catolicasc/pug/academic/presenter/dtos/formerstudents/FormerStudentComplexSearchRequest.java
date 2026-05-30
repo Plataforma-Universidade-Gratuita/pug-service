@@ -41,6 +41,10 @@ public record FormerStudentComplexSearchRequest(
     List<UUID> courseIds,
     List<UUID> areaOfExpertiseIds) {
 
+  /**
+   * Creates an immutable former-student complex-search request, normalizing optional collections to
+   * empty immutable lists when absent.
+   */
   public FormerStudentComplexSearchRequest {
     campi = campi == null ? List.of() : List.copyOf(campi);
     courseIds = courseIds == null ? List.of() : List.copyOf(courseIds);

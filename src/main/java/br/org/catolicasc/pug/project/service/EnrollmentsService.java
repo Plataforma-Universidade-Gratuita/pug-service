@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import java.util.UUID;
 
+/** Application-layer command contract for enrollment lifecycle operations. */
 public interface EnrollmentsService {
 
   Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus status);

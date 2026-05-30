@@ -29,6 +29,7 @@ public record AttendanceComplexSearchCriteria(
     OffsetDateTime dateFrom,
     OffsetDateTime dateTo) {
 
+  /** Normalizes nullable list inputs to immutable empty lists. */
   public AttendanceComplexSearchCriteria {
     projectIds = projectIds == null ? List.of() : List.copyOf(projectIds);
     formerStudentIds = formerStudentIds == null ? List.of() : List.copyOf(formerStudentIds);

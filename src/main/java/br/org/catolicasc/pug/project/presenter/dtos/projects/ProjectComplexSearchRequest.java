@@ -33,6 +33,7 @@ public record ProjectComplexSearchRequest(
     @DecimalMin("0.00") BigDecimal maxOfferedHours,
     @DecimalMin("0.00") BigDecimal minOfferedHours) {
 
+  /** Normalizes nullable list inputs to immutable empty lists. */
   public ProjectComplexSearchRequest {
     entityIds = entityIds == null ? List.of() : List.copyOf(entityIds);
     createdByIds = createdByIds == null ? List.of() : List.copyOf(createdByIds);

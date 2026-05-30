@@ -29,8 +29,8 @@ public class AreaOfExpertiseProcessor {
    *
    * <p>Applies partial updates, returning a new immutable instance of the aggregate.
    *
-   * @param existingSchool the current, reconstituted {@link AreaOfExpertise} aggregate from the
-   *     repository
+   * @param existingAreaOfExpertise the current, reconstituted {@link AreaOfExpertise} aggregate
+   *     from the repository
    * @param name the proposed new name, or {@code null}/empty to skip updating
    * @return a new {@link AreaOfExpertise} domain aggregate reflecting the requested updates,
    *     potentially containing validation errors

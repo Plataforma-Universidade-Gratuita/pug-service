@@ -46,6 +46,7 @@ public class ProjectsAreasOfExpertiseResource {
 
   @Context HttpHeaders headers;
 
+  /** Lists every area of expertise associated with the provided project identifier. */
   @GET
   public Response listAreasOfExpertiseByProjectId(@PathParam("projectId") @UuidV7 UUID projectId) {
     Set<AreaOfExpertiseView> views = readService.listAllAreasOfExpertiseByProjectId(projectId);

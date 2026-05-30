@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/** Default application service that exposes the enrollment read-side use cases. */
 @ApplicationScoped
 public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
 

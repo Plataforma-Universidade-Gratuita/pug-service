@@ -22,6 +22,12 @@ public final class EntityPresenter {
 
   private EntityPresenter() {}
 
+  /**
+   * Maps the entity-creation request payload to a service-layer command.
+   *
+   * @param req the incoming presenter-layer request
+   * @return the mapped service command, or {@code null} when the request is {@code null}
+   */
   public static EntityCreateCommand toCommand(EntityCreateRequest req) {
     if (req == null) {
       return null;
@@ -29,6 +35,12 @@ public final class EntityPresenter {
     return new EntityCreateCommand(req.cnpjString(), req.name(), req.cityId(), req.address());
   }
 
+  /**
+   * Maps the entity-update request payload to a service-layer command.
+   *
+   * @param req the incoming presenter-layer request
+   * @return the mapped service command, or {@code null} when the request is {@code null}
+   */
   public static EntityUpdateCommand toCommand(EntityUpdateRequest req) {
     if (req == null) {
       return null;
@@ -90,6 +102,13 @@ public final class EntityPresenter {
     return new EntitySimpleComplexSearchResponse(view.id(), view.name());
   }
 
+  /**
+   * Maps a standard entity read projection to the canonical API response.
+   *
+   * @param v the read-side projection
+   * @param locale the locale used to format audit timestamps
+   * @return the mapped response, or {@code null} when the projection is {@code null}
+   */
   public static EntityResponse toResponse(EntityView v, Locale locale) {
     if (v == null) {
       return null;

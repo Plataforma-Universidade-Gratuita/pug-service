@@ -106,6 +106,11 @@ public class Account extends DomainError {
     return account;
   }
 
+  /**
+   * Returns a copy of this account marked as inactive.
+   *
+   * @return the updated account, or this instance when it is already inactive
+   */
   public Account deactivate() {
     if (Boolean.FALSE.equals(active)) {
       return this;
@@ -115,6 +120,11 @@ public class Account extends DomainError {
     return updated;
   }
 
+  /**
+   * Returns a copy of this account marked as active.
+   *
+   * @return the updated account, or this instance when it is already active
+   */
   public Account activate() {
     if (Boolean.TRUE.equals(active)) {
       return this;
@@ -124,6 +134,12 @@ public class Account extends DomainError {
     return updated;
   }
 
+  /**
+   * Returns a copy of this account with a new email address.
+   *
+   * @param newEmail the replacement email value object
+   * @return the updated account, or this instance when the email is unchanged
+   */
   public Account changeEmail(Email newEmail) {
     if (email.equals(newEmail)) {
       return this;
@@ -133,6 +149,12 @@ public class Account extends DomainError {
     return updated;
   }
 
+  /**
+   * Returns a copy of this account with a new password hash.
+   *
+   * @param newHash the replacement password hash, or {@code null} to clear deferred credentials
+   * @return the updated account, or this instance when the hash is unchanged
+   */
   public Account changePasswordHash(String newHash) {
     if (StringUtils.isEmpty(newHash) && StringUtils.isEmpty(passwordHash)) {
       return this;

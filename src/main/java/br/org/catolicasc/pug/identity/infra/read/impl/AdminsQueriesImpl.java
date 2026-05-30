@@ -114,9 +114,6 @@ public class AdminsQueriesImpl implements AdminsQueries {
     boolean activeOnly = criteria == null || criteria.activeOnly();
     String cpf = criteria == null ? null : criteria.cpf();
     OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
-    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String email = criteria == null ? null : criteria.email();
-    String name = criteria == null ? null : criteria.name();
 
     List<String> clauses = new ArrayList<>();
     if (activeOnly) {
@@ -130,14 +127,17 @@ public class AdminsQueriesImpl implements AdminsQueries {
           "(acc.createdAt >= :dateFrom or acc.updatedAt >= :dateFrom or u.createdAt >= :dateFrom"
               + " or u.updatedAt >= :dateFrom or a.grantedAt >= :dateFrom)");
     }
+    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
     if (dateTo != null) {
       clauses.add(
           "(acc.createdAt <= :dateTo or acc.updatedAt <= :dateTo or u.createdAt <= :dateTo or"
               + " u.updatedAt <= :dateTo or a.grantedAt <= :dateTo)");
     }
+    String email = criteria == null ? null : criteria.email();
     if (StringUtils.isNotEmpty(email)) {
       clauses.add(JpaSearchUtils.containsClause("acc.email", "emailPattern"));
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("u.name", "namePattern"));
     }

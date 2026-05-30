@@ -107,11 +107,7 @@ public class AccountsQueriesImpl implements AccountsQueries {
       PageQuery pageQuery, AccountComplexSearchCriteria criteria) {
     boolean activeOnly = criteria == null || criteria.activeOnly();
     String cpf = criteria == null ? null : criteria.cpf();
-    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
-    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String email = criteria == null ? null : criteria.email();
     List<AccountType> accountTypes = criteria == null ? null : criteria.accountTypes();
-    String name = criteria == null ? null : criteria.name();
 
     List<String> clauses = new ArrayList<>();
     if (activeOnly) {
@@ -123,19 +119,23 @@ public class AccountsQueriesImpl implements AccountsQueries {
     if (StringUtils.isNotEmpty(cpf)) {
       clauses.add(JpaSearchUtils.containsClause("u.cpf", "cpfPattern"));
     }
+    OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
     if (dateFrom != null) {
       clauses.add(
           "(a.createdAt >= :dateFrom or a.updatedAt >= :dateFrom or u.createdAt >= :dateFrom or"
               + " u.updatedAt >= :dateFrom)");
     }
+    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
     if (dateTo != null) {
       clauses.add(
           "(a.createdAt <= :dateTo or a.updatedAt <= :dateTo or u.createdAt <= :dateTo or"
               + " u.updatedAt <= :dateTo)");
     }
+    String email = criteria == null ? null : criteria.email();
     if (StringUtils.isNotEmpty(email)) {
       clauses.add(JpaSearchUtils.containsClause("a.email", "emailPattern"));
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("u.name", "namePattern"));
     }

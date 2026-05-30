@@ -31,6 +31,7 @@ public record ProjectComplexSearchCriteria(
     BigDecimal maxOfferedHours,
     BigDecimal minOfferedHours) {
 
+  /** Normalizes nullable list inputs to immutable empty lists. */
   public ProjectComplexSearchCriteria {
     entityIds = entityIds == null ? List.of() : List.copyOf(entityIds);
     createdByIds = createdByIds == null ? List.of() : List.copyOf(createdByIds);

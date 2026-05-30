@@ -7,6 +7,7 @@ import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
 import java.util.UUID;
 
+/** Application-layer read contract for enrollment projections and search results. */
 public interface EnrollmentsReadService {
 
   EnrollmentView getViewByIds(UUID projectId, UUID formerStudentId);

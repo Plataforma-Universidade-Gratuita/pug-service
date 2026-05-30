@@ -120,10 +120,6 @@ public class StaffQueriesImpl implements StaffQueries {
     boolean activeOnly = criteria == null || criteria.activeOnly();
     String cpf = criteria == null ? null : criteria.cpf();
     OffsetDateTime dateFrom = criteria == null ? null : criteria.dateFrom();
-    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
-    String email = criteria == null ? null : criteria.email();
-    List<UUID> entityIds = criteria == null ? null : criteria.entityIds();
-    String name = criteria == null ? null : criteria.name();
 
     List<String> clauses = new ArrayList<>();
     if (activeOnly) {
@@ -134,20 +130,26 @@ public class StaffQueriesImpl implements StaffQueries {
     }
     if (dateFrom != null) {
       clauses.add(
-          "(acc.createdAt >= :dateFrom or acc.updatedAt >= :dateFrom or u.createdAt >= :dateFrom"
-              + " or u.updatedAt >= :dateFrom or e.createdAt >= :dateFrom or e.updatedAt >= :dateFrom)");
+          "(acc.createdAt >= :dateFrom or acc.updatedAt >= :dateFrom or"
+              + " u.createdAt >= :dateFrom or u.updatedAt >= :dateFrom or"
+              + " e.createdAt >= :dateFrom or e.updatedAt >= :dateFrom)");
     }
+    OffsetDateTime dateTo = criteria == null ? null : criteria.dateTo();
     if (dateTo != null) {
       clauses.add(
-          "(acc.createdAt <= :dateTo or acc.updatedAt <= :dateTo or u.createdAt <= :dateTo"
-              + " or u.updatedAt <= :dateTo or e.createdAt <= :dateTo or e.updatedAt <= :dateTo)");
+          "(acc.createdAt <= :dateTo or acc.updatedAt <= :dateTo or"
+              + " u.createdAt <= :dateTo or u.updatedAt <= :dateTo or"
+              + " e.createdAt <= :dateTo or e.updatedAt <= :dateTo)");
     }
+    String email = criteria == null ? null : criteria.email();
     if (StringUtils.isNotEmpty(email)) {
       clauses.add(JpaSearchUtils.containsClause("acc.email", "emailPattern"));
     }
+    List<UUID> entityIds = criteria == null ? null : criteria.entityIds();
     if (CollectionUtils.isNotEmpty(entityIds)) {
       clauses.add("e.id in :entityIds");
     }
+    String name = criteria == null ? null : criteria.name();
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("u.name", "namePattern"));
     }

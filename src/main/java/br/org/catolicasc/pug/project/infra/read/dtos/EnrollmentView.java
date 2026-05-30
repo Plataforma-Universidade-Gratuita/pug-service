@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/** Read-side projection used by enrollment queries and presenter mappings. */
 public record EnrollmentView(
     UUID projectId,
     String projectName,
@@ -22,6 +23,24 @@ public record EnrollmentView(
     OffsetDateTime acceptedAt,
     OffsetDateTime closingStatusAt) {
 
+  /**
+   * Creates an enrollment view from a string-backed status projection.
+   *
+   * @param projectId the linked project identifier
+   * @param projectName the linked project name
+   * @param formerStudentId the linked former-student account identifier
+   * @param studentName the former-student display name
+   * @param studentEmail the former-student email address
+   * @param academicRegistration the academic registration code
+   * @param campus the campus associated with the former student
+   * @param startDate the counterpart period start date
+   * @param dueDate the counterpart period due date
+   * @param status the persisted status name
+   * @param createdAt the enrollment creation timestamp
+   * @param updatedAt the enrollment last-update timestamp
+   * @param acceptedAt the enrollment approval timestamp
+   * @param closingStatusAt the final-status timestamp
+   */
   public EnrollmentView(
       UUID projectId,
       String projectName,

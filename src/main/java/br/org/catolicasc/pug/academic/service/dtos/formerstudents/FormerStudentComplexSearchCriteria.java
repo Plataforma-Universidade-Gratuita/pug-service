@@ -38,6 +38,10 @@ public record FormerStudentComplexSearchCriteria(
     List<UUID> courseIds,
     List<UUID> areaOfExpertiseIds) {
 
+  /**
+   * Creates an immutable former-student complex-search criteria object, normalizing optional
+   * collections to empty immutable lists when absent.
+   */
   public FormerStudentComplexSearchCriteria {
     campi = campi == null ? List.of() : List.copyOf(campi);
     courseIds = courseIds == null ? List.of() : List.copyOf(courseIds);

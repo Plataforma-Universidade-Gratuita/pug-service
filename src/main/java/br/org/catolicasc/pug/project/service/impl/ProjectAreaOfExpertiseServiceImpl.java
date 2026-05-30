@@ -88,7 +88,8 @@ public class ProjectAreaOfExpertiseServiceImpl implements ProjectAreaOfExpertise
   public boolean delete(UUID projectId, UUID areaOfExpertiseId) {
     if (projectId == null || areaOfExpertiseId == null) {
       LOG.debugf(
-          "Delete ProjectsBySchool skipped due to null identifier(s): projectId=%s, areaOfExpertiseId=%s",
+          "Delete project-area-of-expertise skipped due to null identifier(s):"
+              + " projectId=%s, areaOfExpertiseId=%s",
           projectId, areaOfExpertiseId);
       return false;
     }

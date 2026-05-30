@@ -23,6 +23,13 @@ public class Staff extends DomainError {
     this.entityId = entityId;
   }
 
+  /**
+   * Creates a validated staff aggregate.
+   *
+   * @param accountId the linked account identifier
+   * @param entityId the linked partner entity identifier
+   * @return the created and validated aggregate
+   */
   public static Staff factory(UUID accountId, UUID entityId) {
     Staff staff = Staff.builder().accountId(accountId).entityId(entityId).build();
     staff.collectValidationProblems();

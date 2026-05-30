@@ -17,6 +17,12 @@ import java.util.Locale;
 public final class AreaOfExpertisePresenter {
   private AreaOfExpertisePresenter() {}
 
+  /**
+   * Converts an area-of-expertise creation request into its command counterpart.
+   *
+   * @param req incoming presenter-layer payload
+   * @return command representation, or {@code null} when the request is null
+   */
   public static AreaOfExpertiseCreateCommand toCommand(AreaOfExpertiseCreateRequest req) {
     if (req == null) {
       return null;
@@ -24,6 +30,12 @@ public final class AreaOfExpertisePresenter {
     return new AreaOfExpertiseCreateCommand(req.name());
   }
 
+  /**
+   * Converts an area-of-expertise update request into its command counterpart.
+   *
+   * @param req incoming presenter-layer payload
+   * @return command representation, or {@code null} when the request is null
+   */
   public static AreaOfExpertiseUpdateCommand toCommand(AreaOfExpertiseUpdateRequest req) {
     if (req == null) {
       return null;
@@ -31,6 +43,13 @@ public final class AreaOfExpertisePresenter {
     return new AreaOfExpertiseUpdateCommand(req.name());
   }
 
+  /**
+   * Converts a read projection into the standard area-of-expertise response.
+   *
+   * @param view read projection returned by the query layer
+   * @param locale locale used to build localized nested values
+   * @return presenter response, or {@code null} when any required input is null
+   */
   public static AreaOfExpertiseResponse toResponse(AreaOfExpertiseView view, Locale locale) {
     if (view == null || locale == null) {
       return null;
@@ -41,6 +60,12 @@ public final class AreaOfExpertisePresenter {
     return new AreaOfExpertiseResponse(view.id(), view.name(), auditInfo);
   }
 
+  /**
+   * Converts a read projection into the lightweight complex-search response shape.
+   *
+   * @param view read projection returned by the query layer
+   * @return lightweight complex-search response, or {@code null} when the projection is null
+   */
   public static AreaOfExpertiseComplexSearchResponse toComplexSearchResponse(
       AreaOfExpertiseView view) {
     if (view == null) {

@@ -47,6 +47,12 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 
+/**
+ * REST API resource controller for enrollment endpoints.
+ *
+ * <p>Methods are ordered strictly by HTTP verb with single-item endpoints preceding collection
+ * endpoints inside each verb group.
+ */
 @ApplicationScoped
 @Path("/v1/projects")
 @Produces(MediaType.APPLICATION_JSON)
@@ -67,6 +73,7 @@ public class EnrollmentsResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /** Returns a single enrollment identified by project and former-student identifiers. */
   @GET
   @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -78,6 +85,7 @@ public class EnrollmentsResource {
         .build();
   }
 
+  /** Returns the current former student's enrollment for the provided project. */
   @GET
   @Path("/{projectId}/enrollments/me")
   @RolesAllowed("FORMER_STUDENT")
@@ -88,6 +96,7 @@ public class EnrollmentsResource {
         .build();
   }
 
+  /** Lists enrollments, optionally filtering by project or former-student identifier. */
   @GET
   @Path("/enrollments")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -106,6 +115,7 @@ public class EnrollmentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Lists every enrollment belonging to the authenticated former student. */
   @GET
   @Path("/enrollments/me")
   @RolesAllowed("FORMER_STUDENT")
@@ -118,6 +128,7 @@ public class EnrollmentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Creates an enrollment for the authenticated former student or an explicit admin target. */
   @POST
   @Path("/{projectId}/enrollments")
   @RolesAllowed({"ADMIN", "FORMER_STUDENT"})
@@ -141,6 +152,7 @@ public class EnrollmentsResource {
         .build();
   }
 
+  /** Executes the paginated enrollment complex-search flow. */
   @POST
   @Path("/enrollments/search")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -179,6 +191,7 @@ public class EnrollmentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Updates an enrollment status using the administrative transition rules. */
   @PATCH
   @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
@@ -203,6 +216,7 @@ public class EnrollmentsResource {
         .build();
   }
 
+  /** Updates the authenticated former student's enrollment status using self-service rules. */
   @PATCH
   @Path("/{projectId}/enrollments/me")
   @RolesAllowed("FORMER_STUDENT")
@@ -226,6 +240,7 @@ public class EnrollmentsResource {
         .build();
   }
 
+  /** Deletes a single enrollment identified by project and former-student identifiers. */
   @DELETE
   @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed("ADMIN")

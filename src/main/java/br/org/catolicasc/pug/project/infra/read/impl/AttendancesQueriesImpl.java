@@ -111,7 +111,6 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
             ? new AttendanceComplexSearchCriteria(
                 List.of(), List.of(), List.of(), List.of(), null, null, null, null)
             : criteria;
-    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
 
     List<String> clauses = new ArrayList<>();
     if (CollectionUtils.isNotEmpty(safeCriteria.projectIds())) {
@@ -150,6 +149,7 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
     bindFilters(dataQuery, safeCriteria);
 
     long total = countQuery.getSingleResult();
+    PageQuery safePageQuery = pageQuery == null ? new PageQuery(0, 25) : pageQuery;
     PageExecution execution = PageExecution.from(safePageQuery, total);
     List<AttendanceView> content = execution.apply(dataQuery).getResultList();
 

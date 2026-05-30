@@ -61,6 +61,7 @@ public class AttendancesResource {
   @Context UriInfo uri;
   @Context HttpHeaders headers;
 
+  /** Returns a single attendance record by identifier. */
   @GET
   @Path("/{id}")
   public Response get(@PathParam("id") @UuidV7 UUID id) {
@@ -69,6 +70,7 @@ public class AttendancesResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Lists all attendance records or restricts the result to the provided identifiers. */
   @GET
   public Response list(@QueryParam("ids") List<@UuidV7 UUID> ids) {
     List<AttendanceView> views =
@@ -80,6 +82,7 @@ public class AttendancesResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Executes the paginated attendance complex-search flow. */
   @POST
   @Path("/search")
   public Response search(
@@ -117,6 +120,7 @@ public class AttendancesResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Creates a new attendance record and returns the canonical response payload. */
   @POST
   public Response create(@Valid AttendanceCreateRequest req) {
     var created = writeService.save(AttendancePresenter.toCommand(req));
@@ -128,6 +132,7 @@ public class AttendancesResource {
     return Response.created(location).entity(ApiEnvelope.created(body)).build();
   }
 
+  /** Validates an existing attendance record. */
   @PATCH
   @Path("/{id}/validate")
   public Response validate(@PathParam("id") @UuidV7 UUID id, @Valid AttendanceValidateRequest req) {
@@ -137,6 +142,7 @@ public class AttendancesResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Deletes an attendance record by identifier. */
   @DELETE
   @Path("/{id}")
   public Response delete(@PathParam("id") @UuidV7 UUID id) {

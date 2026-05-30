@@ -45,6 +45,7 @@ public class AreasOfExpertiseProjectsResource {
 
   @Context HttpHeaders headers;
 
+  /** Lists every project associated with the provided academic area-of-expertise identifier. */
   @GET
   public Response listProjectsByAreaOfExpertiseId(
       @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {

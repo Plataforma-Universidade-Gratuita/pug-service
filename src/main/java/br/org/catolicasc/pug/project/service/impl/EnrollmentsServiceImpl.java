@@ -22,6 +22,7 @@ import jakarta.transaction.Transactional;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
+/** Default application service responsible for enrollment command-side workflows. */
 @ApplicationScoped
 public class EnrollmentsServiceImpl implements EnrollmentsService {
 
@@ -90,6 +91,9 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
         changeStatus(enrollment.getIdentifier(), targetStatus);
         changed++;
       } catch (RuntimeException ignored) {
+        LOG.debugf(
+            "Skipping enrollment %s because the transition to %s is not allowed",
+            enrollment.getIdentifier(), targetStatus);
       }
     }
     return changed;
@@ -112,6 +116,9 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
         changeStatus(enrollment.getIdentifier(), EnrollmentStatus.COMPLETED);
         changed++;
       } catch (RuntimeException ignored) {
+        LOG.debugf(
+            "Skipping enrollment %s because the transition to %s is not allowed",
+            enrollment.getIdentifier(), EnrollmentStatus.COMPLETED);
       }
     }
     return changed;
