@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.read.AttendancesQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

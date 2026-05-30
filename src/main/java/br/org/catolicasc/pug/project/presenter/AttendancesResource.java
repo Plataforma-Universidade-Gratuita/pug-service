@@ -1,15 +1,15 @@
 package br.org.catolicasc.pug.project.presenter;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceComplexSearchRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceValidateRequest;
 import br.org.catolicasc.pug.project.presenter.mappers.AttendancePresenter;
 import br.org.catolicasc.pug.project.service.AttendancesReadService;
 import br.org.catolicasc.pug.project.service.AttendancesService;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;

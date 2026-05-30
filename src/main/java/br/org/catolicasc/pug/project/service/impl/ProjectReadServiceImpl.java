@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.service.impl;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.service.ProjectReadService;
-import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectComplexSearchCriteria;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

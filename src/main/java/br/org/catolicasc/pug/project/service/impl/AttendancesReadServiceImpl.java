@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.service.impl;
 import br.org.catolicasc.pug.project.infra.read.AttendancesQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.project.service.AttendancesReadService;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

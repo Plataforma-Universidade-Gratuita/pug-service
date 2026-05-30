@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpert
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.AreaOfExpertiseProcessor;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
-import br.org.catolicasc.pug.project.service.ProjectSchoolService;
+import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -27,7 +27,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   @Inject AuditPublisher auditPublisher;
   @Inject AreaOfExpertiseRepository repo;
   @Inject CoursesService coursesService;
-  @Inject ProjectSchoolService projectSchoolService;
+  @Inject
+  ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -46,7 +47,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("AreaOfExpertise deleted successfully. ID: %s", id);
-      projectSchoolService.deleteAllByAreaOfExpertiseId(id);
+      projectAreaOfExpertiseService.deleteAllByAreaOfExpertiseId(id);
       auditPublisher.fireDelete(AreaOfExpertise.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: AreaOfExpertise ID %s not found (idempotent)", id);

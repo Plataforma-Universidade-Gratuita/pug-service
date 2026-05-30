@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectUpdateRequest;
 import java.math.BigDecimal;
 
 /**

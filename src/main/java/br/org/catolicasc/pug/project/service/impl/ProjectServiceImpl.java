@@ -7,10 +7,10 @@ import br.org.catolicasc.pug.project.domain.ProjectRepository;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
-import br.org.catolicasc.pug.project.service.ProjectSchoolService;
+import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.project.service.ProjectService;
-import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectUpdateCommand;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.project.service.utils.ProjectProcessor;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -37,7 +37,8 @@ public class ProjectServiceImpl implements ProjectService {
 
   @Inject AuditPublisher auditPublisher;
   @Inject ProjectRepository repo;
-  @Inject ProjectSchoolService associationService;
+  @Inject
+  ProjectAreaOfExpertiseService associationService;
   @Inject AuthService authService;
   @Inject EntitiesService entityService;
   @Inject EnrollmentsService enrollmentsService;

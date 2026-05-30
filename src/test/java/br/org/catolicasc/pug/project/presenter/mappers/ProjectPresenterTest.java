@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectCreateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
-import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectUpdateRequest;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectUpdateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;

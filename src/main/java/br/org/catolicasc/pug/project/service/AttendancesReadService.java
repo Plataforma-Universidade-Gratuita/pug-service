@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

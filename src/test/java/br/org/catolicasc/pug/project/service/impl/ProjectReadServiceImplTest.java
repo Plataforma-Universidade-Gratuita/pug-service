@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

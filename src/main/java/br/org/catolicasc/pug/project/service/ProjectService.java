@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
-import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.math.BigDecimal;

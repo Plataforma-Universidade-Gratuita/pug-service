@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceValidateRequest;
 
 /**
  * Builder class for creating {@link AttendanceValidateRequest} DTOs in test scenarios.

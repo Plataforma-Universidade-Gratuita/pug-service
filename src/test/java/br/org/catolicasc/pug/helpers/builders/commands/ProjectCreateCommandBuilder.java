@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectCreateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;

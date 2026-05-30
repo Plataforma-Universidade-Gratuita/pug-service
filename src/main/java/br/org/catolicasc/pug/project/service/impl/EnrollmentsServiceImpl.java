@@ -10,7 +10,7 @@ import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectService;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.project.service.utils.EnrollmentProcessor;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;

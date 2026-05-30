@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.service;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import java.util.UUID;
 
 public interface EnrollmentsService {

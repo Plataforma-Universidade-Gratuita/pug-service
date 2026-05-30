@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 

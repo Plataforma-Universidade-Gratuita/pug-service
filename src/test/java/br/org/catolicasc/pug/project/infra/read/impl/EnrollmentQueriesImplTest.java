@@ -10,7 +10,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;

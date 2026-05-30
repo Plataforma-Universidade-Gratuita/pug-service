@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.infra.read.EnrollmentsQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

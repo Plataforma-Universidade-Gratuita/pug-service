@@ -1,14 +1,14 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
-import br.org.catolicasc.pug.project.presenter.dtos.AccountSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentInfoResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.EnrollmentStatusResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.StudentSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentCreateCommand;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.enrollments.EnrollmentComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.enrollments.EnrollmentInfoResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.enrollments.EnrollmentResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.enrollments.EnrollmentStatusResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.dtos.CampusResponse;
@@ -46,7 +46,7 @@ public final class EnrollmentPresenter {
 
     return new EnrollmentComplexSearchResponse(
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
-        new StudentSimpleComplexSearchResponse(
+        new FormerStudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
                 view.formerStudentId(), view.formerStudentName(), view.formerStudentEmail()),
             view.academicRegistration(),

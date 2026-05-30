@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.project.infra.read.impl;
 
 import br.org.catolicasc.pug.project.infra.read.ProjectQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import br.org.catolicasc.pug.project.service.dtos.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.projects.ProjectComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceValidateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;

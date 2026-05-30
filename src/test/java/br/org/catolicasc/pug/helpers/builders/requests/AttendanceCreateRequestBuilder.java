@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceCreateRequest;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.util.UUID;

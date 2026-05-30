@@ -1,18 +1,18 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
-import br.org.catolicasc.pug.project.presenter.dtos.AccountSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceInfoResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceStatusResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.AttendanceValidateRequest;
-import br.org.catolicasc.pug.project.presenter.dtos.ProjectSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.QrValidationInfoResponse;
-import br.org.catolicasc.pug.project.presenter.dtos.StudentSimpleComplexSearchResponse;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceInfoResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceStatusResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceValidateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.QrValidationInfoResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentSimpleComplexSearchResponse;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceValidateCommand;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -93,7 +93,7 @@ public final class AttendancePresenter {
     return new AttendanceComplexSearchResponse(
         view.id(),
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
-        new StudentSimpleComplexSearchResponse(
+        new FormerStudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
                 view.formerStudentId(), view.formerStudentName(), view.formerStudentEmail()),
             view.academicRegistration(),

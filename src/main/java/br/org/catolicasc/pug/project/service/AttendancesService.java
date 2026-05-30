@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceCreateCommand;
-import br.org.catolicasc.pug.project.service.dtos.AttendanceValidateCommand;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceCreateCommand;
+import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceValidateCommand;
 import java.util.UUID;
 
 /** Application service interface for managing attendance aggregates. */

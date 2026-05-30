@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.project.service.impl;
 import br.org.catolicasc.pug.project.infra.read.EnrollmentsQueries;
 import br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView;
 import br.org.catolicasc.pug.project.service.EnrollmentsReadService;
-import br.org.catolicasc.pug.project.service.dtos.EnrollmentComplexSearchCriteria;
+import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentComplexSearchCriteria;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
