@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.partner.infra.read.impl;
 import br.org.catolicasc.pug.partner.infra.read.EntitiesQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
-import br.org.catolicasc.pug.partner.service.dtos.EntityComplexSearchCriteria;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

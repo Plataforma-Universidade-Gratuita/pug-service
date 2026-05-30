@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
-import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;

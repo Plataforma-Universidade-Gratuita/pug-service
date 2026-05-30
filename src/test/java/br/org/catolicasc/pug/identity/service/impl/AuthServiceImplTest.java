@@ -21,7 +21,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.RefreshRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;

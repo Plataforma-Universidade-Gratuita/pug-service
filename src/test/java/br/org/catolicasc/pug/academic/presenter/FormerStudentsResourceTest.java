@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentUpdateRequest;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;

@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.infra.read;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;

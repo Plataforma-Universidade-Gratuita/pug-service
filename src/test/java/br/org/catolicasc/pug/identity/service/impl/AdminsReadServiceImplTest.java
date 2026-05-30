@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.identity.infra.read.AdminsQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.identity.service.dtos.AdminComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

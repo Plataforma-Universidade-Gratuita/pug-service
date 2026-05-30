@@ -3,11 +3,11 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentUpdateCommand;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentUpdateRequest;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentUpdateCommand;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.i18n.I18n;

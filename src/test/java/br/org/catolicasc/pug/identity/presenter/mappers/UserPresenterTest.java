@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.users.UserResponse;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;

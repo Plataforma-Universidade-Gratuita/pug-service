@@ -4,7 +4,7 @@ import br.org.catolicasc.pug.partner.infra.read.StaffQueries;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.partner.service.StaffReadService;
-import br.org.catolicasc.pug.partner.service.dtos.StaffComplexSearchCriteria;
+import br.org.catolicasc.pug.partner.service.dtos.staff.StaffComplexSearchCriteria;
 import br.org.catolicasc.pug.partner.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

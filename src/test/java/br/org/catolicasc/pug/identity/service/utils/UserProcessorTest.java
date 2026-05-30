@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.User;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import java.util.Collections;
 import java.util.List;

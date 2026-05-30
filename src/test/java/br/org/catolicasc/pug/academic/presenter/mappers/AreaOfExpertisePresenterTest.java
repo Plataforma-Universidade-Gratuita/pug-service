@@ -3,12 +3,12 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseComplexSearchResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseUpdateRequest;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseUpdateCommand;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseUpdateRequest;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseUpdateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.time.OffsetDateTime;
 import java.util.Locale;

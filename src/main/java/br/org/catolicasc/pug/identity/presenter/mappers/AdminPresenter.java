@@ -2,18 +2,18 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminComplexSearchResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminUpdateRequest;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AdminCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.AdminUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminCreateRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminUpdateRequest;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.CampusResponse;
@@ -86,9 +86,10 @@ public final class AdminPresenter {
 
     AccountComplexSearchResponse account =
         AccountPresenter.toComplexSearchResponse(v.accountView(), locale, i18n);
+    CampusResponse campusResponse = SharedDataPresenter.createCampusResponse(v.campus(), locale, i18n);
     String grantedAtFormatted = StringUtils.toStringFormatted(v.grantedAt(), locale);
 
-    return new AdminComplexSearchResponse(account, v.grantedAt(), grantedAtFormatted);
+    return new AdminComplexSearchResponse(account, campusResponse, v.grantedAt(), grantedAtFormatted);
   }
 
   /**

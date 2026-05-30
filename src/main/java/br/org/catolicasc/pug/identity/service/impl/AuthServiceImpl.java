@@ -12,7 +12,7 @@ import br.org.catolicasc.pug.identity.presenter.dtos.auth.TokenResponse;
 import br.org.catolicasc.pug.identity.service.AccountsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.identity.service.PasswordService;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountUpdateCommand;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -152,7 +152,8 @@ public class AuthServiceImpl implements AuthService {
       throw ExceptionHelper.unauthorized();
     }
 
-    String accessToken = signAccessToken(account);
+    boolean passwordWired = passwordService.isConfigured(account.getPasswordHash());
+    String accessToken = signAccessToken(account, passwordWired);
     String rawRefreshToken = UUID.randomUUID().toString();
     persistRefreshToken(account.getId(), rawRefreshToken);
 
@@ -162,6 +163,7 @@ public class AuthServiceImpl implements AuthService {
         rawRefreshToken,
         account.getId(),
         account.getAccountType(),
+        passwordWired,
         accessTokenLifespan,
         refreshTokenLifespan);
   }
@@ -199,8 +201,9 @@ public class AuthServiceImpl implements AuthService {
       throw ExceptionHelper.unauthorized();
     }
 
+    boolean passwordWired = passwordService.isConfigured(accountEntity.getPasswordHash());
     Account account = accountService.getById(accountEntity.getId());
-    String accessToken = signAccessToken(account);
+    String accessToken = signAccessToken(account, passwordWired);
 
     LOG.infof("Access token refreshed for account %s", account.getId());
     return new TokenResponse(
@@ -208,6 +211,7 @@ public class AuthServiceImpl implements AuthService {
         request.refreshToken(),
         account.getId(),
         account.getAccountType(),
+        passwordWired,
         accessTokenLifespan,
         refreshTokenLifespan);
   }
@@ -258,12 +262,12 @@ public class AuthServiceImpl implements AuthService {
    * @param account the authenticated account
    * @return the signed JWT string
    */
-  private String signAccessToken(Account account) {
+  private String signAccessToken(Account account, boolean isPasswordWired) {
     return Jwt.upn(account.getEmail().getValue())
         .groups(Set.of(account.getAccountType().name()))
         .claim("accountId", account.getId().toString())
         .claim("userId", account.getUserId().toString())
-        .claim("passwordWired", passwordService.isConfigured(account.getPasswordHash()))
+        .claim("passwordWired", isPasswordWired)
         .sign();
   }
 

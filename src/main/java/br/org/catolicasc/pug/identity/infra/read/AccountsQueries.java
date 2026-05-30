@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.identity.infra.read;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.service.dtos.AccountComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;

@@ -1,13 +1,16 @@
 package br.org.catolicasc.pug.identity.presenter;
 
-import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
+
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountComplexSearchRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountResponse;
 import br.org.catolicasc.pug.identity.presenter.mappers.AccountPresenter;
 import br.org.catolicasc.pug.identity.service.AccountsReadService;
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.identity.service.dtos.AccountComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
@@ -32,9 +35,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
 
 /**
  * REST API resource controller for read-only operations on Accounts.
@@ -43,7 +43,7 @@ import java.util.UUID;
  * entry point, delegating queries to the {@link AccountsReadService} and adhering to CQRS
  * principles.
  */
-@Path(IdentityApiPaths.ACCOUNTS)
+@Path("/v1/identity/accounts")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")

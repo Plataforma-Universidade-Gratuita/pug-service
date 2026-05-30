@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentUpdateRequest;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;

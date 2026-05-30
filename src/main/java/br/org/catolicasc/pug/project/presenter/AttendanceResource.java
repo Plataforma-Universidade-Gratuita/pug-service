@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.AttendanceView;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceCreateRequest;
 import br.org.catolicasc.pug.project.presenter.dtos.AttendanceResponse;
@@ -44,7 +43,7 @@ import java.util.stream.Collectors;
  * endpoints preceding collections.
  */
 @ApplicationScoped
-@Path(ProjectApiPaths.ATTENDANCES)
+@Path("/v1/projects/attendances")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

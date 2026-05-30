@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.service.impl;
 import br.org.catolicasc.pug.identity.infra.read.UsersQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
 import br.org.catolicasc.pug.identity.service.UsersReadService;
-import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

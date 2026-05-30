@@ -8,9 +8,9 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseUpdateRequest;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;

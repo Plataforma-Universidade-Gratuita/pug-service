@@ -1,6 +1,8 @@
 package br.org.catolicasc.pug.shared.infra.audit;
 
 import io.quarkus.mongodb.panache.common.MongoEntity;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -53,7 +55,7 @@ public class AuditLog {
   /** Custom builder method to ensure immutability of the changes list. */
   public static class AuditLogBuilder {
     public AuditLogBuilder changes(List<FieldChange> changes) {
-      this.changes = (changes != null) ? new java.util.ArrayList<>(changes) : null;
+      this.changes = (changes != null) ? new ArrayList<>(changes) : null;
       return this;
     }
   }

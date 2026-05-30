@@ -6,7 +6,7 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.User;
-import br.org.catolicasc.pug.identity.service.dtos.AdminComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import io.quarkus.test.TestTransaction;

@@ -16,7 +16,7 @@ import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
 import br.org.catolicasc.pug.identity.domain.vos.Email;
 import br.org.catolicasc.pug.identity.service.UsersService;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;

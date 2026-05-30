@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.domain.Account;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import com.github.f4b6a3.uuid.UuidCreator;

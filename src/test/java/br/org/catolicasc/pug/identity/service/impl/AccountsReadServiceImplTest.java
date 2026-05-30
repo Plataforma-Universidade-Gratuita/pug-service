@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.identity.infra.read.AccountsQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.service.dtos.AccountComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

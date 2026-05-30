@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.identity.infra.read.impl;
 import br.org.catolicasc.pug.identity.infra.read.AdminsQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.identity.service.dtos.AdminComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
@@ -68,6 +68,7 @@ public class AdminsQueriesImpl implements AdminsQueries {
                       acc.updatedAt,
                       acc.active
                     ),
+                    a.campus,
                     a.grantedAt
                   )
                   from AdminEntity a

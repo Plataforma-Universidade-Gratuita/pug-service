@@ -2,9 +2,10 @@ package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.UserComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountTypeResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.users.UserSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
@@ -44,11 +45,12 @@ public final class AccountPresenter {
     }
 
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
+    AccountTypeResponse accountTypeResponse = new AccountTypeResponse(v.accountType(), typeFormatted);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new AccountResponse(
-        v.id(), v.userId(), v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
+        v.id(), v.userId(), v.email(), accountTypeResponse, auditInfo, v.active());
   }
 
   /**
@@ -72,11 +74,12 @@ public final class AccountPresenter {
     }
 
     String typeFormatted = i18n.translation(v.accountType().getBundleKey(), locale);
+    AccountTypeResponse accountTypeResponse = new AccountTypeResponse(v.accountType(), typeFormatted);
     AuditInfoResponse auditInfo =
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
-    UserComplexSearchResponse user = new UserComplexSearchResponse(v.userId(), v.userName());
+    UserSimpleComplexSearchResponse user = new UserSimpleComplexSearchResponse(v.userId(), v.userName());
 
     return new AccountComplexSearchResponse(
-        v.id(), user, v.email(), v.accountType(), typeFormatted, auditInfo, v.active());
+        v.id(), user, v.email(), accountTypeResponse, auditInfo, v.active());
   }
 }

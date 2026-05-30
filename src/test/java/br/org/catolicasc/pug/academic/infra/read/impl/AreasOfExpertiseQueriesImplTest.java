@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

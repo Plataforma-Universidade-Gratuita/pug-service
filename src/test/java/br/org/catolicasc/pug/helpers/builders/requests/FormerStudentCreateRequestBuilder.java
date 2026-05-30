@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentCreateRequest;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;

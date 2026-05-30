@@ -4,8 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

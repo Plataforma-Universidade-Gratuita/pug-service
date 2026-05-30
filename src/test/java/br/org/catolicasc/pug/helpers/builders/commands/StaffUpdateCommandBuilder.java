@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.StaffUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserUpdateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.staff.StaffUpdateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 

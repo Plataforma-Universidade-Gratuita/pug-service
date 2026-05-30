@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;

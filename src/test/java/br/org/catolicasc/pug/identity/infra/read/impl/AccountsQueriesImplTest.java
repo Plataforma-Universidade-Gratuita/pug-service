@@ -7,7 +7,7 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.service.dtos.AccountComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;

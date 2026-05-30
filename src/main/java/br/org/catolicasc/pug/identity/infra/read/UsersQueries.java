@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.identity.infra.read;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;

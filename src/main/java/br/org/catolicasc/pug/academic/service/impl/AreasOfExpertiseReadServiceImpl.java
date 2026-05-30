@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.academic.service.impl;
 import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.service.AreasOfExpertiseReadService;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

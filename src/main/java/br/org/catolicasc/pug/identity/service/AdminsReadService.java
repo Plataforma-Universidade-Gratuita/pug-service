@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.identity.service;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.identity.service.dtos.AdminComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

@@ -1,18 +1,17 @@
 package br.org.catolicasc.pug.identity.presenter;
 
-import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountStatusRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminComplexSearchRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminCreateRequest;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminUpdateRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountStatusRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminComplexSearchRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminCreateRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminUpdateRequest;
 import br.org.catolicasc.pug.identity.presenter.mappers.AdminPresenter;
 import br.org.catolicasc.pug.identity.service.AdminsReadService;
 import br.org.catolicasc.pug.identity.service.AdminsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.identity.service.dtos.AdminComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.admins.AdminComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
@@ -55,7 +54,7 @@ import java.util.UUID;
  * privileges. It delegates commands to the {@link AdminsService} (writes) and queries to the {@link
  * AdminsReadService} (reads), strictly adhering to CQRS principles.
  */
-@Path(IdentityApiPaths.ADMINS)
+@Path("/v1/identity/admins")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @RolesAllowed("ADMIN")

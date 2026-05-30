@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
@@ -247,9 +249,9 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .queryParam("size", 25)
         .body(
             new EnrollmentComplexSearchRequest(
-                java.util.List.of(project[0].getId()),
-                java.util.List.of(formerStudent[0].getAccountId()),
-                java.util.List.of(EnrollmentStatus.PENDING),
+                List.of(project[0].getId()),
+                List.of(formerStudent[0].getAccountId()),
+                List.of(EnrollmentStatus.PENDING),
                 null,
                 null,
                 null,

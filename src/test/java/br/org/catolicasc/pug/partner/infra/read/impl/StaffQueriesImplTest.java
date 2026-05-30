@@ -8,7 +8,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.partner.service.dtos.StaffComplexSearchCriteria;
+import br.org.catolicasc.pug.partner.service.dtos.staff.StaffComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;

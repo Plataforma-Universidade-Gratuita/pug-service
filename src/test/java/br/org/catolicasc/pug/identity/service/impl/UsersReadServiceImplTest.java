@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.identity.infra.read.UsersQueries;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

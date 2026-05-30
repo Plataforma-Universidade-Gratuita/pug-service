@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectResponse;
 import br.org.catolicasc.pug.project.presenter.mappers.ProjectPresenter;
@@ -34,7 +33,7 @@ import java.util.UUID;
  * expertise side.
  */
 @ApplicationScoped
-@Path(AcademicApiPaths.AREAS_OF_EXPERTISE_PROJECTS)
+@Path("/v1/academic/areas-of-expertise/{schoolId}/projects")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

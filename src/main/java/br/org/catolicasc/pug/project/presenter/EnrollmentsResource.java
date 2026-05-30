@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.project.presenter;
 
 import br.org.catolicasc.pug.identity.service.AuthService;
-import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
@@ -25,7 +24,6 @@ import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
-import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -51,7 +49,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
-@Path(ProjectApiPaths.PROJECTS)
+@Path("/v1/projects")
 @Produces(MediaType.APPLICATION_JSON)
 public class EnrollmentsResource {
 

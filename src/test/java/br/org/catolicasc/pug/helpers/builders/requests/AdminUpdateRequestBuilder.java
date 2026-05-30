@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.presenter.dtos.AdminUpdateRequest;
+import br.org.catolicasc.pug.identity.presenter.dtos.admins.AdminUpdateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.util.Random;
 

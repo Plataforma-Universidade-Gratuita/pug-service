@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.AreasOfExpertiseQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

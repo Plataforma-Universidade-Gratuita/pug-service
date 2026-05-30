@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.project.presenter.dtos;
 
-import br.org.catolicasc.pug.partner.presenter.dtos.EntitySimpleComplexSearchResponse;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplexSearchResponse;
 import java.util.UUID;
 
 /**

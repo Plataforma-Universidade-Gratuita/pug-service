@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.geo.presenter;
 
-import br.org.catolicasc.pug.geo.constants.GeoApiPaths;
 import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
 import br.org.catolicasc.pug.geo.presenter.dtos.CityComplexSearchRequest;
 import br.org.catolicasc.pug.geo.presenter.dtos.CityResponse;
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
  * ensures that all responses are consistently wrapped in a standardized {@link ApiEnvelope}.
  */
 @ApplicationScoped
-@Path(GeoApiPaths.CITIES)
+@Path("/v1/geo/cities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 @Authenticated

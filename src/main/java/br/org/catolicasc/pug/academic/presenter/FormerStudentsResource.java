@@ -1,17 +1,16 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentComplexSearchRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.FormerStudentUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentComplexSearchRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.FormerStudentUpdateRequest;
 import br.org.catolicasc.pug.academic.presenter.mappers.FormerStudentPresenter;
 import br.org.catolicasc.pug.academic.service.FormerStudentsReadService;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentComplexSearchCriteria;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountStatusRequest;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountStatusRequest;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
@@ -52,7 +51,7 @@ import java.util.UUID;
  * REST resource exposing former-student read and write operations.
  */
 @ApplicationScoped
-@Path(AcademicApiPaths.FORMER_STUDENTS)
+@Path("/v1/academic/former-students")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class FormerStudentsResource {

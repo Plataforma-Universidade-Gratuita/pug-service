@@ -3,7 +3,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 import br.org.catolicasc.pug.academic.infra.read.FormerStudentsQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

@@ -2,9 +2,9 @@ package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.service.dtos.AccountCreateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.StaffCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.staff.StaffCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;

@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.identity.presenter;
 
-import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.CredentialsRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LoginRequest;
 import br.org.catolicasc.pug.identity.presenter.dtos.auth.LogoutRequest;
@@ -28,7 +27,7 @@ import io.quarkus.security.Authenticated;
  * wire first-time credentials, and log out by revoking refresh tokens.
  */
 @ApplicationScoped
-@Path(IdentityApiPaths.AUTH)
+@Path("/v1/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
@@ -48,39 +47,6 @@ public class AuthResource {
   public Response login(@Valid LoginRequest request) {
     TokenResponse body = authService.login(request);
     return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Validates a refresh token and issues a new short-lived access token.
-   *
-   * @param request the validated {@link RefreshRequest} containing the opaque refresh token
-   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the new {@link
-   *     TokenResponse}
-   */
-  @POST
-  @Path("/refresh")
-  @PermitAll
-  public Response refresh(@Valid RefreshRequest request) {
-    TokenResponse body = authService.refresh(request);
-    return Response.ok(ApiEnvelope.ok(body)).build();
-  }
-
-  /**
-   * Wires the password credentials for an already provisioned account.
-   *
-   * <p>This endpoint is intended for first-access onboarding flows where the underlying account was
-   * created without an initial password hash.
-   *
-   * @param request the validated {@link CredentialsRequest} containing the account email and the
-   *     desired raw password
-   * @return an HTTP 204 No Content response
-   */
-  @POST
-  @Path("/wire-credentials")
-  @Authenticated
-  public Response wireCredentials(@Valid CredentialsRequest request) {
-    authService.wireCredentials(request);
-    return Response.noContent().build();
   }
 
   /**
@@ -109,6 +75,39 @@ public class AuthResource {
   @RolesAllowed({"ADMIN", "PARTNER", "FORMER_STUDENT"})
   public Response logoutAll() {
     authService.logoutAll();
+    return Response.noContent().build();
+  }
+
+    /**
+     * Validates a refresh token and issues a new short-lived access token.
+     *
+     * @param request the validated {@link RefreshRequest} containing the opaque refresh token
+     * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the new {@link
+     *     TokenResponse}
+     */
+    @POST
+    @Path("/refresh")
+    @PermitAll
+    public Response refresh(@Valid RefreshRequest request) {
+        TokenResponse body = authService.refresh(request);
+        return Response.ok(ApiEnvelope.ok(body)).build();
+    }
+
+  /**
+   * Wires the password credentials for an already provisioned account.
+   *
+   * <p>This endpoint is intended for first-access onboarding flows where the underlying account was
+   * created without an initial password hash.
+   *
+   * @param request the validated {@link CredentialsRequest} containing the account email and the
+   *     desired raw password
+   * @return an HTTP 204 No Content response
+   */
+  @POST
+  @Path("/wire-credentials")
+  @Authenticated
+  public Response wireCredentials(@Valid CredentialsRequest request) {
+    authService.wireCredentials(request);
     return Response.noContent().build();
   }
 }

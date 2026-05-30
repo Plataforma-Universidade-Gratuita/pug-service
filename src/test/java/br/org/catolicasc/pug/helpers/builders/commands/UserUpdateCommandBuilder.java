@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserUpdateCommand;
 
 /**
  * Builder class for creating {@link UserUpdateCommand} DTOs in test scenarios.

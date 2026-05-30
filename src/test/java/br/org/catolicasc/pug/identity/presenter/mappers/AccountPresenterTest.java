@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountComplexSearchView;
 import br.org.catolicasc.pug.identity.infra.read.dtos.AccountView;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountComplexSearchResponse;
-import br.org.catolicasc.pug.identity.presenter.dtos.AccountResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountComplexSearchResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountResponse;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import com.github.f4b6a3.uuid.UuidCreator;

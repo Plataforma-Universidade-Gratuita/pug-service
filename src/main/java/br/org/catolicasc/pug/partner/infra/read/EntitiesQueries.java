@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.partner.infra.read;
 
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
-import br.org.catolicasc.pug.partner.service.dtos.EntityComplexSearchCriteria;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;

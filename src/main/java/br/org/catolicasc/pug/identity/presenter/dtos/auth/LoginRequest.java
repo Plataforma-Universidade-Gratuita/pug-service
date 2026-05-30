@@ -11,4 +11,4 @@ import jakarta.validation.constraints.Size;
  * @param password the raw, plaintext password
  */
 public record LoginRequest(
-    @NotBlank @Email @Size(max = 254) String email, @NotBlank @Size(max = 255) String password) {}
+    @NotBlank @Email @Size(max = 254) String email, @NotBlank @Size(min = 8, max = 255) String password) {}

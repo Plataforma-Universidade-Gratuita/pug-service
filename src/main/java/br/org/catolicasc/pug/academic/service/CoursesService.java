@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;

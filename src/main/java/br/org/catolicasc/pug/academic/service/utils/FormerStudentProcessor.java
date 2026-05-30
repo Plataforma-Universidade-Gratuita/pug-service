@@ -4,7 +4,7 @@ import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
 import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.utils.StringUtils;

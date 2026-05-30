@@ -1,13 +1,13 @@
 package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseWithAuditInfoComplexSearchResponse;
-import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseWithAuditInfoComplexSearchResponse;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;

@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.partner.presenter.dtos.StaffCreateRequest;
+import br.org.catolicasc.pug.partner.presenter.dtos.staff.StaffCreateRequest;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 

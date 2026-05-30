@@ -9,7 +9,7 @@ import br.org.catolicasc.pug.project.presenter.dtos.ProjectStatusResponse;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectUpdateRequest;
 import br.org.catolicasc.pug.project.service.dtos.ProjectCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.ProjectUpdateCommand;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntitySimpleComplexSearchResponse;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplexSearchResponse;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;

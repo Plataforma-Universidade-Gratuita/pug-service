@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentCreateCommand;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.domain.User;

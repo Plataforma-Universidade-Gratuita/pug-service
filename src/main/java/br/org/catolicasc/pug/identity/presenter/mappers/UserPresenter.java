@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.identity.presenter.mappers;
 
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.identity.presenter.dtos.UserResponse;
+import br.org.catolicasc.pug.identity.presenter.dtos.users.UserResponse;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import br.org.catolicasc.pug.shared.presenter.mappers.SharedDataPresenter;
 import java.util.Locale;

@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;

@@ -6,7 +6,7 @@ import br.org.catolicasc.pug.helpers.BaseSearchTest;
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.infra.read.dtos.UserView;
-import br.org.catolicasc.pug.identity.service.dtos.UserComplexSearchCriteria;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import com.github.f4b6a3.uuid.UuidCreator;
 import io.quarkus.test.junit.QuarkusTest;

@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.presenter;
 
-import br.org.catolicasc.pug.project.constants.ProjectApiPaths;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.ProjectComplexSearchRequest;
@@ -55,7 +54,7 @@ import java.util.UUID;
  * endpoints within each verb group.
  */
 @ApplicationScoped
-@Path(ProjectApiPaths.PROJECTS)
+@Path("/v1/projects")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class ProjectsResource {

@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.academic.infra.read.impl;
 
 import br.org.catolicasc.pug.academic.infra.read.CoursesQueries;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.infra.persistence.JpaSearchUtils;
 import br.org.catolicasc.pug.shared.service.dtos.PageExecution;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;

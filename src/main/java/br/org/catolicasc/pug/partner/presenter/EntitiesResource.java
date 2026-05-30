@@ -1,17 +1,16 @@
 package br.org.catolicasc.pug.partner.presenter;
 
-import br.org.catolicasc.pug.partner.constants.PartnerApiPaths;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.infra.read.dtos.EntityView;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityComplexSearchRequest;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityComplexSearchResponse;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityCreateRequest;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityResponse;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityUpdateRequest;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityComplexSearchRequest;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityComplexSearchResponse;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityCreateRequest;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityResponse;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityUpdateRequest;
 import br.org.catolicasc.pug.partner.presenter.mappers.EntityPresenter;
 import br.org.catolicasc.pug.partner.service.EntitiesReadService;
 import br.org.catolicasc.pug.partner.service.EntitiesService;
-import br.org.catolicasc.pug.partner.service.dtos.EntityComplexSearchCriteria;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityComplexSearchCriteria;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
@@ -52,7 +51,7 @@ import java.util.UUID;
  * EntitiesReadService}, adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path(PartnerApiPaths.ENTITIES)
+@Path("/v1/partners/entities")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class EntitiesResource {

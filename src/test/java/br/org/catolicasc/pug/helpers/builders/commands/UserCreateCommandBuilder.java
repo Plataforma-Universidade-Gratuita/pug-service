@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
 
 /**
  * Builder class for creating {@link UserCreateCommand} DTOs in test scenarios.

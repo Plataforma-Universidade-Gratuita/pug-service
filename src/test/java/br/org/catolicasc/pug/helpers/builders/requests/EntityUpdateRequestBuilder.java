@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.partner.presenter.dtos.EntityUpdateRequest;
+import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntityUpdateRequest;
 import java.util.UUID;
 
 /**

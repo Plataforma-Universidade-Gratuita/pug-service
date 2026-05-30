@@ -1,18 +1,17 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseComplexSearchRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseUpdateRequest;
 import br.org.catolicasc.pug.academic.presenter.mappers.AreaOfExpertisePresenter;
 import br.org.catolicasc.pug.academic.service.AreasOfExpertiseReadService;
 import br.org.catolicasc.pug.academic.service.AreasOfExpertiseService;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseComplexSearchCriteria;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.AreaOfExpertiseUpdateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
@@ -55,7 +54,7 @@ import java.util.UUID;
  * {@link AreasOfExpertiseReadService}, adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path(AcademicApiPaths.AREAS_OF_EXPERTISE)
+@Path("/v1/academic/areas-of-expertise")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AreasOfExpertiseResource {

@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.commands;
 
 import br.org.catolicasc.pug.helpers.TestBrazilianIdentifierGenerator;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityCreateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;
 

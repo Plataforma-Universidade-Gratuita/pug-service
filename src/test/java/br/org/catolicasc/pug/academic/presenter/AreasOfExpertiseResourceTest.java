@@ -7,9 +7,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseComplexSearchRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.AreaOfExpertiseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseUpdateRequest;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;

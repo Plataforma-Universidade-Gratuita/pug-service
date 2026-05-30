@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.identity.presenter.security;
 
-import br.org.catolicasc.pug.identity.constants.IdentityApiPaths;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.Priority;
@@ -25,8 +24,6 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
 @Priority(Priorities.AUTHORIZATION)
 public class PasswordSetupGuardFilter implements ContainerRequestFilter {
 
-  private static final String AUTH_PATH = IdentityApiPaths.AUTH.substring(1);
-
   @Inject SecurityIdentity identity;
 
   /** {@inheritDoc} */
@@ -37,7 +34,7 @@ public class PasswordSetupGuardFilter implements ContainerRequestFilter {
     }
 
     String path = requestContext.getUriInfo().getPath();
-    if (path != null && path.startsWith(AUTH_PATH)) {
+    if (path != null && path.startsWith("/v1/auth")) {
       return;
     }
 

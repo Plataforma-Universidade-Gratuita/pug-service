@@ -2,8 +2,8 @@ package br.org.catolicasc.pug.partner.service;
 
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.partner.domain.Staff;
-import br.org.catolicasc.pug.partner.service.dtos.EntityCreateCommand;
-import br.org.catolicasc.pug.partner.service.dtos.EntityUpdateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityCreateCommand;
+import br.org.catolicasc.pug.partner.service.dtos.entities.EntityUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;

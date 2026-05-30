@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.util.UUID;

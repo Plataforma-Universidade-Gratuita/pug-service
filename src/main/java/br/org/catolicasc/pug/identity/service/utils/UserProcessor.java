@@ -2,7 +2,7 @@ package br.org.catolicasc.pug.identity.service.utils;
 
 import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.domain.vos.Cpf;
-import br.org.catolicasc.pug.identity.service.dtos.UserCreateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserCreateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;

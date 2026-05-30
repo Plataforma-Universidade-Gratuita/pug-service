@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.helpers.builders.commands;
 
-import br.org.catolicasc.pug.academic.service.dtos.FormerStudentUpdateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentUpdateCommand;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
-import br.org.catolicasc.pug.identity.service.dtos.AccountUpdateCommand;
-import br.org.catolicasc.pug.identity.service.dtos.UserUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.accounts.AccountUpdateCommand;
+import br.org.catolicasc.pug.identity.service.dtos.users.UserUpdateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import java.math.BigDecimal;
 import java.time.LocalDate;

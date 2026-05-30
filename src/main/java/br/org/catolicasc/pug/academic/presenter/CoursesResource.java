@@ -1,18 +1,17 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.academic.constants.AcademicApiPaths;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseComplexSearchRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.CourseUpdateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseCreateRequest;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseResponse;
+import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseUpdateRequest;
 import br.org.catolicasc.pug.academic.presenter.mappers.CoursePresenter;
 import br.org.catolicasc.pug.academic.service.CoursesReadService;
 import br.org.catolicasc.pug.academic.service.CoursesService;
-import br.org.catolicasc.pug.academic.service.dtos.CourseComplexSearchCriteria;
-import br.org.catolicasc.pug.academic.service.dtos.CourseCreateCommand;
-import br.org.catolicasc.pug.academic.service.dtos.CourseUpdateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseComplexSearchCriteria;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
+import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.presenter.dtos.PageResponse;
@@ -55,7 +54,7 @@ import java.util.UUID;
  * strictly adhering to CQRS principles.
  */
 @ApplicationScoped
-@Path(AcademicApiPaths.COURSES)
+@Path("/v1/academic/courses")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class CoursesResource {
