@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import com.github.f4b6a3.uuid.UuidCreator;
-import java.time.OffsetDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -13,8 +12,7 @@ class AttendanceInfoTest {
   @Test
   @DisplayName("Should create valid info")
   void shouldCreate() {
-    AttendanceInfo info =
-        AttendanceInfo.factory(UuidCreator.getTimeOrderedEpoch(), OffsetDateTime.now());
+    AttendanceInfo info = AttendanceInfo.factory(null, null);
     assertThat(info.hasFieldErrors()).isFalse();
   }
 

@@ -93,8 +93,11 @@ class ProjectTest {
     void shouldHandleIdempotency() {
       Project p =
           Project.factory("Name", entityId, "Desc", creatorId, 10, BigDecimal.TEN, BigDecimal.ZERO);
-      assertThat(p.start().start()).isEqualTo(p.start());
-      assertThat(p.cancel().cancel()).isEqualTo(p.cancel());
+      Project started = p.start();
+      assertThat(started.start()).isSameAs(started);
+
+      Project canceled = p.cancel();
+      assertThat(canceled.cancel()).isSameAs(canceled);
     }
 
     @Test
