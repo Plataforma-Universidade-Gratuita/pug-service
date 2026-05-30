@@ -1,0 +1,36 @@
+﻿meta {
+  name: Create Former Students Bulk
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/academic/former-students/bulk
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  [
+    {
+      "cpf": "52998224059",
+      "name": "Maria Oliveira",
+      "email": "maria.oliveira@aluno.com",
+      "academicRegistration": "20261002",
+      "campus": "JOINVILLE",
+      "courseId": "00000000-0000-0000-0000-000000000001",
+      "requiredHours": 150.00,
+      "startDate": "2026-03-15",
+      "dueDate": "2028-12-15"
+    }
+  ]
+}

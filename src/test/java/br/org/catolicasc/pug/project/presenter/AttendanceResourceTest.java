@@ -4,22 +4,29 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceComplexSearchRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceCreateRequest;
+import br.org.catolicasc.pug.project.presenter.dtos.attendance.AttendanceValidateRequest;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import com.github.f4b6a3.uuid.UuidCreator;
+import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +34,8 @@ import org.junit.jupiter.api.Test;
 @QuarkusTest
 @DisplayName("AttendancesResource Integration Tests")
 class AttendanceResourceTest extends BaseResourceTest {
+
+  @InjectMock AuthService authService;
 
   private record AttendanceGraph(
       Project project, FormerStudent formerStudent, Attendance attendance) {}
@@ -149,6 +158,58 @@ class AttendanceResourceTest extends BaseResourceTest {
         .body(
             "data.content[0].student.account.id",
             is(graph.formerStudent().getAccountId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
+  @DisplayName("POST /v1/projects/attendances - Success")
+  void createSuccess() throws Exception {
+    AttendanceGraph graph = createAttendanceGraph();
+
+    AttendanceCreateRequest request =
+        new AttendanceCreateRequest(
+            graph.project().getId(), graph.formerStudent().getAccountId(), BigDecimal.TEN);
+
+    given()
+        .contentType(ContentType.JSON)
+        .body(request)
+        .when()
+        .post("/v1/projects/attendances")
+        .then()
+        .statusCode(201)
+        .body("data.projectId", is(graph.project().getId().toString()))
+        .body("data.formerStudentId", is(graph.formerStudent().getAccountId().toString()));
+  }
+
+  @Test
+  @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
+  @DisplayName("PATCH /v1/projects/attendances/{id}/validate - Success")
+  void validateSuccess() throws Exception {
+    AttendanceGraph graph = createAttendanceGraph();
+    Account[] validator = new Account[1];
+    doInTransaction(
+        () -> validator[0] = factory.createAccount(factory.createUser(), AccountType.ADMIN));
+
+    when(authService.getCurrentAccountId()).thenReturn(validator[0].getId());
+    doNothing().when(authService).requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
+
+    given()
+        .contentType(ContentType.JSON)
+        .pathParam("id", graph.attendance().getId())
+        .body(
+            new AttendanceValidateRequest(
+                AttendanceStatus.PRESENT,
+                graph.attendance().getQrValidationInfo().getQrValidationHash()))
+        .when()
+        .patch("/v1/projects/attendances/{id}/validate")
+        .then()
+        .statusCode(200)
+        .body("data.id", is(graph.attendance().getId().toString()))
+        .body("data.status.status", is("PRESENT"));
   }
 
   @Test

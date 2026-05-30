@@ -1,0 +1,26 @@
+﻿meta {
+  name: Update Staff Status
+  type: http
+  seq: 8
+}
+
+patch {
+  url: {{baseUrl}}/v1/partners/staff/00000000-0000-0000-0000-000000000001/status
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "active": true
+  }
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}

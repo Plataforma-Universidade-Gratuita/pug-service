@@ -1,7 +1,7 @@
-meta {
+﻿meta {
   name: List Entities
   type: http
-  seq: 2
+  seq: 3
 }
 
 get {
@@ -11,8 +11,7 @@ get {
 }
 
 params:query {
-  ~q: Tech
-  ~cityId: 00000000-0000-0000-0000-000000000001
+  ~ids: 00000000-0000-0000-0000-000000000001
 }
 
 headers {
@@ -22,5 +21,3 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
-
-

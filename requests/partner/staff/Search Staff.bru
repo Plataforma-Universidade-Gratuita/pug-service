@@ -1,0 +1,30 @@
+﻿meta {
+  name: Search Staff
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/partners/staff/search?page=0&size=25
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "name": "Gestor",
+    "cpf": "123",
+    "email": "techcorp",
+    "entityIds": ["00000000-0000-0000-0000-000000000001"],
+    "activeOnly": true
+  }
+}

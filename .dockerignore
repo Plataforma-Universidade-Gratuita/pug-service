@@ -1,5 +1,9 @@
-*
-!target/*-runner
-!target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
+.git
+.github
+.idea
+.quarkus
+requests
+target
+README.md
+generate-test-report.py
+*.iml

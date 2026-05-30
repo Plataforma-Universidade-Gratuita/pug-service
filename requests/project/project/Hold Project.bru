@@ -1,11 +1,11 @@
-meta {
+﻿meta {
   name: Hold Project
   type: http
-  seq: 7
+  seq: 8
 }
 
 patch {
-  url: {{baseUrl}}/v1/projects/00000000-0000-0000-0000-000000000001
+  url: {{baseUrl}}/v1/projects/00000000-0000-0000-0000-000000000001/status
   body: json
   auth: bearer
 }
@@ -16,12 +16,9 @@ headers {
 }
 
 body:json {
-  {
-    "status": "ON_HOLD"
-  }
+  "ON_HOLD"
 }
 
 auth:bearer {
   token: {{jwtToken}}
 }
-

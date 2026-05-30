@@ -1,0 +1,29 @@
+﻿meta {
+  name: Search Entities
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/partners/entities/search?page=0&size=25
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "name": "Tech",
+    "cnpj": "123",
+    "address": "Street",
+    "cityIds": ["00000000-0000-0000-0000-000000000001"]
+  }
+}

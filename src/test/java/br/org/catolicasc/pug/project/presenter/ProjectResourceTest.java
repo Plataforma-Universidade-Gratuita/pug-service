@@ -193,6 +193,28 @@ class ProjectResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
+      user = "staff",
+      roles = {"STAFF"})
+  void listByEntity() throws Exception {
+    Entity[] entity = new Entity[1];
+    doInTransaction(
+        () -> {
+          entity[0] = factory.createEntity(factory.getAnyCity());
+          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          factory.createProject(entity[0], creator);
+        });
+
+    given()
+        .pathParam("entityId", entity[0].getId())
+        .when()
+        .get("/v1/projects/entities/{entityId}")
+        .then()
+        .statusCode(200)
+        .body("data", hasSize(greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  @TestSecurity(
       user = "admin",
       roles = {"ADMIN"})
   void searchSuccess() throws Exception {

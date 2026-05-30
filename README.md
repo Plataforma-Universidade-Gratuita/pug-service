@@ -28,6 +28,31 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
   - Flyway schema migrations
   - JaCoCo, Spotless, Checkstyle, SpotBugs, and Maven Enforcer quality gates
 
+## Current public contract facts
+
+- Academic public naming uses:
+  - `areas-of-expertise`, not `schools`
+  - `former-students`, not `students`
+- Identity and partner collection-oriented read and write surfaces use pluralized names where the
+  code handles collections or aggregate collections:
+  - `Accounts*`
+  - `Admins*`
+  - `Users*`
+  - `Entities*`
+  - `Staff*`
+  - `Projects*`
+  - `Attendances*`
+  - `Enrollments*`
+- Passwords are no longer set during admin, former-student, or staff creation flows.
+- First-access credential wiring is handled by `POST /v1/auth/wire-credentials`.
+- Account activation changes are handled by dedicated status endpoints rather than mixed update
+  payloads.
+- Project status transitions are handled by `PATCH /v1/projects/{id}/status`.
+- Enrollment status transitions are handled by dedicated enrollment status update endpoints, not by
+  ad hoc transition-specific routes in the service layer.
+- Project-to-academic associations are exposed as project-to-area-of-expertise routes, not
+  project-to-school routes.
+
 ## Non-negotiable rules
 
 - Keep broader system and module overview docs in `../pug-docs/pug-service`, not in source folders here.
@@ -47,6 +72,38 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
 - Prefer nested routes for relationship-oriented operations, for example project enrollments and project-areaOfExpertise associations.
 - Do not bypass module boundaries by reaching directly into another module's infrastructure layer.
 - Keep changes scoped. Avoid opportunistic cross-module refactors unless the task actually requires them.
+
+## Current contract patterns
+
+### Complex-search
+
+- Complex-search endpoints are `POST` collection subroutes named `/search`.
+- Complex-search request DTOs follow the `*ComplexSearchRequest` naming pattern.
+- Complex-search responses return `PageResponse<...>` wrapped in `ApiEnvelope.ok(...)`.
+- Optional filters combine with `AND`.
+- List filters use `in` semantics.
+- Text filters use the shared folded/contains search utilities already present in the codebase.
+- Timestamp filters such as `dateFrom` and `dateTo` apply across the relevant timestamp fields
+  defined by the contract for that aggregate.
+
+### Status-only updates
+
+- If a contract separates lifecycle state changes from general updates, keep them separated.
+- Use dedicated `PATCH` endpoints for:
+  - account activation
+  - project lifecycle status
+  - enrollment lifecycle status
+- Do not reintroduce mixed update payloads that change both regular editable fields and lifecycle
+  status in the same contract unless the public API explicitly requires it.
+
+### Password setup flow
+
+- New accounts may start with a `null` password hash.
+- `POST /v1/auth/login` must support first-access authentication for passwordless accounts according
+  to the identity contract.
+- Authenticated users without wired credentials are limited by the password-setup guard until
+  credentials are wired.
+- Keep password hashing, verification, and strength validation inside `PasswordService`.
 
 ## Current tech and runtime facts
 
@@ -78,8 +135,10 @@ Use it for day-to-day implementation rules, repo conventions, validation steps, 
 - Local development infrastructure currently configured in the checked-in profiles:
   - dev PostgreSQL: `localhost:5433`
   - dev MongoDB: `localhost:27018`
-  - test PostgreSQL: `localhost:5434`
-  - test MongoDB: `localhost:27019`
+- Test infrastructure:
+  - test runs use Quarkus Dev Services
+  - PostgreSQL and MongoDB test containers are provisioned automatically
+  - Docker must be available for `./mvnw test` and `./mvnw verify`
 
 ## High-level folder contract
 
@@ -136,6 +195,20 @@ Do not collapse these layers casually. The separation is intentional and already
   - item lookup through `/{id}`
   - authenticated self routes through `/me`
   - relationship operations through nested routes
+  - complex-search through `/search`
+
+### Current route-shape expectations
+
+- Collection `GET` routes should support optional `ids` filters when the public contract says the
+  collection can be restricted by identifier.
+- Search-specific old routes such as `by-cpf`, `by-email`, ad hoc `q`, or route-per-filter
+  patterns should not be reintroduced when the current contract already replaced them with
+  collection `GET` plus `POST /search`.
+- Keep public academic and project association paths aligned with the renamed domain terms:
+  - `/v1/academic/areas-of-expertise`
+  - `/v1/academic/former-students`
+  - `/v1/projects/{projectId}/areas-of-expertise`
+  - `/v1/academic/areas-of-expertise/{areaOfExpertiseId}/projects`
 
 ### Response rules
 
@@ -167,6 +240,12 @@ Do not collapse these layers casually. The separation is intentional and already
 - Presenter transformations live under `presenter/mappers`.
 - Presenter DTOs should match the public HTTP contract, not the internal persistence model.
 - Use record-style DTOs where the project already follows that pattern.
+- Nested response DTOs should be preferred when the public contract groups related information, such
+  as:
+  - account status and audit info
+  - project status and project info
+  - enrollment status and enrollment info
+  - attendance status and attendance info
 - If a route changes shape:
   - update the request DTO
   - update the response DTO if needed
@@ -249,7 +328,8 @@ Do not collapse these layers casually. The separation is intentional and already
   - Bruno requests
   - docs in `pug-docs`
 - Bruno collections live under `requests/` and are grouped by domain.
-- Keep the request collection aligned with the backend contract even when old filenames still describe the previous action wording.
+- Keep the request collection aligned with the backend contract, including renamed domains and
+  dedicated search/status request files.
 - Coverage reporting flow:
   - JaCoCo HTML/XML/CSV are produced under `target/jacoco-report`
   - `generate-test-report.py` transforms coverage output into the docs report

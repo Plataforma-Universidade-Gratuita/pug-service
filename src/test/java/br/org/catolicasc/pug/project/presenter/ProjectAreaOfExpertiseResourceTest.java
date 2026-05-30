@@ -93,6 +93,55 @@ class ProjectAreaOfExpertiseResourceTest extends BaseResourceTest {
   }
 
   @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  void deleteAssociation() throws Exception {
+    Graph g = createGraph();
+    createAssociation(g);
+
+    given()
+        .pathParam("projectId", g.project().getId())
+        .pathParam("areaOfExpertiseId", g.areaOfExpertise().getId())
+        .when()
+        .delete("/v1/projects/{projectId}/areas-of-expertise/{areaOfExpertiseId}")
+        .then()
+        .statusCode(204);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  void deleteAllByProject() throws Exception {
+    Graph g = createGraph();
+    createAssociation(g);
+
+    given()
+        .pathParam("projectId", g.project().getId())
+        .when()
+        .delete("/v1/projects/{projectId}/areas-of-expertise")
+        .then()
+        .statusCode(204);
+  }
+
+  @Test
+  @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  void deleteAllByAreaOfExpertise() throws Exception {
+    Graph g = createGraph();
+    createAssociation(g);
+
+    given()
+        .pathParam("areaOfExpertiseId", g.areaOfExpertise().getId())
+        .when()
+        .delete("/v1/academic/areas-of-expertise/{areaOfExpertiseId}/projects")
+        .then()
+        .statusCode(204);
+  }
+
+  @Test
   void unauthorizedAccess() {
     given()
         .pathParam("projectId", UuidCreator.getTimeOrderedEpoch())

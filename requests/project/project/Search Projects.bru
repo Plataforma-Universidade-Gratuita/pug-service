@@ -1,28 +1,32 @@
-meta {
+﻿meta {
   name: Search Projects
   type: http
   seq: 5
 }
 
-get {
-  url: {{baseUrl}}/v1/projects?q=Alpha
-  body: none
+post {
+  url: {{baseUrl}}/v1/projects/search?page=0&size=25
+  body: json
   auth: bearer
 }
 
 headers {
   Accept-Language: pt-BR
-}
-
-tests {
-  test("Should search projects by name", function() {
-    expect(res.getStatus()).to.equal(200);
-    expect(res.getBody().success).to.be.true;
-  });
+  Content-Type: application/json
 }
 
 auth:bearer {
   token: {{jwtToken}}
 }
 
-
+body:json {
+  {
+    "name": "Projeto",
+    "entityIds": ["00000000-0000-0000-0000-000000000001"],
+    "description": "Extensao",
+    "createdByIds": ["00000000-0000-0000-0000-000000000002"],
+    "statuses": ["PLANNED"],
+    "minOfferedHours": 10.00,
+    "maxOfferedHours": 100.00
+  }
+}

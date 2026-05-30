@@ -1,7 +1,7 @@
-meta {
+﻿meta {
   name: List Staff
   type: http
-  seq: 7
+  seq: 3
 }
 
 get {
@@ -11,7 +11,7 @@ get {
 }
 
 params:query {
-  ~q: gestor
+  ~ids: 00000000-0000-0000-0000-000000000001
 }
 
 headers {
@@ -21,5 +21,3 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
-
-

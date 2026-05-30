@@ -1,0 +1,21 @@
+﻿meta {
+  name: Delete Student
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/v1/academic/former-students/00000000-0000-0000-0000-000000000001
+  body: none
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+

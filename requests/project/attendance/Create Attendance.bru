@@ -1,7 +1,7 @@
-meta {
+﻿meta {
   name: Create Attendance
   type: http
-  seq: 1
+  seq: 5
 }
 
 post {
@@ -15,17 +15,14 @@ headers {
   Content-Type: application/json
 }
 
-body:json {
-  {
-    "projectId": "00000000-0000-0000-0000-000000000001",
-    "formerStudentId": "00000000-0000-0000-0000-000000000002",
-    "duration": 4.00
-  }
-}
-
 auth:bearer {
   token: {{jwtToken}}
 }
 
-
-
+body:json {
+  {
+    "projectId": "00000000-0000-0000-0000-000000000001",
+    "formerStudentId": "00000000-0000-0000-0000-000000000002",
+    "duration": 4.50
+  }
+}

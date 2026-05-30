@@ -1,7 +1,7 @@
-meta {
+﻿meta {
   name: Update Staff
   type: http
-  seq: 8
+  seq: 7
 }
 
 put {
@@ -19,12 +19,10 @@ body:json {
   {
     "name": "Gestor Atualizado",
     "email": "gestor.novo@techcorp.com",
-    "password": "NewPass123!"
+    "entityId": "00000000-0000-0000-0000-000000000002"
   }
 }
 
 auth:bearer {
   token: {{jwtToken}}
 }
-
-

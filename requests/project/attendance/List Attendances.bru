@@ -1,4 +1,4 @@
-meta {
+﻿meta {
   name: List Attendances
   type: http
   seq: 3
@@ -11,8 +11,7 @@ get {
 }
 
 params:query {
-  ~projectId: 00000000-0000-0000-0000-000000000001
-  ~formerStudentId: 00000000-0000-0000-0000-000000000002
+  ~ids: 00000000-0000-0000-0000-000000000001
 }
 
 headers {
@@ -22,6 +21,3 @@ headers {
 auth:bearer {
   token: {{jwtToken}}
 }
-
-
-

@@ -1,0 +1,26 @@
+﻿meta {
+  name: Search Areas Of Expertise
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/academic/areas-of-expertise/search?page=0&size=25
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept-Language: pt-BR
+  Content-Type: application/json
+}
+
+auth:bearer {
+  token: {{jwtToken}}
+}
+
+body:json {
+  {
+    "name": "Tecnologia"
+  }
+}
