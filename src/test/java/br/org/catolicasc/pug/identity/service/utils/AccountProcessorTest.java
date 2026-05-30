@@ -60,7 +60,7 @@ class AccountProcessorTest {
   void shouldUpdateAccount() {
     Account acc =
         AccountProcessor.processCreateInput(
-            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
+            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "FORMER_STUDENT", "hash");
 
     Account updated =
         AccountProcessor.processUpdateInput(acc, "new@test.com", "newhash", Boolean.FALSE);
@@ -75,7 +75,7 @@ class AccountProcessorTest {
   void shouldIgnoreNullUpdates() {
     Account acc =
         AccountProcessor.processCreateInput(
-            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "STUDENT", "hash");
+            UuidCreator.getTimeOrderedEpoch(), "old@test.com", "FORMER_STUDENT", "hash");
     assertThat(AccountProcessor.processUpdateInput(acc, null, null, null)).isEqualTo(acc);
   }
 }

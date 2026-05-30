@@ -271,10 +271,12 @@ class AuthServiceImplTest {
     String email = "test@pug.com";
     String rawPassword = "StrongPass1!";
     String hashedPassword = "hashed-password";
-    UUID accountId = UuidCreator.getTimeOrderedEpoch();
-
     Account account =
-        Account.factory(accountId, Email.factory(email), AccountType.FORMER_STUDENT, null);
+        Account.factory(
+            UuidCreator.getTimeOrderedEpoch(),
+            Email.factory(email),
+            AccountType.FORMER_STUDENT,
+            null);
 
     when(accountService.getByEmail(email)).thenReturn(account);
     when(passwordService.hash(rawPassword)).thenReturn(hashedPassword);
@@ -284,7 +286,7 @@ class AuthServiceImplTest {
     verify(passwordService).validateStrength(rawPassword);
     verify(passwordService).hash(rawPassword);
     verify(accountService)
-        .update(accountId, new AccountUpdateCommand(null, hashedPassword, null, null));
+        .update(account.getId(), new AccountUpdateCommand(null, hashedPassword, null, null));
   }
 
   @Test

@@ -176,7 +176,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
       query.setParameter("formerStudentIds", criteria.formerStudentIds());
     }
     if (CollectionUtils.isNotEmpty(criteria.statuses())) {
-      query.setParameter("statuses", criteria.statuses());
+      query.setParameter("statuses", criteria.statuses().stream().map(Enum::name).toList());
     }
     if (criteria.dateFrom() != null) {
       query.setParameter("dateFrom", criteria.dateFrom());

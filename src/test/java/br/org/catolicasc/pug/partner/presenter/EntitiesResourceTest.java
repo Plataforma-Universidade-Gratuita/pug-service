@@ -121,13 +121,13 @@ class EntitiesResourceTest extends BaseResourceTest {
 
     given()
         .contentType(ContentType.JSON)
-        .body("{\"name\":\"" + entity[0].getName().substring(0, 3) + "\"}")
+        .body("{\"cnpj\":\"" + entity[0].getCnpj().getValue() + "\"}")
         .when()
         .post("/v1/partners/entities/search?page=0&size=25")
         .then()
         .statusCode(200)
         .body("data.content", hasSize(1))
-        .body("data.content[0].id", is(entity[0].getId().toString()))
+        .body("data.content.id", org.hamcrest.Matchers.hasItem(entity[0].getId().toString()))
         .body("data.content[0].cnpjFormatted", notNullValue())
         .body("data.content[0].city", notNullValue());
   }

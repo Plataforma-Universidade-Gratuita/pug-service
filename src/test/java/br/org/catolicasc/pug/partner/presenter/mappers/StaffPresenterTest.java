@@ -130,7 +130,7 @@ class StaffPresenterTest {
       assertThat(response.cityId()).isEqualTo(cityId);
       assertThat(response.account()).isNotNull();
       assertThat(response.account().email()).isEqualTo("staff@pug.com");
-      assertThat(response.account().accountType()).isEqualTo(AccountType.PARTNER);
+      assertThat(response.account().accountType().accountType()).isEqualTo(AccountType.PARTNER);
       assertThat(response.account().active()).isTrue();
     }
 

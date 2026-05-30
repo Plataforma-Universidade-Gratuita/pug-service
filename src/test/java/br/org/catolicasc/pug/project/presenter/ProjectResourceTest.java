@@ -13,7 +13,6 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
@@ -162,7 +161,7 @@ class ProjectResourceTest extends BaseResourceTest {
     given()
         .contentType(ContentType.JSON)
         .pathParam("id", project[0].getId())
-        .body(ProjectStatus.IN_PROGRESS)
+        .body("\"IN_PROGRESS\"")
         .when()
         .patch("/v1/projects/{id}/status")
         .then()

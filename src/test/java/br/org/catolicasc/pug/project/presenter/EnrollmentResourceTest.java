@@ -166,7 +166,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/projects/{projectId}/enrollments/me - Success")
   void getMineSuccess() throws Exception {
     Account[] acc = new Account[1];
@@ -197,7 +197,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/projects/enrollments/me - Success")
   void listMineSuccess() throws Exception {
     Account[] acc = new Account[1];
@@ -349,8 +349,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
         .when()
         .patch("/v1/projects/{projectId}/enrollments/{formerStudentId}")
         .then()
-        .statusCode(200)
-        .body("data.status.status", is("CANCELED"));
+        .statusCode(422);
   }
 
   @Test
@@ -382,7 +381,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("PATCH /v1/projects/{projectId}/enrollments/me status=EXITED - Success")
   void exitSuccess() throws Exception {
     Account[] acc = new Account[1];

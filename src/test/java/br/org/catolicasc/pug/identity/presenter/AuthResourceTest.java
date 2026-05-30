@@ -58,7 +58,7 @@ class AuthResourceTest {
   @Test
   @DisplayName("POST /v1/auth/login - Unauthorized")
   void loginUnauthorized() {
-    var req = aLoginRequest().withEmail("bad@pug.com").withPassword("wrong").build();
+    var req = aLoginRequest().withEmail("bad@pug.com").withPassword("wrongpass").build();
     when(authService.login(req)).thenThrow(new NotAuthorizedException("Unauthorized"));
 
     given()

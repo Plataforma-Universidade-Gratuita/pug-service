@@ -34,7 +34,7 @@ public class PasswordSetupGuardFilter implements ContainerRequestFilter {
     }
 
     String path = requestContext.getUriInfo().getPath();
-    if (path != null && path.startsWith("/v1/auth")) {
+    if (path != null && (path.startsWith("/v1/auth") || path.startsWith("v1/auth"))) {
       return;
     }
 
