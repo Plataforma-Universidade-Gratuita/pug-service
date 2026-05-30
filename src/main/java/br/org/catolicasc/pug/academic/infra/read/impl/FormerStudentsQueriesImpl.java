@@ -72,7 +72,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         new br.org.catolicasc.pug.academic.infra.read.dtos.CourseComplexSearchView(
           c.id,
           c.name,
-          new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolComplexSearchView(
+          new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseComplexSearchView(
             sch.id,
             sch.name
           )
@@ -82,7 +82,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         join AccountEntity acc on acc.id = s.accountId
         join UserEntity u on u.id = acc.userId
         join CourseEntity c on c.id = s.courseId
-        join SchoolEntity sch on sch.id = c.schoolId
+        join AreaOfExpertiseEntity sch on sch.id = c.areaOfExpertiseId
       """;
 
   private static final String ORDER_BY_PERSON_NAME_ASC = " order by u.name asc";
@@ -135,7 +135,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
     LocalDate periodFrom = criteria == null ? null : criteria.periodFrom();
     LocalDate periodTo = criteria == null ? null : criteria.periodTo();
     String cpf = criteria == null ? null : criteria.cpf();
-    List<UUID> schoolIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
+    List<UUID> areaOfExpertiseIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
     boolean activeOnly = criteria == null || criteria.activeOnly();
 
     List<String> clauses = new ArrayList<>();
@@ -184,8 +184,8 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
     if (StringUtils.isNotEmpty(cpf)) {
       clauses.add(JpaSearchUtils.containsClause("u.cpf", "cpfPattern"));
     }
-    if (CollectionUtils.isNotEmpty(schoolIds)) {
-      clauses.add("sch.id in :schoolIds");
+    if (CollectionUtils.isNotEmpty(areaOfExpertiseIds)) {
+      clauses.add("sch.id in :areaOfExpertiseIds");
     }
 
     String whereClause = clauses.isEmpty() ? "" : " where " + String.join(" and ", clauses);
@@ -196,7 +196,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
                 + " join AccountEntity acc on acc.id = s.accountId"
                 + " join UserEntity u on u.id = acc.userId"
                 + " join CourseEntity c on c.id = s.courseId"
-                + " join SchoolEntity sch on sch.id = c.schoolId"
+                + " join AreaOfExpertiseEntity sch on sch.id = c.areaOfExpertiseId"
                 + whereClause,
             Long.class);
     bindSearchParameters(
@@ -211,7 +211,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         periodFrom,
         periodTo,
         cpf,
-        schoolIds);
+        areaOfExpertiseIds);
 
     long totalElements = countQuery.getSingleResult();
     PageExecution pageExecution = PageExecution.from(pageQuery, totalElements);
@@ -232,7 +232,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
         periodFrom,
         periodTo,
         cpf,
-        schoolIds);
+        areaOfExpertiseIds);
 
     return new PageResult<>(
         pageExecution.apply(dataQuery).getResultList(),
@@ -254,7 +254,7 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
       LocalDate periodFrom,
       LocalDate periodTo,
       String cpf,
-      List<UUID> schoolIds) {
+      List<UUID> areaOfExpertiseIds) {
     if (StringUtils.isNotEmpty(academicRegistration)) {
       JpaSearchUtils.bindContains(query, "academicRegistrationPattern", academicRegistration);
     }
@@ -285,8 +285,8 @@ public class FormerStudentsQueriesImpl implements FormerStudentsQueries {
     if (StringUtils.isNotEmpty(cpf)) {
       JpaSearchUtils.bindContains(query, "cpfPattern", cpf);
     }
-    if (CollectionUtils.isNotEmpty(schoolIds)) {
-      query.setParameter("schoolIds", schoolIds);
+    if (CollectionUtils.isNotEmpty(areaOfExpertiseIds)) {
+      query.setParameter("areaOfExpertiseIds", areaOfExpertiseIds);
     }
   }
 }

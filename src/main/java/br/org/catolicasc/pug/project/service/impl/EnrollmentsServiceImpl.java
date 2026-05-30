@@ -98,13 +98,13 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public long completeAllByStudentId(UUID studentId) {
-    if (studentId == null) {
+  public long completeAllByFormerStudentId(UUID formerStudentId) {
+    if (formerStudentId == null) {
       return 0L;
     }
 
     long changed = 0L;
-    for (Enrollment enrollment : repo.listAllByStudentId(studentId)) {
+    for (Enrollment enrollment : repo.listAllByFormerStudentId(formerStudentId)) {
       if (enrollment.getStatus() != EnrollmentStatus.APPROVED) {
         continue;
       }
@@ -139,8 +139,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsAnyByStudentId(UUID studentId) {
-    return studentId != null && repo.existsByStudentId(studentId);
+  public boolean existsAnyByFormerStudentId(UUID formerStudentId) {
+    return formerStudentId != null && repo.existsByFormerStudentId(formerStudentId);
   }
 
   /** {@inheritDoc} */
@@ -162,8 +162,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     Project project = projectService.getById(cmd.projectId());
     FormerStudent formerStudent;
 
-    if (authService.getCurrentAccountType() == AccountType.ADMIN && cmd.studentId() != null) {
-      formerStudent = studentService.getById(cmd.studentId());
+    if (authService.getCurrentAccountType() == AccountType.ADMIN && cmd.formerStudentId() != null) {
+      formerStudent = studentService.getById(cmd.formerStudentId());
     } else {
       authService.requireCurrentAccountOfType(AccountType.FORMER_STUDENT);
       formerStudent = studentService.getById(authService.getCurrentAccountId());

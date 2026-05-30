@@ -10,13 +10,13 @@ import java.util.UUID;
 
 public interface EnrollmentsQueries {
 
-  Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId);
+  Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID formerStudentId);
 
   List<EnrollmentView> listAll();
 
   List<EnrollmentView> listAllByProjectId(UUID projectId);
 
-  List<EnrollmentView> listAllByStudentId(UUID studentId);
+  List<EnrollmentView> listAllByFormerStudentId(UUID formerStudentId);
 
   PageResult<EnrollmentView> search(EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery);
 }

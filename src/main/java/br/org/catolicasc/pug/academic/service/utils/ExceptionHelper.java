@@ -49,8 +49,8 @@ public final class ExceptionHelper {
   }
 
   /**
-   * Instantiates a standardized {@link DuplicateResourceException} indicating that a School with
-   * the specified name already exists in the system.
+   * Instantiates a standardized {@link DuplicateResourceException} indicating that a
+   * AreaOfExpertise with the specified name already exists in the system.
    *
    * @return a fully configured {@link DuplicateResourceException} instance
    */
@@ -70,7 +70,7 @@ public final class ExceptionHelper {
 
   /**
    * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
-   * Academic School could not be located.
+   * Academic AreaOfExpertise could not be located.
    *
    * @return a fully configured {@link ResourceNotFoundException} instance
    */

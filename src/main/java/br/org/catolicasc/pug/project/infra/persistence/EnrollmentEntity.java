@@ -41,7 +41,7 @@ import lombok.ToString;
 @Table(
     name = "enrollments",
     indexes = {
-      @Index(name = "idx_enrollments_student", columnList = "student_id"),
+      @Index(name = "idx_enrollments_former_student", columnList = "former_student_id"),
       @Index(name = "idx_enrollments_status", columnList = "status")
     })
 public class EnrollmentEntity {
@@ -58,8 +58,8 @@ public class EnrollmentEntity {
     @Column(name = "project_id", nullable = false)
     private UUID projectId;
 
-    @Column(name = "student_id", nullable = false)
-    private UUID studentId;
+    @Column(name = "former_student_id", nullable = false)
+    private UUID formerStudentId;
   }
 
   /** The composite identifier mapping. */

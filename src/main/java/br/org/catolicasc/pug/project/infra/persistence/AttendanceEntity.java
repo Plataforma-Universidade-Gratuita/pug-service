@@ -36,16 +36,16 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @ToString(
     callSuper = true,
-    of = {"projectId", "studentId", "status"})
+    of = {"projectId", "formerStudentId", "status"})
 @Entity
 @Table(
     name = "attendances",
     indexes = {
-      @Index(name = "idx_attendances_enrollment", columnList = "project_id, student_id"),
+      @Index(name = "idx_attendances_enrollment", columnList = "project_id, former_student_id"),
       @Index(name = "idx_attendances_status", columnList = "status"),
       @Index(name = "idx_attendances_validated_by", columnList = "validated_by"),
       @Index(name = "idx_attendances_validated_at", columnList = "validated_at"),
-      @Index(name = "idx_attendances_student_stat", columnList = "student_id, status")
+      @Index(name = "idx_attendances_former_student_stat", columnList = "former_student_id, status")
     })
 public class AttendanceEntity extends BaseAuditedEntity {
 
@@ -56,8 +56,8 @@ public class AttendanceEntity extends BaseAuditedEntity {
 
   /** The unique identifier (Account ID UUID) of the associated FormerStudent. */
   @NotNull
-  @Column(name = "student_id", nullable = false)
-  private UUID studentId;
+  @Column(name = "former_student_id", nullable = false)
+  private UUID formerStudentId;
 
   /** The recorded time duration the formerStudent spent on the project. */
   @NotNull

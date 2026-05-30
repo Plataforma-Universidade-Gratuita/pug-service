@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.academic.presenter;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
@@ -150,7 +150,7 @@ public class AreasOfExpertiseResource {
   @RolesAllowed("ADMIN")
   public Response create(@Valid AreaOfExpertiseCreateRequest req) {
     AreaOfExpertiseCreateCommand cmd = AreaOfExpertisePresenter.toCommand(req);
-    School created = writeService.save(cmd);
+    AreaOfExpertise created = writeService.save(cmd);
 
     AreaOfExpertiseView view = readService.getViewById(created.getId());
     AreaOfExpertiseResponse body = AreaOfExpertisePresenter.toResponse(view, locale());

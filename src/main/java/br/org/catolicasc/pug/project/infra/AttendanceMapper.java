@@ -35,7 +35,7 @@ public final class AttendanceMapper {
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.builder()
             .projectId(e.getProjectId())
-            .studentId(e.getStudentId())
+            .formerStudentId(e.getFormerStudentId())
             .build();
 
     QrValidationInfo qrInfo = QrValidationInfo.factory(e.getDuration(), e.getQrValidationHash());
@@ -72,7 +72,7 @@ public final class AttendanceMapper {
     return AttendanceEntity.builder()
         .id(d.getId())
         .projectId(d.getEnrollmentIdentifier().getProjectId())
-        .studentId(d.getEnrollmentIdentifier().getStudentId())
+        .formerStudentId(d.getEnrollmentIdentifier().getFormerStudentId())
         .duration(d.getQrValidationInfo().getDuration())
         .qrValidationHash(d.getQrValidationInfo().getQrValidationHash())
         .status(d.getStatus().name())
@@ -121,7 +121,7 @@ public final class AttendanceMapper {
         e.getId(),
         e.getProjectId(),
         null,
-        e.getStudentId(),
+        e.getFormerStudentId(),
         null,
         null,
         null,

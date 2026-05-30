@@ -22,7 +22,7 @@ import lombok.Value;
 public class EnrollmentIdentifier extends DomainError {
 
   /** The unique identifier (Account ID) of the enrolled formerStudent. */
-  UUID studentId;
+  UUID formerStudentId;
 
   /** The unique identifier of the project the formerStudent is enrolled in. */
   UUID projectId;
@@ -30,12 +30,12 @@ public class EnrollmentIdentifier extends DomainError {
   /**
    * Constructs an {@code EnrollmentIdentifier} instance.
    *
-   * @param studentId the unique identifier of the formerStudent
+   * @param formerStudentId the unique identifier of the formerStudent
    * @param projectId the unique identifier of the project
    */
   @Builder(toBuilder = true)
-  private EnrollmentIdentifier(UUID studentId, UUID projectId) {
-    this.studentId = studentId;
+  private EnrollmentIdentifier(UUID formerStudentId, UUID projectId) {
+    this.formerStudentId = formerStudentId;
     this.projectId = projectId;
   }
 
@@ -44,13 +44,16 @@ public class EnrollmentIdentifier extends DomainError {
    *
    * <p>The instance is created and immediately self-validated.
    *
-   * @param studentId the unique identifier of the formerStudent
+   * @param formerStudentId the unique identifier of the formerStudent
    * @param projectId the unique identifier of the project
    * @return a self-validated {@link EnrollmentIdentifier} instance
    */
-  public static EnrollmentIdentifier factory(UUID studentId, UUID projectId) {
+  public static EnrollmentIdentifier factory(UUID formerStudentId, UUID projectId) {
     EnrollmentIdentifier id =
-        EnrollmentIdentifier.builder().studentId(studentId).projectId(projectId).build();
+        EnrollmentIdentifier.builder()
+            .formerStudentId(formerStudentId)
+            .projectId(projectId)
+            .build();
     id.collectValidationProblems();
     return id;
   }
@@ -68,7 +71,7 @@ public class EnrollmentIdentifier extends DomainError {
    * </ul>
    */
   private void collectValidationProblems() {
-    if (studentId == null) {
+    if (formerStudentId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_STUDENT_BLANK);
     }
     if (projectId == null) {

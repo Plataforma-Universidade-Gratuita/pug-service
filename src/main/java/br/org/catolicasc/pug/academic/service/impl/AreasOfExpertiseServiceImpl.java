@@ -1,13 +1,13 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
-import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.SchoolRepository;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertiseRepository;
 import br.org.catolicasc.pug.academic.service.AreasOfExpertiseService;
 import br.org.catolicasc.pug.academic.service.CoursesService;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseUpdateCommand;
+import br.org.catolicasc.pug.academic.service.utils.AreaOfExpertiseProcessor;
 import br.org.catolicasc.pug.academic.service.utils.ExceptionHelper;
-import br.org.catolicasc.pug.academic.service.utils.SchoolProcessor;
 import br.org.catolicasc.pug.project.service.ProjectSchoolService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
@@ -25,7 +25,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   private static final Logger LOG = Logger.getLogger(AreasOfExpertiseServiceImpl.class);
 
   @Inject AuditPublisher auditPublisher;
-  @Inject SchoolRepository repo;
+  @Inject AreaOfExpertiseRepository repo;
   @Inject CoursesService coursesService;
   @Inject ProjectSchoolService projectSchoolService;
 
@@ -38,7 +38,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
       return false;
     }
 
-    if (coursesService.existsAnyBySchoolId(id)) {
+    if (coursesService.existsAnyByAreaOfExpertiseId(id)) {
       LOG.warnf("Delete failed: AreaOfExpertise ID %s has active courses", id);
       throw ExceptionHelper.schoolHasCourses();
     }
@@ -46,8 +46,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
     boolean deleted = repo.deleteById(id);
     if (deleted) {
       LOG.infof("AreaOfExpertise deleted successfully. ID: %s", id);
-      projectSchoolService.deleteAllBySchoolId(id);
-      auditPublisher.fireDelete(School.class.getName(), id);
+      projectSchoolService.deleteAllByAreaOfExpertiseId(id);
+      auditPublisher.fireDelete(AreaOfExpertise.class.getName(), id);
     } else {
       LOG.debugf("Delete failed: AreaOfExpertise ID %s not found (idempotent)", id);
     }
@@ -57,8 +57,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
 
   /** {@inheritDoc} */
   @Override
-  public School getById(UUID id) {
-    School areaOfExpertise =
+  public AreaOfExpertise getById(UUID id) {
+    AreaOfExpertise areaOfExpertise =
         repo.findOptionalById(id)
             .orElseThrow(
                 () -> {
@@ -78,9 +78,10 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public School save(AreaOfExpertiseCreateCommand cmd) {
+  public AreaOfExpertise save(AreaOfExpertiseCreateCommand cmd) {
     LOG.debugf("Attempting to create AreaOfExpertise: %s", cmd.name());
-    School areaOfExpertiseToPersist = SchoolProcessor.processCreateInput(cmd.name());
+    AreaOfExpertise areaOfExpertiseToPersist =
+        AreaOfExpertiseProcessor.processCreateInput(cmd.name());
 
     if (areaOfExpertiseToPersist.hasFieldErrors()) {
       throw new AppValidationException(areaOfExpertiseToPersist.getFieldErrors());
@@ -93,20 +94,21 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
       throw ExceptionHelper.schoolAlreadyExists();
     }
 
-    School savedAreaOfExpertise = repo.persist(areaOfExpertiseToPersist);
+    AreaOfExpertise savedAreaOfExpertise = repo.persist(areaOfExpertiseToPersist);
     LOG.infof("AreaOfExpertise created successfully. ID: %s", savedAreaOfExpertise.getId());
 
-    auditPublisher.fireCreate(School.class.getName(), savedAreaOfExpertise.getId());
+    auditPublisher.fireCreate(AreaOfExpertise.class.getName(), savedAreaOfExpertise.getId());
     return savedAreaOfExpertise;
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public School update(UUID id, AreaOfExpertiseUpdateCommand cmd) {
+  public AreaOfExpertise update(UUID id, AreaOfExpertiseUpdateCommand cmd) {
     LOG.debugf("Attempting to update AreaOfExpertise ID: %s", id);
-    School current = getById(id);
-    School updatedAreaOfExpertise = SchoolProcessor.processUpdateInput(current, cmd.name());
+    AreaOfExpertise current = getById(id);
+    AreaOfExpertise updatedAreaOfExpertise =
+        AreaOfExpertiseProcessor.processUpdateInput(current, cmd.name());
 
     if (updatedAreaOfExpertise.hasFieldErrors()) {
       throw new AppValidationException(updatedAreaOfExpertise.getFieldErrors());
@@ -123,7 +125,7 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
     repo.update(updatedAreaOfExpertise);
     LOG.infof("AreaOfExpertise updated successfully. ID: %s", id);
 
-    auditPublisher.fireUpdate(School.class.getName(), id, current, updatedAreaOfExpertise);
+    auditPublisher.fireUpdate(AreaOfExpertise.class.getName(), id, current, updatedAreaOfExpertise);
     return getById(id);
   }
 

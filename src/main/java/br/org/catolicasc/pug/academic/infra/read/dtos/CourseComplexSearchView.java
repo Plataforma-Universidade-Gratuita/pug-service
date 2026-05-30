@@ -9,4 +9,5 @@ import java.util.UUID;
  * @param name course name
  * @param school lightweight school projection associated with the course
  */
-public record CourseComplexSearchView(UUID id, String name, SchoolComplexSearchView school) {}
+public record CourseComplexSearchView(
+    UUID id, String name, AreaOfExpertiseComplexSearchView school) {}

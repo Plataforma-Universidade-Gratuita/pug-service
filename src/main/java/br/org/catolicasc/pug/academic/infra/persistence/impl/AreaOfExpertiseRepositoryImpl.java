@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.academic.infra.persistence.impl;
 
-import br.org.catolicasc.pug.academic.domain.School;
-import br.org.catolicasc.pug.academic.domain.SchoolRepository;
-import br.org.catolicasc.pug.academic.infra.SchoolMapper;
-import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertiseRepository;
+import br.org.catolicasc.pug.academic.infra.AreaOfExpertiseMapper;
+import br.org.catolicasc.pug.academic.infra.persistence.AreaOfExpertiseEntity;
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -11,15 +11,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementation of the {@link SchoolRepository} utilizing Hibernate ORM with Panache.
+ * Implementation of the {@link AreaOfExpertiseRepository} utilizing Hibernate ORM with Panache.
  *
  * <p>This application-scoped bean bridges the pure domain repository interface with the underlying
  * database infrastructure. It handles standard CRUD operations and ensures proper mapping between
- * {@link School} domain aggregates and their JPA counterparts.
+ * {@link AreaOfExpertise} domain aggregates and their JPA counterparts.
  */
 @ApplicationScoped
-public class SchoolRepositoryImpl
-    implements SchoolRepository, PanacheRepositoryBase<SchoolEntity, UUID> {
+public class AreaOfExpertiseRepositoryImpl
+    implements AreaOfExpertiseRepository, PanacheRepositoryBase<AreaOfExpertiseEntity, UUID> {
 
   /** {@inheritDoc} */
   @Transactional
@@ -41,33 +41,33 @@ public class SchoolRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
-  public Optional<School> findOptionalById(UUID id) {
-    Optional<SchoolEntity> entityOpt = findByIdOptional(id);
-    return entityOpt.map(SchoolMapper::toDomain);
+  public Optional<AreaOfExpertise> findOptionalById(UUID id) {
+    Optional<AreaOfExpertiseEntity> entityOpt = findByIdOptional(id);
+    return entityOpt.map(AreaOfExpertiseMapper::toDomain);
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public School persist(School school) {
+  public AreaOfExpertise persist(AreaOfExpertise school) {
     if (school == null) {
       return null;
     }
-    var e = SchoolMapper.toEntity(school);
+    var e = AreaOfExpertiseMapper.toEntity(school);
     persistAndFlush(e);
-    return SchoolMapper.toDomain(e);
+    return AreaOfExpertiseMapper.toDomain(e);
   }
 
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public void update(School school) {
+  public void update(AreaOfExpertise school) {
     if (school == null || school.getId() == null) {
       return;
     }
-    SchoolEntity managed = findById(school.getId());
+    AreaOfExpertiseEntity managed = findById(school.getId());
     if (managed != null) {
-      SchoolMapper.copy(school, managed);
+      AreaOfExpertiseMapper.copy(school, managed);
     }
   }
 }

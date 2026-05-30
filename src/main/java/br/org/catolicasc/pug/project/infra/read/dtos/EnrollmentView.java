@@ -9,7 +9,7 @@ import java.util.UUID;
 public record EnrollmentView(
     UUID projectId,
     String projectName,
-    UUID studentId,
+    UUID formerStudentId,
     String studentName,
     String studentEmail,
     String academicRegistration,
@@ -25,7 +25,7 @@ public record EnrollmentView(
   public EnrollmentView(
       UUID projectId,
       String projectName,
-      UUID studentId,
+      UUID formerStudentId,
       String studentName,
       String studentEmail,
       String academicRegistration,
@@ -40,7 +40,7 @@ public record EnrollmentView(
     this(
         projectId,
         projectName,
-        studentId,
+        formerStudentId,
         studentName,
         studentEmail,
         academicRegistration,

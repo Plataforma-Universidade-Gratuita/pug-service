@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.service;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
@@ -28,13 +28,13 @@ public interface CoursesService {
   /**
    * Checks whether any academic course associated with the specified school identifier exists.
    *
-   * <p>This method is utilized to enforce relational integrity, ensuring that a {@link School}
-   * cannot be deleted if it still has active courses linked to it.
+   * <p>This method is utilized to enforce relational integrity, ensuring that a {@link
+   * AreaOfExpertise} cannot be deleted if it still has active courses linked to it.
    *
-   * @param schoolId the unique identifier (UUID) of the school to check
+   * @param areaOfExpertiseId the unique identifier (UUID) of the school to check
    * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
    */
-  boolean existsAnyBySchoolId(UUID schoolId);
+  boolean existsAnyByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
   /**
    * Retrieves a full {@link Course} domain aggregate by its unique identifier.

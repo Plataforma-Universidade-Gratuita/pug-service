@@ -64,7 +64,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     repo.update(updated);
     if (Boolean.FALSE.equals(current.getCounterpartHours().getConcluded())
         && Boolean.TRUE.equals(updated.getCounterpartHours().getConcluded())) {
-      enrollmentsService.completeAllByStudentId(accountId);
+      enrollmentsService.completeAllByFormerStudentId(accountId);
     }
     LOG.infof("Horas adicionadas com sucesso ao estudante %s", accountId);
     return updated;
@@ -79,7 +79,7 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
       return false;
     }
 
-    if (enrollmentsService.existsAnyByStudentId(accountId)) {
+    if (enrollmentsService.existsAnyByFormerStudentId(accountId)) {
       LOG.warnf("Delete failed: FormerStudent ID %s is enrolled in projects", accountId);
       throw ExceptionHelper.studentHasEnrollments();
     }

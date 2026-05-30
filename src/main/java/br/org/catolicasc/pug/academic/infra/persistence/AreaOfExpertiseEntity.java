@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.academic.infra.persistence;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.shared.infra.persistence.BaseAuditedEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,11 +15,11 @@ import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
 /**
- * JPA entity representing an Academic School within the persistence layer.
+ * JPA entity representing an Academic AreaOfExpertise within the persistence layer.
  *
- * <p>This class acts as the database-mapped counterpart to the {@link School} domain aggregate. It
- * inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from {@link
- * BaseAuditedEntity}.
+ * <p>This class acts as the database-mapped counterpart to the {@link AreaOfExpertise} domain
+ * aggregate. It inherits a time-ordered UUIDv7 primary key and standard audit tracking fields from
+ * {@link BaseAuditedEntity}.
  */
 @Getter
 @Setter
@@ -32,13 +32,13 @@ import lombok.experimental.SuperBuilder;
     of = {"name"})
 @Entity
 @Table(
-    name = "schools",
+    name = "areas_of_expertise",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "uq_schools_name",
+          name = "uq_areas_of_expertise_name",
           columnNames = {"name"})
     })
-public class SchoolEntity extends BaseAuditedEntity {
+public class AreaOfExpertiseEntity extends BaseAuditedEntity {
 
   /** The name of the academic school. */
   @Column(name = "name", nullable = false, length = 100)

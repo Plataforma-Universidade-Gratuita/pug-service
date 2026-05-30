@@ -58,7 +58,7 @@ public class SchoolsProjectsResource {
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response deleteAllByAreaOfExpertise(
       @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
-    writeService.deleteAllBySchoolId(areaOfExpertiseId);
+    writeService.deleteAllByAreaOfExpertiseId(areaOfExpertiseId);
     return Response.noContent().build();
   }
 

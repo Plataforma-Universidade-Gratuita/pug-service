@@ -12,7 +12,8 @@ import java.util.UUID;
  * operations.
  *
  * @param projectIds the optional project identifiers used in an {@code in} filter
- * @param studentIds the optional former student account identifiers used in an {@code in} filter
+ * @param formerStudentIds the optional former student account identifiers used in an {@code in}
+ *     filter
  * @param statuses the optional attendance statuses used in an {@code in} filter
  * @param validatedByIds the optional validator account identifiers used in an {@code in} filter
  * @param durationFrom the optional inclusive minimum duration filter
@@ -22,7 +23,7 @@ import java.util.UUID;
  */
 public record AttendanceComplexSearchRequest(
     List<@UuidV7 UUID> projectIds,
-    List<@UuidV7 UUID> studentIds,
+    List<@UuidV7 UUID> formerStudentIds,
     List<AttendanceStatus> statuses,
     List<@UuidV7 UUID> validatedByIds,
     BigDecimal durationFrom,
@@ -32,7 +33,7 @@ public record AttendanceComplexSearchRequest(
 
   public AttendanceComplexSearchRequest {
     projectIds = projectIds == null ? List.of() : List.copyOf(projectIds);
-    studentIds = studentIds == null ? List.of() : List.copyOf(studentIds);
+    formerStudentIds = formerStudentIds == null ? List.of() : List.copyOf(formerStudentIds);
     statuses = statuses == null ? List.of() : List.copyOf(statuses);
     validatedByIds = validatedByIds == null ? List.of() : List.copyOf(validatedByIds);
   }

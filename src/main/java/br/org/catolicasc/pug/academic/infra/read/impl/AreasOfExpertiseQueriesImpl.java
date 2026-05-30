@@ -35,7 +35,7 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
         .createQuery(
             "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
-                + "from SchoolEntity s where s.id = :id",
+                + "from AreaOfExpertiseEntity s where s.id = :id",
             AreaOfExpertiseView.class)
         .setParameter("id", id)
         .getResultStream()
@@ -52,7 +52,7 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
         .createQuery(
             "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
-                + "from SchoolEntity s where s.id in :ids order by s.name asc",
+                + "from AreaOfExpertiseEntity s where s.id in :ids order by s.name asc",
             AreaOfExpertiseView.class)
         .setParameter("ids", ids)
         .getResultList();
@@ -65,7 +65,7 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
         .createQuery(
             "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
-                + "from SchoolEntity s order by s.name asc",
+                + "from AreaOfExpertiseEntity s order by s.name asc",
             AreaOfExpertiseView.class)
         .getResultList();
   }
@@ -82,7 +82,7 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
 
     var countQuery =
         entityManager.createQuery(
-            "select count(s.id) from SchoolEntity s" + whereClause, Long.class);
+            "select count(s.id) from AreaOfExpertiseEntity s" + whereClause, Long.class);
     bindSearchParameters(countQuery, name);
     long totalElements = countQuery.getSingleResult();
     PageExecution pageExecution = PageExecution.from(pageQuery, totalElements);
@@ -91,7 +91,7 @@ public class AreasOfExpertiseQueriesImpl implements AreasOfExpertiseQueries {
         entityManager.createQuery(
             "select new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView("
                 + "s.id, s.name, s.createdAt, s.updatedAt) "
-                + "from SchoolEntity s"
+                + "from AreaOfExpertiseEntity s"
                 + whereClause
                 + " order by s.name asc",
             AreaOfExpertiseView.class);

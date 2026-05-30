@@ -9,13 +9,13 @@ import java.util.UUID;
 
 public interface EnrollmentsReadService {
 
-  EnrollmentView getViewByIds(UUID projectId, UUID studentId);
+  EnrollmentView getViewByIds(UUID projectId, UUID formerStudentId);
 
   List<EnrollmentView> listViews();
 
   List<EnrollmentView> listViewsByProjectId(UUID projectId);
 
-  List<EnrollmentView> listViewsByStudentId(UUID studentId);
+  List<EnrollmentView> listViewsByFormerStudentId(UUID formerStudentId);
 
   PageResult<EnrollmentView> search(EnrollmentComplexSearchCriteria criteria, PageQuery pageQuery);
 }

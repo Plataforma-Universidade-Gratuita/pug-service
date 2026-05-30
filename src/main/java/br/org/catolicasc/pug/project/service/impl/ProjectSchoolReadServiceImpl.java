@@ -40,7 +40,7 @@ public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
       return Set.of();
     }
 
-    var areaOfExpertiseIds = associationRepo.findAllSchoolIdsByProjectId(projectId);
+    var areaOfExpertiseIds = associationRepo.findAllAreaOfExpertiseIdsByProjectId(projectId);
     if (areaOfExpertiseIds.isEmpty()) {
       LOG.debugf(
           "No ProjectsBySchool associations found for projectId=%s when listing areas of expertise",
@@ -60,7 +60,7 @@ public class ProjectSchoolReadServiceImpl implements ProjectSchoolReadService {
       return Set.of();
     }
 
-    var projectIds = associationRepo.findAllProjectIdsBySchoolId(areaOfExpertiseId);
+    var projectIds = associationRepo.findAllProjectIdsByAreaOfExpertiseId(areaOfExpertiseId);
     if (projectIds.isEmpty()) {
       LOG.debugf(
           "No ProjectsBySchool associations found for areaOfExpertiseId=%s when listing projects",

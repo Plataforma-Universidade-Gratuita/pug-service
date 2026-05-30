@@ -36,7 +36,7 @@ public final class AttendancePresenter {
     if (req == null) {
       return null;
     }
-    return new AttendanceCreateCommand(req.projectId(), req.studentId(), req.duration());
+    return new AttendanceCreateCommand(req.projectId(), req.formerStudentId(), req.duration());
   }
 
   /**
@@ -69,7 +69,7 @@ public final class AttendancePresenter {
     return new AttendanceResponse(
         view.id(),
         view.projectId(),
-        view.studentId(),
+        view.formerStudentId(),
         toStatusResponse(view, locale, i18n),
         toAttendanceInfoResponse(view, locale),
         toQrValidationInfoResponse(view));
@@ -95,7 +95,7 @@ public final class AttendancePresenter {
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
         new StudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
-                view.studentId(), view.studentName(), view.studentEmail()),
+                view.formerStudentId(), view.studentName(), view.studentEmail()),
             view.academicRegistration(),
             SharedDataPresenter.createCampusResponse(view.campus(), locale, i18n)),
         toStatusResponse(view, locale, i18n),

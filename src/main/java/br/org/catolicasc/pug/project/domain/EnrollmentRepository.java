@@ -60,11 +60,11 @@ public interface EnrollmentRepository {
    * <p>This query is commonly used to enforce relational integrity, ensuring that a {@link
    * FormerStudent} cannot be deleted while they still have project enrollments.
    *
-   * @param studentId the unique identifier (UUID) of the formerStudent account
+   * @param formerStudentId the unique identifier (UUID) of the formerStudent account
    * @return {@code true} if at least one enrollment is linked to the formerStudent, {@code false}
    *     otherwise
    */
-  boolean existsByStudentId(UUID studentId);
+  boolean existsByFormerStudentId(UUID formerStudentId);
 
   /**
    * Retrieves an {@link Enrollment} by its composite identifier.
@@ -83,7 +83,7 @@ public interface EnrollmentRepository {
 
   List<Enrollment> listAllByProjectId(UUID projectId);
 
-  List<Enrollment> listAllByStudentId(UUID studentId);
+  List<Enrollment> listAllByFormerStudentId(UUID formerStudentId);
 
   /**
    * Persists a newly created {@link Enrollment} aggregate into the repository.

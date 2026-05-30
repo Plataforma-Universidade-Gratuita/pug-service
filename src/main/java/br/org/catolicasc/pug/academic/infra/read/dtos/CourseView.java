@@ -8,7 +8,7 @@ import java.util.UUID;
  *
  * <p>Following CQRS principles, this record is used exclusively for returning queried data to the
  * client. It flattens the internal domain structure and aggregates the associated {@link
- * SchoolView} to provide a lightweight structure optimized for JSON serialization.
+ * AreaOfExpertiseView} to provide a lightweight structure optimized for JSON serialization.
  *
  * @param id the unique identifier (UUIDv7) of the course
  * @param name the name of the academic course
@@ -17,4 +17,8 @@ import java.util.UUID;
  * @param updatedAt the exact timestamp when the course record was last modified
  */
 public record CourseView(
-    UUID id, String name, SchoolView school, OffsetDateTime createdAt, OffsetDateTime updatedAt) {}
+    UUID id,
+    String name,
+    AreaOfExpertiseView school,
+    OffsetDateTime createdAt,
+    OffsetDateTime updatedAt) {}

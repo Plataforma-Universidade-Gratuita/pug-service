@@ -33,7 +33,7 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
         a.id,
         a.projectId,
         p.name,
-        a.studentId,
+        a.formerStudentId,
         su.name,
         sa.email,
         fs.academicRegistration,
@@ -50,7 +50,7 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
       )
       from AttendanceEntity a
       join ProjectEntity p on p.id = a.projectId
-      join FormerStudentEntity fs on fs.accountId = a.studentId
+      join FormerStudentEntity fs on fs.accountId = a.formerStudentId
       join AccountEntity sa on sa.id = fs.accountId
       join UserEntity su on su.id = sa.userId
       left join AccountEntity va on va.id = a.validatedBy
@@ -62,7 +62,7 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
       select count(a.id)
       from AttendanceEntity a
       join ProjectEntity p on p.id = a.projectId
-      join FormerStudentEntity fs on fs.accountId = a.studentId
+      join FormerStudentEntity fs on fs.accountId = a.formerStudentId
       join AccountEntity sa on sa.id = fs.accountId
       join UserEntity su on su.id = sa.userId
       left join AccountEntity va on va.id = a.validatedBy
@@ -117,8 +117,8 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
     if (CollectionUtils.isNotEmpty(safeCriteria.projectIds())) {
       clauses.add("a.projectId in :projectIds");
     }
-    if (CollectionUtils.isNotEmpty(safeCriteria.studentIds())) {
-      clauses.add("a.studentId in :studentIds");
+    if (CollectionUtils.isNotEmpty(safeCriteria.formerStudentIds())) {
+      clauses.add("a.formerStudentId in :formerStudentIds");
     }
     if (CollectionUtils.isNotEmpty(safeCriteria.statuses())) {
       clauses.add("a.status in :statuses");
@@ -165,8 +165,8 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
     if (CollectionUtils.isNotEmpty(criteria.projectIds())) {
       query.setParameter("projectIds", criteria.projectIds());
     }
-    if (CollectionUtils.isNotEmpty(criteria.studentIds())) {
-      query.setParameter("studentIds", criteria.studentIds());
+    if (CollectionUtils.isNotEmpty(criteria.formerStudentIds())) {
+      query.setParameter("formerStudentIds", criteria.formerStudentIds());
     }
     if (CollectionUtils.isNotEmpty(criteria.statuses())) {
       query.setParameter("statuses", criteria.statuses().stream().map(Enum::name).toList());

@@ -41,11 +41,11 @@ public class CourseRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
+  public boolean existsByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    if (areaOfExpertiseId == null) {
       return false;
     }
-    return count("schoolId", schoolId) > 0;
+    return count("areaOfExpertiseId", areaOfExpertiseId) > 0;
   }
 
   /** {@inheritDoc} */

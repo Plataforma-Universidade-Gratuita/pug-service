@@ -68,12 +68,12 @@ public class EnrollmentsResource {
   @Context HttpHeaders headers;
 
   @GET
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response get(
       @PathParam("projectId") @UuidV7 UUID projectId,
-      @PathParam("studentId") @UuidV7 UUID studentId) {
-    EnrollmentView view = readService.getViewByIds(projectId, studentId);
+      @PathParam("formerStudentId") @UuidV7 UUID formerStudentId) {
+    EnrollmentView view = readService.getViewByIds(projectId, formerStudentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
@@ -93,12 +93,12 @@ public class EnrollmentsResource {
   @RolesAllowed({"ADMIN", "STAFF"})
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
-      @QueryParam("studentId") @UuidV7 UUID studentId) {
+      @QueryParam("formerStudentId") @UuidV7 UUID formerStudentId) {
     List<EnrollmentView> views =
         projectId != null
             ? readService.listViewsByProjectId(projectId)
-            : studentId != null
-                ? readService.listViewsByStudentId(studentId)
+            : formerStudentId != null
+                ? readService.listViewsByFormerStudentId(formerStudentId)
                 : readService.listViews();
 
     List<EnrollmentResponse> body =
@@ -112,7 +112,7 @@ public class EnrollmentsResource {
   public Response listMine() {
     UUID studentAccountId = authService.getCurrentAccountId();
     List<EnrollmentResponse> body =
-        readService.listViewsByStudentId(studentAccountId).stream()
+        readService.listViewsByFormerStudentId(studentAccountId).stream()
             .map(view -> EnrollmentPresenter.toResponse(view, locale(), i18n))
             .toList();
     return Response.ok(ApiEnvelope.ok(body)).build();
@@ -123,17 +123,17 @@ public class EnrollmentsResource {
   @RolesAllowed({"ADMIN", "STUDENT"})
   public Response create(
       @PathParam("projectId") @UuidV7 UUID projectId,
-      @QueryParam("studentId") @UuidV7 UUID studentId) {
-    EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(projectId, studentId);
+      @QueryParam("formerStudentId") @UuidV7 UUID formerStudentId) {
+    EnrollmentCreateCommand cmd = EnrollmentPresenter.toCommand(projectId, formerStudentId);
     Enrollment created = writeService.save(cmd);
 
     EnrollmentView view =
         readService.getViewByIds(
-            created.getIdentifier().getProjectId(), created.getIdentifier().getStudentId());
+            created.getIdentifier().getProjectId(), created.getIdentifier().getFormerStudentId());
 
     URI location =
         uri.getAbsolutePathBuilder()
-            .path(created.getIdentifier().getStudentId().toString())
+            .path(created.getIdentifier().getFormerStudentId().toString())
             .build();
 
     return Response.created(location)
@@ -155,7 +155,7 @@ public class EnrollmentsResource {
                 List.of(), List.of(), List.of(), null, null, null, null)
             : new EnrollmentComplexSearchCriteria(
                 req.projectIds(),
-                req.studentIds(),
+                req.formerStudentIds(),
                 req.statuses(),
                 req.dateFrom(),
                 req.dateTo(),
@@ -180,22 +180,25 @@ public class EnrollmentsResource {
   }
 
   @PATCH
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed({"ADMIN", "STAFF"})
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateStatus(
       @PathParam("projectId") @UuidV7 UUID projectId,
-      @PathParam("studentId") @UuidV7 UUID studentId,
+      @PathParam("formerStudentId") @UuidV7 UUID formerStudentId,
       @Valid EnrollmentUpdateStatusRequest req) {
     if (!ADMIN_ALLOWED_STATUSES.contains(req.status())) {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
 
     writeService.changeStatus(
-        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build(),
+        EnrollmentIdentifier.builder()
+            .projectId(projectId)
+            .formerStudentId(formerStudentId)
+            .build(),
         req.status());
 
-    EnrollmentView view = readService.getViewByIds(projectId, studentId);
+    EnrollmentView view = readService.getViewByIds(projectId, formerStudentId);
     return Response.ok(ApiEnvelope.ok(EnrollmentPresenter.toResponse(view, locale(), i18n)))
         .build();
   }
@@ -212,7 +215,10 @@ public class EnrollmentsResource {
 
     UUID studentAccountId = authService.getCurrentAccountId();
     writeService.changeStatus(
-        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentAccountId).build(),
+        EnrollmentIdentifier.builder()
+            .projectId(projectId)
+            .formerStudentId(studentAccountId)
+            .build(),
         req.status());
 
     EnrollmentView view = readService.getViewByIds(projectId, studentAccountId);
@@ -221,13 +227,16 @@ public class EnrollmentsResource {
   }
 
   @DELETE
-  @Path("/{projectId}/enrollments/{studentId}")
+  @Path("/{projectId}/enrollments/{formerStudentId}")
   @RolesAllowed("ADMIN")
   public Response delete(
       @PathParam("projectId") @UuidV7 UUID projectId,
-      @PathParam("studentId") @UuidV7 UUID studentId) {
+      @PathParam("formerStudentId") @UuidV7 UUID formerStudentId) {
     writeService.delete(
-        EnrollmentIdentifier.builder().projectId(projectId).studentId(studentId).build());
+        EnrollmentIdentifier.builder()
+            .projectId(projectId)
+            .formerStudentId(formerStudentId)
+            .build());
     return Response.noContent().build();
   }
 

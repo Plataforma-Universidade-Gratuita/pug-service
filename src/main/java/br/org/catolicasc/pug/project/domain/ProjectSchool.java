@@ -28,18 +28,18 @@ public class ProjectSchool extends DomainError {
   private final UUID projectId;
 
   /** The unique identifier of the school. */
-  private final UUID schoolId;
+  private final UUID areaOfExpertiseId;
 
   /**
    * Factory method to create a new {@code ProjectsBySchool} instance.
    *
    * @param projectId the unique identifier of the project
-   * @param schoolId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the school
    * @return a self-validated {@link ProjectSchool} instance
    */
-  public static ProjectSchool factory(UUID projectId, UUID schoolId) {
+  public static ProjectSchool factory(UUID projectId, UUID areaOfExpertiseId) {
     ProjectSchool association =
-        ProjectSchool.builder().projectId(projectId).schoolId(schoolId).build();
+        ProjectSchool.builder().projectId(projectId).areaOfExpertiseId(areaOfExpertiseId).build();
     association.collectValidationProblems();
     return association;
   }
@@ -49,7 +49,7 @@ public class ProjectSchool extends DomainError {
     if (projectId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);
     }
-    if (schoolId == null) {
+    if (areaOfExpertiseId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_SCHOOL_ID_BLANK);
     }
   }

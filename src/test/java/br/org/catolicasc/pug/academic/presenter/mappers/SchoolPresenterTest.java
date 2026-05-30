@@ -3,10 +3,6 @@ package br.org.catolicasc.pug.academic.presenter.mappers;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolComplexSearchResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolResponse;
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolUpdateRequest;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.SchoolUpdateCommand;
 import com.github.f4b6a3.uuid.UuidCreator;

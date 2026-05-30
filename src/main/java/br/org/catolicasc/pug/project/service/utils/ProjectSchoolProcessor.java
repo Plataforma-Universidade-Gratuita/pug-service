@@ -26,11 +26,11 @@ public final class ProjectSchoolProcessor {
    * throwing an {@link AppValidationException}).
    *
    * @param projectId the unique identifier of the project
-   * @param schoolId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the school
    * @return a fully instantiated {@link ProjectSchool} domain aggregate, potentially containing
    *     validation errors
    */
-  public static ProjectSchool processCreateInput(UUID projectId, UUID schoolId) {
-    return ProjectSchool.factory(projectId, schoolId);
+  public static ProjectSchool processCreateInput(UUID projectId, UUID areaOfExpertiseId) {
+    return ProjectSchool.factory(projectId, areaOfExpertiseId);
   }
 }

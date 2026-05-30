@@ -92,7 +92,7 @@ public class AttendancesResource {
                 List.of(), List.of(), List.of(), List.of(), null, null, null, null)
             : new AttendanceComplexSearchCriteria(
                 req.projectIds(),
-                req.studentIds(),
+                req.formerStudentIds(),
                 req.statuses(),
                 req.validatedByIds(),
                 req.durationFrom(),

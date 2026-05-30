@@ -10,10 +10,11 @@ import java.util.UUID;
  * Data Transfer Object (DTO) used as the JSON request payload for creating a new Attendance record.
  *
  * @param projectId the unique identifier (UUIDv7) of the project (must not be null)
- * @param studentId the unique identifier (UUIDv7) of the formerStudent account (must not be null)
+ * @param formerStudentId the unique identifier (UUIDv7) of the formerStudent account (must not be
+ *     null)
  * @param duration the duration of time the formerStudent spent on the project (must be min 0.01)
  */
 public record AttendanceCreateRequest(
     @NotNull @UuidV7 UUID projectId,
-    @NotNull @UuidV7 UUID studentId,
+    @NotNull @UuidV7 UUID formerStudentId,
     @NotNull @DecimalMin(value = "0.01") BigDecimal duration) {}

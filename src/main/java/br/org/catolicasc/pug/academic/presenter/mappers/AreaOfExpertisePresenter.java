@@ -1,7 +1,6 @@
 package br.org.catolicasc.pug.academic.presenter.mappers;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseCreateRequest;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseResponse;
@@ -42,25 +41,8 @@ public final class AreaOfExpertisePresenter {
     return new AreaOfExpertiseResponse(view.id(), view.name(), auditInfo);
   }
 
-  public static AreaOfExpertiseResponse toResponse(SchoolView view, Locale locale) {
-    if (view == null || locale == null) {
-      return null;
-    }
-
-    AuditInfoResponse auditInfo =
-        SharedDataPresenter.createAuditInfoResponse(view.createdAt(), view.updatedAt(), locale);
-    return new AreaOfExpertiseResponse(view.id(), view.name(), auditInfo);
-  }
-
   public static AreaOfExpertiseComplexSearchResponse toComplexSearchResponse(
       AreaOfExpertiseView view) {
-    if (view == null) {
-      return null;
-    }
-    return new AreaOfExpertiseComplexSearchResponse(view.id(), view.name());
-  }
-
-  public static AreaOfExpertiseComplexSearchResponse toComplexSearchResponse(SchoolView view) {
     if (view == null) {
       return null;
     }

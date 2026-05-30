@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.service;
 
-import br.org.catolicasc.pug.academic.domain.School;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectSchool;
 import br.org.catolicasc.pug.project.domain.ProjectSchoolRepository;
@@ -9,8 +8,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Application service interface for managing the association between {@link Project} and {@link
- * School} aggregates via {@link ProjectSchool}.
+ * Application service interface for managing the association between {@link Project} and academic
+ * areas of expertise via {@link ProjectSchool}.
  *
  * <p>Following CQRS principles, this service handles the "Command" operations for the
  * project–school link: creation and deletion of associations. It orchestrates validation and
@@ -31,13 +30,13 @@ public interface ProjectSchoolService {
    * </ul>
    *
    * @param projectId the unique identifier of the project to link
-   * @param schoolIds the unique identifiers of the schools to link to the project
+   * @param areaOfExpertiseIds the unique identifiers of the schools to link to the project
    * @return a {@link List} of fully instantiated and persisted {@link ProjectSchool} aggregates
    *     corresponding to the provided school IDs
    * @throws AppValidationException if any created association violates domain constraints (e.g.,
    *     null IDs)
    */
-  List<ProjectSchool> save(UUID projectId, List<UUID> schoolIds);
+  List<ProjectSchool> save(UUID projectId, List<UUID> areaOfExpertiseIds);
 
   /**
    * Removes a specific association between a project and a school.
@@ -46,10 +45,10 @@ public interface ProjectSchoolService {
    * implementation should simply return {@code false} without raising an exception.
    *
    * @param projectId the unique identifier of the project
-   * @param schoolId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the school
    * @return {@code true} if an association was deleted, {@code false} otherwise
    */
-  boolean delete(UUID projectId, UUID schoolId);
+  boolean delete(UUID projectId, UUID areaOfExpertiseId);
 
   /**
    * Removes all associations for the specified project.
@@ -69,9 +68,9 @@ public interface ProjectSchoolService {
    * <p>This is typically used when deleting or restructuring a school and needing to clean up all
    * of its project links in a single operation.
    *
-   * @param schoolId the unique identifier of the school
-   * @return the number of associations deleted (zero if {@code schoolId} is {@code null} or no
-   *     associations exist)
+   * @param areaOfExpertiseId the unique identifier of the school
+   * @return the number of associations deleted (zero if {@code areaOfExpertiseId} is {@code null}
+   *     or no associations exist)
    */
-  long deleteAllBySchoolId(UUID schoolId);
+  long deleteAllByAreaOfExpertiseId(UUID areaOfExpertiseId);
 }

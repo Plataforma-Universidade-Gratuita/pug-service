@@ -15,10 +15,10 @@ public interface AttendanceRepository {
    * Removes all attendance records associated with a specific project/formerStudent pair.
    *
    * @param projectId the unique identifier of the project
-   * @param studentId the unique identifier of the formerStudent account
+   * @param formerStudentId the unique identifier of the formerStudent account
    * @return the total number of attendance records successfully deleted
    */
-  long deleteAllByEnrollmentId(UUID projectId, UUID studentId);
+  long deleteAllByEnrollmentId(UUID projectId, UUID formerStudentId);
 
   /**
    * Removes an {@link Attendance} record from the repository based on its unique identifier.

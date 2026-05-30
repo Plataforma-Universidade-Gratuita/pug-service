@@ -1,6 +1,6 @@
 package br.org.catolicasc.pug.academic.service;
 
-import br.org.catolicasc.pug.academic.domain.School;
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseUpdateCommand;
 import java.util.UUID;
@@ -26,24 +26,24 @@ public interface AreasOfExpertiseService {
    * Retrieves an area-of-expertise aggregate by its unique identifier.
    *
    * @param id the unique identifier of the area of expertise
-   * @return the matching {@link School} aggregate
+   * @return the matching {@link AreaOfExpertise} aggregate
    */
-  School getById(UUID id);
+  AreaOfExpertise getById(UUID id);
 
   /**
    * Registers a new academic area of expertise.
    *
    * @param cmd the command containing the area-of-expertise creation data
-   * @return the persisted {@link School} aggregate
+   * @return the persisted {@link AreaOfExpertise} aggregate
    */
-  School save(AreaOfExpertiseCreateCommand cmd);
+  AreaOfExpertise save(AreaOfExpertiseCreateCommand cmd);
 
   /**
    * Updates an existing academic area of expertise.
    *
    * @param id the unique identifier of the area of expertise to update
    * @param cmd the command containing the modified area-of-expertise data
-   * @return the updated {@link School} aggregate
+   * @return the updated {@link AreaOfExpertise} aggregate
    */
-  School update(UUID id, AreaOfExpertiseUpdateCommand cmd);
+  AreaOfExpertise update(UUID id, AreaOfExpertiseUpdateCommand cmd);
 }

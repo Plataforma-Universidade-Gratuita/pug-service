@@ -31,8 +31,8 @@ import lombok.ToString;
 @ToString(of = "id")
 @Entity
 @Table(
-    name = "project_school",
-    indexes = {@Index(name = "idx_pbs_school", columnList = "school_id")})
+    name = "project_areas_of_expertise",
+    indexes = {@Index(name = "idx_pbs_areas_of_expertise", columnList = "area_of_expertise_id")})
 public class ProjectSchoolEntity {
 
   /** Embeddable composite primary key mapping the intersection of a Project and a School. */
@@ -49,8 +49,8 @@ public class ProjectSchoolEntity {
     private UUID projectId;
 
     @NotNull
-    @Column(name = "school_id", nullable = false)
-    private UUID schoolId;
+    @Column(name = "area_of_expertise_id", nullable = false)
+    private UUID areaOfExpertiseId;
   }
 
   /** The composite identifier mapping. */

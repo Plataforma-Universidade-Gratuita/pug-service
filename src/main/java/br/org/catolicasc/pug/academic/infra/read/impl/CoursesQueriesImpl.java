@@ -35,7 +35,7 @@ public class CoursesQueriesImpl implements CoursesQueries {
       select new br.org.catolicasc.pug.academic.infra.read.dtos.CourseView(
         c.id,
         c.name,
-        new br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView(
+        new br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView(
           s.id,
           s.name,
           s.createdAt,
@@ -45,7 +45,7 @@ public class CoursesQueriesImpl implements CoursesQueries {
         c.updatedAt
       )
       from CourseEntity c
-      left join SchoolEntity s on s.id = c.schoolId
+      left join AreaOfExpertiseEntity s on s.id = c.areaOfExpertiseId
       """;
 
   private static final String ORDER_BY_NAME_ASC = " order by c.name asc";
@@ -88,26 +88,26 @@ public class CoursesQueriesImpl implements CoursesQueries {
   public PageResult<CourseView> search(PageQuery pageQuery, CourseComplexSearchCriteria criteria) {
     List<String> clauses = new ArrayList<>();
     String name = criteria == null ? null : criteria.name();
-    List<UUID> schoolIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
+    List<UUID> areaOfExpertiseIds = criteria == null ? List.of() : criteria.areaOfExpertiseIds();
 
     if (StringUtils.isNotEmpty(name)) {
       clauses.add(JpaSearchUtils.containsClause("c.name", "namePattern"));
     }
-    if (CollectionUtils.isNotEmpty(schoolIds)) {
-      clauses.add("c.schoolId in :schoolIds");
+    if (CollectionUtils.isNotEmpty(areaOfExpertiseIds)) {
+      clauses.add("c.areaOfExpertiseId in :areaOfExpertiseIds");
     }
 
     String whereClause = clauses.isEmpty() ? "" : " where " + String.join(" and ", clauses);
     var countQuery =
         entityManager.createQuery(
             "select count(c.id) from CourseEntity c" + whereClause, Long.class);
-    bindSearchParameters(countQuery, name, schoolIds);
+    bindSearchParameters(countQuery, name, areaOfExpertiseIds);
     long totalElements = countQuery.getSingleResult();
     PageExecution pageExecution = PageExecution.from(pageQuery, totalElements);
 
     var dataQuery =
         entityManager.createQuery(SELECT_BASE + whereClause + ORDER_BY_NAME_ASC, CourseView.class);
-    bindSearchParameters(dataQuery, name, schoolIds);
+    bindSearchParameters(dataQuery, name, areaOfExpertiseIds);
 
     return new PageResult<>(
         pageExecution.apply(dataQuery).getResultList(),
@@ -117,12 +117,13 @@ public class CoursesQueriesImpl implements CoursesQueries {
         pageExecution.totalPages());
   }
 
-  private <T> void bindSearchParameters(TypedQuery<T> query, String name, List<UUID> schoolIds) {
+  private <T> void bindSearchParameters(
+      TypedQuery<T> query, String name, List<UUID> areaOfExpertiseIds) {
     if (StringUtils.isNotEmpty(name)) {
       JpaSearchUtils.bindContains(query, "namePattern", name);
     }
-    if (CollectionUtils.isNotEmpty(schoolIds)) {
-      query.setParameter("schoolIds", schoolIds);
+    if (CollectionUtils.isNotEmpty(areaOfExpertiseIds)) {
+      query.setParameter("areaOfExpertiseIds", areaOfExpertiseIds);
     }
   }
 }

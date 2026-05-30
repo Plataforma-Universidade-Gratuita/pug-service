@@ -2,9 +2,9 @@ package br.org.catolicasc.pug.academic.service.impl;
 
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.CourseRepository;
+import br.org.catolicasc.pug.academic.service.AreasOfExpertiseService;
 import br.org.catolicasc.pug.academic.service.CoursesService;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
-import br.org.catolicasc.pug.academic.service.SchoolService;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.academic.service.utils.CourseProcessor;
@@ -34,7 +34,7 @@ public class CoursesServiceImpl implements CoursesService {
 
   @Inject CourseRepository repo;
 
-  @Inject SchoolService schoolService;
+  @Inject AreasOfExpertiseService areasOfExpertiseService;
 
   @Inject FormerStudentsService studentService;
 
@@ -65,8 +65,8 @@ public class CoursesServiceImpl implements CoursesService {
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsAnyBySchoolId(UUID schoolId) {
-    return repo.existsBySchoolId(schoolId);
+  public boolean existsAnyByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    return repo.existsByAreaOfExpertiseId(areaOfExpertiseId);
   }
 
   /** {@inheritDoc} */
@@ -94,9 +94,10 @@ public class CoursesServiceImpl implements CoursesService {
   @Override
   public Course save(CourseCreateCommand cmd) {
     LOG.debugf("Attempting to create Course: %s", cmd.name());
-    schoolService.getById(cmd.schoolId());
+    areasOfExpertiseService.getById(cmd.areaOfExpertiseId());
 
-    Course courseToPersist = CourseProcessor.processCreateInput(cmd.name(), cmd.schoolId());
+    Course courseToPersist =
+        CourseProcessor.processCreateInput(cmd.name(), cmd.areaOfExpertiseId());
 
     if (courseToPersist.hasFieldErrors()) {
       throw new AppValidationException(courseToPersist.getFieldErrors());
@@ -121,11 +122,13 @@ public class CoursesServiceImpl implements CoursesService {
     LOG.debugf("Attempting to update Course ID: %s", id);
     Course current = getById(id);
 
-    if (cmd.schoolId() != null && !cmd.schoolId().equals(current.getSchoolId())) {
-      schoolService.getById(cmd.schoolId());
+    if (cmd.areaOfExpertiseId() != null
+        && !cmd.areaOfExpertiseId().equals(current.getAreaOfExpertiseId())) {
+      areasOfExpertiseService.getById(cmd.areaOfExpertiseId());
     }
 
-    Course updatedCourse = CourseProcessor.processUpdateInput(current, cmd.name(), cmd.schoolId());
+    Course updatedCourse =
+        CourseProcessor.processUpdateInput(current, cmd.name(), cmd.areaOfExpertiseId());
 
     if (updatedCourse.hasFieldErrors()) {
       throw new AppValidationException(updatedCourse.getFieldErrors());

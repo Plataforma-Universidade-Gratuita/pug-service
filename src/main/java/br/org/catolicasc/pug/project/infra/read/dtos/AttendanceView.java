@@ -13,7 +13,7 @@ import java.util.UUID;
  * @param id the unique identifier of the attendance record
  * @param projectId the unique identifier of the associated project
  * @param projectName the display name of the associated project
- * @param studentId the unique identifier of the associated former student account
+ * @param formerStudentId the unique identifier of the associated former student account
  * @param studentName the display name of the associated former student
  * @param studentEmail the email address of the associated former student account
  * @param academicRegistration the academic registration of the associated former student
@@ -32,7 +32,7 @@ public record AttendanceView(
     UUID id,
     UUID projectId,
     String projectName,
-    UUID studentId,
+    UUID formerStudentId,
     String studentName,
     String studentEmail,
     String academicRegistration,
@@ -55,7 +55,7 @@ public record AttendanceView(
       UUID id,
       UUID projectId,
       String projectName,
-      UUID studentId,
+      UUID formerStudentId,
       String studentName,
       String studentEmail,
       String academicRegistration,
@@ -73,7 +73,7 @@ public record AttendanceView(
         id,
         projectId,
         projectName,
-        studentId,
+        formerStudentId,
         studentName,
         studentEmail,
         academicRegistration,

@@ -30,11 +30,11 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 @ToString(
     callSuper = true,
-    of = {"name", "schoolId"})
+    of = {"name", "areaOfExpertiseId"})
 @Entity
 @Table(
     name = "courses",
-    indexes = {@Index(name = "idx_courses_school", columnList = "school_id")})
+    indexes = {@Index(name = "idx_courses_area_of_expertise", columnList = "area_of_expertise_id")})
 public class CourseEntity extends BaseAuditedEntity {
 
   /** The name of the academic course. */
@@ -42,10 +42,10 @@ public class CourseEntity extends BaseAuditedEntity {
   private String name;
 
   /**
-   * The unique identifier (UUID) of the associated {@link SchoolEntity}.
+   * The unique identifier (UUID) of the associated {@link AreaOfExpertiseEntity}.
    *
    * <p>Acts as a foreign key linking this course to its parent academic school.
    */
-  @Column(name = "school_id", nullable = false)
-  private UUID schoolId;
+  @Column(name = "area_of_expertise_id", nullable = false)
+  private UUID areaOfExpertiseId;
 }

@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.academic.presenter.mappers;
 
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentComplexSearchView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.FormerStudentView;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolComplexSearchView;
 import br.org.catolicasc.pug.academic.presenter.dtos.areasofexpertise.AreaOfExpertiseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.courses.CourseComplexSearchResponse;
 import br.org.catolicasc.pug.academic.presenter.dtos.formerstudents.CounterpartHoursResponse;
@@ -185,7 +185,7 @@ public final class FormerStudentPresenter {
   }
 
   private static AreaOfExpertiseComplexSearchResponse toAreaOfExpertiseComplexSearchResponse(
-      SchoolComplexSearchView view) {
+      AreaOfExpertiseComplexSearchView view) {
     if (view == null) {
       return null;
     }

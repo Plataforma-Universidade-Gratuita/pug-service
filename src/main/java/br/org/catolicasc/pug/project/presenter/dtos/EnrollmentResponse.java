@@ -4,6 +4,6 @@ import java.util.UUID;
 
 public record EnrollmentResponse(
     UUID projectId,
-    UUID studentId,
+    UUID formerStudentId,
     EnrollmentStatusResponse status,
     EnrollmentInfoResponse enrollmentInfo) {}

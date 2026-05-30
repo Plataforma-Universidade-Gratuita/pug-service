@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.helpers.builders.requests;
 
-import br.org.catolicasc.pug.academic.presenter.dtos.SchoolCreateRequest;
 import br.org.catolicasc.pug.helpers.TestNameGenerator;
 
 /**

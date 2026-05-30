@@ -14,9 +14,9 @@ public interface ProjectSchoolRepository {
   /**
    * Removes a specific association between a project and a school.
    *
-   * <p>The implementation is expected to use the {@code projectId} and {@code schoolId} contained
-   * in the provided {@link ProjectSchool} aggregate to identify and delete a single matching
-   * record.
+   * <p>The implementation is expected to use the {@code projectId} and {@code areaOfExpertiseId}
+   * contained in the provided {@link ProjectSchool} aggregate to identify and delete a single
+   * matching record.
    *
    * @param association the {@link ProjectSchool} aggregate containing both identifiers
    * @return {@code true} if an association was deleted, {@code false} otherwise
@@ -37,13 +37,13 @@ public interface ProjectSchoolRepository {
   /**
    * Removes all associations for the specified school.
    *
-   * <p>The implementation is expected to use the provided {@code schoolId} to identify and delete
-   * all matching {@link ProjectSchool} records.
+   * <p>The implementation is expected to use the provided {@code areaOfExpertiseId} to identify and
+   * delete all matching {@link ProjectSchool} records.
    *
-   * @param schoolId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the school
    * @return the number of associations deleted
    */
-  long deleteAllBySchoolId(UUID schoolId);
+  long deleteAllByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
   /**
    * Retrieves the identifiers of all schools associated with the given project.
@@ -56,7 +56,7 @@ public interface ProjectSchoolRepository {
    * @return a {@link Set} of school UUIDs associated with the project; an empty set if {@code
    *     projectId} is {@code null} or if no associations exist
    */
-  Set<UUID> findAllSchoolIdsByProjectId(UUID projectId);
+  Set<UUID> findAllAreaOfExpertiseIdsByProjectId(UUID projectId);
 
   /**
    * Retrieves the identifiers of all projects associated with the given school.
@@ -65,11 +65,11 @@ public interface ProjectSchoolRepository {
    * school and needing to understand its current project links). It does not instantiate full
    * association aggregates, returning only the foreign key identifiers.
    *
-   * @param schoolId the unique identifier of the school
+   * @param areaOfExpertiseId the unique identifier of the school
    * @return a {@link Set} of project UUIDs associated with the school; an empty set if {@code
-   *     schoolId} is {@code null} or if no associations exist
+   *     areaOfExpertiseId} is {@code null} or if no associations exist
    */
-  Set<java.util.UUID> findAllProjectIdsBySchoolId(UUID schoolId);
+  Set<java.util.UUID> findAllProjectIdsByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
   /**
    * Persists a newly created {@link ProjectSchool} association into the repository.

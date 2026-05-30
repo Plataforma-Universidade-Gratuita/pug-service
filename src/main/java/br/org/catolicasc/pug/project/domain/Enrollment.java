@@ -57,12 +57,12 @@ public class Enrollment extends DomainError {
    *     state
    */
   public static Enrollment factory(FormerStudent formerStudent, Project project) {
-    UUID studentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
+    UUID formerStudentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
     UUID projectId = (project != null) ? project.getId() : null;
 
     Enrollment enrollment =
         Enrollment.builder()
-            .identifier(EnrollmentIdentifier.factory(studentId, projectId))
+            .identifier(EnrollmentIdentifier.factory(formerStudentId, projectId))
             .status(EnrollmentStatus.PENDING)
             .enrollmentInfo(EnrollmentInfo.factory())
             .build();

@@ -37,31 +37,35 @@ public class ProjectSchoolServiceImpl implements ProjectSchoolService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public List<ProjectSchool> save(UUID projectId, List<UUID> schoolIds) {
-    if (projectId == null || CollectionUtils.isEmpty(schoolIds)) {
-      LOG.debugf("ProjectBySchool save skipped: projectId=%s, schoolIds=%s", projectId, schoolIds);
+  public List<ProjectSchool> save(UUID projectId, List<UUID> areaOfExpertiseIds) {
+    if (projectId == null || CollectionUtils.isEmpty(areaOfExpertiseIds)) {
+      LOG.debugf(
+          "ProjectBySchool save skipped: projectId=%s, areaOfExpertiseIds=%s",
+          projectId, areaOfExpertiseIds);
       return List.of();
     }
 
-    List<UUID> requestedSchoolIds = schoolIds.stream().filter(Objects::nonNull).distinct().toList();
+    List<UUID> requestedAreaOfExpertiseIds =
+        areaOfExpertiseIds.stream().filter(Objects::nonNull).distinct().toList();
 
-    Set<UUID> existingSchoolIds = repo.findAllSchoolIdsByProjectId(projectId);
+    Set<UUID> existingAreaOfExpertiseIds = repo.findAllAreaOfExpertiseIdsByProjectId(projectId);
 
     LOG.debugf(
         "Creating ProjectBySchool associations for projectId=%s. Requested=%d, existing=%d",
-        projectId, requestedSchoolIds.size(), existingSchoolIds.size());
+        projectId, requestedAreaOfExpertiseIds.size(), existingAreaOfExpertiseIds.size());
 
     List<ProjectSchool> created = new ArrayList<>();
 
-    for (UUID schoolId : requestedSchoolIds) {
-      if (existingSchoolIds.contains(schoolId)) {
+    for (UUID areaOfExpertiseId : requestedAreaOfExpertiseIds) {
+      if (existingAreaOfExpertiseIds.contains(areaOfExpertiseId)) {
         LOG.debugf(
-            "Skipping: association already exists (projectId=%s, schoolId=%s)",
-            projectId, schoolId);
+            "Skipping: association already exists (projectId=%s, areaOfExpertiseId=%s)",
+            projectId, areaOfExpertiseId);
         continue;
       }
 
-      ProjectSchool association = ProjectSchoolProcessor.processCreateInput(projectId, schoolId);
+      ProjectSchool association =
+          ProjectSchoolProcessor.processCreateInput(projectId, areaOfExpertiseId);
 
       if (association.hasFieldErrors()) {
         throw new AppValidationException(association.getFieldErrors());
@@ -81,30 +85,30 @@ public class ProjectSchoolServiceImpl implements ProjectSchoolService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public boolean delete(UUID projectId, UUID schoolId) {
-    if (projectId == null || schoolId == null) {
+  public boolean delete(UUID projectId, UUID areaOfExpertiseId) {
+    if (projectId == null || areaOfExpertiseId == null) {
       LOG.debugf(
-          "Delete ProjectsBySchool skipped due to null identifier(s): projectId=%s, schoolId=%s",
-          projectId, schoolId);
+          "Delete ProjectsBySchool skipped due to null identifier(s): projectId=%s, areaOfExpertiseId=%s",
+          projectId, areaOfExpertiseId);
       return false;
     }
 
     LOG.debugf(
-        "Attempting to delete ProjectsBySchool association: projectId=%s, schoolId=%s",
-        projectId, schoolId);
+        "Attempting to delete ProjectsBySchool association: projectId=%s, areaOfExpertiseId=%s",
+        projectId, areaOfExpertiseId);
 
     ProjectSchool association =
-        ProjectSchool.builder().projectId(projectId).schoolId(schoolId).build();
+        ProjectSchool.builder().projectId(projectId).areaOfExpertiseId(areaOfExpertiseId).build();
 
     boolean deleted = repo.delete(association);
     if (deleted) {
       LOG.infof(
-          "ProjectsBySchool association deleted successfully. projectId=%s, schoolId=%s",
-          projectId, schoolId);
+          "ProjectsBySchool association deleted successfully. projectId=%s, areaOfExpertiseId=%s",
+          projectId, areaOfExpertiseId);
     } else {
       LOG.debugf(
-          "ProjectsBySchool association not found for deletion. projectId=%s, schoolId=%s",
-          projectId, schoolId);
+          "ProjectsBySchool association not found for deletion. projectId=%s, areaOfExpertiseId=%s",
+          projectId, areaOfExpertiseId);
     }
 
     if (deleted) {
@@ -135,18 +139,21 @@ public class ProjectSchoolServiceImpl implements ProjectSchoolService {
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public long deleteAllBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
-      LOG.debug("deleteAllBySchoolId skipped: schoolId is null");
+  public long deleteAllByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    if (areaOfExpertiseId == null) {
+      LOG.debug("deleteAllByAreaOfExpertiseId skipped: areaOfExpertiseId is null");
       return 0L;
     }
 
-    LOG.debugf("Deleting all ProjectsBySchool associations for schoolId=%s", schoolId);
-    long deleted = repo.deleteAllBySchoolId(schoolId);
-    LOG.infof("Deleted %d ProjectsBySchool associations for schoolId=%s", deleted, schoolId);
+    LOG.debugf(
+        "Deleting all ProjectsBySchool associations for areaOfExpertiseId=%s", areaOfExpertiseId);
+    long deleted = repo.deleteAllByAreaOfExpertiseId(areaOfExpertiseId);
+    LOG.infof(
+        "Deleted %d ProjectsBySchool associations for areaOfExpertiseId=%s",
+        deleted, areaOfExpertiseId);
 
     if (deleted > 0) {
-      auditPublisher.fireDelete(ProjectSchool.class.getName(), schoolId);
+      auditPublisher.fireDelete(ProjectSchool.class.getName(), areaOfExpertiseId);
     }
     return deleted;
   }

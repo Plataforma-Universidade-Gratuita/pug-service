@@ -9,7 +9,7 @@ import java.util.UUID;
 
 public record EnrollmentComplexSearchRequest(
     List<@UuidV7 UUID> projectIds,
-    List<@UuidV7 UUID> studentIds,
+    List<@UuidV7 UUID> formerStudentIds,
     List<EnrollmentStatus> statuses,
     OffsetDateTime dateFrom,
     OffsetDateTime dateTo,
@@ -18,7 +18,7 @@ public record EnrollmentComplexSearchRequest(
 
   public EnrollmentComplexSearchRequest {
     projectIds = projectIds == null ? List.of() : List.copyOf(projectIds);
-    studentIds = studentIds == null ? List.of() : List.copyOf(studentIds);
+    formerStudentIds = formerStudentIds == null ? List.of() : List.copyOf(formerStudentIds);
     statuses = statuses == null ? List.of() : List.copyOf(statuses);
   }
 }

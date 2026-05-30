@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public record EnrollmentComplexSearchCriteria(
     List<UUID> projectIds,
-    List<UUID> studentIds,
+    List<UUID> formerStudentIds,
     List<EnrollmentStatus> statuses,
     OffsetDateTime dateFrom,
     OffsetDateTime dateTo,
@@ -17,7 +17,7 @@ public record EnrollmentComplexSearchCriteria(
 
   public EnrollmentComplexSearchCriteria {
     projectIds = projectIds == null ? List.of() : List.copyOf(projectIds);
-    studentIds = studentIds == null ? List.of() : List.copyOf(studentIds);
+    formerStudentIds = formerStudentIds == null ? List.of() : List.copyOf(formerStudentIds);
     statuses = statuses == null ? List.of() : List.copyOf(statuses);
   }
 }

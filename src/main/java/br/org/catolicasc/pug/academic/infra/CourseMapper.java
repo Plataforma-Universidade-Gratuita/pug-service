@@ -1,10 +1,10 @@
 package br.org.catolicasc.pug.academic.infra;
 
 import br.org.catolicasc.pug.academic.domain.Course;
+import br.org.catolicasc.pug.academic.infra.persistence.AreaOfExpertiseEntity;
 import br.org.catolicasc.pug.academic.infra.persistence.CourseEntity;
-import br.org.catolicasc.pug.academic.infra.persistence.SchoolEntity;
+import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.infra.read.dtos.CourseView;
-import br.org.catolicasc.pug.academic.infra.read.dtos.SchoolView;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
 
 /**
@@ -31,7 +31,7 @@ public final class CourseMapper {
     return Course.builder()
         .id(e.getId())
         .name(e.getName())
-        .schoolId(e.getSchoolId())
+        .areaOfExpertiseId(e.getAreaOfExpertiseId())
         .auditInfo(AuditInfo.factory(e.getCreatedAt(), e.getUpdatedAt()))
         .build();
   }
@@ -51,7 +51,7 @@ public final class CourseMapper {
     return CourseEntity.builder()
         .id(d.getId())
         .name(d.getName())
-        .schoolId(d.getSchoolId())
+        .areaOfExpertiseId(d.getAreaOfExpertiseId())
         .createdAt(d.getAuditInfo().getCreatedAt())
         .updatedAt(d.getAuditInfo().getUpdatedAt())
         .build();
@@ -69,26 +69,26 @@ public final class CourseMapper {
       return;
     }
     e.setName(d.getName());
-    e.setSchoolId(d.getSchoolId());
+    e.setAreaOfExpertiseId(d.getAreaOfExpertiseId());
     e.setCreatedAt(d.getAuditInfo().getCreatedAt());
     e.setUpdatedAt(d.getAuditInfo().getUpdatedAt());
   }
 
   /**
-   * Projects a {@link CourseEntity} and its parent {@link SchoolEntity} into a consolidated {@link
-   * CourseView} DTO.
+   * Projects a {@link CourseEntity} and its parent {@link AreaOfExpertiseEntity} into a
+   * consolidated {@link CourseView} DTO.
    *
    * @param c the JPA persistence entity representing the course
    * @param s the JPA persistence entity representing the linked school
    * @return a populated {@link CourseView} DTO, or {@code null} if the course entity is null
    */
-  public static CourseView toView(CourseEntity c, SchoolEntity s) {
+  public static CourseView toView(CourseEntity c, AreaOfExpertiseEntity s) {
     if (c == null) {
       return null;
     }
-    SchoolView schoolView =
+    AreaOfExpertiseView schoolView =
         (s != null)
-            ? new SchoolView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
+            ? new AreaOfExpertiseView(s.getId(), s.getName(), s.getCreatedAt(), s.getUpdatedAt())
             : null;
     return new CourseView(c.getId(), c.getName(), schoolView, c.getCreatedAt(), c.getUpdatedAt());
   }

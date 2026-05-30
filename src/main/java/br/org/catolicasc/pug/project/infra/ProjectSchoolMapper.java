@@ -27,7 +27,7 @@ public final class ProjectSchoolMapper {
     }
     return ProjectSchool.builder()
         .projectId(e.getId().getProjectId())
-        .schoolId(e.getId().getSchoolId())
+        .areaOfExpertiseId(e.getId().getAreaOfExpertiseId())
         .build();
   }
 
@@ -44,7 +44,7 @@ public final class ProjectSchoolMapper {
       return null;
     }
     ProjectSchoolEntity.ProjectsBySchoolsId id =
-        new ProjectSchoolEntity.ProjectsBySchoolsId(d.getProjectId(), d.getSchoolId());
+        new ProjectSchoolEntity.ProjectsBySchoolsId(d.getProjectId(), d.getAreaOfExpertiseId());
     return new ProjectSchoolEntity(id);
   }
 }

@@ -50,7 +50,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     }
     LOG.debugf("Deleting all attendances for Enrollment: %s", identifier);
     long deleted =
-        repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getStudentId());
+        repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getFormerStudentId());
     if (deleted > 0) {
       auditPublisher.fireDelete(Attendance.class.getName(), identifier.getProjectId());
     }
@@ -105,11 +105,11 @@ public class AttendancesServiceImpl implements AttendancesService {
   public Attendance save(AttendanceCreateCommand cmd) {
     LOG.debugf(
         "Attempting to create Attendance for Project: %s, FormerStudent: %s",
-        cmd.projectId(), cmd.studentId());
+        cmd.projectId(), cmd.formerStudentId());
     Project project = projectService.getById(cmd.projectId());
-    FormerStudent formerStudent = studentService.getById(cmd.studentId());
+    FormerStudent formerStudent = studentService.getById(cmd.formerStudentId());
 
-    String qrHash = generateQrHash(cmd.projectId(), cmd.studentId());
+    String qrHash = generateQrHash(cmd.projectId(), cmd.formerStudentId());
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), qrHash);
@@ -151,7 +151,7 @@ public class AttendancesServiceImpl implements AttendancesService {
 
     if (validated.getStatus() == AttendanceStatus.PRESENT) {
       studentService.addCompletedHours(
-          validated.getEnrollmentIdentifier().getStudentId(),
+          validated.getEnrollmentIdentifier().getFormerStudentId(),
           validated.getQrValidationInfo().getDuration());
       projectService.addCompletedHours(
           validated.getEnrollmentIdentifier().getProjectId(),
@@ -162,8 +162,8 @@ public class AttendancesServiceImpl implements AttendancesService {
     return getById(id);
   }
 
-  private String generateQrHash(UUID projectId, UUID studentId) {
-    String raw = projectId.toString() + studentId.toString() + LocalDateTime.now() + pepper;
+  private String generateQrHash(UUID projectId, UUID formerStudentId) {
+    String raw = projectId.toString() + formerStudentId.toString() + LocalDateTime.now() + pepper;
     return BcryptUtil.bcryptHash(raw);
   }
 }

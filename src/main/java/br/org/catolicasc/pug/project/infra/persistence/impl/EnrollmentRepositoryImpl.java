@@ -24,12 +24,13 @@ public class EnrollmentRepositoryImpl
   public boolean deleteById(EnrollmentIdentifier identifier) {
     if (identifier == null
         || identifier.getProjectId() == null
-        || identifier.getStudentId() == null) {
+        || identifier.getFormerStudentId() == null) {
       return false;
     }
 
     var id =
-        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
+        new EnrollmentEntity.EnrollmentsId(
+            identifier.getProjectId(), identifier.getFormerStudentId());
 
     boolean deleted = delete("id", id) > 0;
     flush();
@@ -41,14 +42,14 @@ public class EnrollmentRepositoryImpl
   public boolean existsById(EnrollmentIdentifier identifier) {
     if (identifier == null
         || identifier.getProjectId() == null
-        || identifier.getStudentId() == null) {
+        || identifier.getFormerStudentId() == null) {
       return false;
     }
 
     return count(
-            "id.projectId = ?1 and id.studentId = ?2",
+            "id.projectId = ?1 and id.formerStudentId = ?2",
             identifier.getProjectId(),
-            identifier.getStudentId())
+            identifier.getFormerStudentId())
         > 0;
   }
 
@@ -63,11 +64,11 @@ public class EnrollmentRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
-  public boolean existsByStudentId(UUID studentId) {
-    if (studentId == null) {
+  public boolean existsByFormerStudentId(UUID formerStudentId) {
+    if (formerStudentId == null) {
       return false;
     }
-    return count("id.studentId", studentId) > 0;
+    return count("id.formerStudentId", formerStudentId) > 0;
   }
 
   /** {@inheritDoc} */
@@ -75,12 +76,13 @@ public class EnrollmentRepositoryImpl
   public Optional<Enrollment> findOptionalById(EnrollmentIdentifier identifier) {
     if (identifier == null
         || identifier.getProjectId() == null
-        || identifier.getStudentId() == null) {
+        || identifier.getFormerStudentId() == null) {
       return Optional.empty();
     }
 
     var id =
-        new EnrollmentEntity.EnrollmentsId(identifier.getProjectId(), identifier.getStudentId());
+        new EnrollmentEntity.EnrollmentsId(
+            identifier.getProjectId(), identifier.getFormerStudentId());
 
     return findByIdOptional(id).map(EnrollmentMapper::toDomain);
   }
@@ -96,11 +98,13 @@ public class EnrollmentRepositoryImpl
 
   /** {@inheritDoc} */
   @Override
-  public List<Enrollment> listAllByStudentId(UUID studentId) {
-    if (studentId == null) {
+  public List<Enrollment> listAllByFormerStudentId(UUID formerStudentId) {
+    if (formerStudentId == null) {
       return List.of();
     }
-    return find("id.studentId", studentId).list().stream().map(EnrollmentMapper::toDomain).toList();
+    return find("id.formerStudentId", formerStudentId).list().stream()
+        .map(EnrollmentMapper::toDomain)
+        .toList();
   }
 
   /** {@inheritDoc} */
@@ -125,7 +129,7 @@ public class EnrollmentRepositoryImpl
 
     var id =
         new EnrollmentEntity.EnrollmentsId(
-            entity.getIdentifier().getProjectId(), entity.getIdentifier().getStudentId());
+            entity.getIdentifier().getProjectId(), entity.getIdentifier().getFormerStudentId());
 
     EnrollmentEntity managed = findById(id);
     if (managed != null) {

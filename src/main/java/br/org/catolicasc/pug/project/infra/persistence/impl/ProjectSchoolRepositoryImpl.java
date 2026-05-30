@@ -51,18 +51,18 @@ public class ProjectSchoolRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public long deleteAllBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
+  public long deleteAllByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    if (areaOfExpertiseId == null) {
       return 0;
     }
-    long deleted = delete("id.schoolId", schoolId);
+    long deleted = delete("id.areaOfExpertiseId", areaOfExpertiseId);
     flush();
     return deleted;
   }
 
   /** {@inheritDoc} */
   @Override
-  public Set<UUID> findAllSchoolIdsByProjectId(UUID projectId) {
+  public Set<UUID> findAllAreaOfExpertiseIdsByProjectId(UUID projectId) {
     if (projectId == null) {
       return Set.of();
     }
@@ -70,18 +70,18 @@ public class ProjectSchoolRepositoryImpl
     return find("id.projectId", projectId).stream()
         .map(ProjectSchoolEntity::getId)
         .filter(Objects::nonNull)
-        .map(ProjectSchoolEntity.ProjectsBySchoolsId::getSchoolId)
+        .map(ProjectSchoolEntity.ProjectsBySchoolsId::getAreaOfExpertiseId)
         .collect(Collectors.toSet());
   }
 
   /** {@inheritDoc} */
   @Override
-  public Set<UUID> findAllProjectIdsBySchoolId(UUID schoolId) {
-    if (schoolId == null) {
+  public Set<UUID> findAllProjectIdsByAreaOfExpertiseId(UUID areaOfExpertiseId) {
+    if (areaOfExpertiseId == null) {
       return Set.of();
     }
 
-    return find("id.schoolId", schoolId).stream()
+    return find("id.areaOfExpertiseId", areaOfExpertiseId).stream()
         .map(ProjectSchoolEntity::getId)
         .filter(Objects::nonNull)
         .map(ProjectSchoolEntity.ProjectsBySchoolsId::getProjectId)

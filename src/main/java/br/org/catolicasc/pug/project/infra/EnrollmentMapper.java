@@ -33,7 +33,7 @@ public final class EnrollmentMapper {
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.builder()
             .projectId(e.getId().getProjectId())
-            .studentId(e.getId().getStudentId())
+            .formerStudentId(e.getId().getFormerStudentId())
             .build();
 
     EnrollmentInfo info =
@@ -65,7 +65,7 @@ public final class EnrollmentMapper {
 
     EnrollmentEntity.EnrollmentsId eid =
         new EnrollmentEntity.EnrollmentsId(
-            d.getIdentifier().getProjectId(), d.getIdentifier().getStudentId());
+            d.getIdentifier().getProjectId(), d.getIdentifier().getFormerStudentId());
 
     return EnrollmentEntity.builder()
         .id(eid)

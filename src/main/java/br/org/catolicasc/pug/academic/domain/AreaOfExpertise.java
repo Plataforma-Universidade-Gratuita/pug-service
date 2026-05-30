@@ -13,7 +13,7 @@ import lombok.Getter;
 import lombok.Value;
 
 /**
- * Immutable Domain Entity representing an Academic School.
+ * Immutable Domain Entity representing an Academic AreaOfExpertise.
  *
  * <p>This class acts as an aggregate root representing a university department or educational
  * institution that groups together various {@link Course} entities. It extends {@link DomainError}
@@ -23,7 +23,7 @@ import lombok.Value;
 @Value
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
-public class School extends DomainError {
+public class AreaOfExpertise extends DomainError {
 
   /** The unique identifier for the school (UUIDv7). */
   UUID id;
@@ -35,33 +35,33 @@ public class School extends DomainError {
   AuditInfo auditInfo;
 
   /**
-   * Constructs a {@code School} instance.
+   * Constructs a {@code AreaOfExpertise} instance.
    *
    * @param id the unique identifier
    * @param name the name of the school
    * @param auditInfo the audit tracking VO
    */
   @Builder(toBuilder = true)
-  private School(UUID id, String name, AuditInfo auditInfo) {
+  private AreaOfExpertise(UUID id, String name, AuditInfo auditInfo) {
     this.id = id;
     this.name = name;
     this.auditInfo = auditInfo;
   }
 
   /**
-   * Factory method to create a new {@code School} aggregate.
+   * Factory method to create a new {@code AreaOfExpertise} aggregate.
    *
    * <p>Automatically generates a time-ordered epoch UUID (UUIDv7) for the identifier, trims the
    * provided name, initializes standard audit tracking information, and performs a full validation
    * of the aggregate.
    *
    * @param name the name of the school
-   * @return a newly created and self-validated {@link School} instance
+   * @return a newly created and self-validated {@link AreaOfExpertise} instance
    */
-  public static School factory(String name) {
+  public static AreaOfExpertise factory(String name) {
     String trimmedName = StringUtils.trim(name);
-    School school =
-        School.builder()
+    AreaOfExpertise school =
+        AreaOfExpertise.builder()
             .id(UuidCreator.getTimeOrderedEpoch())
             .name(trimmedName)
             .auditInfo(AuditInfo.factory())
@@ -74,25 +74,27 @@ public class School extends DomainError {
   /**
    * Updates the school's name.
    *
-   * <p>Since this entity is immutable, this method returns a new {@code School} instance with the
-   * updated, trimmed name and a refreshed {@link AuditInfo} timestamp.
+   * <p>Since this entity is immutable, this method returns a new {@code AreaOfExpertise} instance
+   * with the updated, trimmed name and a refreshed {@link AuditInfo} timestamp.
    *
    * @param newName the new name for the school
-   * @return a new, updated, and validated {@link School} instance, or {@code this} if the name is
-   *     unchanged
+   * @return a new, updated, and validated {@link AreaOfExpertise} instance, or {@code this} if the
+   *     name is unchanged
    */
-  public School rename(String newName) {
+  public AreaOfExpertise rename(String newName) {
     String trimmedName = StringUtils.trim(newName);
     if (name.equals(trimmedName)) {
       return this;
     }
-    School updatedSchool = toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
+    AreaOfExpertise updatedSchool =
+        toBuilder().name(trimmedName).auditInfo(auditInfo.update()).build();
     updatedSchool.collectValidationProblems();
     return updatedSchool;
   }
 
   /**
-   * Evaluates constraints for the School aggregate and accumulates any validation problems.
+   * Evaluates constraints for the AreaOfExpertise aggregate and accumulates any validation
+   * problems.
    *
    * <p>Rules applied:
    *

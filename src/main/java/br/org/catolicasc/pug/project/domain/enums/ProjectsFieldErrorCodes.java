@@ -31,7 +31,7 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
 
   /** Indicates that the formerStudent ID for an attendance record is null. */
   INVALID_ATTENDANCE_STUDENT_BLANK(
-      "error.domain.projects.attendance.formerStudent.blank", "studentId"),
+      "error.domain.projects.attendance.formerStudent.blank", "formerStudentId"),
 
   /** Indicates that the creation timestamp was provided as null. */
   INVALID_CREATED_AT_BLANK("error.domain.projects.createdat.blank", "createdAt"),
@@ -60,7 +60,7 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
 
   /** Indicates that the formerStudent ID for an enrollment is null. */
   INVALID_ENROLLMENT_STUDENT_BLANK(
-      "error.domain.projects.enrollment.formerStudent.blank", "studentId"),
+      "error.domain.projects.enrollment.formerStudent.blank", "formerStudentId"),
 
   /** Indicates that the maximum number of participants is negative. */
   INVALID_MAX_PARTICIPANTS_NEGATIVE(
@@ -107,7 +107,7 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_STATUS_BLANK("error.domain.projects.status.blank", "status"),
 
   /** Indicates that a school ID was provided as null. */
-  INVALID_SCHOOL_ID_BLANK("error.domain.projects.school.id.blank", "schoolId");
+  INVALID_SCHOOL_ID_BLANK("error.domain.projects.areaOfExpertise.id.blank", "areaOfExpertiseId");
 
   /**
    * The property key used to resolve the localized error message in the application's resource

@@ -32,13 +32,13 @@ public interface CourseRepository {
    * Checks whether any {@link Course} associated with the specified school identifier exists in the
    * repository.
    *
-   * <p>This query is crucial for enforcing relational integrity, ensuring schools are not deleted
-   * if they still offer active courses.
+   * <p>This query is crucial for enforcing relational integrity, ensuring areasOfExpertise are not
+   * deleted if they still offer active courses.
    *
-   * @param schoolId the unique identifier (UUID) of the associated school
+   * @param areaOfExpertiseId the unique identifier (UUID) of the associated school
    * @return {@code true} if at least one course is linked to the school, {@code false} otherwise
    */
-  boolean existsBySchoolId(UUID schoolId);
+  boolean existsByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
   /**
    * Retrieves a {@link Course} by its unique identifier.

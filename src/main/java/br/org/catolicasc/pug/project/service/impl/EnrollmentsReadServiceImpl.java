@@ -22,13 +22,14 @@ public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
   @Inject EnrollmentsQueries queries;
 
   @Override
-  public EnrollmentView getViewByIds(UUID projectId, UUID studentId) {
+  public EnrollmentView getViewByIds(UUID projectId, UUID formerStudentId) {
     return queries
-        .findOptionalByIds(projectId, studentId)
+        .findOptionalByIds(projectId, formerStudentId)
         .orElseThrow(
             () -> {
               LOG.debugf(
-                  "Enrollment lookup failed: Project %s, FormerStudent %s", projectId, studentId);
+                  "Enrollment lookup failed: Project %s, FormerStudent %s",
+                  projectId, formerStudentId);
               return ExceptionHelper.enrollmentNotFound();
             });
   }
@@ -47,8 +48,8 @@ public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
 
   /** {@inheritDoc} */
   @Override
-  public List<EnrollmentView> listViewsByStudentId(UUID studentId) {
-    return studentId == null ? List.of() : queries.listAllByStudentId(studentId);
+  public List<EnrollmentView> listViewsByFormerStudentId(UUID formerStudentId) {
+    return formerStudentId == null ? List.of() : queries.listAllByFormerStudentId(formerStudentId);
   }
 
   /** {@inheritDoc} */

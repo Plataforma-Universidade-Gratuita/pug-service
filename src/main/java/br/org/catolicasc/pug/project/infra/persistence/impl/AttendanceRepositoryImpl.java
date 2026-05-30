@@ -23,11 +23,11 @@ public class AttendanceRepositoryImpl
   /** {@inheritDoc} */
   @Transactional
   @Override
-  public long deleteAllByEnrollmentId(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) {
+  public long deleteAllByEnrollmentId(UUID projectId, UUID formerStudentId) {
+    if (projectId == null || formerStudentId == null) {
       return 0;
     }
-    long deleted = delete("projectId = ?1 and studentId = ?2", projectId, studentId);
+    long deleted = delete("projectId = ?1 and formerStudentId = ?2", projectId, formerStudentId);
     flush();
     return deleted;
   }

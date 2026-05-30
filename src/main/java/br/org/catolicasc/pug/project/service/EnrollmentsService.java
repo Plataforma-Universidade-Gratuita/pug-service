@@ -15,13 +15,13 @@ public interface EnrollmentsService {
   long changeStatusByProjectId(
       UUID projectId, EnrollmentStatus currentStatus, EnrollmentStatus targetStatus);
 
-  long completeAllByStudentId(UUID studentId);
+  long completeAllByFormerStudentId(UUID formerStudentId);
 
   boolean delete(EnrollmentIdentifier identifier);
 
   boolean existsAnyByProjectId(UUID projectId);
 
-  boolean existsAnyByStudentId(UUID studentId);
+  boolean existsAnyByFormerStudentId(UUID formerStudentId);
 
   Enrollment getByIds(EnrollmentIdentifier identifier);
 

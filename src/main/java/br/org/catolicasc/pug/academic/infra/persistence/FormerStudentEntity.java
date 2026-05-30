@@ -39,13 +39,13 @@ import lombok.ToString;
 @ToString(of = {"accountId", "academicRegistration"})
 @Entity
 @Table(
-    name = "students",
+    name = "former_students",
     uniqueConstraints = {
       @UniqueConstraint(
-          name = "uq_students_registration",
+          name = "uq_former_students_registration",
           columnNames = {"academic_registration"})
     },
-    indexes = {@Index(name = "idx_students_course", columnList = "course_id")})
+    indexes = {@Index(name = "idx_former_students_course", columnList = "course_id")})
 public class FormerStudentEntity {
 
   /**

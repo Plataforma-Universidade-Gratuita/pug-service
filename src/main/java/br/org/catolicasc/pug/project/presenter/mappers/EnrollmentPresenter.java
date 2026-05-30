@@ -21,8 +21,8 @@ public final class EnrollmentPresenter {
 
   private EnrollmentPresenter() {}
 
-  public static EnrollmentCreateCommand toCommand(UUID projectId, UUID studentId) {
-    return new EnrollmentCreateCommand(projectId, studentId);
+  public static EnrollmentCreateCommand toCommand(UUID projectId, UUID formerStudentId) {
+    return new EnrollmentCreateCommand(projectId, formerStudentId);
   }
 
   public static EnrollmentResponse toResponse(EnrollmentView view, Locale locale, I18n i18n) {
@@ -31,7 +31,7 @@ public final class EnrollmentPresenter {
     }
     return new EnrollmentResponse(
         view.projectId(),
-        view.studentId(),
+        view.formerStudentId(),
         createStatusResponse(view, locale, i18n),
         createInfoResponse(view, locale));
   }
@@ -48,7 +48,7 @@ public final class EnrollmentPresenter {
         new ProjectSimpleComplexSearchResponse(view.projectId(), view.projectName()),
         new StudentSimpleComplexSearchResponse(
             new AccountSimpleComplexSearchResponse(
-                view.studentId(), view.studentName(), view.studentEmail()),
+                view.formerStudentId(), view.studentName(), view.studentEmail()),
             view.academicRegistration(),
             campus),
         createStatusResponse(view, locale, i18n),

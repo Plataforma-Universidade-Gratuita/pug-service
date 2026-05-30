@@ -26,7 +26,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
       select new br.org.catolicasc.pug.project.infra.read.dtos.EnrollmentView(
         en.id.projectId,
         p.name,
-        en.id.studentId,
+        en.id.formerStudentId,
         u.name,
         a.email,
         fs.academicRegistration,
@@ -41,7 +41,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
       )
       from EnrollmentEntity en
       join ProjectEntity p on p.id = en.id.projectId
-      join FormerStudentEntity fs on fs.accountId = en.id.studentId
+      join FormerStudentEntity fs on fs.accountId = en.id.formerStudentId
       join AccountEntity a on a.id = fs.accountId
       join UserEntity u on u.id = a.userId
       """;
@@ -51,7 +51,7 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
       select count(en.id)
       from EnrollmentEntity en
       join ProjectEntity p on p.id = en.id.projectId
-      join FormerStudentEntity fs on fs.accountId = en.id.studentId
+      join FormerStudentEntity fs on fs.accountId = en.id.formerStudentId
       join AccountEntity a on a.id = fs.accountId
       join UserEntity u on u.id = a.userId
       """;
@@ -62,15 +62,16 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
   @Inject EntityManager em;
 
   @Override
-  public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID studentId) {
-    if (projectId == null || studentId == null) {
+  public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID formerStudentId) {
+    if (projectId == null || formerStudentId == null) {
       return Optional.empty();
     }
     return em.createQuery(
-            SELECT_BASE + " where en.id.projectId = :projectId and en.id.studentId = :studentId",
+            SELECT_BASE
+                + " where en.id.projectId = :projectId and en.id.formerStudentId = :formerStudentId",
             EnrollmentView.class)
         .setParameter("projectId", projectId)
-        .setParameter("studentId", studentId)
+        .setParameter("formerStudentId", formerStudentId)
         .getResultStream()
         .findFirst();
   }
@@ -95,13 +96,14 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
 
   /** {@inheritDoc} */
   @Override
-  public List<EnrollmentView> listAllByStudentId(UUID studentId) {
-    if (studentId == null) {
+  public List<EnrollmentView> listAllByFormerStudentId(UUID formerStudentId) {
+    if (formerStudentId == null) {
       return List.of();
     }
     return em.createQuery(
-            SELECT_BASE + " where en.id.studentId = :studentId" + ORDER_BY, EnrollmentView.class)
-        .setParameter("studentId", studentId)
+            SELECT_BASE + " where en.id.formerStudentId = :formerStudentId" + ORDER_BY,
+            EnrollmentView.class)
+        .setParameter("formerStudentId", formerStudentId)
         .getResultList();
   }
 
@@ -120,8 +122,8 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     if (CollectionUtils.isNotEmpty(safeCriteria.projectIds())) {
       clauses.add("en.id.projectId in :projectIds");
     }
-    if (CollectionUtils.isNotEmpty(safeCriteria.studentIds())) {
-      clauses.add("en.id.studentId in :studentIds");
+    if (CollectionUtils.isNotEmpty(safeCriteria.formerStudentIds())) {
+      clauses.add("en.id.formerStudentId in :formerStudentIds");
     }
     if (CollectionUtils.isNotEmpty(safeCriteria.statuses())) {
       clauses.add("en.status in :statuses");
@@ -166,8 +168,8 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
     if (CollectionUtils.isNotEmpty(criteria.projectIds())) {
       query.setParameter("projectIds", criteria.projectIds());
     }
-    if (CollectionUtils.isNotEmpty(criteria.studentIds())) {
-      query.setParameter("studentIds", criteria.studentIds());
+    if (CollectionUtils.isNotEmpty(criteria.formerStudentIds())) {
+      query.setParameter("formerStudentIds", criteria.formerStudentIds());
     }
     if (CollectionUtils.isNotEmpty(criteria.statuses())) {
       query.setParameter("statuses", criteria.statuses());
