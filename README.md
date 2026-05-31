@@ -134,16 +134,16 @@ The first-access flow is:
 
 ```mermaid
 sequenceDiagram
-    participant Create as Create Account Flow
-    participant Auth as Auth Module
-    participant User as End User
+    participant Creator as "Create Account Flow"
+    participant Auth as "Auth Module"
+    participant User as "End User"
 
-    Create->>Auth: create account with null password hash
+    Creator->>Auth: Create account
     User->>Auth: POST /v1/auth/login
-    Auth-->>User: token with passwordWired=false
+    Auth-->>User: JWT passwordWired=false
     User->>Auth: POST /v1/auth/wire-credentials
-    Auth->>Auth: PasswordService validates and hashes
-    Auth-->>User: credentials wired
+    Auth->>Auth: Validate and hash password
+    Auth-->>User: Credentials wired
 ```
 
 ## 📦 Module map
