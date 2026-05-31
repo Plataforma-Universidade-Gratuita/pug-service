@@ -49,7 +49,7 @@ class AccountsReadOnlyResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/identity/accounts/me - Authenticated Success")
   void getMeSuccess() throws Exception {
     Account[] account = new Account[1];

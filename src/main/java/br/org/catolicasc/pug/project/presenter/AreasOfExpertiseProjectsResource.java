@@ -62,7 +62,7 @@ public class AreasOfExpertiseProjectsResource {
   }
 
   @DELETE
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response deleteAllByAreaOfExpertise(
       @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
     writeService.deleteAllByAreaOfExpertiseId(areaOfExpertiseId);

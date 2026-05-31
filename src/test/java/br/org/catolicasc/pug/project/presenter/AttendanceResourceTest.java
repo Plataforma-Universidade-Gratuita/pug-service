@@ -163,7 +163,7 @@ class AttendanceResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   @DisplayName("POST /v1/projects/attendances - Success")
   void createSuccess() throws Exception {
     AttendanceGraph graph = createAttendanceGraph();
@@ -186,7 +186,7 @@ class AttendanceResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   @DisplayName("PATCH /v1/projects/attendances/{id}/validate - Success")
   void validateSuccess() throws Exception {
     AttendanceGraph graph = createAttendanceGraph();

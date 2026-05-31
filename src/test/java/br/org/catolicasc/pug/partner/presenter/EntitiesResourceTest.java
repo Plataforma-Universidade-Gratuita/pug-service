@@ -187,7 +187,7 @@ class EntitiesResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   @DisplayName("PUT /v1/partners/entities/{id} - Success")
   void updateSuccess() throws Exception {
     Entity[] entity = new Entity[1];
@@ -292,8 +292,8 @@ class EntitiesResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
-  @DisplayName("DELETE /v1/partners/entities/{id} - Forbidden for STAFF")
+      roles = {"PARTNER"})
+  @DisplayName("DELETE /v1/partners/entities/{id} - Forbidden for PARTNER")
   void deleteForbiddenForStaff() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())

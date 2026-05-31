@@ -61,7 +61,7 @@ class UsersReadOnlyResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/identity/users/me - Authenticated Success")
   void getMeSuccess() throws Exception {
     User[] user = new User[1];

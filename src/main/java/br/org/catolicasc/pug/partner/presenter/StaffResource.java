@@ -164,7 +164,7 @@ public class StaffResource {
    * @return an HTTP 201 Created response containing the created {@link StaffResponse}
    */
   @POST
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response create(@Valid StaffCreateRequest req) {
     Staff staff = writeService.save(StaffPresenter.toCommand(req));
     StaffView v = readService.getViewByAccountId(staff.getAccountId());
@@ -182,7 +182,7 @@ public class StaffResource {
    */
   @PUT
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid StaffUpdateRequest req) {
     Staff updated = writeService.update(id, StaffPresenter.toCommand(req));
     StaffView v = readService.getViewByAccountId(updated.getAccountId());
@@ -199,7 +199,7 @@ public class StaffResource {
    */
   @PATCH
   @Path("/{id}/status")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response updateStatus(@PathParam("id") @UuidV7 UUID id, @Valid AccountStatusRequest req) {
     writeService.updateStatus(id, req.active());
     return Response.noContent().build();

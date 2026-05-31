@@ -98,7 +98,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   void createSuccess() throws Exception {
     Account[] staffAccount = new Account[1];
     Entity[] entity = new Entity[1];
@@ -124,7 +124,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   void updateSuccess() throws Exception {
     Project[] project = new Project[1];
     doInTransaction(
@@ -172,7 +172,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   void listByCreator() throws Exception {
     Account[] creator = new Account[1];
     doInTransaction(
@@ -194,7 +194,7 @@ class ProjectResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   void listByEntity() throws Exception {
     Entity[] entity = new Entity[1];
     doInTransaction(

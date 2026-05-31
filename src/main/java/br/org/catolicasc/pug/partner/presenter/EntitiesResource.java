@@ -143,7 +143,7 @@ public class EntitiesResource {
    * @return an HTTP 201 Created response containing the created {@link EntityResponse}
    */
   @POST
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response create(@Valid EntityCreateRequest req) {
     Entity created = writeService.save(EntityPresenter.toCommand(req));
     EntityResponse body =
@@ -161,7 +161,7 @@ public class EntitiesResource {
    */
   @PUT
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid EntityUpdateRequest req) {
     Entity updated = writeService.update(id, EntityPresenter.toCommand(req));
     EntityResponse body =

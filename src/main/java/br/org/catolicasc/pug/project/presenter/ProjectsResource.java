@@ -167,7 +167,7 @@ public class ProjectsResource {
 
   /** Creates a new project and returns the canonical response payload. */
   @POST
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response create(@Valid ProjectCreateRequest req) {
     ProjectCreateCommand cmd = ProjectPresenter.toCommand(req);
     var created = writeService.save(cmd);
@@ -181,7 +181,7 @@ public class ProjectsResource {
   /** Updates a project without changing its lifecycle status. */
   @PUT
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response update(@PathParam("id") @UuidV7 UUID id, @Valid ProjectUpdateRequest req) {
     ProjectUpdateCommand cmd = ProjectPresenter.toCommand(req);
     writeService.update(id, cmd);
@@ -192,7 +192,7 @@ public class ProjectsResource {
   /** Updates only the lifecycle status of an existing project. */
   @PATCH
   @Path("/{id}/status")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response updateStatus(@PathParam("id") @UuidV7 UUID id, @NotNull ProjectStatus status) {
     writeService.transitionStatus(id, status);
     ProjectView view = readService.getViewById(id);
@@ -202,7 +202,7 @@ public class ProjectsResource {
   /** Deletes a project by identifier. */
   @DELETE
   @Path("/{id}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response delete(@PathParam("id") @UuidV7 UUID id) {
     writeService.delete(id);
     return Response.noContent().build();

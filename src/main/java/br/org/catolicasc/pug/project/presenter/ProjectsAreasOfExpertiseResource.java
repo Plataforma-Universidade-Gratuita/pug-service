@@ -59,7 +59,7 @@ public class ProjectsAreasOfExpertiseResource {
   }
 
   @POST
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response createAssociations(
       @PathParam("projectId") @UuidV7 UUID projectId, @Valid ProjectAreaOfExpertiseRequest req) {
     writeService.save(projectId, req.areaOfExpertiseIds());
@@ -68,7 +68,7 @@ public class ProjectsAreasOfExpertiseResource {
 
   @DELETE
   @Path("/{areaOfExpertiseId}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response deleteAssociation(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("areaOfExpertiseId") @UuidV7 UUID areaOfExpertiseId) {
@@ -77,7 +77,7 @@ public class ProjectsAreasOfExpertiseResource {
   }
 
   @DELETE
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response deleteAllByProject(@PathParam("projectId") @UuidV7 UUID projectId) {
     writeService.deleteAllByProjectId(projectId);
     return Response.noContent().build();

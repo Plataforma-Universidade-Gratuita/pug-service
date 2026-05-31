@@ -89,7 +89,7 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
+      roles = {"PARTNER"})
   @DisplayName("GET /v1/partners/staff/me - Success")
   void getMeSuccess() throws Exception {
     StaffGraph graph = createStaffGraph();
@@ -106,7 +106,7 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
+      roles = {"FORMER_STUDENT"})
   @DisplayName("GET /v1/partners/staff - List All")
   void listAll() throws Exception {
     createStaffGraph();
@@ -291,8 +291,8 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
-  @DisplayName("POST /v1/partners/staff - Forbidden for STUDENT")
+      roles = {"FORMER_STUDENT"})
+  @DisplayName("POST /v1/partners/staff - Forbidden for FORMER_STUDENT")
   void createForbiddenForStudent() {
     var request = aStaffCreateRequest().build();
 
@@ -308,8 +308,8 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "formerStudent",
-      roles = {"STUDENT"})
-  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for STUDENT")
+      roles = {"FORMER_STUDENT"})
+  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for FORMER_STUDENT")
   void deleteForbiddenForStudent() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())
@@ -322,8 +322,8 @@ class StaffResourceTest extends BaseResourceTest {
   @Test
   @TestSecurity(
       user = "staff",
-      roles = {"STAFF"})
-  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for STAFF")
+      roles = {"PARTNER"})
+  @DisplayName("DELETE /v1/partners/staff/{id} - Forbidden for PARTNER")
   void deleteForbiddenForStaff() {
     given()
         .pathParam("id", UuidCreator.getTimeOrderedEpoch())

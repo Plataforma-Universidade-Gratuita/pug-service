@@ -78,7 +78,7 @@ public class EnrollmentsResource {
   /** Returns a single enrollment identified by project and former-student identifiers. */
   @GET
   @Path("/{projectId}/enrollments/{formerStudentId}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response get(
       @PathParam("projectId") @UuidV7 UUID projectId,
       @PathParam("formerStudentId") @UuidV7 UUID formerStudentId) {
@@ -101,7 +101,7 @@ public class EnrollmentsResource {
   /** Lists enrollments, optionally filtering by project or former-student identifier. */
   @GET
   @Path("/enrollments")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("formerStudentId") @UuidV7 UUID formerStudentId) {
@@ -160,7 +160,7 @@ public class EnrollmentsResource {
    */
   @POST
   @Path("/enrollments/search")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   @Consumes(MediaType.APPLICATION_JSON)
   public Response search(
       @Valid EnrollmentComplexSearchRequest req,
@@ -199,7 +199,7 @@ public class EnrollmentsResource {
   /** Updates an enrollment status using the administrative transition rules. */
   @PATCH
   @Path("/{projectId}/enrollments/{formerStudentId}")
-  @RolesAllowed({"ADMIN", "STAFF"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   @Consumes(MediaType.APPLICATION_JSON)
   public Response updateStatus(
       @PathParam("projectId") @UuidV7 UUID projectId,
