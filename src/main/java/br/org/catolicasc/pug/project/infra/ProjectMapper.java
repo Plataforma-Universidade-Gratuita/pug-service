@@ -120,6 +120,8 @@ public final class ProjectMapper {
         null,
         p.getDescription(),
         p.getCreatedBy(),
+        null,
+        null,
         p.getMaxParticipants(),
         p.getOfferedHours(),
         p.getCompletedHours(),

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
@@ -31,11 +32,13 @@ class ProjectQueriesImplTest {
   private Project project;
   private Entity partnerEntity;
   private Account creator;
+  private User creatorUser;
 
   @BeforeEach
   void setup() {
     partnerEntity = factory.createEntity(factory.getAnyCity());
-    creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    creatorUser = factory.createUser();
+    creator = factory.createAccount(creatorUser, AccountType.PARTNER);
     project = factory.createProject(partnerEntity, creator);
   }
 
@@ -49,6 +52,9 @@ class ProjectQueriesImplTest {
     assertThat(view.get().id()).isEqualTo(project.getId());
     assertThat(view.get().entityId()).isEqualTo(partnerEntity.getId());
     assertThat(view.get().entityName()).isEqualTo(partnerEntity.getName());
+    assertThat(view.get().creatorId()).isEqualTo(creator.getId());
+    assertThat(view.get().creatorName()).isEqualTo(creatorUser.getName());
+    assertThat(view.get().creatorEmail()).isEqualTo(creator.getEmail().getValue());
   }
 
   @Test
@@ -97,7 +103,13 @@ class ProjectQueriesImplTest {
     var list = queries.listAllByCreatedBy(creator.getId());
 
     assertThat(list).isNotEmpty();
-    assertThat(list).allSatisfy(view -> assertThat(view.creatorId()).isEqualTo(creator.getId()));
+    assertThat(list)
+        .allSatisfy(
+            view -> {
+              assertThat(view.creatorId()).isEqualTo(creator.getId());
+              assertThat(view.creatorName()).isEqualTo(creatorUser.getName());
+              assertThat(view.creatorEmail()).isEqualTo(creator.getEmail().getValue());
+            });
   }
 
   @Test

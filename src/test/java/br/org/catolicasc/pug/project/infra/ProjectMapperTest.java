@@ -120,6 +120,8 @@ class ProjectMapperTest extends CopyableMapperTest<Project, ProjectEntity> {
     assertThat(view.entityId()).isEqualTo(entityId);
     assertThat(view.description()).isEqualTo("desc");
     assertThat(view.creatorId()).isEqualTo(creatorId);
+    assertThat(view.creatorName()).isNull();
+    assertThat(view.creatorEmail()).isNull();
     assertThat(view.maxParticipants()).isEqualTo(10);
     assertThat(view.offeredHours()).isEqualByComparingTo(new BigDecimal("40.00"));
     assertThat(view.completedHours()).isEqualByComparingTo(BigDecimal.ZERO);

@@ -56,7 +56,10 @@ class ProjectPresenterTest {
     assertThat(response.id()).isEqualTo(view.id());
     assertThat(response.entity().id()).isEqualTo(view.entityId());
     assertThat(response.entity().name()).isEqualTo(view.entityName());
-    assertThat(response.projectInfo().createdBy()).isEqualTo(view.creatorId());
+    assertThat(response.projectInfo().createdBy()).isNotNull();
+    assertThat(response.projectInfo().createdBy().id()).isEqualTo(view.creatorId());
+    assertThat(response.projectInfo().createdBy().name()).isEqualTo(view.creatorName());
+    assertThat(response.projectInfo().createdBy().email()).isEqualTo(view.creatorEmail());
     assertThat(response.status().status()).isEqualTo(ProjectStatus.PLANNED);
     assertThat(response.status().statusFormatted()).isNotBlank();
     assertThat(response.projectInfo().auditInfo()).isNotNull();
@@ -70,6 +73,8 @@ class ProjectPresenterTest {
         "Entity Name",
         "desc",
         UuidCreator.getTimeOrderedEpoch(),
+        "Creator Name",
+        "creator@example.com",
         20,
         new BigDecimal("40.00"),
         BigDecimal.ZERO,

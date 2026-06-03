@@ -18,6 +18,8 @@ import java.util.UUID;
  * @param entityName the registered name of the partner organization offering the project
  * @param description the detailed description of the project
  * @param creatorId the unique identifier of the staff account who created the project
+ * @param creatorName the display name of the staff account who created the project
+ * @param creatorEmail the email address of the staff account who created the project
  * @param maxParticipants the maximum number of formerStudents allowed to enroll
  * @param offeredHours the total counterpart hours the project offers
  * @param completedHours the total counterpart hours that have been completed to date
@@ -33,6 +35,8 @@ public record ProjectView(
     String entityName,
     String description,
     UUID creatorId,
+    String creatorName,
+    String creatorEmail,
     Integer maxParticipants,
     BigDecimal offeredHours,
     BigDecimal completedHours,
@@ -50,6 +54,8 @@ public record ProjectView(
    * @param entityName the registered name of the partner organization offering the project
    * @param description the detailed description of the project
    * @param creatorId the unique identifier of the creator account
+   * @param creatorName the display name of the creator account
+   * @param creatorEmail the email address of the creator account
    * @param maxParticipants the maximum number of formerStudents allowed to enroll
    * @param offeredHours the total counterpart hours the project offers
    * @param completedHours the total counterpart hours that have been completed to date
@@ -65,6 +71,8 @@ public record ProjectView(
       String entityName,
       String description,
       UUID creatorId,
+      String creatorName,
+      String creatorEmail,
       Integer maxParticipants,
       BigDecimal offeredHours,
       BigDecimal completedHours,
@@ -79,6 +87,8 @@ public record ProjectView(
         entityName,
         description,
         creatorId,
+        creatorName,
+        creatorEmail,
         maxParticipants,
         offeredHours,
         completedHours,

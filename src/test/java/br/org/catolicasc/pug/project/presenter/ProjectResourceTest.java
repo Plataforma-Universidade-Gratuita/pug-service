@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
+import br.org.catolicasc.pug.identity.domain.User;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
@@ -33,11 +34,14 @@ class ProjectResourceTest extends BaseResourceTest {
       roles = {"ADMIN"})
   void getByIdSuccess() throws Exception {
     Project[] project = new Project[1];
+    User[] creatorUser = new User[1];
+    Account[] creator = new Account[1];
     doInTransaction(
         () -> {
           Entity entity = factory.createEntity(factory.getAnyCity());
-          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-          project[0] = factory.createProject(entity, creator);
+          creatorUser[0] = factory.createUser();
+          creator[0] = factory.createAccount(creatorUser[0], AccountType.PARTNER);
+          project[0] = factory.createProject(entity, creator[0]);
         });
 
     given()
@@ -49,8 +53,10 @@ class ProjectResourceTest extends BaseResourceTest {
         .body("data.id", is(project[0].getId().toString()))
         .body("data.entity.id", is(project[0].getEntityId().toString()))
         .body(
-            "data.projectInfo.createdBy",
-            is(project[0].getProjectInfo().getCreatedBy().toString()));
+            "data.projectInfo.createdBy.id",
+            is(project[0].getProjectInfo().getCreatedBy().toString()))
+        .body("data.projectInfo.createdBy.name", is(creatorUser[0].getName()))
+        .body("data.projectInfo.createdBy.email", is(creator[0].getEmail().getValue()));
   }
 
   @Test

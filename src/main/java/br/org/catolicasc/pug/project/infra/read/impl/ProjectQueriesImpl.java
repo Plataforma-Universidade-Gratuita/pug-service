@@ -38,6 +38,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
         e.name,
         p.description,
         p.createdBy,
+        u.name,
+        a.email,
         p.maxParticipants,
         p.offeredHours,
         p.completedHours,
@@ -48,6 +50,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
       )
       from ProjectEntity p
       join EntityEntity e on e.id = p.entityId
+      left join AccountEntity a on a.id = p.createdBy
+      left join UserEntity u on u.id = a.userId
       """;
 
   private static final String COUNT_BASE =

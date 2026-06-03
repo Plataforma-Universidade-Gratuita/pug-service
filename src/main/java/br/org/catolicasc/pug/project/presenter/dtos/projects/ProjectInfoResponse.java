@@ -1,9 +1,9 @@
 package br.org.catolicasc.pug.project.presenter.dtos.projects;
 
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.shared.presenter.dtos.AuditInfoResponse;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 /**
  * Nested response DTO that groups the operational metadata associated with a project.
@@ -17,7 +17,7 @@ import java.util.UUID;
  * @param auditInfo the nested audit information for the project row
  */
 public record ProjectInfoResponse(
-    UUID createdBy,
+    AccountSimpleComplexSearchResponse createdBy,
     Integer maxParticipants,
     BigDecimal offeredHours,
     BigDecimal completedHours,

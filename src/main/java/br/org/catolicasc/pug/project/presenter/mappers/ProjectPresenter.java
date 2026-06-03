@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.presenter.mappers;
 
+import br.org.catolicasc.pug.identity.presenter.dtos.accounts.AccountSimpleComplexSearchResponse;
 import br.org.catolicasc.pug.partner.presenter.dtos.entities.EntitySimpleComplexSearchResponse;
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.presenter.dtos.projects.ProjectComplexSearchResponse;
@@ -123,12 +124,20 @@ public final class ProjectPresenter {
         SharedDataPresenter.createAuditInfoResponse(v.createdAt(), v.updatedAt(), locale);
 
     return new ProjectInfoResponse(
-        v.creatorId(),
+        toAccountResponse(v),
         v.maxParticipants(),
         v.offeredHours(),
         v.completedHours(),
         v.closedAt(),
         StringUtils.toStringFormatted(v.closedAt(), locale),
         auditInfo);
+  }
+
+  private static AccountSimpleComplexSearchResponse toAccountResponse(ProjectView v) {
+    if (v == null || v.creatorId() == null) {
+      return null;
+    }
+
+    return new AccountSimpleComplexSearchResponse(v.creatorId(), v.creatorName(), v.creatorEmail());
   }
 }

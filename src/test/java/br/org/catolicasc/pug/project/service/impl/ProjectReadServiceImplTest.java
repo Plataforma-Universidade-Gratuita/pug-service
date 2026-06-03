@@ -72,6 +72,8 @@ class ProjectReadServiceImplTest {
         "Entity Name",
         "desc",
         UuidCreator.getTimeOrderedEpoch(),
+        "Creator Name",
+        "creator@example.com",
         20,
         new BigDecimal("40.00"),
         BigDecimal.ZERO,

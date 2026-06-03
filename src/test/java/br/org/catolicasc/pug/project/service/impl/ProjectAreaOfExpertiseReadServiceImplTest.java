@@ -83,6 +83,8 @@ class ProjectAreaOfExpertiseReadServiceImplTest {
                     "Entity Name",
                     "desc",
                     UuidCreator.getTimeOrderedEpoch(),
+                    "Creator Name",
+                    "creator@example.com",
                     10,
                     new BigDecimal("40"),
                     BigDecimal.ZERO,
