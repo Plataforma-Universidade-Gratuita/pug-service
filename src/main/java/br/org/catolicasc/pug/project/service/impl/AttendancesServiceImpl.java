@@ -21,6 +21,7 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -109,7 +110,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     Project project = projectService.getById(cmd.projectId());
     FormerStudent formerStudent = studentService.getById(cmd.formerStudentId());
 
-    String qrHash = generateQrHash(cmd.projectId(), cmd.formerStudentId());
+    String qrHash = generateQrHash(cmd.projectId(), cmd.formerStudentId(), cmd.duration());
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), qrHash);
@@ -162,8 +163,13 @@ public class AttendancesServiceImpl implements AttendancesService {
     return getById(id);
   }
 
-  private String generateQrHash(UUID projectId, UUID formerStudentId) {
-    String raw = projectId.toString() + formerStudentId.toString() + LocalDateTime.now() + pepper;
+  private String generateQrHash(UUID projectId, UUID formerStudentId, BigDecimal duration) {
+    String raw =
+        projectId.toString()
+            + formerStudentId.toString()
+            + LocalDateTime.now()
+            + duration.toString()
+            + pepper;
     return BcryptUtil.bcryptHash(raw);
   }
 }
