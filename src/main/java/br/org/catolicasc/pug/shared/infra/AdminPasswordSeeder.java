@@ -14,15 +14,15 @@ import org.jboss.logging.Logger;
  * Startup observer that re-hashes the seeded System Administrator password so it matches the
  * current environment's pepper configuration.
  *
- * <p>The Flyway seed migration ({@code V014}) stores a BCrypt hash for the plain password {@code
- * "admin"} <em>without</em> a pepper. At runtime, however, the {@link PasswordService} appends a
- * secret pepper before hashing and verifying. Because the pepper differs per environment, a single
- * static hash in the migration can never satisfy all profiles.
+ * <p>The Flyway seed migration ({@code V015}) stores a BCrypt hash for the plain password {@code
+ * "Admin123*"} <em>without</em> a pepper. At runtime, however, the {@link PasswordService} appends
+ * a secret pepper before hashing and verifying. Because the pepper differs per environment, a
+ * single static hash in the migration can never satisfy all profiles.
  *
  * <p>This observer solves the problem by running on <strong>every</strong> non-test startup (both
  * DEV and NORMAL/production) and re-hashing the password with the currently configured pepper. The
- * update is idempotent — BCrypt always produces a different hash, but the net effect is that the
- * admin account can always be authenticated with the well-known password {@code "admin"}.
+ * update is idempotent - BCrypt always produces a different hash, but the net effect is that the
+ * admin account can always be authenticated with the well-known password {@code "Admin123*"}.
  *
  * <p><strong>Security note:</strong> In a real production deployment you should change this
  * password immediately after the first login, or disable this seeder entirely by removing it or
@@ -33,7 +33,7 @@ public class AdminPasswordSeeder {
 
   private static final Logger LOG = Logger.getLogger(AdminPasswordSeeder.class);
   private static final String ADMIN_EMAIL = "admin@pug.com";
-  private static final String ADMIN_RAW_PASSWORD = "admin";
+  private static final String ADMIN_RAW_PASSWORD = "Admin123*";
 
   @Inject PasswordService passwordService;
   @Inject EntityManager em;

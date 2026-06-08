@@ -153,9 +153,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     boolean passwordWired = passwordService.isConfigured(account.getPasswordHash());
-    String accessToken = signAccessToken(account, passwordWired);
     String rawRefreshToken = UUID.randomUUID().toString();
-    persistRefreshToken(account.getId(), rawRefreshToken);
+    RefreshTokenEntity refreshToken = persistRefreshToken(account.getId(), rawRefreshToken);
+    String accessToken = signAccessToken(account, passwordWired, refreshToken.getId());
 
     LOG.infof("Authentication successful for account %s", account.getId());
     return new TokenResponse(
@@ -203,7 +203,7 @@ public class AuthServiceImpl implements AuthService {
 
     boolean passwordWired = passwordService.isConfigured(accountEntity.getPasswordHash());
     Account account = accountService.getById(accountEntity.getId());
-    String accessToken = signAccessToken(account, passwordWired);
+    String accessToken = signAccessToken(account, passwordWired, entity.getId());
 
     LOG.infof("Access token refreshed for account %s", account.getId());
     return new TokenResponse(
@@ -260,14 +260,17 @@ public class AuthServiceImpl implements AuthService {
    * Signs a short-lived JWT access token for the given account.
    *
    * @param account the authenticated account
+   * @param isPasswordWired whether the account has already completed password setup
+   * @param refreshTokenId the persisted refresh-token row backing the current authenticated session
    * @return the signed JWT string
    */
-  private String signAccessToken(Account account, boolean isPasswordWired) {
+  private String signAccessToken(Account account, boolean isPasswordWired, UUID refreshTokenId) {
     return Jwt.upn(account.getEmail().getValue())
         .groups(Set.of(account.getAccountType().name()))
         .claim("accountId", account.getId().toString())
         .claim("userId", account.getUserId().toString())
         .claim("passwordWired", isPasswordWired)
+        .claim("refreshTokenId", refreshTokenId.toString())
         .sign();
   }
 
@@ -276,8 +279,9 @@ public class AuthServiceImpl implements AuthService {
    *
    * @param accountId the account UUID
    * @param rawToken the raw opaque refresh token string
+   * @return the persisted refresh-token entity backing the authenticated session
    */
-  private void persistRefreshToken(UUID accountId, String rawToken) {
+  private RefreshTokenEntity persistRefreshToken(UUID accountId, String rawToken) {
     AccountEntity accountRef = em.getReference(AccountEntity.class, accountId);
 
     OffsetDateTime now = OffsetDateTime.now();
@@ -292,6 +296,7 @@ public class AuthServiceImpl implements AuthService {
             .build();
 
     refreshTokenRepository.persist(entity);
+    return entity;
   }
 
   /**

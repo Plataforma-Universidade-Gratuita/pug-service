@@ -28,6 +28,32 @@ public class RefreshTokenRepositoryImpl implements PanacheRepositoryBase<Refresh
   }
 
   /**
+   * Determines whether a specific refresh-token session is still active for the given account.
+   *
+   * @param refreshTokenId the refresh-token row UUID embedded in the access token
+   * @param accountId the owning account UUID
+   * @return {@code true} when the session exists, belongs to the account, and has not expired
+   */
+  public boolean existsActiveByIdAndAccountId(UUID refreshTokenId, UUID accountId) {
+    return count(
+            "id = ?1 and account.id = ?2 and expiresAt > ?3",
+            refreshTokenId,
+            accountId,
+            OffsetDateTime.now())
+        > 0;
+  }
+
+  /**
+   * Determines whether an account still has at least one active refresh-token session.
+   *
+   * @param accountId the owning account UUID
+   * @return {@code true} when the account has at least one unexpired refresh token
+   */
+  public boolean existsActiveByAccountId(UUID accountId) {
+    return count("account.id = ?1 and expiresAt > ?2", accountId, OffsetDateTime.now()) > 0;
+  }
+
+  /**
    * Deletes a specific refresh token identified by its hash.
    *
    * @param tokenHash the SHA-256 hex digest of the raw refresh token

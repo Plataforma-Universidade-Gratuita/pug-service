@@ -167,7 +167,9 @@ class AuthServiceImplTest {
     accountEntity.setId(accId);
     accountEntity.setActive(true);
 
+    UUID sessionId = UuidCreator.getTimeOrderedEpoch();
     RefreshTokenEntity entity = mock(RefreshTokenEntity.class);
+    when(entity.getId()).thenReturn(sessionId);
     when(entity.getExpiresAt()).thenReturn(OffsetDateTime.now().plusHours(1));
     when(entity.getAccount()).thenReturn(accountEntity);
 

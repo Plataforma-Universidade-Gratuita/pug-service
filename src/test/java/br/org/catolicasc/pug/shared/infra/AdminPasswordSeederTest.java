@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.shared.infra;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
@@ -28,9 +29,9 @@ class AdminPasswordSeederTest {
 
   @BeforeEach
   void setUp() {
-    lenient().when(passwordService.hash("admin")).thenReturn("hashed-admin");
+    lenient().when(passwordService.hash("Admin123*")).thenReturn("hashed-admin");
     lenient().when(em.createNativeQuery(anyString())).thenReturn(query);
-    lenient().when(query.setParameter(anyString(), anyString())).thenReturn(query);
+    lenient().when(query.setParameter(anyString(), any())).thenReturn(query);
   }
 
   @Test
@@ -40,7 +41,7 @@ class AdminPasswordSeederTest {
 
     seeder.rehashAdminPassword();
 
-    verify(passwordService).hash("admin");
+    verify(passwordService).hash("Admin123*");
     verify(em).createNativeQuery("UPDATE accounts SET password_hash = :hash WHERE email = :email");
     verify(query).setParameter("hash", "hashed-admin");
     verify(query).setParameter("email", "admin@pug.com");

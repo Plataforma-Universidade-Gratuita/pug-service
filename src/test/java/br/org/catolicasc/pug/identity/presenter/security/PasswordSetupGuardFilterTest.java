@@ -44,6 +44,21 @@ class PasswordSetupGuardFilterTest {
   }
 
   @Test
+  @DisplayName("Should allow /me endpoints even when password is not wired")
+  void shouldAllowMeEndpoints() {
+    PasswordSetupGuardFilter filter = new PasswordSetupGuardFilter();
+    SecurityIdentity identity = mock(SecurityIdentity.class);
+    JsonWebToken jwt = mock(JsonWebToken.class);
+
+    when(identity.isAnonymous()).thenReturn(false);
+    when(identity.getPrincipal()).thenReturn(jwt);
+    when(jwt.getClaim("passwordWired")).thenReturn(false);
+    filter.identity = identity;
+
+    assertDoesNotThrow(() -> filter.filter(mockRequestContext("v1/identity/accounts/me")));
+  }
+
+  @Test
   @DisplayName("Should ignore non-JWT authenticated principals")
   void shouldIgnoreNonJwtPrincipals() {
     PasswordSetupGuardFilter filter = new PasswordSetupGuardFilter();
@@ -67,6 +82,22 @@ class PasswordSetupGuardFilterTest {
     when(identity.isAnonymous()).thenReturn(false);
     when(identity.getPrincipal()).thenReturn(jwt);
     when(jwt.getClaim("passwordWired")).thenReturn(false);
+    filter.identity = identity;
+
+    assertThrows(
+        BusinessRuleException.class, () -> filter.filter(mockRequestContext("v1/identity/users")));
+  }
+
+  @Test
+  @DisplayName("Should block protected endpoints when password claim is a string false")
+  void shouldBlockProtectedEndpointsWhenClaimIsStringFalse() {
+    PasswordSetupGuardFilter filter = new PasswordSetupGuardFilter();
+    SecurityIdentity identity = mock(SecurityIdentity.class);
+    JsonWebToken jwt = mock(JsonWebToken.class);
+
+    when(identity.isAnonymous()).thenReturn(false);
+    when(identity.getPrincipal()).thenReturn(jwt);
+    when(jwt.getClaim("passwordWired")).thenReturn("false");
     filter.identity = identity;
 
     assertThrows(

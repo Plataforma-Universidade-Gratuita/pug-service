@@ -16,8 +16,8 @@ import org.eclipse.microprofile.jwt.JsonWebToken;
  * endpoints.
  *
  * <p>Accounts provisioned without a password are temporarily allowed to authenticate so they can
- * complete the credential-onboarding flow. Until that happens, only the authentication endpoints
- * remain accessible.
+ * complete the credential-onboarding flow. Until that happens, only authentication endpoints and
+ * self-service {@code /me} endpoints remain accessible.
  */
 @Provider
 @ApplicationScoped
@@ -33,8 +33,8 @@ public class PasswordSetupGuardFilter implements ContainerRequestFilter {
       return;
     }
 
-    String path = requestContext.getUriInfo().getPath();
-    if (path != null && (path.startsWith("/v1/auth") || path.startsWith("v1/auth"))) {
+    String path = normalizePath(requestContext.getUriInfo().getPath());
+    if (isAllowedWithoutPassword(path)) {
       return;
     }
 
@@ -43,9 +43,36 @@ public class PasswordSetupGuardFilter implements ContainerRequestFilter {
       return;
     }
 
-    Object passwordWired = jwt.getClaim("passwordWired");
-    if (Boolean.FALSE.equals(passwordWired)) {
+    if (isPasswordSetupRequired(jwt.getClaim("passwordWired"))) {
       throw ExceptionHelper.accountPasswordSetupRequired();
     }
+  }
+
+  static String normalizePath(String path) {
+    if (path == null || path.isBlank()) {
+      return "";
+    }
+
+    return path.startsWith("/") ? path.substring(1) : path;
+  }
+
+  static boolean isAllowedWithoutPassword(String normalizedPath) {
+    if (normalizedPath.equals("v1/auth") || normalizedPath.startsWith("v1/auth/")) {
+      return true;
+    }
+
+    return normalizedPath.equals("me") || normalizedPath.endsWith("/me");
+  }
+
+  static boolean isPasswordSetupRequired(Object passwordWiredClaim) {
+    if (passwordWiredClaim instanceof Boolean wired) {
+      return !wired;
+    }
+
+    if (passwordWiredClaim == null) {
+      return false;
+    }
+
+    return "false".equalsIgnoreCase(String.valueOf(passwordWiredClaim));
   }
 }
