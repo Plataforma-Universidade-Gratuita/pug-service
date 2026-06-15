@@ -4,8 +4,11 @@ import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.NotAuthorizedException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -24,12 +27,15 @@ public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthoriz
   private static final Logger LOG = Logger.getLogger(NotAuthorizedExceptionMapper.class);
 
   @Inject I18n i18n;
+  @Context HttpHeaders headers;
 
   @Override
   public Response toResponse(NotAuthorizedException ex) {
     LOG.debugf(ex, "Unauthorized access attempt");
     String code = SharedErrorCodes.UNAUTHORIZED_ERROR.getCode();
-    String message = i18n.translation(SharedErrorCodes.UNAUTHORIZED_ERROR.getBundleKey());
+    String message =
+        i18n.translation(
+            SharedErrorCodes.UNAUTHORIZED_ERROR.getBundleKey(), PresenterUtils.pickLocale(headers));
 
     ApiError error = ApiError.of(code, message);
 

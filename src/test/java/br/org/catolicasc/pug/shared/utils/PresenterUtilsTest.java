@@ -28,7 +28,7 @@ class PresenterUtilsTest {
     @Test
     @DisplayName("Should return pt-BR as default when list is null")
     void shouldReturnDefaultForNull() {
-      Locale result = PresenterUtils.pickLocale(null);
+      Locale result = PresenterUtils.pickLocale((List<Locale>) null);
 
       assertThat(result.toLanguageTag()).isEqualTo("pt-BR");
     }

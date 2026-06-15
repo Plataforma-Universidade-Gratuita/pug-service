@@ -23,7 +23,7 @@ public final class TestNameGenerator {
    * @return a unique hex string
    */
   public static String uniqueSuffix() {
-    return UUID.randomUUID().toString().substring(0, 4);
+    return UUID.randomUUID().toString().replace("-", "").substring(0, 6);
   }
 
   /**
@@ -76,7 +76,7 @@ public final class TestNameGenerator {
     String lastName = SURNAMES[(int) (Math.random() * SURNAMES.length)];
     String suffix = uniqueSuffix();
 
-    return firstName + " " + lastName + " " + suffix;
+    return firstName + suffix + " " + lastName;
   }
 
   private static final String[] SCHOOL_PREFIXES = {

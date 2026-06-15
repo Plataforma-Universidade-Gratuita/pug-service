@@ -4,7 +4,10 @@ import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -23,6 +26,7 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
   private static final Logger LOG = Logger.getLogger(ResourceNotFoundExceptionMapper.class);
 
   @Inject I18n i18n;
+  @Context HttpHeaders headers;
 
   /**
    * Converts a ResourceNotFoundException into a structured HTTP 404 response.
@@ -34,7 +38,8 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
   public Response toResponse(ResourceNotFoundException ex) {
     LOG.debugf(ex, "Resource not found");
     String code = ex.getCode().getCode();
-    String message = i18n.translation(ex.getCode().getBundleKey());
+    String message =
+        i18n.translation(ex.getCode().getBundleKey(), PresenterUtils.pickLocale(headers));
 
     ApiError error = ApiError.of(code, message);
 

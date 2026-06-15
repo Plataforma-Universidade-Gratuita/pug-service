@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.shared.utils;
 
+import jakarta.ws.rs.core.HttpHeaders;
 import java.util.List;
 import java.util.Locale;
 
@@ -11,6 +12,8 @@ import java.util.Locale;
  * resolution, ensuring consistent behavior across different API endpoints.
  */
 public final class PresenterUtils {
+
+  private static final Locale DEFAULT_LOCALE = Locale.forLanguageTag("pt-BR");
 
   /** Private constructor to prevent instantiation of this utility class. */
   private PresenterUtils() {}
@@ -29,8 +32,17 @@ public final class PresenterUtils {
    *     list is empty
    */
   public static Locale pickLocale(List<Locale> acceptable) {
-    return CollectionUtils.isEmpty(acceptable)
-        ? Locale.forLanguageTag("pt-BR")
-        : acceptable.getFirst();
+    return CollectionUtils.isEmpty(acceptable) ? DEFAULT_LOCALE : acceptable.getFirst();
+  }
+
+  public static Locale pickLocale(HttpHeaders headers) {
+    if (headers == null) {
+      return DEFAULT_LOCALE;
+    }
+    try {
+      return pickLocale(headers.getAcceptableLanguages());
+    } catch (IllegalStateException ignored) {
+      return DEFAULT_LOCALE;
+    }
   }
 }

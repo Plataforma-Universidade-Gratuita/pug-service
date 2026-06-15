@@ -6,9 +6,12 @@ import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import br.org.catolicasc.pug.shared.presenter.rest.Details;
 import br.org.catolicasc.pug.shared.presenter.rest.FieldErrorsResponse;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -32,6 +35,7 @@ public class ConstraintViolationExceptionMapper
   private static final Logger LOG = Logger.getLogger(ConstraintViolationExceptionMapper.class);
 
   @Inject I18n i18n;
+  @Context HttpHeaders headers;
 
   /**
    * Converts a ConstraintViolationException into an HTTP 422 Unprocessable Entity response.
@@ -56,7 +60,9 @@ public class ConstraintViolationExceptionMapper
             .map(entry -> new FieldErrorsResponse(entry.getKey(), entry.getValue()))
             .toList();
 
-    String msg = i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey());
+    String msg =
+        i18n.translation(
+            SharedErrorCodes.VALIDATION_ERROR.getBundleKey(), PresenterUtils.pickLocale(headers));
     ApiError error =
         ApiError.of(
             SharedErrorCodes.VALIDATION_ERROR.getCode(), msg, new Details(groupedViolations));

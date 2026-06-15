@@ -4,8 +4,11 @@ import br.org.catolicasc.pug.shared.domain.enums.SharedErrorCodes;
 import br.org.catolicasc.pug.shared.i18n.I18n;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiEnvelope;
 import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
 import jakarta.persistence.PersistenceException;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -31,6 +34,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
   private static final Logger LOG = LoggerFactory.getLogger(PersistenceExceptionMapper.class);
 
   @Inject I18n i18n;
+  @Context HttpHeaders headers;
 
   /**
    * Maps a generic PersistenceException to an appropriate HTTP response.
@@ -87,7 +91,7 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
    * @return The final Response object.
    */
   private Response buildResponse(SharedErrorCodes code, Response.Status status) {
-    String msg = i18n.translation(code.getBundleKey());
+    String msg = i18n.translation(code.getBundleKey(), PresenterUtils.pickLocale(headers));
     ApiError error = ApiError.of(code.getCode(), msg);
 
     return Response.status(status)

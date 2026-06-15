@@ -9,7 +9,10 @@ import br.org.catolicasc.pug.shared.presenter.rest.ApiError;
 import br.org.catolicasc.pug.shared.presenter.rest.Details;
 import br.org.catolicasc.pug.shared.presenter.rest.FieldErrorsResponse;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
+import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
@@ -24,6 +27,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
   private static final Logger LOG = Logger.getLogger(AppValidationExceptionMapper.class);
 
   @Inject I18n i18n;
+  @Context HttpHeaders headers;
 
   /**
    * Maps AppValidationException to an HTTP 400 response with validation error details grouped by
@@ -35,6 +39,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
   @Override
   public Response toResponse(AppValidationException exception) {
     LOG.debugf(exception, "Validation error caught");
+    var locale = PresenterUtils.pickLocale(headers);
     List<FieldErrorsResponse> groupedErrors =
         CollectionUtils.toStream(exception.getFieldErrors())
             .collect(
@@ -49,7 +54,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
     ApiError apiError =
         ApiError.of(
             SharedErrorCodes.VALIDATION_ERROR.getCode(),
-            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey()),
+            i18n.translation(SharedErrorCodes.VALIDATION_ERROR.getBundleKey(), locale),
             new Details(groupedErrors));
 
     return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
@@ -63,7 +68,8 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    */
   private FieldErrorsResponse.FieldErrorDetail mapToDetail(GenericFieldErrorCodes fieldError) {
     String errorCode = fieldError.getCode();
-    String message = i18n.translation(fieldError.getBundleKey());
+    String message =
+        i18n.translation(fieldError.getBundleKey(), PresenterUtils.pickLocale(headers));
     return new FieldErrorsResponse.FieldErrorDetail(errorCode, message);
   }
 }
