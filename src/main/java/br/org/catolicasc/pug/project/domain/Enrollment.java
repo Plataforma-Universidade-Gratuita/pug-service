@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.domain;
 
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
@@ -134,6 +135,14 @@ public class Enrollment extends DomainError {
     return updated;
   }
 
+  public Enrollment changeStatus(EnrollmentStatus newStatus, Project project) {
+    Enrollment updated = changeStatus(newStatus);
+    if (shouldPauseApprovedPendingEnrollment(newStatus, project)) {
+      return updated.changeStatus(EnrollmentStatus.ON_HOLD);
+    }
+    return updated;
+  }
+
   private Enrollment buildUpdatedEnrollment(EnrollmentStatus newStatus, EnrollmentInfo newInfo) {
     return toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
   }
@@ -190,14 +199,14 @@ public class Enrollment extends DomainError {
     throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
   }
 
-  /**
-   * Evaluates whether the provided enrollment status represents a terminal (closing) state in the
-   * enrollment lifecycle.
-   *
-   * @param s the {@link EnrollmentStatus} to evaluate
-   * @return {@code true} if the status is considered closing (e.g., {@code CANCELED}, {@code
-   *     COMPLETED}, {@code EXITED}, {@code REJECTED}, {@code REMOVED}); {@code false} otherwise
-   */
+  private boolean shouldPauseApprovedPendingEnrollment(
+      EnrollmentStatus newStatus, Project project) {
+    return status == EnrollmentStatus.PENDING
+        && newStatus == EnrollmentStatus.APPROVED
+        && project != null
+        && project.getProjectStatus() == ProjectStatus.ON_HOLD;
+  }
+
   private boolean isClosingStatus(EnrollmentStatus s) {
     return s == EnrollmentStatus.REJECTED
         || s == EnrollmentStatus.EXITED
@@ -206,23 +215,6 @@ public class Enrollment extends DomainError {
         || s == EnrollmentStatus.COMPLETED;
   }
 
-  /**
-   * Evaluates constraints for the {@code Enrollment} aggregate and accumulates any validation
-   * problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Ensures the {@code identifier} is not {@code null} and bubbles up any internal errors
-   *       from {@link EnrollmentIdentifier}. If {@code identifier} is {@code null}, both {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_FORMER_STUDENT_BLANK} and {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK} are appended.
-   *   <li>Ensures the {@code status} is not {@code null} (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_STATUS_BLANK}).
-   *   <li>Ensures the {@code enrollmentInfo} is either {@code null} (no additional checks) or, if
-   *       present, bubbles up any internal errors from {@link EnrollmentInfo}.
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (identifier == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK);

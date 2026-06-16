@@ -16,7 +16,7 @@ public class AttendanceBuilder {
   private Project project = ProjectBuilder.aProject().build();
   private FormerStudent formerStudent = FormerStudentBuilder.aStudent().build();
   private final BigDecimal duration = new BigDecimal("1.00");
-  private final String hash = "hash-" + UuidCreator.getTimeOrderedEpoch();
+  private final String pepper = "pepper-" + UuidCreator.getTimeOrderedEpoch();
 
   private AttendanceBuilder() {}
 
@@ -57,6 +57,6 @@ public class AttendanceBuilder {
    * @return a configured {@link Attendance} instance
    */
   public Attendance build() {
-    return Attendance.factory(project, formerStudent, duration, hash);
+    return Attendance.factory(project, formerStudent, duration, pepper);
   }
 }

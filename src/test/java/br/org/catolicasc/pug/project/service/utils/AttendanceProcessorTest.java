@@ -24,7 +24,7 @@ class AttendanceProcessorTest {
 
     Attendance attendance =
         AttendanceProcessor.processCreateInput(
-            project, formerStudent, new BigDecimal("2.00"), "hash-test-123");
+            project, formerStudent, new BigDecimal("2.00"), "test-pepper");
 
     assertThat(attendance).isNotNull();
     assertThat(attendance.getEnrollmentIdentifier().getProjectId()).isEqualTo(project.getId());
@@ -32,7 +32,7 @@ class AttendanceProcessorTest {
         .isEqualTo(formerStudent.getAccountId());
     assertThat(attendance.getQrValidationInfo().getDuration())
         .isEqualByComparingTo(new BigDecimal("2.00"));
-    assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isEqualTo("hash-test-123");
+    assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isNotBlank();
     assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
     assertThat(attendance.hasFieldErrors()).isFalse();
   }

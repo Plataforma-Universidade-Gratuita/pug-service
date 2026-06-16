@@ -11,7 +11,9 @@ import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.quarkus.elytron.security.common.BcryptUtil;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -57,13 +59,14 @@ public class Attendance extends DomainError {
    * @param project the associated project
    * @param formerStudent the associated formerStudent
    * @param duration the duration of time the formerStudent spent on the project
-   * @param qrHash the unique hash of the QR code being registered
+   * @param pepper the application secret used to generate the QR validation hash
    * @return a newly created and self-validated {@link Attendance} instance
    */
   public static Attendance factory(
-      Project project, FormerStudent formerStudent, BigDecimal duration, String qrHash) {
+      Project project, FormerStudent formerStudent, BigDecimal duration, String pepper) {
     UUID formerStudentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
     UUID projectId = (project != null) ? project.getId() : null;
+    String qrHash = generateQrHash(projectId, formerStudentId, duration, pepper);
 
     Attendance att =
         Attendance.builder()
@@ -76,6 +79,16 @@ public class Attendance extends DomainError {
 
     att.collectValidationProblems();
     return att;
+  }
+
+  private static String generateQrHash(
+      UUID projectId, UUID formerStudentId, BigDecimal duration, String pepper) {
+    if (projectId == null || formerStudentId == null || duration == null || pepper == null) {
+      return null;
+    }
+
+    String raw = projectId.toString() + formerStudentId + LocalDateTime.now() + duration + pepper;
+    return BcryptUtil.bcryptHash(raw);
   }
 
   /**

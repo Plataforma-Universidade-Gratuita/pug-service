@@ -27,12 +27,12 @@ public final class AttendanceProcessor {
    * @param project the fully reconstituted {@link Project} aggregate
    * @param formerStudent the fully reconstituted {@link FormerStudent} aggregate
    * @param duration the duration of time the formerStudent spent on the project
-   * @param qrHash the unique cryptographic hash for the new QR code
+   * @param pepper the application secret used to generate the QR validation hash
    * @return a fully instantiated {@link Attendance} domain aggregate, potentially containing errors
    */
   public static Attendance processCreateInput(
-      Project project, FormerStudent formerStudent, BigDecimal duration, String qrHash) {
-    return Attendance.factory(project, formerStudent, duration, qrHash);
+      Project project, FormerStudent formerStudent, BigDecimal duration, String pepper) {
+    return Attendance.factory(project, formerStudent, duration, pepper);
   }
 
   /**

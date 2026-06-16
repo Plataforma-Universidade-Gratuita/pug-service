@@ -67,6 +67,18 @@ class EnrollmentTest {
     }
 
     @Test
+    @DisplayName("Should place approved pending enrollment on hold when project is on hold")
+    void shouldApproveEnrollmentAsOnHoldWhenProjectIsOnHold() {
+      Enrollment enrollment = Enrollment.factory(formerStudent, project);
+      Project onHoldProject = project.start().putOnHold();
+
+      Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED, onHoldProject);
+
+      assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.ON_HOLD);
+      assertThat(approved.getEnrollmentInfo().getAcceptedAt()).isNotNull();
+    }
+
+    @Test
     @DisplayName("Should transition from APPROVED to various closing statuses")
     void shouldCloseEnrollment() {
       Enrollment base =

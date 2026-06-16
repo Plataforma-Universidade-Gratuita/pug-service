@@ -17,12 +17,9 @@ import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
-import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
@@ -110,10 +107,8 @@ public class AttendancesServiceImpl implements AttendancesService {
     Project project = projectService.getById(cmd.projectId());
     FormerStudent formerStudent = studentService.getById(cmd.formerStudentId());
 
-    String qrHash = generateQrHash(cmd.projectId(), cmd.formerStudentId(), cmd.duration());
-
     Attendance attendance =
-        AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), qrHash);
+        AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), pepper);
 
     if (attendance.hasFieldErrors()) {
       throw new AppValidationException(attendance.getFieldErrors());
@@ -161,15 +156,5 @@ public class AttendancesServiceImpl implements AttendancesService {
 
     auditPublisher.fireUpdate(Attendance.class.getName(), id, current, validated);
     return getById(id);
-  }
-
-  private String generateQrHash(UUID projectId, UUID formerStudentId, BigDecimal duration) {
-    String raw =
-        projectId.toString()
-            + formerStudentId.toString()
-            + LocalDateTime.now()
-            + duration.toString()
-            + pepper;
-    return BcryptUtil.bcryptHash(raw);
   }
 }

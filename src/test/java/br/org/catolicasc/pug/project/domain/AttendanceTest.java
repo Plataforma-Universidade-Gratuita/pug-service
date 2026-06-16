@@ -30,10 +30,11 @@ class AttendanceTest {
     @DisplayName("Should create valid Attendance in WAITING status")
     void shouldCreateValidAttendance() {
       Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
 
       assertThat(attendance.hasFieldErrors()).isFalse();
       assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
+      assertThat(attendance.getQrValidationInfo().getQrValidationHash()).isNotBlank();
     }
 
     @Test
@@ -59,7 +60,7 @@ class AttendanceTest {
     @DisplayName("Should transition status to PRESENT or ABSENT when validated")
     void shouldValidatePresence() {
       Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       Attendance updatedPresent = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
@@ -74,7 +75,7 @@ class AttendanceTest {
     @DisplayName("Should throw BusinessRuleException for invalid status update")
     void shouldFailOnInvalidStatus() {
       Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "qr-hash-123");
+          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       assertThrows(

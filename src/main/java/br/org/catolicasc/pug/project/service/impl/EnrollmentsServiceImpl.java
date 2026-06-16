@@ -45,11 +45,11 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   public Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus status) {
     LOG.debugf("Attempting to transition Enrollment %s to status %s", identifier, status);
     Enrollment current = getByIds(identifier);
-    Enrollment updated = current.changeStatus(status);
-
-    if (shouldPauseApprovedPendingEnrollment(current, status)) {
-      updated = updated.changeStatus(EnrollmentStatus.ON_HOLD);
-    }
+    Project project =
+        current.getStatus() == EnrollmentStatus.PENDING && status == EnrollmentStatus.APPROVED
+            ? projectService.getById(current.getIdentifier().getProjectId())
+            : null;
+    Enrollment updated = current.changeStatus(status, project);
 
     if (updated.hasFieldErrors()) {
       throw new AppValidationException(updated.getFieldErrors());
@@ -59,19 +59,6 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     auditPublisher.fireUpdate(
         Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
-  }
-
-  private boolean shouldPauseApprovedPendingEnrollment(
-      Enrollment current, EnrollmentStatus targetStatus) {
-    if (current == null
-        || targetStatus != EnrollmentStatus.APPROVED
-        || current.getStatus() != EnrollmentStatus.PENDING) {
-      return false;
-    }
-
-    Project project = projectService.getById(current.getIdentifier().getProjectId());
-    return project.getProjectStatus()
-        == br.org.catolicasc.pug.project.domain.enums.ProjectStatus.ON_HOLD;
   }
 
   /** {@inheritDoc} */
@@ -207,13 +194,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
         studentService.getAreaOfExpertise(formerStudent.getAccountId());
     List<AreaOfExpertise> projectAreasOfExpertise =
         projectAreaOfExpertiseService.listByProjects(project.getId());
-
-      if (formerStudentAreaOfExpertise == null
-              || projectAreasOfExpertise.stream()
-              .map(AreaOfExpertise::getId)
-              .noneMatch(formerStudentAreaOfExpertise.getId()::equals)) {
-          throw ExceptionHelper.enrollmentAreaOfExpertiseMismatch();
-      }
+    project.validateAreaMatch(formerStudentAreaOfExpertise, projectAreasOfExpertise);
 
     if (identifier.hasFieldErrors()) {
       throw new AppValidationException(identifier.getFieldErrors());

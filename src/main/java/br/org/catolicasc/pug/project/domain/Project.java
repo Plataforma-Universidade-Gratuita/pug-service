@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.domain;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
@@ -11,6 +12,7 @@ import br.org.catolicasc.pug.shared.utils.StringUtils;
 import com.github.f4b6a3.uuid.UuidCreator;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -269,7 +271,17 @@ public class Project extends DomainError {
     }
   }
 
-  /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
+  public void validateAreaMatch(
+      AreaOfExpertise formerStudentAreaOfExpertise, List<AreaOfExpertise> projectAreasOfExpertise) {
+    if (formerStudentAreaOfExpertise == null
+        || projectAreasOfExpertise == null
+        || projectAreasOfExpertise.stream()
+            .map(AreaOfExpertise::getId)
+            .noneMatch(formerStudentAreaOfExpertise.getId()::equals)) {
+      throw new BusinessRuleException(ProjectsErrorCodes.ENROLLMENT_AREA_OF_EXPERTISE_MISMATCH);
+    }
+  }
+
   private void collectValidationProblems() {
     validateIdField(id);
     if (entityId == null) {
