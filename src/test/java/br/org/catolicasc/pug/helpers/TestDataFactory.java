@@ -32,8 +32,10 @@ import br.org.catolicasc.pug.partner.infra.persistence.impl.StaffRepositoryImpl;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertise;
 import br.org.catolicasc.pug.project.infra.persistence.impl.AttendanceRepositoryImpl;
 import br.org.catolicasc.pug.project.infra.persistence.impl.EnrollmentRepositoryImpl;
+import br.org.catolicasc.pug.project.infra.persistence.impl.ProjectAreaOfExpertiseRepositoryImpl;
 import br.org.catolicasc.pug.project.infra.persistence.impl.ProjectRepositoryImpl;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -60,6 +62,7 @@ public class TestDataFactory {
   @Inject AdminRepositoryImpl adminRepository;
   @Inject EnrollmentRepositoryImpl enrollmentRepository;
   @Inject AttendanceRepositoryImpl attendanceRepository;
+  @Inject ProjectAreaOfExpertiseRepositoryImpl projectAreaOfExpertiseRepository;
 
   public User createUser() {
     return userRepository.persist(UserBuilder.aUser().build());
@@ -131,6 +134,12 @@ public class TestDataFactory {
 
   public Enrollment createEnrollment(FormerStudent formerStudent, Project project) {
     return enrollmentRepository.persist(Enrollment.factory(formerStudent, project));
+  }
+
+  public ProjectAreaOfExpertise createProjectAreaOfExpertise(
+      Project project, AreaOfExpertise areaOfExpertise) {
+    return projectAreaOfExpertiseRepository.persist(
+        ProjectAreaOfExpertise.factory(project.getId(), areaOfExpertise.getId()));
   }
 
   public Attendance createAttendance(Project project, FormerStudent formerStudent) {

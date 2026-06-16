@@ -72,10 +72,10 @@ public class Enrollment extends DomainError {
    * Transitions the enrollment to the {@link EnrollmentStatus#APPROVED} state if valid.
    *
    * <p>If the enrollment is already approved, it returns itself. Otherwise, it checks that the
-   * current status allows for approval (i.e., it must be either {@link EnrollmentStatus#PENDING}
-   * or {@link EnrollmentStatus#ON_HOLD}) and that it is not in a closed state. If valid, it
-   * creates a new instance with the updated status and an updated {@link EnrollmentInfo} reflecting
-   * the approval timestamp. The new instance is self-validated before being returned.
+   * current status allows for approval (i.e., it must be either {@link EnrollmentStatus#PENDING} or
+   * {@link EnrollmentStatus#ON_HOLD}) and that it is not in a closed state. If valid, it creates a
+   * new instance with the updated status and an updated {@link EnrollmentInfo} reflecting the
+   * approval timestamp. The new instance is self-validated before being returned.
    *
    * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#APPROVED} state if the
    *     transition is valid; otherwise, throws a {@link BusinessRuleException}
