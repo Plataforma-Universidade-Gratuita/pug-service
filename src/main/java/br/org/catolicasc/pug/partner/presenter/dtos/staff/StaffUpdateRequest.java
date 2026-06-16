@@ -13,10 +13,10 @@ import java.util.UUID;
  * is provided, the staff member is transferred from the current partner entity to the supplied one.
  *
  * @param name the new name of the staff member, or {@code null} to leave unchanged
- * @param emailString the new email address, or {@code null} to leave unchanged
+ * @param email the new email address, or {@code null} to leave unchanged
  * @param entityId the new partner entity identifier, or {@code null} to preserve the current one
  */
 public record StaffUpdateRequest(
     @Size(max = 100) String name,
-    @Email @Size(max = 100) @JsonProperty("email") String emailString,
+    @Email @Size(max = 100) @JsonProperty("email") String email,
     UUID entityId) {}

@@ -14,8 +14,8 @@ import jakarta.validation.constraints.Size;
  *
  * @param name the new full name, or {@code null} to leave unchanged (if provided, max 150
  *     characters)
- * @param emailString the new email address string, or {@code null} to leave unchanged
+ * @param email the new email address string, or {@code null} to leave unchanged
  * @param campus the new university campus assignment, or {@code null} to leave unchanged
  */
 public record AdminUpdateRequest(
-    @Size(max = 150) String name, @JsonProperty("email") String emailString, Campi campus) {}
+    @Size(max = 150) String name, @JsonProperty("email") String email, Campi campus) {}

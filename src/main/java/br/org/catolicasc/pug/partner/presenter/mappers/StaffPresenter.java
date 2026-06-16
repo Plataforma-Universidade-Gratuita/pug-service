@@ -36,9 +36,9 @@ public final class StaffPresenter {
     if (req == null) {
       return null;
     }
-    UserCreateCommand userCmd = new UserCreateCommand(req.cpfString(), req.name());
+    UserCreateCommand userCmd = new UserCreateCommand(req.cpf(), req.name());
     AccountCreateCommand accountCmd =
-        new AccountCreateCommand(req.emailString(), AccountType.PARTNER, null, userCmd);
+        new AccountCreateCommand(req.email(), AccountType.PARTNER, null, userCmd);
     return new StaffCreateCommand(req.entityId(), accountCmd);
   }
 
@@ -53,8 +53,7 @@ public final class StaffPresenter {
       return null;
     }
     UserUpdateCommand userCmd = new UserUpdateCommand(req.name());
-    AccountUpdateCommand accountCmd =
-        new AccountUpdateCommand(req.emailString(), null, null, userCmd);
+    AccountUpdateCommand accountCmd = new AccountUpdateCommand(req.email(), null, null, userCmd);
     return new StaffUpdateCommand(accountCmd, req.entityId());
   }
 

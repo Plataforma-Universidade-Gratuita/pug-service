@@ -44,8 +44,8 @@ public final class AdminPresenter {
     if (req == null) {
       return null;
     }
-    var userCmd = new UserCreateCommand(req.cpfString(), req.name());
-    var accountCmd = new AccountCreateCommand(req.emailString(), AccountType.ADMIN, null, userCmd);
+    var userCmd = new UserCreateCommand(req.cpf(), req.name());
+    var accountCmd = new AccountCreateCommand(req.email(), AccountType.ADMIN, null, userCmd);
     return new AdminCreateCommand(accountCmd, req.campus());
   }
 
@@ -60,7 +60,7 @@ public final class AdminPresenter {
       return null;
     }
     var userCmd = new UserUpdateCommand(req.name());
-    var accountCmd = new AccountUpdateCommand(req.emailString(), null, null, userCmd);
+    var accountCmd = new AccountUpdateCommand(req.email(), null, null, userCmd);
     return new AdminUpdateCommand(accountCmd, req.campus());
   }
 
