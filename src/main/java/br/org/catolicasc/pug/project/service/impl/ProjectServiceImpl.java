@@ -57,7 +57,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     repo.update(updated);
     if (updated.getProjectStatus() == ProjectStatus.COMPLETED) {
-        propagateEnrollmentStatusChange(id, current.getProjectStatus(), updated.getProjectStatus());
+      propagateEnrollmentStatusChange(id, current.getProjectStatus(), updated.getProjectStatus());
     }
     LOG.infof("Horas adicionadas ao projeto %s. Status atual: %s", id, updated.getProjectStatus());
     return updated;

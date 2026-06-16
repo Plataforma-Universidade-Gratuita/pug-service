@@ -159,6 +159,40 @@ class EnrollmentsServiceImplTest {
   }
 
   @Test
+  @DisplayName("Should throw when creating enrollment for canceled project")
+  void saveCanceledProject() {
+    Project canceledProject = project.cancel();
+    when(projectService.getById(canceledProject.getId())).thenReturn(canceledProject);
+    when(projectAreaOfExpertiseService.listByProjects(canceledProject.getId()))
+        .thenReturn(List.of(areaOfExpertise));
+
+    EnrollmentCreateCommand cmd =
+        anEnrollmentCreateCommand()
+            .withProjectId(canceledProject.getId())
+            .withStudentId(formerStudent.getAccountId())
+            .build();
+
+    assertThrows(BusinessRuleException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @DisplayName(
+      "Should throw when creating enrollment for former student with concluded counterpart")
+  void saveFormerStudentWithConcludedCounterpart() {
+    FormerStudent concludedFormerStudent =
+        formerStudent.addCompletedHours(formerStudent.getCounterpartHours().getRequiredHours());
+    when(studentService.getById(formerStudent.getAccountId())).thenReturn(concludedFormerStudent);
+
+    EnrollmentCreateCommand cmd =
+        anEnrollmentCreateCommand()
+            .withProjectId(project.getId())
+            .withStudentId(formerStudent.getAccountId())
+            .build();
+
+    assertThrows(BusinessRuleException.class, () -> service.save(cmd));
+  }
+
+  @Test
   @Transactional
   @DisplayName("Should transition enrollment status")
   void changeStatusSuccess() {

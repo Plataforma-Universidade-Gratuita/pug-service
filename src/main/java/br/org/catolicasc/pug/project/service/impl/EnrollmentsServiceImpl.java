@@ -8,6 +8,7 @@ import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.EnrollmentRepository;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
@@ -197,6 +198,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
       formerStudent = studentService.getById(authService.getCurrentAccountId());
     }
 
+    validateEnrollmentCreationPreconditions(project, formerStudent);
+
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.factory(formerStudent.getAccountId(), project.getId());
 
@@ -217,6 +220,21 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     Enrollment saved = repo.persist(enrollment);
     auditPublisher.fireCreate(Enrollment.class.getName(), identifier.getProjectId());
     return saved;
+  }
+
+  private void validateEnrollmentCreationPreconditions(
+      Project project, FormerStudent formerStudent) {
+    if (project != null
+        && (project.getProjectStatus() == ProjectStatus.CANCELED
+            || project.getProjectStatus() == ProjectStatus.COMPLETED)) {
+      throw ExceptionHelper.enrollmentProjectUnavailable();
+    }
+
+    if (formerStudent != null
+        && formerStudent.getCounterpartHours() != null
+        && Boolean.TRUE.equals(formerStudent.getCounterpartHours().getConcluded())) {
+      throw ExceptionHelper.enrollmentFormerStudentConcluded();
+    }
   }
 
   private void validateSharedAreaOfExpertise(UUID projectId, UUID formerStudentId) {

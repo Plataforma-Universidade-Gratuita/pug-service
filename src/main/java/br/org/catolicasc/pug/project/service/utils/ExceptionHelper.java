@@ -48,6 +48,26 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that the target project no
+   * longer accepts new enrollments because it is canceled or completed.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException enrollmentProjectUnavailable() {
+    return new BusinessRuleException(ProjectsErrorCodes.ENROLLMENT_PROJECT_UNAVAILABLE);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that the former student
+   * has already concluded their counterpart hours.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException enrollmentFormerStudentConcluded() {
+    return new BusinessRuleException(ProjectsErrorCodes.ENROLLMENT_FORMER_STUDENT_CONCLUDED);
+  }
+
+  /**
    * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
    * enrollment record could not be found.
    *

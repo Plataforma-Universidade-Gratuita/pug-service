@@ -24,6 +24,12 @@ public enum ProjectsErrorCodes implements GenericCodes {
   ENROLLMENT_AREA_OF_EXPERTISE_MISMATCH(
       "error.domain.projects.enrollment.area.of.expertise.mismatch"),
 
+  /** Indicates an attempt to create an enrollment for a project that no longer accepts them. */
+  ENROLLMENT_PROJECT_UNAVAILABLE("error.domain.projects.enrollment.project.unavailable"),
+
+  /** Indicates an attempt to create an enrollment for a concluded former-student counterpart. */
+  ENROLLMENT_FORMER_STUDENT_CONCLUDED("error.domain.projects.enrollment.former.student.concluded"),
+
   /** Indicates that a requested enrollment record could not be found. */
   ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.not.found"),
 
