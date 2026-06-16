@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.academic.service.impl;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.domain.FormerStudentRepository;
 import br.org.catolicasc.pug.academic.service.CoursesService;
@@ -101,6 +102,12 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   @Override
   public boolean existsAnyByCourseId(UUID courseId) {
     return repo.existsByCourseId(courseId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AreaOfExpertise getAreaOfExpertise(UUID accountId) {
+    return repo.findAreaOfExpertise(accountId);
   }
 
   /** {@inheritDoc} */

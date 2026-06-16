@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.service;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertiseRepository;
@@ -16,6 +17,14 @@ import java.util.UUID;
  * and delegates persistence concerns to the {@link ProjectAreaOfExpertiseRepository}.
  */
 public interface ProjectAreaOfExpertiseService {
+
+  /**
+   * Lists all academic areas of expertise linked to the given project.
+   *
+   * @param projectId the project identifier
+   * @return the linked {@link AreaOfExpertise} aggregates, or an empty list when none exist
+   */
+  List<AreaOfExpertise> listByProjects(UUID projectId);
 
   /**
    * Creates new associations between a project and one or more areaOfExpertises.

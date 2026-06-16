@@ -1,8 +1,11 @@
 package br.org.catolicasc.pug.academic.infra.persistence.impl;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.domain.FormerStudentRepository;
+import br.org.catolicasc.pug.academic.infra.AreaOfExpertiseMapper;
 import br.org.catolicasc.pug.academic.infra.FormerStudentMapper;
+import br.org.catolicasc.pug.academic.infra.persistence.AreaOfExpertiseEntity;
 import br.org.catolicasc.pug.academic.infra.persistence.FormerStudentEntity;
 import br.org.catolicasc.pug.shared.utils.CollectionUtils;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -61,6 +64,32 @@ public class FormerStudentRepositoryImpl
       return false;
     }
     return count("academicRegistration", registration) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public AreaOfExpertise findAreaOfExpertise(UUID id) {
+    if (id == null) {
+      return null;
+    }
+
+    AreaOfExpertiseEntity entity =
+        getEntityManager()
+            .createQuery(
+                """
+                select area
+                from FormerStudentEntity formerStudent
+                join CourseEntity course on course.id = formerStudent.courseId
+                join AreaOfExpertiseEntity area on area.id = course.areaOfExpertiseId
+                where formerStudent.id = :id
+                """,
+                AreaOfExpertiseEntity.class)
+            .setParameter("id", id)
+            .getResultStream()
+            .findFirst()
+            .orElse(null);
+
+    return AreaOfExpertiseMapper.toDomain(entity);
   }
 
   /** {@inheritDoc} */

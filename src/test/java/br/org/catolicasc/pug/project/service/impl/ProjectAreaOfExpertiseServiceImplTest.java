@@ -51,6 +51,17 @@ class ProjectAreaOfExpertiseServiceImplTest {
   }
 
   @Test
+  @Transactional
+  @DisplayName("Should list project areas of expertise")
+  void listByProjects() {
+    service.save(project.getId(), List.of(areaOfExpertise.getId()));
+
+    List<AreaOfExpertise> linkedAreas = service.listByProjects(project.getId());
+
+    assertThat(linkedAreas).extracting(AreaOfExpertise::getId).contains(areaOfExpertise.getId());
+  }
+
+  @Test
   @DisplayName("Should return empty list for null project ID")
   void saveNullProjectId() {
     assertThat(service.save(null, List.of(UuidCreator.getTimeOrderedEpoch()))).isEmpty();

@@ -280,6 +280,14 @@ class FormerStudentsServiceImplTest {
     assertThat(service.existsAnyByCourseId(course.getId())).isTrue();
   }
 
+  @Test
+  @DisplayName("Should get former student area of expertise")
+  void getAreaOfExpertise() {
+    assertThat(service.getAreaOfExpertise(formerStudent.getAccountId())).isNotNull();
+    assertThat(service.getAreaOfExpertise(formerStudent.getAccountId()).getId())
+        .isEqualTo(course.getAreaOfExpertiseId());
+  }
+
   private FormerStudentCreateCommand createCommand(String registration) {
     return new FormerStudentCreateCommand(
         accountCreateCommand(),

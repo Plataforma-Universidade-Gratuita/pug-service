@@ -20,6 +20,7 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -32,6 +33,7 @@ import io.quarkus.test.InjectMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,14 +49,16 @@ class EnrollmentsServiceImplTest {
   @InjectMock AuthService authService;
   @InjectMock ProjectService projectService;
   @InjectMock FormerStudentsService studentService;
+  @InjectMock ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
+  private AreaOfExpertise areaOfExpertise;
   private FormerStudent formerStudent;
   private Project project;
   private Enrollment enrollment;
 
   @BeforeEach
   void setup() {
-    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
+    areaOfExpertise = factory.createAreaOfExpertise();
     Course course = factory.createCourse(areaOfExpertise);
     Account studentAccount =
         factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
@@ -69,6 +73,10 @@ class EnrollmentsServiceImplTest {
     when(authService.getCurrentAccountId()).thenReturn(formerStudent.getAccountId());
     when(projectService.getById(project.getId())).thenReturn(project);
     when(studentService.getById(formerStudent.getAccountId())).thenReturn(formerStudent);
+    when(studentService.getAreaOfExpertise(formerStudent.getAccountId()))
+        .thenReturn(areaOfExpertise);
+    when(projectAreaOfExpertiseService.listByProjects(project.getId()))
+        .thenReturn(List.of(areaOfExpertise));
   }
 
   @Test
@@ -80,6 +88,8 @@ class EnrollmentsServiceImplTest {
             factory.createEntity(factory.getAnyCity()),
             factory.createAccount(factory.createUser(), AccountType.PARTNER));
     when(projectService.getById(anotherProject.getId())).thenReturn(anotherProject);
+    when(projectAreaOfExpertiseService.listByProjects(anotherProject.getId()))
+        .thenReturn(List.of(areaOfExpertise));
 
     EnrollmentCreateCommand cmd =
         anEnrollmentCreateCommand()
@@ -105,6 +115,8 @@ class EnrollmentsServiceImplTest {
             factory.createEntity(factory.getAnyCity()),
             factory.createAccount(factory.createUser(), AccountType.PARTNER));
     when(projectService.getById(anotherProject.getId())).thenReturn(anotherProject);
+    when(projectAreaOfExpertiseService.listByProjects(anotherProject.getId()))
+        .thenReturn(List.of(areaOfExpertise));
 
     Enrollment saved = service.save(new EnrollmentCreateCommand(anotherProject.getId(), null));
 
@@ -123,6 +135,27 @@ class EnrollmentsServiceImplTest {
             .build();
 
     assertThrows(DuplicateResourceException.class, () -> service.save(cmd));
+  }
+
+  @Test
+  @DisplayName("Should throw when former student and project do not share area of expertise")
+  void saveAreaOfExpertiseMismatch() {
+    AreaOfExpertise anotherAreaOfExpertise = factory.createAreaOfExpertise();
+    Project anotherProject =
+        factory.createProject(
+            factory.createEntity(factory.getAnyCity()),
+            factory.createAccount(factory.createUser(), AccountType.PARTNER));
+    when(projectService.getById(anotherProject.getId())).thenReturn(anotherProject);
+    when(projectAreaOfExpertiseService.listByProjects(anotherProject.getId()))
+        .thenReturn(List.of(anotherAreaOfExpertise));
+
+    EnrollmentCreateCommand cmd =
+        anEnrollmentCreateCommand()
+            .withProjectId(anotherProject.getId())
+            .withStudentId(formerStudent.getAccountId())
+            .build();
+
+    assertThrows(BusinessRuleException.class, () -> service.save(cmd));
   }
 
   @Test

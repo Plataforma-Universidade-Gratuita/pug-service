@@ -20,6 +20,10 @@ public enum ProjectsErrorCodes implements GenericCodes {
   /** Indicates an attempt to create an enrollment that already exists. */
   ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.already.exists"),
 
+  /** Indicates that a former student and project do not share a linked area of expertise. */
+  ENROLLMENT_AREA_OF_EXPERTISE_MISMATCH(
+      "error.domain.projects.enrollment.area.of.expertise.mismatch"),
+
   /** Indicates that a requested enrollment record could not be found. */
   ENROLLMENT_NOT_FOUND("error.domain.projects.enrollment.not.found"),
 

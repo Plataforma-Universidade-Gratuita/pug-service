@@ -1,5 +1,8 @@
 package br.org.catolicasc.pug.project.infra.persistence.impl;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
+import br.org.catolicasc.pug.academic.infra.AreaOfExpertiseMapper;
+import br.org.catolicasc.pug.academic.infra.persistence.AreaOfExpertiseEntity;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertiseRepository;
 import br.org.catolicasc.pug.project.infra.ProjectAreaOfExpertiseMapper;
@@ -7,6 +10,7 @@ import br.org.catolicasc.pug.project.infra.persistence.ProjectAreaOfExpertiseEnt
 import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -76,6 +80,28 @@ public class ProjectAreaOfExpertiseRepositoryImpl
         .filter(Objects::nonNull)
         .map(ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId::getAreaOfExpertiseId)
         .collect(Collectors.toSet());
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public List<AreaOfExpertise> findAllAreasOfExpertiseByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return List.of();
+    }
+
+    return getEntityManager()
+        .createQuery(
+            """
+            select area
+            from ProjectAreaOfExpertiseEntity association
+            join AreaOfExpertiseEntity area on area.id = association.id.areaOfExpertiseId
+            where association.id.projectId = :projectId
+            """,
+            AreaOfExpertiseEntity.class)
+        .setParameter("projectId", projectId)
+        .getResultStream()
+        .map(AreaOfExpertiseMapper::toDomain)
+        .toList();
   }
 
   /** {@inheritDoc} */

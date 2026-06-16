@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.service.impl;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
@@ -9,6 +10,7 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
+import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
 import br.org.catolicasc.pug.project.service.utils.EnrollmentProcessor;
@@ -19,6 +21,7 @@ import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
 import org.jboss.logging.Logger;
 
@@ -35,6 +38,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   @Inject AuthService authService;
   @Inject ProjectService projectService;
   @Inject FormerStudentsService studentService;
+  @Inject ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
   @Transactional
   @Override
@@ -196,6 +200,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     EnrollmentIdentifier identifier =
         EnrollmentIdentifier.factory(formerStudent.getAccountId(), project.getId());
 
+    validateSharedAreaOfExpertise(project.getId(), formerStudent.getAccountId());
+
     if (identifier.hasFieldErrors()) {
       throw new AppValidationException(identifier.getFieldErrors());
     }
@@ -211,5 +217,19 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     Enrollment saved = repo.persist(enrollment);
     auditPublisher.fireCreate(Enrollment.class.getName(), identifier.getProjectId());
     return saved;
+  }
+
+  private void validateSharedAreaOfExpertise(UUID projectId, UUID formerStudentId) {
+    AreaOfExpertise formerStudentAreaOfExpertise =
+        studentService.getAreaOfExpertise(formerStudentId);
+    List<AreaOfExpertise> projectAreasOfExpertise =
+        projectAreaOfExpertiseService.listByProjects(projectId);
+
+    if (formerStudentAreaOfExpertise == null
+        || projectAreasOfExpertise.stream()
+            .map(AreaOfExpertise::getId)
+            .noneMatch(formerStudentAreaOfExpertise.getId()::equals)) {
+      throw ExceptionHelper.enrollmentAreaOfExpertiseMismatch();
+    }
   }
 }

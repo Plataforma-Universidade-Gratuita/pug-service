@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.project.service.impl;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertise;
 import br.org.catolicasc.pug.project.domain.ProjectAreaOfExpertiseRepository;
 import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
@@ -33,6 +34,12 @@ public class ProjectAreaOfExpertiseServiceImpl implements ProjectAreaOfExpertise
 
   @Inject AuditPublisher auditPublisher;
   @Inject ProjectAreaOfExpertiseRepository repo;
+
+  /** {@inheritDoc} */
+  @Override
+  public List<AreaOfExpertise> listByProjects(UUID projectId) {
+    return repo.findAllAreasOfExpertiseByProjectId(projectId);
+  }
 
   /** {@inheritDoc} */
   @Transactional

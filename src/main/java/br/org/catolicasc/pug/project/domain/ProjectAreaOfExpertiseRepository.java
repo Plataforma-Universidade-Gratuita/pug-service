@@ -1,5 +1,7 @@
 package br.org.catolicasc.pug.project.domain;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -60,6 +62,15 @@ public interface ProjectAreaOfExpertiseRepository {
   Set<UUID> findAllAreaOfExpertiseIdsByProjectId(UUID projectId);
 
   /**
+   * Retrieves all fully reconstituted academic areas of expertise linked to the given project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return a {@link List} of linked {@link AreaOfExpertise} aggregates, or an empty list if none
+   *     exist
+   */
+  List<AreaOfExpertise> findAllAreasOfExpertiseByProjectId(UUID projectId);
+
+  /**
    * Retrieves the identifiers of all projects associated with the given areaOfExpertise.
    *
    * <p>This method is intended for write-side orchestration (e.g., when updating or deleting a
@@ -70,7 +81,7 @@ public interface ProjectAreaOfExpertiseRepository {
    * @return a {@link Set} of project UUIDs associated with the areaOfExpertise; an empty set if
    *     {@code areaOfExpertiseId} is {@code null} or if no associations exist
    */
-  Set<java.util.UUID> findAllProjectIdsByAreaOfExpertiseId(UUID areaOfExpertiseId);
+  Set<UUID> findAllProjectIdsByAreaOfExpertiseId(UUID areaOfExpertiseId);
 
   /**
    * Persists a newly created {@link ProjectAreaOfExpertise} association into the repository.

@@ -38,6 +38,16 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that the former student
+   * and project do not share a linked area of expertise.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException enrollmentAreaOfExpertiseMismatch() {
+    return new BusinessRuleException(ProjectsErrorCodes.ENROLLMENT_AREA_OF_EXPERTISE_MISMATCH);
+  }
+
+  /**
    * Instantiates a standardized {@link ResourceNotFoundException} indicating that a requested
    * enrollment record could not be found.
    *

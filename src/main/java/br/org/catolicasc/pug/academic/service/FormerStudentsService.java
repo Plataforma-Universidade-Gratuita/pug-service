@@ -1,5 +1,6 @@
 package br.org.catolicasc.pug.academic.service;
 
+import br.org.catolicasc.pug.academic.domain.AreaOfExpertise;
 import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.service.dtos.formerstudents.FormerStudentCreateCommand;
@@ -60,6 +61,14 @@ public interface FormerStudentsService {
    *     otherwise
    */
   boolean existsAnyByCourseId(UUID courseId);
+
+  /**
+   * Retrieves the academic area of expertise linked to a former student.
+   *
+   * @param accountId the former student's linked account identifier
+   * @return the resolved {@link AreaOfExpertise}, or {@code null} when no linkage exists
+   */
+  AreaOfExpertise getAreaOfExpertise(UUID accountId);
 
   /**
    * Retrieves a full {@link FormerStudent} domain aggregate by its linked account identifier.

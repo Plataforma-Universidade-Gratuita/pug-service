@@ -52,6 +52,17 @@ public interface FormerStudentRepository {
   boolean existsByRegistration(String registration);
 
   /**
+   * Resolves the academic area of expertise linked to the specified former student.
+   *
+   * <p>This query is intended for write-side orchestration where only the student's resolved area
+   * linkage is needed, without reconstituting the full course aggregate.
+   *
+   * @param id the unique identifier (UUID) of the former student's linked account
+   * @return the linked {@link AreaOfExpertise}, or {@code null} if no linkage exists
+   */
+  AreaOfExpertise findAreaOfExpertise(UUID id);
+
+  /**
    * Retrieves a {@link FormerStudent} by their linked account identifier.
    *
    * <p>When a formerStudent is reconstituted from the persistence layer, it might contain
