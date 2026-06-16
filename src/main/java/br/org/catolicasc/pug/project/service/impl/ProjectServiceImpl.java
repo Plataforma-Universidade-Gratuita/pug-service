@@ -158,7 +158,11 @@ public class ProjectServiceImpl implements ProjectService {
     Project updated;
 
     switch (status) {
-      case IN_PROGRESS -> updated = project.start();
+      case IN_PROGRESS ->
+          updated =
+              project.getProjectStatus() == ProjectStatus.ON_HOLD
+                  ? project.retake()
+                  : project.start();
       case COMPLETED -> updated = project.complete();
       case CANCELED -> updated = project.cancel();
       case ON_HOLD -> updated = project.putOnHold();

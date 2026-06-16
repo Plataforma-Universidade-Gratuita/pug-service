@@ -205,6 +205,19 @@ class ProjectServiceImplTest {
 
   @Test
   @Transactional
+  @DisplayName("Should retake project from ON_HOLD to IN_PROGRESS")
+  void transitionToInProgressFromOnHold() {
+    Project project = factory.createProject(partnerEntity, creator);
+    Project started = service.transitionStatus(project.getId(), ProjectStatus.IN_PROGRESS);
+    Project onHold = service.transitionStatus(started.getId(), ProjectStatus.ON_HOLD);
+
+    Project retaken = service.transitionStatus(onHold.getId(), ProjectStatus.IN_PROGRESS);
+
+    assertThat(retaken.getProjectStatus()).isEqualTo(ProjectStatus.IN_PROGRESS);
+  }
+
+  @Test
+  @Transactional
   @DisplayName("Should add completed hours")
   void addCompletedHours() {
     Project project = factory.createProject(partnerEntity, creator);
