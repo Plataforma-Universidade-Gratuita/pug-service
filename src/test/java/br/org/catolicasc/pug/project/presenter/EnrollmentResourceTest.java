@@ -396,9 +396,7 @@ class EnrollmentResourceTest extends BaseResourceTest {
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
           Enrollment enr =
-              factory
-                  .createEnrollment(formerStudent, project[0])
-                  .changeStatus(EnrollmentStatus.APPROVED);
+              factory.createEnrollment(formerStudent, project[0]).approve();
           em.merge(EnrollmentMapper.toEntity(enr));
         });
 
@@ -511,6 +509,6 @@ class EnrollmentResourceTest extends BaseResourceTest {
     Entity entity = factory.createEntity(factory.getAnyCity());
     Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     Project project = factory.createProject(entity, creator);
-    return factory.createEnrollment(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
+    return factory.createEnrollment(formerStudent, project).approve();
   }
 }

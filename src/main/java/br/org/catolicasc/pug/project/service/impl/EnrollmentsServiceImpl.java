@@ -31,7 +31,6 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentsServiceImpl.class);
 
-  /** {@inheritDoc} */
   @Inject AuditPublisher auditPublisher;
 
   @Inject EnrollmentRepository repo;
@@ -40,16 +39,13 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   @Inject FormerStudentsService studentService;
   @Inject ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
+  /** {@inheritDoc} */
   @Transactional
   @Override
   public Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus status) {
     LOG.debugf("Attempting to transition Enrollment %s to status %s", identifier, status);
     Enrollment current = getByIds(identifier);
-    Project project =
-        current.getStatus() == EnrollmentStatus.PENDING && status == EnrollmentStatus.APPROVED
-            ? projectService.getById(current.getIdentifier().getProjectId())
-            : null;
-    Enrollment updated = current.changeStatus(status, project);
+    Enrollment updated = transitionEnrollment(current, status);
 
     if (updated.hasFieldErrors()) {
       throw new AppValidationException(updated.getFieldErrors());
@@ -59,6 +55,31 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     auditPublisher.fireUpdate(
         Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
+  }
+
+  private Enrollment transitionEnrollment(Enrollment enrollment, EnrollmentStatus status) {
+    if (status == null) {
+      throw new NullPointerException("status");
+    }
+
+    return switch (status) {
+      case PENDING -> enrollment;
+      case APPROVED -> approveEnrollment(enrollment);
+      case ON_HOLD -> enrollment.putOnHold();
+      case REJECTED -> enrollment.reject();
+      case CANCELED -> enrollment.cancel();
+      case COMPLETED -> enrollment.complete();
+      case EXITED -> enrollment.exit();
+      case REMOVED -> enrollment.remove();
+    };
+  }
+
+  private Enrollment approveEnrollment(Enrollment enrollment) {
+    Project project =
+        enrollment.getStatus() == EnrollmentStatus.PENDING
+            ? projectService.getById(enrollment.getIdentifier().getProjectId())
+            : null;
+    return enrollment.approve(project);
   }
 
   /** {@inheritDoc} */

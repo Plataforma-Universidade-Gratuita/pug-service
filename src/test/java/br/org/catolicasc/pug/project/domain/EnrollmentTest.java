@@ -50,17 +50,17 @@ class EnrollmentTest {
   class BehaviorTests {
 
     @Test
-    @DisplayName("Should be idempotent when status is the same")
-    void shouldBeIdempotent() {
-      Enrollment enrollment = Enrollment.factory(formerStudent, project);
-      assertThat(enrollment.changeStatus(EnrollmentStatus.PENDING)).isEqualTo(enrollment);
+    @DisplayName("Should be idempotent when approving an approved enrollment")
+    void shouldKeepApprovedEnrollmentAsIs() {
+      Enrollment enrollment = Enrollment.factory(formerStudent, project).approve();
+      assertThat(enrollment.approve()).isEqualTo(enrollment);
     }
 
     @Test
     @DisplayName("Should transition from PENDING to APPROVED successfully")
     void shouldApproveEnrollment() {
       Enrollment enrollment = Enrollment.factory(formerStudent, project);
-      Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED);
+      Enrollment approved = enrollment.approve();
 
       assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
       assertThat(approved.getEnrollmentInfo().getAcceptedAt()).isNotNull();
@@ -72,7 +72,7 @@ class EnrollmentTest {
       Enrollment enrollment = Enrollment.factory(formerStudent, project);
       Project onHoldProject = project.start().putOnHold();
 
-      Enrollment approved = enrollment.changeStatus(EnrollmentStatus.APPROVED, onHoldProject);
+      Enrollment approved = enrollment.approve(onHoldProject);
 
       assertThat(approved.getStatus()).isEqualTo(EnrollmentStatus.ON_HOLD);
       assertThat(approved.getEnrollmentInfo().getAcceptedAt()).isNotNull();
@@ -81,21 +81,22 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should transition from APPROVED to various closing statuses")
     void shouldCloseEnrollment() {
-      Enrollment base =
-          Enrollment.factory(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
+      Enrollment base = Enrollment.factory(formerStudent, project).approve();
 
-      for (EnrollmentStatus status :
-          new EnrollmentStatus[] {
-            EnrollmentStatus.COMPLETED,
-            EnrollmentStatus.CANCELED,
-            EnrollmentStatus.EXITED,
-            EnrollmentStatus.REJECTED,
-            EnrollmentStatus.REMOVED
-          }) {
-        Enrollment closed = base.changeStatus(status);
-        assertThat(closed.getStatus()).isEqualTo(status);
-        assertThat(closed.getEnrollmentInfo().getClosingStatusAt()).isNotNull();
-      }
+      assertThat(base.complete().getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+      assertThat(base.complete().getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+
+      assertThat(base.cancel().getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
+      assertThat(base.cancel().getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+
+      assertThat(base.exit().getStatus()).isEqualTo(EnrollmentStatus.EXITED);
+      assertThat(base.exit().getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+
+      assertThat(base.reject().getStatus()).isEqualTo(EnrollmentStatus.REJECTED);
+      assertThat(base.reject().getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+
+      assertThat(base.remove().getStatus()).isEqualTo(EnrollmentStatus.REMOVED);
+      assertThat(base.remove().getEnrollmentInfo().getClosingStatusAt()).isNotNull();
     }
 
     @Test
@@ -103,7 +104,7 @@ class EnrollmentTest {
     void shouldCancelPendingEnrollment() {
       Enrollment pending = Enrollment.factory(formerStudent, project);
 
-      Enrollment canceled = pending.changeStatus(EnrollmentStatus.CANCELED);
+      Enrollment canceled = pending.cancel();
 
       assertThat(canceled.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
       assertThat(canceled.getEnrollmentInfo().getClosingStatusAt()).isNotNull();
@@ -112,11 +113,10 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should transition from APPROVED to ON_HOLD and then back to APPROVED")
     void shouldPauseAndResumeEnrollment() {
-      Enrollment approved =
-          Enrollment.factory(formerStudent, project).changeStatus(EnrollmentStatus.APPROVED);
+      Enrollment approved = Enrollment.factory(formerStudent, project).approve();
 
-      Enrollment onHold = approved.changeStatus(EnrollmentStatus.ON_HOLD);
-      Enrollment resumed = onHold.changeStatus(EnrollmentStatus.APPROVED);
+      Enrollment onHold = approved.putOnHold();
+      Enrollment resumed = onHold.approve();
 
       assertThat(onHold.getStatus()).isEqualTo(EnrollmentStatus.ON_HOLD);
       assertThat(onHold.getEnrollmentInfo().getAcceptedAt())
@@ -129,13 +129,9 @@ class EnrollmentTest {
     @Test
     @DisplayName("Should fail when transitioning from closed state")
     void shouldFailFromClosed() {
-      Enrollment completed =
-          Enrollment.factory(formerStudent, project)
-              .changeStatus(EnrollmentStatus.APPROVED)
-              .changeStatus(EnrollmentStatus.COMPLETED);
+      Enrollment completed = Enrollment.factory(formerStudent, project).approve().complete();
 
-      Assertions.assertThrows(
-          BusinessRuleException.class, () -> completed.changeStatus(EnrollmentStatus.APPROVED));
+      Assertions.assertThrows(BusinessRuleException.class, completed::approve);
     }
 
     @Test
@@ -143,15 +139,8 @@ class EnrollmentTest {
     void shouldFailInvalidTransitions() {
       Enrollment pending = Enrollment.factory(formerStudent, project);
 
-      Assertions.assertThrows(
-          BusinessRuleException.class, () -> pending.changeStatus(EnrollmentStatus.COMPLETED));
-
-      Enrollment approved = pending.changeStatus(EnrollmentStatus.APPROVED);
-
-      Assertions.assertThrows(
-          BusinessRuleException.class, () -> approved.changeStatus(EnrollmentStatus.PENDING));
-
-      Assertions.assertThrows(NullPointerException.class, () -> approved.changeStatus(null));
+      Assertions.assertThrows(BusinessRuleException.class, pending::complete);
+      Assertions.assertThrows(BusinessRuleException.class, pending::putOnHold);
     }
   }
 }

@@ -10,7 +10,6 @@ import br.org.catolicasc.pug.project.domain.vos.EnrollmentInfo;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -70,117 +69,166 @@ public class Enrollment extends DomainError {
   }
 
   /**
-   * Transitions the enrollment to a new lifecycle status, updating tracking timestamps accordingly.
+   * Transitions the enrollment to the {@link EnrollmentStatus#APPROVED} state if valid.
    *
-   * <p>Business rules applied:
+   * <p>If the enrollment is already approved, it returns itself. Otherwise, it checks that the
+   * current status allows for approval (i.e., it must be either {@link EnrollmentStatus#PENDING}
+   * or {@link EnrollmentStatus#ON_HOLD}) and that it is not in a closed state. If valid, it
+   * creates a new instance with the updated status and an updated {@link EnrollmentInfo} reflecting
+   * the approval timestamp. The new instance is self-validated before being returned.
    *
-   * <ul>
-   *   <li>If the requested {@code newStatus} is equal to the current {@code status}, this method is
-   *       idempotent and returns {@code this} without changes.
-   *   <li>If the current {@code status} is already a closing state (see {@link
-   *       #isClosingStatus(EnrollmentStatus)}), no further transitions are allowed and a {@link
-   *       BusinessRuleException} is thrown with {@link
-   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
-   *   <li>A transition to {@link EnrollmentStatus#APPROVED} is only allowed when the current {@code
-   *       status} is {@link EnrollmentStatus#PENDING} or {@link EnrollmentStatus#ON_HOLD}. When
-   *       moving from {@code PENDING}, {@link EnrollmentInfo#accept()} is applied, stamping {@code
-   *       acceptedAt}. When moving from {@code ON_HOLD}, the existing acceptance timestamp is
-   *       preserved and only the audit metadata is refreshed through {@link
-   *       EnrollmentInfo#update()}.
-   *   <li>A transition to {@link EnrollmentStatus#ON_HOLD} is only allowed when the current {@code
-   *       status} is {@link EnrollmentStatus#APPROVED}. On success, {@link EnrollmentInfo#update()}
-   *       is applied so the enrollment keeps its lifecycle timestamps while still tracking the
-   *       state change.
-   *   <li>A transition to {@link EnrollmentStatus#CANCELED} is allowed when the current {@code
-   *       status} is {@link EnrollmentStatus#PENDING}, {@link EnrollmentStatus#APPROVED}, or {@link
-   *       EnrollmentStatus#ON_HOLD}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
-   *       stamping {@code closingStatusAt}.
-   *   <li>Transitions to the remaining closing statuses (i.e., {@link EnrollmentStatus#COMPLETED},
-   *       {@link EnrollmentStatus#EXITED}, {@link EnrollmentStatus#REMOVED}) are only allowed when
-   *       the current {@code status} is {@link EnrollmentStatus#APPROVED} or {@link
-   *       EnrollmentStatus#ON_HOLD}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
-   *       stamping {@code closingStatusAt}.
-   *   <li>A transition to {@link EnrollmentStatus#REJECTED} is allowed from both {@link
-   *       EnrollmentStatus#PENDING} and {@link EnrollmentStatus#APPROVED}. On success, {@link
-   *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
-   *   <li>All other transitions (for example, attempting to go from {@code PENDING} directly to a
-   *       closing status, or attempting to revert from a closing status back to {@code PENDING} or
-   *       {@code APPROVED}) are rejected with a {@link BusinessRuleException} using {@link
-   *       ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE}.
-   * </ul>
-   *
-   * @param newStatus the target {@link EnrollmentStatus} to transition to (must not be {@code null}
-   *     for a valid transition)
-   * @return a new {@link Enrollment} instance reflecting the updated status and lifecycle metadata,
-   *     or {@code this} if the status is unchanged
-   * @throws BusinessRuleException if the requested transition violates the enrollment lifecycle
-   *     rules and {@link ProjectsErrorCodes#INVALID_ENROLLMENT_STATUS_UPDATE} is raised
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#APPROVED} state if the
+   *     transition is valid; otherwise, throws a {@link BusinessRuleException}
    */
-  public Enrollment changeStatus(EnrollmentStatus newStatus) {
-    if (status == newStatus) {
+  public Enrollment approve() {
+    if (status == EnrollmentStatus.APPROVED) {
       return this;
     }
 
-    if (isClosingStatus(status)) {
-      throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-    }
-
-    EnrollmentInfo newInfo = resolveNextEnrollmentInfo(Objects.requireNonNull(newStatus));
-
-    Enrollment updated = buildUpdatedEnrollment(newStatus, newInfo);
-    updated.collectValidationProblems();
-    return updated;
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.ON_HOLD);
+    EnrollmentInfo newInfo =
+        status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
+    return buildUpdatedEnrollment(EnrollmentStatus.APPROVED, newInfo);
   }
 
-  public Enrollment changeStatus(EnrollmentStatus newStatus, Project project) {
-    Enrollment updated = changeStatus(newStatus);
-    if (shouldPauseApprovedPendingEnrollment(newStatus, project)) {
-      return updated.changeStatus(EnrollmentStatus.ON_HOLD);
+  /**
+   * Approves the enrollment and immediately places it on hold when the linked project is on hold.
+   *
+   * <p>This preserves the enrollment lifecycle rule while also honoring the project lifecycle
+   * context passed by the application service. If the current enrollment is pending and the project
+   * is currently {@link ProjectStatus#ON_HOLD}, the returned enrollment ends in {@link
+   * EnrollmentStatus#ON_HOLD}; otherwise it ends in {@link EnrollmentStatus#APPROVED}.
+   *
+   * @param project the linked {@link Project} whose current status influences the result
+   * @return a new {@link Enrollment} instance reflecting the resulting lifecycle state
+   */
+  public Enrollment approve(Project project) {
+    Enrollment approved = approve();
+    if (status == EnrollmentStatus.PENDING && isProjectOnHold(project)) {
+      return approved.putOnHold();
     }
-    return updated;
+    return approved;
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#ON_HOLD}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#APPROVED}. The acceptance
+   * timestamp is preserved while the audit metadata is refreshed.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#ON_HOLD} state
+   */
+  public Enrollment putOnHold() {
+    if (status == EnrollmentStatus.ON_HOLD) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED);
+    return buildUpdatedEnrollment(EnrollmentStatus.ON_HOLD, enrollmentInfo.update());
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#REJECTED}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#PENDING} or {@link
+   * EnrollmentStatus#APPROVED}. On success, the enrollment is closed and its closing timestamp is
+   * recorded.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#REJECTED} state
+   */
+  public Enrollment reject() {
+    if (status == EnrollmentStatus.REJECTED) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED);
+    return buildUpdatedEnrollment(EnrollmentStatus.REJECTED, enrollmentInfo.closeStatus());
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#CANCELED}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#PENDING}, {@link
+   * EnrollmentStatus#APPROVED}, or {@link EnrollmentStatus#ON_HOLD}. On success, the enrollment is
+   * closed and its closing timestamp is recorded.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#CANCELED} state
+   */
+  public Enrollment cancel() {
+    if (status == EnrollmentStatus.CANCELED) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(
+        EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+    return buildUpdatedEnrollment(EnrollmentStatus.CANCELED, enrollmentInfo.closeStatus());
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#COMPLETED}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#APPROVED} or {@link
+   * EnrollmentStatus#ON_HOLD}. On success, the enrollment is closed and its closing timestamp is
+   * recorded.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#COMPLETED} state
+   */
+  public Enrollment complete() {
+    if (status == EnrollmentStatus.COMPLETED) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+    return buildUpdatedEnrollment(EnrollmentStatus.COMPLETED, enrollmentInfo.closeStatus());
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#EXITED}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#APPROVED} or {@link
+   * EnrollmentStatus#ON_HOLD}. On success, the enrollment is closed and its closing timestamp is
+   * recorded.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#EXITED} state
+   */
+  public Enrollment exit() {
+    if (status == EnrollmentStatus.EXITED) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+    return buildUpdatedEnrollment(EnrollmentStatus.EXITED, enrollmentInfo.closeStatus());
+  }
+
+  /**
+   * Transitions the enrollment to {@link EnrollmentStatus#REMOVED}.
+   *
+   * <p>This transition is only valid from {@link EnrollmentStatus#APPROVED} or {@link
+   * EnrollmentStatus#ON_HOLD}. On success, the enrollment is closed and its closing timestamp is
+   * recorded.
+   *
+   * @return a new {@link Enrollment} instance in {@link EnrollmentStatus#REMOVED} state
+   */
+  public Enrollment remove() {
+    if (status == EnrollmentStatus.REMOVED) {
+      return this;
+    }
+
+    ensureNotClosed();
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+    return buildUpdatedEnrollment(EnrollmentStatus.REMOVED, enrollmentInfo.closeStatus());
   }
 
   private Enrollment buildUpdatedEnrollment(EnrollmentStatus newStatus, EnrollmentInfo newInfo) {
-    return toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
-  }
-
-  private EnrollmentInfo resolveNextEnrollmentInfo(EnrollmentStatus newStatus) {
-    return switch (newStatus) {
-      case APPROVED -> resolveApprovedInfo();
-      case ON_HOLD -> resolveOnHoldInfo();
-      case REJECTED -> resolveRejectedInfo();
-      default -> resolveClosingInfo(newStatus);
-    };
-  }
-
-  private EnrollmentInfo resolveApprovedInfo() {
-    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.ON_HOLD);
-    return status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
-  }
-
-  private EnrollmentInfo resolveOnHoldInfo() {
-    ensureCurrentStatusIs(EnrollmentStatus.APPROVED);
-    return enrollmentInfo.update();
-  }
-
-  private EnrollmentInfo resolveRejectedInfo() {
-    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED);
-    return enrollmentInfo.closeStatus();
-  }
-
-  private EnrollmentInfo resolveClosingInfo(EnrollmentStatus newStatus) {
-    if (!isClosingStatus(newStatus)) {
-      throwInvalidStatusTransition();
-    }
-
-    if (newStatus == EnrollmentStatus.CANCELED) {
-      ensureCurrentStatusIs(
-          EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
-      return enrollmentInfo.closeStatus();
-    }
-
-    ensureCurrentStatusIs(EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
-    return enrollmentInfo.closeStatus();
+    Enrollment updated = toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
+    updated.collectValidationProblems();
+    return updated;
   }
 
   private void ensureCurrentStatusIs(EnrollmentStatus... allowedStatuses) {
@@ -196,12 +244,14 @@ public class Enrollment extends DomainError {
     throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
   }
 
-  private boolean shouldPauseApprovedPendingEnrollment(
-      EnrollmentStatus newStatus, Project project) {
-    return status == EnrollmentStatus.PENDING
-        && newStatus == EnrollmentStatus.APPROVED
-        && project != null
-        && project.getProjectStatus() == ProjectStatus.ON_HOLD;
+  private void ensureNotClosed() {
+    if (isClosingStatus(status)) {
+      throwInvalidStatusTransition();
+    }
+  }
+
+  private boolean isProjectOnHold(Project project) {
+    return project != null && project.getProjectStatus() == ProjectStatus.ON_HOLD;
   }
 
   private boolean isClosingStatus(EnrollmentStatus s) {
