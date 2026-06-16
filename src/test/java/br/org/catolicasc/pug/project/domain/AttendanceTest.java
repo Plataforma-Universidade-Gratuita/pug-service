@@ -21,6 +21,7 @@ class AttendanceTest {
 
   private final Project project = ProjectBuilder.aProject().build();
   private final FormerStudent formerStudent = FormerStudentBuilder.aStudent().build();
+  private final Enrollment enrollment = Enrollment.factory(formerStudent, project).approve();
 
   @Nested
   @DisplayName("Factory and Validation")
@@ -29,8 +30,7 @@ class AttendanceTest {
     @Test
     @DisplayName("Should create valid Attendance in WAITING status")
     void shouldCreateValidAttendance() {
-      Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
+      Attendance attendance = Attendance.factory(enrollment, new BigDecimal("1.5"), "test-pepper");
 
       assertThat(attendance.hasFieldErrors()).isFalse();
       assertThat(attendance.getStatus()).isEqualTo(AttendanceStatus.WAITING);
@@ -40,7 +40,7 @@ class AttendanceTest {
     @Test
     @DisplayName("Should collect errors for missing fields")
     void shouldCollectErrors() {
-      Attendance attendance = Attendance.factory(null, null, null, " ");
+      Attendance attendance = Attendance.factory(null, null, " ");
 
       assertThat(attendance.hasFieldErrors()).isTrue();
       assertThat(attendance.getFieldErrors())
@@ -59,8 +59,7 @@ class AttendanceTest {
     @Test
     @DisplayName("Should transition status to PRESENT or ABSENT when validated")
     void shouldValidatePresence() {
-      Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
+      Attendance attendance = Attendance.factory(enrollment, new BigDecimal("1.5"), "test-pepper");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       Attendance updatedPresent = attendance.validatePresence(staffId, AttendanceStatus.PRESENT);
@@ -74,8 +73,7 @@ class AttendanceTest {
     @Test
     @DisplayName("Should throw BusinessRuleException for invalid status update")
     void shouldFailOnInvalidStatus() {
-      Attendance attendance =
-          Attendance.factory(project, formerStudent, new BigDecimal("1.5"), "test-pepper");
+      Attendance attendance = Attendance.factory(enrollment, new BigDecimal("1.5"), "test-pepper");
       UUID staffId = UuidCreator.getTimeOrderedEpoch();
 
       assertThrows(

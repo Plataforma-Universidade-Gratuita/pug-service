@@ -225,6 +225,20 @@ public class Enrollment extends DomainError {
     return buildUpdatedEnrollment(EnrollmentStatus.REMOVED, enrollmentInfo.closeStatus());
   }
 
+  /**
+   * Validates whether this enrollment is eligible to receive new attendance records.
+   *
+   * <p>Attendances may only be registered for enrollments currently in the {@link
+   * EnrollmentStatus#APPROVED} state.
+   *
+   * @throws BusinessRuleException if the enrollment is not approved
+   */
+  public void validateCanCreateAttendance() {
+    if (status != EnrollmentStatus.APPROVED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_ENROLLMENT_NOT_APPROVED);
+    }
+  }
+
   private Enrollment buildUpdatedEnrollment(EnrollmentStatus newStatus, EnrollmentInfo newInfo) {
     Enrollment updated = toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
     updated.collectValidationProblems();

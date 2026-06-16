@@ -27,6 +27,26 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an attendance cannot
+   * be created because the referenced enrollment does not exist.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException attendanceEnrollmentNotFound() {
+    return new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_ENROLLMENT_NOT_FOUND);
+  }
+
+  /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an attendance cannot
+   * be created because the referenced enrollment is not approved.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException attendanceEnrollmentNotApproved() {
+    return new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_ENROLLMENT_NOT_APPROVED);
+  }
+
+  /**
    * Instantiates a standardized {@link DuplicateResourceException} indicating that an enrollment
    * record already exists.
    *

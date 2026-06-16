@@ -6,6 +6,7 @@ import br.org.catolicasc.pug.helpers.builders.domain.AttendanceBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.FormerStudentBuilder;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
@@ -21,10 +22,10 @@ class AttendanceProcessorTest {
   void processCreateInputValid() {
     var project = ProjectBuilder.aProject().build();
     var formerStudent = FormerStudentBuilder.aStudent().build();
+    Enrollment enrollment = Enrollment.factory(formerStudent, project).approve();
 
     Attendance attendance =
-        AttendanceProcessor.processCreateInput(
-            project, formerStudent, new BigDecimal("2.00"), "test-pepper");
+        AttendanceProcessor.processCreateInput(enrollment, new BigDecimal("2.00"), "test-pepper");
 
     assertThat(attendance).isNotNull();
     assertThat(attendance.getEnrollmentIdentifier().getProjectId()).isEqualTo(project.getId());

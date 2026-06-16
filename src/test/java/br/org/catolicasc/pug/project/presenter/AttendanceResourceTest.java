@@ -53,7 +53,7 @@ class AttendanceResourceTest extends BaseResourceTest {
           Entity entity = factory.createEntity(factory.getAnyCity());
           Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
           project[0] = factory.createProject(entity, creator);
-          factory.createEnrollment(formerStudent[0], project[0]);
+          factory.createApprovedEnrollment(formerStudent[0], project[0]);
           attendance[0] = factory.createAttendance(project[0], formerStudent[0]);
         });
     return new AttendanceGraph(project[0], formerStudent[0], attendance[0]);

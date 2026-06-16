@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.project.domain;
 
-import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
@@ -51,16 +50,20 @@ public class Attendance extends DomainError {
    *
    * <p>Initializes the attendance in a {@code WAITING} state with empty validation info.
    *
-   * @param project the associated project
-   * @param formerStudent the associated formerStudent
+   * @param enrollment the approved enrollment associated with this attendance
    * @param duration the duration of time the formerStudent spent on the project
    * @param pepper the application secret used to generate the QR validation hash
    * @return a newly created and self-validated {@link Attendance} instance
    */
-  public static Attendance factory(
-      Project project, FormerStudent formerStudent, BigDecimal duration, String pepper) {
-    UUID formerStudentId = (formerStudent != null) ? formerStudent.getAccountId() : null;
-    UUID projectId = (project != null) ? project.getId() : null;
+  public static Attendance factory(Enrollment enrollment, BigDecimal duration, String pepper) {
+    UUID formerStudentId =
+        enrollment != null && enrollment.getIdentifier() != null
+            ? enrollment.getIdentifier().getFormerStudentId()
+            : null;
+    UUID projectId =
+        enrollment != null && enrollment.getIdentifier() != null
+            ? enrollment.getIdentifier().getProjectId()
+            : null;
     String qrHash = generateQrHash(projectId, formerStudentId, duration, pepper);
 
     Attendance att =

@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.helpers.builders.domain;
 
 import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 public class AttendanceBuilder {
   private Project project = ProjectBuilder.aProject().build();
   private FormerStudent formerStudent = FormerStudentBuilder.aStudent().build();
+  private Enrollment enrollment;
   private final BigDecimal duration = new BigDecimal("1.00");
   private final String pepper = "pepper-" + UuidCreator.getTimeOrderedEpoch();
 
@@ -52,11 +54,24 @@ public class AttendanceBuilder {
   }
 
   /**
+   * Sets the enrollment associated with this attendance record.
+   *
+   * @param enrollment the {@link Enrollment} aggregate
+   * @return this builder instance
+   */
+  public AttendanceBuilder withEnrollment(Enrollment enrollment) {
+    this.enrollment = enrollment;
+    return this;
+  }
+
+  /**
    * Constructs the {@link Attendance} aggregate using the current builder state.
    *
    * @return a configured {@link Attendance} instance
    */
   public Attendance build() {
-    return Attendance.factory(project, formerStudent, duration, pepper);
+    Enrollment resolvedEnrollment =
+        enrollment != null ? enrollment : Enrollment.factory(formerStudent, project);
+    return Attendance.factory(resolvedEnrollment, duration, pepper);
   }
 }

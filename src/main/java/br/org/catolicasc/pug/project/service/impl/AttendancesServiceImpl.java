@@ -1,14 +1,14 @@
 package br.org.catolicasc.pug.project.service.impl;
 
-import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.AttendanceRepository;
-import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.AttendancesService;
+import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceValidateCommand;
@@ -32,8 +32,9 @@ public class AttendancesServiceImpl implements AttendancesService {
 
   @Inject AuditPublisher auditPublisher;
   @Inject AttendanceRepository repo;
+  @Inject EnrollmentsService enrollmentsService;
   @Inject ProjectService projectService;
-  @Inject FormerStudentsService studentService;
+  @Inject FormerStudentsService formerStudentsService;
   @Inject AuthService authService;
 
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
@@ -104,11 +105,18 @@ public class AttendancesServiceImpl implements AttendancesService {
     LOG.debugf(
         "Attempting to create Attendance for Project: %s, FormerStudent: %s",
         cmd.projectId(), cmd.formerStudentId());
-    Project project = projectService.getById(cmd.projectId());
-    FormerStudent formerStudent = studentService.getById(cmd.formerStudentId());
+    EnrollmentIdentifier identifier =
+        EnrollmentIdentifier.factory(cmd.formerStudentId(), cmd.projectId());
+
+    if (identifier.hasFieldErrors()) {
+      throw new AppValidationException(identifier.getFieldErrors());
+    }
+
+    Enrollment enrollment = enrollmentsService.getByIds(identifier);
+    enrollment.validateCanCreateAttendance();
 
     Attendance attendance =
-        AttendanceProcessor.processCreateInput(project, formerStudent, cmd.duration(), pepper);
+        AttendanceProcessor.processCreateInput(enrollment, cmd.duration(), pepper);
 
     if (attendance.hasFieldErrors()) {
       throw new AppValidationException(attendance.getFieldErrors());
@@ -146,7 +154,7 @@ public class AttendancesServiceImpl implements AttendancesService {
     LOG.infof("Attendance validated successfully. ID: %s, Status: %s", id, cmd.status());
 
     if (validated.getStatus() == AttendanceStatus.PRESENT) {
-      studentService.addCompletedHours(
+      formerStudentsService.addCompletedHours(
           validated.getEnrollmentIdentifier().getFormerStudentId(),
           validated.getQrValidationInfo().getDuration());
       projectService.addCompletedHours(

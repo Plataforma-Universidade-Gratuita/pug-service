@@ -18,11 +18,15 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Attendance;
+import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.domain.EnrollmentRepository;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectsErrorCodes;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -40,6 +44,7 @@ class AttendanceServiceImplTest {
 
   @Inject AttendancesServiceImpl service;
   @Inject TestDataFactory factory;
+  @Inject EnrollmentRepository enrollmentRepository;
 
   @InjectMock AuditPublisher audit;
   @InjectMock AuthService authService;
@@ -62,7 +67,7 @@ class AttendanceServiceImplTest {
     creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creatorAcc);
 
-    factory.createEnrollment(formerStudent, project);
+    factory.createApprovedEnrollment(formerStudent, project);
     attendance = factory.createAttendance(project, formerStudent);
 
     doNothing().when(authService).requireCurrentAccountNotOfType(any());
@@ -74,9 +79,6 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should save attendance successfully")
   void saveSuccess() {
-    when(projectService.getById(project.getId())).thenReturn(project);
-    when(studentService.getById(formerStudent.getAccountId())).thenReturn(formerStudent);
-
     Attendance saved =
         service.save(
             anAttendanceCreateCommand()
@@ -87,6 +89,51 @@ class AttendanceServiceImplTest {
     assertThat(saved).isNotNull();
     assertThat(saved.getStatus()).isEqualTo(AttendanceStatus.WAITING);
     verify(audit).fireCreate(any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should fail to save attendance when enrollment does not exist")
+  void saveFailsWhenEnrollmentDoesNotExist() {
+    BusinessRuleException ex =
+        assertThrows(
+            BusinessRuleException.class,
+            () ->
+                service.save(
+                    anAttendanceCreateCommand()
+                        .withProjectId(project.getId())
+                        .withStudentId(UuidCreator.getTimeOrderedEpoch())
+                        .build()));
+
+    assertThat(ex.getCode()).isEqualTo(ProjectsErrorCodes.ATTENDANCE_ENROLLMENT_NOT_FOUND);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should fail to save attendance when enrollment is not approved")
+  void saveFailsWhenEnrollmentIsNotApproved() {
+    AreaOfExpertise areaOfExpertise = factory.createAreaOfExpertise();
+    Course course = factory.createCourse(areaOfExpertise);
+    Account pendingStudentAcc =
+        factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    FormerStudent pendingStudent = factory.createStudent(pendingStudentAcc, course);
+    Entity entity = factory.createEntity(factory.getAnyCity());
+    Account pendingCreator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Project pendingProject = factory.createProject(entity, pendingCreator);
+    Enrollment pendingEnrollment = Enrollment.factory(pendingStudent, pendingProject);
+    enrollmentRepository.persist(pendingEnrollment);
+
+    BusinessRuleException ex =
+        assertThrows(
+            BusinessRuleException.class,
+            () ->
+                service.save(
+                    anAttendanceCreateCommand()
+                        .withProjectId(pendingProject.getId())
+                        .withStudentId(pendingStudent.getAccountId())
+                        .build()));
+
+    assertThat(ex.getCode()).isEqualTo(ProjectsErrorCodes.ATTENDANCE_ENROLLMENT_NOT_APPROVED);
   }
 
   @Test

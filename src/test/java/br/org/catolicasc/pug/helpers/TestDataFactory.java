@@ -136,6 +136,10 @@ public class TestDataFactory {
     return enrollmentRepository.persist(Enrollment.factory(formerStudent, project));
   }
 
+  public Enrollment createApprovedEnrollment(FormerStudent formerStudent, Project project) {
+    return enrollmentRepository.persist(Enrollment.factory(formerStudent, project).approve());
+  }
+
   public ProjectAreaOfExpertise createProjectAreaOfExpertise(
       Project project, AreaOfExpertise areaOfExpertise) {
     return projectAreaOfExpertiseRepository.persist(

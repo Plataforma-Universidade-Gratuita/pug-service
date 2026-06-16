@@ -142,5 +142,15 @@ class EnrollmentTest {
       Assertions.assertThrows(BusinessRuleException.class, pending::complete);
       Assertions.assertThrows(BusinessRuleException.class, pending::putOnHold);
     }
+
+    @Test
+    @DisplayName("Should only allow attendance creation for approved enrollments")
+    void shouldValidateAttendanceCreationEligibility() {
+      Enrollment approved = Enrollment.factory(formerStudent, project).approve();
+      Enrollment pending = Enrollment.factory(formerStudent, project);
+
+      approved.validateCanCreateAttendance();
+      Assertions.assertThrows(BusinessRuleException.class, pending::validateCanCreateAttendance);
+    }
   }
 }

@@ -1,8 +1,7 @@
 package br.org.catolicasc.pug.project.service.utils;
 
-import br.org.catolicasc.pug.academic.domain.FormerStudent;
 import br.org.catolicasc.pug.project.domain.Attendance;
-import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -23,15 +22,14 @@ public final class AttendanceProcessor {
    * Processes raw creation inputs and constructs a new {@link Attendance} domain aggregate in a
    * WAITING state.
    *
-   * @param project the fully reconstituted {@link Project} aggregate
-   * @param formerStudent the fully reconstituted {@link FormerStudent} aggregate
+   * @param enrollment the fully reconstituted {@link Enrollment} aggregate
    * @param duration the duration of time the formerStudent spent on the project
    * @param pepper the application secret used to generate the QR validation hash
    * @return a fully instantiated {@link Attendance} domain aggregate, potentially containing errors
    */
   public static Attendance processCreateInput(
-      Project project, FormerStudent formerStudent, BigDecimal duration, String pepper) {
-    return Attendance.factory(project, formerStudent, duration, pepper);
+      Enrollment enrollment, BigDecimal duration, String pepper) {
+    return Attendance.factory(enrollment, duration, pepper);
   }
 
   /**

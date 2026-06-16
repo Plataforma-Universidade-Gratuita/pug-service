@@ -17,6 +17,12 @@ public enum ProjectsErrorCodes implements GenericCodes {
   /** Indicates that a requested attendance record could not be found. */
   ATTENDANCE_NOT_FOUND("error.domain.projects.attendance.not.found"),
 
+  /** Indicates that an attendance cannot be created because the enrollment does not exist. */
+  ATTENDANCE_ENROLLMENT_NOT_FOUND("error.domain.projects.attendance.enrollment.not.found"),
+
+  /** Indicates that an attendance cannot be created because the enrollment is not approved. */
+  ATTENDANCE_ENROLLMENT_NOT_APPROVED("error.domain.projects.attendance.enrollment.not.approved"),
+
   /** Indicates an attempt to create an enrollment that already exists. */
   ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.already.exists"),
 
