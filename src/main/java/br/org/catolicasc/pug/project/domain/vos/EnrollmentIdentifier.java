@@ -21,18 +21,10 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class EnrollmentIdentifier extends DomainError {
 
-  /** The unique identifier (Account ID) of the enrolled formerStudent. */
   UUID formerStudentId;
 
-  /** The unique identifier of the project the formerStudent is enrolled in. */
   UUID projectId;
 
-  /**
-   * Constructs an {@code EnrollmentIdentifier} instance.
-   *
-   * @param formerStudentId the unique identifier of the formerStudent
-   * @param projectId the unique identifier of the project
-   */
   @Builder(toBuilder = true)
   private EnrollmentIdentifier(UUID formerStudentId, UUID projectId) {
     this.formerStudentId = formerStudentId;
@@ -58,18 +50,6 @@ public class EnrollmentIdentifier extends DomainError {
     return id;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>The formerStudent ID must not be null (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_FORMER_STUDENT_BLANK}).
-   *   <li>The project ID must not be null (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_PROJECT_BLANK}).
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (formerStudentId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_FORMER_STUDENT_BLANK);

@@ -20,18 +20,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AuditInfo extends DomainError {
 
-  /** The timestamp indicating when the entity was initially created. */
   OffsetDateTime createdAt;
 
-  /** The timestamp indicating when the entity was last updated. */
   OffsetDateTime updatedAt;
 
-  /**
-   * Constructs an {@code AuditInfo} instance.
-   *
-   * @param createdAt the initial creation timestamp
-   * @param updatedAt the last update timestamp
-   */
   @Builder(toBuilder = true)
   private AuditInfo(OffsetDateTime createdAt, OffsetDateTime updatedAt) {
     this.createdAt = createdAt;
@@ -83,20 +75,6 @@ public class AuditInfo extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Validates the following business rules:
-   *
-   * <ul>
-   *   <li>{@code createdAt} cannot be null (appends {@link
-   *       SharedFieldErrorCodes#INVALID_CREATED_AT_BLANK})
-   *   <li>{@code updatedAt} cannot be null (appends {@link
-   *       SharedFieldErrorCodes#INVALID_UPDATED_AT_BLANK})
-   *   <li>{@code updatedAt} cannot precede {@code createdAt} (appends {@link
-   *       SharedFieldErrorCodes#INVALID_UPDATED_AT_BEFORE_CREATED_AT})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (createdAt == null) {
       addFieldError(SharedFieldErrorCodes.INVALID_CREATED_AT_BLANK);

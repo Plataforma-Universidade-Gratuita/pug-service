@@ -15,7 +15,6 @@ import jakarta.ws.rs.NotAuthorizedException;
  */
 public final class ExceptionHelper {
 
-  /** Private constructor to prevent instantiation. */
   private ExceptionHelper() {}
 
   /**

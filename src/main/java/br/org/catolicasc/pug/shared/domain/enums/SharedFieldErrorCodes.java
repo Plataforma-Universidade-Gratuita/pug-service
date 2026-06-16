@@ -42,19 +42,10 @@ public enum SharedFieldErrorCodes implements GenericFieldErrorCodes {
    */
   INVALID_UPDATED_AT_BEFORE_CREATED_AT("error.domain.updated.at.before.created.at", "updatedAt");
 
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /** The exact name of the domain property or DTO field that failed validation. */
   private final String fieldName;
 
-  /**
-   * Constructs the {@code SharedFieldErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles
-   * @param fieldName the literal name of the field causing the validation error (used heavily for
-   *     mapping API error details)
-   */
   SharedFieldErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;

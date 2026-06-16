@@ -25,22 +25,12 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class AreaOfExpertise extends DomainError {
 
-  /** The unique identifier for the areaOfExpertise (UUIDv7). */
   UUID id;
 
-  /** The name of the academic areaOfExpertise. */
   String name;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs a {@code AreaOfExpertise} instance.
-   *
-   * @param id the unique identifier
-   * @param name the name of the areaOfExpertise
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private AreaOfExpertise(UUID id, String name, AuditInfo auditInfo) {
     this.id = id;
@@ -92,18 +82,6 @@ public class AreaOfExpertise extends DomainError {
     return updatedSchool;
   }
 
-  /**
-   * Evaluates constraints for the AreaOfExpertise aggregate and accumulates any validation
-   * problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     validateNameField(name);

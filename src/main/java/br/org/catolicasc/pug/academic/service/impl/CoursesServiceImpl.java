@@ -148,14 +148,6 @@ public class CoursesServiceImpl implements CoursesService {
     return getById(id);
   }
 
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if a Course entity exists by its exact name.
-   *
-   * @param name the exact name of the course to check
-   * @return {@code true} if a course with the given name exists, {@code false} otherwise
-   */
   private boolean existsByName(String name) {
     if (StringUtils.isEmpty(name)) {
       return false;

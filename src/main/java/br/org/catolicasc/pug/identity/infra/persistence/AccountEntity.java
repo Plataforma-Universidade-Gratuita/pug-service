@@ -49,43 +49,19 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class AccountEntity extends BaseAuditedEntity {
 
-  /**
-   * The unique identifier (UUID) of the associated {@link UserEntity}.
-   *
-   * <p>Acts as a foreign key linking this authentication account to a specific person. Once
-   * created, this association is immutable.
-   */
   @Column(name = "user_id", nullable = false, updatable = false)
   private UUID userId;
 
-  /**
-   * The unique email address used for authentication.
-   *
-   * <p>This field serves as a natural key for logging in and is protected by the {@code
-   * uq_accounts_email} unique database constraint.
-   */
   @Column(name = "email", nullable = false, length = 254)
   private String email;
 
-  /**
-   * The designated authorization role for this account (e.g., ADMIN, FORMER_STUDENT).
-   *
-   * <p>Stored as a string representation of the {@link AccountType} enum.
-   */
   @Enumerated(EnumType.STRING)
   @Column(name = "account_type", nullable = false, length = 16)
   private AccountType accountType;
 
-  /**
-   * The securely hashed representation of the user's password.
-   *
-   * <p>This column may remain {@code null} for account flows where password setup is intentionally
-   * deferred until a later stage.
-   */
   @Column(name = "password_hash")
   private String passwordHash;
 
-  /** Flag indicating whether the account is active or has been deactivated. */
   @Column(name = "active", nullable = false)
   private Boolean active;
 }

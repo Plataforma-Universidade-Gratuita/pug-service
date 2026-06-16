@@ -7,7 +7,7 @@ import java.util.stream.StreamSupport;
 
 /** Utility class for collection operations. */
 public final class CollectionUtils {
-  /** Private constructor to prevent instantiation. */
+
   private CollectionUtils() {}
 
   /**

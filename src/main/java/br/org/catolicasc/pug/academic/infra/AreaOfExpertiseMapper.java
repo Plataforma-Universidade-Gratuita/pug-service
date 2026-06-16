@@ -13,7 +13,7 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  * AreaOfExpertiseEntity}).
  */
 public final class AreaOfExpertiseMapper {
-  /** Private constructor to prevent instantiation. */
+
   private AreaOfExpertiseMapper() {}
 
   /**

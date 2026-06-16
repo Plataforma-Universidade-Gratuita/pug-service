@@ -21,7 +21,7 @@ import java.util.Locale;
  * mapping of the nested academic area-of-expertise data to the {@link AreaOfExpertisePresenter}.
  */
 public final class CoursePresenter {
-  /** Private constructor to prevent instantiation. */
+
   private CoursePresenter() {}
 
   /**

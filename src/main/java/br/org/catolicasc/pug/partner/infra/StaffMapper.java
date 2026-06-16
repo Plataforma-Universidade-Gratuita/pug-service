@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 
 /** Stateless utility class responsible for mapping between Staff boundary layers. */
 public final class StaffMapper {
+
   private StaffMapper() {}
 
   /**

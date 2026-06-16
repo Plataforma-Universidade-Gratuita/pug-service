@@ -34,22 +34,16 @@ import lombok.Getter;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Project extends DomainError {
 
-  /** The unique identifier for the project (UUIDv7). */
   UUID id;
 
-  /** The title or name of the project. */
   String name;
 
-  /** The unique identifier of the partner organization offering this project. */
   UUID entityId;
 
-  /** The optional detailed description of the project's objectives and tasks. */
   String description;
 
-  /** The logistical metadata and audit information of the project. */
   ProjectInfo projectInfo;
 
-  /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   ProjectStatus projectStatus;
 
   /**
@@ -271,6 +265,15 @@ public class Project extends DomainError {
     }
   }
 
+  /**
+   * Validates whether a former student's area of expertise matches any of the project's areas of
+   * expertise.
+   *
+   * @param formerStudentAreaOfExpertise the area of expertise associated with the former student
+   * @param projectAreasOfExpertise the list of areas of expertise required by the project
+   * @throws BusinessRuleException if there is no match between the student's area and the project's
+   *     areas
+   */
   public void validateAreaMatch(
       AreaOfExpertise formerStudentAreaOfExpertise, List<AreaOfExpertise> projectAreasOfExpertise) {
     if (formerStudentAreaOfExpertise == null

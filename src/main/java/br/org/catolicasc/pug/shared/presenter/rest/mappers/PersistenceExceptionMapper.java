@@ -56,14 +56,6 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     return buildResponse(SharedErrorCodes.INTERNAL_ERROR, Response.Status.INTERNAL_SERVER_ERROR);
   }
 
-  /**
-   * Evaluates the constraint name generically to determine if it is a unique constraint or a
-   * foreign key integrity violation.
-   *
-   * @param constraintName The raw database constraint name.
-   * @param ex The original exception for internal logging.
-   * @return A safe HTTP 409 Conflict response.
-   */
   private Response handleConstraintViolation(
       String constraintName, ConstraintViolationException ex) {
     if (constraintName == null) {
@@ -83,13 +75,6 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
     return buildResponse(SharedErrorCodes.DATA_INTEGRITY_ERROR, Response.Status.CONFLICT);
   }
 
-  /**
-   * Helper method to construct the final secure API error response.
-   *
-   * @param code The shared generic error code.
-   * @param status The HTTP status to return.
-   * @return The final Response object.
-   */
   private Response buildResponse(SharedErrorCodes code, Response.Status status) {
     String msg = i18n.translation(code.getBundleKey(), PresenterUtils.pickLocale(headers));
     ApiError error = ApiError.of(code.getCode(), msg);

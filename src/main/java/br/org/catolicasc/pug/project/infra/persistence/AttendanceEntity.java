@@ -49,39 +49,32 @@ import lombok.experimental.SuperBuilder;
     })
 public class AttendanceEntity extends BaseAuditedEntity {
 
-  /** The unique identifier (UUID) of the associated Project. */
   @NotNull
   @Column(name = "project_id", nullable = false)
   private UUID projectId;
 
-  /** The unique identifier (Account ID UUID) of the associated FormerStudent. */
   @NotNull
   @Column(name = "former_student_id", nullable = false)
   private UUID formerStudentId;
 
-  /** The recorded time duration the formerStudent spent on the project. */
   @NotNull
   @DecimalMin(value = "0.00", inclusive = false)
   @Column(name = "duration", nullable = false, precision = 4, scale = 2)
   private BigDecimal duration;
 
-  /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
   @NotBlank
   @Size(max = 16)
   @Column(name = "status", nullable = false, length = 16)
   private String status;
 
-  /** The unique cryptographic hash of the QR code used for validation. */
   @NotBlank
   @Size(max = 512)
   @Column(name = "qr_validation_hash", nullable = false, length = 512, unique = true)
   private String qrValidationHash;
 
-  /** The unique identifier of the Staff account that validated the attendance. */
   @Column(name = "validated_by")
   private UUID validatedBy;
 
-  /** The exact timestamp when the attendance was explicitly validated by staff. */
   @Column(name = "validated_at")
   private OffsetDateTime validatedAt;
 }

@@ -14,7 +14,6 @@ import br.org.catolicasc.pug.geo.infra.read.dtos.CityView;
  */
 public final class CityMapper {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private CityMapper() {}
 
   /**

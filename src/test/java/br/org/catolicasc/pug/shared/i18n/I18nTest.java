@@ -68,7 +68,7 @@ class I18nTest {
     void shouldHandleNullLocale() {
       Locale.setDefault(Locale.US);
 
-      String result = i18n.translation("error.unauthorized", null);
+      String result = i18n.translation("error.unauthorized", (Object) null);
 
       assertThat(result).isEqualTo("Invalid credentials or inactive account.");
     }

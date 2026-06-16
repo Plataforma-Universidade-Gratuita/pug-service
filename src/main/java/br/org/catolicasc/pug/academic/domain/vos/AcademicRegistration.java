@@ -19,14 +19,8 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class AcademicRegistration extends DomainError {
 
-  /** The raw string representing the formerStudent's registration identifier. */
   String value;
 
-  /**
-   * Constructs an {@code AcademicRegistration} instance.
-   *
-   * @param value the registration string
-   */
   @Builder(toBuilder = true)
   private AcademicRegistration(String value) {
     this.value = value;
@@ -47,18 +41,6 @@ public class AcademicRegistration extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Must not be null or empty (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REGISTRATION_BLANK})
-   *   <li>Must not exceed 15 characters in length (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_REGISTRATION_TOO_LONG})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addFieldError(AcademicFieldErrorCodes.INVALID_REGISTRATION_BLANK);

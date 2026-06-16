@@ -36,19 +36,14 @@ import lombok.Getter;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Attendance extends DomainError {
 
-  /** The unique identifier for the attendance record (UUIDv7). */
   UUID id;
 
-  /** The composite identifier linking this attendance to a specific formerStudent and project. */
   EnrollmentIdentifier enrollmentIdentifier;
 
-  /** The temporal data and unique QR validation hash recorded. */
   QrValidationInfo qrValidationInfo;
 
-  /** The metadata tracking which staff member validated the attendance and when. */
   AttendanceInfo attendanceInfo;
 
-  /** The current validation status of the attendance (e.g., WAITING, PRESENT). */
   AttendanceStatus status;
 
   /**
@@ -120,7 +115,6 @@ public class Attendance extends DomainError {
     return updated;
   }
 
-  /** Evaluates constraints for the Attendance aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
     if (enrollmentIdentifier == null) {

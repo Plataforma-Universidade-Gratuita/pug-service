@@ -32,44 +32,20 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class FormerStudent extends DomainError {
 
-  /** The unique identifier of the linked authentication account, which acts as the primary key. */
   UUID accountId;
 
-  /** The validated Academic Registration Value Object associated with the formerStudent. */
   AcademicRegistration academicRegistration;
 
-  /** The specific university campus where the formerStudent is enrolled. */
   Campi campus;
 
-  /** The unique identifier of the {@link Course} the formerStudent is enrolled in. */
   UUID courseId;
 
-  /**
-   * The validated Value Object tracking the required counterpart hours the formerStudent must
-   * fulfill.
-   */
   CounterpartHours counterpartHours;
 
-  /**
-   * The validated Value Object representing the chronological validity of the formerStudent's
-   * enrollment.
-   */
   Period period;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs a {@code FormerStudent} instance.
-   *
-   * @param accountId the unique identifier of the account
-   * @param academicRegistration the academic registration VO
-   * @param campus the campus enumeration
-   * @param courseId the unique identifier of the course
-   * @param counterpartHours the counterpart hours VO
-   * @param period the academic period VO
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private FormerStudent(
       UUID accountId,
@@ -246,24 +222,6 @@ public class FormerStudent extends DomainError {
     }
   }
 
-  /**
-   * Evaluates constraints for the FormerStudent aggregate and accumulates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Ensures the {@code accountId} is not null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_ACCOUNT_ID_BLANK})
-   *   <li>Ensures the {@code academicRegistration} is not null and bubbles up any internal errors
-   *   <li>Ensures the {@code campus} is not null (appends {@link
-   *       SharedFieldErrorCodes#INVALID_CAMPUS_BLANK})
-   *   <li>Ensures the {@code courseId} is not null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_COURSE_BLANK})
-   *   <li>Ensures the {@code counterpartHours} is not null and bubbles up any internal errors
-   *   <li>Ensures the {@code period} is not null and bubbles up any internal errors
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (accountId == null) {
       addFieldError(AcademicFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK);

@@ -25,22 +25,12 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Admin extends DomainError {
 
-  /** The unique identifier of the linked {@link Account}, which acts as the primary key. */
   UUID accountId;
 
-  /** The precise timestamp when administrative privileges were granted. */
   OffsetDateTime grantedAt;
 
-  /** The specific university campus associated with the administrator's operational scope. */
   Campi campus;
 
-  /**
-   * Constructs an {@code Admin} instance.
-   *
-   * @param accountId the linked account's identifier
-   * @param grantedAt the time the privileges were assigned
-   * @param campus the assigned campus
-   */
   @Builder(toBuilder = true)
   private Admin(UUID accountId, OffsetDateTime grantedAt, Campi campus) {
     this.accountId = accountId;
@@ -84,20 +74,6 @@ public class Admin extends DomainError {
     return updatedAdmin;
   }
 
-  /**
-   * Evaluates constraints for the Admin entity and aggregates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Ensures the {@code accountId} is not null (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_ACCOUNT_ID_BLANK})
-   *   <li>Ensures the {@code grantedAt} timestamp is present (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_GRANTED_AT_BLANK})
-   *   <li>Ensures the {@code campus} definition is not null (appends {@link
-   *       SharedFieldErrorCodes#INVALID_CAMPUS_BLANK})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (accountId == null) {
       addFieldError(IdentityFieldErrorCodes.INVALID_ACCOUNT_ID_BLANK);

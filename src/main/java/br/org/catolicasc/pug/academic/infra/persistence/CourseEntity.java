@@ -37,15 +37,9 @@ import lombok.experimental.SuperBuilder;
     indexes = {@Index(name = "idx_courses_area_of_expertise", columnList = "area_of_expertise_id")})
 public class CourseEntity extends BaseAuditedEntity {
 
-  /** The name of the academic course. */
   @Column(name = "name", nullable = false, length = 120, unique = true)
   private String name;
 
-  /**
-   * The unique identifier (UUID) of the associated {@link AreaOfExpertiseEntity}.
-   *
-   * <p>Acts as a foreign key linking this course to its parent academic areaOfExpertise.
-   */
   @Column(name = "area_of_expertise_id", nullable = false)
   private UUID areaOfExpertiseId;
 }

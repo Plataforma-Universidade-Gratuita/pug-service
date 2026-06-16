@@ -26,26 +26,14 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Course extends DomainError {
 
-  /** The unique identifier for the course (UUIDv7). */
   UUID id;
 
-  /** The name of the academic course. */
   String name;
 
-  /** The unique identifier of the {@link AreaOfExpertise} that offers this course. */
   UUID areaOfExpertiseId;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs a {@code Course} instance.
-   *
-   * @param id the unique identifier
-   * @param name the name of the course
-   * @param areaOfExpertiseId the unique identifier of the associated areaOfExpertise
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private Course(UUID id, String name, UUID areaOfExpertiseId, AuditInfo auditInfo) {
     this.id = id;
@@ -116,19 +104,6 @@ public class Course extends DomainError {
     return updatedCourse;
   }
 
-  /**
-   * Evaluates constraints for the Course aggregate and accumulates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
-   *   <li>Ensures the {@code areaOfExpertiseId} is not null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_AREA_OF_EXPERTISE_BLANK})
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     validateNameField(name);

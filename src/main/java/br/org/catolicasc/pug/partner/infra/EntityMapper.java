@@ -12,7 +12,7 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  * Entity}) does not leak into or depend upon the JPA Persistence model ({@link EntityEntity}).
  */
 public final class EntityMapper {
-  /** Private constructor to prevent instantiation. */
+
   private EntityMapper() {}
 
   /**

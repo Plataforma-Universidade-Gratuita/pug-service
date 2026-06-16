@@ -15,7 +15,6 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  */
 public final class AccountMapper {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private AccountMapper() {}
 
   /**

@@ -20,6 +20,17 @@ import java.util.List;
 public record PageResult<T>(
     List<T> content, int page, int size, long totalElements, int totalPages) {
 
+  /**
+   * Constructs a new PageResult, ensuring that the content list is immutable and non-null. If the
+   * provided content is null, it defaults to an empty list.
+   *
+   * @param content the list of items for the current page; if null, it will be set to an empty list
+   * @param page the zero-based index of the current page
+   * @param size the effective number of items returned in this page; may differ from requested size
+   *     when fetching all records
+   * @param totalElements the total number of matching records across all pages
+   * @param totalPages the total number of pages available for the current query
+   */
   public PageResult {
     content = content == null ? List.of() : List.copyOf(content);
   }

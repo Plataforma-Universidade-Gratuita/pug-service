@@ -49,16 +49,13 @@ import lombok.experimental.SuperBuilder;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class RefreshTokenEntity extends BaseAuditedEntity {
 
-  /** The account that owns this refresh token. */
   @ManyToOne(optional = false)
   @JoinColumn(name = "account_id", nullable = false, updatable = false)
   private AccountEntity account;
 
-  /** SHA-256 hex digest of the opaque refresh token string sent to the client. */
   @Column(name = "token_hash", nullable = false, length = 128, updatable = false)
   private String tokenHash;
 
-  /** The point in time after which this refresh token is no longer valid. */
   @Column(name = "expires_at", nullable = false, updatable = false)
   private OffsetDateTime expiresAt;
 }

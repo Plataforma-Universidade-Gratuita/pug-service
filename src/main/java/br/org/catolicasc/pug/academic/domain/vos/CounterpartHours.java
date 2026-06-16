@@ -20,22 +20,12 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class CounterpartHours extends DomainError {
 
-  /** The total hours the formerStudent is required to complete. */
   BigDecimal requiredHours;
 
-  /** The total hours the formerStudent has completed to date. */
   BigDecimal completedHours;
 
-  /** A flag indicating whether the required hours have been fully satisfied. */
   Boolean concluded;
 
-  /**
-   * Constructs a {@code CounterpartHours} instance.
-   *
-   * @param requiredHours the hours required
-   * @param completedHours the hours completed
-   * @param concluded the completion status
-   */
   @Builder(toBuilder = true)
   private CounterpartHours(BigDecimal requiredHours, BigDecimal completedHours, Boolean concluded) {
     this.requiredHours = requiredHours;
@@ -63,17 +53,6 @@ public class CounterpartHours extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>{@code requiredHours} must not be null and must be greater than zero.
-   *   <li>{@code completedHours} must not be negative.
-   *   <li>{@code completedHours} cannot be higher than {@code requiredHours}.
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (requiredHours == null || requiredHours.compareTo(BigDecimal.ZERO) <= 0) {
       addFieldError(AcademicFieldErrorCodes.INVALID_HOURS_BLANK);

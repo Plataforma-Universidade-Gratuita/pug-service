@@ -16,19 +16,8 @@ import java.util.Locale;
  */
 public final class UserPresenter {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private UserPresenter() {}
 
-  /**
-   * Computes the formatted string representation of a Brazilian CPF.
-   *
-   * <p>Transforms a raw 11-digit numeric string (e.g., "12345678900") into the standard punctuated
-   * format (e.g., "123.456.789-00"). If the input is null or not exactly 11 characters, the raw
-   * value is returned safely to prevent exceptions.
-   *
-   * @param cpf the raw numeric CPF string
-   * @return the punctuated CPF string, or the raw input if formatting is not possible
-   */
   private static String cpfFormatted(String cpf) {
     if (cpf == null || cpf.length() != 11) {
       return cpf;

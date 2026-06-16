@@ -31,7 +31,6 @@ import java.util.Locale;
  */
 public final class AdminPresenter {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private AdminPresenter() {}
 
   /**

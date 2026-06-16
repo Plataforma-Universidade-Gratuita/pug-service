@@ -102,13 +102,6 @@ public class AuthServiceImpl implements AuthService {
     return UUID.fromString(userId);
   }
 
-  /**
-   * Retrieves a required string claim from the current JWT principal.
-   *
-   * @param claimName the name of the claim to resolve
-   * @return the claim value as a non-null {@link String}
-   * @throws jakarta.ws.rs.NotAuthorizedException if the claim cannot be resolved
-   */
   private String getRequiredClaim(String claimName) {
     if (identity == null || identity.isAnonymous()) {
       throw ExceptionHelper.unauthorized();
@@ -256,14 +249,6 @@ public class AuthServiceImpl implements AuthService {
     }
   }
 
-  /**
-   * Signs a short-lived JWT access token for the given account.
-   *
-   * @param account the authenticated account
-   * @param isPasswordWired whether the account has already completed password setup
-   * @param refreshTokenId the persisted refresh-token row backing the current authenticated session
-   * @return the signed JWT string
-   */
   private String signAccessToken(Account account, boolean isPasswordWired, UUID refreshTokenId) {
     return Jwt.upn(account.getEmail().getValue())
         .groups(Set.of(account.getAccountType().name()))
@@ -274,13 +259,6 @@ public class AuthServiceImpl implements AuthService {
         .sign();
   }
 
-  /**
-   * Persists a hashed refresh token linked to the given account.
-   *
-   * @param accountId the account UUID
-   * @param rawToken the raw opaque refresh token string
-   * @return the persisted refresh-token entity backing the authenticated session
-   */
   private RefreshTokenEntity persistRefreshToken(UUID accountId, String rawToken) {
     AccountEntity accountRef = em.getReference(AccountEntity.class, accountId);
 
@@ -299,12 +277,6 @@ public class AuthServiceImpl implements AuthService {
     return entity;
   }
 
-  /**
-   * Computes the SHA-256 hex digest of the given input.
-   *
-   * @param input the string to hash
-   * @return the lowercase hex-encoded SHA-256 digest
-   */
   static String sha256(String input) {
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-256");

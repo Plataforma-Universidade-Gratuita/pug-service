@@ -28,6 +28,5 @@ public enum Campi implements GenericCodes {
    */
   JOINVILLE("academic.campus.joinville");
 
-  /** The property key used to resolve the localized name of the campus. */
   private final String bundleKey;
 }

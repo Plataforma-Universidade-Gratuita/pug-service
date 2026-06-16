@@ -15,7 +15,6 @@ import br.org.catolicasc.pug.shared.domain.enums.Campi;
  */
 public final class CityPresenter {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private CityPresenter() {}
 
   /**

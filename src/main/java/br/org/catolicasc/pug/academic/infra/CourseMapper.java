@@ -15,7 +15,7 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  * the Read/Query model ({@link CourseView}).
  */
 public final class CourseMapper {
-  /** Private constructor to prevent instantiation. */
+
   private CourseMapper() {}
 
   /**

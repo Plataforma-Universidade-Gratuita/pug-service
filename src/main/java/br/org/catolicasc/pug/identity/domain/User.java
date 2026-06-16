@@ -28,26 +28,14 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class User extends DomainError {
 
-  /** The unique identifier for the user (UUIDv7). */
   UUID id;
 
-  /** The validated CPF Value Object associated with the user. */
   Cpf cpf;
 
-  /** The full name of the user. */
   String name;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs a {@code User} instance.
-   *
-   * @param id the unique identifier
-   * @param cpf the user's CPF VO
-   * @param name the user's name
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private User(UUID id, Cpf cpf, String name, AuditInfo auditInfo) {
     this.id = id;
@@ -101,20 +89,6 @@ public class User extends DomainError {
     return updated;
   }
 
-  /**
-   * Evaluates constraints for the User entity and aggregates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Ensures the {@code cpf} is not null and bubbles up any internal {@link Cpf} errors
-   *   <li>Ensures the {@code name} is not blank and does not exceed 255 characters (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_USER_ID_BLANK} or {@link
-   *       IdentityFieldErrorCodes#INVALID_USER_ID_TOO_LONG})
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     if (cpf == null) {

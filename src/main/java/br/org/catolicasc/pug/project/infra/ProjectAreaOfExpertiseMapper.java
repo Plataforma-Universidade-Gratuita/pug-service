@@ -13,7 +13,6 @@ import br.org.catolicasc.pug.project.infra.persistence.ProjectAreaOfExpertiseEnt
  */
 public final class ProjectAreaOfExpertiseMapper {
 
-  /** Private constructor to prevent instantiation. */
   private ProjectAreaOfExpertiseMapper() {}
 
   /**

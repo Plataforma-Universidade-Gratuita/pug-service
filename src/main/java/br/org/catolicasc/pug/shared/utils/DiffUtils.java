@@ -21,10 +21,6 @@ public final class DiffUtils {
 
   private DiffUtils() {}
 
-  /**
-   * Defines fields that should be excluded from audit logs due to security, privacy, or technical
-   * reasons.
-   */
   private enum Ignored {
     PASSWORD_HASH("passwordHash"),
     QR_VALIDATION_HASH("qrValidationHash"),

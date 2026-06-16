@@ -25,22 +25,12 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class City extends DomainError {
 
-  /** The unique identifier for the city (UUIDv7). */
   UUID id;
 
-  /** The name of the city. */
   String name;
 
-  /** The validated IBGE code Value Object associated with the city. */
   IbgeCode ibgeCode;
 
-  /**
-   * Constructs a {@code City} instance.
-   *
-   * @param id the unique identifier
-   * @param name the city name
-   * @param ibgeCode the city's IBGE code VO
-   */
   @Builder(toBuilder = true)
   private City(UUID id, String name, IbgeCode ibgeCode) {
     this.id = id;
@@ -109,20 +99,6 @@ public class City extends DomainError {
     return c;
   }
 
-  /**
-   * Evaluates constraints for the City entity and aggregates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Validates the city name (inherited from {@link DomainError})
-   *   <li>Ensures the {@code ibgeCode} is not null (appends {@link
-   *       GeoFieldErrorCodes#INVALID_IBGE_CODE_BLANK})
-   *   <li>Extracts and bubbles up any errors already present inside the {@link IbgeCode} value
-   *       object
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     validateNameField(name);

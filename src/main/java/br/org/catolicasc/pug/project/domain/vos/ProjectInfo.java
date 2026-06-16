@@ -26,34 +26,18 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProjectInfo extends DomainError {
 
-  /** The unique identifier (Account ID) of the staff member who created the project. */
   UUID createdBy;
 
-  /** The maximum number of formerStudents allowed to enroll in the project. */
   Integer maxParticipants;
 
-  /** The total amount of counterpart hours the project offers to its participants. */
   BigDecimal offeredHours;
 
-  /** The total amount of counterpart hours already completed in the project. */
   BigDecimal completedHours;
 
-  /** The exact timestamp when the project was officially closed. */
   OffsetDateTime closedAt;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs a {@code ProjectInfo} instance.
-   *
-   * @param createdBy the unique identifier of the creator
-   * @param maxParticipants the maximum number of participants
-   * @param offeredHours the hours offered by the project
-   * @param completedHours the hours completed in the project
-   * @param closedAt the timestamp when the project was closed
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private ProjectInfo(
       UUID createdBy,
@@ -158,20 +142,6 @@ public class ProjectInfo extends DomainError {
     return updated;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>The creator ID must not be null.
-   *   <li>The participant capacity, if provided, must not be negative.
-   *   <li>The offered hours must not be negative.
-   *   <li>{@code completedHours} must not be negative.
-   *   <li>{@code completedHours} cannot exceed {@code offeredHours}.
-   *   <li>Ensures the {@code auditInfo} is not null.
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (createdBy == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_PROJECT_CREATED_BY_BLANK);

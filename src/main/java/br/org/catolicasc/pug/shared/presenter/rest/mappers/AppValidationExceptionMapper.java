@@ -60,12 +60,6 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
     return Response.status(Response.Status.BAD_REQUEST).entity(ApiEnvelope.error(apiError)).build();
   }
 
-  /**
-   * Helper method to convert a GenericFieldErrorCodes into a nested FieldErrorDetail.
-   *
-   * @param fieldError The domain validation error.
-   * @return The detailed record containing the raw code and the translated message.
-   */
   private FieldErrorsResponse.FieldErrorDetail mapToDetail(GenericFieldErrorCodes fieldError) {
     String errorCode = fieldError.getCode();
     String message =

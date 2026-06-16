@@ -14,7 +14,6 @@ import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
  */
 public final class ExceptionHelper {
 
-  /** Private constructor to prevent instantiation. */
   private ExceptionHelper() {}
 
   /**

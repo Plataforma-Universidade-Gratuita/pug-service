@@ -22,7 +22,6 @@ import java.util.Locale;
  */
 public final class AccountPresenter {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private AccountPresenter() {}
 
   /**

@@ -244,7 +244,6 @@ public class AdminsResource {
     return Response.noContent().build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

@@ -17,7 +17,6 @@ import java.util.UUID;
  */
 public final class AttendanceProcessor {
 
-  /** Private constructor to prevent instantiation. */
   private AttendanceProcessor() {}
 
   /**

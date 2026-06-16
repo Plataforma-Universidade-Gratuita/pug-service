@@ -142,7 +142,6 @@ public class UsersReadOnlyResource {
     return Response.ok(ApiEnvelope.ok(responseBody)).build();
   }
 
-  /** Helper method to determine the preferred locale from the incoming request headers. */
   private Locale locale() {
     return PresenterUtils.pickLocale(headers.getAcceptableLanguages());
   }

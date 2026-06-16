@@ -33,14 +33,8 @@ public enum SharedErrorCodes implements GenericCodes {
   /** Indicates a general request payload validation failure. */
   VALIDATION_ERROR("error.validation");
 
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * Constructs the {@code SharedErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles
-   */
   SharedErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
   }

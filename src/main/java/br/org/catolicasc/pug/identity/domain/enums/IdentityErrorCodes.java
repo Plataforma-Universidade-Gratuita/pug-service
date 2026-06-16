@@ -59,15 +59,8 @@ public enum IdentityErrorCodes implements GenericCodes {
    */
   WEAK_PASSWORD("error.domain.identity.password.weak");
 
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * Constructs the {@code IdentityErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles (e.g.,
-   *     {@code messages_en_US.properties})
-   */
   IdentityErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
   }

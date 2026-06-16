@@ -48,54 +48,38 @@ import lombok.ToString;
     indexes = {@Index(name = "idx_former_students_course", columnList = "course_id")})
 public class FormerStudentEntity {
 
-  /**
-   * The unique identifier of the linked authentication account.
-   *
-   * <p>Serves dual purpose as both the primary key for this entity and the logical foreign key to
-   * the identity accounts table. It is strictly immutable once persisted.
-   */
   @Id
   @Column(name = "account_id", nullable = false, updatable = false)
   private UUID accountId;
 
-  /** The formal academic registration identifier for the formerStudent. */
   @Column(name = "academic_registration", nullable = false, length = 15)
   private String academicRegistration;
 
-  /** The specific university campus where the formerStudent is enrolled. */
   @Enumerated(EnumType.STRING)
   @Column(name = "campus", nullable = false, length = 16)
   private Campi campus;
 
-  /** The unique identifier (UUID) of the associated {@link CourseEntity}. */
   @Column(name = "course_id", nullable = false)
   private UUID courseId;
 
-  /** The quantified hours the formerStudent is required to complete. */
   @Column(name = "required_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal requiredHours;
 
-  /** The amount of hours already completed by the formerStudent. */
   @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal completedHours;
 
-  /** Flag indicating whether the required counterpart hours have been successfully completed. */
   @Column(name = "concluded", nullable = false)
   private Boolean concluded;
 
-  /** The start date defining the validity of the formerStudent's enrollment period. */
   @Column(name = "start_date", nullable = false)
   private LocalDate startDate;
 
-  /** The due date (end date) defining the expiration of the formerStudent's enrollment period. */
   @Column(name = "due_date", nullable = false)
   private LocalDate dueDate;
 
-  /** Timestamp indicating when this formerStudent record was initially created. */
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
-  /** Timestamp indicating when this formerStudent record was last updated. */
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 }

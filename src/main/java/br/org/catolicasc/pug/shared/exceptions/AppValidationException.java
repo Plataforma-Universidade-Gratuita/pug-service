@@ -23,11 +23,6 @@ public final class AppValidationException extends RuntimeException {
 
   @Serial private static final long serialVersionUID = 1L;
 
-  /**
-   * The list of specific field validation errors that triggered this exception. Marked as transient
-   * because enum instances are inherently tied to the runtime environment and do not need standard
-   * Java serialization.
-   */
   @SuppressFBWarnings("SE_TRANSIENT_FIELD_NOT_RESTORED")
   private final transient List<GenericFieldErrorCodes> fieldErrors;
 

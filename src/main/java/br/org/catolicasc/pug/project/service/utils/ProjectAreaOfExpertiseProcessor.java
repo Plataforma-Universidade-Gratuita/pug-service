@@ -14,7 +14,6 @@ import java.util.UUID;
  */
 public final class ProjectAreaOfExpertiseProcessor {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private ProjectAreaOfExpertiseProcessor() {}
 
   /**

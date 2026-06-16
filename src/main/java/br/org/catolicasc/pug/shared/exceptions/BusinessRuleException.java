@@ -17,7 +17,6 @@ import lombok.Getter;
 @Getter
 public class BusinessRuleException extends RuntimeException {
 
-  /** The specific domain code representing the business rule violation. */
   private final GenericCodes code;
 
   /**

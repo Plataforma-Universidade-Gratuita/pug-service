@@ -24,22 +24,12 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class AttendanceInfo extends DomainError {
 
-  /** The unique identifier (Account ID) of who validated the attendance. */
   UUID validatedBy;
 
-  /** The exact timestamp when the attendance was explicitly validated. */
   OffsetDateTime validatedAt;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs an {@code AttendanceInfo} instance.
-   *
-   * @param validatedBy the unique identifier of the validating staff member
-   * @param validatedAt the timestamp of validation
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private AttendanceInfo(UUID validatedBy, OffsetDateTime validatedAt, AuditInfo auditInfo) {
     this.validatedBy = validatedBy;
@@ -78,19 +68,6 @@ public class AttendanceInfo extends DomainError {
     return updated;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Either both {@code validatedBy} and {@code validatedAt} are provided, or neither are.
-   *       (appends {@link ProjectsFieldErrorCodes#INVALID_ATTENDANCE_STATUS_BLANK} if mismatched).
-   *   <li>The validation timestamp cannot chronologically precede the creation timestamp (appends
-   *       {@link ProjectsFieldErrorCodes#INVALID_CREATED_AT_FUTURE}).
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
-   * </ul>
-   */
   private void collectValidationProblems() {
     boolean hasValidator = validatedBy != null;
     boolean hasDate = validatedAt != null;

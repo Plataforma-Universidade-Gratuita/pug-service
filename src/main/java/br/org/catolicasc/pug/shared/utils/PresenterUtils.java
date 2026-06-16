@@ -15,7 +15,6 @@ public final class PresenterUtils {
 
   private static final Locale DEFAULT_LOCALE = Locale.forLanguageTag("pt-BR");
 
-  /** Private constructor to prevent instantiation of this utility class. */
   private PresenterUtils() {}
 
   /**
@@ -35,6 +34,18 @@ public final class PresenterUtils {
     return CollectionUtils.isEmpty(acceptable) ? DEFAULT_LOCALE : acceptable.getFirst();
   }
 
+  /**
+   * Resolves the client's preferred locale based on the HTTP request headers.
+   *
+   * <p>This method extracts the list of acceptable languages from the provided {@link HttpHeaders}
+   * and delegates to {@link #pickLocale(List)} for resolution. If the headers are null or if an
+   * error occurs during locale extraction, it gracefully defaults to Brazilian Portuguese ({@code
+   * pt-BR}).
+   *
+   * @param headers the HTTP request headers containing potential locale information (e.g., {@code
+   *     Accept-Language})
+   * @return the resolved client {@link Locale}, or the {@code pt-BR} fallback if resolution fails
+   */
   public static Locale pickLocale(HttpHeaders headers) {
     if (headers == null) {
       return DEFAULT_LOCALE;

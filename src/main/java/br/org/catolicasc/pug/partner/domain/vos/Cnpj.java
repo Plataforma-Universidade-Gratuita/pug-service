@@ -21,14 +21,8 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Cnpj extends DomainError {
 
-  /** The raw, numeric-only 14-digit string representing the CNPJ. */
   String value;
 
-  /**
-   * Constructs a {@code Cnpj} instance.
-   *
-   * @param value the sanitized, numeric-only CNPJ string
-   */
   @Builder(toBuilder = true)
   private Cnpj(String value) {
     this.value = value;
@@ -52,18 +46,6 @@ public class Cnpj extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Must not be null or empty (appends {@link PartnerFieldErrorCodes#INVALID_CNPJ_BLANK})
-   *   <li>Must be exactly 14 digits long, cannot consist of the same repeated digit, and must pass
-   *       the standard modulo-11 checksum algorithm for both verification digits (appends {@link
-   *       PartnerFieldErrorCodes#INVALID_CNPJ_FORMAT})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addFieldError(PartnerFieldErrorCodes.INVALID_CNPJ_BLANK);

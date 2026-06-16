@@ -28,37 +28,20 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Account extends DomainError {
 
-  /** The unique identifier for the account (UUIDv7). */
   UUID id;
 
-  /** The unique identifier of the {@link User} this account belongs to. */
   UUID userId;
 
-  /** The validated email address used for logging into the account. */
   Email email;
 
-  /** The defined role/type of the account (e.g., ADMIN, FORMER_STUDENT). */
   AccountType accountType;
 
-  /** The securely hashed representation of the user's password. */
   String passwordHash;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /** Flag indicating whether the account is active or has been deactivated. */
   Boolean active;
 
-  /**
-   * Constructs an {@code Account} instance.
-   *
-   * @param id the unique identifier
-   * @param userId the linked user's identifier
-   * @param email the account's email VO
-   * @param accountType the classification of the account
-   * @param passwordHash the hashed password, or {@code null} when setup is intentionally deferred
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private Account(
       UUID id,
@@ -167,13 +150,6 @@ public class Account extends DomainError {
     return updated;
   }
 
-  /**
-   * Aggregates every structural validation rule that defines a valid account aggregate.
-   *
-   * <p>This method validates identifiers, linked value objects, account type, optional password
-   * hash length, audit information, and activation state. Any failure is collected into this
-   * aggregate through the inherited field-error accumulator instead of failing fast.
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     if (userId == null) {

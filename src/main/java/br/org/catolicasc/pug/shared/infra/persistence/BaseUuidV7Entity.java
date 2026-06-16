@@ -25,12 +25,6 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseUuidV7Entity {
 
-  /**
-   * The unique identifier for the entity.
-   *
-   * <p>Configured as non-nullable and non-updatable to guarantee primary key immutability once the
-   * record is persisted to the database.
-   */
   @Id
   @Column(name = "id", nullable = false, updatable = false, columnDefinition = "uuid")
   private UUID id;

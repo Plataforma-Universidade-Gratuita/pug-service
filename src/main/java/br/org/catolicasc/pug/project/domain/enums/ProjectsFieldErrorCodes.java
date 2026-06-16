@@ -110,21 +110,10 @@ public enum ProjectsFieldErrorCodes implements GenericFieldErrorCodes {
   INVALID_AREA_OF_EXPERTISE_ID_BLANK(
       "error.domain.projects.areaOfExpertise.id.blank", "areaOfExpertiseId");
 
-  /**
-   * The property key used to resolve the localized error message in the application's resource
-   * bundles.
-   */
   private final String bundleKey;
 
-  /** The exact name of the domain property or DTO field that failed validation. */
   private final String fieldName;
 
-  /**
-   * Constructs a {@code ProjectsFieldErrorCodes} instance.
-   *
-   * @param bundleKey the unique i18n key mapping to the resource bundles
-   * @param fieldName the literal name of the domain property or DTO field that failed validation
-   */
   ProjectsFieldErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;

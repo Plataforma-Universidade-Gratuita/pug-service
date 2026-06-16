@@ -47,18 +47,10 @@ import org.hibernate.type.SqlTypes;
 @SuperBuilder
 public class UserEntity extends BaseAuditedEntity {
 
-  /**
-   * The unique 11-digit Brazilian CPF of the user.
-   *
-   * <p>Mapped as a fixed-length {@code CHAR(11)} at the database level for optimal storage and
-   * indexing. This serves as a natural key for the user, enforced by the {@code uq_users_cpf}
-   * unique constraint.
-   */
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "cpf", nullable = false, length = 11)
   private String cpf;
 
-  /** The full name of the user. */
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 }

@@ -23,24 +23,12 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class EnrollmentInfo extends DomainError {
 
-  /** The exact timestamp when the enrollment was formally accepted. */
   OffsetDateTime acceptedAt;
 
-  /**
-   * The exact timestamp when the enrollment reached a terminal state (e.g., Completed, Canceled).
-   */
   OffsetDateTime closingStatusAt;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs an {@code EnrollmentInfo} instance.
-   *
-   * @param acceptedAt the acceptance timestamp
-   * @param closingStatusAt the terminal state timestamp
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private EnrollmentInfo(
       OffsetDateTime acceptedAt, OffsetDateTime closingStatusAt, AuditInfo auditInfo) {
@@ -104,19 +92,6 @@ public class EnrollmentInfo extends DomainError {
     return closed;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>The acceptance timestamp cannot logically precede the creation timestamp (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
-   *   <li>The closing timestamp cannot logically precede the creation timestamp (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ENROLLMENT_DATES_INVALID}).
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors.
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (auditInfo == null) {
       addFieldError(SharedFieldErrorCodes.INVALID_AUDIT_INFO_BLANK);

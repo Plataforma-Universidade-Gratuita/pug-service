@@ -102,12 +102,6 @@ public class AccountsServiceImpl implements AccountsService {
     return deletedCount;
   }
 
-  /**
-   * Checks if an Account with the given email already exists.
-   *
-   * @param email the email address to check
-   * @return {@code true} if an Account with the email exists, {@code false} otherwise
-   */
   private boolean existsByEmail(String email) {
     if (email == null) {
       return false;

@@ -17,7 +17,7 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  * boundaries (Identity, Academic).
  */
 public final class FormerStudentMapper {
-  /** Private constructor. */
+
   private FormerStudentMapper() {}
 
   /**

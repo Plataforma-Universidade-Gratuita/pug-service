@@ -56,6 +56,5 @@ public class ProjectAreaOfExpertiseEntity {
     private UUID areaOfExpertiseId;
   }
 
-  /** The composite identifier mapping. */
   @EmbeddedId private ProjectsAreaOfExpertiseId id;
 }

@@ -23,21 +23,9 @@ import lombok.experimental.SuperBuilder;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseAuditedEntity extends BaseUuidV7Entity {
 
-  /**
-   * The exact timestamp when the entity was first persisted to the database.
-   *
-   * <p>This column is strictly immutable post-creation ({@code updatable = false}) to preserve
-   * accurate historical auditing.
-   */
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
-  /**
-   * The timestamp indicating when the entity's state was last updated.
-   *
-   * <p>This value should be refreshed via application logic or JPA lifecycle callbacks whenever the
-   * entity is modified.
-   */
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 }

@@ -62,32 +62,24 @@ public class EnrollmentEntity {
     private UUID formerStudentId;
   }
 
-  /** The composite identifier mapping. */
   @EmbeddedId private EnrollmentsId id;
 
-  /** The current lifecycle status of the enrollment (e.g., PENDING, APPROVED). */
   @NotBlank
   @Size(max = 16)
   @Column(name = "status", nullable = false, length = 16)
   private String status;
 
-  /** Timestamp indicating when this enrollment request was initially created. */
   @NotNull
   @Column(name = "created_at", nullable = false, updatable = false)
   private OffsetDateTime createdAt;
 
-  /** Timestamp indicating when this enrollment record was last modified. */
   @NotNull
   @Column(name = "updated_at", nullable = false)
   private OffsetDateTime updatedAt;
 
-  /** Timestamp indicating when the enrollment request was formally accepted by staff. */
   @Column(name = "accepted_at")
   private OffsetDateTime acceptedAt;
 
-  /**
-   * Timestamp indicating when the enrollment reached a terminal state (e.g., Completed, Canceled).
-   */
   @Column(name = "closing_status_at")
   private OffsetDateTime closingStatusAt;
 }

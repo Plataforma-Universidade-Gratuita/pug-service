@@ -29,15 +29,8 @@ public enum AccountType implements GenericCodes {
    */
   FORMER_STUDENT("shared.account.type.formerStudent");
 
-  /** The property key used to resolve the localized name of the account type. */
   private final String bundleKey;
 
-  /**
-   * Constructs an {@code AccountType} with its corresponding i18n message key.
-   *
-   * @param bundleKey the unique key mapping to the application's resource bundles (e.g., {@code
-   *     messages_en_US.properties} and {@code messages_pt_BR.properties})
-   */
   AccountType(String bundleKey) {
     this.bundleKey = bundleKey;
   }

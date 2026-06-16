@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 public final class StringUtils {
   private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
-  /** Private constructor to prevent instantiation. */
   private StringUtils() {}
 
   /**

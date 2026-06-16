@@ -263,15 +263,6 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
     return updated;
   }
 
-  /* --------------- INTERNAL HELPER METHODS --------------- */
-
-  /**
-   * Checks if a formerStudent with the given academic registration already exists.
-   *
-   * @param registration the academic registration string to check
-   * @return {@code true} if a formerStudent with the given registration exists, {@code false}
-   *     otherwise
-   */
   private boolean existsByRegistration(String registration) {
     if (StringUtils.isEmpty(registration)) {
       return false;

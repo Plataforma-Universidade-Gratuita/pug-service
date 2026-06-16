@@ -19,18 +19,10 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Period extends DomainError {
 
-  /** The start date of the period. */
   LocalDate startDate;
 
-  /** The due date (end date) of the period. */
   LocalDate dueDate;
 
-  /**
-   * Constructs a {@code Period} instance.
-   *
-   * @param startDate the start date
-   * @param dueDate the due date
-   */
   @Builder(toBuilder = true)
   private Period(LocalDate startDate, LocalDate dueDate) {
     this.startDate = startDate;
@@ -53,20 +45,6 @@ public class Period extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>The start date must not be null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_START_DATE_BLANK})
-   *   <li>The due date must not be null (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_DUE_DATE_BLANK})
-   *   <li>The due date must not occur chronologically before the start date (appends {@link
-   *       AcademicFieldErrorCodes#INVALID_PERIOD_RANGE})
-   * </ul>
-   */
   private void collectValidationProblems() {
     boolean hasNulls = false;
     if (startDate == null) {

@@ -20,10 +20,6 @@ public class PasswordServiceImpl implements PasswordService {
 
   private static final String SPECIAL_CHARACTERS = "!@#$%^&*()_+-=[]{}|;:,.<>?/";
 
-  /**
-   * The secret pepper string injected from the application configuration. Defaults to an empty
-   * string if not explicitly configured (e.g., in some test environments).
-   */
   @ConfigProperty(name = "security.password.pepper", defaultValue = "")
   String pepper;
 

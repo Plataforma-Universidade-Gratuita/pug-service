@@ -14,7 +14,6 @@ import lombok.Getter;
 @Getter
 public class ResourceNotFoundException extends RuntimeException {
 
-  /** The specific domain code representing the missing resource. */
   private final GenericCodes code;
 
   /**

@@ -37,29 +37,13 @@ import lombok.ToString;
 @Builder(toBuilder = true)
 public class AdminEntity {
 
-  /**
-   * The unique identifier of the linked {@link AccountEntity}.
-   *
-   * <p>Serves dual purpose as both the primary key for this entity and the logical foreign key to
-   * the accounts table. It is strictly immutable once persisted.
-   */
   @Id
   @Column(name = "account_id", nullable = false, updatable = false)
   private UUID accountId;
 
-  /**
-   * The exact timestamp indicating when the administrative privileges were granted.
-   *
-   * <p>Used for auditing and security tracking. This field is immutable.
-   */
   @Column(name = "granted_at", nullable = false, updatable = false)
   private OffsetDateTime grantedAt;
 
-  /**
-   * The designated university campus where this administrator has operational jurisdiction.
-   *
-   * <p>Stored as a string representation of the {@link Campi} enum.
-   */
   @Enumerated(EnumType.STRING)
   @Column(name = "campus", nullable = false, length = 16)
   private Campi campus;

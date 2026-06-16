@@ -42,17 +42,9 @@ import org.hibernate.type.SqlTypes;
     })
 public class CityEntity extends BaseUuidV7Entity {
 
-  /** The name of the city. */
   @Column(name = "name", nullable = false, length = 100)
   private String name;
 
-  /**
-   * The unique 7-digit IBGE code of the city.
-   *
-   * <p>Mapped as a fixed-length {@code CHAR(7)} at the database level for optimal storage and
-   * indexing. This serves as the natural key for the city, enforced by the {@code
-   * uq_cities_ibge_code} unique constraint.
-   */
   @JdbcTypeCode(SqlTypes.CHAR)
   @Column(name = "ibge_code", nullable = false, length = 7, unique = true)
   private String ibgeCode;

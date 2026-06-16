@@ -74,15 +74,8 @@ public enum AcademicErrorCodes implements GenericCodes {
    */
   FORMER_STUDENT_NOT_FOUND("error.domain.academic.formerStudent.not.found");
 
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * Constructs the {@code AcademicErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles (e.g.,
-   *     {@code messages_en_US.properties})
-   */
   AcademicErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
   }

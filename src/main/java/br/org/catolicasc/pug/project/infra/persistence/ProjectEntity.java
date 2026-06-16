@@ -57,50 +57,41 @@ import lombok.experimental.SuperBuilder;
     })
 public class ProjectEntity extends BaseAuditedEntity {
 
-  /** The title or name of the project. */
   @NotBlank
   @Size(max = 150)
   @Column(name = "name", nullable = false, length = 150)
   private String name;
 
-  /** The unique identifier (UUID) of the partner organization offering this project. */
   @NotNull
   @Column(name = "entity_id", nullable = false)
   private UUID entityId;
 
-  /** A detailed description of the project's objectives and tasks. */
   @Size(max = 4000)
   @Column(name = "description", nullable = false, length = 4000)
   private String description;
 
-  /** The unique identifier (Account ID) of the staff member who created the project. */
   @NotNull
   @Column(name = "created_by", nullable = false)
   private UUID createdBy;
 
-  /** The exact timestamp when the project reached a terminal/closed state. */
   @Column(name = "closed_at")
   private OffsetDateTime closedAt;
 
-  /** The total amount of counterpart hours the project offers to its participants. */
   @NotNull
   @DecimalMin("0.00")
   @Column(name = "offered_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal offeredHours;
 
-  /** A quantidade de horas completadas no projeto até o momento. */
   @NotNull
   @DecimalMin("0.00")
   @Column(name = "completed_hours", nullable = false, precision = 6, scale = 2)
   private BigDecimal completedHours;
 
-  /** The current execution state of the project (e.g., PLANNED, IN_PROGRESS). */
   @NotBlank
   @Size(max = 16)
   @Column(name = "status", nullable = false, length = 16)
   private String status;
 
-  /** The maximum number of formerStudents allowed to enroll in the project. */
   @Min(0)
   @Column(name = "max_participants")
   private Integer maxParticipants;

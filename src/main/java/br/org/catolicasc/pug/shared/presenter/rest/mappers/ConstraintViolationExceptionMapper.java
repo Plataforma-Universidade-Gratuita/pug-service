@@ -72,18 +72,10 @@ public class ConstraintViolationExceptionMapper
         .build();
   }
 
-  /** Extracts the field name from the violation path. */
   private String extractFieldName(ConstraintViolation<?> violation) {
     return violation.getPropertyPath() == null ? "unknown" : violation.getPropertyPath().toString();
   }
 
-  /**
-   * Maps a single Bean Validation violation into a detailed error record.
-   *
-   * <p>Dynamically extracts the annotation type (e.g., "NotNull") to serve as the programmatic
-   * error code. If the annotation cannot be determined, it safely falls back to the
-   * SharedErrorCodes equivalent.
-   */
   private FieldErrorsResponse.FieldErrorDetail mapToDetail(ConstraintViolation<?> violation) {
     String code = SharedErrorCodes.VALIDATION_ERROR.getCode();
     if (violation.getConstraintDescriptor() != null

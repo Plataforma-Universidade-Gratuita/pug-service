@@ -20,6 +20,18 @@ import java.util.List;
 public record PageResponse<T>(
     List<T> content, int page, int size, long totalElements, int totalPages) {
 
+  /**
+   * Constructs a new {@code PageResponse} with the provided content and pagination metadata. The
+   * content list is defensively copied to ensure immutability and prevent external modifications.
+   *
+   * @param content the list of items for the current page; if null, it will be treated as an empty
+   *     list
+   * @param page the zero-based index of the current page
+   * @param size the effective number of items returned in this page; may differ from the requested
+   *     size when fetch-all is requested
+   * @param totalElements the total number of matching records across all pages
+   * @param totalPages the total number of pages available for the current query
+   */
   public PageResponse {
     content = content == null ? List.of() : List.copyOf(content);
   }

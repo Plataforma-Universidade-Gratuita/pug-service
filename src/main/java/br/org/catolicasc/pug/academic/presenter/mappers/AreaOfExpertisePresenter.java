@@ -15,6 +15,7 @@ import java.util.Locale;
  * Stateless mapper responsible for translating academic area-of-expertise requests and projections.
  */
 public final class AreaOfExpertisePresenter {
+
   private AreaOfExpertisePresenter() {}
 
   /**

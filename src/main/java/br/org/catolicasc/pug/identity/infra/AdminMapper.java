@@ -15,7 +15,6 @@ import br.org.catolicasc.pug.identity.infra.read.dtos.AdminView;
  */
 public final class AdminMapper {
 
-  /** Private constructor to prevent instantiation of utility class. */
   private AdminMapper() {}
 
   /**

@@ -24,10 +24,8 @@ import lombok.Getter;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProjectAreaOfExpertise extends DomainError {
 
-  /** The unique identifier of the project. */
   private final UUID projectId;
 
-  /** The unique identifier of the areaOfExpertise. */
   private final UUID areaOfExpertiseId;
 
   /**
@@ -47,7 +45,6 @@ public class ProjectAreaOfExpertise extends DomainError {
     return association;
   }
 
-  /** Evaluates constraints for the aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     if (projectId == null) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ENROLLMENT_PROJECT_BLANK);

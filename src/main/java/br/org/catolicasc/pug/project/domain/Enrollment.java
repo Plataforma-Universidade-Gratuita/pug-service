@@ -33,13 +33,10 @@ import lombok.Getter;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Enrollment extends DomainError {
 
-  /** The composite identifier uniquely linking the formerStudent to the project. */
   EnrollmentIdentifier identifier;
 
-  /** The current lifecycle status of the enrollment. */
   EnrollmentStatus status;
 
-  /** The metadata tracking critical timestamps (acceptance, closure) of the enrollment. */
   EnrollmentInfo enrollmentInfo;
 
   /**

@@ -24,23 +24,10 @@ public enum GeoFieldErrorCodes implements GenericFieldErrorCodes {
    */
   INVALID_IBGE_CODE_FORMAT("error.domain.geo.ibge.code.invalid", "ibgeCode");
 
-  /**
-   * The property key used to resolve the localized error message in the application's resource
-   * bundles.
-   */
   private final String bundleKey;
 
-  /** The exact name of the domain property or DTO field that failed validation. */
   private final String fieldName;
 
-  /**
-   * Constructs a {@code GeoFieldErrorCodes} instance.
-   *
-   * @param bundleKey the unique i18n key mapping to the resource bundles (e.g., {@code
-   *     messages_en_US.properties})
-   * @param fieldName the literal name of the field causing the validation error (used heavily for
-   *     API error payload mapping)
-   */
   GeoFieldErrorCodes(String bundleKey, String fieldName) {
     this.bundleKey = bundleKey;
     this.fieldName = fieldName;

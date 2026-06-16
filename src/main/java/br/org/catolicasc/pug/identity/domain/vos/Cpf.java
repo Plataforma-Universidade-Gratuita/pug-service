@@ -21,14 +21,8 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class Cpf extends DomainError {
 
-  /** The raw, numeric-only 11-digit string representing the CPF. */
   String value;
 
-  /**
-   * Constructs a {@code Cpf} instance.
-   *
-   * @param value the sanitized, numeric-only CPF string
-   */
   @Builder(toBuilder = true)
   private Cpf(String value) {
     this.value = value;
@@ -52,18 +46,6 @@ public class Cpf extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Must not be null or empty (appends {@link IdentityFieldErrorCodes#INVALID_CPF_BLANK})
-   *   <li>Must be exactly 11 digits long, cannot consist of the same repeated digit, and must pass
-   *       the standard modulo-11 checksum algorithm for both verification digits (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_CPF_FORMAT})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addFieldError(IdentityFieldErrorCodes.INVALID_CPF_BLANK);

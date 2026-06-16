@@ -20,14 +20,8 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class IbgeCode extends DomainError {
 
-  /** The raw 7-digit string representing the IBGE code. */
   String code;
 
-  /**
-   * Constructs an {@code IbgeCode} instance.
-   *
-   * @param code the raw IBGE code string
-   */
   @Builder(toBuilder = true)
   private IbgeCode(String code) {
     this.code = code;
@@ -48,17 +42,6 @@ public class IbgeCode extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Must not be null or empty (appends {@link GeoFieldErrorCodes#INVALID_IBGE_CODE_BLANK})
-   *   <li>Must be exactly 7 characters long and contain only numeric digits (appends {@link
-   *       GeoFieldErrorCodes#INVALID_IBGE_CODE_FORMAT})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(code)) {
       addFieldError(GeoFieldErrorCodes.INVALID_IBGE_CODE_BLANK);

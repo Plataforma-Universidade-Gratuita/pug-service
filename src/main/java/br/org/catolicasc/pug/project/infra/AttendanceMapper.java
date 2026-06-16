@@ -17,7 +17,6 @@ import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
  */
 public final class AttendanceMapper {
 
-  /** Private constructor to prevent instantiation. */
   private AttendanceMapper() {}
 
   /**

@@ -58,14 +58,8 @@ public enum ProjectsErrorCodes implements GenericCodes {
   /** Indicates that a requested project could not be found. */
   PROJECT_NOT_FOUND("error.domain.projects.not.found");
 
-  /** The property key used to resolve the localized error message in the resource bundles. */
   private final String bundleKey;
 
-  /**
-   * Constructs the {@code ProjectsErrorCodes} enum.
-   *
-   * @param bundleKey the unique i18n key mapping to the application's resource bundles
-   */
   ProjectsErrorCodes(String bundleKey) {
     this.bundleKey = bundleKey;
   }

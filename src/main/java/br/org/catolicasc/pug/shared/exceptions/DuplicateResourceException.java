@@ -14,7 +14,6 @@ import lombok.Getter;
 @Getter
 public class DuplicateResourceException extends RuntimeException {
 
-  /** The specific domain code representing the duplication error. */
   private final GenericCodes code;
 
   /**

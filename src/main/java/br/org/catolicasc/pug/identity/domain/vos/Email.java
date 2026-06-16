@@ -24,14 +24,8 @@ public class Email extends DomainError {
 
   private static final EmailValidator EMAIL_VALIDATOR = EmailValidator.getInstance();
 
-  /** The normalized (trimmed and lowercased) string representation of the email address. */
   String value;
 
-  /**
-   * Constructs an {@code Email} instance.
-   *
-   * @param value the normalized email string
-   */
   @Builder(toBuilder = true)
   private Email(String value) {
     this.value = value;
@@ -55,18 +49,6 @@ public class Email extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>Must not be null, empty, or whitespace (appends {@link
-   *       IdentityFieldErrorCodes#INVALID_EMAIL_BLANK})
-   *   <li>Must not exceed 254 characters and must pass the Apache Commons Email format validation
-   *       (appends {@link IdentityFieldErrorCodes#INVALID_EMAIL_FORMAT})
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (StringUtils.isEmpty(value)) {
       addFieldError(IdentityFieldErrorCodes.INVALID_EMAIL_BLANK);

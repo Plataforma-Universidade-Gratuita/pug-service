@@ -23,7 +23,6 @@ import java.util.Locale;
  */
 public final class SharedDataPresenter {
 
-  /** Private constructor to prevent instantiation of the utility class. */
   private SharedDataPresenter() {
     throw new UnsupportedOperationException("Utility class cannot be instantiated");
   }

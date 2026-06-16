@@ -23,18 +23,10 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class QrValidationInfo extends DomainError {
 
-  /** The duration of time spent on this attendance. */
   BigDecimal duration;
 
-  /** The unique cryptographic hash of the QR code used for validation. */
   String qrValidationHash;
 
-  /**
-   * Constructs a {@code QrValidationInfo} instance.
-   *
-   * @param duration the time duration recorded
-   * @param qrValidationHash the unique QR hash
-   */
   @Builder(toBuilder = true)
   private QrValidationInfo(BigDecimal duration, String qrValidationHash) {
     this.duration = duration;
@@ -57,18 +49,6 @@ public class QrValidationInfo extends DomainError {
     return vo;
   }
 
-  /**
-   * Evaluates internal constraints and accumulates validation problems.
-   *
-   * <p>Business rules applied:
-   *
-   * <ul>
-   *   <li>The duration must not be null and must be strictly greater than zero (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_DURATION_INVALID}).
-   *   <li>The qrValidationHash must not be null or an empty string (appends {@link
-   *       ProjectsFieldErrorCodes#INVALID_ATTENDANCE_QR_VALIDATION_HASH_EMPTY}).
-   * </ul>
-   */
   private void collectValidationProblems() {
     if (duration == null || duration.signum() <= 0) {
       addFieldError(ProjectsFieldErrorCodes.INVALID_ATTENDANCE_DURATION_INVALID);

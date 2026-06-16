@@ -1,6 +1,5 @@
 package br.org.catolicasc.pug.partner.domain;
 
-import br.org.catolicasc.pug.geo.domain.City;
 import br.org.catolicasc.pug.partner.domain.enums.PartnerFieldErrorCodes;
 import br.org.catolicasc.pug.partner.domain.vos.Cnpj;
 import br.org.catolicasc.pug.shared.domain.DomainError;
@@ -29,34 +28,18 @@ import lombok.Value;
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Entity extends DomainError {
 
-  /** The unique identifier for the partner entity (UUIDv7). */
   UUID id;
 
-  /** The validated CNPJ Value Object associated with the partner entity. */
   Cnpj cnpj;
 
-  /** The registered name or corporate reason of the partner entity. */
   String name;
 
-  /** The unique identifier of the associated {@link City} where the entity is located. */
   UUID cityId;
 
-  /** The physical street address of the partner entity. */
   String address;
 
-  /** The audit tracking information (creation and update timestamps). */
   AuditInfo auditInfo;
 
-  /**
-   * Constructs an {@code Entity} instance.
-   *
-   * @param id the unique identifier
-   * @param cnpj the entity's CNPJ VO
-   * @param name the entity's name
-   * @param cityId the UUID of the city
-   * @param address the physical address
-   * @param auditInfo the audit tracking VO
-   */
   @Builder(toBuilder = true)
   private Entity(
       UUID id, Cnpj cnpj, String name, UUID cityId, String address, AuditInfo auditInfo) {
@@ -150,22 +133,6 @@ public class Entity extends DomainError {
     return updated;
   }
 
-  /**
-   * Evaluates constraints for the Entity aggregate and accumulates any validation problems.
-   *
-   * <p>Rules applied:
-   *
-   * <ul>
-   *   <li>Validates the UUID (inherited from {@link DomainError})
-   *   <li>Ensures the {@code cnpj} is not null and bubbles up any internal {@link Cnpj} errors
-   *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
-   *   <li>Ensures the {@code cityId} is not null (appends {@link
-   *       PartnerFieldErrorCodes#INVALID_CITY_ID_BLANK})
-   *   <li>Ensures the {@code address} does not exceed 254 characters (appends {@link
-   *       PartnerFieldErrorCodes#INVALID_ADDRESS_TOO_LONG})
-   *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
-   * </ul>
-   */
   private void collectValidationProblems() {
     validateIdField(id);
     if (cnpj == null) {

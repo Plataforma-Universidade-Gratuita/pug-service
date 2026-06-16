@@ -29,6 +29,15 @@ public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthoriz
   @Inject I18n i18n;
   @Context HttpHeaders headers;
 
+  /**
+   * Handles the mapping of {@link NotAuthorizedException} to a standardized API error response.
+   * Logs the unauthorized access attempt and returns a generic error message without revealing
+   * specific details about the failure reason (e.g., invalid email or password) to prevent
+   * credential enumeration attacks.
+   *
+   * @param ex the caught {@link NotAuthorizedException}
+   * @return a {@link Response} with status 401 (Unauthorized) containing a localized error message
+   */
   @Override
   public Response toResponse(NotAuthorizedException ex) {
     LOG.debugf(ex, "Unauthorized access attempt");
