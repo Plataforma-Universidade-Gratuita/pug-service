@@ -244,6 +244,8 @@ class ProjectServiceImplTest {
 
     assertThat(updated.getProjectStatus()).isEqualTo(ProjectStatus.COMPLETED);
     assertThat(updated.getProjectInfo().getCompletedHours()).isEqualByComparingTo("40.00");
+    verify(enrollmentsService)
+        .changeStatusByProjectId(eq(project.getId()), eq(EnrollmentStatus.COMPLETED));
   }
 
   @Test
