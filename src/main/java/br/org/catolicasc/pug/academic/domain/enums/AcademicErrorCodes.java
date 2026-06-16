@@ -63,6 +63,12 @@ public enum AcademicErrorCodes implements GenericCodes {
   FORMER_STUDENT_HAS_ENROLLMENTS("error.domain.academic.formerStudent.has.enrollments"),
 
   /**
+   * Indicates an attempt to enroll a former student who has already concluded their counterpart
+   * hours.
+   */
+  FORMER_STUDENT_ENROLLMENT_CONCLUDED("error.domain.academic.former.student.concluded"),
+
+  /**
    * Indicates that a requested formerStudent enrollment record could not be located in the
    * underlying data store by its linked account ID, CPF, or academic registration.
    */

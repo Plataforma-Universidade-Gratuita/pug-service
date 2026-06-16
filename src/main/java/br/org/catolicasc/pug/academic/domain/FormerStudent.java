@@ -1,6 +1,7 @@
 package br.org.catolicasc.pug.academic.domain;
 
 import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
+import br.org.catolicasc.pug.academic.domain.enums.AcademicErrorCodes;
 import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
 import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
@@ -8,6 +9,7 @@ import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.vos.AuditInfo;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -231,6 +233,17 @@ public class FormerStudent extends DomainError {
 
     updated.collectValidationProblems();
     return updated;
+  }
+
+  /**
+   * Validates whether the former student can enroll in new projects.
+   *
+   * @throws BusinessRuleException if the counterpart-hour requirement is already concluded
+   */
+  public void validateCanEnroll() {
+    if (counterpartHours != null && Boolean.TRUE.equals(counterpartHours.getConcluded())) {
+      throw new BusinessRuleException(AcademicErrorCodes.FORMER_STUDENT_ENROLLMENT_CONCLUDED);
+    }
   }
 
   /**

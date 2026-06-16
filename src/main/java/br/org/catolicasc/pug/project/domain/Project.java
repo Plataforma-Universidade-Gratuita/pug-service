@@ -258,6 +258,17 @@ public class Project extends DomainError {
     return updated;
   }
 
+  /**
+   * Validates whether the project can receive new enrollments.
+   *
+   * @throws BusinessRuleException if the project is canceled or completed
+   */
+  public void validateCanReceiveEnrollments() {
+    if (projectStatus == ProjectStatus.CANCELED || projectStatus == ProjectStatus.COMPLETED) {
+      throw new BusinessRuleException(ProjectsErrorCodes.ENROLLMENT_PROJECT_UNAVAILABLE);
+    }
+  }
+
   /** Evaluates constraints for the Project aggregate and accumulates any validation problems. */
   private void collectValidationProblems() {
     validateIdField(id);
