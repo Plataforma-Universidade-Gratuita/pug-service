@@ -1,7 +1,7 @@
 package br.org.catolicasc.pug.academic.domain;
 
-import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
 import br.org.catolicasc.pug.academic.domain.enums.AcademicErrorCodes;
+import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
 import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
 import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
