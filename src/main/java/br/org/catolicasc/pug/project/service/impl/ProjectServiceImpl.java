@@ -171,7 +171,7 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     repo.update(updated);
-    propagateEnrollmentStatusChange(id, status);
+    propagateEnrollmentStatusChange(id, project.getProjectStatus(), updated.getProjectStatus());
 
     auditPublisher.fireUpdate(Project.class.getName(), id, project, updated);
     return updated;
@@ -207,12 +207,13 @@ public class ProjectServiceImpl implements ProjectService {
     return getById(id);
   }
 
-  private void propagateEnrollmentStatusChange(UUID projectId, ProjectStatus status) {
-    if (projectId == null || status == null) {
+  private void propagateEnrollmentStatusChange(
+      UUID projectId, ProjectStatus previousStatus, ProjectStatus nextStatus) {
+    if (projectId == null || previousStatus == null || nextStatus == null) {
       return;
     }
 
-    switch (status) {
+    switch (nextStatus) {
       case CANCELED ->
           enrollmentsService.changeStatusByProjectId(projectId, EnrollmentStatus.CANCELED);
       case COMPLETED ->
@@ -220,6 +221,12 @@ public class ProjectServiceImpl implements ProjectService {
       case ON_HOLD ->
           enrollmentsService.changeStatusByProjectId(
               projectId, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+      case IN_PROGRESS -> {
+        if (previousStatus == ProjectStatus.ON_HOLD) {
+          enrollmentsService.changeStatusByProjectId(
+              projectId, EnrollmentStatus.ON_HOLD, EnrollmentStatus.APPROVED);
+        }
+      }
       case PLANNED ->
           enrollmentsService.changeStatusByProjectId(
               projectId, EnrollmentStatus.ON_HOLD, EnrollmentStatus.APPROVED);

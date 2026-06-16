@@ -5,6 +5,7 @@ import static br.org.catolicasc.pug.helpers.builders.commands.ProjectUpdateComma
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +15,7 @@ import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Project;
+import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
@@ -214,6 +216,9 @@ class ProjectServiceImplTest {
     Project retaken = service.transitionStatus(onHold.getId(), ProjectStatus.IN_PROGRESS);
 
     assertThat(retaken.getProjectStatus()).isEqualTo(ProjectStatus.IN_PROGRESS);
+    verify(enrollmentsService)
+        .changeStatusByProjectId(
+            eq(project.getId()), eq(EnrollmentStatus.ON_HOLD), eq(EnrollmentStatus.APPROVED));
   }
 
   @Test

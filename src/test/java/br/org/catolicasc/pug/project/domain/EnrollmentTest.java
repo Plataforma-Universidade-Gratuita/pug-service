@@ -87,6 +87,17 @@ class EnrollmentTest {
     }
 
     @Test
+    @DisplayName("Should transition from PENDING to CANCELED successfully")
+    void shouldCancelPendingEnrollment() {
+      Enrollment pending = Enrollment.factory(formerStudent, project);
+
+      Enrollment canceled = pending.changeStatus(EnrollmentStatus.CANCELED);
+
+      assertThat(canceled.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
+      assertThat(canceled.getEnrollmentInfo().getClosingStatusAt()).isNotNull();
+    }
+
+    @Test
     @DisplayName("Should transition from APPROVED to ON_HOLD and then back to APPROVED")
     void shouldPauseAndResumeEnrollment() {
       Enrollment approved =

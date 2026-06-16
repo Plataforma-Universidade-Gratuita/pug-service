@@ -43,6 +43,10 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     Enrollment current = getByIds(identifier);
     Enrollment updated = current.changeStatus(status);
 
+    if (shouldPauseApprovedPendingEnrollment(current, status)) {
+      updated = updated.changeStatus(EnrollmentStatus.ON_HOLD);
+    }
+
     if (updated.hasFieldErrors()) {
       throw new AppValidationException(updated.getFieldErrors());
     }
@@ -51,6 +55,19 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     auditPublisher.fireUpdate(
         Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
+  }
+
+  private boolean shouldPauseApprovedPendingEnrollment(
+      Enrollment current, EnrollmentStatus targetStatus) {
+    if (current == null
+        || targetStatus != EnrollmentStatus.APPROVED
+        || current.getStatus() != EnrollmentStatus.PENDING) {
+      return false;
+    }
+
+    Project project = projectService.getById(current.getIdentifier().getProjectId());
+    return project.getProjectStatus()
+        == br.org.catolicasc.pug.project.domain.enums.ProjectStatus.ON_HOLD;
   }
 
   /** {@inheritDoc} */

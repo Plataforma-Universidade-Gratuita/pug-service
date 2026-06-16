@@ -18,6 +18,7 @@ import br.org.catolicasc.pug.partner.domain.Entity;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
@@ -132,6 +133,21 @@ class EnrollmentsServiceImplTest {
         service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
+    verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should place approved pending enrollment on hold when project is on hold")
+  void changeStatusApprovedOnOnHoldProjectBecomesOnHold() {
+    Project onHoldProject = project.start().putOnHold();
+    when(projectService.getById(project.getId())).thenReturn(onHoldProject);
+
+    Enrollment updated =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.ON_HOLD);
+    assertThat(onHoldProject.getProjectStatus()).isEqualTo(ProjectStatus.ON_HOLD);
     verify(audit).fireUpdate(any(), any(), any(), any());
   }
 

@@ -93,11 +93,15 @@ public class Enrollment extends DomainError {
    *       status} is {@link EnrollmentStatus#APPROVED}. On success, {@link EnrollmentInfo#update()}
    *       is applied so the enrollment keeps its lifecycle timestamps while still tracking the
    *       state change.
-   *   <li>Transitions to any closing status (i.e., {@link EnrollmentStatus#CANCELED}, {@link
-   *       EnrollmentStatus#COMPLETED}, {@link EnrollmentStatus#EXITED}, {@link
-   *       EnrollmentStatus#REMOVED}) are only allowed when the current {@code status} is {@link
-   *       EnrollmentStatus#APPROVED} or {@link EnrollmentStatus#ON_HOLD}. On success, {@link
-   *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
+   *   <li>A transition to {@link EnrollmentStatus#CANCELED} is allowed when the current {@code
+   *       status} is {@link EnrollmentStatus#PENDING}, {@link EnrollmentStatus#APPROVED}, or {@link
+   *       EnrollmentStatus#ON_HOLD}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
+   *       stamping {@code closingStatusAt}.
+   *   <li>Transitions to the remaining closing statuses (i.e., {@link EnrollmentStatus#COMPLETED},
+   *       {@link EnrollmentStatus#EXITED}, {@link EnrollmentStatus#REMOVED}) are only allowed when
+   *       the current {@code status} is {@link EnrollmentStatus#APPROVED} or {@link
+   *       EnrollmentStatus#ON_HOLD}. On success, {@link EnrollmentInfo#closeStatus()} is applied,
+   *       stamping {@code closingStatusAt}.
    *   <li>A transition to {@link EnrollmentStatus#REJECTED} is allowed from both {@link
    *       EnrollmentStatus#PENDING} and {@link EnrollmentStatus#APPROVED}. On success, {@link
    *       EnrollmentInfo#closeStatus()} is applied, stamping {@code closingStatusAt}.
@@ -123,38 +127,67 @@ public class Enrollment extends DomainError {
       throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
     }
 
-    EnrollmentInfo newInfo;
+    EnrollmentInfo newInfo = resolveNextEnrollmentInfo(Objects.requireNonNull(newStatus));
 
-    if (Objects.requireNonNull(newStatus) == EnrollmentStatus.APPROVED) {
-      if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.ON_HOLD) {
-        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-      }
-      newInfo =
-          status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
-    } else if (newStatus == EnrollmentStatus.ON_HOLD) {
-      if (status != EnrollmentStatus.APPROVED) {
-        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-      }
-      newInfo = enrollmentInfo.update();
-    } else if (newStatus == EnrollmentStatus.REJECTED) {
-      if (status != EnrollmentStatus.PENDING && status != EnrollmentStatus.APPROVED) {
-        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-      }
-      newInfo = enrollmentInfo.closeStatus();
-    } else {
-      if (isClosingStatus(newStatus)) {
-        if (status != EnrollmentStatus.APPROVED && status != EnrollmentStatus.ON_HOLD) {
-          throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-        }
-        newInfo = enrollmentInfo.closeStatus();
-      } else {
-        throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
-      }
-    }
-
-    Enrollment updated = toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
+    Enrollment updated = buildUpdatedEnrollment(newStatus, newInfo);
     updated.collectValidationProblems();
     return updated;
+  }
+
+  private Enrollment buildUpdatedEnrollment(EnrollmentStatus newStatus, EnrollmentInfo newInfo) {
+    return toBuilder().status(newStatus).enrollmentInfo(newInfo).build();
+  }
+
+  private EnrollmentInfo resolveNextEnrollmentInfo(EnrollmentStatus newStatus) {
+    return switch (newStatus) {
+      case APPROVED -> resolveApprovedInfo();
+      case ON_HOLD -> resolveOnHoldInfo();
+      case REJECTED -> resolveRejectedInfo();
+      default -> resolveClosingInfo(newStatus);
+    };
+  }
+
+  private EnrollmentInfo resolveApprovedInfo() {
+    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.ON_HOLD);
+    return status == EnrollmentStatus.PENDING ? enrollmentInfo.accept() : enrollmentInfo.update();
+  }
+
+  private EnrollmentInfo resolveOnHoldInfo() {
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED);
+    return enrollmentInfo.update();
+  }
+
+  private EnrollmentInfo resolveRejectedInfo() {
+    ensureCurrentStatusIs(EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED);
+    return enrollmentInfo.closeStatus();
+  }
+
+  private EnrollmentInfo resolveClosingInfo(EnrollmentStatus newStatus) {
+    if (!isClosingStatus(newStatus)) {
+      throwInvalidStatusTransition();
+    }
+
+    if (newStatus == EnrollmentStatus.CANCELED) {
+      ensureCurrentStatusIs(
+          EnrollmentStatus.PENDING, EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+      return enrollmentInfo.closeStatus();
+    }
+
+    ensureCurrentStatusIs(EnrollmentStatus.APPROVED, EnrollmentStatus.ON_HOLD);
+    return enrollmentInfo.closeStatus();
+  }
+
+  private void ensureCurrentStatusIs(EnrollmentStatus... allowedStatuses) {
+    for (EnrollmentStatus allowedStatus : allowedStatuses) {
+      if (status == allowedStatus) {
+        return;
+      }
+    }
+    throwInvalidStatusTransition();
+  }
+
+  private void throwInvalidStatusTransition() {
+    throw new BusinessRuleException(ProjectsErrorCodes.INVALID_ENROLLMENT_STATUS_UPDATE);
   }
 
   /**
