@@ -38,8 +38,7 @@ class EntityTest {
         .contains(
             PartnerFieldErrorCodes.INVALID_CNPJ_BLANK,
             SharedFieldErrorCodes.INVALID_NAME_BLANK,
-            PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK,
-            PartnerFieldErrorCodes.INVALID_ADDRESS_BLANK);
+            PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK);
   }
 
   @Nested

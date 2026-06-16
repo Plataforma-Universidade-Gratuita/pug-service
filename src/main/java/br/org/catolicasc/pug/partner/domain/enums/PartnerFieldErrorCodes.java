@@ -18,9 +18,6 @@ public enum PartnerFieldErrorCodes implements GenericFieldErrorCodes {
   /** Indicates that an account ID was provided as null. */
   INVALID_ACCOUNT_ID_BLANK("error.domain.partner.accountId.blank", "accountId"),
 
-  /** Indicates that a physical address was provided as null, empty, or whitespace. */
-  INVALID_ADDRESS_BLANK("error.domain.partner.address.blank", "address"),
-
   /** Indicates that a physical address exceeds the maximum allowed length constraints. */
   INVALID_ADDRESS_TOO_LONG("error.domain.partner.address.tooLong", "address"),
 

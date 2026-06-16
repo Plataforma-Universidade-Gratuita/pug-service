@@ -33,6 +33,12 @@ public enum IdentityErrorCodes implements GenericCodes {
   ADMIN_NOT_FOUND("error.domain.identity.admin.not.found"),
 
   /**
+   * Indicates that an administrator cannot be removed because they are linked to existing projects
+   * as creator.
+   */
+  ADMIN_HAS_PROJECTS("error.domain.identity.admin.has.projects"),
+
+  /**
    * Indicates that the authenticated account must wire a password before it can access protected
    * application operations.
    */

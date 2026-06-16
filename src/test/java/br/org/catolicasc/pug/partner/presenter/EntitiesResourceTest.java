@@ -151,7 +151,7 @@ class EntitiesResourceTest extends BaseResourceTest {
         .then()
         .statusCode(201)
         .body("data.name", is(req.name()))
-        .body("data.cnpj", is(req.cnpjString()))
+        .body("data.cnpj", is(req.cnpj()))
         .body("data.cnpjFormatted", notNullValue());
   }
 

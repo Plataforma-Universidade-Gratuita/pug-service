@@ -10,6 +10,7 @@ import br.org.catolicasc.pug.identity.service.dtos.admins.AdminCreateCommand;
 import br.org.catolicasc.pug.identity.service.dtos.admins.AdminUpdateCommand;
 import br.org.catolicasc.pug.identity.service.utils.AdminProcessor;
 import br.org.catolicasc.pug.identity.service.utils.ExceptionHelper;
+import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -33,6 +34,7 @@ public class AdminsServiceImpl implements AdminsService {
   @Inject AuditPublisher auditPublisher;
   @Inject AdminRepository repo;
   @Inject AccountsService accountService;
+  @Inject ProjectService projectService;
 
   /** {@inheritDoc} */
   @Transactional
@@ -54,6 +56,10 @@ public class AdminsServiceImpl implements AdminsService {
   @Override
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to revoke Admin role for Account ID: %s", accountId);
+    if (projectService.existsByCreatedBy(accountId)) {
+      throw ExceptionHelper.adminHasProjects();
+    }
+
     boolean deleted = repo.deleteByAccountId(accountId);
 
     if (deleted) {

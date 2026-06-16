@@ -161,8 +161,7 @@ public class Entity extends DomainError {
    *   <li>Validates the entity {@code name} (inherited from {@link DomainError})
    *   <li>Ensures the {@code cityId} is not null (appends {@link
    *       PartnerFieldErrorCodes#INVALID_CITY_ID_BLANK})
-   *   <li>Ensures the {@code address} is not blank and does not exceed 254 characters (appends
-   *       {@link PartnerFieldErrorCodes#INVALID_ADDRESS_BLANK} or {@link
+   *   <li>Ensures the {@code address} does not exceed 254 characters (appends {@link
    *       PartnerFieldErrorCodes#INVALID_ADDRESS_TOO_LONG})
    *   <li>Ensures the {@code auditInfo} is not null and bubbles up any internal errors
    * </ul>
@@ -178,9 +177,7 @@ public class Entity extends DomainError {
     if (cityId == null) {
       addFieldError(PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK);
     }
-    if (StringUtils.isEmpty(address)) {
-      addFieldError(PartnerFieldErrorCodes.INVALID_ADDRESS_BLANK);
-    } else if (address.length() > 254) {
+    if (address.length() > 254) {
       addFieldError(PartnerFieldErrorCodes.INVALID_ADDRESS_TOO_LONG);
     }
     if (auditInfo == null) {

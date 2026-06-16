@@ -14,7 +14,9 @@ import br.org.catolicasc.pug.helpers.builders.domain.AdminBuilder;
 import br.org.catolicasc.pug.identity.domain.Admin;
 import br.org.catolicasc.pug.identity.domain.AdminRepository;
 import br.org.catolicasc.pug.identity.service.AccountsService;
+import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import com.github.f4b6a3.uuid.UuidCreator;
@@ -34,6 +36,7 @@ class AdminsServiceImplTest {
   @Inject AdminsServiceImpl service;
   @InjectMock AdminRepository repo;
   @InjectMock AccountsService accountService;
+  @InjectMock ProjectService projectService;
   @InjectMock AuditPublisher audit;
 
   @Test
@@ -56,6 +59,7 @@ class AdminsServiceImplTest {
   @DisplayName("Should delete admin and revoke account")
   void deleteSuccess() {
     UUID id = UuidCreator.getTimeOrderedEpoch();
+    when(projectService.existsByCreatedBy(id)).thenReturn(false);
     when(repo.deleteByAccountId(id)).thenReturn(true);
 
     boolean deleted = service.delete(id);
@@ -63,6 +67,19 @@ class AdminsServiceImplTest {
     assertThat(deleted).isTrue();
     verify(accountService).delete(id);
     verify(audit).fireDelete(Admin.class.getName(), id);
+  }
+
+  @Test
+  @DisplayName("Should throw when admin has projects")
+  void deleteBlockedWhenAdminHasProjects() {
+    UUID id = UuidCreator.getTimeOrderedEpoch();
+    when(projectService.existsByCreatedBy(id)).thenReturn(true);
+
+    assertThrows(BusinessRuleException.class, () -> service.delete(id));
+
+    verify(repo, never()).deleteByAccountId(id);
+    verify(accountService, never()).delete(id);
+    verify(audit, never()).fireDelete(Admin.class.getName(), id);
   }
 
   @Test

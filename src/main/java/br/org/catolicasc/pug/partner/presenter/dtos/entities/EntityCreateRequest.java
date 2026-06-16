@@ -12,7 +12,7 @@ import java.util.UUID;
  * <p>This record applies Jakarta Bean Validation constraints to ensure the initial data is
  * structurally sound before it reaches the application service layer.
  *
- * @param cnpjString the raw 14-digit numeric CNPJ string (must not be blank)
+ * @param cnpj the raw 14-digit numeric CNPJ string (must not be blank)
  * @param name the registered name or corporate reason of the organization (must not be blank and
  *     max 150 characters)
  * @param cityId the unique identifier (UUID) of the city where the organization is located (must
@@ -20,7 +20,7 @@ import java.util.UUID;
  * @param address the physical street address (optional, max 254 characters)
  */
 public record EntityCreateRequest(
-    @NotBlank @JsonProperty("cnpj") String cnpjString,
+    @NotBlank @JsonProperty("cnpj") String cnpj,
     @NotBlank @Size(max = 150) String name,
     @NotNull UUID cityId,
     @Size(max = 254) String address) {}

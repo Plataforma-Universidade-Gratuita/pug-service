@@ -49,6 +49,16 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an administrator
+   * cannot be removed because it is linked to existing projects.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException adminHasProjects() {
+    return new BusinessRuleException(IdentityErrorCodes.ADMIN_HAS_PROJECTS);
+  }
+
+  /**
    * Instantiates a standardized {@link BusinessRuleException} indicating that the authenticated
    * account still needs to wire a password before it can use protected operations.
    *

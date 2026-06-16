@@ -32,7 +32,7 @@ public final class EntityPresenter {
     if (req == null) {
       return null;
     }
-    return new EntityCreateCommand(req.cnpjString(), req.name(), req.cityId(), req.address());
+    return new EntityCreateCommand(req.cnpj(), req.name(), req.cityId(), req.address());
   }
 
   /**
