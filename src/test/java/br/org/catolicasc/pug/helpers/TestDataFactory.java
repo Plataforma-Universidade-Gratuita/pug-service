@@ -132,6 +132,10 @@ public class TestDataFactory {
         ProjectBuilder.aProject().withEntity(entity.getId()).withCreator(creator.getId()).build());
   }
 
+  public void updateProject(Project project) {
+    projectRepository.update(project);
+  }
+
   public Enrollment createEnrollment(FormerStudent formerStudent, Project project) {
     return enrollmentRepository.persist(Enrollment.factory(formerStudent, project));
   }

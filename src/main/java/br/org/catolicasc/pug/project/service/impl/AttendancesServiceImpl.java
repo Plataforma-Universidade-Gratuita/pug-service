@@ -5,6 +5,7 @@ import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.AttendanceRepository;
 import br.org.catolicasc.pug.project.domain.Enrollment;
+import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.AttendancesService;
@@ -16,6 +17,7 @@ import br.org.catolicasc.pug.project.service.utils.AttendanceProcessor;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -52,6 +54,21 @@ public class AttendancesServiceImpl implements AttendancesService {
         repo.deleteAllByEnrollmentId(identifier.getProjectId(), identifier.getFormerStudentId());
     if (deleted > 0) {
       auditPublisher.fireDelete(Attendance.class.getName(), identifier.getProjectId());
+    }
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllWaitingValidationByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return 0;
+    }
+    LOG.debugf("Deleting all waiting-validation attendances for Project: %s", projectId);
+    long deleted = repo.deleteAllWaitingValidationByProjectId(projectId);
+    if (deleted > 0) {
+      auditPublisher.fireDelete(Attendance.class.getName(), projectId);
     }
     return deleted;
   }
@@ -112,7 +129,12 @@ public class AttendancesServiceImpl implements AttendancesService {
       throw new AppValidationException(identifier.getFieldErrors());
     }
 
-    Enrollment enrollment = enrollmentsService.getByIds(identifier);
+    Enrollment enrollment;
+    try {
+      enrollment = enrollmentsService.getByIds(identifier);
+    } catch (ResourceNotFoundException ex) {
+      throw ExceptionHelper.attendanceEnrollmentNotFound();
+    }
     enrollment.validateCanCreateAttendance();
 
     Attendance attendance =
@@ -143,6 +165,10 @@ public class AttendancesServiceImpl implements AttendancesService {
       throw ExceptionHelper.attendanceNotFound();
     }
 
+    if (cmd.status() == AttendanceStatus.PRESENT) {
+      projectService.validateIsInProgress(current.getEnrollmentIdentifier().getProjectId());
+    }
+
     Attendance validated =
         AttendanceProcessor.processValidationInput(current, validatorAccountId, cmd.status());
 
@@ -154,10 +180,32 @@ public class AttendancesServiceImpl implements AttendancesService {
     LOG.infof("Attendance validated successfully. ID: %s, Status: %s", id, cmd.status());
 
     if (validated.getStatus() == AttendanceStatus.PRESENT) {
+      var formerStudent =
+          formerStudentsService.getById(validated.getEnrollmentIdentifier().getFormerStudentId());
+      formerStudent.validateCanAddCompletedHours(validated.getQrValidationInfo().getDuration());
+
+      Project project = projectService.getById(validated.getEnrollmentIdentifier().getProjectId());
+      project.validateCanAddCompletedHours(validated.getQrValidationInfo().getDuration());
+
       formerStudentsService.addCompletedHours(
           validated.getEnrollmentIdentifier().getFormerStudentId(),
           validated.getQrValidationInfo().getDuration());
       projectService.addCompletedHours(
+          validated.getEnrollmentIdentifier().getProjectId(),
+          validated.getQrValidationInfo().getDuration());
+    } else if (current.getStatus() == AttendanceStatus.PRESENT
+        && validated.getStatus() == AttendanceStatus.ABSENT) {
+      var formerStudent =
+          formerStudentsService.getById(validated.getEnrollmentIdentifier().getFormerStudentId());
+      formerStudent.validateCanRemoveCompletedHours(validated.getQrValidationInfo().getDuration());
+
+      Project project = projectService.getById(validated.getEnrollmentIdentifier().getProjectId());
+      project.validateCanRemoveCompletedHours(validated.getQrValidationInfo().getDuration());
+
+      formerStudentsService.removeCompletedHours(
+          validated.getEnrollmentIdentifier().getFormerStudentId(),
+          validated.getQrValidationInfo().getDuration());
+      projectService.removeCompletedHours(
           validated.getEnrollmentIdentifier().getProjectId(),
           validated.getQrValidationInfo().getDuration());
     }

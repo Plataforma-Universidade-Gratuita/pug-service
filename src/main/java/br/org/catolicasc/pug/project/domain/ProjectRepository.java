@@ -49,6 +49,14 @@ public interface ProjectRepository {
   boolean existsByNameAndEntityId(String name, UUID entityId);
 
   /**
+   * Checks whether a specific project is currently in the {@code IN_PROGRESS} status.
+   *
+   * @param id the unique identifier of the project
+   * @return {@code true} when the project exists and is in progress, {@code false} otherwise
+   */
+  boolean isInProgress(UUID id);
+
+  /**
    * Retrieves a {@link Project} by its unique identifier.
    *
    * @param id the unique identifier (UUID) of the project

@@ -38,6 +38,19 @@ public interface FormerStudentsService {
   FormerStudent addCompletedHours(UUID accountId, BigDecimal hours);
 
   /**
+   * Removes completed hours from a formerStudent's academic progress.
+   *
+   * <p>This method updates the formerStudent's record, recalculating whether the formerStudent
+   * still satisfies the total required counterpart hours.
+   *
+   * @param accountId the formerStudent's account identifier
+   * @param hours the amount of hours to remove
+   * @return the updated {@link FormerStudent} aggregate
+   * @throws ResourceNotFoundException if the formerStudent does not exist
+   */
+  FormerStudent removeCompletedHours(UUID accountId, BigDecimal hours);
+
+  /**
    * Removes a formerStudent's enrollment by deleting the {@link FormerStudent} record.
    *
    * <p>This operation enforces data hygiene. After the academic enrollment is successfully removed,

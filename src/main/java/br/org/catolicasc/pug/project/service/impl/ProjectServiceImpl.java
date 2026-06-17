@@ -66,6 +66,24 @@ public class ProjectServiceImpl implements ProjectService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public Project removeCompletedHours(UUID id, BigDecimal hours) {
+    LOG.debugf("Removing %s completed hours from project: %s", hours, id);
+    Project current = getById(id);
+
+    Project updated = current.removeCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Hours removed from project %s. Current status: %s", id, updated.getProjectStatus());
+    return updated;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Project ID: %s", id);
     if (id == null) {
@@ -104,6 +122,14 @@ public class ProjectServiceImpl implements ProjectService {
       return false;
     }
     return repo.existsByCreatedBy(accountId);
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void validateIsInProgress(UUID projectId) {
+    if (!repo.isInProgress(projectId)) {
+      throw ExceptionHelper.attendanceProjectNotInProgress();
+    }
   }
 
   /** {@inheritDoc} */

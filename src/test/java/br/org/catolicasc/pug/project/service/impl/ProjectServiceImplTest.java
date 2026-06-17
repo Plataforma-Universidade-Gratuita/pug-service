@@ -196,6 +196,25 @@ class ProjectServiceImplTest {
 
   @Test
   @Transactional
+  @DisplayName("Should validate project is in progress")
+  void validateIsInProgressSuccess() {
+    Project project = factory.createProject(partnerEntity, creator);
+    Project started = service.transitionStatus(project.getId(), ProjectStatus.IN_PROGRESS);
+
+    service.validateIsInProgress(started.getId());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should throw when validating project is in progress for non started project")
+  void validateIsInProgressFailure() {
+    Project project = factory.createProject(partnerEntity, creator);
+
+    assertThrows(BusinessRuleException.class, () -> service.validateIsInProgress(project.getId()));
+  }
+
+  @Test
+  @Transactional
   @DisplayName("Should transition project to IN_PROGRESS")
   void transitionToInProgress() {
     Project project = factory.createProject(partnerEntity, creator);

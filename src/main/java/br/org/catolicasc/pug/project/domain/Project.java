@@ -255,6 +255,67 @@ public class Project extends DomainError {
   }
 
   /**
+   * Removes completed hours from the project's total progress.
+   *
+   * <p>If the total completed hours drops below the offered hours, the project status is preserved
+   * and only the progress counters are updated.
+   *
+   * @param hours the amount of hours to remove
+   * @return a new instance of {@link Project} with updated progress
+   */
+  public Project removeCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = projectInfo.getCompletedHours().subtract(hours);
+
+    ProjectInfo updatedInfo =
+        ProjectInfo.factory(
+            projectInfo.getCreatedBy(),
+            projectInfo.getMaxParticipants(),
+            projectInfo.getOfferedHours(),
+            newTotal);
+
+    Project updated = toBuilder().projectInfo(updatedInfo).build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Validates whether the specified attendance duration can be added without exceeding the
+   * project's offered hours.
+   *
+   * @param hours the attendance duration to add
+   * @throws BusinessRuleException if the resulting total would exceed the offered hours
+   */
+  public void validateCanAddCompletedHours(BigDecimal hours) {
+    if (projectInfo == null || hours == null) {
+      return;
+    }
+
+    BigDecimal nextTotal = projectInfo.getCompletedHours().add(hours);
+    if (nextTotal.compareTo(projectInfo.getOfferedHours()) > 0) {
+      throw new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_PROJECT_HOURS_EXCEED);
+    }
+  }
+
+  /**
+   * Validates whether the specified attendance duration can be removed without making the project's
+   * completed hours negative.
+   *
+   * @param hours the attendance duration to remove
+   * @throws BusinessRuleException if the resulting total would be negative
+   */
+  public void validateCanRemoveCompletedHours(BigDecimal hours) {
+    if (projectInfo == null || hours == null) {
+      return;
+    }
+
+    BigDecimal nextTotal = projectInfo.getCompletedHours().subtract(hours);
+    if (nextTotal.compareTo(BigDecimal.ZERO) < 0) {
+      throw new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_PROJECT_HOURS_NEGATIVE);
+    }
+  }
+
+  /**
    * Validates whether the project can receive new enrollments.
    *
    * @throws BusinessRuleException if the project is canceled or completed

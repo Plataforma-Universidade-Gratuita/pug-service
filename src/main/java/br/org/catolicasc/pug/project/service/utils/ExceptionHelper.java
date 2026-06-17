@@ -47,6 +47,16 @@ public final class ExceptionHelper {
   }
 
   /**
+   * Instantiates a standardized {@link BusinessRuleException} indicating that an attendance cannot
+   * be validated as present because the project is not in progress.
+   *
+   * @return a fully configured {@link BusinessRuleException} instance
+   */
+  public static BusinessRuleException attendanceProjectNotInProgress() {
+    return new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_PROJECT_NOT_IN_PROGRESS);
+  }
+
+  /**
    * Instantiates a standardized {@link DuplicateResourceException} indicating that an enrollment
    * record already exists.
    *

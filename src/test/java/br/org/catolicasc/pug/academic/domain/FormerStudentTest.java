@@ -1,6 +1,8 @@
 package br.org.catolicasc.pug.academic.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.org.catolicasc.pug.academic.domain.enums.AcademicFieldErrorCodes;
 import br.org.catolicasc.pug.academic.domain.vos.AcademicRegistration;
@@ -8,6 +10,7 @@ import br.org.catolicasc.pug.academic.domain.vos.CounterpartHours;
 import br.org.catolicasc.pug.academic.domain.vos.Period;
 import br.org.catolicasc.pug.shared.domain.enums.Campi;
 import br.org.catolicasc.pug.shared.domain.enums.SharedFieldErrorCodes;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import com.github.f4b6a3.uuid.UuidCreator;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -93,6 +96,71 @@ class FormerStudentTest {
       FormerStudent updated = formerStudent.changeCourse(newCourse);
 
       assertThat(updated.getCourseId()).isEqualTo(newCourse);
+    }
+
+    @Test
+    @DisplayName("Should allow adding completed hours within required limit")
+    void shouldAllowAddingCompletedHoursWithinLimit() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+
+      assertDoesNotThrow(() -> formerStudent.validateCanAddCompletedHours(new BigDecimal("50")));
+    }
+
+    @Test
+    @DisplayName("Should fail when adding completed hours exceeds required limit")
+    void shouldFailWhenAddingCompletedHoursExceedsLimit() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+
+      assertThrows(
+          BusinessRuleException.class,
+          () -> formerStudent.validateCanAddCompletedHours(new BigDecimal("101")));
+    }
+
+    @Test
+    @DisplayName("Should allow removing completed hours without going negative")
+    void shouldAllowRemovingCompletedHoursWithoutGoingNegative() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+                  UuidCreator.getTimeOrderedEpoch(),
+                  validReg,
+                  Campi.JARAGUA_DO_SUL,
+                  UuidCreator.getTimeOrderedEpoch(),
+                  validHours,
+                  validPeriod)
+              .addCompletedHours(new BigDecimal("50"));
+
+      assertDoesNotThrow(() -> formerStudent.validateCanRemoveCompletedHours(new BigDecimal("50")));
+    }
+
+    @Test
+    @DisplayName("Should fail when removing completed hours goes negative")
+    void shouldFailWhenRemovingCompletedHoursGoesNegative() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+
+      assertThrows(
+          BusinessRuleException.class,
+          () -> formerStudent.validateCanRemoveCompletedHours(BigDecimal.ONE));
     }
   }
 }

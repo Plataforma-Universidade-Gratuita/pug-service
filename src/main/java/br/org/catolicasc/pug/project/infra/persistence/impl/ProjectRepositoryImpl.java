@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.infra.persistence.impl;
 
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.ProjectRepository;
+import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.ProjectMapper;
 import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -57,6 +58,15 @@ public class ProjectRepositoryImpl
       return false;
     }
     return count("name = ?1 and entityId = ?2", name, entityId) > 0;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public boolean isInProgress(UUID id) {
+    if (id == null) {
+      return false;
+    }
+    return count("id = ?1 and status = ?2", id, ProjectStatus.IN_PROGRESS.name()) > 0;
   }
 
   /** {@inheritDoc} */

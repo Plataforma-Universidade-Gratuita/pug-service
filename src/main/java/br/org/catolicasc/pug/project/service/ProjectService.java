@@ -32,6 +32,16 @@ public interface ProjectService {
   Project addCompletedHours(UUID id, BigDecimal hours);
 
   /**
+   * Removes completed hours from a project's accumulated progress.
+   *
+   * @param id the identifier of the project
+   * @param hours the amount of hours to remove
+   * @return the updated {@link Project} aggregate
+   * @throws ResourceNotFoundException if the project does not exist
+   */
+  Project removeCompletedHours(UUID id, BigDecimal hours);
+
+  /**
    * Removes a {@link Project} from the system by its unique identifier.
    *
    * @param id the unique identifier (UUID) of the project to delete
@@ -54,6 +64,14 @@ public interface ProjectService {
    * @return {@code true} if a project exists
    */
   boolean existsAnyByEntityId(UUID entityId);
+
+  /**
+   * Validates whether the given project is currently in progress.
+   *
+   * @param projectId the unique identifier of the project
+   * @throws BusinessRuleException if the project is not currently in progress
+   */
+  void validateIsInProgress(UUID projectId);
 
   /**
    * Retrieves a full {@link Project} aggregate by its identifier.

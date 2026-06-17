@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -73,6 +74,8 @@ class AttendanceServiceImplTest {
     doNothing().when(authService).requireCurrentAccountNotOfType(any());
     doNothing().when(authService).requireCurrentAccountOfType(any());
     when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+    when(studentService.getById(any())).thenReturn(formerStudent);
+    when(projectService.getById(any())).thenReturn(project);
   }
 
   @Test
@@ -140,6 +143,8 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should validate attendance successfully")
   void validateSuccess() {
+    doNothing().when(projectService).validateIsInProgress(project.getId());
+
     Attendance validated =
         service.validate(
             attendance.getId(),
@@ -152,6 +157,62 @@ class AttendanceServiceImplTest {
     verify(studentService).addCompletedHours(any(), any());
     verify(projectService).addCompletedHours(any(), any());
     verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should fail to validate attendance as present when project is not in progress")
+  void validatePresentFailsWhenProjectIsNotInProgress() {
+    doThrow(new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_PROJECT_NOT_IN_PROGRESS))
+        .when(projectService)
+        .validateIsInProgress(project.getId());
+
+    BusinessRuleException ex =
+        assertThrows(
+            BusinessRuleException.class,
+            () ->
+                service.validate(
+                    attendance.getId(),
+                    anAttendanceValidateCommand()
+                        .withQrValidationHash(
+                            attendance.getQrValidationInfo().getQrValidationHash())
+                        .withStatus(AttendanceStatus.PRESENT)
+                        .build()));
+
+    assertThat(ex.getCode()).isEqualTo(ProjectsErrorCodes.ATTENDANCE_PROJECT_NOT_IN_PROGRESS);
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should remove hours when attendance changes from PRESENT to ABSENT")
+  void validatePresentToAbsentRemovesHours() {
+    doNothing().when(projectService).validateIsInProgress(project.getId());
+    FormerStudent progressedFormerStudent =
+        formerStudent.addCompletedHours(attendance.getQrValidationInfo().getDuration());
+    Project progressedProject =
+        project.addCompletedHours(attendance.getQrValidationInfo().getDuration());
+    when(studentService.getById(any())).thenReturn(formerStudent, progressedFormerStudent);
+    when(projectService.getById(any())).thenReturn(project, progressedProject);
+
+    Attendance presentAttendance =
+        service.validate(
+            attendance.getId(),
+            anAttendanceValidateCommand()
+                .withQrValidationHash(attendance.getQrValidationInfo().getQrValidationHash())
+                .withStatus(AttendanceStatus.PRESENT)
+                .build());
+
+    Attendance absentAttendance =
+        service.validate(
+            presentAttendance.getId(),
+            anAttendanceValidateCommand()
+                .withQrValidationHash(presentAttendance.getQrValidationInfo().getQrValidationHash())
+                .withStatus(AttendanceStatus.ABSENT)
+                .build());
+
+    assertThat(absentAttendance.getStatus()).isEqualTo(AttendanceStatus.ABSENT);
+    verify(studentService).removeCompletedHours(any(), any());
+    verify(projectService).removeCompletedHours(any(), any());
   }
 
   @Test

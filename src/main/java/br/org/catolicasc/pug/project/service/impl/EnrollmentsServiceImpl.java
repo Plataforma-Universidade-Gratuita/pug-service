@@ -9,6 +9,7 @@ import br.org.catolicasc.pug.project.domain.EnrollmentRepository;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import br.org.catolicasc.pug.project.service.AttendancesService;
 import br.org.catolicasc.pug.project.service.EnrollmentsService;
 import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.project.service.ProjectService;
@@ -34,6 +35,7 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   @Inject AuditPublisher auditPublisher;
 
   @Inject EnrollmentRepository repo;
+  @Inject AttendancesService attendancesService;
   @Inject AuthService authService;
   @Inject ProjectService projectService;
   @Inject FormerStudentsService studentService;
@@ -52,9 +54,24 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
     }
 
     repo.update(updated);
+    deleteWaitingAttendancesWhenEnrollmentClosed(updated);
     auditPublisher.fireUpdate(
         Enrollment.class.getName(), identifier.getProjectId(), current, updated);
     return updated;
+  }
+
+  private void deleteWaitingAttendancesWhenEnrollmentClosed(Enrollment enrollment) {
+    if (enrollment == null || enrollment.getIdentifier() == null) {
+      return;
+    }
+
+    switch (enrollment.getStatus()) {
+      case CANCELED, COMPLETED, EXITED, REMOVED ->
+          attendancesService.deleteAllByEnrollmentIdentifier(enrollment.getIdentifier());
+      default -> {
+        // No attendance cleanup is required for non-closing states.
+      }
+    }
   }
 
   private Enrollment transitionEnrollment(Enrollment enrollment, EnrollmentStatus status) {

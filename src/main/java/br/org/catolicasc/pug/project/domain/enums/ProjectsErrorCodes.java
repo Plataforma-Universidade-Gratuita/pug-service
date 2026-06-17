@@ -23,6 +23,22 @@ public enum ProjectsErrorCodes implements GenericCodes {
   /** Indicates that an attendance cannot be created because the enrollment is not approved. */
   ATTENDANCE_ENROLLMENT_NOT_APPROVED("error.domain.projects.attendance.enrollment.not.approved"),
 
+  /**
+   * Indicates that an attendance cannot be validated as present unless the project is in progress.
+   */
+  ATTENDANCE_PROJECT_NOT_IN_PROGRESS("error.domain.projects.attendance.project.not.in.progress"),
+
+  /**
+   * Indicates that validating an attendance as present would exceed the project's offered hours.
+   */
+  ATTENDANCE_PROJECT_HOURS_EXCEED("error.domain.projects.attendance.project.hours.exceed"),
+
+  /**
+   * Indicates that reverting a validated attendance would make the project's completed hours
+   * negative.
+   */
+  ATTENDANCE_PROJECT_HOURS_NEGATIVE("error.domain.projects.attendance.project.hours.negative"),
+
   /** Indicates an attempt to create an enrollment that already exists. */
   ENROLLMENT_ALREADY_EXISTS("error.domain.projects.enrollment.already.exists"),
 

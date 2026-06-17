@@ -74,6 +74,24 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   /** {@inheritDoc} */
   @Transactional
   @Override
+  public FormerStudent removeCompletedHours(UUID accountId, BigDecimal hours) {
+    LOG.debugf("Removing %s completed hours from former student: %s", hours, accountId);
+    FormerStudent current = getById(accountId);
+
+    FormerStudent updated = current.removeCompletedHours(hours);
+
+    if (updated.hasFieldErrors()) {
+      throw new AppValidationException(updated.getFieldErrors());
+    }
+
+    repo.update(updated);
+    LOG.infof("Completed hours removed successfully from former student %s", accountId);
+    return updated;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to delete FormerStudent Account ID: %s", accountId);
     if (accountId == null) {

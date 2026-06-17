@@ -21,6 +21,14 @@ public interface AttendanceRepository {
   long deleteAllByEnrollmentId(UUID projectId, UUID formerStudentId);
 
   /**
+   * Removes all attendance records in waiting-validation status for a specific project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return the total number of deleted attendance records
+   */
+  long deleteAllWaitingValidationByProjectId(UUID projectId);
+
+  /**
    * Removes an {@link Attendance} record from the repository based on its unique identifier.
    *
    * @param id the unique identifier (UUIDv7) of the attendance

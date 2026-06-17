@@ -20,6 +20,7 @@ import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.EnrollmentStatus;
 import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
+import br.org.catolicasc.pug.project.service.AttendancesService;
 import br.org.catolicasc.pug.project.service.ProjectAreaOfExpertiseService;
 import br.org.catolicasc.pug.project.service.ProjectService;
 import br.org.catolicasc.pug.project.service.dtos.enrollments.EnrollmentCreateCommand;
@@ -50,6 +51,7 @@ class EnrollmentsServiceImplTest {
   @InjectMock ProjectService projectService;
   @InjectMock FormerStudentsService studentService;
   @InjectMock ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
+  @InjectMock AttendancesService attendancesService;
 
   private AreaOfExpertise areaOfExpertise;
   private FormerStudent formerStudent;
@@ -201,6 +203,32 @@ class EnrollmentsServiceImplTest {
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.APPROVED);
     verify(audit).fireUpdate(any(), any(), any(), any());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete waiting attendances when enrollment is canceled")
+  void changeStatusCanceledDeletesWaitingAttendances() {
+    Enrollment approved =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
+
+    Enrollment updated = service.changeStatus(approved.getIdentifier(), EnrollmentStatus.CANCELED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
+    verify(attendancesService).deleteAllByEnrollmentIdentifier(approved.getIdentifier());
+  }
+
+  @Test
+  @Transactional
+  @DisplayName("Should delete waiting attendances when enrollment is completed")
+  void changeStatusCompletedDeletesWaitingAttendances() {
+    Enrollment approved =
+        service.changeStatus(enrollment.getIdentifier(), EnrollmentStatus.APPROVED);
+
+    Enrollment updated = service.changeStatus(approved.getIdentifier(), EnrollmentStatus.COMPLETED);
+
+    assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
+    verify(attendancesService).deleteAllByEnrollmentIdentifier(approved.getIdentifier());
   }
 
   @Test

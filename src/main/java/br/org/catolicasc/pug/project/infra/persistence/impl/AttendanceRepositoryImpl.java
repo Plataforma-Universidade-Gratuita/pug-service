@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.infra.persistence.impl;
 
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.AttendanceRepository;
+import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
 import br.org.catolicasc.pug.project.infra.AttendanceMapper;
 import br.org.catolicasc.pug.project.infra.persistence.AttendanceEntity;
 import br.org.catolicasc.pug.shared.utils.StringUtils;
@@ -28,6 +29,19 @@ public class AttendanceRepositoryImpl
       return 0;
     }
     long deleted = delete("projectId = ?1 and formerStudentId = ?2", projectId, formerStudentId);
+    flush();
+    return deleted;
+  }
+
+  /** {@inheritDoc} */
+  @Transactional
+  @Override
+  public long deleteAllWaitingValidationByProjectId(UUID projectId) {
+    if (projectId == null) {
+      return 0;
+    }
+    long deleted =
+        delete("projectId = ?1 and status = ?2", projectId, AttendanceStatus.WAITING.name());
     flush();
     return deleted;
   }

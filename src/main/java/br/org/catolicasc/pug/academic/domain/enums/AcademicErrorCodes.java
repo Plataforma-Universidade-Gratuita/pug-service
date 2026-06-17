@@ -69,6 +69,20 @@ public enum AcademicErrorCodes implements GenericCodes {
   FORMER_STUDENT_ENROLLMENT_CONCLUDED("error.domain.academic.former.student.concluded"),
 
   /**
+   * Indicates that validating an attendance as present would exceed the former student's required
+   * counterpart hours.
+   */
+  FORMER_STUDENT_ATTENDANCE_HOURS_EXCEED(
+      "error.domain.academic.former.student.attendance.hours.exceed"),
+
+  /**
+   * Indicates that reverting a validated attendance would make the former student's completed hours
+   * negative.
+   */
+  FORMER_STUDENT_ATTENDANCE_HOURS_NEGATIVE(
+      "error.domain.academic.former.student.attendance.hours.negative"),
+
+  /**
    * Indicates that a requested formerStudent enrollment record could not be located in the
    * underlying data store by its linked account ID, CPF, or academic registration.
    */

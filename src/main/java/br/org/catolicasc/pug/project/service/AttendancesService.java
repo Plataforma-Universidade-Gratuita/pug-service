@@ -18,6 +18,14 @@ public interface AttendancesService {
   long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier);
 
   /**
+   * Removes all attendances awaiting validation for a specific project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return the total number of deleted attendance records
+   */
+  long deleteAllWaitingValidationByProjectId(UUID projectId);
+
+  /**
    * Removes an attendance record from the system.
    *
    * @param id the unique identifier of the attendance

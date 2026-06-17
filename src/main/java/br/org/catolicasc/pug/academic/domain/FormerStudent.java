@@ -212,6 +212,65 @@ public class FormerStudent extends DomainError {
   }
 
   /**
+   * Removes completed hours from the formerStudent's progress.
+   *
+   * <p>If the total completed hours drops below the required hours, the formerStudent's counterpart
+   * status is automatically recalculated as not concluded.
+   *
+   * @param hours the amount of hours to remove
+   * @return a new instance of {@link FormerStudent} with updated hours and recalculated status
+   */
+  public FormerStudent removeCompletedHours(BigDecimal hours) {
+    BigDecimal newTotal = counterpartHours.getCompletedHours().subtract(hours);
+    boolean isNowConcluded = newTotal.compareTo(counterpartHours.getRequiredHours()) >= 0;
+
+    CounterpartHours updatedHours =
+        CounterpartHours.factory(counterpartHours.getRequiredHours(), newTotal, isNowConcluded);
+
+    FormerStudent updated =
+        toBuilder().counterpartHours(updatedHours).auditInfo(auditInfo.update()).build();
+
+    updated.collectValidationProblems();
+    return updated;
+  }
+
+  /**
+   * Validates whether the specified attendance duration can be added without exceeding the former
+   * student's required counterpart hours.
+   *
+   * @param hours the attendance duration to add
+   * @throws BusinessRuleException if the resulting total would exceed the required hours
+   */
+  public void validateCanAddCompletedHours(BigDecimal hours) {
+    if (counterpartHours == null || hours == null) {
+      return;
+    }
+
+    BigDecimal nextTotal = counterpartHours.getCompletedHours().add(hours);
+    if (nextTotal.compareTo(counterpartHours.getRequiredHours()) > 0) {
+      throw new BusinessRuleException(AcademicErrorCodes.FORMER_STUDENT_ATTENDANCE_HOURS_EXCEED);
+    }
+  }
+
+  /**
+   * Validates whether the specified attendance duration can be removed without making the former
+   * student's completed hours negative.
+   *
+   * @param hours the attendance duration to remove
+   * @throws BusinessRuleException if the resulting total would be negative
+   */
+  public void validateCanRemoveCompletedHours(BigDecimal hours) {
+    if (counterpartHours == null || hours == null) {
+      return;
+    }
+
+    BigDecimal nextTotal = counterpartHours.getCompletedHours().subtract(hours);
+    if (nextTotal.compareTo(BigDecimal.ZERO) < 0) {
+      throw new BusinessRuleException(AcademicErrorCodes.FORMER_STUDENT_ATTENDANCE_HOURS_NEGATIVE);
+    }
+  }
+
+  /**
    * Validates whether the former student can enroll in new projects.
    *
    * @throws BusinessRuleException if the counterpart-hour requirement is already concluded
