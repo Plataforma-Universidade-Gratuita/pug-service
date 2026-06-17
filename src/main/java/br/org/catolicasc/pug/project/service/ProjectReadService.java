@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.project.service;
 
 import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
 import br.org.catolicasc.pug.project.service.dtos.projects.ProjectComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
@@ -20,6 +21,7 @@ public interface ProjectReadService {
    *
    * @param id the unique identifier (UUID) of the project
    * @return the populated {@link ProjectView} DTO
+   * @throws ResourceNotFoundException if no project matches the provided identifier
    */
   ProjectView getViewById(UUID id);
 

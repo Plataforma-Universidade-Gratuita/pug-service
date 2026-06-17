@@ -43,8 +43,8 @@ public class AttendancesServiceImpl implements AttendancesService {
   String pepper;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
     if (identifier == null) {
       return 0;
@@ -59,8 +59,8 @@ public class AttendancesServiceImpl implements AttendancesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllWaitingValidationByProjectId(UUID projectId) {
     if (projectId == null) {
       return 0;
@@ -74,8 +74,8 @@ public class AttendancesServiceImpl implements AttendancesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Attendance ID: %s", id);
     if (id == null) {
@@ -116,8 +116,8 @@ public class AttendancesServiceImpl implements AttendancesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Attendance save(AttendanceCreateCommand cmd) {
     LOG.debugf(
         "Attempting to create Attendance for Project: %s, FormerStudent: %s",
@@ -152,8 +152,8 @@ public class AttendancesServiceImpl implements AttendancesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
     LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);

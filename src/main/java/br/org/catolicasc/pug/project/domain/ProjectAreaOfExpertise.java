@@ -4,8 +4,6 @@ import br.org.catolicasc.pug.project.domain.enums.ProjectsFieldErrorCodes;
 import br.org.catolicasc.pug.shared.domain.DomainError;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,7 +17,6 @@ import lombok.Getter;
  */
 @Getter
 @Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class ProjectAreaOfExpertise extends DomainError {
@@ -27,6 +24,11 @@ public class ProjectAreaOfExpertise extends DomainError {
   private final UUID projectId;
 
   private final UUID areaOfExpertiseId;
+
+  private ProjectAreaOfExpertise(UUID projectId, UUID areaOfExpertiseId) {
+    this.projectId = projectId;
+    this.areaOfExpertiseId = areaOfExpertiseId;
+  }
 
   /**
    * Factory method to create a new {@code ProjectAreaOfExpertise} instance.

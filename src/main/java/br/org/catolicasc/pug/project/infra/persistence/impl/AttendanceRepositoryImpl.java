@@ -22,8 +22,8 @@ public class AttendanceRepositoryImpl
     implements AttendanceRepository, PanacheRepositoryBase<AttendanceEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByEnrollmentId(UUID projectId, UUID formerStudentId) {
     if (projectId == null || formerStudentId == null) {
       return 0;
@@ -34,8 +34,8 @@ public class AttendanceRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllWaitingValidationByProjectId(UUID projectId) {
     if (projectId == null) {
       return 0;
@@ -47,8 +47,8 @@ public class AttendanceRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -95,8 +95,8 @@ public class AttendanceRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Attendance persist(Attendance entity) {
     if (entity == null) {
       return null;
@@ -107,8 +107,8 @@ public class AttendanceRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Attendance entity) {
     if (entity == null || entity.getId() == null) {
       return;

@@ -22,8 +22,8 @@ public class ProjectRepositoryImpl
   @Inject EntityManager em;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -76,8 +76,8 @@ public class ProjectRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project persist(Project entity) {
     if (entity == null) {
       return null;
@@ -88,8 +88,8 @@ public class ProjectRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Project entity) {
     if (entity == null || entity.getId() == null) {
       return;

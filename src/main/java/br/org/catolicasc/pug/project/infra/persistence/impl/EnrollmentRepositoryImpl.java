@@ -19,8 +19,8 @@ public class EnrollmentRepositoryImpl
         PanacheRepositoryBase<EnrollmentEntity, EnrollmentEntity.EnrollmentsId> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(EnrollmentIdentifier identifier) {
     if (identifier == null
         || identifier.getProjectId() == null
@@ -108,8 +108,8 @@ public class EnrollmentRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Enrollment persist(Enrollment entity) {
     if (entity == null) {
       return null;
@@ -120,8 +120,8 @@ public class EnrollmentRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Enrollment entity) {
     if (entity == null || entity.getIdentifier() == null) {
       return;

@@ -58,6 +58,7 @@ public class ProjectsAreasOfExpertiseResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Creates one or more project-to-area-of-expertise associations for the provided project. */
   @POST
   @RolesAllowed({"ADMIN", "PARTNER"})
   public Response createAssociations(
@@ -66,6 +67,9 @@ public class ProjectsAreasOfExpertiseResource {
     return Response.noContent().build();
   }
 
+  /**
+   * Deletes a single project-to-area-of-expertise association identified by both path parameters.
+   */
   @DELETE
   @Path("/{areaOfExpertiseId}")
   @RolesAllowed({"ADMIN", "PARTNER"})
@@ -76,6 +80,7 @@ public class ProjectsAreasOfExpertiseResource {
     return Response.noContent().build();
   }
 
+  /** Deletes every area-of-expertise association linked to the provided project. */
   @DELETE
   @RolesAllowed({"ADMIN", "PARTNER"})
   public Response deleteAllByProject(@PathParam("projectId") @UuidV7 UUID projectId) {

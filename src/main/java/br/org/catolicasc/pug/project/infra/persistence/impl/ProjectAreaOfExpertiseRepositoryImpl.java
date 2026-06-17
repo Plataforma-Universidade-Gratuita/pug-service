@@ -27,8 +27,8 @@ public class ProjectAreaOfExpertiseRepositoryImpl
             ProjectAreaOfExpertiseEntity, ProjectAreaOfExpertiseEntity.ProjectsAreaOfExpertiseId> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(ProjectAreaOfExpertise association) {
     if (association == null) {
       return false;
@@ -45,8 +45,8 @@ public class ProjectAreaOfExpertiseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByProjectId(UUID projectId) {
     if (projectId == null) {
       return 0;
@@ -57,8 +57,8 @@ public class ProjectAreaOfExpertiseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByAreaOfExpertiseId(UUID areaOfExpertiseId) {
     if (areaOfExpertiseId == null) {
       return 0;
@@ -119,8 +119,8 @@ public class ProjectAreaOfExpertiseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public ProjectAreaOfExpertise persist(ProjectAreaOfExpertise association) {
     if (association == null) {
       return null;

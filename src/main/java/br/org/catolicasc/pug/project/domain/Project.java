@@ -14,8 +14,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -29,7 +27,6 @@ import lombok.Getter;
  */
 @Getter
 @Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Project extends DomainError {
@@ -45,6 +42,21 @@ public class Project extends DomainError {
   ProjectInfo projectInfo;
 
   ProjectStatus projectStatus;
+
+  private Project(
+      UUID id,
+      String name,
+      UUID entityId,
+      String description,
+      ProjectInfo projectInfo,
+      ProjectStatus projectStatus) {
+    this.id = id;
+    this.name = name;
+    this.entityId = entityId;
+    this.description = description;
+    this.projectInfo = projectInfo;
+    this.projectStatus = projectStatus;
+  }
 
   /**
    * Transitions the project's state to 'CANCELED'.

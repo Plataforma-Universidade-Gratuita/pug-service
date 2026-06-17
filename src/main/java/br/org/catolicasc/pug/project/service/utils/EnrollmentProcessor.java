@@ -15,6 +15,8 @@ import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
  */
 public final class EnrollmentProcessor {
 
+  private EnrollmentProcessor() {}
+
   /**
    * Processes raw creation inputs and constructs a new {@link Enrollment} domain aggregate.
    *

@@ -81,8 +81,20 @@ public interface EnrollmentRepository {
    */
   Optional<Enrollment> findOptionalById(EnrollmentIdentifier identifier);
 
+  /**
+   * Lists every enrollment linked to the provided project.
+   *
+   * @param projectId the unique identifier of the project
+   * @return the enrollments linked to the project, or an empty list when none exist
+   */
   List<Enrollment> listAllByProjectId(UUID projectId);
 
+  /**
+   * Lists every enrollment linked to the provided former student.
+   *
+   * @param formerStudentId the unique identifier of the former student account
+   * @return the enrollments linked to the former student, or an empty list when none exist
+   */
   List<Enrollment> listAllByFormerStudentId(UUID formerStudentId);
 
   /**

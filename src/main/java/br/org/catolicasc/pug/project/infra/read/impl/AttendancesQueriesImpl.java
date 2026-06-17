@@ -71,9 +71,9 @@ public class AttendancesQueriesImpl implements AttendancesQueries {
 
   private static final String ORDER_BY = " order by a.createdAt desc";
 
-  /** {@inheritDoc} */
   @Inject EntityManager em;
 
+  /** {@inheritDoc} */
   @Override
   public Optional<AttendanceView> findOptionalById(UUID id) {
     if (id == null) {

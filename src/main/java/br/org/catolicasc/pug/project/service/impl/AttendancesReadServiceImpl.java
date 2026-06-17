@@ -20,9 +20,9 @@ public class AttendancesReadServiceImpl implements AttendancesReadService {
 
   private static final Logger LOG = Logger.getLogger(AttendancesReadServiceImpl.class);
 
-  /** {@inheritDoc} */
   @Inject AttendancesQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public AttendanceView getViewById(UUID id) {
     return queries

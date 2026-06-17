@@ -4,9 +4,17 @@ import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.vos.EnrollmentIdentifier;
 import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceCreateCommand;
 import br.org.catolicasc.pug.project.service.dtos.attendance.AttendanceValidateCommand;
+import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
 
-/** Application service interface for managing attendance aggregates. */
+/**
+ * Application-layer command contract for attendance lifecycle operations.
+ *
+ * <p>This boundary centralizes attendance creation, validation, deletion, and bulk cleanup flows
+ * triggered by enrollment or project lifecycle changes.
+ */
 public interface AttendancesService {
 
   /**
@@ -46,6 +54,7 @@ public interface AttendancesService {
    *
    * @param id the unique identifier of the attendance
    * @return the matching attendance aggregate
+   * @throws ResourceNotFoundException if no attendance exists for the provided identifier
    */
   Attendance getById(UUID id);
 
@@ -54,6 +63,9 @@ public interface AttendancesService {
    *
    * @param cmd the command containing attendance creation data
    * @return the persisted attendance aggregate
+   * @throws BusinessRuleException if the referenced enrollment does not exist or cannot receive
+   *     attendances
+   * @throws AppValidationException if the requested attendance state violates domain constraints
    */
   Attendance save(AttendanceCreateCommand cmd);
 
@@ -63,6 +75,11 @@ public interface AttendancesService {
    * @param id the unique identifier of the attendance
    * @param cmd the command containing validation status and hash
    * @return the updated attendance aggregate
+   * @throws ResourceNotFoundException if the attendance does not exist or the submitted QR hash
+   *     does not match the stored attendance
+   * @throws BusinessRuleException if the requested validation violates an attendance or project
+   *     business rule
+   * @throws AppValidationException if the resulting attendance state violates domain constraints
    */
   Attendance validate(UUID id, AttendanceValidateCommand cmd);
 }

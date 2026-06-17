@@ -59,9 +59,9 @@ public class EnrollmentsQueriesImpl implements EnrollmentsQueries {
 
   private static final String ORDER_BY = " order by en.createdAt desc";
 
-  /** {@inheritDoc} */
   @Inject EntityManager em;
 
+  /** {@inheritDoc} */
   @Override
   public Optional<EnrollmentView> findOptionalByIds(UUID projectId, UUID formerStudentId) {
     if (projectId == null || formerStudentId == null) {

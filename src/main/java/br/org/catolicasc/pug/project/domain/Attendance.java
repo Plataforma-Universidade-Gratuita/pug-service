@@ -15,8 +15,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -30,7 +28,6 @@ import lombok.Getter;
  */
 @Getter
 @Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Attendance extends DomainError {
@@ -44,6 +41,19 @@ public class Attendance extends DomainError {
   AttendanceInfo attendanceInfo;
 
   AttendanceStatus status;
+
+  private Attendance(
+      UUID id,
+      EnrollmentIdentifier enrollmentIdentifier,
+      QrValidationInfo qrValidationInfo,
+      AttendanceInfo attendanceInfo,
+      AttendanceStatus status) {
+    this.id = id;
+    this.enrollmentIdentifier = enrollmentIdentifier;
+    this.qrValidationInfo = qrValidationInfo;
+    this.attendanceInfo = attendanceInfo;
+    this.status = status;
+  }
 
   /**
    * Factory method to create a new, unvalidated {@code Attendance} instance.

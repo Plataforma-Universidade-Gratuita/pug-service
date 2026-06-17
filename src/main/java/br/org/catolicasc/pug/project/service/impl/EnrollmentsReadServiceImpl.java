@@ -19,9 +19,9 @@ public class EnrollmentsReadServiceImpl implements EnrollmentsReadService {
 
   private static final Logger LOG = Logger.getLogger(EnrollmentsReadServiceImpl.class);
 
-  /** {@inheritDoc} */
   @Inject EnrollmentsQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public EnrollmentView getViewByIds(UUID projectId, UUID formerStudentId) {
     return queries

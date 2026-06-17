@@ -61,6 +61,7 @@ public class AreasOfExpertiseProjectsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
+  /** Deletes every project association linked to the provided academic area-of-expertise. */
   @DELETE
   @RolesAllowed({"ADMIN", "PARTNER"})
   public Response deleteAllByAreaOfExpertise(

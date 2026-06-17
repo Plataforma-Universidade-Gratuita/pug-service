@@ -43,8 +43,8 @@ public class ProjectServiceImpl implements ProjectService {
   @Inject EnrollmentsService enrollmentsService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project addCompletedHours(UUID id, BigDecimal hours) {
     LOG.debugf("Adicionando %s horas completadas ao projeto: %s", hours, id);
     Project current = getById(id);
@@ -64,8 +64,8 @@ public class ProjectServiceImpl implements ProjectService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project removeCompletedHours(UUID id, BigDecimal hours) {
     LOG.debugf("Removing %s completed hours from project: %s", hours, id);
     Project current = getById(id);
@@ -82,8 +82,8 @@ public class ProjectServiceImpl implements ProjectService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Project ID: %s", id);
     if (id == null) {
@@ -145,8 +145,8 @@ public class ProjectServiceImpl implements ProjectService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project save(ProjectCreateCommand cmd) {
     LOG.debugf("Attempting to create Project: %s", cmd.name());
     authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
@@ -180,8 +180,8 @@ public class ProjectServiceImpl implements ProjectService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project transitionStatus(UUID id, ProjectStatus status) {
     Project project = getById(id);
     Project updated;
@@ -207,8 +207,8 @@ public class ProjectServiceImpl implements ProjectService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Project update(UUID id, ProjectUpdateCommand cmd) {
     LOG.debugf("Attempting to update Project ID: %s", id);
     Project current = getById(id);

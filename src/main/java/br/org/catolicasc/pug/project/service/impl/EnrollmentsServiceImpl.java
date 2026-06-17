@@ -42,8 +42,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   @Inject ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Enrollment changeStatus(EnrollmentIdentifier identifier, EnrollmentStatus status) {
     LOG.debugf("Attempting to transition Enrollment %s to status %s", identifier, status);
     Enrollment current = getByIds(identifier);
@@ -100,8 +100,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long changeStatusByProjectId(UUID projectId, EnrollmentStatus targetStatus) {
     if (projectId == null || targetStatus == null) {
       return 0L;
@@ -120,8 +120,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long changeStatusByProjectId(
       UUID projectId, EnrollmentStatus currentStatus, EnrollmentStatus targetStatus) {
     if (projectId == null || currentStatus == null || targetStatus == null) {
@@ -146,8 +146,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long completeAllByFormerStudentId(UUID formerStudentId) {
     if (formerStudentId == null) {
       return 0L;
@@ -171,8 +171,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(EnrollmentIdentifier identifier) {
     if (identifier == null) {
       return false;
@@ -209,8 +209,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Enrollment save(EnrollmentCreateCommand cmd) {
     Project project = projectService.getById(cmd.projectId());
     FormerStudent formerStudent;

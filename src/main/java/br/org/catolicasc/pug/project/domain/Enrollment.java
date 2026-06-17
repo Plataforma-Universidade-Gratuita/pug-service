@@ -11,8 +11,6 @@ import br.org.catolicasc.pug.shared.domain.DomainError;
 import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.util.UUID;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -27,7 +25,6 @@ import lombok.Getter;
  */
 @Getter
 @Builder(toBuilder = true)
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = false)
 @SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Enrollment extends DomainError {
@@ -37,6 +34,13 @@ public class Enrollment extends DomainError {
   EnrollmentStatus status;
 
   EnrollmentInfo enrollmentInfo;
+
+  private Enrollment(
+      EnrollmentIdentifier identifier, EnrollmentStatus status, EnrollmentInfo enrollmentInfo) {
+    this.identifier = identifier;
+    this.status = status;
+    this.enrollmentInfo = enrollmentInfo;
+  }
 
   /**
    * Factory method to create a new {@code Enrollment} instance in a {@link
