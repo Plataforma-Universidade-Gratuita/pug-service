@@ -1,18 +1,18 @@
-name: CI
+name: Verify
 
 on:
   pull_request:
   push:
     branches:
-      - "**"
+      - main
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: verify-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  validate:
-    name: Validate
+  verify:
+    name: Verify
     runs-on: ubuntu-latest
 
     services:
