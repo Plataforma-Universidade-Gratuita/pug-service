@@ -22,8 +22,8 @@ public class CourseRepositoryImpl
     implements CourseRepository, PanacheRepositoryBase<CourseEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -56,8 +56,8 @@ public class CourseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Course persist(Course entity) {
     if (entity == null) {
       return null;
@@ -68,8 +68,8 @@ public class CourseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Course course) {
     if (course == null || course.getId() == null) {
       return;

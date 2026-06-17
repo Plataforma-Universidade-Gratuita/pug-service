@@ -47,7 +47,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/** REST resource exposing former-student read and write operations. */
+/**
+ * REST API resource controller for managing former-student records.
+ *
+ * <p>This resource exposes the academic former-student endpoints for direct lookup, authenticated
+ * self-lookup, collection reads, complex search, creation, bulk creation, updates, status mutation,
+ * and deletion. Command operations are delegated to {@link FormerStudentsService} while read
+ * operations are delegated to {@link FormerStudentsReadService}, preserving the module's CQRS
+ * boundary.
+ */
 @ApplicationScoped
 @Path("/v1/academic/former-students")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -93,6 +101,10 @@ public class FormerStudentsResource {
 
   /**
    * Retrieves former students, optionally filtered by a collection of linked account identifiers.
+   *
+   * @param ids the optional linked account identifiers used to restrict the result set
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with a list of {@link
+   *     FormerStudentResponse}
    */
   @GET
   @Authenticated
@@ -106,7 +118,15 @@ public class FormerStudentsResource {
     return Response.ok(ApiEnvelope.ok(body)).build();
   }
 
-  /** Executes paginated former-student complex search. */
+  /**
+   * Executes paginated former-student complex search.
+   *
+   * @param page the zero-based page index
+   * @param size the requested page size; {@code 1} returns the full result set in a single page
+   * @param request the optional complex-search filters
+   * @return an HTTP 200 OK response containing an {@link ApiEnvelope} with the paginated search
+   *     result
+   */
   @POST
   @Path("/search")
   @Authenticated

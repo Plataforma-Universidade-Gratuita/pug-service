@@ -10,12 +10,6 @@ import org.junit.jupiter.api.Test;
 class AreaOfExpertiseProcessorTest {
 
   @Test
-  @DisplayName("Should instantiate processor for constructor coverage")
-  void shouldInstantiateProcessor() {
-    assertThat(new AreaOfExpertiseProcessor()).isNotNull();
-  }
-
-  @Test
   @DisplayName("Should process create input successfully")
   void shouldProcessCreateInput() {
     AreaOfExpertise areaOfExpertise =

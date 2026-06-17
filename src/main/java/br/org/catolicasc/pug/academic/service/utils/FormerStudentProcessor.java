@@ -22,7 +22,9 @@ import java.util.UUID;
  * behaviors, ensuring that complex initialization or update logic does not pollute the application
  * service layer.
  */
-public class FormerStudentProcessor {
+public final class FormerStudentProcessor {
+
+  private FormerStudentProcessor() {}
 
   /**
    * Processes a bulk list of formerStudent creation commands, combining them with their newly

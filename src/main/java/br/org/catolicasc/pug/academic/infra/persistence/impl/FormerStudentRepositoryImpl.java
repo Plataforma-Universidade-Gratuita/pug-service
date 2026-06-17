@@ -28,8 +28,8 @@ public class FormerStudentRepositoryImpl
     implements FormerStudentRepository, PanacheRepositoryBase<FormerStudentEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -100,8 +100,8 @@ public class FormerStudentRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent persist(FormerStudent formerStudent) {
     if (formerStudent == null) {
       return null;
@@ -112,8 +112,8 @@ public class FormerStudentRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<FormerStudent> persistAll(List<FormerStudent> formerStudents) {
     if (CollectionUtils.isEmpty(formerStudents)) {
       return List.of();
@@ -127,8 +127,8 @@ public class FormerStudentRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(FormerStudent formerStudent) {
     if (formerStudent == null || formerStudent.getAccountId() == null) {
       return;

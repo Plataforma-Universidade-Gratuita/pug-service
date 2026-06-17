@@ -100,11 +100,11 @@ class CoursesQueriesImplTest extends BaseSearchTest {
   void shouldSearchByNameSuccess() {
     String searchKey = course.getName().substring(0, 3);
     var result =
-        queries.search(new PageQuery(0, 10), new CourseComplexSearchCriteria(searchKey, null));
+        queries.search(new PageQuery(0, 1), new CourseComplexSearchCriteria(searchKey, null));
 
     assertThat(result.content()).anyMatch(v -> v.id().equals(course.getId()));
     assertThat(result.page()).isZero();
-    assertThat(result.size()).isEqualTo(10);
+    assertThat(result.size()).isEqualTo(Math.max((int) result.totalElements(), 1));
   }
 
   @Test

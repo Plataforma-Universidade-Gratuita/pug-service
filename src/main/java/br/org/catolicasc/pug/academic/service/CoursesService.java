@@ -5,6 +5,7 @@ import br.org.catolicasc.pug.academic.domain.Course;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseCreateCommand;
 import br.org.catolicasc.pug.academic.service.dtos.courses.CourseUpdateCommand;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.exceptions.DuplicateResourceException;
 import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import java.util.UUID;
@@ -22,6 +23,7 @@ public interface CoursesService {
    *
    * @param id the unique identifier (UUID) of the course to delete
    * @return {@code true} if the course was successfully deleted, {@code false} if it was not found
+   * @throws BusinessRuleException if the course still has linked former students
    */
   boolean delete(UUID id);
 

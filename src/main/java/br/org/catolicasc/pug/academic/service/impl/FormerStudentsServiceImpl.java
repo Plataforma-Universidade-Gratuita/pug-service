@@ -50,8 +50,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   @Inject EnrollmentsService enrollmentsService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent addCompletedHours(UUID accountId, BigDecimal hours) {
     LOG.debugf("Adding %s completed hours to former student: %s", hours, accountId);
     FormerStudent current = getById(accountId);
@@ -72,8 +72,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent removeCompletedHours(UUID accountId, BigDecimal hours) {
     LOG.debugf("Removing %s completed hours from former student: %s", hours, accountId);
     FormerStudent current = getById(accountId);
@@ -90,8 +90,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to delete FormerStudent Account ID: %s", accountId);
     if (accountId == null) {
@@ -150,8 +150,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent save(FormerStudentCreateCommand cmd) {
     LOG.debugf(
         "Attempting to create FormerStudent with registration: %s", cmd.academicRegistration());
@@ -188,8 +188,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<FormerStudent> saveInBulk(List<FormerStudentCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -227,8 +227,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent update(UUID accountId, FormerStudentUpdateCommand cmd) {
     LOG.debugf("Attempting to update FormerStudent Account ID: %s", accountId);
     FormerStudent current = getById(accountId);
@@ -271,8 +271,8 @@ public class FormerStudentsServiceImpl implements FormerStudentsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public FormerStudent updateStatus(UUID accountId, boolean active) {
     FormerStudent current = getById(accountId);
     accountService.update(accountId, new AccountUpdateCommand(null, null, active, null));

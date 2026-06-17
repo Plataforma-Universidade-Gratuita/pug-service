@@ -12,7 +12,9 @@ import java.util.UUID;
  * behaviors, ensuring that complex initialization or update logic does not pollute the application
  * service layer.
  */
-public class CourseProcessor {
+public final class CourseProcessor {
+
+  private CourseProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Course} domain aggregate.

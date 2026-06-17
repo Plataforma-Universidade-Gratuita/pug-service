@@ -30,8 +30,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   @Inject ProjectAreaOfExpertiseService projectAreaOfExpertiseService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete AreaOfExpertise ID: %s", id);
     if (id == null) {
@@ -76,8 +76,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public AreaOfExpertise save(AreaOfExpertiseCreateCommand cmd) {
     LOG.debugf("Attempting to create AreaOfExpertise: %s", cmd.name());
     AreaOfExpertise areaOfExpertiseToPersist =
@@ -102,8 +102,8 @@ public class AreasOfExpertiseServiceImpl implements AreasOfExpertiseService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public AreaOfExpertise update(UUID id, AreaOfExpertiseUpdateCommand cmd) {
     LOG.debugf("Attempting to update AreaOfExpertise ID: %s", id);
     AreaOfExpertise current = getById(id);

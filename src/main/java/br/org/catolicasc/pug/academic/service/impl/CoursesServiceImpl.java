@@ -39,8 +39,8 @@ public class CoursesServiceImpl implements CoursesService {
   @Inject FormerStudentsService formerStudentsService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Course ID: %s", id);
     if (id == null) {
@@ -90,8 +90,8 @@ public class CoursesServiceImpl implements CoursesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Course save(CourseCreateCommand cmd) {
     LOG.debugf("Attempting to create Course: %s", cmd.name());
     areasOfExpertiseService.getById(cmd.areaOfExpertiseId());
@@ -116,8 +116,8 @@ public class CoursesServiceImpl implements CoursesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Course update(UUID id, CourseUpdateCommand cmd) {
     LOG.debugf("Attempting to update Course ID: %s", id);
     Course current = getById(id);

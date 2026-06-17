@@ -2,6 +2,7 @@ package br.org.catolicasc.pug.academic.service;
 
 import br.org.catolicasc.pug.academic.infra.read.dtos.AreaOfExpertiseView;
 import br.org.catolicasc.pug.academic.service.dtos.areasofexpertise.AreaOfExpertiseComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
@@ -21,6 +22,7 @@ public interface AreasOfExpertiseReadService {
    *
    * @param id the unique identifier of the area of expertise
    * @return the matching {@link AreaOfExpertiseView}
+   * @throws ResourceNotFoundException if no read projection exists for the provided identifier
    */
   AreaOfExpertiseView getViewById(UUID id);
 

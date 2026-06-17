@@ -21,9 +21,9 @@ public class FormerStudentsReadServiceImpl implements FormerStudentsReadService 
 
   private static final Logger LOG = Logger.getLogger(FormerStudentsReadServiceImpl.class);
 
-  /** {@inheritDoc} */
   @Inject FormerStudentsQueries queries;
 
+  /** {@inheritDoc} */
   @Override
   public FormerStudentView getViewByAccountId(UUID accountId) {
     return queries

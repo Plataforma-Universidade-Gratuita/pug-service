@@ -18,12 +18,39 @@ import java.util.UUID;
  */
 public interface FormerStudentsQueries {
 
+  /**
+   * Resolves a single former-student projection by its linked account identifier.
+   *
+   * @param accountId the linked account identifier of the requested former student
+   * @return an {@link Optional} containing the matching {@link FormerStudentView}, or an empty
+   *     optional when no row matches the provided account identifier
+   */
   Optional<FormerStudentView> findOptionalById(UUID accountId);
 
+  /**
+   * Retrieves all former-student projections whose linked account identifiers are present in the
+   * provided collection.
+   *
+   * @param accountIds the linked account identifiers used to restrict the result set
+   * @return a list containing the matching {@link FormerStudentView} projections
+   */
   List<FormerStudentView> listAllByIds(List<UUID> accountIds);
 
+  /**
+   * Retrieves every former-student projection available to the academic read model.
+   *
+   * @return a list containing all {@link FormerStudentView} projections
+   */
   List<FormerStudentView> listAllFormerStudents();
 
+  /**
+   * Executes paginated former-student complex search using the provided filtering criteria.
+   *
+   * @param pageQuery the pagination request containing page and size information
+   * @param criteria the search filters to apply to the read model
+   * @return a paginated result containing matching {@link FormerStudentComplexSearchView}
+   *     projections
+   */
   PageResult<FormerStudentComplexSearchView> search(
       PageQuery pageQuery, FormerStudentComplexSearchCriteria criteria);
 }

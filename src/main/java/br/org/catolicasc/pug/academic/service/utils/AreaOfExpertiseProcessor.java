@@ -7,7 +7,9 @@ import br.org.catolicasc.pug.shared.utils.StringUtils;
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link
  * AreaOfExpertise} Domain Aggregates.
  */
-public class AreaOfExpertiseProcessor {
+public final class AreaOfExpertiseProcessor {
+
+  private AreaOfExpertiseProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link AreaOfExpertise} domain aggregate.

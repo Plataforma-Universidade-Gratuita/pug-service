@@ -22,8 +22,8 @@ public class AreaOfExpertiseRepositoryImpl
     implements AreaOfExpertiseRepository, PanacheRepositoryBase<AreaOfExpertiseEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -47,8 +47,8 @@ public class AreaOfExpertiseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public AreaOfExpertise persist(AreaOfExpertise areaOfExpertise) {
     if (areaOfExpertise == null) {
       return null;
@@ -59,8 +59,8 @@ public class AreaOfExpertiseRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(AreaOfExpertise areaOfExpertise) {
     if (areaOfExpertise == null || areaOfExpertise.getId() == null) {
       return;
