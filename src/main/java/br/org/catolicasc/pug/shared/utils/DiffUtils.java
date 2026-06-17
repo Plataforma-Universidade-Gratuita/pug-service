@@ -36,6 +36,7 @@ public final class DiffUtils {
       this.fieldName = fieldName;
     }
 
+    /** Returns the set of field names that must be excluded from reflective diffing. */
     public static Set<String> all() {
       return Set.of(
           PASSWORD_HASH.fieldName,

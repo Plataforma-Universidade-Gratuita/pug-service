@@ -14,16 +14,7 @@ import java.util.UUID;
  */
 public final class UuidV7ForUuid implements ConstraintValidator<UuidV7, UUID> {
 
-  /**
-   * Evaluates whether the provided UUID object is version 7.
-   *
-   * <p>Consistent with standard Bean Validation practices, {@code null} values are considered
-   * valid.
-   *
-   * @param value the UUID object to validate
-   * @param ctx the context in which the constraint is evaluated
-   * @return {@code true} if the UUID is null or its version is 7; {@code false} otherwise
-   */
+  /** {@inheritDoc} */
   @Override
   public boolean isValid(UUID value, ConstraintValidatorContext ctx) {
     return value == null || value.version() == 7;

@@ -22,13 +22,7 @@ import org.jboss.logging.MDC;
 public class CorrelationFilter implements ContainerRequestFilter, ContainerResponseFilter {
   private static final String HDR = "X-Correlation-Id";
 
-  /**
-   * Handles the incoming request to extract or generate a correlation ID. If an "X-Correlation-Id"
-   * header is present, it is reused. Otherwise, a new UUID is generated. The ID is stored in
-   * request properties and MDC for logging purposes.
-   *
-   * @param req The container request context.
-   */
+  /** {@inheritDoc} */
   @Override
   public void filter(ContainerRequestContext req) {
     String cid = req.getHeaderString(HDR);
@@ -39,14 +33,7 @@ public class CorrelationFilter implements ContainerRequestFilter, ContainerRespo
     MDC.put(HDR, cid);
   }
 
-  /**
-   * Handles the outgoing response to include the correlation ID in the headers. The correlation ID
-   * is retrieved from the request properties and added to the response header. The ID is then
-   * removed from the MDC.
-   *
-   * @param req The container request context.
-   * @param res The container response context.
-   */
+  /** {@inheritDoc} */
   @Override
   public void filter(ContainerRequestContext req, ContainerResponseContext res) {
     String cid = (String) req.getProperty(HDR);

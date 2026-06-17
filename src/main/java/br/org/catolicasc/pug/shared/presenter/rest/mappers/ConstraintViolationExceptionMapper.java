@@ -46,6 +46,7 @@ public class ConstraintViolationExceptionMapper
    * @param ex The ConstraintViolationException thrown during request payload validation.
    * @return A Response object with status 422 and a JSON body containing grouped error details.
    */
+  /** {@inheritDoc} */
   @Override
   public Response toResponse(ConstraintViolationException ex) {
     LOG.debugf(ex, "Bean validation constraint violation");

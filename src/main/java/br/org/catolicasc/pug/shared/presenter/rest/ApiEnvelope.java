@@ -30,14 +30,6 @@ public record ApiEnvelope<T>(
    */
   private static final String CID_KEY = "X-Correlation-Id";
 
-  /**
-   * Extracts the current correlation ID from the logging context (MDC).
-   *
-   * <p>This ties the API response directly to the backend application logs, greatly simplifying
-   * production debugging and observability for API consumers and operators.
-   *
-   * @return the correlation ID as a {@link String}, or {@code null} if not present in the MDC
-   */
   private static String getCorrelationId() {
     Object cid = MDC.get(CID_KEY);
     return cid != null ? cid.toString() : null;

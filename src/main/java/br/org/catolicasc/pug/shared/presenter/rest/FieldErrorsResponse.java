@@ -19,6 +19,12 @@ public record FieldErrorsResponse(String field, List<FieldErrorDetail> errors) {
     errors = (errors != null) ? List.copyOf(errors) : null;
   }
 
+  /**
+   * Returns an immutable view of the field-level validation details.
+   *
+   * @return an unmodifiable list containing the validation details, or {@code null} when no details
+   *     were supplied
+   */
   public List<FieldErrorDetail> errors() {
     return errors != null ? Collections.unmodifiableList(errors) : null;
   }

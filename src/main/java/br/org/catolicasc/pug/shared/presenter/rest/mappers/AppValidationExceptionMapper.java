@@ -36,6 +36,7 @@ public class AppValidationExceptionMapper implements ExceptionMapper<AppValidati
    * @param exception The caught exception containing field validation errors.
    * @return An HTTP 400 response with grouped validation error details.
    */
+  /** {@inheritDoc} */
   @Override
   public Response toResponse(AppValidationException exception) {
     LOG.debugf(exception, "Validation error caught");
