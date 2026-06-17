@@ -17,7 +17,9 @@ import java.util.List;
  * behaviors, ensuring that complex initialization or update logic does not pollute the application
  * service layer.
  */
-public class UserProcessor {
+public final class UserProcessor {
+
+  private UserProcessor() {}
 
   /**
    * Processes a bulk list of user creation commands, generating a list of pure Domain Aggregates.

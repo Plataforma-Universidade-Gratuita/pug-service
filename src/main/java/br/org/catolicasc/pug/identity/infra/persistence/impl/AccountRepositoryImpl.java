@@ -35,8 +35,8 @@ public class AccountRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return 0;
@@ -45,8 +45,8 @@ public class AccountRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -117,8 +117,8 @@ public class AccountRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Account persist(Account entity) {
     if (entity == null) {
       return null;
@@ -129,8 +129,8 @@ public class AccountRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<Account> persistAll(List<Account> accounts) {
     if (CollectionUtils.isEmpty(accounts)) {
       return List.of();
@@ -144,8 +144,8 @@ public class AccountRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Account entity) {
     if (entity == null || entity.getId() == null) {
       return;

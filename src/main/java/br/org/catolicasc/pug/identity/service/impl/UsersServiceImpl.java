@@ -36,8 +36,8 @@ public class UsersServiceImpl implements UsersService {
   @Inject UserRepository repo;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete User ID: %s", id);
 
@@ -54,8 +54,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAll(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return 0;
@@ -128,8 +128,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public User save(UserCreateCommand cmd) {
     LOG.debugf("Attempting to create User with name: '%s'", cmd.name());
     User userToPersist = UserProcessor.processCreateInput(cmd.cpfString(), cmd.name());
@@ -151,8 +151,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<User> saveInBulk(List<UserCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -175,8 +175,8 @@ public class UsersServiceImpl implements UsersService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public User update(UUID id, UserUpdateCommand cmd) {
     LOG.debugf("Attempting to update User ID: %s", id);
 

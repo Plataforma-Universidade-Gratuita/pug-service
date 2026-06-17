@@ -45,8 +45,8 @@ public class AccountsServiceImpl implements AccountsService {
   @Inject UsersService userService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Account deactivate(UUID id) {
     LOG.debugf("Attempting to deactivate Account ID: %s", id);
     Account account = getById(id);
@@ -61,8 +61,8 @@ public class AccountsServiceImpl implements AccountsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Account ID: %s", id);
     Account account = getById(id);
@@ -83,8 +83,8 @@ public class AccountsServiceImpl implements AccountsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAll(List<UUID> ids) {
     LOG.debugf("Attempting to delete multiple Accounts. IDs: %s", ids);
     List<UUID> userIds = repo.findUserIdsByIds(ids);
@@ -150,8 +150,8 @@ public class AccountsServiceImpl implements AccountsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Account save(AccountCreateCommand cmd) {
     LOG.debugf("Attempting to create Account for email: '%s'", cmd.emailString());
 
@@ -187,8 +187,8 @@ public class AccountsServiceImpl implements AccountsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<Account> saveInBulk(List<AccountCreateCommand> cmds) {
     if (CollectionUtils.isEmpty(cmds)) {
       return List.of();
@@ -232,8 +232,8 @@ public class AccountsServiceImpl implements AccountsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Account update(UUID id, AccountUpdateCommand cmd) {
     LOG.debugf("Attempting to update Account ID: %s", id);
     Account current = getById(id);

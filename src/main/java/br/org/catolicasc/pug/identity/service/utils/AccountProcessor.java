@@ -22,7 +22,9 @@ import java.util.UUID;
  * state-mutation behaviors to keep the application service layer clean. It also handles complex
  * list transformations for bulk processing.
  */
-public class AccountProcessor {
+public final class AccountProcessor {
+
+  private AccountProcessor() {}
 
   /**
    * Extracts a distinct list of user creation commands for individuals who do not yet exist in the

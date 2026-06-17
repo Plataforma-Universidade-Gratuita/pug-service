@@ -22,8 +22,8 @@ public class AdminRepositoryImpl
     implements AdminRepository, PanacheRepositoryBase<AdminEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteByAccountId(UUID accountId) {
     if (accountId == null) {
       return false;
@@ -40,8 +40,8 @@ public class AdminRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Admin persist(Admin entity) {
     if (entity == null || entity.getAccountId() == null) {
       return null;
@@ -52,8 +52,8 @@ public class AdminRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Admin entity) {
     if (entity == null || entity.getAccountId() == null) {
       return;

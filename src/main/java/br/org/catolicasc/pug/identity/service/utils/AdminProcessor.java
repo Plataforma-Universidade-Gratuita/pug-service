@@ -8,7 +8,9 @@ import java.util.UUID;
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Admin}
  * Domain Aggregates.
  */
-public class AdminProcessor {
+public final class AdminProcessor {
+
+  private AdminProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Admin} domain aggregate.

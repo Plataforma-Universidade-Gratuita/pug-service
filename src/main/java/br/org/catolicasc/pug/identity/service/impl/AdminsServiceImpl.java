@@ -37,8 +37,8 @@ public class AdminsServiceImpl implements AdminsService {
   @Inject ProjectService projectService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deactivate(UUID accountId) {
     LOG.debugf("Attempting to deactivate Admin Account ID: %s", accountId);
     if (accountId == null) {
@@ -52,8 +52,8 @@ public class AdminsServiceImpl implements AdminsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to revoke Admin role for Account ID: %s", accountId);
     if (projectService.existsByCreatedBy(accountId)) {
@@ -95,8 +95,8 @@ public class AdminsServiceImpl implements AdminsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Admin save(AdminCreateCommand cmd) {
     LOG.debugf("Attempting to create Admin for email: %s", cmd.accountCommand().emailString());
     Account account = accountService.save(cmd.accountCommand());
@@ -114,8 +114,8 @@ public class AdminsServiceImpl implements AdminsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Admin update(UUID accountId, AdminUpdateCommand cmd) {
     LOG.debugf("Attempting to update Admin details for Account ID: %s", accountId);
     Admin current = getByAccountId(accountId);
@@ -138,8 +138,8 @@ public class AdminsServiceImpl implements AdminsService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Admin updateStatus(UUID accountId, boolean active) {
     LOG.debugf("Attempting to update Admin account status for Account ID: %s", accountId);
     Admin current = getByAccountId(accountId);

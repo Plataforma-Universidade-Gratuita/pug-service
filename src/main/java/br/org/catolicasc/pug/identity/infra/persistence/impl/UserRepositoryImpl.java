@@ -24,8 +24,8 @@ import java.util.UUID;
 public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase<UserEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByIds(List<UUID> ids) {
     if (CollectionUtils.isEmpty(ids)) {
       return 0;
@@ -34,8 +34,8 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -88,8 +88,8 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public User persist(User entity) {
     if (entity == null) {
       return null;
@@ -100,8 +100,8 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public List<User> persistAll(List<User> users) {
     if (CollectionUtils.isEmpty(users)) {
       return List.of();
@@ -113,8 +113,8 @@ public class UserRepositoryImpl implements UserRepository, PanacheRepositoryBase
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(User entity) {
     if (entity == null || entity.getId() == null) {
       return;
