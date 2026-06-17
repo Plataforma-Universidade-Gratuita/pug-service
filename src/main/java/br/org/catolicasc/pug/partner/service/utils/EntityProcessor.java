@@ -13,7 +13,9 @@ import java.util.UUID;
  * behaviors, ensuring that complex initialization or update logic does not pollute the application
  * service layer.
  */
-public class EntityProcessor {
+public final class EntityProcessor {
+
+  private EntityProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Entity} domain aggregate.

@@ -7,7 +7,9 @@ import java.util.UUID;
  * Stateless utility class responsible for mapping raw DTO command data into pure {@link Staff}
  * Domain Aggregates.
  */
-public class StaffProcessor {
+public final class StaffProcessor {
+
+  private StaffProcessor() {}
 
   /**
    * Processes raw creation inputs and constructs a new {@link Staff} domain aggregate.

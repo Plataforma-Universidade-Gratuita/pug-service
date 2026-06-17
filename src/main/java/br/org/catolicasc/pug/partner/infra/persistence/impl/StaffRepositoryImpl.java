@@ -16,8 +16,8 @@ import java.util.UUID;
 public class StaffRepositoryImpl
     implements StaffRepository, PanacheRepositoryBase<StaffEntity, UUID> {
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteByAccountId(UUID accountId) {
     if (accountId == null) {
       return false;
@@ -28,8 +28,8 @@ public class StaffRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteByEntityId(UUID entityId) {
     if (entityId == null) {
       return 0;
@@ -85,8 +85,8 @@ public class StaffRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Staff persist(Staff entity) {
     if (entity == null) {
       return null;
@@ -98,8 +98,8 @@ public class StaffRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Staff entity) {
     if (entity == null || entity.getAccountId() == null) {
       return;

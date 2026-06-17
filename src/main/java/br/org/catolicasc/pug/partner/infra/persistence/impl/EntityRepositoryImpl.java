@@ -23,8 +23,8 @@ public class EntityRepositoryImpl
     implements EntityRepository, PanacheRepositoryBase<EntityEntity, UUID> {
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean deleteById(UUID id) {
     if (id == null) {
       return false;
@@ -61,8 +61,8 @@ public class EntityRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Entity persist(Entity entity) {
     if (entity == null) {
       return null;
@@ -77,8 +77,8 @@ public class EntityRepositoryImpl
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public void update(Entity entity) {
     if (entity == null) {
       return;

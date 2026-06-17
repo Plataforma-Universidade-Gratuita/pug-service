@@ -30,7 +30,6 @@ public class StaffServiceImpl implements StaffService {
 
   private static final Logger LOG = Logger.getLogger(StaffServiceImpl.class);
 
-  /** {@inheritDoc} */
   @Inject AuditPublisher auditPublisher;
 
   @Inject StaffRepository repo;
@@ -39,8 +38,9 @@ public class StaffServiceImpl implements StaffService {
   @Inject ProjectService projectService;
   @Inject AttendancesService attendancesService;
 
-  @Transactional
+  /** {@inheritDoc} */
   @Override
+  @Transactional
   public boolean delete(UUID accountId) {
     LOG.debugf("Attempting to hard-delete Staff Account ID: %s", accountId);
     if (accountId == null) {
@@ -64,8 +64,8 @@ public class StaffServiceImpl implements StaffService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public long deleteAllByEntityId(UUID entityId) {
     if (entityId == null) {
       return 0;
@@ -96,8 +96,8 @@ public class StaffServiceImpl implements StaffService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Staff save(StaffCreateCommand cmd) {
     entityService.getById(cmd.entityId());
     Account account = accountService.save(cmd.accountCommand());
@@ -122,8 +122,8 @@ public class StaffServiceImpl implements StaffService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Staff update(UUID accountId, StaffUpdateCommand cmd) {
     Staff current = getByAccountId(accountId);
     Account currentAccount = accountService.getById(accountId);
@@ -154,8 +154,8 @@ public class StaffServiceImpl implements StaffService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Staff updateStatus(UUID accountId, boolean active) {
     Staff current = getByAccountId(accountId);
     accountService.update(accountId, new AccountUpdateCommand(null, null, active, null));

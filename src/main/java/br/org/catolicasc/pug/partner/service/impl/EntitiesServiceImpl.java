@@ -38,8 +38,8 @@ public class EntitiesServiceImpl implements EntitiesService {
   @Inject ProjectService projectService;
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public boolean delete(UUID id) {
     LOG.debugf("Attempting to delete Entity ID: %s", id);
     if (id == null) {
@@ -101,8 +101,8 @@ public class EntitiesServiceImpl implements EntitiesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Entity save(EntityCreateCommand cmd) {
     LOG.debugf("Attempting to create Entity: %s (CNPJ: %s)", cmd.name(), cmd.cnpjString());
     if (cmd.cityId() != null) {
@@ -130,8 +130,8 @@ public class EntitiesServiceImpl implements EntitiesService {
   }
 
   /** {@inheritDoc} */
-  @Transactional
   @Override
+  @Transactional
   public Entity update(UUID id, EntityUpdateCommand cmd) {
     LOG.debugf("Attempting to update Entity ID: %s", id);
     Entity current = getById(id);

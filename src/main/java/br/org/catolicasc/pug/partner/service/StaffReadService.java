@@ -3,6 +3,7 @@ package br.org.catolicasc.pug.partner.service;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffComplexSearchView;
 import br.org.catolicasc.pug.partner.infra.read.dtos.StaffView;
 import br.org.catolicasc.pug.partner.service.dtos.staff.StaffComplexSearchCriteria;
+import br.org.catolicasc.pug.shared.exceptions.ResourceNotFoundException;
 import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import java.util.List;
@@ -22,6 +23,7 @@ public interface StaffReadService {
    *
    * @param accountId the unique identifier of the account linked to the staff member
    * @return the matching {@link StaffView}
+   * @throws ResourceNotFoundException if no staff projection exists for the provided account
    */
   StaffView getViewByAccountId(UUID accountId);
 
