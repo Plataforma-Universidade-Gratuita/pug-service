@@ -19,7 +19,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of CitiesQueries using JPA. */
+/**
+ * JPA-backed implementation of the {@link CitiesQueries} contract.
+ *
+ * <p>This query component serves the geo read model by projecting persisted city rows directly into
+ * immutable {@link CityView} instances, including paginated complex-search flows.
+ */
 @ApplicationScoped
 @Transactional(Transactional.TxType.SUPPORTS)
 public class CitiesQueriesImpl implements CitiesQueries {

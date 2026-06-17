@@ -16,6 +16,7 @@ public interface CityRepository {
    *
    * @param id the unique identifier (UUID) of the city
    * @return an {@link Optional} containing the {@link City} if found, or {@link Optional#empty()}
+   *     if no persisted aggregate matches the provided identifier
    */
   Optional<City> findOptionalById(UUID id);
 }

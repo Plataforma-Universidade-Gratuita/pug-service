@@ -40,7 +40,8 @@ public interface CitiesReadService {
    * Retrieves a list of city projections based on a provided list of unique identifiers.
    *
    * <p>This method is optimized for batch retrieval scenarios, allowing clients to fetch multiple
-   * city views in a single call. The results are returned in the same order as the input IDs.
+   * city views in a single call. Only cities matching the supplied identifiers are returned, using
+   * the ordering defined by the underlying query implementation.
    *
    * @param ids a {@link List} of unique identifiers (UUIDs) corresponding to the desired cities
    * @return a {@link List} of {@link CityView} entries matching the provided IDs

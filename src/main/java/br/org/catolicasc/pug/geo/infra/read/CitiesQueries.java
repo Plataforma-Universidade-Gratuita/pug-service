@@ -31,7 +31,7 @@ public interface CitiesQueries {
    *
    * <p>This query supports batch lookup scenarios where multiple cities must be resolved in a
    * single round-trip to the persistence layer. Only cities matching the supplied identifiers are
-   * returned.
+   * returned, ordered according to the underlying query implementation.
    *
    * @param ids a {@link List} of city identifiers to resolve
    * @return a {@link List} containing the matching {@link CityView} projections

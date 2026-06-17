@@ -9,7 +9,12 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Implementation of the read-only CityRepository using Panache. */
+/**
+ * Panache-backed implementation of the read-only {@link CityRepository}.
+ *
+ * <p>This repository reconstitutes immutable {@link City} aggregates from persisted {@link
+ * CityEntity} rows while preserving the geo module's read-only dictionary semantics.
+ */
 @ApplicationScoped
 public class CityRepositoryImpl implements CityRepository, PanacheRepositoryBase<CityEntity, UUID> {
   /** {@inheritDoc} */
