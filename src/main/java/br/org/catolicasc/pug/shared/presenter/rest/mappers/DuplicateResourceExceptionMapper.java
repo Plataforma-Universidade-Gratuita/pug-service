@@ -36,7 +36,6 @@ public class DuplicateResourceExceptionMapper
    * @param ex The DuplicateResourceException representing the conflict.
    * @return A Response object with status 409 and a JSON body containing the error code.
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(DuplicateResourceException ex) {
     LOG.debugf(ex, "Duplicate resource conflict");

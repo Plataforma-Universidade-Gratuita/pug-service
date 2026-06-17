@@ -38,7 +38,6 @@ public class NotAuthorizedExceptionMapper implements ExceptionMapper<NotAuthoriz
    * @param ex the caught {@link NotAuthorizedException}
    * @return a {@link Response} with status 401 (Unauthorized) containing a localized error message
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(NotAuthorizedException ex) {
     LOG.debugf(ex, "Unauthorized access attempt");

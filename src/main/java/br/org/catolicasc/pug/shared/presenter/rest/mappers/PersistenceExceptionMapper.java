@@ -42,7 +42,6 @@ public class PersistenceExceptionMapper implements ExceptionMapper<PersistenceEx
    * @param ex The PersistenceException thrown during database operations.
    * @return A secure, standardized API response.
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(PersistenceException ex) {
     Throwable cause = ex.getCause();

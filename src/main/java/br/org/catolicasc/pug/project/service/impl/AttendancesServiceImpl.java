@@ -42,7 +42,6 @@ public class AttendancesServiceImpl implements AttendancesService {
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
   String pepper;
 
-  /** {@inheritDoc} */
   @Override
   @Transactional
   public long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
@@ -58,7 +57,6 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
-  /** {@inheritDoc} */
   @Override
   @Transactional
   public long deleteAllWaitingValidationByProjectId(UUID projectId) {
@@ -73,7 +71,6 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
-  /** {@inheritDoc} */
   @Override
   @Transactional
   public boolean delete(UUID id) {
@@ -92,7 +89,6 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
-  /** {@inheritDoc} */
   @Override
   public boolean existsByValidatedBy(UUID accountId) {
     if (accountId == null) {
@@ -101,7 +97,6 @@ public class AttendancesServiceImpl implements AttendancesService {
     return repo.existsByValidatedBy(accountId);
   }
 
-  /** {@inheritDoc} */
   @Override
   public Attendance getById(UUID id) {
     Attendance attendance =
@@ -115,7 +110,6 @@ public class AttendancesServiceImpl implements AttendancesService {
     return attendance;
   }
 
-  /** {@inheritDoc} */
   @Override
   @Transactional
   public Attendance save(AttendanceCreateCommand cmd) {
@@ -151,13 +145,11 @@ public class AttendancesServiceImpl implements AttendancesService {
     return saved;
   }
 
-  /** {@inheritDoc} */
   @Override
   @Transactional
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
     LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);
-    UUID validatorAccountId = authService.getCurrentAccountId();
     authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
 
     if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
@@ -169,6 +161,7 @@ public class AttendancesServiceImpl implements AttendancesService {
       projectService.validateIsInProgress(current.getEnrollmentIdentifier().getProjectId());
     }
 
+    UUID validatorAccountId = authService.getCurrentAccountId();
     Attendance validated =
         AttendanceProcessor.processValidationInput(current, validatorAccountId, cmd.status());
 

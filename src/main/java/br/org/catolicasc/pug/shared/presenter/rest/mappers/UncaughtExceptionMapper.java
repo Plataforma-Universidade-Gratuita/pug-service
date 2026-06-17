@@ -35,7 +35,6 @@ public class UncaughtExceptionMapper implements ExceptionMapper<Throwable> {
    * @param ex The unexpected exception that was thrown.
    * @return A Response object containing a safe error code and HTTP 500 status.
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(Throwable ex) {
     LOG.error("An uncaught exception occurred:", ex);

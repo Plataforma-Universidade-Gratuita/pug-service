@@ -34,7 +34,6 @@ public class BusinessRuleExceptionMapper implements ExceptionMapper<BusinessRule
    * @param ex The BusinessRuleException thrown by the domain.
    * @return A Response object containing the specific error code and localized reason.
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(BusinessRuleException ex) {
     LOG.debugf(ex, "Business rule violation caught");

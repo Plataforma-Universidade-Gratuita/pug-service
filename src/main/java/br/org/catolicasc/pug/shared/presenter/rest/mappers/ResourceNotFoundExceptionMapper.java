@@ -34,7 +34,6 @@ public class ResourceNotFoundExceptionMapper implements ExceptionMapper<Resource
    * @param ex The ResourceNotFoundException representing the missing entity.
    * @return A Response object with status 404 and a JSON body containing the exact error.
    */
-  /** {@inheritDoc} */
   @Override
   public Response toResponse(ResourceNotFoundException ex) {
     LOG.debugf(ex, "Resource not found");

@@ -99,6 +99,98 @@ class FormerStudentTest {
     }
 
     @Test
+    @DisplayName("Should keep same instance when campus is unchanged")
+    void shouldKeepSameInstanceWhenCampusIsUnchanged() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+
+      FormerStudent updated = formerStudent.moveToCampus(Campi.JARAGUA_DO_SUL);
+
+      assertThat(updated).isSameAs(formerStudent);
+    }
+
+    @Test
+    @DisplayName("Should update academic registration successfully")
+    void shouldChangeAcademicRegistration() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+      AcademicRegistration newRegistration = AcademicRegistration.factory("54321");
+
+      FormerStudent updated = formerStudent.changeAcademicRegistration(newRegistration);
+
+      assertThat(updated.getAcademicRegistration()).isEqualTo(newRegistration);
+    }
+
+    @Test
+    @DisplayName("Should update required hours successfully")
+    void shouldUpdateRequiredHours() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+      CounterpartHours newHours =
+          CounterpartHours.factory(new BigDecimal("120"), new BigDecimal("20"), false);
+
+      FormerStudent updated = formerStudent.updateRequiredHours(newHours);
+
+      assertThat(updated.getCounterpartHours()).isEqualTo(newHours);
+    }
+
+    @Test
+    @DisplayName("Should update period successfully")
+    void shouldUpdateDateWindow() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+      Period newPeriod = Period.factory(LocalDate.now().plusDays(1), LocalDate.now().plusMonths(8));
+
+      FormerStudent updated = formerStudent.updateDateWindow(newPeriod);
+
+      assertThat(updated.getPeriod()).isEqualTo(newPeriod);
+    }
+
+    @Test
+    @DisplayName("Should remove completed hours and recalculate concluded status")
+    void shouldRemoveCompletedHours() {
+      CounterpartHours concludedHours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("100"), true);
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              concludedHours,
+              validPeriod);
+
+      FormerStudent updated = formerStudent.removeCompletedHours(new BigDecimal("10"));
+
+      assertThat(updated.getCounterpartHours().getCompletedHours()).isEqualTo(new BigDecimal("90"));
+      assertThat(updated.getCounterpartHours().getConcluded()).isFalse();
+    }
+
+    @Test
     @DisplayName("Should allow adding completed hours within required limit")
     void shouldAllowAddingCompletedHoursWithinLimit() {
       FormerStudent formerStudent =
@@ -161,6 +253,38 @@ class FormerStudentTest {
       assertThrows(
           BusinessRuleException.class,
           () -> formerStudent.validateCanRemoveCompletedHours(BigDecimal.ONE));
+    }
+
+    @Test
+    @DisplayName("Should allow enrollment when counterpart hours are not concluded")
+    void shouldAllowEnrollmentWhenNotConcluded() {
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              validHours,
+              validPeriod);
+
+      assertDoesNotThrow(formerStudent::validateCanEnroll);
+    }
+
+    @Test
+    @DisplayName("Should fail enrollment when counterpart hours are concluded")
+    void shouldFailEnrollmentWhenConcluded() {
+      CounterpartHours concludedHours =
+          CounterpartHours.factory(new BigDecimal("100"), new BigDecimal("100"), true);
+      FormerStudent formerStudent =
+          FormerStudent.factory(
+              UuidCreator.getTimeOrderedEpoch(),
+              validReg,
+              Campi.JARAGUA_DO_SUL,
+              UuidCreator.getTimeOrderedEpoch(),
+              concludedHours,
+              validPeriod);
+
+      assertThrows(BusinessRuleException.class, formerStudent::validateCanEnroll);
     }
   }
 }
