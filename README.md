@@ -87,7 +87,7 @@ Important architectural properties:
 - all business modules live inside one Quarkus application
 - `shared` contains cross-cutting infrastructure rather than a separate deployable service
 - PostgreSQL stores the main relational domain data
-- MongoDB is used as the audit boundary in the current codebase
+- MongoDB is used as the audit boundary in the repository
 - JaCoCo coverage checks are enforced per package in `verify`
 
 ## 🧰 Tech stack
@@ -130,7 +130,7 @@ Then start the application in dev mode:
 
 ### Environment and local runtime notes
 
-Dedicated `.env` files were **not found in the current codebase**.
+Dedicated `.env` files are not part of the repository.
 
 The current dev profile uses fixed local settings in [src/main/resources/application-dev.properties](src/main/resources/application-dev.properties), including:
 
@@ -157,8 +157,8 @@ Useful local commands:
 - **Initial stable release:** this README documents the current `pug-service` repository as release `1.0.0`
 - **Main delivered modules/features:** shared infrastructure, identity, geo, partner, academic, and project modules running inside one Quarkus service
 - **Known limitations visible in the repo:**
-  - the `geo` module is read-only in the current codebase
-  - dedicated `@QuarkusIntegrationTest` classes were not found in the current codebase
+  - the `geo` module is read-only in the repository
+  - dedicated `@QuarkusIntegrationTest` classes are not part of the repository
   - downstream deployment automation was not found; current workflows stop at verify/build/publish
 - **Compatibility/runtime expectations:**
   - Java `21` is required by the build
@@ -191,9 +191,9 @@ pug-service/
 
 ## 🔗 Links to deeper documentation
 
-- [Expanded workspace documentation](../pug-docs/pug-service/README.md)
-- [Architecture notes](../pug-docs/pug-service/ARCHITECTURE.md)
-- [Development notes](../pug-docs/pug-service/DEVELOPMENT.md)
-- [Testing notes](../pug-docs/pug-service/TESTS.md)
-- [CI/CD notes](../pug-docs/pug-service/CICD.md)
+- [Expanded workspace documentation](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/README.md)
+- [Architecture notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/ARCHITECTURE.md)
+- [Development notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/DEVELOPMENT.md)
+- [Testing notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/TESTS.md)
+- [CI/CD notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/CICD.md)
 
