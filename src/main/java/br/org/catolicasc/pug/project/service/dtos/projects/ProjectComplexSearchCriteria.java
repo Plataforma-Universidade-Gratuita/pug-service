@@ -23,18 +23,22 @@ import java.util.UUID;
 public record ProjectComplexSearchCriteria(
     String name,
     List<UUID> entityIds,
+    List<UUID> areaOfExpertiseIds,
     String description,
     List<UUID> createdByIds,
     OffsetDateTime dateFrom,
     OffsetDateTime dateTo,
     List<ProjectStatus> statuses,
+    Boolean available,
     BigDecimal maxOfferedHours,
     BigDecimal minOfferedHours) {
 
   /** Normalizes nullable list inputs to immutable empty lists. */
   public ProjectComplexSearchCriteria {
     entityIds = entityIds == null ? List.of() : List.copyOf(entityIds);
+    areaOfExpertiseIds = areaOfExpertiseIds == null ? List.of() : List.copyOf(areaOfExpertiseIds);
     createdByIds = createdByIds == null ? List.of() : List.copyOf(createdByIds);
     statuses = statuses == null ? List.of() : List.copyOf(statuses);
+    available = available != null && available;
   }
 }

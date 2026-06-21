@@ -135,7 +135,8 @@ public class ProjectQueriesImpl implements ProjectQueries {
     ProjectComplexSearchCriteria safeCriteria =
         criteria == null
             ? new ProjectComplexSearchCriteria(
-                null, List.of(), null, List.of(), null, null, List.of(), null, null)
+                null, List.of(), List.of(), null, List.of(), null, null, List.of(), false, null,
+                null)
             : criteria;
 
     List<String> clauses = new ArrayList<>();
@@ -145,6 +146,17 @@ public class ProjectQueriesImpl implements ProjectQueries {
     }
     if (CollectionUtils.isNotEmpty(safeCriteria.entityIds())) {
       clauses.add("p.entityId in :entityIds");
+    }
+    if (CollectionUtils.isNotEmpty(safeCriteria.areaOfExpertiseIds())) {
+      clauses.add(
+          """
+                  exists (
+                    select 1
+                    from ProjectAreaOfExpertiseEntity pae
+                    where pae.id.projectId = p.id
+                      and pae.id.areaOfExpertiseId in :areaOfExpertiseIds
+                  )
+                  """);
     }
     if (StringUtils.isNotEmpty(safeCriteria.description())) {
       clauses.add(JpaSearchUtils.containsClause("p.description", "descriptionPattern"));
@@ -161,6 +173,20 @@ public class ProjectQueriesImpl implements ProjectQueries {
     }
     if (CollectionUtils.isNotEmpty(safeCriteria.statuses())) {
       clauses.add("p.status in :statuses");
+    }
+    if (safeCriteria.available()) {
+      clauses.add(
+          """
+                  (
+                    p.maxParticipants is null
+                    or (
+                      select count(en.id.formerStudentId)
+                      from EnrollmentEntity en
+                      where en.id.projectId = p.id
+                        and en.status in ('APPROVED', 'ON_HOLD')
+                    ) < p.maxParticipants
+                  )
+                  """);
     }
     if (safeCriteria.maxOfferedHours() != null) {
       clauses.add("p.offeredHours <= :maxOfferedHours");
@@ -197,6 +223,9 @@ public class ProjectQueriesImpl implements ProjectQueries {
     }
     if (CollectionUtils.isNotEmpty(criteria.entityIds())) {
       query.setParameter("entityIds", criteria.entityIds());
+    }
+    if (CollectionUtils.isNotEmpty(criteria.areaOfExpertiseIds())) {
+      query.setParameter("areaOfExpertiseIds", criteria.areaOfExpertiseIds());
     }
     if (StringUtils.isNotEmpty(criteria.description())) {
       JpaSearchUtils.bindContains(query, "descriptionPattern", criteria.description());

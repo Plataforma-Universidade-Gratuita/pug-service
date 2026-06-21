@@ -130,27 +130,19 @@ public class ProjectsResource {
         new ProjectComplexSearchCriteria(
             req == null ? null : req.name(),
             req == null ? List.of() : req.entityIds(),
+            req == null ? List.of() : req.areaOfExpertiseIds(),
             req == null ? null : req.description(),
             req == null ? List.of() : req.createdByIds(),
             req == null ? null : req.dateFrom(),
             req == null ? null : req.dateTo(),
             req == null ? List.of() : req.statuses(),
+            req != null && Boolean.TRUE.equals(req.available()),
             req == null ? null : req.maxOfferedHours(),
             req == null ? null : req.minOfferedHours());
 
     PageResult<ProjectView> result =
         readService.search(
-            new ProjectComplexSearchCriteria(
-                criteria.name(),
-                criteria.entityIds(),
-                criteria.description(),
-                criteria.createdByIds(),
-                criteria.dateFrom(),
-                criteria.dateTo(),
-                criteria.statuses(),
-                criteria.maxOfferedHours(),
-                criteria.minOfferedHours()),
-            new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
+            criteria, new PageQuery(page == null ? 0 : page, size == null ? 25 : size));
 
     PageResponse<ProjectComplexSearchResponse> body =
         new PageResponse<>(

@@ -58,7 +58,8 @@ class ProjectReadServiceImplTest {
             service
                 .search(
                     new ProjectComplexSearchCriteria(
-                        null, List.of(), null, List.of(), null, null, List.of(), null, null),
+                        null, List.of(), null, null, List.of(), null, null, List.of(), null, null,
+                        null),
                     new PageQuery(0, 1))
                 .content())
         .hasSize(1);

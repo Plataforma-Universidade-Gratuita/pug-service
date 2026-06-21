@@ -170,11 +170,13 @@ class ProjectQueriesImplTest {
             new ProjectComplexSearchCriteria(
                 project.getName().substring(0, 3),
                 List.of(partnerEntity.getId()),
+                null,
                 project.getDescription() == null ? null : project.getDescription().substring(0, 3),
                 List.of(creator.getId()),
                 createdAt.minusSeconds(1),
                 createdAt.plusSeconds(1),
                 List.of(ProjectStatus.PLANNED),
+                null,
                 project.getProjectInfo().getOfferedHours().add(BigDecimal.ONE),
                 BigDecimal.ZERO),
             new PageQuery(0, 10));
@@ -199,7 +201,8 @@ class ProjectQueriesImplTest {
   void shouldSearchWithNullPageQuery() {
     var result =
         queries.search(
-            new ProjectComplexSearchCriteria(null, null, null, null, null, null, null, null, null),
+            new ProjectComplexSearchCriteria(
+                null, null, null, null, null, null, null, null, null, null, null),
             null);
 
     assertThat(result.content()).hasSizeLessThanOrEqualTo(25);
@@ -212,7 +215,17 @@ class ProjectQueriesImplTest {
     var result =
         queries.search(
             new ProjectComplexSearchCriteria(
-                project.getName().substring(0, 3), null, null, null, null, null, null, null, null),
+                project.getName().substring(0, 3),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null),
             new PageQuery(5, 1));
 
     assertThat(result.page()).isZero();
