@@ -5,13 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import br.org.catolicasc.pug.helpers.CopyableMapperTest;
 import br.org.catolicasc.pug.helpers.builders.domain.ProjectBuilder;
 import br.org.catolicasc.pug.project.domain.Project;
-import br.org.catolicasc.pug.project.domain.enums.ProjectStatus;
 import br.org.catolicasc.pug.project.infra.persistence.ProjectEntity;
-import br.org.catolicasc.pug.project.infra.read.dtos.ProjectView;
-import com.github.f4b6a3.uuid.UuidCreator;
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -80,52 +74,5 @@ class ProjectMapperTest extends CopyableMapperTest<Project, ProjectEntity> {
     assertThat(entity.getCompletedHours())
         .isEqualByComparingTo(project.getProjectInfo().getCompletedHours());
     assertThat(entity.getStatus()).isEqualTo(project.getProjectStatus().name());
-  }
-
-  @Test
-  @DisplayName("toView should return null when entity is null")
-  void toViewShouldReturnNullForNullEntity() {
-    assertThat(ProjectMapper.toView(null)).isNull();
-  }
-
-  @Test
-  @DisplayName("toView should map all fields correctly")
-  void toViewShouldMapAllFields() {
-    UUID id = UuidCreator.getTimeOrderedEpoch();
-    UUID entityId = UuidCreator.getTimeOrderedEpoch();
-    UUID creatorId = UuidCreator.getTimeOrderedEpoch();
-    OffsetDateTime now = OffsetDateTime.now();
-
-    ProjectEntity entity =
-        ProjectEntity.builder()
-            .id(id)
-            .name("Test Project")
-            .entityId(entityId)
-            .description("desc")
-            .createdBy(creatorId)
-            .maxParticipants(10)
-            .offeredHours(new BigDecimal("40.00"))
-            .completedHours(BigDecimal.ZERO)
-            .status("PLANNED")
-            .closedAt(null)
-            .createdAt(now)
-            .updatedAt(now)
-            .build();
-
-    ProjectView view = ProjectMapper.toView(entity);
-
-    assertThat(view).isNotNull();
-    assertThat(view.id()).isEqualTo(id);
-    assertThat(view.name()).isEqualTo("Test Project");
-    assertThat(view.entityId()).isEqualTo(entityId);
-    assertThat(view.description()).isEqualTo("desc");
-    assertThat(view.creatorId()).isEqualTo(creatorId);
-    assertThat(view.creatorName()).isNull();
-    assertThat(view.creatorEmail()).isNull();
-    assertThat(view.maxParticipants()).isEqualTo(10);
-    assertThat(view.offeredHours()).isEqualByComparingTo(new BigDecimal("40.00"));
-    assertThat(view.completedHours()).isEqualByComparingTo(BigDecimal.ZERO);
-    assertThat(view.status()).isEqualTo(ProjectStatus.PLANNED);
-    assertThat(view.closedAt()).isNull();
   }
 }

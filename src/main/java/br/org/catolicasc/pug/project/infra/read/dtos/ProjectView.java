@@ -21,6 +21,7 @@ import java.util.UUID;
  * @param creatorName the display name of the staff account who created the project
  * @param creatorEmail the email address of the staff account who created the project
  * @param maxParticipants the maximum number of formerStudents allowed to enroll
+ * @param currentParticipants the current number of participants
  * @param offeredHours the total counterpart hours the project offers
  * @param completedHours the total counterpart hours that have been completed to date
  * @param status the current execution state of the project
@@ -38,6 +39,7 @@ public record ProjectView(
     String creatorName,
     String creatorEmail,
     Integer maxParticipants,
+    Long currentParticipants,
     BigDecimal offeredHours,
     BigDecimal completedHours,
     ProjectStatus status,
@@ -57,6 +59,7 @@ public record ProjectView(
    * @param creatorName the display name of the creator account
    * @param creatorEmail the email address of the creator account
    * @param maxParticipants the maximum number of formerStudents allowed to enroll
+   * @param currentParticipants the current number of participants
    * @param offeredHours the total counterpart hours the project offers
    * @param completedHours the total counterpart hours that have been completed to date
    * @param status the raw project-status value returned by the database
@@ -74,6 +77,7 @@ public record ProjectView(
       String creatorName,
       String creatorEmail,
       Integer maxParticipants,
+      Long currentParticipants,
       BigDecimal offeredHours,
       BigDecimal completedHours,
       String status,
@@ -90,6 +94,7 @@ public record ProjectView(
         creatorName,
         creatorEmail,
         maxParticipants,
+        currentParticipants,
         offeredHours,
         completedHours,
         ProjectStatus.valueOf(status),

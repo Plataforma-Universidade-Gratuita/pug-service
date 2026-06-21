@@ -86,6 +86,7 @@ class ProjectAreaOfExpertiseReadServiceImplTest {
                     "Creator Name",
                     "creator@example.com",
                     10,
+                    0L,
                     new BigDecimal("40"),
                     BigDecimal.ZERO,
                     ProjectStatus.PLANNED,

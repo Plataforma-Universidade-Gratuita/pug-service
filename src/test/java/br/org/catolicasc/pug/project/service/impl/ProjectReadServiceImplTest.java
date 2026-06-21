@@ -75,6 +75,7 @@ class ProjectReadServiceImplTest {
         "Creator Name",
         "creator@example.com",
         20,
+        0L,
         new BigDecimal("40.00"),
         BigDecimal.ZERO,
         ProjectStatus.PLANNED,

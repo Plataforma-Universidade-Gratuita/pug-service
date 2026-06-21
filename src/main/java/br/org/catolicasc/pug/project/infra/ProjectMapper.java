@@ -100,33 +100,4 @@ public final class ProjectMapper {
         .updatedAt(d.getProjectInfo().getAuditInfo().getUpdatedAt())
         .build();
   }
-
-  /**
-   * Projects a raw JPA {@link ProjectEntity} into a {@link ProjectView} DTO.
-   *
-   * @param p the JPA entity representing the project
-   * @return a fully populated {@link ProjectView} DTO containing IDs for relations
-   */
-  public static ProjectView toView(ProjectEntity p) {
-    if (p == null) {
-      return null;
-    }
-
-    return new ProjectView(
-        p.getId(),
-        p.getName(),
-        p.getEntityId(),
-        null,
-        p.getDescription(),
-        p.getCreatedBy(),
-        null,
-        null,
-        p.getMaxParticipants(),
-        p.getOfferedHours(),
-        p.getCompletedHours(),
-        ProjectStatus.valueOf(p.getStatus()),
-        p.getClosedAt(),
-        p.getCreatedAt(),
-        p.getUpdatedAt());
-  }
 }

@@ -10,6 +10,7 @@ import java.time.OffsetDateTime;
  *
  * @param createdBy the unique identifier of the account that created the project
  * @param maxParticipants the maximum number of participants accepted by the project
+ * @param currentParticipants the current number of participants in the project
  * @param offeredHours the total counterpart hours offered by the project
  * @param completedHours the total counterpart hours completed so far
  * @param closedAt the exact timestamp when the project reached a terminal state
@@ -19,6 +20,7 @@ import java.time.OffsetDateTime;
 public record ProjectInfoResponse(
     AccountSimpleComplexSearchResponse createdBy,
     Integer maxParticipants,
+    Long currentParticipants,
     BigDecimal offeredHours,
     BigDecimal completedHours,
     OffsetDateTime closedAt,

@@ -126,6 +126,7 @@ public final class ProjectPresenter {
     return new ProjectInfoResponse(
         toAccountResponse(v),
         v.maxParticipants(),
+        v.currentParticipants(),
         v.offeredHours(),
         v.completedHours(),
         v.closedAt(),

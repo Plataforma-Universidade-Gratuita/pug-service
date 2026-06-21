@@ -56,7 +56,8 @@ class ProjectResourceTest extends BaseResourceTest {
             "data.projectInfo.createdBy.id",
             is(project[0].getProjectInfo().getCreatedBy().toString()))
         .body("data.projectInfo.createdBy.name", is(creatorUser[0].getName()))
-        .body("data.projectInfo.createdBy.email", is(creator[0].getEmail().getValue()));
+        .body("data.projectInfo.createdBy.email", is(creator[0].getEmail().getValue()))
+        .body("data.projectInfo.currentParticipants", is(0));
   }
 
   @Test

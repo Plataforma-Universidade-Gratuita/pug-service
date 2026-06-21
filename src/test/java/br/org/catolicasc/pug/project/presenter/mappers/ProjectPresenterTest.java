@@ -60,6 +60,7 @@ class ProjectPresenterTest {
     assertThat(response.projectInfo().createdBy().id()).isEqualTo(view.creatorId());
     assertThat(response.projectInfo().createdBy().name()).isEqualTo(view.creatorName());
     assertThat(response.projectInfo().createdBy().email()).isEqualTo(view.creatorEmail());
+    assertThat(response.projectInfo().currentParticipants()).isEqualTo(view.currentParticipants());
     assertThat(response.status().status()).isEqualTo(ProjectStatus.PLANNED);
     assertThat(response.status().statusFormatted()).isNotBlank();
     assertThat(response.projectInfo().auditInfo()).isNotNull();
@@ -76,6 +77,7 @@ class ProjectPresenterTest {
         "Creator Name",
         "creator@example.com",
         20,
+        3L,
         new BigDecimal("40.00"),
         BigDecimal.ZERO,
         ProjectStatus.PLANNED,

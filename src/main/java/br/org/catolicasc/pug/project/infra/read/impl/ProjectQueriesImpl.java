@@ -41,6 +41,12 @@ public class ProjectQueriesImpl implements ProjectQueries {
         u.name,
         a.email,
         p.maxParticipants,
+        (
+          select count(en.id.formerStudentId)
+          from EnrollmentEntity en
+          where en.id.projectId = p.id
+            and en.status in ('APPROVED', 'ON_HOLD')
+        ),
         p.offeredHours,
         p.completedHours,
         p.status,
