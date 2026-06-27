@@ -59,81 +59,118 @@ jobs:
             exit 1
           fi
 
+      - name: Prepare image metadata
+        id: image
+        run: |
+          OWNER_LOWER=$(echo "${GITHUB_REPOSITORY_OWNER}" | tr '[:upper:]' '[:lower:]')
+          IMAGE="ghcr.io/${OWNER_LOWER}/${{ steps.maven.outputs.artifact_id }}"
+          SHORT_SHA="${GITHUB_SHA::12}"
+
+          {
+            echo "image=$IMAGE"
+            echo "short_sha=$SHORT_SHA"
+            echo "scan_tag=$IMAGE:scan"
+            echo "sha_tag=$IMAGE:sha-$SHORT_SHA"
+          } >> "$GITHUB_OUTPUT"
+
+          TAGS="$IMAGE:sha-$SHORT_SHA"
+
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAGS="$TAGS,$IMAGE:latest"
+          fi
+
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAGS="$TAGS,$IMAGE:${GITHUB_REF_NAME},$IMAGE:${{ steps.maven.outputs.version }}"
+          fi
+
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
       - name: Verify
         run: ./mvnw -B clean verify
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        run: |
+          docker buildx create --name pug-builder --use
+          docker buildx inspect --bootstrap
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository_owner }}/${{ steps.maven.outputs.artifact_id }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            type=sha,prefix=sha-
-            type=ref,event=tag
-            type=semver,pattern={{version}}
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" \
+            | docker login ghcr.io \
+                --username "${{ github.actor }}" \
+                --password-stdin
 
       - name: Build image for scan
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          load: true
-          tags: ghcr.io/${{ github.repository_owner }}/${{ steps.maven.outputs.artifact_id }}:scan
-          cache-from: type=gha
+        run: |
+          docker buildx build \
+            --load \
+            --tag "${{ steps.image.outputs.scan_tag }}" \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --file ./Dockerfile \
+            .
 
       - name: Scan image
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.33.1
         with:
-          image-ref: ghcr.io/${{ github.repository_owner }}/${{ steps.maven.outputs.artifact_id }}:scan
+          image-ref: ${{ steps.image.outputs.scan_tag }}
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
-          exit-code: 1
+          exit-code: 0
 
       - name: Upload Trivy results
-        if: always()
+        if: hashFiles('trivy-results.sarif') != ''
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
 
+      - name: Fail on critical or high vulnerabilities
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: ${{ steps.image.outputs.scan_tag }}
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          format: table
+
       - name: Build and push image
         id: build
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        run: |
+          TAG_ARGS=""
+          IFS=',' read -ra TAGS <<< "${{ steps.image.outputs.tags }}"
+          for TAG in "${TAGS[@]}"; do
+            TAG_ARGS="$TAG_ARGS --tag $TAG"
+          done
+
+          docker buildx build \
+            --push \
+            --platform linux/amd64,linux/arm64 \
+            $TAG_ARGS \
+            --label "org.opencontainers.image.source=https://github.com/${GITHUB_REPOSITORY}" \
+            --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+            --label "org.opencontainers.image.version=${{ steps.maven.outputs.version }}" \
+            --cache-from type=gha \
+            --cache-to type=gha,mode=max \
+            --file ./Dockerfile \
+            .
+
+          DIGEST=$(docker buildx imagetools inspect "${{ steps.image.outputs.sha_tag }}" \
+            --format '{{json .Manifest.Digest}}' | tr -d '"')
+
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
       - name: Sign image
-        env:
-          COSIGN_EXPERIMENTAL: "true"
         run: |
           cosign sign --yes \
-            ghcr.io/${{ github.repository_owner }}/${{ steps.maven.outputs.artifact_id }}@${{ steps.build.outputs.digest }}
+            "${{ steps.image.outputs.image }}@${{ steps.build.outputs.digest }}"
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository_owner }}/${{ steps.maven.outputs.artifact_id }}@${{ steps.build.outputs.digest }}
+          image: ${{ steps.image.outputs.image }}@${{ steps.build.outputs.digest }}
           format: spdx-json
           output-file: sbom.spdx.json
 
@@ -145,4 +182,5 @@ jobs:
 
       - name: Print image digest
         run: |
-          echo "Image digest: ${{ steps.build.outputs.digest }}"
+          echo "Image: ${{ steps.image.outputs.image }}"
+          echo "Digest: ${{ steps.build.outputs.digest }}"
