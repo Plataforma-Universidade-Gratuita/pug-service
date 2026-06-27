@@ -41,9 +41,9 @@ public class SeedPasswordSeeder {
 
   @Transactional
   void rehashSeedPasswords() {
-    rehashLike("admin.%@pug.test", "Admin123*");
-    rehashLike("student.%@pug.test", "FormerS123*");
-    rehashLike("staff.%@pug.test", "EntityS123*");
+    rehashLike("admin.%@pug.br", "Admin123*");
+    rehashLike("student.%@pug.br", "FormerS123*");
+    rehashLike("staff.%@pug.br", "EntityS123*");
   }
 
   void rehashLike(String emailPattern, String rawPassword) {

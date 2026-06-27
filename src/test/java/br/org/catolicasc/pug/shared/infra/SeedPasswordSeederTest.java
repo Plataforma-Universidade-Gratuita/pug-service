@@ -48,9 +48,9 @@ class SeedPasswordSeederTest {
     verify(passwordService).hash("FormerS123*");
     verify(passwordService).hash("EntityS123*");
 
-    verify(query).setParameter("emailPattern", "admin.%@pug.test");
-    verify(query).setParameter("emailPattern", "student.%@pug.test");
-    verify(query).setParameter("emailPattern", "staff.%@pug.test");
+    verify(query).setParameter("emailPattern", "admin.%@pug.br");
+    verify(query).setParameter("emailPattern", "student.%@pug.br");
+    verify(query).setParameter("emailPattern", "staff.%@pug.br");
 
     verify(query).setParameter("hash", "hashed-admin");
     verify(query).setParameter("hash", "hashed-former-student");
