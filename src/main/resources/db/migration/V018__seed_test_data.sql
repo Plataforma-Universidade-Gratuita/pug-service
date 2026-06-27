@@ -1,8 +1,3 @@
--- Local test seed mirrored from pug-mocks.
--- Password hashes below were generated with the current %dev profile pepper.
--- Cities are resolved from V016 by IBGE code; areas and courses reuse the V017 reference rows.
--- This migration is intentionally gated and only runs when the Flyway placeholder is enabled.
-
 DO $$
 BEGIN
     IF '${seed_test_data_enabled}'::boolean THEN
@@ -11,157 +6,356 @@ INSERT INTO users (id, cpf, name, created_at, updated_at)
 SELECT uuid_generate_v7(), data.cpf, data.name, data.created_at, data.updated_at
 FROM (
          VALUES
-             ('52998224725', 'Helena Souza', TIMESTAMPTZ '2025-01-02T09:00:00Z', TIMESTAMPTZ '2025-03-01T09:00:00Z'),
-             ('12345678909', 'Caio Lima', TIMESTAMPTZ '2025-01-04T09:00:00Z', TIMESTAMPTZ '2025-03-02T09:00:00Z'),
-             ('11144477735', 'Laura Mendes', TIMESTAMPTZ '2025-01-06T09:00:00Z', TIMESTAMPTZ '2025-03-03T09:00:00Z'),
-             ('74185296355', 'Renata Costa', TIMESTAMPTZ '2025-01-08T09:00:00Z', TIMESTAMPTZ '2025-03-04T09:00:00Z'),
-             ('98765432100', 'Gabriel Silva', TIMESTAMPTZ '2025-01-09T09:00:00Z', TIMESTAMPTZ '2025-03-05T09:00:00Z'),
-             ('13579135759', 'Julia Oliveira', TIMESTAMPTZ '2025-01-10T09:00:00Z', TIMESTAMPTZ '2025-03-06T09:00:00Z'),
-             ('24680246804', 'Vinicius Santos', TIMESTAMPTZ '2025-01-11T09:00:00Z', TIMESTAMPTZ '2025-03-07T09:00:00Z'),
-             ('31415926590', 'Camila Rocha', TIMESTAMPTZ '2025-01-12T09:00:00Z', TIMESTAMPTZ '2025-03-08T09:00:00Z'),
-             ('27182818205', 'Ana Beatriz', TIMESTAMPTZ '2025-01-13T09:00:00Z', TIMESTAMPTZ '2025-03-09T09:00:00Z'),
-             ('16180339805', 'Bruno Pereira', TIMESTAMPTZ '2025-01-14T09:00:00Z', TIMESTAMPTZ '2025-03-10T09:00:00Z'),
-             ('11235813207', 'Daniela Martins', TIMESTAMPTZ '2025-01-15T09:00:00Z', TIMESTAMPTZ '2025-03-11T09:00:00Z'),
-             ('10101010133', 'Erica Fernandes', TIMESTAMPTZ '2025-01-16T09:00:00Z', TIMESTAMPTZ '2025-03-12T09:00:00Z'),
-             ('20202020266', 'Felipe Gomes', TIMESTAMPTZ '2025-01-17T09:00:00Z', TIMESTAMPTZ '2025-03-13T09:00:00Z'),
-             ('30303030399', 'Isabela Alves', TIMESTAMPTZ '2025-01-18T09:00:00Z', TIMESTAMPTZ '2025-03-14T09:00:00Z'),
-             ('40404040411', 'Marcos Nunes', TIMESTAMPTZ '2025-01-19T09:00:00Z', TIMESTAMPTZ '2025-03-15T09:00:00Z')
+             ('20000000108', 'Aline Admin Jaraguá', TIMESTAMPTZ '2026-01-01T09:00:00Z', TIMESTAMPTZ '2026-01-01T10:00:00Z'),
+             ('20000000299', 'Bruno Admin Joinville', TIMESTAMPTZ '2026-01-02T09:00:00Z', TIMESTAMPTZ '2026-01-02T10:00:00Z'),
+             ('20000000370', 'Carla Admin Sem Senha', TIMESTAMPTZ '2026-01-03T09:00:00Z', TIMESTAMPTZ '2026-01-03T10:00:00Z'),
+             ('20000000450', 'Diego Admin Inativo', TIMESTAMPTZ '2026-01-04T09:00:00Z', TIMESTAMPTZ '2026-01-04T10:00:00Z'),
+             ('20000000531', 'Staff Ativo 1', TIMESTAMPTZ '2026-01-05T09:00:00Z', TIMESTAMPTZ '2026-01-05T10:00:00Z'),
+             ('20000000612', 'Staff Inativo 1', TIMESTAMPTZ '2026-01-06T09:00:00Z', TIMESTAMPTZ '2026-01-06T10:00:00Z'),
+             ('20000000701', 'Staff Ativo 2', TIMESTAMPTZ '2026-01-07T09:00:00Z', TIMESTAMPTZ '2026-01-07T10:00:00Z'),
+             ('20000000884', 'Staff Inativo 2', TIMESTAMPTZ '2026-01-08T09:00:00Z', TIMESTAMPTZ '2026-01-08T10:00:00Z'),
+             ('20000000965', 'Staff Ativo 3', TIMESTAMPTZ '2026-01-09T09:00:00Z', TIMESTAMPTZ '2026-01-09T10:00:00Z'),
+             ('20000001007', 'Staff Inativo 3', TIMESTAMPTZ '2026-01-10T09:00:00Z', TIMESTAMPTZ '2026-01-10T10:00:00Z'),
+             ('20000001180', 'Staff Ativo 4', TIMESTAMPTZ '2026-01-11T09:00:00Z', TIMESTAMPTZ '2026-01-11T10:00:00Z'),
+             ('20000001260', 'Staff Inativo 4', TIMESTAMPTZ '2026-01-12T09:00:00Z', TIMESTAMPTZ '2026-01-12T10:00:00Z'),
+             ('20000001341', 'Staff Ativo 5', TIMESTAMPTZ '2026-01-13T09:00:00Z', TIMESTAMPTZ '2026-01-13T10:00:00Z'),
+             ('20000001422', 'Staff Inativo 5', TIMESTAMPTZ '2026-01-14T09:00:00Z', TIMESTAMPTZ '2026-01-14T10:00:00Z'),
+             ('20000001503', 'Staff Ativo 6', TIMESTAMPTZ '2026-01-15T09:00:00Z', TIMESTAMPTZ '2026-01-15T10:00:00Z'),
+             ('20000001694', 'Staff Inativo 6', TIMESTAMPTZ '2026-01-16T09:00:00Z', TIMESTAMPTZ '2026-01-16T10:00:00Z'),
+             ('20000001775', 'Staff Ativo 7', TIMESTAMPTZ '2026-01-17T09:00:00Z', TIMESTAMPTZ '2026-01-17T10:00:00Z'),
+             ('20000001856', 'Staff Inativo 7', TIMESTAMPTZ '2026-01-18T09:00:00Z', TIMESTAMPTZ '2026-01-18T10:00:00Z'),
+             ('20000001937', 'Staff Ativo 8', TIMESTAMPTZ '2026-01-19T09:00:00Z', TIMESTAMPTZ '2026-01-19T10:00:00Z'),
+             ('20000002070', 'Staff Inativo 8', TIMESTAMPTZ '2026-01-20T09:00:00Z', TIMESTAMPTZ '2026-01-20T10:00:00Z'),
+             ('20000002151', 'Staff Ativo 9', TIMESTAMPTZ '2026-01-21T09:00:00Z', TIMESTAMPTZ '2026-01-21T10:00:00Z'),
+             ('20000002232', 'Staff Inativo 9', TIMESTAMPTZ '2026-01-22T09:00:00Z', TIMESTAMPTZ '2026-01-22T10:00:00Z'),
+             ('20000002313', 'Staff Ativo 10', TIMESTAMPTZ '2026-01-23T09:00:00Z', TIMESTAMPTZ '2026-01-23T10:00:00Z'),
+             ('20000002402', 'Staff Inativo 10', TIMESTAMPTZ '2026-01-24T09:00:00Z', TIMESTAMPTZ '2026-01-24T10:00:00Z'),
+             ('20000002585', 'Staff QA', TIMESTAMPTZ '2026-01-25T09:00:00Z', TIMESTAMPTZ '2026-01-25T10:00:00Z'),
+             ('20000002666', 'Staff Inativo QA Entidade', TIMESTAMPTZ '2026-01-26T09:00:00Z', TIMESTAMPTZ '2026-01-26T10:00:00Z'),
+             ('20000002747', 'Estudante Administração 1', TIMESTAMPTZ '2026-01-27T09:00:00Z', TIMESTAMPTZ '2026-01-27T10:00:00Z'),
+             ('20000002828', 'Estudante Administração 2', TIMESTAMPTZ '2026-01-28T09:00:00Z', TIMESTAMPTZ '2026-01-28T10:00:00Z'),
+             ('20000002909', 'Estudante Administração 4', TIMESTAMPTZ '2026-01-01T09:00:00Z', TIMESTAMPTZ '2026-01-01T10:00:00Z'),
+             ('20000003042', 'Estudante Administração 5', TIMESTAMPTZ '2026-01-02T09:00:00Z', TIMESTAMPTZ '2026-01-02T10:00:00Z'),
+             ('20000003123', 'Estudante Ciências Contábeis 1', TIMESTAMPTZ '2026-01-03T09:00:00Z', TIMESTAMPTZ '2026-01-03T10:00:00Z'),
+             ('20000003204', 'Estudante Ciências Contábeis 2', TIMESTAMPTZ '2026-01-04T09:00:00Z', TIMESTAMPTZ '2026-01-04T10:00:00Z'),
+             ('20000003395', 'Estudante Ciências Contábeis 3', TIMESTAMPTZ '2026-01-05T09:00:00Z', TIMESTAMPTZ '2026-01-05T10:00:00Z'),
+             ('20000003476', 'Estudante Ciências Contábeis 4', TIMESTAMPTZ '2026-01-06T09:00:00Z', TIMESTAMPTZ '2026-01-06T10:00:00Z'),
+             ('20000003557', 'Estudante Ciências Contábeis 5', TIMESTAMPTZ '2026-01-07T09:00:00Z', TIMESTAMPTZ '2026-01-07T10:00:00Z'),
+             ('20000003638', 'Estudante Arquitetura & Urbanismo 1', TIMESTAMPTZ '2026-01-08T09:00:00Z', TIMESTAMPTZ '2026-01-08T10:00:00Z'),
+             ('20000003719', 'Estudante Arquitetura & Urbanismo 2', TIMESTAMPTZ '2026-01-09T09:00:00Z', TIMESTAMPTZ '2026-01-09T10:00:00Z'),
+             ('20000003808', 'Estudante Arquitetura & Urbanismo 3', TIMESTAMPTZ '2026-01-10T09:00:00Z', TIMESTAMPTZ '2026-01-10T10:00:00Z'),
+             ('20000003980', 'Estudante Arquitetura & Urbanismo 4', TIMESTAMPTZ '2026-01-11T09:00:00Z', TIMESTAMPTZ '2026-01-11T10:00:00Z'),
+             ('20000004014', 'Estudante Arquitetura & Urbanismo 5', TIMESTAMPTZ '2026-01-12T09:00:00Z', TIMESTAMPTZ '2026-01-12T10:00:00Z'),
+             ('20000004103', 'Estudante Design 1', TIMESTAMPTZ '2026-01-13T09:00:00Z', TIMESTAMPTZ '2026-01-13T10:00:00Z'),
+             ('20000004286', 'Estudante Design 2', TIMESTAMPTZ '2026-01-14T09:00:00Z', TIMESTAMPTZ '2026-01-14T10:00:00Z'),
+             ('20000004367', 'Estudante Design 3', TIMESTAMPTZ '2026-01-15T09:00:00Z', TIMESTAMPTZ '2026-01-15T10:00:00Z'),
+             ('20000004448', 'Estudante Design 5', TIMESTAMPTZ '2026-01-16T09:00:00Z', TIMESTAMPTZ '2026-01-16T10:00:00Z'),
+             ('20000004529', 'Estudante Biomedicina 1', TIMESTAMPTZ '2026-01-17T09:00:00Z', TIMESTAMPTZ '2026-01-17T10:00:00Z'),
+             ('20000004600', 'Estudante Biomedicina 2', TIMESTAMPTZ '2026-01-18T09:00:00Z', TIMESTAMPTZ '2026-01-18T10:00:00Z'),
+             ('20000004790', 'Estudante Biomedicina 3', TIMESTAMPTZ '2026-01-19T09:00:00Z', TIMESTAMPTZ '2026-01-19T10:00:00Z'),
+             ('20000004871', 'Estudante Biomedicina 4', TIMESTAMPTZ '2026-01-20T09:00:00Z', TIMESTAMPTZ '2026-01-20T10:00:00Z'),
+             ('20000004952', 'Estudante Biomedicina 5', TIMESTAMPTZ '2026-01-21T09:00:00Z', TIMESTAMPTZ '2026-01-21T10:00:00Z'),
+             ('20000005096', 'Estudante Enfermagem 1', TIMESTAMPTZ '2026-01-22T09:00:00Z', TIMESTAMPTZ '2026-01-22T10:00:00Z'),
+             ('20000005177', 'Estudante Enfermagem 2', TIMESTAMPTZ '2026-01-23T09:00:00Z', TIMESTAMPTZ '2026-01-23T10:00:00Z'),
+             ('20000005258', 'Estudante Enfermagem 3', TIMESTAMPTZ '2026-01-24T09:00:00Z', TIMESTAMPTZ '2026-01-24T10:00:00Z'),
+             ('20000005339', 'Estudante Enfermagem 4', TIMESTAMPTZ '2026-01-25T09:00:00Z', TIMESTAMPTZ '2026-01-25T10:00:00Z'),
+             ('20000005410', 'Estudante Enfermagem 5', TIMESTAMPTZ '2026-01-26T09:00:00Z', TIMESTAMPTZ '2026-01-26T10:00:00Z'),
+             ('20000005509', 'Estudante Nutrição 1', TIMESTAMPTZ '2026-01-27T09:00:00Z', TIMESTAMPTZ '2026-01-27T10:00:00Z'),
+             ('20000005681', 'Estudante Nutrição 2', TIMESTAMPTZ '2026-01-28T09:00:00Z', TIMESTAMPTZ '2026-01-28T10:00:00Z'),
+             ('20000005762', 'Estudante Nutrição 3', TIMESTAMPTZ '2026-01-01T09:00:00Z', TIMESTAMPTZ '2026-01-01T10:00:00Z'),
+             ('20000005843', 'Estudante Nutrição 4', TIMESTAMPTZ '2026-01-02T09:00:00Z', TIMESTAMPTZ '2026-01-02T10:00:00Z'),
+             ('20000005924', 'Estudante Nutrição 5', TIMESTAMPTZ '2026-01-03T09:00:00Z', TIMESTAMPTZ '2026-01-03T10:00:00Z'),
+             ('20000006068', 'Estudante Psicologia 1', TIMESTAMPTZ '2026-01-04T09:00:00Z', TIMESTAMPTZ '2026-01-04T10:00:00Z'),
+             ('20000006149', 'Estudante Psicologia 2', TIMESTAMPTZ '2026-01-05T09:00:00Z', TIMESTAMPTZ '2026-01-05T10:00:00Z'),
+             ('20000006220', 'Estudante Psicologia 3', TIMESTAMPTZ '2026-01-06T09:00:00Z', TIMESTAMPTZ '2026-01-06T10:00:00Z'),
+             ('20000006300', 'Estudante Psicologia 4', TIMESTAMPTZ '2026-01-07T09:00:00Z', TIMESTAMPTZ '2026-01-07T10:00:00Z'),
+             ('20000006491', 'Estudante Psicologia 5', TIMESTAMPTZ '2026-01-08T09:00:00Z', TIMESTAMPTZ '2026-01-08T10:00:00Z'),
+             ('20000006572', 'Estudante Direito 1', TIMESTAMPTZ '2026-01-09T09:00:00Z', TIMESTAMPTZ '2026-01-09T10:00:00Z'),
+             ('20000006653', 'Estudante Direito 2', TIMESTAMPTZ '2026-01-10T09:00:00Z', TIMESTAMPTZ '2026-01-10T10:00:00Z'),
+             ('20000006734', 'Estudante Direito 3', TIMESTAMPTZ '2026-01-11T09:00:00Z', TIMESTAMPTZ '2026-01-11T10:00:00Z'),
+             ('20000006815', 'Estudante Direito 4', TIMESTAMPTZ '2026-01-12T09:00:00Z', TIMESTAMPTZ '2026-01-12T10:00:00Z'),
+             ('20000006904', 'Estudante Direito 5', TIMESTAMPTZ '2026-01-13T09:00:00Z', TIMESTAMPTZ '2026-01-13T10:00:00Z'),
+             ('20000007030', 'Estudante Engenharia Civil 1', TIMESTAMPTZ '2026-01-14T09:00:00Z', TIMESTAMPTZ '2026-01-14T10:00:00Z'),
+             ('20000007110', 'Estudante Engenharia Civil 2', TIMESTAMPTZ '2026-01-15T09:00:00Z', TIMESTAMPTZ '2026-01-15T10:00:00Z'),
+             ('20000007200', 'Estudante Engenharia Civil 3', TIMESTAMPTZ '2026-01-16T09:00:00Z', TIMESTAMPTZ '2026-01-16T10:00:00Z'),
+             ('20000007382', 'Estudante Engenharia Civil 4', TIMESTAMPTZ '2026-01-17T09:00:00Z', TIMESTAMPTZ '2026-01-17T10:00:00Z'),
+             ('20000007463', 'Estudante Engenharia Civil 5', TIMESTAMPTZ '2026-01-18T09:00:00Z', TIMESTAMPTZ '2026-01-18T10:00:00Z'),
+             ('20000007544', 'Estudante Engenharia Elétrica 1', TIMESTAMPTZ '2026-01-19T09:00:00Z', TIMESTAMPTZ '2026-01-19T10:00:00Z'),
+             ('20000007625', 'Estudante Engenharia Elétrica 2', TIMESTAMPTZ '2026-01-20T09:00:00Z', TIMESTAMPTZ '2026-01-20T10:00:00Z'),
+             ('20000007706', 'Estudante Engenharia Elétrica 3', TIMESTAMPTZ '2026-01-21T09:00:00Z', TIMESTAMPTZ '2026-01-21T10:00:00Z'),
+             ('20000007897', 'Estudante Engenharia Elétrica 4', TIMESTAMPTZ '2026-01-22T09:00:00Z', TIMESTAMPTZ '2026-01-22T10:00:00Z'),
+             ('20000007978', 'Estudante Engenharia Elétrica 5', TIMESTAMPTZ '2026-01-23T09:00:00Z', TIMESTAMPTZ '2026-01-23T10:00:00Z'),
+             ('20000008001', 'Estudante Engenharia Mecânica 1', TIMESTAMPTZ '2026-01-24T09:00:00Z', TIMESTAMPTZ '2026-01-24T10:00:00Z'),
+             ('20000008192', 'Estudante Engenharia Mecânica 2', TIMESTAMPTZ '2026-01-25T09:00:00Z', TIMESTAMPTZ '2026-01-25T10:00:00Z'),
+             ('20000008273', 'Estudante Engenharia Mecânica 3', TIMESTAMPTZ '2026-01-26T09:00:00Z', TIMESTAMPTZ '2026-01-26T10:00:00Z'),
+             ('20000008354', 'Estudante Engenharia Mecânica 4', TIMESTAMPTZ '2026-01-27T09:00:00Z', TIMESTAMPTZ '2026-01-27T10:00:00Z'),
+             ('20000008435', 'Estudante Engenharia Mecânica 5', TIMESTAMPTZ '2026-01-28T09:00:00Z', TIMESTAMPTZ '2026-01-28T10:00:00Z'),
+             ('20000008516', 'Estudante Engenharia de Produção 1', TIMESTAMPTZ '2026-01-01T09:00:00Z', TIMESTAMPTZ '2026-01-01T10:00:00Z'),
+             ('20000008605', 'Estudante Engenharia de Produção 2', TIMESTAMPTZ '2026-01-02T09:00:00Z', TIMESTAMPTZ '2026-01-02T10:00:00Z'),
+             ('20000008788', 'Estudante Engenharia de Produção 3', TIMESTAMPTZ '2026-01-03T09:00:00Z', TIMESTAMPTZ '2026-01-03T10:00:00Z'),
+             ('20000008869', 'Estudante Engenharia de Produção 4', TIMESTAMPTZ '2026-01-04T09:00:00Z', TIMESTAMPTZ '2026-01-04T10:00:00Z'),
+             ('20000008940', 'Estudante Engenharia de Produção 5', TIMESTAMPTZ '2026-01-05T09:00:00Z', TIMESTAMPTZ '2026-01-05T10:00:00Z'),
+             ('20000009083', 'Estudante Engenharia de Software 1', TIMESTAMPTZ '2026-01-06T09:00:00Z', TIMESTAMPTZ '2026-01-06T10:00:00Z'),
+             ('20000009164', 'Estudante Engenharia de Software 2', TIMESTAMPTZ '2026-01-07T09:00:00Z', TIMESTAMPTZ '2026-01-07T10:00:00Z'),
+             ('20000009245', 'Estudante Engenharia de Software 3', TIMESTAMPTZ '2026-01-08T09:00:00Z', TIMESTAMPTZ '2026-01-08T10:00:00Z'),
+             ('20000009326', 'Estudante Engenharia de Software 5', TIMESTAMPTZ '2026-01-09T09:00:00Z', TIMESTAMPTZ '2026-01-09T10:00:00Z'),
+             ('20000009407', 'Student QA', TIMESTAMPTZ '2026-01-10T09:00:00Z', TIMESTAMPTZ '2026-01-10T10:00:00Z')
      ) AS data(cpf, name, created_at, updated_at)
-ON CONFLICT (cpf) DO NOTHING;
+    ON CONFLICT (cpf) DO NOTHING;
 
 INSERT INTO accounts (id, user_id, email, account_type, password_hash, created_at, updated_at, active)
-SELECT
-    uuid_generate_v7(),
-    users.id,
-    data.email,
-    data.account_type,
-    data.password_hash,
-    data.created_at,
-    data.updated_at,
-    data.active
+SELECT uuid_generate_v7(), users.id, data.email, data.account_type, data.password_hash, data.created_at, data.updated_at, data.active
 FROM (
          VALUES
-             ('52998224725', 'helena.souza@admin.pug.br', 'ADMIN', '$2a$10$teFaa7OBtyXNytDf/KrrkuucVLEn2ZVGIYwMNAOWeTDI/XAl5I.c2', TIMESTAMPTZ '2025-01-03T09:00:00Z', TIMESTAMPTZ '2025-03-05T09:00:00Z', TRUE),
-             ('12345678909', 'caio.lima@admin.pug.br', 'ADMIN', NULL, TIMESTAMPTZ '2025-01-05T09:00:00Z', TIMESTAMPTZ '2025-03-06T09:00:00Z', TRUE),
-             ('11144477735', 'laura.mendes@admin.pug.br', 'ADMIN', '$2a$10$rznIbTk7bFIinfZmN5OfX.r01z.OwsEgu/FXxpsfpXX6TXgkk1Tfe', TIMESTAMPTZ '2025-01-07T09:00:00Z', TIMESTAMPTZ '2025-03-07T09:00:00Z', FALSE),
-             ('74185296355', 'renata.costa@partner.pug.br', 'PARTNER', '$2a$10$n7mjRxtJ2ZvDCBkXMpRrFe015a.L3cBa1MXLBBLFdOSUDs2pwT2TK', TIMESTAMPTZ '2025-01-09T09:00:00Z', TIMESTAMPTZ '2025-03-08T09:00:00Z', TRUE),
-             ('98765432100', 'gabriel.silva@partner.pug.br', 'PARTNER', '$2a$10$LgVVEWCpz2mrgHgGaaRjueV8Tt4Yfths9QJdR1vxoakbit2qYFjcO', TIMESTAMPTZ '2025-01-10T09:00:00Z', TIMESTAMPTZ '2025-03-09T09:00:00Z', FALSE),
-             ('13579135759', 'julia.oliveira@partner.pug.br', 'PARTNER', NULL, TIMESTAMPTZ '2025-01-11T09:00:00Z', TIMESTAMPTZ '2025-03-10T09:00:00Z', TRUE),
-             ('24680246804', 'vinicius.santos@partner.pug.br', 'PARTNER', '$2a$10$j6WcgOqdZAyaMu58h8CSQOCUKFa8XfQ7M/.W4d9EgSdRrFnOj28NW', TIMESTAMPTZ '2025-01-12T09:00:00Z', TIMESTAMPTZ '2025-03-11T09:00:00Z', FALSE),
-             ('31415926590', 'camila.rocha@partner.pug.br', 'PARTNER', '$2a$10$K5XVlvf2pCwF3dowLwu7v.epuStVbPQIsKjWoJpEGRYXzOnbMuzAG', TIMESTAMPTZ '2025-01-13T09:00:00Z', TIMESTAMPTZ '2025-03-12T09:00:00Z', TRUE),
-             ('74185296355', 'renata.costa@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$ithi5IhWMsQM1JKM4zjisehHXbhUWZB5hiAIZxBvThgDx6dVIi1Wi', TIMESTAMPTZ '2025-01-14T09:00:00Z', TIMESTAMPTZ '2025-03-13T09:00:00Z', TRUE),
-             ('27182818205', 'ana.beatriz@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-15T09:00:00Z', TIMESTAMPTZ '2025-03-14T09:00:00Z', FALSE),
-             ('16180339805', 'bruno.pereira@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$B5c4orlKy0T6.oh7J4/75uov1j9/eqET4sLUPZ/SB.32O05ezK8Za', TIMESTAMPTZ '2025-01-16T09:00:00Z', TIMESTAMPTZ '2025-03-15T09:00:00Z', TRUE),
-             ('98765432100', 'gabriel.silva@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-17T09:00:00Z', TIMESTAMPTZ '2025-03-16T09:00:00Z', FALSE),
-             ('13579135759', 'julia.oliveira@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$rVRMDsJQAFfmuzTuUcPHmuMn.0kMJMnEmmwEVHPoKmriooYLttNYe', TIMESTAMPTZ '2025-01-18T09:00:00Z', TIMESTAMPTZ '2025-03-17T09:00:00Z', TRUE),
-             ('11235813207', 'daniela.martins@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-19T09:00:00Z', TIMESTAMPTZ '2025-03-18T09:00:00Z', FALSE),
-             ('10101010133', 'erica.fernandes@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$gr7QRNauh6AiiafGcZuDpexbwp6CQVfaaRmc7bewLw8mMWsb9XbIq', TIMESTAMPTZ '2025-01-20T09:00:00Z', TIMESTAMPTZ '2025-03-19T09:00:00Z', TRUE),
-             ('24680246804', 'vinicius.santos@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-21T09:00:00Z', TIMESTAMPTZ '2025-03-20T09:00:00Z', FALSE),
-             ('31415926590', 'camila.rocha@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$oqxNyrgoFrzT2zuQezo/LeCnn94SCD1Fm.NiF3QmU9MEza52aOdJ.', TIMESTAMPTZ '2025-01-22T09:00:00Z', TIMESTAMPTZ '2025-03-21T09:00:00Z', TRUE),
-             ('20202020266', 'felipe.gomes@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-23T09:00:00Z', TIMESTAMPTZ '2025-03-22T09:00:00Z', FALSE),
-             ('30303030399', 'isabela.alves@former-student.pug.br', 'FORMER_STUDENT', '$2a$10$1iiyImAQyJynMfHL76QWm.rpZHcpkEBoGCoyswWWJqe7MoZEcHISm', TIMESTAMPTZ '2025-01-24T09:00:00Z', TIMESTAMPTZ '2025-03-23T09:00:00Z', TRUE),
-             ('40404040411', 'marcos.nunes@former-student.pug.br', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2025-01-25T09:00:00Z', TIMESTAMPTZ '2025-03-24T09:00:00Z', FALSE)
+             ('20000000108', 'admin.jaragua.qa@pug.test', 'ADMIN', 'Admin123*', TIMESTAMPTZ '2026-01-01T11:00:00Z', TIMESTAMPTZ '2026-01-01T12:00:00Z', TRUE),
+             ('20000000299', 'admin.joinville.qa@pug.test', 'ADMIN', 'Admin123*', TIMESTAMPTZ '2026-01-02T11:00:00Z', TIMESTAMPTZ '2026-01-02T12:00:00Z', TRUE),
+             ('20000000370', 'admin.no-password.qa@pug.test', 'ADMIN', NULL, TIMESTAMPTZ '2026-01-03T11:00:00Z', TIMESTAMPTZ '2026-01-03T12:00:00Z', TRUE),
+             ('20000000450', 'admin.inactive.qa@pug.test', 'ADMIN', 'Admin123*', TIMESTAMPTZ '2026-01-04T11:00:00Z', TIMESTAMPTZ '2026-01-04T12:00:00Z', FALSE),
+             ('20000000531', 'staff.1.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-05T11:00:00Z', TIMESTAMPTZ '2026-01-05T12:00:00Z', TRUE),
+             ('20000000612', 'staff.1.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-06T11:00:00Z', TIMESTAMPTZ '2026-01-06T12:00:00Z', FALSE),
+             ('20000000701', 'staff.2.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-07T11:00:00Z', TIMESTAMPTZ '2026-01-07T12:00:00Z', TRUE),
+             ('20000000884', 'staff.2.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-08T11:00:00Z', TIMESTAMPTZ '2026-01-08T12:00:00Z', FALSE),
+             ('20000000965', 'staff.3.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-09T11:00:00Z', TIMESTAMPTZ '2026-01-09T12:00:00Z', TRUE),
+             ('20000001007', 'staff.3.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-10T11:00:00Z', TIMESTAMPTZ '2026-01-10T12:00:00Z', FALSE),
+             ('20000001180', 'staff.4.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-11T11:00:00Z', TIMESTAMPTZ '2026-01-11T12:00:00Z', TRUE),
+             ('20000001260', 'staff.4.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-12T11:00:00Z', TIMESTAMPTZ '2026-01-12T12:00:00Z', FALSE),
+             ('20000001341', 'staff.5.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-13T11:00:00Z', TIMESTAMPTZ '2026-01-13T12:00:00Z', TRUE),
+             ('20000001422', 'staff.5.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-14T11:00:00Z', TIMESTAMPTZ '2026-01-14T12:00:00Z', FALSE),
+             ('20000001503', 'staff.6.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-15T11:00:00Z', TIMESTAMPTZ '2026-01-15T12:00:00Z', TRUE),
+             ('20000001694', 'staff.6.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-16T11:00:00Z', TIMESTAMPTZ '2026-01-16T12:00:00Z', FALSE),
+             ('20000001775', 'staff.7.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-17T11:00:00Z', TIMESTAMPTZ '2026-01-17T12:00:00Z', TRUE),
+             ('20000001856', 'staff.7.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-18T11:00:00Z', TIMESTAMPTZ '2026-01-18T12:00:00Z', FALSE),
+             ('20000001937', 'staff.8.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-19T11:00:00Z', TIMESTAMPTZ '2026-01-19T12:00:00Z', TRUE),
+             ('20000002070', 'staff.8.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-20T11:00:00Z', TIMESTAMPTZ '2026-01-20T12:00:00Z', FALSE),
+             ('20000002151', 'staff.9.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-21T11:00:00Z', TIMESTAMPTZ '2026-01-21T12:00:00Z', TRUE),
+             ('20000002232', 'staff.9.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-22T11:00:00Z', TIMESTAMPTZ '2026-01-22T12:00:00Z', FALSE),
+             ('20000002313', 'staff.10.active@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-23T11:00:00Z', TIMESTAMPTZ '2026-01-23T12:00:00Z', TRUE),
+             ('20000002402', 'staff.10.inactive@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-24T11:00:00Z', TIMESTAMPTZ '2026-01-24T12:00:00Z', FALSE),
+             ('20000002585', 'staff.qa@pug.test', 'PARTNER', NULL, TIMESTAMPTZ '2026-01-25T11:00:00Z', TIMESTAMPTZ '2026-01-25T12:00:00Z', TRUE),
+             ('20000002666', 'staff.inativo.qa-entidade@pug.test', 'PARTNER', 'EntityS123*', TIMESTAMPTZ '2026-01-26T11:00:00Z', TIMESTAMPTZ '2026-01-26T12:00:00Z', FALSE),
+             ('20000002747', 'student.1.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-27T11:00:00Z', TIMESTAMPTZ '2026-01-27T12:00:00Z', FALSE),
+             ('20000002828', 'student.1.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-28T11:00:00Z', TIMESTAMPTZ '2026-01-28T12:00:00Z', FALSE),
+             ('20000000108', 'student.1.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-01T11:00:00Z', TIMESTAMPTZ '2026-01-01T12:00:00Z', TRUE),
+             ('20000002909', 'student.1.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-02T11:00:00Z', TIMESTAMPTZ '2026-01-02T12:00:00Z', TRUE),
+             ('20000003042', 'student.1.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-03T11:00:00Z', TIMESTAMPTZ '2026-01-03T12:00:00Z', TRUE),
+             ('20000003123', 'student.2.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-04T11:00:00Z', TIMESTAMPTZ '2026-01-04T12:00:00Z', FALSE),
+             ('20000003204', 'student.2.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-05T11:00:00Z', TIMESTAMPTZ '2026-01-05T12:00:00Z', FALSE),
+             ('20000003395', 'student.2.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-06T11:00:00Z', TIMESTAMPTZ '2026-01-06T12:00:00Z', TRUE),
+             ('20000003476', 'student.2.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-07T11:00:00Z', TIMESTAMPTZ '2026-01-07T12:00:00Z', TRUE),
+             ('20000003557', 'student.2.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-08T11:00:00Z', TIMESTAMPTZ '2026-01-08T12:00:00Z', TRUE),
+             ('20000003638', 'student.3.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-09T11:00:00Z', TIMESTAMPTZ '2026-01-09T12:00:00Z', FALSE),
+             ('20000003719', 'student.3.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-10T11:00:00Z', TIMESTAMPTZ '2026-01-10T12:00:00Z', FALSE),
+             ('20000003808', 'student.3.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-11T11:00:00Z', TIMESTAMPTZ '2026-01-11T12:00:00Z', TRUE),
+             ('20000003980', 'student.3.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-12T11:00:00Z', TIMESTAMPTZ '2026-01-12T12:00:00Z', TRUE),
+             ('20000004014', 'student.3.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-13T11:00:00Z', TIMESTAMPTZ '2026-01-13T12:00:00Z', TRUE),
+             ('20000004103', 'student.4.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-14T11:00:00Z', TIMESTAMPTZ '2026-01-14T12:00:00Z', FALSE),
+             ('20000004286', 'student.4.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-15T11:00:00Z', TIMESTAMPTZ '2026-01-15T12:00:00Z', FALSE),
+             ('20000004367', 'student.4.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-16T11:00:00Z', TIMESTAMPTZ '2026-01-16T12:00:00Z', TRUE),
+             ('20000000531', 'student.4.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-17T11:00:00Z', TIMESTAMPTZ '2026-01-17T12:00:00Z', TRUE),
+             ('20000004448', 'student.4.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-18T11:00:00Z', TIMESTAMPTZ '2026-01-18T12:00:00Z', TRUE),
+             ('20000004529', 'student.5.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-19T11:00:00Z', TIMESTAMPTZ '2026-01-19T12:00:00Z', FALSE),
+             ('20000004600', 'student.5.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-20T11:00:00Z', TIMESTAMPTZ '2026-01-20T12:00:00Z', FALSE),
+             ('20000004790', 'student.5.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-21T11:00:00Z', TIMESTAMPTZ '2026-01-21T12:00:00Z', TRUE),
+             ('20000004871', 'student.5.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-22T11:00:00Z', TIMESTAMPTZ '2026-01-22T12:00:00Z', TRUE),
+             ('20000004952', 'student.5.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-23T11:00:00Z', TIMESTAMPTZ '2026-01-23T12:00:00Z', TRUE),
+             ('20000005096', 'student.6.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-24T11:00:00Z', TIMESTAMPTZ '2026-01-24T12:00:00Z', FALSE),
+             ('20000005177', 'student.6.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-25T11:00:00Z', TIMESTAMPTZ '2026-01-25T12:00:00Z', FALSE),
+             ('20000005258', 'student.6.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-26T11:00:00Z', TIMESTAMPTZ '2026-01-26T12:00:00Z', TRUE),
+             ('20000005339', 'student.6.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-27T11:00:00Z', TIMESTAMPTZ '2026-01-27T12:00:00Z', TRUE),
+             ('20000005410', 'student.6.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-28T11:00:00Z', TIMESTAMPTZ '2026-01-28T12:00:00Z', TRUE),
+             ('20000005509', 'student.7.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-01T11:00:00Z', TIMESTAMPTZ '2026-01-01T12:00:00Z', FALSE),
+             ('20000005681', 'student.7.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-02T11:00:00Z', TIMESTAMPTZ '2026-01-02T12:00:00Z', FALSE),
+             ('20000005762', 'student.7.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-03T11:00:00Z', TIMESTAMPTZ '2026-01-03T12:00:00Z', TRUE),
+             ('20000005843', 'student.7.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-04T11:00:00Z', TIMESTAMPTZ '2026-01-04T12:00:00Z', TRUE),
+             ('20000005924', 'student.7.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-05T11:00:00Z', TIMESTAMPTZ '2026-01-05T12:00:00Z', TRUE),
+             ('20000006068', 'student.8.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-06T11:00:00Z', TIMESTAMPTZ '2026-01-06T12:00:00Z', FALSE),
+             ('20000006149', 'student.8.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-07T11:00:00Z', TIMESTAMPTZ '2026-01-07T12:00:00Z', FALSE),
+             ('20000006220', 'student.8.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-08T11:00:00Z', TIMESTAMPTZ '2026-01-08T12:00:00Z', TRUE),
+             ('20000006300', 'student.8.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-09T11:00:00Z', TIMESTAMPTZ '2026-01-09T12:00:00Z', TRUE),
+             ('20000006491', 'student.8.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-10T11:00:00Z', TIMESTAMPTZ '2026-01-10T12:00:00Z', TRUE),
+             ('20000006572', 'student.9.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-11T11:00:00Z', TIMESTAMPTZ '2026-01-11T12:00:00Z', FALSE),
+             ('20000006653', 'student.9.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-12T11:00:00Z', TIMESTAMPTZ '2026-01-12T12:00:00Z', FALSE),
+             ('20000006734', 'student.9.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-13T11:00:00Z', TIMESTAMPTZ '2026-01-13T12:00:00Z', TRUE),
+             ('20000006815', 'student.9.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-14T11:00:00Z', TIMESTAMPTZ '2026-01-14T12:00:00Z', TRUE),
+             ('20000006904', 'student.9.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-15T11:00:00Z', TIMESTAMPTZ '2026-01-15T12:00:00Z', TRUE),
+             ('20000007030', 'student.10.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-16T11:00:00Z', TIMESTAMPTZ '2026-01-16T12:00:00Z', FALSE),
+             ('20000007110', 'student.10.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-17T11:00:00Z', TIMESTAMPTZ '2026-01-17T12:00:00Z', FALSE),
+             ('20000007200', 'student.10.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-18T11:00:00Z', TIMESTAMPTZ '2026-01-18T12:00:00Z', TRUE),
+             ('20000007382', 'student.10.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-19T11:00:00Z', TIMESTAMPTZ '2026-01-19T12:00:00Z', TRUE),
+             ('20000007463', 'student.10.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-20T11:00:00Z', TIMESTAMPTZ '2026-01-20T12:00:00Z', TRUE),
+             ('20000007544', 'student.11.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-21T11:00:00Z', TIMESTAMPTZ '2026-01-21T12:00:00Z', FALSE),
+             ('20000007625', 'student.11.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-22T11:00:00Z', TIMESTAMPTZ '2026-01-22T12:00:00Z', FALSE),
+             ('20000007706', 'student.11.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-23T11:00:00Z', TIMESTAMPTZ '2026-01-23T12:00:00Z', TRUE),
+             ('20000007897', 'student.11.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-24T11:00:00Z', TIMESTAMPTZ '2026-01-24T12:00:00Z', TRUE),
+             ('20000007978', 'student.11.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-25T11:00:00Z', TIMESTAMPTZ '2026-01-25T12:00:00Z', TRUE),
+             ('20000008001', 'student.12.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-26T11:00:00Z', TIMESTAMPTZ '2026-01-26T12:00:00Z', FALSE),
+             ('20000008192', 'student.12.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-27T11:00:00Z', TIMESTAMPTZ '2026-01-27T12:00:00Z', FALSE),
+             ('20000008273', 'student.12.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-28T11:00:00Z', TIMESTAMPTZ '2026-01-28T12:00:00Z', TRUE),
+             ('20000008354', 'student.12.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-01T11:00:00Z', TIMESTAMPTZ '2026-01-01T12:00:00Z', TRUE),
+             ('20000008435', 'student.12.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-02T11:00:00Z', TIMESTAMPTZ '2026-01-02T12:00:00Z', TRUE),
+             ('20000008516', 'student.13.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-03T11:00:00Z', TIMESTAMPTZ '2026-01-03T12:00:00Z', FALSE),
+             ('20000008605', 'student.13.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-04T11:00:00Z', TIMESTAMPTZ '2026-01-04T12:00:00Z', FALSE),
+             ('20000008788', 'student.13.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-05T11:00:00Z', TIMESTAMPTZ '2026-01-05T12:00:00Z', TRUE),
+             ('20000008869', 'student.13.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-06T11:00:00Z', TIMESTAMPTZ '2026-01-06T12:00:00Z', TRUE),
+             ('20000008940', 'student.13.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-07T11:00:00Z', TIMESTAMPTZ '2026-01-07T12:00:00Z', TRUE),
+             ('20000009083', 'student.14.1@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-08T11:00:00Z', TIMESTAMPTZ '2026-01-08T12:00:00Z', FALSE),
+             ('20000009164', 'student.14.2@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-09T11:00:00Z', TIMESTAMPTZ '2026-01-09T12:00:00Z', FALSE),
+             ('20000009245', 'student.14.3@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-10T11:00:00Z', TIMESTAMPTZ '2026-01-10T12:00:00Z', TRUE),
+             ('20000000701', 'student.14.4@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-11T11:00:00Z', TIMESTAMPTZ '2026-01-11T12:00:00Z', TRUE),
+             ('20000009326', 'student.14.5@pug.test', 'FORMER_STUDENT', 'FormerS123*', TIMESTAMPTZ '2026-01-12T11:00:00Z', TIMESTAMPTZ '2026-01-12T12:00:00Z', TRUE),
+             ('20000009407', 'student.qa@pug.test', 'FORMER_STUDENT', NULL, TIMESTAMPTZ '2026-01-13T11:00:00Z', TIMESTAMPTZ '2026-01-13T12:00:00Z', TRUE)
      ) AS data(cpf, email, account_type, password_hash, created_at, updated_at, active)
-         JOIN users ON users.cpf = data.cpf
-ON CONFLICT (email) DO NOTHING;
+     JOIN users ON users.cpf = data.cpf
+    ON CONFLICT (email) DO NOTHING;
 
 INSERT INTO admins (account_id, granted_at, campus)
 SELECT accounts.id, data.granted_at, data.campus
 FROM (
          VALUES
-             ('helena.souza@admin.pug.br', TIMESTAMPTZ '2025-01-10T14:30:00Z', 'JARAGUA_DO_SUL'),
-             ('caio.lima@admin.pug.br', TIMESTAMPTZ '2025-01-12T14:30:00Z', 'JOINVILLE'),
-             ('laura.mendes@admin.pug.br', TIMESTAMPTZ '2025-01-14T14:30:00Z', 'JARAGUA_DO_SUL')
+             ('admin.jaragua.qa@pug.test', TIMESTAMPTZ '2026-01-10T14:00:00Z', 'JARAGUA_DO_SUL'),
+             ('admin.joinville.qa@pug.test', TIMESTAMPTZ '2026-01-11T14:00:00Z', 'JOINVILLE'),
+             ('admin.no-password.qa@pug.test', TIMESTAMPTZ '2026-01-12T14:00:00Z', 'JARAGUA_DO_SUL'),
+             ('admin.inactive.qa@pug.test', TIMESTAMPTZ '2026-01-13T14:00:00Z', 'JOINVILLE')
      ) AS data(email, granted_at, campus)
-         JOIN accounts ON accounts.email = data.email
-ON CONFLICT (account_id) DO NOTHING;
+     JOIN accounts ON accounts.email = data.email
+    ON CONFLICT (account_id) DO NOTHING;
 
 INSERT INTO entities (id, cnpj, name, city_id, address, created_at, updated_at)
 SELECT uuid_generate_v7(), data.cnpj, data.name, cities.id, data.address, data.created_at, data.updated_at
 FROM (
          VALUES
-             ('11222333000181', 'Inova Tech Labs Ltda', '4209106', 'Rua das Industrias, 1450', TIMESTAMPTZ '2025-02-02T09:30:00Z', TIMESTAMPTZ '2025-03-10T09:30:00Z'),
-             ('22333444000181', 'Instituto Crescer Social', '4208900', 'Avenida Central, 220', TIMESTAMPTZ '2025-02-06T09:30:00Z', TIMESTAMPTZ '2025-03-11T09:30:00Z'),
-             ('33444555000181', 'Associacao Cultura Viva', '4202404', 'Rua da Cidadania, 88', TIMESTAMPTZ '2025-02-10T09:30:00Z', TIMESTAMPTZ '2025-03-14T09:30:00Z')
+             ('22333000000146', 'Hub Negócios Comunitários', '4208900', 'Rua Seed Negócios 1, 100', TIMESTAMPTZ '2026-02-01T09:00:00Z', TIMESTAMPTZ '2026-02-01T10:00:00Z'),
+             ('22333000000227', 'Instituto Gestão Social', '4209106', 'Rua Seed Negócios 2, 105', TIMESTAMPTZ '2026-02-02T09:00:00Z', TIMESTAMPTZ '2026-02-02T10:00:00Z'),
+             ('22333000000308', 'Ateliê Urbano Social', '4209106', 'Rua Seed Design 1, 120', TIMESTAMPTZ '2026-02-03T09:00:00Z', TIMESTAMPTZ '2026-02-03T10:00:00Z'),
+             ('22333000000499', 'Casa Design Inclusivo', '4208900', 'Rua Seed Design 2, 125', TIMESTAMPTZ '2026-02-04T09:00:00Z', TIMESTAMPTZ '2026-02-04T10:00:00Z'),
+             ('22333000000570', 'Clínica Vida Comunitária', '4208900', 'Rua Seed Saúde 1, 140', TIMESTAMPTZ '2026-02-05T09:00:00Z', TIMESTAMPTZ '2026-02-05T10:00:00Z'),
+             ('22333000000650', 'Instituto Bem Cuidar', '4209106', NULL, TIMESTAMPTZ '2026-02-06T09:00:00Z', TIMESTAMPTZ '2026-02-06T10:00:00Z'),
+             ('22333000000731', 'Núcleo Justiça Cidadã', '4209106', 'Rua Seed Direito 1, 160', TIMESTAMPTZ '2026-02-07T09:00:00Z', TIMESTAMPTZ '2026-02-07T10:00:00Z'),
+             ('22333000000812', 'Instituto Direitos em Rede', '4208900', 'Rua Seed Direito 2, 165', TIMESTAMPTZ '2026-02-08T09:00:00Z', TIMESTAMPTZ '2026-02-08T10:00:00Z'),
+             ('22333000000901', 'Laboratório Tech Social', '4208900', 'Rua Seed Politécnica 1, 180', TIMESTAMPTZ '2026-02-09T09:00:00Z', TIMESTAMPTZ '2026-02-09T10:00:00Z'),
+             ('22333000001037', 'Fábrica de Soluções Digitais', '4209106', 'Rua Seed Politécnica 2, 185', TIMESTAMPTZ '2026-02-10T09:00:00Z', TIMESTAMPTZ '2026-02-10T10:00:00Z'),
+             ('22333000001118', 'Entidade QA Jaraguá', '4208900', 'Rua QA Seed, 999', TIMESTAMPTZ '2026-02-11T09:00:00Z', TIMESTAMPTZ '2026-02-11T10:00:00Z')
      ) AS data(cnpj, name, city_ibge_code, address, created_at, updated_at)
-         JOIN cities ON cities.ibge_code = data.city_ibge_code
-ON CONFLICT (cnpj) DO NOTHING;
+     JOIN cities ON cities.ibge_code = data.city_ibge_code
+    ON CONFLICT (cnpj) DO NOTHING;
 
 INSERT INTO staff (account_id, entity_id)
 SELECT accounts.id, entities.id
 FROM (
          VALUES
-             ('renata.costa@partner.pug.br', '11222333000181'),
-             ('gabriel.silva@partner.pug.br', '11222333000181'),
-             ('julia.oliveira@partner.pug.br', '22333444000181'),
-             ('vinicius.santos@partner.pug.br', '22333444000181'),
-             ('camila.rocha@partner.pug.br', '33444555000181')
+             ('staff.1.active@pug.test', '22333000000146'),
+             ('staff.1.inactive@pug.test', '22333000000146'),
+             ('staff.2.active@pug.test', '22333000000227'),
+             ('staff.2.inactive@pug.test', '22333000000227'),
+             ('staff.3.active@pug.test', '22333000000308'),
+             ('staff.3.inactive@pug.test', '22333000000308'),
+             ('staff.4.active@pug.test', '22333000000499'),
+             ('staff.4.inactive@pug.test', '22333000000499'),
+             ('staff.5.active@pug.test', '22333000000570'),
+             ('staff.5.inactive@pug.test', '22333000000570'),
+             ('staff.6.active@pug.test', '22333000000650'),
+             ('staff.6.inactive@pug.test', '22333000000650'),
+             ('staff.7.active@pug.test', '22333000000731'),
+             ('staff.7.inactive@pug.test', '22333000000731'),
+             ('staff.8.active@pug.test', '22333000000812'),
+             ('staff.8.inactive@pug.test', '22333000000812'),
+             ('staff.9.active@pug.test', '22333000000901'),
+             ('staff.9.inactive@pug.test', '22333000000901'),
+             ('staff.10.active@pug.test', '22333000001037'),
+             ('staff.10.inactive@pug.test', '22333000001037'),
+             ('staff.qa@pug.test', '22333000001118'),
+             ('staff.inativo.qa-entidade@pug.test', '22333000001118')
      ) AS data(email, cnpj)
-         JOIN accounts ON accounts.email = data.email
-         JOIN entities ON entities.cnpj = data.cnpj
-ON CONFLICT (account_id) DO NOTHING;
+     JOIN accounts ON accounts.email = data.email
+     JOIN entities ON entities.cnpj = data.cnpj
+    ON CONFLICT (account_id) DO NOTHING;
 
--- Course mapping used to reuse the seeded V017 course rows:
--- Computer Science -> Engenharia de Software
--- Information Systems -> Engenharia de Software
--- Design -> Design
--- Digital Media -> Design
--- Data Science -> Engenharia de ProduÃ§Ã£o
--- Business Analytics -> AdministraÃ§Ã£o
 INSERT INTO former_students (
-    account_id,
-    academic_registration,
-    campus,
-    course_id,
-    required_hours,
-    completed_hours,
-    start_date,
-    due_date,
-    concluded,
-    created_at,
-    updated_at
+    account_id, academic_registration, campus, course_id,
+    required_hours, completed_hours, start_date, due_date,
+    concluded, created_at, updated_at
 )
 SELECT
-    accounts.id,
-    data.academic_registration,
-    data.campus,
-    courses.id,
-    data.required_hours,
-    data.completed_hours,
-    data.start_date,
-    data.due_date,
-    data.completed_hours >= data.required_hours,
-    data.created_at,
-    data.updated_at
+    accounts.id, data.academic_registration, data.campus, courses.id,
+    data.required_hours, data.completed_hours, data.start_date, data.due_date,
+    data.completed_hours >= data.required_hours, data.created_at, data.updated_at
 FROM (
          VALUES
-             ('renata.costa@former-student.pug.br', '2023101001', 'JARAGUA_DO_SUL', 'Engenharia de Software', 240.00, 120.00, DATE '2026-02-10', DATE '2026-11-30', TIMESTAMPTZ '2025-03-01T10:00:00Z', TIMESTAMPTZ '2025-03-18T10:00:00Z'),
-             ('ana.beatriz@former-student.pug.br', '2023101002', 'JOINVILLE', 'Engenharia de Software', 240.00, 40.00, DATE '2026-02-12', DATE '2026-11-30', TIMESTAMPTZ '2025-03-02T10:00:00Z', TIMESTAMPTZ '2025-03-19T10:00:00Z'),
-             ('bruno.pereira@former-student.pug.br', '2023102001', 'JARAGUA_DO_SUL', 'Engenharia de Software', 180.00, 60.00, DATE '2026-02-15', DATE '2026-11-25', TIMESTAMPTZ '2025-03-03T10:00:00Z', TIMESTAMPTZ '2025-03-20T10:00:00Z'),
-             ('gabriel.silva@former-student.pug.br', '2023102002', 'JOINVILLE', 'Engenharia de Software', 180.00, 20.00, DATE '2026-02-16', DATE '2026-11-25', TIMESTAMPTZ '2025-03-04T10:00:00Z', TIMESTAMPTZ '2025-03-21T10:00:00Z'),
-             ('julia.oliveira@former-student.pug.br', '2023202001', 'JOINVILLE', 'Design', 160.00, 0.00, DATE '2026-03-01', DATE '2026-12-10', TIMESTAMPTZ '2025-03-05T10:00:00Z', TIMESTAMPTZ '2025-03-22T10:00:00Z'),
-             ('daniela.martins@former-student.pug.br', '2023202002', 'JARAGUA_DO_SUL', 'Design', 160.00, 30.00, DATE '2026-03-02', DATE '2026-12-10', TIMESTAMPTZ '2025-03-06T10:00:00Z', TIMESTAMPTZ '2025-03-23T10:00:00Z'),
-             ('erica.fernandes@former-student.pug.br', '2023203001', 'JOINVILLE', 'Design', 200.00, 200.00, DATE '2026-03-03', DATE '2026-12-15', TIMESTAMPTZ '2025-03-07T10:00:00Z', TIMESTAMPTZ '2025-03-24T10:00:00Z'),
-             ('vinicius.santos@former-student.pug.br', '2023203002', 'JOINVILLE', 'Design', 200.00, 80.00, DATE '2026-03-04', DATE '2026-12-15', TIMESTAMPTZ '2025-03-08T10:00:00Z', TIMESTAMPTZ '2025-03-25T10:00:00Z'),
-             ('camila.rocha@former-student.pug.br', '2023301001', 'JARAGUA_DO_SUL', 'Engenharia de ProduÃ§Ã£o', 220.00, 110.00, DATE '2026-03-06', DATE '2026-12-20', TIMESTAMPTZ '2025-03-09T10:00:00Z', TIMESTAMPTZ '2025-03-26T10:00:00Z'),
-             ('felipe.gomes@former-student.pug.br', '2023301002', 'JOINVILLE', 'Engenharia de ProduÃ§Ã£o', 220.00, 10.00, DATE '2026-03-07', DATE '2026-12-20', TIMESTAMPTZ '2025-03-10T10:00:00Z', TIMESTAMPTZ '2025-03-27T10:00:00Z'),
-             ('isabela.alves@former-student.pug.br', '2023302001', 'JARAGUA_DO_SUL', 'AdministraÃ§Ã£o', 140.00, 70.00, DATE '2026-03-08', DATE '2026-12-22', TIMESTAMPTZ '2025-03-11T10:00:00Z', TIMESTAMPTZ '2025-03-28T10:00:00Z'),
-             ('marcos.nunes@former-student.pug.br', '2023302002', 'JOINVILLE', 'AdministraÃ§Ã£o', 140.00, 0.00, DATE '2026-03-09', DATE '2026-12-22', TIMESTAMPTZ '2025-03-12T10:00:00Z', TIMESTAMPTZ '2025-03-29T10:00:00Z')
-     ) AS data(
-         email,
-         academic_registration,
-         campus,
-         course_name,
-         required_hours,
-         completed_hours,
-         start_date,
-         due_date,
-         created_at,
-         updated_at
-     )
-         JOIN accounts ON accounts.email = data.email
-         JOIN courses ON courses.name = data.course_name
-ON CONFLICT (account_id) DO NOTHING;
+             ('student.1.1@pug.test', '202601001', 'JARAGUA_DO_SUL', 'Administração', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-01T09:00:00Z', TIMESTAMPTZ '2026-03-01T10:00:00Z'),
+             ('student.1.2@pug.test', '202601002', 'JARAGUA_DO_SUL', 'Administração', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-02T09:00:00Z', TIMESTAMPTZ '2026-03-02T10:00:00Z'),
+             ('student.1.3@pug.test', '202601003', 'JARAGUA_DO_SUL', 'Administração', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-03T09:00:00Z', TIMESTAMPTZ '2026-03-03T10:00:00Z'),
+             ('student.1.4@pug.test', '202601004', 'JARAGUA_DO_SUL', 'Administração', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-04T09:00:00Z', TIMESTAMPTZ '2026-03-04T10:00:00Z'),
+             ('student.1.5@pug.test', '202601005', 'JARAGUA_DO_SUL', 'Administração', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-05T09:00:00Z', TIMESTAMPTZ '2026-03-05T10:00:00Z'),
+             ('student.2.1@pug.test', '202602001', 'JOINVILLE', 'Ciências Contábeis', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-06T09:00:00Z', TIMESTAMPTZ '2026-03-06T10:00:00Z'),
+             ('student.2.2@pug.test', '202602002', 'JOINVILLE', 'Ciências Contábeis', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-07T09:00:00Z', TIMESTAMPTZ '2026-03-07T10:00:00Z'),
+             ('student.2.3@pug.test', '202602003', 'JOINVILLE', 'Ciências Contábeis', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-08T09:00:00Z', TIMESTAMPTZ '2026-03-08T10:00:00Z'),
+             ('student.2.4@pug.test', '202602004', 'JOINVILLE', 'Ciências Contábeis', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-09T09:00:00Z', TIMESTAMPTZ '2026-03-09T10:00:00Z'),
+             ('student.2.5@pug.test', '202602005', 'JOINVILLE', 'Ciências Contábeis', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-10T09:00:00Z', TIMESTAMPTZ '2026-03-10T10:00:00Z'),
+             ('student.3.1@pug.test', '202603001', 'JARAGUA_DO_SUL', 'Arquitetura & Urbanismo', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-11T09:00:00Z', TIMESTAMPTZ '2026-03-11T10:00:00Z'),
+             ('student.3.2@pug.test', '202603002', 'JARAGUA_DO_SUL', 'Arquitetura & Urbanismo', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-12T09:00:00Z', TIMESTAMPTZ '2026-03-12T10:00:00Z'),
+             ('student.3.3@pug.test', '202603003', 'JARAGUA_DO_SUL', 'Arquitetura & Urbanismo', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-13T09:00:00Z', TIMESTAMPTZ '2026-03-13T10:00:00Z'),
+             ('student.3.4@pug.test', '202603004', 'JARAGUA_DO_SUL', 'Arquitetura & Urbanismo', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-14T09:00:00Z', TIMESTAMPTZ '2026-03-14T10:00:00Z'),
+             ('student.3.5@pug.test', '202603005', 'JARAGUA_DO_SUL', 'Arquitetura & Urbanismo', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-15T09:00:00Z', TIMESTAMPTZ '2026-03-15T10:00:00Z'),
+             ('student.4.1@pug.test', '202604001', 'JOINVILLE', 'Design', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-16T09:00:00Z', TIMESTAMPTZ '2026-03-16T10:00:00Z'),
+             ('student.4.2@pug.test', '202604002', 'JOINVILLE', 'Design', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-17T09:00:00Z', TIMESTAMPTZ '2026-03-17T10:00:00Z'),
+             ('student.4.3@pug.test', '202604003', 'JOINVILLE', 'Design', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-18T09:00:00Z', TIMESTAMPTZ '2026-03-18T10:00:00Z'),
+             ('student.4.4@pug.test', '202604004', 'JOINVILLE', 'Design', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-19T09:00:00Z', TIMESTAMPTZ '2026-03-19T10:00:00Z'),
+             ('student.4.5@pug.test', '202604005', 'JOINVILLE', 'Design', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-20T09:00:00Z', TIMESTAMPTZ '2026-03-20T10:00:00Z'),
+             ('student.5.1@pug.test', '202605001', 'JARAGUA_DO_SUL', 'Biomedicina', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-21T09:00:00Z', TIMESTAMPTZ '2026-03-21T10:00:00Z'),
+             ('student.5.2@pug.test', '202605002', 'JARAGUA_DO_SUL', 'Biomedicina', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-22T09:00:00Z', TIMESTAMPTZ '2026-03-22T10:00:00Z'),
+             ('student.5.3@pug.test', '202605003', 'JARAGUA_DO_SUL', 'Biomedicina', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-23T09:00:00Z', TIMESTAMPTZ '2026-03-23T10:00:00Z'),
+             ('student.5.4@pug.test', '202605004', 'JARAGUA_DO_SUL', 'Biomedicina', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-24T09:00:00Z', TIMESTAMPTZ '2026-03-24T10:00:00Z'),
+             ('student.5.5@pug.test', '202605005', 'JARAGUA_DO_SUL', 'Biomedicina', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-25T09:00:00Z', TIMESTAMPTZ '2026-03-25T10:00:00Z'),
+             ('student.6.1@pug.test', '202606001', 'JOINVILLE', 'Enfermagem', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-26T09:00:00Z', TIMESTAMPTZ '2026-03-26T10:00:00Z'),
+             ('student.6.2@pug.test', '202606002', 'JOINVILLE', 'Enfermagem', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-27T09:00:00Z', TIMESTAMPTZ '2026-03-27T10:00:00Z'),
+             ('student.6.3@pug.test', '202606003', 'JOINVILLE', 'Enfermagem', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-28T09:00:00Z', TIMESTAMPTZ '2026-03-28T10:00:00Z'),
+             ('student.6.4@pug.test', '202606004', 'JOINVILLE', 'Enfermagem', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-01T09:00:00Z', TIMESTAMPTZ '2026-03-01T10:00:00Z'),
+             ('student.6.5@pug.test', '202606005', 'JOINVILLE', 'Enfermagem', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-02T09:00:00Z', TIMESTAMPTZ '2026-03-02T10:00:00Z'),
+             ('student.7.1@pug.test', '202607001', 'JARAGUA_DO_SUL', 'Nutrição', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-03T09:00:00Z', TIMESTAMPTZ '2026-03-03T10:00:00Z'),
+             ('student.7.2@pug.test', '202607002', 'JARAGUA_DO_SUL', 'Nutrição', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-04T09:00:00Z', TIMESTAMPTZ '2026-03-04T10:00:00Z'),
+             ('student.7.3@pug.test', '202607003', 'JARAGUA_DO_SUL', 'Nutrição', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-05T09:00:00Z', TIMESTAMPTZ '2026-03-05T10:00:00Z'),
+             ('student.7.4@pug.test', '202607004', 'JARAGUA_DO_SUL', 'Nutrição', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-06T09:00:00Z', TIMESTAMPTZ '2026-03-06T10:00:00Z'),
+             ('student.7.5@pug.test', '202607005', 'JARAGUA_DO_SUL', 'Nutrição', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-07T09:00:00Z', TIMESTAMPTZ '2026-03-07T10:00:00Z'),
+             ('student.8.1@pug.test', '202608001', 'JOINVILLE', 'Psicologia', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-08T09:00:00Z', TIMESTAMPTZ '2026-03-08T10:00:00Z'),
+             ('student.8.2@pug.test', '202608002', 'JOINVILLE', 'Psicologia', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-09T09:00:00Z', TIMESTAMPTZ '2026-03-09T10:00:00Z'),
+             ('student.8.3@pug.test', '202608003', 'JOINVILLE', 'Psicologia', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-10T09:00:00Z', TIMESTAMPTZ '2026-03-10T10:00:00Z'),
+             ('student.8.4@pug.test', '202608004', 'JOINVILLE', 'Psicologia', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-11T09:00:00Z', TIMESTAMPTZ '2026-03-11T10:00:00Z'),
+             ('student.8.5@pug.test', '202608005', 'JOINVILLE', 'Psicologia', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-12T09:00:00Z', TIMESTAMPTZ '2026-03-12T10:00:00Z'),
+             ('student.9.1@pug.test', '202609001', 'JARAGUA_DO_SUL', 'Direito', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-13T09:00:00Z', TIMESTAMPTZ '2026-03-13T10:00:00Z'),
+             ('student.9.2@pug.test', '202609002', 'JARAGUA_DO_SUL', 'Direito', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-14T09:00:00Z', TIMESTAMPTZ '2026-03-14T10:00:00Z'),
+             ('student.9.3@pug.test', '202609003', 'JARAGUA_DO_SUL', 'Direito', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-15T09:00:00Z', TIMESTAMPTZ '2026-03-15T10:00:00Z'),
+             ('student.9.4@pug.test', '202609004', 'JARAGUA_DO_SUL', 'Direito', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-16T09:00:00Z', TIMESTAMPTZ '2026-03-16T10:00:00Z'),
+             ('student.9.5@pug.test', '202609005', 'JARAGUA_DO_SUL', 'Direito', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-17T09:00:00Z', TIMESTAMPTZ '2026-03-17T10:00:00Z'),
+             ('student.10.1@pug.test', '202610001', 'JOINVILLE', 'Engenharia Civil', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-18T09:00:00Z', TIMESTAMPTZ '2026-03-18T10:00:00Z'),
+             ('student.10.2@pug.test', '202610002', 'JOINVILLE', 'Engenharia Civil', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-19T09:00:00Z', TIMESTAMPTZ '2026-03-19T10:00:00Z'),
+             ('student.10.3@pug.test', '202610003', 'JOINVILLE', 'Engenharia Civil', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-20T09:00:00Z', TIMESTAMPTZ '2026-03-20T10:00:00Z'),
+             ('student.10.4@pug.test', '202610004', 'JOINVILLE', 'Engenharia Civil', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-21T09:00:00Z', TIMESTAMPTZ '2026-03-21T10:00:00Z'),
+             ('student.10.5@pug.test', '202610005', 'JOINVILLE', 'Engenharia Civil', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-22T09:00:00Z', TIMESTAMPTZ '2026-03-22T10:00:00Z'),
+             ('student.11.1@pug.test', '202611001', 'JARAGUA_DO_SUL', 'Engenharia Elétrica', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-23T09:00:00Z', TIMESTAMPTZ '2026-03-23T10:00:00Z'),
+             ('student.11.2@pug.test', '202611002', 'JARAGUA_DO_SUL', 'Engenharia Elétrica', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-24T09:00:00Z', TIMESTAMPTZ '2026-03-24T10:00:00Z'),
+             ('student.11.3@pug.test', '202611003', 'JARAGUA_DO_SUL', 'Engenharia Elétrica', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-25T09:00:00Z', TIMESTAMPTZ '2026-03-25T10:00:00Z'),
+             ('student.11.4@pug.test', '202611004', 'JARAGUA_DO_SUL', 'Engenharia Elétrica', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-26T09:00:00Z', TIMESTAMPTZ '2026-03-26T10:00:00Z'),
+             ('student.11.5@pug.test', '202611005', 'JARAGUA_DO_SUL', 'Engenharia Elétrica', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-27T09:00:00Z', TIMESTAMPTZ '2026-03-27T10:00:00Z'),
+             ('student.12.1@pug.test', '202612001', 'JOINVILLE', 'Engenharia Mecânica', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-28T09:00:00Z', TIMESTAMPTZ '2026-03-28T10:00:00Z'),
+             ('student.12.2@pug.test', '202612002', 'JOINVILLE', 'Engenharia Mecânica', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-01T09:00:00Z', TIMESTAMPTZ '2026-03-01T10:00:00Z'),
+             ('student.12.3@pug.test', '202612003', 'JOINVILLE', 'Engenharia Mecânica', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-02T09:00:00Z', TIMESTAMPTZ '2026-03-02T10:00:00Z'),
+             ('student.12.4@pug.test', '202612004', 'JOINVILLE', 'Engenharia Mecânica', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-03T09:00:00Z', TIMESTAMPTZ '2026-03-03T10:00:00Z'),
+             ('student.12.5@pug.test', '202612005', 'JOINVILLE', 'Engenharia Mecânica', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-04T09:00:00Z', TIMESTAMPTZ '2026-03-04T10:00:00Z'),
+             ('student.13.1@pug.test', '202613001', 'JARAGUA_DO_SUL', 'Engenharia de Produção', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-05T09:00:00Z', TIMESTAMPTZ '2026-03-05T10:00:00Z'),
+             ('student.13.2@pug.test', '202613002', 'JARAGUA_DO_SUL', 'Engenharia de Produção', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-06T09:00:00Z', TIMESTAMPTZ '2026-03-06T10:00:00Z'),
+             ('student.13.3@pug.test', '202613003', 'JARAGUA_DO_SUL', 'Engenharia de Produção', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-07T09:00:00Z', TIMESTAMPTZ '2026-03-07T10:00:00Z'),
+             ('student.13.4@pug.test', '202613004', 'JARAGUA_DO_SUL', 'Engenharia de Produção', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-08T09:00:00Z', TIMESTAMPTZ '2026-03-08T10:00:00Z'),
+             ('student.13.5@pug.test', '202613005', 'JARAGUA_DO_SUL', 'Engenharia de Produção', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-09T09:00:00Z', TIMESTAMPTZ '2026-03-09T10:00:00Z'),
+             ('student.14.1@pug.test', '202614001', 'JOINVILLE', 'Engenharia de Software', 240.00, 80.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-10T09:00:00Z', TIMESTAMPTZ '2026-03-10T10:00:00Z'),
+             ('student.14.2@pug.test', '202614002', 'JOINVILLE', 'Engenharia de Software', 200.00, 200.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-11T09:00:00Z', TIMESTAMPTZ '2026-03-11T10:00:00Z'),
+             ('student.14.3@pug.test', '202614003', 'JOINVILLE', 'Engenharia de Software', 180.00, 45.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-12T09:00:00Z', TIMESTAMPTZ '2026-03-12T10:00:00Z'),
+             ('student.14.4@pug.test', '202614004', 'JOINVILLE', 'Engenharia de Software', 220.00, 110.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-13T09:00:00Z', TIMESTAMPTZ '2026-03-13T10:00:00Z'),
+             ('student.14.5@pug.test', '202614005', 'JOINVILLE', 'Engenharia de Software', 160.00, 20.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-14T09:00:00Z', TIMESTAMPTZ '2026-03-14T10:00:00Z'),
+             ('student.qa@pug.test', '202699999', 'JARAGUA_DO_SUL', 'Engenharia de Software', 240.00, 0.00, DATE '2026-02-01', DATE '2026-12-20', TIMESTAMPTZ '2026-03-15T09:00:00Z', TIMESTAMPTZ '2026-03-15T10:00:00Z')
+     ) AS data(email, academic_registration, campus, course_name, required_hours, completed_hours, start_date, due_date, created_at, updated_at)
+     JOIN accounts ON accounts.email = data.email
+     JOIN courses ON courses.name = data.course_name
+    ON CONFLICT (account_id) DO NOTHING;
 
 INSERT INTO projects (
     id,
@@ -192,44 +386,91 @@ SELECT
     data.max_participants
 FROM (
          VALUES
-             ('11222333000181', 'Portal Comunitario', 'Plataforma digital para gestao de atendimento comunitario.', 'renata.costa@partner.pug.br', TIMESTAMPTZ '2025-03-05T08:00:00Z', TIMESTAMPTZ '2025-04-12T16:00:00Z', NULL::TIMESTAMPTZ, 60.00, 24.00, 'IN_PROGRESS', 20),
-             ('11222333000181', 'Laboratorio de Acessibilidade', 'Projeto de acessibilidade digital para servicos comunitarios.', 'gabriel.silva@partner.pug.br', TIMESTAMPTZ '2025-03-08T08:00:00Z', TIMESTAMPTZ '2025-04-01T16:00:00Z', NULL::TIMESTAMPTZ, 80.00, 0.00, 'PLANNED', 16),
-             ('22333444000181', 'Oficina UX Social', 'Ciclo de oficinas para melhorar servicos com pesquisa e prototipacao.', 'julia.oliveira@partner.pug.br', TIMESTAMPTZ '2025-03-10T08:00:00Z', TIMESTAMPTZ '2025-04-04T16:00:00Z', NULL::TIMESTAMPTZ, 40.00, 12.00, 'ON_HOLD', 12),
-             ('22333444000181', 'Trilha de Dados Aplicados', 'Capacitacao pratica em dados para organizacoes sociais.', 'vinicius.santos@partner.pug.br', TIMESTAMPTZ '2025-03-12T08:00:00Z', TIMESTAMPTZ '2025-05-15T18:00:00Z', TIMESTAMPTZ '2025-05-15T18:00:00Z', 30.00, 30.00, 'COMPLETED', 10),
-             ('22333444000181', 'Rede de Cuidado Comunitario', 'Estruturacao de fluxo de atendimento para rede comunitaria.', 'helena.souza@admin.pug.br', TIMESTAMPTZ '2025-03-15T08:00:00Z', TIMESTAMPTZ '2025-05-20T17:00:00Z', TIMESTAMPTZ '2025-05-20T17:00:00Z', 50.00, 5.00, 'CANCELED', 14)
+             ('22333000000146', 'Projeto Seed 01A', 'Projeto principal 01 para Escola de Negócios.', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-05-01T10:00:00Z', TIMESTAMPTZ '2026-06-15T18:00:00Z', 455.00, 455.00, 'COMPLETED', 25),
+             ('22333000000146', 'Projeto Seed 01B', 'Projeto integrado 01 para cenários multiárea.', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-05-02T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 29),
+             ('22333000000227', 'Projeto Seed 02A', 'Projeto principal 02 para Escola de Negócios.', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-04-03T09:00:00Z', TIMESTAMPTZ '2026-05-03T10:00:00Z', NULL::TIMESTAMPTZ, 635.00, 455.00, 'IN_PROGRESS', 26),
+             ('22333000000227', 'Projeto Seed 02B', 'Projeto integrado 02 para cenários multiárea.', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-04-04T09:00:00Z', TIMESTAMPTZ '2026-05-04T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'ON_HOLD', 30),
+             ('22333000000308', 'Projeto Seed 03A', 'Projeto principal 03 para Escola de Design & Arquitetura.', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-04-05T09:00:00Z', TIMESTAMPTZ '2026-05-05T10:00:00Z', NULL::TIMESTAMPTZ, 635.00, 455.00, 'IN_PROGRESS', 27),
+             ('22333000000308', 'Projeto Seed 03B', 'Projeto integrado 03 para cenários multiárea.', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-04-06T09:00:00Z', TIMESTAMPTZ '2026-05-06T10:00:00Z', TIMESTAMPTZ '2026-06-16T18:00:00Z', 240.00, 0.00, 'CANCELED', 31),
+             ('22333000000499', 'Projeto Seed 04A', 'Projeto principal 04 para Escola de Design & Arquitetura.', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-04-07T09:00:00Z', TIMESTAMPTZ '2026-05-07T10:00:00Z', NULL::TIMESTAMPTZ, 635.00, 455.00, 'IN_PROGRESS', 28),
+             ('22333000000499', 'Projeto Seed 04B', 'Projeto integrado 04 para cenários multiárea.', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-04-08T09:00:00Z', TIMESTAMPTZ '2026-05-08T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 32),
+             ('22333000000570', 'Projeto Seed 05A', 'Projeto principal 05 para Escola de Saúde.', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-04-09T09:00:00Z', TIMESTAMPTZ '2026-05-09T10:00:00Z', NULL::TIMESTAMPTZ, 1090.00, 910.00, 'IN_PROGRESS', 29),
+             ('22333000000570', 'Projeto Seed 05B', 'Projeto integrado 05 para cenários multiárea.', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-04-10T09:00:00Z', TIMESTAMPTZ '2026-05-10T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 33),
+             ('22333000000650', 'Projeto Seed 06A', 'Projeto principal 06 para Escola de Saúde.', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-04-11T09:00:00Z', TIMESTAMPTZ '2026-05-11T10:00:00Z', NULL::TIMESTAMPTZ, 1090.00, 910.00, 'IN_PROGRESS', 30),
+             ('22333000000650', 'Projeto Seed 06B', 'Projeto integrado 06 para cenários multiárea.', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-04-12T09:00:00Z', TIMESTAMPTZ '2026-05-12T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 34),
+             ('22333000000731', 'Projeto Seed 07A', 'Projeto principal 07 para Escola de Direito.', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-04-13T09:00:00Z', TIMESTAMPTZ '2026-05-13T10:00:00Z', NULL::TIMESTAMPTZ, 635.00, 455.00, 'IN_PROGRESS', 31),
+             ('22333000000731', 'Projeto Seed 07B', 'Projeto integrado 07 para cenários multiárea.', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-04-14T09:00:00Z', TIMESTAMPTZ '2026-05-14T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 35),
+             ('22333000000812', 'Projeto Seed 08A', 'Projeto principal 08 para Escola de Direito.', 'staff.8.active@pug.test', TIMESTAMPTZ '2026-04-15T09:00:00Z', TIMESTAMPTZ '2026-05-15T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'PLANNED', 24),
+             ('22333000000812', 'Projeto Seed 08B', 'Projeto integrado 08 para cenários multiárea.', 'staff.8.active@pug.test', TIMESTAMPTZ '2026-04-16T09:00:00Z', TIMESTAMPTZ '2026-05-16T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 28),
+             ('22333000000901', 'Projeto Seed 09A', 'Projeto principal 09 para Escola Politécnica.', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-04-17T09:00:00Z', TIMESTAMPTZ '2026-05-17T10:00:00Z', NULL::TIMESTAMPTZ, 980.00, 800.00, 'IN_PROGRESS', 25),
+             ('22333000000901', 'Projeto Seed 09B', 'Projeto integrado 09 para cenários multiárea.', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-04-18T09:00:00Z', TIMESTAMPTZ '2026-05-18T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 29),
+             ('22333000001037', 'Projeto Seed 10A', 'Projeto principal 10 para Escola Politécnica.', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-04-19T09:00:00Z', TIMESTAMPTZ '2026-05-19T10:00:00Z', NULL::TIMESTAMPTZ, 980.00, 800.00, 'IN_PROGRESS', 26),
+             ('22333000001037', 'Projeto Seed 10B', 'Projeto integrado 10 para cenários multiárea.', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-04-20T09:00:00Z', TIMESTAMPTZ '2026-05-20T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 30),
+             ('22333000001118', 'Projeto Seed 11A', 'Projeto principal 11 para Escola Politécnica.', 'staff.qa@pug.test', TIMESTAMPTZ '2026-04-21T09:00:00Z', TIMESTAMPTZ '2026-05-21T10:00:00Z', NULL::TIMESTAMPTZ, 855.00, 675.00, 'IN_PROGRESS', 27),
+             ('22333000001118', 'Projeto Seed 11B', 'Projeto integrado 11 para cenários multiárea.', 'staff.qa@pug.test', TIMESTAMPTZ '2026-04-22T09:00:00Z', TIMESTAMPTZ '2026-05-22T10:00:00Z', NULL::TIMESTAMPTZ, 240.00, 0.00, 'IN_PROGRESS', 31)
      ) AS data(
-         cnpj,
-         name,
-         description,
-         created_by_email,
-         created_at,
-         updated_at,
-         closed_at,
-         offered_hours,
-         completed_hours,
-         status,
-         max_participants
-     )
-         JOIN entities ON entities.cnpj = data.cnpj
-         JOIN accounts ON accounts.email = data.created_by_email
-ON CONFLICT (entity_id, name) DO NOTHING;
+                cnpj,
+                name,
+                description,
+                created_by_email,
+                created_at,
+                updated_at,
+                closed_at,
+                offered_hours,
+                completed_hours,
+                status,
+                max_participants
+    )
+     JOIN entities ON entities.cnpj = data.cnpj
+     JOIN accounts ON accounts.email = data.created_by_email
+    ON CONFLICT (entity_id, name) DO NOTHING;
 
--- Area mapping used to reuse the seeded V017 area rows:
--- Software Engineering -> Escola PolitÃ©cnica
--- Product Design -> Escola de Design & Arquitetura
 INSERT INTO project_areas_of_expertise (project_id, area_of_expertise_id)
 SELECT projects.id, areas_of_expertise.id
 FROM (
          VALUES
-             ('11222333000181', 'Portal Comunitario', 'Escola PolitÃ©cnica'),
-             ('11222333000181', 'Laboratorio de Acessibilidade', 'Escola PolitÃ©cnica'),
-             ('22333444000181', 'Oficina UX Social', 'Escola de Design & Arquitetura'),
-             ('22333444000181', 'Trilha de Dados Aplicados', 'Escola PolitÃ©cnica')
+             ('22333000000146', 'Projeto Seed 01A', 'Escola de Negócios'),
+             ('22333000000146', 'Projeto Seed 01B', 'Escola de Negócios'),
+             ('22333000000146', 'Projeto Seed 01B', 'Escola Politécnica'),
+             ('22333000000227', 'Projeto Seed 02A', 'Escola de Negócios'),
+             ('22333000000227', 'Projeto Seed 02B', 'Escola de Negócios'),
+             ('22333000000227', 'Projeto Seed 02B', 'Escola de Saúde'),
+             ('22333000000308', 'Projeto Seed 03A', 'Escola de Design & Arquitetura'),
+             ('22333000000308', 'Projeto Seed 03B', 'Escola de Design & Arquitetura'),
+             ('22333000000308', 'Projeto Seed 03B', 'Escola Politécnica'),
+             ('22333000000499', 'Projeto Seed 04A', 'Escola de Design & Arquitetura'),
+             ('22333000000499', 'Projeto Seed 04B', 'Escola de Design & Arquitetura'),
+             ('22333000000499', 'Projeto Seed 04B', 'Escola de Direito'),
+             ('22333000000570', 'Projeto Seed 05A', 'Escola de Saúde'),
+             ('22333000000570', 'Projeto Seed 05B', 'Escola de Saúde'),
+             ('22333000000570', 'Projeto Seed 05B', 'Escola de Negócios'),
+             ('22333000000570', 'Projeto Seed 05B', 'Escola Politécnica'),
+             ('22333000000650', 'Projeto Seed 06A', 'Escola de Saúde'),
+             ('22333000000650', 'Projeto Seed 06B', 'Escola de Saúde'),
+             ('22333000000650', 'Projeto Seed 06B', 'Escola de Design & Arquitetura'),
+             ('22333000000731', 'Projeto Seed 07A', 'Escola de Direito'),
+             ('22333000000731', 'Projeto Seed 07B', 'Escola de Direito'),
+             ('22333000000731', 'Projeto Seed 07B', 'Escola Politécnica'),
+             ('22333000000812', 'Projeto Seed 08A', 'Escola de Direito'),
+             ('22333000000812', 'Projeto Seed 08B', 'Escola de Direito'),
+             ('22333000000812', 'Projeto Seed 08B', 'Escola de Negócios'),
+             ('22333000000812', 'Projeto Seed 08B', 'Escola de Saúde'),
+             ('22333000000901', 'Projeto Seed 09A', 'Escola Politécnica'),
+             ('22333000000901', 'Projeto Seed 09B', 'Escola Politécnica'),
+             ('22333000000901', 'Projeto Seed 09B', 'Escola de Design & Arquitetura'),
+             ('22333000001037', 'Projeto Seed 10A', 'Escola Politécnica'),
+             ('22333000001037', 'Projeto Seed 10B', 'Escola Politécnica'),
+             ('22333000001037', 'Projeto Seed 10B', 'Escola de Saúde'),
+             ('22333000001037', 'Projeto Seed 10B', 'Escola de Direito'),
+             ('22333000001118', 'Projeto Seed 11A', 'Escola Politécnica'),
+             ('22333000001118', 'Projeto Seed 11B', 'Escola Politécnica'),
+             ('22333000001118', 'Projeto Seed 11B', 'Escola de Negócios'),
+             ('22333000001118', 'Projeto Seed 11B', 'Escola de Saúde')
      ) AS data(cnpj, project_name, area_name)
-         JOIN entities ON entities.cnpj = data.cnpj
-         JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
-         JOIN areas_of_expertise ON areas_of_expertise.name = data.area_name
-ON CONFLICT (project_id, area_of_expertise_id) DO NOTHING;
+     JOIN entities ON entities.cnpj = data.cnpj
+     JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
+     JOIN areas_of_expertise ON areas_of_expertise.name = data.area_name
+    ON CONFLICT (project_id, area_of_expertise_id) DO NOTHING;
 
 INSERT INTO enrollments (
     project_id,
@@ -250,29 +491,100 @@ SELECT
     data.closing_status_at
 FROM (
          VALUES
-             ('11222333000181', 'Portal Comunitario', 'renata.costa@former-student.pug.br', 'APPROVED', TIMESTAMPTZ '2026-03-01T09:00:00Z', TIMESTAMPTZ '2026-03-05T13:00:00Z', TIMESTAMPTZ '2026-03-05T13:00:00Z', NULL::TIMESTAMPTZ),
-             ('11222333000181', 'Laboratorio de Acessibilidade', 'renata.costa@former-student.pug.br', 'PENDING', TIMESTAMPTZ '2026-03-12T09:00:00Z', TIMESTAMPTZ '2026-03-12T09:00:00Z', NULL::TIMESTAMPTZ, NULL::TIMESTAMPTZ),
-             ('22333444000181', 'Trilha de Dados Aplicados', 'bruno.pereira@former-student.pug.br', 'COMPLETED', TIMESTAMPTZ '2026-03-04T09:00:00Z', TIMESTAMPTZ '2026-05-02T18:00:00Z', TIMESTAMPTZ '2026-03-08T14:00:00Z', TIMESTAMPTZ '2026-05-02T18:00:00Z'),
-             ('22333444000181', 'Oficina UX Social', 'gabriel.silva@former-student.pug.br', 'ON_HOLD', TIMESTAMPTZ '2026-03-05T09:00:00Z', TIMESTAMPTZ '2026-03-18T11:00:00Z', TIMESTAMPTZ '2026-03-09T11:00:00Z', NULL::TIMESTAMPTZ),
-             ('22333444000181', 'Rede de Cuidado Comunitario', 'julia.oliveira@former-student.pug.br', 'CANCELED', TIMESTAMPTZ '2026-03-06T09:00:00Z', TIMESTAMPTZ '2026-03-20T10:00:00Z', NULL::TIMESTAMPTZ, TIMESTAMPTZ '2026-03-20T10:00:00Z'),
-             ('11222333000181', 'Portal Comunitario', 'daniela.martins@former-student.pug.br', 'EXITED', TIMESTAMPTZ '2026-03-07T09:00:00Z', TIMESTAMPTZ '2026-04-18T16:00:00Z', TIMESTAMPTZ '2026-03-10T10:30:00Z', TIMESTAMPTZ '2026-04-18T16:00:00Z'),
-             ('11222333000181', 'Laboratorio de Acessibilidade', 'vinicius.santos@former-student.pug.br', 'REJECTED', TIMESTAMPTZ '2026-03-08T09:00:00Z', TIMESTAMPTZ '2026-03-21T12:00:00Z', NULL::TIMESTAMPTZ, TIMESTAMPTZ '2026-03-21T12:00:00Z'),
-             ('22333444000181', 'Oficina UX Social', 'erica.fernandes@former-student.pug.br', 'REMOVED', TIMESTAMPTZ '2026-03-09T09:00:00Z', TIMESTAMPTZ '2026-04-25T17:00:00Z', TIMESTAMPTZ '2026-03-11T13:00:00Z', TIMESTAMPTZ '2026-04-25T17:00:00Z')
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000146', 'Projeto Seed 01B', 'student.qa@pug.test', 'PENDING', TIMESTAMPTZ '2026-04-03T09:00:00Z', TIMESTAMPTZ '2026-04-03T09:00:00Z', NULL::TIMESTAMPTZ, NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000227', 'Projeto Seed 02B', 'student.5.3@pug.test', 'ON_HOLD', TIMESTAMPTZ '2026-04-04T09:00:00Z', TIMESTAMPTZ '2026-04-05T09:00:00Z', TIMESTAMPTZ '2026-04-04T12:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000308', 'Projeto Seed 03B', 'student.14.3@pug.test', 'REJECTED', TIMESTAMPTZ '2026-04-06T09:00:00Z', TIMESTAMPTZ '2026-04-07T09:00:00Z', NULL::TIMESTAMPTZ, TIMESTAMPTZ '2026-04-07T09:00:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000499', 'Projeto Seed 04B', 'student.9.3@pug.test', 'CANCELED', TIMESTAMPTZ '2026-04-08T09:00:00Z', TIMESTAMPTZ '2026-04-09T09:00:00Z', NULL::TIMESTAMPTZ, TIMESTAMPTZ '2026-04-09T09:00:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000570', 'Projeto Seed 05B', 'student.1.4@pug.test', 'EXITED', TIMESTAMPTZ '2026-04-10T09:00:00Z', TIMESTAMPTZ '2026-04-11T09:00:00Z', TIMESTAMPTZ '2026-04-10T12:00:00Z', TIMESTAMPTZ '2026-04-11T09:00:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000650', 'Projeto Seed 06B', 'student.4.3@pug.test', 'REMOVED', TIMESTAMPTZ '2026-04-12T09:00:00Z', TIMESTAMPTZ '2026-04-13T09:00:00Z', TIMESTAMPTZ '2026-04-12T12:00:00Z', TIMESTAMPTZ '2026-04-13T09:00:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000731', 'Projeto Seed 07B', 'student.11.3@pug.test', 'COMPLETED', TIMESTAMPTZ '2026-04-14T09:00:00Z', TIMESTAMPTZ '2026-04-15T09:00:00Z', TIMESTAMPTZ '2026-04-14T12:00:00Z', TIMESTAMPTZ '2026-04-15T09:00:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.11.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.11.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.13.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001037', 'Projeto Seed 10A', 'student.13.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.1@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.2@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.3@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.4@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.5@pug.test', 'APPROVED', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', NULL::TIMESTAMPTZ)
      ) AS data(
-         cnpj,
-         project_name,
-         former_student_email,
-         status,
-         created_at,
-         updated_at,
-         accepted_at,
-         closing_status_at
-     )
-         JOIN entities ON entities.cnpj = data.cnpj
-         JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
-         JOIN accounts ON accounts.email = data.former_student_email
-         JOIN former_students ON former_students.account_id = accounts.id
-ON CONFLICT (project_id, former_student_id) DO NOTHING;
+                cnpj,
+                project_name,
+                former_student_email,
+                status,
+                created_at,
+                updated_at,
+                accepted_at,
+                closing_status_at
+    )
+     JOIN entities ON entities.cnpj = data.cnpj
+     JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
+     JOIN accounts ON accounts.email = data.former_student_email
+     JOIN former_students ON former_students.account_id = accounts.id
+    ON CONFLICT (project_id, former_student_id) DO NOTHING;
 
 INSERT INTO attendances (
     id,
@@ -299,27 +611,138 @@ SELECT
     data.updated_at
 FROM (
          VALUES
-             ('11222333000181', 'Portal Comunitario', 'renata.costa@former-student.pug.br', 4.00, 'WAITING', 'qr-portal-comunitario-001', NULL, NULL::TIMESTAMPTZ, TIMESTAMPTZ '2026-03-15T17:00:00Z', TIMESTAMPTZ '2026-03-15T17:00:00Z'),
-             ('22333444000181', 'Trilha de Dados Aplicados', 'bruno.pereira@former-student.pug.br', 4.00, 'PRESENT', 'qr-trilha-dados-001', 'helena.souza@admin.pug.br', TIMESTAMPTZ '2026-03-15T18:00:00Z', TIMESTAMPTZ '2026-03-15T17:00:00Z', TIMESTAMPTZ '2026-03-15T18:00:00Z'),
-             ('22333444000181', 'Oficina UX Social', 'erica.fernandes@former-student.pug.br', 2.00, 'ABSENT', 'qr-oficina-ux-social-001', 'caio.lima@admin.pug.br', TIMESTAMPTZ '2026-03-18T19:30:00Z', TIMESTAMPTZ '2026-03-18T18:00:00Z', TIMESTAMPTZ '2026-03-18T19:30:00Z')
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0001', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-01T10:30:00Z', TIMESTAMPTZ '2026-05-01T10:00:00Z', TIMESTAMPTZ '2026-05-01T10:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0002', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-02T11:30:00Z', TIMESTAMPTZ '2026-05-02T11:00:00Z', TIMESTAMPTZ '2026-05-02T11:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0003', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-03T12:30:00Z', TIMESTAMPTZ '2026-05-03T12:00:00Z', TIMESTAMPTZ '2026-05-03T12:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0004', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-04T13:30:00Z', TIMESTAMPTZ '2026-05-04T13:00:00Z', TIMESTAMPTZ '2026-05-04T13:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0005', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-05T14:30:00Z', TIMESTAMPTZ '2026-05-05T14:00:00Z', TIMESTAMPTZ '2026-05-05T14:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0006', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-06T15:30:00Z', TIMESTAMPTZ '2026-05-06T15:00:00Z', TIMESTAMPTZ '2026-05-06T15:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0007', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-07T16:30:00Z', TIMESTAMPTZ '2026-05-07T16:00:00Z', TIMESTAMPTZ '2026-05-07T16:30:00Z'),
+             ('22333000000146', 'Projeto Seed 01A', 'student.1.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0008', 'staff.1.active@pug.test', TIMESTAMPTZ '2026-05-08T17:30:00Z', TIMESTAMPTZ '2026-05-08T17:00:00Z', TIMESTAMPTZ '2026-05-08T17:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0009', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-09T10:30:00Z', TIMESTAMPTZ '2026-05-09T10:00:00Z', TIMESTAMPTZ '2026-05-09T10:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0010', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-10T11:30:00Z', TIMESTAMPTZ '2026-05-10T11:00:00Z', TIMESTAMPTZ '2026-05-10T11:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0011', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-11T12:30:00Z', TIMESTAMPTZ '2026-05-11T12:00:00Z', TIMESTAMPTZ '2026-05-11T12:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0012', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-12T13:30:00Z', TIMESTAMPTZ '2026-05-12T13:00:00Z', TIMESTAMPTZ '2026-05-12T13:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0013', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-13T14:30:00Z', TIMESTAMPTZ '2026-05-13T14:00:00Z', TIMESTAMPTZ '2026-05-13T14:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0014', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-14T15:30:00Z', TIMESTAMPTZ '2026-05-14T15:00:00Z', TIMESTAMPTZ '2026-05-14T15:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0015', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-15T16:30:00Z', TIMESTAMPTZ '2026-05-15T16:00:00Z', TIMESTAMPTZ '2026-05-15T16:30:00Z'),
+             ('22333000000227', 'Projeto Seed 02A', 'student.2.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0016', 'staff.2.active@pug.test', TIMESTAMPTZ '2026-05-16T17:30:00Z', TIMESTAMPTZ '2026-05-16T17:00:00Z', TIMESTAMPTZ '2026-05-16T17:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0017', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-17T10:30:00Z', TIMESTAMPTZ '2026-05-17T10:00:00Z', TIMESTAMPTZ '2026-05-17T10:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0018', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-18T11:30:00Z', TIMESTAMPTZ '2026-05-18T11:00:00Z', TIMESTAMPTZ '2026-05-18T11:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0019', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-19T12:30:00Z', TIMESTAMPTZ '2026-05-19T12:00:00Z', TIMESTAMPTZ '2026-05-19T12:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0020', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-20T13:30:00Z', TIMESTAMPTZ '2026-05-20T13:00:00Z', TIMESTAMPTZ '2026-05-20T13:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0021', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-21T14:30:00Z', TIMESTAMPTZ '2026-05-21T14:00:00Z', TIMESTAMPTZ '2026-05-21T14:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0022', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-22T15:30:00Z', TIMESTAMPTZ '2026-05-22T15:00:00Z', TIMESTAMPTZ '2026-05-22T15:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0023', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-23T16:30:00Z', TIMESTAMPTZ '2026-05-23T16:00:00Z', TIMESTAMPTZ '2026-05-23T16:30:00Z'),
+             ('22333000000308', 'Projeto Seed 03A', 'student.3.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0024', 'staff.3.active@pug.test', TIMESTAMPTZ '2026-05-24T17:30:00Z', TIMESTAMPTZ '2026-05-24T17:00:00Z', TIMESTAMPTZ '2026-05-24T17:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0025', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-25T10:30:00Z', TIMESTAMPTZ '2026-05-25T10:00:00Z', TIMESTAMPTZ '2026-05-25T10:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0026', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-26T11:30:00Z', TIMESTAMPTZ '2026-05-26T11:00:00Z', TIMESTAMPTZ '2026-05-26T11:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0027', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-27T12:30:00Z', TIMESTAMPTZ '2026-05-27T12:00:00Z', TIMESTAMPTZ '2026-05-27T12:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0028', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-28T13:30:00Z', TIMESTAMPTZ '2026-05-28T13:00:00Z', TIMESTAMPTZ '2026-05-28T13:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0029', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-01T14:30:00Z', TIMESTAMPTZ '2026-05-01T14:00:00Z', TIMESTAMPTZ '2026-05-01T14:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0030', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-02T15:30:00Z', TIMESTAMPTZ '2026-05-02T15:00:00Z', TIMESTAMPTZ '2026-05-02T15:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0031', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-03T16:30:00Z', TIMESTAMPTZ '2026-05-03T16:00:00Z', TIMESTAMPTZ '2026-05-03T16:30:00Z'),
+             ('22333000000499', 'Projeto Seed 04A', 'student.4.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0032', 'staff.4.active@pug.test', TIMESTAMPTZ '2026-05-04T17:30:00Z', TIMESTAMPTZ '2026-05-04T17:00:00Z', TIMESTAMPTZ '2026-05-04T17:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0033', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-05T10:30:00Z', TIMESTAMPTZ '2026-05-05T10:00:00Z', TIMESTAMPTZ '2026-05-05T10:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0034', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-06T11:30:00Z', TIMESTAMPTZ '2026-05-06T11:00:00Z', TIMESTAMPTZ '2026-05-06T11:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0035', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-07T12:30:00Z', TIMESTAMPTZ '2026-05-07T12:00:00Z', TIMESTAMPTZ '2026-05-07T12:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0036', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-08T13:30:00Z', TIMESTAMPTZ '2026-05-08T13:00:00Z', TIMESTAMPTZ '2026-05-08T13:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0037', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-09T14:30:00Z', TIMESTAMPTZ '2026-05-09T14:00:00Z', TIMESTAMPTZ '2026-05-09T14:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0038', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-10T15:30:00Z', TIMESTAMPTZ '2026-05-10T15:00:00Z', TIMESTAMPTZ '2026-05-10T15:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0039', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-11T16:30:00Z', TIMESTAMPTZ '2026-05-11T16:00:00Z', TIMESTAMPTZ '2026-05-11T16:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.5.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0040', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-12T17:30:00Z', TIMESTAMPTZ '2026-05-12T17:00:00Z', TIMESTAMPTZ '2026-05-12T17:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0041', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-13T10:30:00Z', TIMESTAMPTZ '2026-05-13T10:00:00Z', TIMESTAMPTZ '2026-05-13T10:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0042', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-14T11:30:00Z', TIMESTAMPTZ '2026-05-14T11:00:00Z', TIMESTAMPTZ '2026-05-14T11:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0043', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-15T12:30:00Z', TIMESTAMPTZ '2026-05-15T12:00:00Z', TIMESTAMPTZ '2026-05-15T12:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0044', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-16T13:30:00Z', TIMESTAMPTZ '2026-05-16T13:00:00Z', TIMESTAMPTZ '2026-05-16T13:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0045', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-17T14:30:00Z', TIMESTAMPTZ '2026-05-17T14:00:00Z', TIMESTAMPTZ '2026-05-17T14:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0046', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-18T15:30:00Z', TIMESTAMPTZ '2026-05-18T15:00:00Z', TIMESTAMPTZ '2026-05-18T15:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0047', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-19T16:30:00Z', TIMESTAMPTZ '2026-05-19T16:00:00Z', TIMESTAMPTZ '2026-05-19T16:30:00Z'),
+             ('22333000000570', 'Projeto Seed 05A', 'student.6.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0048', 'staff.5.active@pug.test', TIMESTAMPTZ '2026-05-20T17:30:00Z', TIMESTAMPTZ '2026-05-20T17:00:00Z', TIMESTAMPTZ '2026-05-20T17:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0049', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-21T10:30:00Z', TIMESTAMPTZ '2026-05-21T10:00:00Z', TIMESTAMPTZ '2026-05-21T10:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0050', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-22T11:30:00Z', TIMESTAMPTZ '2026-05-22T11:00:00Z', TIMESTAMPTZ '2026-05-22T11:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0051', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-23T12:30:00Z', TIMESTAMPTZ '2026-05-23T12:00:00Z', TIMESTAMPTZ '2026-05-23T12:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0052', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-24T13:30:00Z', TIMESTAMPTZ '2026-05-24T13:00:00Z', TIMESTAMPTZ '2026-05-24T13:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0053', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-25T14:30:00Z', TIMESTAMPTZ '2026-05-25T14:00:00Z', TIMESTAMPTZ '2026-05-25T14:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0054', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-26T15:30:00Z', TIMESTAMPTZ '2026-05-26T15:00:00Z', TIMESTAMPTZ '2026-05-26T15:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0055', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-27T16:30:00Z', TIMESTAMPTZ '2026-05-27T16:00:00Z', TIMESTAMPTZ '2026-05-27T16:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.7.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0056', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-28T17:30:00Z', TIMESTAMPTZ '2026-05-28T17:00:00Z', TIMESTAMPTZ '2026-05-28T17:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0057', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-01T10:30:00Z', TIMESTAMPTZ '2026-05-01T10:00:00Z', TIMESTAMPTZ '2026-05-01T10:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0058', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-02T11:30:00Z', TIMESTAMPTZ '2026-05-02T11:00:00Z', TIMESTAMPTZ '2026-05-02T11:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0059', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-03T12:30:00Z', TIMESTAMPTZ '2026-05-03T12:00:00Z', TIMESTAMPTZ '2026-05-03T12:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0060', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-04T13:30:00Z', TIMESTAMPTZ '2026-05-04T13:00:00Z', TIMESTAMPTZ '2026-05-04T13:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0061', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-05T14:30:00Z', TIMESTAMPTZ '2026-05-05T14:00:00Z', TIMESTAMPTZ '2026-05-05T14:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0062', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-06T15:30:00Z', TIMESTAMPTZ '2026-05-06T15:00:00Z', TIMESTAMPTZ '2026-05-06T15:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0063', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-07T16:30:00Z', TIMESTAMPTZ '2026-05-07T16:00:00Z', TIMESTAMPTZ '2026-05-07T16:30:00Z'),
+             ('22333000000650', 'Projeto Seed 06A', 'student.8.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0064', 'staff.6.active@pug.test', TIMESTAMPTZ '2026-05-08T17:30:00Z', TIMESTAMPTZ '2026-05-08T17:00:00Z', TIMESTAMPTZ '2026-05-08T17:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0065', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-09T10:30:00Z', TIMESTAMPTZ '2026-05-09T10:00:00Z', TIMESTAMPTZ '2026-05-09T10:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0066', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-10T11:30:00Z', TIMESTAMPTZ '2026-05-10T11:00:00Z', TIMESTAMPTZ '2026-05-10T11:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0067', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-11T12:30:00Z', TIMESTAMPTZ '2026-05-11T12:00:00Z', TIMESTAMPTZ '2026-05-11T12:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0068', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-12T13:30:00Z', TIMESTAMPTZ '2026-05-12T13:00:00Z', TIMESTAMPTZ '2026-05-12T13:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0069', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-13T14:30:00Z', TIMESTAMPTZ '2026-05-13T14:00:00Z', TIMESTAMPTZ '2026-05-13T14:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0070', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-14T15:30:00Z', TIMESTAMPTZ '2026-05-14T15:00:00Z', TIMESTAMPTZ '2026-05-14T15:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0071', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-15T16:30:00Z', TIMESTAMPTZ '2026-05-15T16:00:00Z', TIMESTAMPTZ '2026-05-15T16:30:00Z'),
+             ('22333000000731', 'Projeto Seed 07A', 'student.9.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0072', 'staff.7.active@pug.test', TIMESTAMPTZ '2026-05-16T17:30:00Z', TIMESTAMPTZ '2026-05-16T17:00:00Z', TIMESTAMPTZ '2026-05-16T17:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0073', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-17T10:30:00Z', TIMESTAMPTZ '2026-05-17T10:00:00Z', TIMESTAMPTZ '2026-05-17T10:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0074', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-18T11:30:00Z', TIMESTAMPTZ '2026-05-18T11:00:00Z', TIMESTAMPTZ '2026-05-18T11:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0075', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-19T12:30:00Z', TIMESTAMPTZ '2026-05-19T12:00:00Z', TIMESTAMPTZ '2026-05-19T12:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0076', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-20T13:30:00Z', TIMESTAMPTZ '2026-05-20T13:00:00Z', TIMESTAMPTZ '2026-05-20T13:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0077', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-21T14:30:00Z', TIMESTAMPTZ '2026-05-21T14:00:00Z', TIMESTAMPTZ '2026-05-21T14:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0078', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-22T15:30:00Z', TIMESTAMPTZ '2026-05-22T15:00:00Z', TIMESTAMPTZ '2026-05-22T15:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0079', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-23T16:30:00Z', TIMESTAMPTZ '2026-05-23T16:00:00Z', TIMESTAMPTZ '2026-05-23T16:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.10.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0080', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-24T17:30:00Z', TIMESTAMPTZ '2026-05-24T17:00:00Z', TIMESTAMPTZ '2026-05-24T17:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0081', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-25T10:30:00Z', TIMESTAMPTZ '2026-05-25T10:00:00Z', TIMESTAMPTZ '2026-05-25T10:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0082', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-26T11:30:00Z', TIMESTAMPTZ '2026-05-26T11:00:00Z', TIMESTAMPTZ '2026-05-26T11:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0083', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-27T12:30:00Z', TIMESTAMPTZ '2026-05-27T12:00:00Z', TIMESTAMPTZ '2026-05-27T12:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0084', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-28T13:30:00Z', TIMESTAMPTZ '2026-05-28T13:00:00Z', TIMESTAMPTZ '2026-05-28T13:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0085', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-01T14:30:00Z', TIMESTAMPTZ '2026-05-01T14:00:00Z', TIMESTAMPTZ '2026-05-01T14:30:00Z'),
+             ('22333000000901', 'Projeto Seed 09A', 'student.11.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0086', 'staff.9.active@pug.test', TIMESTAMPTZ '2026-05-02T15:30:00Z', TIMESTAMPTZ '2026-05-02T15:00:00Z', TIMESTAMPTZ '2026-05-02T15:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.11.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0087', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-03T16:30:00Z', TIMESTAMPTZ '2026-05-03T16:00:00Z', TIMESTAMPTZ '2026-05-03T16:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.11.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0088', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-04T17:30:00Z', TIMESTAMPTZ '2026-05-04T17:00:00Z', TIMESTAMPTZ '2026-05-04T17:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0089', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-05T10:30:00Z', TIMESTAMPTZ '2026-05-05T10:00:00Z', TIMESTAMPTZ '2026-05-05T10:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0090', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-06T11:30:00Z', TIMESTAMPTZ '2026-05-06T11:00:00Z', TIMESTAMPTZ '2026-05-06T11:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0091', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-07T12:30:00Z', TIMESTAMPTZ '2026-05-07T12:00:00Z', TIMESTAMPTZ '2026-05-07T12:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0092', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-08T13:30:00Z', TIMESTAMPTZ '2026-05-08T13:00:00Z', TIMESTAMPTZ '2026-05-08T13:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0093', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-09T14:30:00Z', TIMESTAMPTZ '2026-05-09T14:00:00Z', TIMESTAMPTZ '2026-05-09T14:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0094', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-10T15:30:00Z', TIMESTAMPTZ '2026-05-10T15:00:00Z', TIMESTAMPTZ '2026-05-10T15:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0095', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-11T16:30:00Z', TIMESTAMPTZ '2026-05-11T16:00:00Z', TIMESTAMPTZ '2026-05-11T16:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.12.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0096', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-12T17:30:00Z', TIMESTAMPTZ '2026-05-12T17:00:00Z', TIMESTAMPTZ '2026-05-12T17:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.13.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0097', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-13T10:30:00Z', TIMESTAMPTZ '2026-05-13T10:00:00Z', TIMESTAMPTZ '2026-05-13T10:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.13.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0098', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-14T11:30:00Z', TIMESTAMPTZ '2026-05-14T11:00:00Z', TIMESTAMPTZ '2026-05-14T11:30:00Z'),
+             ('22333000001037', 'Projeto Seed 10A', 'student.13.2@pug.test', 65.00, 'PRESENT', 'seed-attendance-0099', 'staff.10.active@pug.test', TIMESTAMPTZ '2026-05-15T12:30:00Z', TIMESTAMPTZ '2026-05-15T12:00:00Z', TIMESTAMPTZ '2026-05-15T12:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.2@pug.test', 45.00, 'PRESENT', 'seed-attendance-0100', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-16T13:30:00Z', TIMESTAMPTZ '2026-05-16T13:00:00Z', TIMESTAMPTZ '2026-05-16T13:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0101', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-17T14:30:00Z', TIMESTAMPTZ '2026-05-17T14:00:00Z', TIMESTAMPTZ '2026-05-17T14:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0102', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-18T15:30:00Z', TIMESTAMPTZ '2026-05-18T15:00:00Z', TIMESTAMPTZ '2026-05-18T15:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0103', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-19T16:30:00Z', TIMESTAMPTZ '2026-05-19T16:00:00Z', TIMESTAMPTZ '2026-05-19T16:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.4@pug.test', 20.00, 'ABSENT', 'seed-attendance-0103-2', NULL, NULL, TIMESTAMPTZ '2026-05-19T16:00:00Z', TIMESTAMPTZ '2026-05-19T16:00:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.4@pug.test', 20.00, 'WAITING', 'seed-attendance-0103-3', NULL, NULL, TIMESTAMPTZ '2026-05-19T16:00:00Z', TIMESTAMPTZ '2026-05-19T16:00:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.13.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0104', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-20T17:30:00Z', TIMESTAMPTZ '2026-05-20T17:00:00Z', TIMESTAMPTZ '2026-05-20T17:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.1@pug.test', 80.00, 'PRESENT', 'seed-attendance-0105', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-21T10:30:00Z', TIMESTAMPTZ '2026-05-21T10:00:00Z', TIMESTAMPTZ '2026-05-21T10:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0106', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-22T11:30:00Z', TIMESTAMPTZ '2026-05-22T11:00:00Z', TIMESTAMPTZ '2026-05-22T11:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.2@pug.test', 90.00, 'PRESENT', 'seed-attendance-0107', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-23T12:30:00Z', TIMESTAMPTZ '2026-05-23T12:00:00Z', TIMESTAMPTZ '2026-05-23T12:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.2@pug.test', 20.00, 'PRESENT', 'seed-attendance-0108', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-24T13:30:00Z', TIMESTAMPTZ '2026-05-24T13:00:00Z', TIMESTAMPTZ '2026-05-24T13:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.3@pug.test', 45.00, 'PRESENT', 'seed-attendance-0109', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-25T14:30:00Z', TIMESTAMPTZ '2026-05-25T14:00:00Z', TIMESTAMPTZ '2026-05-25T14:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.4@pug.test', 90.00, 'PRESENT', 'seed-attendance-0110', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-26T15:30:00Z', TIMESTAMPTZ '2026-05-26T15:00:00Z', TIMESTAMPTZ '2026-05-26T15:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.4@pug.test', 20.00, 'PRESENT', 'seed-attendance-0111', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-27T16:30:00Z', TIMESTAMPTZ '2026-05-27T16:00:00Z', TIMESTAMPTZ '2026-05-27T16:30:00Z'),
+             ('22333000001118', 'Projeto Seed 11A', 'student.14.5@pug.test', 20.00, 'PRESENT', 'seed-attendance-0112', 'staff.qa@pug.test', TIMESTAMPTZ '2026-05-28T17:30:00Z', TIMESTAMPTZ '2026-05-28T17:00:00Z', TIMESTAMPTZ '2026-05-28T17:30:00Z')
      ) AS data(
-         cnpj,
-         project_name,
-         former_student_email,
-         duration,
-         status,
-         qr_validation_hash,
-         validator_email,
-         validated_at,
-         created_at,
-         updated_at
-     )
-         JOIN entities ON entities.cnpj = data.cnpj
-         JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
-         JOIN accounts AS students ON students.email = data.former_student_email
-         JOIN former_students ON former_students.account_id = students.id
-         LEFT JOIN accounts AS validators ON validators.email = data.validator_email
-ON CONFLICT (qr_validation_hash) DO NOTHING;
+                cnpj,
+                project_name,
+                former_student_email,
+                duration,
+                status,
+                qr_validation_hash,
+                validator_email,
+                validated_at,
+                created_at,
+                updated_at
+    )
+     JOIN entities ON entities.cnpj = data.cnpj
+     JOIN projects ON projects.entity_id = entities.id AND projects.name = data.project_name
+     JOIN accounts AS students ON students.email = data.former_student_email
+     JOIN former_students ON former_students.account_id = students.id
+     JOIN accounts AS validators ON validators.email = data.validator_email
+    ON CONFLICT (qr_validation_hash) DO NOTHING;
 
-    END IF;
+END IF;
 END $$;

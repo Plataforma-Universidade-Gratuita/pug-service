@@ -98,7 +98,7 @@ public class User extends DomainError {
     }
     if (StringUtils.isEmpty(name)) {
       addFieldError(IdentityFieldErrorCodes.INVALID_USER_ID_BLANK);
-    } else if (name.length() > 255) {
+    } else if (name.length() > 150) {
       addFieldError(IdentityFieldErrorCodes.INVALID_USER_ID_TOO_LONG);
     }
     if (auditInfo == null) {

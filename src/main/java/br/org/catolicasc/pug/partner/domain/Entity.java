@@ -144,7 +144,7 @@ public class Entity extends DomainError {
     if (cityId == null) {
       addFieldError(PartnerFieldErrorCodes.INVALID_CITY_ID_BLANK);
     }
-    if (address.length() > 254) {
+    if (StringUtils.isNotEmpty(address) && address.length() > 254) {
       addFieldError(PartnerFieldErrorCodes.INVALID_ADDRESS_TOO_LONG);
     }
     if (auditInfo == null) {
