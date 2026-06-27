@@ -6,7 +6,7 @@
 
     <groupId>com.pug</groupId>
     <artifactId>pug-service</artifactId>
-    <version>1.0.2</version>
+    <version>1.0.0</version>
 
     <properties>
         <compiler-plugin.version>3.13.0</compiler-plugin.version>
