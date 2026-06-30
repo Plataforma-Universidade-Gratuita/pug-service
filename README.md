@@ -6,7 +6,7 @@
 
 ## 🚀 Release 1.0.0
 
-Release `1.0.0` marks the current stable backend surface implemented in the repository. This version provides the main PUG business modules, JWT-based identity flows, PostgreSQL-backed domain persistence, MongoDB-backed audit logging, Flyway migrations, package-level coverage enforcement, and image/verification workflows for CI.
+Release `1.0.0` marks the current stable backend surface implemented in the repository. This version provides the main PUG business modules, JWT-based identity flows, PostgreSQL-backed domain persistence, MongoDB-backed audit logging, Flyway migrations, package-level coverage enforcement, image/verification workflows for CI, GHCR publishing, and Azure Container Apps QA deployment.
 
 Main capabilities present in this release:
 
@@ -15,7 +15,7 @@ Main capabilities present in this release:
 - academic, geo, partner, and project management APIs
 - PostgreSQL persistence with Flyway migrations
 - MongoDB audit logging
-- CI verification, container image build validation, and GHCR publish workflow
+- CI verification, container image build validation, GHCR publish workflow, and QA deployment workflow
 
 ## ✨ Features
 
@@ -26,6 +26,7 @@ Main capabilities present in this release:
 - localization support
 - audit persistence to MongoDB
 - pagination and request validation helpers
+- CORS configuration through runtime environment variables
 
 ### Identity
 
@@ -89,6 +90,7 @@ Important architectural properties:
 - PostgreSQL stores the main relational domain data
 - MongoDB is used as the audit boundary in the repository
 - JaCoCo coverage checks are enforced per package in `verify`
+- QA runtime configuration is injected through Azure Container Apps environment variables and secrets
 
 ## 🧰 Tech stack
 
@@ -105,6 +107,8 @@ Important architectural properties:
 - **Testing:** JUnit 5, Quarkus Test, Mockito, RestAssured, AssertJ, Awaitility, JaCoCo
 - **Containerization:** Docker multi-stage build
 - **CI/CD tooling:** GitHub Actions
+- **Registry:** GitHub Container Registry / GHCR
+- **Deployment target:** Azure Container Apps
 
 ## ▶️ Getting started
 
@@ -156,10 +160,11 @@ Useful local commands:
 
 - **Initial stable release:** this README documents the current `pug-service` repository as release `1.0.0`
 - **Main delivered modules/features:** shared infrastructure, identity, geo, partner, academic, and project modules running inside one Quarkus service
+- **CI/CD capabilities:** verification, image build validation, GHCR publishing, and manual QA deployment through Azure Container Apps
 - **Known limitations visible in the repo:**
   - the `geo` module is read-only in the repository
   - dedicated `@QuarkusIntegrationTest` classes are not part of the repository
-  - downstream deployment automation was not found; current workflows stop at verify/build/publish
+  - a dedicated PRD deployment workflow is not currently part of the repository
 - **Compatibility/runtime expectations:**
   - Java `21` is required by the build
   - the local dev profile expects PostgreSQL on `5433` and MongoDB on `27018`
@@ -196,4 +201,3 @@ pug-service/
 - [Development notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/DEVELOPMENT.md)
 - [Testing notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/TESTS.md)
 - [CI/CD notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/CICD.md)
-

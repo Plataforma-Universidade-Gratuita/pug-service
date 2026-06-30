@@ -23,6 +23,7 @@ import br.org.catolicasc.pug.shared.service.dtos.PageQuery;
 import br.org.catolicasc.pug.shared.service.dtos.PageResult;
 import br.org.catolicasc.pug.shared.utils.PresenterUtils;
 import br.org.catolicasc.pug.shared.validation.UuidV7;
+import io.quarkus.security.Authenticated;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -101,7 +102,7 @@ public class EnrollmentsResource {
   /** Lists enrollments, optionally filtering by project or former-student identifier. */
   @GET
   @Path("/enrollments")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @Authenticated
   public Response list(
       @QueryParam("projectId") @UuidV7 UUID projectId,
       @QueryParam("formerStudentId") @UuidV7 UUID formerStudentId) {
@@ -160,7 +161,7 @@ public class EnrollmentsResource {
    */
   @POST
   @Path("/enrollments/search")
-  @RolesAllowed({"ADMIN", "PARTNER", "FORMER_STUDENT"})
+  @RolesAllowed({"ADMIN", "PARTNER"})
   @Consumes(MediaType.APPLICATION_JSON)
   public Response search(
       @Valid EnrollmentComplexSearchRequest req,
