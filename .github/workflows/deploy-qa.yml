@@ -2,10 +2,14 @@ name: Deploy QA
 
 on:
   workflow_dispatch:
+    inputs:
+      image:
+        description: "Full image to deploy, e.g. ghcr.io/plataforma-universidade-gratuita/pug-service:sha-abc123"
+        required: true
+        type: string
 
 permissions:
   contents: read
-  packages: write
 
 jobs:
   deploy:
@@ -15,5 +19,5 @@ jobs:
       azure_resource_group: rg-pug-qa
       azure_container_app: pug-service-qa
       quarkus_profile: qa
-      image_tag_alias: qa
+      image: ${{ inputs.image }}
     secrets: inherit

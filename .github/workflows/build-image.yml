@@ -2,15 +2,22 @@ name: Build Image
 
 on:
   pull_request:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
-concurrency:
-  group: build-image-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
+  packages: read
 
 jobs:
+  verify:
+    name: Verify
+    uses: ./.github/workflows/verify.yml
+
   build-image:
     name: Build Image
+    needs: verify
     runs-on: ubuntu-latest
 
     steps:
@@ -26,5 +33,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max

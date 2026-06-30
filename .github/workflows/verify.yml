@@ -1,14 +1,10 @@
 name: Verify
 
 on:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
 
-concurrency:
-  group: verify-${{ github.ref }}
-  cancel-in-progress: true
+permissions:
+  contents: read
 
 jobs:
   verify:
@@ -38,9 +34,9 @@ jobs:
         ports:
           - 27019:27017
         options: >-
-          --health-cmd "mongosh mongodb://pug_test:pug_test@localhost:27017/admin --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand(\"ping\").ok'"
           --health-interval 10s
-          --health-timeout 10s
+          --health-timeout 5s
           --health-retries 10
 
     steps:
@@ -51,18 +47,8 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: '21'
           cache: maven
-
-      - name: Make Maven wrapper executable
-        run: chmod +x mvnw
 
       - name: Run Maven verify
         run: ./mvnw -B clean verify
-        env:
-          QUARKUS_DATASOURCE_DEVSERVICES_ENABLED: "false"
-          QUARKUS_MONGODB_DEVSERVICES_ENABLED: "false"
-          QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://localhost:5434/pug_test
-          QUARKUS_DATASOURCE_USERNAME: pug_test
-          QUARKUS_DATASOURCE_PASSWORD: pug_test
-          QUARKUS_MONGODB_CONNECTION_STRING: mongodb://pug_test:pug_test@localhost:27019

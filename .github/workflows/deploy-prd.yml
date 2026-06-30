@@ -1,0 +1,23 @@
+name: Deploy PRD
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PRD_IMAGE: ghcr.io/plataforma-universidade-gratuita/pug-service:latest
+
+jobs:
+  deploy:
+    name: Deploy PRD Placeholder
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print placeholder
+        run: |
+          echo "PRD deployment is not configured yet."
+          echo "When PRD is ready, this workflow should deploy:"
+          echo "$PRD_IMAGE"
+          echo "latest must point to the newest versioned release image, e.g. pug-service:1.0.0"
