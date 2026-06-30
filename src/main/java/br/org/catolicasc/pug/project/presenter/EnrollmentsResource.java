@@ -160,7 +160,7 @@ public class EnrollmentsResource {
    */
   @POST
   @Path("/enrollments/search")
-  @RolesAllowed({"ADMIN", "PARTNER"})
+  @RolesAllowed({"ADMIN", "PARTNER", "FORMER_STUDENT"})
   @Consumes(MediaType.APPLICATION_JSON)
   public Response search(
       @Valid EnrollmentComplexSearchRequest req,
