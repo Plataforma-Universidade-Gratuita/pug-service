@@ -1046,7 +1046,7 @@ INSERT INTO projects (
 )
 SELECT
     uuid_generate_v7(), data.name, entities.id, data.description, creator.id,
-    data.offered_hours, data.completed_hours, data.status, data.max_participants,
+    data.offered_hours, data.completed_hours, data.status, data.max_participants::integer,
     data.created_at, data.updated_at
 FROM (
          VALUES
@@ -1098,7 +1098,7 @@ INSERT INTO enrollments (
 )
 SELECT
     projects.id, accounts.id, data.status,
-    data.created_at, data.updated_at, data.accepted_at, data.closing_status_at
+    data.created_at, data.updated_at, data.accepted_at, data.closing_status_at::timestamptz
 FROM (
          VALUES
              ('Projeto Seed Administração', 'mariana.costa.administracao@pug.br', 'APPROVED', TIMESTAMPTZ '2026-05-01T09:00:00Z', TIMESTAMPTZ '2026-05-01T10:00:00Z', TIMESTAMPTZ '2026-05-01T11:00:00Z', NULL),
@@ -1433,3 +1433,4 @@ FROM (
 
 END IF;
 END $$;
+
