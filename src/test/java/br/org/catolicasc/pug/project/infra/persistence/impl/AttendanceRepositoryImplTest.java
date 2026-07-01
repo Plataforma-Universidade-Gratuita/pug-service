@@ -90,11 +90,43 @@ class AttendanceRepositoryImplTest {
 
   @Test
   @Transactional
+  @DisplayName("Should delete only waiting attendances for the targeted enrollment")
+  void shouldDeleteOnlyWaitingAttendancesForTargetEnrollment() {
+    Attendance waitingTarget = factory.createAttendance(project, formerStudent);
+    Account validator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+    Attendance presentTarget =
+        factory
+            .createAttendance(project, formerStudent)
+            .validatePresence(validator.getId(), AttendanceStatus.PRESENT);
+    repository.update(presentTarget);
+    repository.flush();
+
+    AreaOfExpertise secondAreaOfExpertise = factory.createAreaOfExpertise();
+    Course secondCourse = factory.createCourse(secondAreaOfExpertise);
+    Account secondStudentAccount =
+        factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
+    FormerStudent secondStudent = factory.createStudent(secondStudentAccount, secondCourse);
+    factory.createEnrollment(secondStudent, project);
+    Attendance waitingOtherEnrollment = factory.createAttendance(project, secondStudent);
+
+    long deleted =
+        repository.deleteAllWaitingValidationByEnrollmentId(
+            project.getId(), formerStudent.getAccountId());
+
+    assertThat(deleted).isEqualTo(1);
+    assertThat(repository.findOptionalById(waitingTarget.getId())).isEmpty();
+    assertThat(repository.findOptionalById(presentTarget.getId())).isPresent();
+    assertThat(repository.findOptionalById(waitingOtherEnrollment.getId())).isPresent();
+  }
+
+  @Test
+  @Transactional
   @DisplayName("Should handle edge cases for repository methods")
   void shouldHandleEdgeCases() {
     assertThat(repository.deleteById(null)).isFalse();
 
     assertThat(repository.deleteAllByEnrollmentId(null, null)).isZero();
+    assertThat(repository.deleteAllWaitingValidationByEnrollmentId(null, null)).isZero();
 
     repository.update(null);
 

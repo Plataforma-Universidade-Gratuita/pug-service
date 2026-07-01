@@ -2,6 +2,8 @@ package br.org.catolicasc.pug.project.service.impl;
 
 import br.org.catolicasc.pug.academic.service.FormerStudentsService;
 import br.org.catolicasc.pug.identity.service.AuthService;
+import br.org.catolicasc.pug.partner.domain.Staff;
+import br.org.catolicasc.pug.partner.service.StaffService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.AttendanceRepository;
 import br.org.catolicasc.pug.project.domain.Enrollment;
@@ -37,6 +39,7 @@ public class AttendancesServiceImpl implements AttendancesService {
   @Inject EnrollmentsService enrollmentsService;
   @Inject ProjectService projectService;
   @Inject FormerStudentsService formerStudentsService;
+  @Inject StaffService staffService;
   @Inject AuthService authService;
 
   @ConfigProperty(name = "security.qr.pepper", defaultValue = "default-pepper")
@@ -57,17 +60,24 @@ public class AttendancesServiceImpl implements AttendancesService {
     return deleted;
   }
 
+  /** {@inheritDoc} */
   @Override
   @Transactional
-  public long deleteAllWaitingValidationByProjectId(UUID projectId) {
-    if (projectId == null) {
+  public long deleteAllWaitingValidationByEnrollmentIdentifier(EnrollmentIdentifier identifier) {
+    if (identifier == null) {
       return 0;
     }
-    LOG.debugf("Deleting all waiting-validation attendances for Project: %s", projectId);
-    long deleted = repo.deleteAllWaitingValidationByProjectId(projectId);
+
+    LOG.debugf("Deleting waiting-validation attendances for Enrollment: %s", identifier);
+
+    long deleted =
+        repo.deleteAllWaitingValidationByEnrollmentId(
+            identifier.getProjectId(), identifier.getFormerStudentId());
+
     if (deleted > 0) {
-      auditPublisher.fireDelete(Attendance.class.getName(), projectId);
+      auditPublisher.fireDelete(Attendance.class.getName(), identifier.getProjectId());
     }
+
     return deleted;
   }
 
@@ -123,6 +133,8 @@ public class AttendancesServiceImpl implements AttendancesService {
       throw new AppValidationException(identifier.getFieldErrors());
     }
 
+    authorizeAttendanceCreation(cmd);
+
     Enrollment enrollment;
     try {
       enrollment = enrollmentsService.getByIds(identifier);
@@ -150,15 +162,17 @@ public class AttendancesServiceImpl implements AttendancesService {
   public Attendance validate(UUID id, AttendanceValidateCommand cmd) {
     LOG.debugf("Attempting to validate Attendance ID: %s", id);
     Attendance current = getById(id);
-    authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
 
     if (!current.getQrValidationInfo().getQrValidationHash().equals(cmd.qrValidationHash())) {
       LOG.warnf("Validation failed: QR Hash mismatch for Attendance ID: %s", id);
       throw ExceptionHelper.attendanceNotFound();
     }
 
+    Project project = projectService.getById(current.getEnrollmentIdentifier().getProjectId());
+    authorizeAttendanceValidation(project);
+
     if (cmd.status() == AttendanceStatus.PRESENT) {
-      projectService.validateIsInProgress(current.getEnrollmentIdentifier().getProjectId());
+      projectService.validateIsInProgress(project.getId());
     }
 
     UUID validatorAccountId = authService.getCurrentAccountId();
@@ -172,12 +186,19 @@ public class AttendancesServiceImpl implements AttendancesService {
     repo.update(validated);
     LOG.infof("Attendance validated successfully. ID: %s, Status: %s", id, cmd.status());
 
-    if (validated.getStatus() == AttendanceStatus.PRESENT) {
+    boolean becamePresent =
+        current.getStatus() != AttendanceStatus.PRESENT
+            && validated.getStatus() == AttendanceStatus.PRESENT;
+
+    boolean stoppedBeingPresent =
+        current.getStatus() == AttendanceStatus.PRESENT
+            && validated.getStatus() == AttendanceStatus.ABSENT;
+
+    if (becamePresent) {
       var formerStudent =
           formerStudentsService.getById(validated.getEnrollmentIdentifier().getFormerStudentId());
       formerStudent.validateCanAddCompletedHours(validated.getQrValidationInfo().getDuration());
 
-      Project project = projectService.getById(validated.getEnrollmentIdentifier().getProjectId());
       project.validateCanAddCompletedHours(validated.getQrValidationInfo().getDuration());
 
       formerStudentsService.addCompletedHours(
@@ -186,13 +207,11 @@ public class AttendancesServiceImpl implements AttendancesService {
       projectService.addCompletedHours(
           validated.getEnrollmentIdentifier().getProjectId(),
           validated.getQrValidationInfo().getDuration());
-    } else if (current.getStatus() == AttendanceStatus.PRESENT
-        && validated.getStatus() == AttendanceStatus.ABSENT) {
+    } else if (stoppedBeingPresent) {
       var formerStudent =
           formerStudentsService.getById(validated.getEnrollmentIdentifier().getFormerStudentId());
       formerStudent.validateCanRemoveCompletedHours(validated.getQrValidationInfo().getDuration());
 
-      Project project = projectService.getById(validated.getEnrollmentIdentifier().getProjectId());
       project.validateCanRemoveCompletedHours(validated.getQrValidationInfo().getDuration());
 
       formerStudentsService.removeCompletedHours(
@@ -205,5 +224,43 @@ public class AttendancesServiceImpl implements AttendancesService {
 
     auditPublisher.fireUpdate(Attendance.class.getName(), id, current, validated);
     return getById(id);
+  }
+
+  private void authorizeAttendanceCreation(AttendanceCreateCommand cmd) {
+    AccountType currentType = authService.getCurrentAccountType();
+
+    if (currentType == AccountType.ADMIN) {
+      return;
+    }
+
+    if (currentType == AccountType.FORMER_STUDENT) {
+      UUID currentAccountId = authService.getCurrentAccountId();
+
+      if (currentAccountId != null && currentAccountId.equals(cmd.formerStudentId())) {
+        return;
+      }
+    }
+
+    throw ExceptionHelper.attendanceEnrollmentNotFound();
+  }
+
+  private void authorizeAttendanceValidation(Project project) {
+    AccountType currentType = authService.getCurrentAccountType();
+
+    if (currentType == AccountType.ADMIN) {
+      return;
+    }
+
+    if (currentType != AccountType.PARTNER) {
+      authService.requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
+      throw ExceptionHelper.attendanceNotFound();
+    }
+
+    UUID currentAccountId = authService.getCurrentAccountId();
+    Staff staff = staffService.getByAccountId(currentAccountId);
+
+    if (!staff.getEntityId().equals(project.getEntityId())) {
+      throw ExceptionHelper.attendanceNotFound();
+    }
   }
 }

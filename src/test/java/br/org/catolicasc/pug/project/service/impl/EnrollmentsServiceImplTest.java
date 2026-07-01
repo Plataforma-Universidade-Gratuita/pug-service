@@ -215,7 +215,8 @@ class EnrollmentsServiceImplTest {
     Enrollment updated = service.changeStatus(approved.getIdentifier(), EnrollmentStatus.CANCELED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.CANCELED);
-    verify(attendancesService).deleteAllByEnrollmentIdentifier(approved.getIdentifier());
+    verify(attendancesService)
+        .deleteAllWaitingValidationByEnrollmentIdentifier(approved.getIdentifier());
   }
 
   @Test
@@ -228,7 +229,8 @@ class EnrollmentsServiceImplTest {
     Enrollment updated = service.changeStatus(approved.getIdentifier(), EnrollmentStatus.COMPLETED);
 
     assertThat(updated.getStatus()).isEqualTo(EnrollmentStatus.COMPLETED);
-    verify(attendancesService).deleteAllByEnrollmentIdentifier(approved.getIdentifier());
+    verify(attendancesService)
+        .deleteAllWaitingValidationByEnrollmentIdentifier(approved.getIdentifier());
   }
 
   @Test

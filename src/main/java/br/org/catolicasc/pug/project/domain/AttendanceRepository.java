@@ -21,12 +21,17 @@ public interface AttendanceRepository {
   long deleteAllByEnrollmentId(UUID projectId, UUID formerStudentId);
 
   /**
-   * Removes all attendance records in waiting-validation status for a specific project.
+   * Removes only attendance records still awaiting validation for a specific enrollment.
+   *
+   * <p>Historical validated attendances must be preserved when an enrollment reaches a terminal
+   * lifecycle status. This method is intended for lifecycle cleanup and must only delete records in
+   * {@code WAITING} status for the provided project/former-student pair.
    *
    * @param projectId the unique identifier of the project
-   * @return the total number of deleted attendance records
+   * @param formerStudentId the unique identifier of the former student account
+   * @return the total number of waiting-validation attendance records deleted
    */
-  long deleteAllWaitingValidationByProjectId(UUID projectId);
+  long deleteAllWaitingValidationByEnrollmentId(UUID projectId, UUID formerStudentId);
 
   /**
    * Removes an {@link Attendance} record from the repository based on its unique identifier.

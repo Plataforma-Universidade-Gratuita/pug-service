@@ -195,7 +195,6 @@ public class ProjectServiceImpl implements ProjectService {
       case COMPLETED -> updated = project.complete();
       case CANCELED -> updated = project.cancel();
       case ON_HOLD -> updated = project.putOnHold();
-      case PLANNED -> updated = project.retake();
       default -> throw new IllegalArgumentException("Unsupported status: " + status);
     }
 

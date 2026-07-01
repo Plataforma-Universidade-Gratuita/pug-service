@@ -18,6 +18,7 @@ import br.org.catolicasc.pug.helpers.TestDataFactory;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.partner.service.StaffService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Enrollment;
 import br.org.catolicasc.pug.project.domain.EnrollmentRepository;
@@ -51,11 +52,13 @@ class AttendanceServiceImplTest {
   @InjectMock AuthService authService;
   @InjectMock FormerStudentsService studentService;
   @InjectMock ProjectService projectService;
+  @InjectMock StaffService staffService;
 
   private FormerStudent formerStudent;
   private Project project;
   private Attendance attendance;
   private Account creatorAcc;
+  private Entity entity;
 
   @BeforeEach
   void setup() {
@@ -64,7 +67,7 @@ class AttendanceServiceImplTest {
     Account studentAcc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     formerStudent = factory.createStudent(studentAcc, course);
 
-    Entity entity = factory.createEntity(factory.getAnyCity());
+    entity = factory.createEntity(factory.getAnyCity());
     creatorAcc = factory.createAccount(factory.createUser(), AccountType.PARTNER);
     project = factory.createProject(entity, creatorAcc);
 
@@ -73,7 +76,8 @@ class AttendanceServiceImplTest {
 
     doNothing().when(authService).requireCurrentAccountNotOfType(any());
     doNothing().when(authService).requireCurrentAccountOfType(any());
-    when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.FORMER_STUDENT);
+    when(authService.getCurrentAccountId()).thenReturn(formerStudent.getAccountId());
     when(studentService.getById(any())).thenReturn(formerStudent);
     when(projectService.getById(any())).thenReturn(project);
   }
@@ -120,11 +124,12 @@ class AttendanceServiceImplTest {
     Account pendingStudentAcc =
         factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
     FormerStudent pendingStudent = factory.createStudent(pendingStudentAcc, course);
-    Entity entity = factory.createEntity(factory.getAnyCity());
+    Entity pendingEntity = factory.createEntity(factory.getAnyCity());
     Account pendingCreator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-    Project pendingProject = factory.createProject(entity, pendingCreator);
+    Project pendingProject = factory.createProject(pendingEntity, pendingCreator);
     Enrollment pendingEnrollment = Enrollment.factory(pendingStudent, pendingProject);
     enrollmentRepository.persist(pendingEnrollment);
+    when(authService.getCurrentAccountId()).thenReturn(pendingStudent.getAccountId());
 
     BusinessRuleException ex =
         assertThrows(
@@ -143,6 +148,10 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should validate attendance successfully")
   void validateSuccess() {
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.PARTNER);
+    when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+    when(staffService.getByAccountId(creatorAcc.getId()))
+        .thenReturn(factory.createStaff(creatorAcc, entity));
     doNothing().when(projectService).validateIsInProgress(project.getId());
 
     Attendance validated =
@@ -163,6 +172,10 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should fail to validate attendance as present when project is not in progress")
   void validatePresentFailsWhenProjectIsNotInProgress() {
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.PARTNER);
+    when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+    when(staffService.getByAccountId(creatorAcc.getId()))
+        .thenReturn(factory.createStaff(creatorAcc, entity));
     doThrow(new BusinessRuleException(ProjectsErrorCodes.ATTENDANCE_PROJECT_NOT_IN_PROGRESS))
         .when(projectService)
         .validateIsInProgress(project.getId());
@@ -186,6 +199,10 @@ class AttendanceServiceImplTest {
   @Transactional
   @DisplayName("Should remove hours when attendance changes from PRESENT to ABSENT")
   void validatePresentToAbsentRemovesHours() {
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.PARTNER);
+    when(authService.getCurrentAccountId()).thenReturn(creatorAcc.getId());
+    when(staffService.getByAccountId(creatorAcc.getId()))
+        .thenReturn(factory.createStaff(creatorAcc, entity));
     doNothing().when(projectService).validateIsInProgress(project.getId());
     FormerStudent progressedFormerStudent =
         formerStudent.addCompletedHours(attendance.getQrValidationInfo().getDuration());

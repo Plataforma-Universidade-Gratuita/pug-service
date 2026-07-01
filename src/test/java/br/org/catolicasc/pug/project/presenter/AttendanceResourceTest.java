@@ -14,6 +14,8 @@ import br.org.catolicasc.pug.helpers.BaseResourceTest;
 import br.org.catolicasc.pug.identity.domain.Account;
 import br.org.catolicasc.pug.identity.service.AuthService;
 import br.org.catolicasc.pug.partner.domain.Entity;
+import br.org.catolicasc.pug.partner.domain.Staff;
+import br.org.catolicasc.pug.partner.service.StaffService;
 import br.org.catolicasc.pug.project.domain.Attendance;
 import br.org.catolicasc.pug.project.domain.Project;
 import br.org.catolicasc.pug.project.domain.enums.AttendanceStatus;
@@ -36,12 +38,19 @@ import org.junit.jupiter.api.Test;
 class AttendanceResourceTest extends BaseResourceTest {
 
   @InjectMock AuthService authService;
+  @InjectMock StaffService staffService;
 
   private record AttendanceGraph(
-      Project project, FormerStudent formerStudent, Attendance attendance) {}
+      Project project,
+      Entity entity,
+      Account creator,
+      FormerStudent formerStudent,
+      Attendance attendance) {}
 
   private AttendanceGraph createAttendanceGraph() throws Exception {
     Project[] project = new Project[1];
+    Entity[] entity = new Entity[1];
+    Account[] creator = new Account[1];
     FormerStudent[] formerStudent = new FormerStudent[1];
     Attendance[] attendance = new Attendance[1];
     doInTransaction(
@@ -50,15 +59,15 @@ class AttendanceResourceTest extends BaseResourceTest {
           Course course = factory.createCourse(areaOfExpertise);
           Account acc = factory.createAccount(factory.createUser(), AccountType.FORMER_STUDENT);
           formerStudent[0] = factory.createStudent(acc, course);
-          Entity entity = factory.createEntity(factory.getAnyCity());
-          Account creator = factory.createAccount(factory.createUser(), AccountType.PARTNER);
-          project[0] = factory.createProject(entity, creator);
+          entity[0] = factory.createEntity(factory.getAnyCity());
+          creator[0] = factory.createAccount(factory.createUser(), AccountType.PARTNER);
+          project[0] = factory.createProject(entity[0], creator[0]);
           project[0] = project[0].start();
           factory.updateProject(project[0]);
           factory.createApprovedEnrollment(formerStudent[0], project[0]);
           attendance[0] = factory.createAttendance(project[0], formerStudent[0]);
         });
-    return new AttendanceGraph(project[0], formerStudent[0], attendance[0]);
+    return new AttendanceGraph(project[0], entity[0], creator[0], formerStudent[0], attendance[0]);
   }
 
   @Test
@@ -164,11 +173,13 @@ class AttendanceResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
-      user = "staff",
-      roles = {"PARTNER"})
+      user = "former-student",
+      roles = {"FORMER_STUDENT"})
   @DisplayName("POST /v1/projects/attendances - Success")
   void createSuccess() throws Exception {
     AttendanceGraph graph = createAttendanceGraph();
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.FORMER_STUDENT);
+    when(authService.getCurrentAccountId()).thenReturn(graph.formerStudent().getAccountId());
 
     AttendanceCreateRequest request =
         new AttendanceCreateRequest(
@@ -192,11 +203,12 @@ class AttendanceResourceTest extends BaseResourceTest {
   @DisplayName("PATCH /v1/projects/attendances/{id}/validate - Success")
   void validateSuccess() throws Exception {
     AttendanceGraph graph = createAttendanceGraph();
-    Account[] validator = new Account[1];
-    doInTransaction(
-        () -> validator[0] = factory.createAccount(factory.createUser(), AccountType.ADMIN));
+    Staff[] validator = new Staff[1];
+    doInTransaction(() -> validator[0] = factory.createStaff(graph.creator(), graph.entity()));
 
-    when(authService.getCurrentAccountId()).thenReturn(validator[0].getId());
+    when(authService.getCurrentAccountType()).thenReturn(AccountType.PARTNER);
+    when(authService.getCurrentAccountId()).thenReturn(graph.creator().getId());
+    when(staffService.getByAccountId(graph.creator().getId())).thenReturn(validator[0]);
     doNothing().when(authService).requireCurrentAccountNotOfType(AccountType.FORMER_STUDENT);
 
     given()

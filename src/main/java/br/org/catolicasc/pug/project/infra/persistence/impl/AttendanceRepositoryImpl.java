@@ -30,19 +30,27 @@ public class AttendanceRepositoryImpl
     }
     long deleted = delete("projectId = ?1 and formerStudentId = ?2", projectId, formerStudentId);
     flush();
+    getEntityManager().clear();
     return deleted;
   }
 
   /** {@inheritDoc} */
   @Override
   @Transactional
-  public long deleteAllWaitingValidationByProjectId(UUID projectId) {
-    if (projectId == null) {
+  public long deleteAllWaitingValidationByEnrollmentId(UUID projectId, UUID formerStudentId) {
+    if (projectId == null || formerStudentId == null) {
       return 0;
     }
+
     long deleted =
-        delete("projectId = ?1 and status = ?2", projectId, AttendanceStatus.WAITING.name());
+        delete(
+            "projectId = ?1 and formerStudentId = ?2 and status = ?3",
+            projectId,
+            formerStudentId,
+            AttendanceStatus.WAITING.name());
+
     flush();
+    getEntityManager().clear();
     return deleted;
   }
 

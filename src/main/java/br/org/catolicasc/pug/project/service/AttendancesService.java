@@ -26,12 +26,16 @@ public interface AttendancesService {
   long deleteAllByEnrollmentIdentifier(EnrollmentIdentifier identifier);
 
   /**
-   * Removes all attendances awaiting validation for a specific project.
+   * Removes only attendance records still awaiting validation for a specific enrollment.
    *
-   * @param projectId the unique identifier of the project
-   * @return the total number of deleted attendance records
+   * <p>This cleanup is used when an enrollment reaches a terminal lifecycle status. Validated
+   * historical records, such as {@code PRESENT} and {@code ABSENT} attendances, must be preserved
+   * so project and former-student completed-hour history remains auditable.
+   *
+   * @param identifier the composite identifier of the enrollment
+   * @return the total number of waiting-validation attendance records deleted
    */
-  long deleteAllWaitingValidationByProjectId(UUID projectId);
+  long deleteAllWaitingValidationByEnrollmentIdentifier(EnrollmentIdentifier identifier);
 
   /**
    * Removes an attendance record from the system.

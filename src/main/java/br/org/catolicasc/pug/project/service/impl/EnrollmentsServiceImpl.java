@@ -18,6 +18,7 @@ import br.org.catolicasc.pug.project.service.utils.EnrollmentProcessor;
 import br.org.catolicasc.pug.project.service.utils.ExceptionHelper;
 import br.org.catolicasc.pug.shared.domain.enums.AccountType;
 import br.org.catolicasc.pug.shared.exceptions.AppValidationException;
+import br.org.catolicasc.pug.shared.exceptions.BusinessRuleException;
 import br.org.catolicasc.pug.shared.infra.audit.AuditPublisher;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -67,7 +68,8 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
 
     switch (enrollment.getStatus()) {
       case CANCELED, COMPLETED, EXITED, REMOVED ->
-          attendancesService.deleteAllByEnrollmentIdentifier(enrollment.getIdentifier());
+          attendancesService.deleteAllWaitingValidationByEnrollmentIdentifier(
+              enrollment.getIdentifier());
       default -> {
         // No attendance cleanup is required for non-closing states.
       }
@@ -112,8 +114,10 @@ public class EnrollmentsServiceImpl implements EnrollmentsService {
       try {
         changeStatus(enrollment.getIdentifier(), targetStatus);
         changed++;
-      } catch (RuntimeException ignored) {
-        // Intentionally skip enrollments whose lifecycle does not allow the forced transition.
+      } catch (BusinessRuleException | AppValidationException ex) {
+        LOG.debugf(
+            "Skipping enrollment %s because transition to %s is not allowed",
+            enrollment.getIdentifier(), targetStatus);
       }
     }
     return changed;
