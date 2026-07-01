@@ -104,6 +104,20 @@ class ProjectResourceTest extends BaseResourceTest {
 
   @Test
   @TestSecurity(
+      user = "admin",
+      roles = {"ADMIN"})
+  void listAllByIdsMalformedUuidReturnsBadRequest() {
+    given()
+        .queryParam("ids", "not-a-uuid")
+        .when()
+        .get("/v1/projects")
+        .then()
+        .statusCode(400)
+        .body("error.code", is("VALIDATION_ERROR"));
+  }
+
+  @Test
+  @TestSecurity(
       user = "staff",
       roles = {"PARTNER"})
   void createSuccess() throws Exception {
