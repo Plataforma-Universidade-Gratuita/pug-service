@@ -1410,11 +1410,11 @@ FROM (
     ON CONFLICT (project_id, former_student_id) DO NOTHING;
 
 INSERT INTO attendances (
-    id, project_id, former_student_id, duration, status, qr_code, validated_by,
+    id, project_id, former_student_id, duration, status, qr_validation_hash, validated_by,
     validated_at, created_at, updated_at
 )
 SELECT
-    uuid_generate_v7(), projects.id, former_students.id, data.duration, data.status, data.qr_code, validators.id,
+    uuid_generate_v7(), projects.id, former_students.id, data.duration, data.status, data.qr_validation_hash, validators.id,
     data.validated_at, data.created_at, data.updated_at
 FROM (
          VALUES
@@ -1701,11 +1701,11 @@ FROM (
              ('Projeto QA Ciências Contábeis 01 Execução Assistida', 'felipe.duarte.ciencias.contabeis@pug.br', 4.00, 'ABSENT', 'seed:felipe.duarte.ciencias.contabeis@pug.br:absent:46', 'staff.001@pug.br', TIMESTAMPTZ '2026-04-01T12:00:00Z', TIMESTAMPTZ '2026-04-01T09:00:00Z', TIMESTAMPTZ '2026-04-01T10:00:00Z'),
              ('Projeto QA Arquitetura & Urbanismo 01 Execução Assistida', 'juliana.alves.arquitetura.e.urbanismo@pug.br', 4.00, 'ABSENT', 'seed:juliana.alves.arquitetura.e.urbanismo@pug.br:absent:47', 'staff.001@pug.br', TIMESTAMPTZ '2026-04-02T12:00:00Z', TIMESTAMPTZ '2026-04-02T09:00:00Z', TIMESTAMPTZ '2026-04-02T10:00:00Z'),
              ('Projeto QA Administração 01 Execução Assistida', 'mariana.costa.administracao@pug.br', 4.00, 'WAITING', 'seed:mariana.costa.administracao@pug.br:waiting:1', NULL, NULL, TIMESTAMPTZ '2026-04-03T09:00:00Z', TIMESTAMPTZ '2026-04-03T10:00:00Z')
-     ) AS data(project_name, former_student_email, duration, status, qr_code, validator_email, validated_at, created_at, updated_at)
+     ) AS data(project_name, former_student_email, duration, status, qr_validation_hash, validator_email, validated_at, created_at, updated_at)
      JOIN projects ON projects.name = data.project_name
      JOIN accounts former_students ON former_students.email = data.former_student_email
      LEFT JOIN accounts validators ON validators.email = data.validator_email
-    ON CONFLICT (qr_code) DO NOTHING;
+    ON CONFLICT (qr_validation_hash) DO NOTHING;
 
 END IF;
 END $$;
