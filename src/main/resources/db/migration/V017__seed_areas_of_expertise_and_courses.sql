@@ -1,3 +1,11 @@
+--
+-- Copyright (c) 2026 Mateus Fernandes and Plataforma Universidade Gratuita.
+-- All rights reserved.
+--
+-- This database migration is proprietary and confidential. Unauthorized use,
+-- copying, modification, distribution, or deployment is prohibited.
+--
+
 INSERT INTO areas_of_expertise (id, name, created_at, updated_at)
 VALUES
     (uuid_generate_v7(), 'Escola de Negócios', now(), now()),

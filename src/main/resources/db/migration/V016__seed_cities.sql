@@ -1,3 +1,11 @@
+--
+-- Copyright (c) 2026 Mateus Fernandes and Plataforma Universidade Gratuita.
+-- All rights reserved.
+--
+-- This database migration is proprietary and confidential. Unauthorized use,
+-- copying, modification, distribution, or deployment is prohibited.
+--
+
 -- Inserting all 295 cities from Santa Catarina (SC)
 INSERT INTO cities (id, name, ibge_code)
 VALUES (uuid_generate_v7(), 'Abdon Batista', '4200051'),
