@@ -448,7 +448,7 @@ def sorted_by_low_coverage(nodes: Sequence[CoverageNode], counter_type: str, min
 
 
 def sorted_by_risk(nodes: Sequence[CoverageNode], limit: int) -> list[CoverageNode]:
-    return sorted(nodes, key=lambda n: risk_score(n), reverse=True)[:limit]
+    return sorted(nodes, key=risk_score, reverse=True)[:limit]
 
 
 def distribution_buckets(nodes: Sequence[CoverageNode], counter_type: str) -> list[tuple[str, int]]:
