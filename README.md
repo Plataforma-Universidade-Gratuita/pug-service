@@ -201,3 +201,12 @@ pug-service/
 - [Development notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/DEVELOPMENT.md)
 - [Testing notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/TESTS.md)
 - [CI/CD notes](https://github.com/Plataforma-Universidade-Gratuita/pug-docs/blob/main/pug-service/CICD.md)
+
+## License
+
+This repository contains proprietary software. All rights are reserved.
+
+No use, copying, modification, distribution, hosting, sublicensing, or commercial
+use is permitted without prior express written permission from the copyright holder.
+
+See [LICENSE](./LICENSE).
