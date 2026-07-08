@@ -1,11 +1,3 @@
---
--- Copyright (c) 2026 Mateus Fernandes and Plataforma Universidade Gratuita.
--- All rights reserved.
---
--- This database migration is proprietary and confidential. Unauthorized use,
--- copying, modification, distribution, or deployment is prohibited.
---
-
 CREATE TABLE refresh_tokens
 (
     id         uuid                     DEFAULT uuid_generate_v7(),
